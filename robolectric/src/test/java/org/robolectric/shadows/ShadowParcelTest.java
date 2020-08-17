@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
@@ -14,10 +15,14 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +33,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowParcel.UnreliableBehaviorError;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowParcelTest {
@@ -211,13 +217,13 @@ public class ShadowParcelTest {
     assertInvariants();
 
     parcel.setDataPosition(0);
-    assertThat(parcel.readInt()).named("readInt@0").isEqualTo(1);
-    assertThat(parcel.dataPosition()).named("position post-readInt@0").isEqualTo(4);
-    assertThat(parcel.readByte()).named("readByte@4").isEqualTo(55);
-    assertThat(parcel.dataPosition()).named("position post-readByte@4").isEqualTo(8);
-    assertThat(parcel.readString()).named("readString@8").isNull();
-    assertThat(parcel.dataPosition()).named("position post-readString@8").isEqualTo(12);
-    assertThat(parcel.readInt()).named("readInt@12").isEqualTo(4);
+    assertWithMessage("readInt@0").that(parcel.readInt()).isEqualTo(1);
+    assertWithMessage("position post-readInt@0").that(parcel.dataPosition()).isEqualTo(4);
+    assertWithMessage("readByte@4").that(parcel.readByte()).isEqualTo(55);
+    assertWithMessage("position post-readByte@4").that(parcel.dataPosition()).isEqualTo(8);
+    assertWithMessage("readString@8").that(parcel.readString()).isNull();
+    assertWithMessage("position post-readString@8").that(parcel.dataPosition()).isEqualTo(12);
+    assertWithMessage("readInt@12").that(parcel.readInt()).isEqualTo(4);
   }
 
   @Test
@@ -295,7 +301,7 @@ public class ShadowParcelTest {
     parcel.writeInt(0);
     parcel.writeFloat(0.0f);
     parcel.writeByteArray(new byte[0]);
-    assertThat(parcel.dataSize()).named("total size").isEqualTo(24);
+    assertWithMessage("total size").that(parcel.dataSize()).isEqualTo(24);
 
     parcel.setDataPosition(0);
     assertThat(parcel.readLong()).isEqualTo(0L);
@@ -311,7 +317,7 @@ public class ShadowParcelTest {
     parcel.writeLong(0);
     parcel.writeDouble(0.0);
     parcel.writeLong(0);
-    assertThat(parcel.dataSize()).named("total size").isEqualTo(24);
+    assertWithMessage("total size").that(parcel.dataSize()).isEqualTo(24);
 
     parcel.setDataPosition(0);
     assertThat(parcel.readInt()).isEqualTo(0);
@@ -337,10 +343,10 @@ public class ShadowParcelTest {
     parcel.writeLong(0); // Overwrite the second half of the double and first half of the long.
     parcel.setDataPosition(20);
     parcel.writeInt(0); // And overwrite the second half of *that* with an int.
-    assertThat(parcel.dataSize()).named("total size").isEqualTo(28);
+    assertWithMessage("total size").that(parcel.dataSize()).isEqualTo(28);
 
     parcel.setDataPosition(0);
-    assertThat(parcel.readInt()).named("initial array length").isEqualTo(8);
+    assertWithMessage("initial array length").that(parcel.readInt()).isEqualTo(8);
     // After this, we are reading all zeroes.  If we just read them as regular old types, it would
     // yield errors, but the special-casing for zeroes addresses this.  Make sure each data type
     // consumes the correct number of bytes.
@@ -528,7 +534,7 @@ public class ShadowParcelTest {
   @Test
   public void testByteArrayOfZeroesCastedToZeroes() {
     parcel.writeByteArray(new byte[17]);
-    assertThat(parcel.dataSize()).named("total size").isEqualTo(24);
+    assertWithMessage("total size").that(parcel.dataSize()).isEqualTo(24);
 
     parcel.setDataPosition(0);
     assertThat(parcel.readInt()).isEqualTo(17);
@@ -541,7 +547,7 @@ public class ShadowParcelTest {
   @Test
   public void testByteArrayOfNonZeroCannotBeCastedToZeroes() {
     parcel.writeByteArray(new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 1});
-    assertThat(parcel.dataSize()).named("total size").isEqualTo(16);
+    assertWithMessage("total size").that(parcel.dataSize()).isEqualTo(16);
 
     parcel.setDataPosition(0);
     assertThat(parcel.readInt()).isEqualTo(9);
@@ -1170,18 +1176,18 @@ public class ShadowParcelTest {
     assertThat(parcel.dataPosition()).isEqualTo(parcel.dataSize());
     parcel.setDataPosition(0);
     assertThat(parcel.readString()).isEqualTo("abcde");
-    assertThat(parcel.dataPosition()).named("end offset of legacy string").isEqualTo(5);
+    assertWithMessage("end offset of legacy string").that(parcel.dataPosition()).isEqualTo(5);
     assertThat(parcel.readString()).isEqualTo("");
-    assertThat(parcel.dataPosition()).named("end offset of legacy empty string").isEqualTo(9);
+    assertWithMessage("end offset of legacy empty string").that(parcel.dataPosition()).isEqualTo(9);
     assertThat(parcel.readInt()).isEqualTo(0);
-    assertThat(parcel.dataPosition()).named("end offset of zero int").isEqualTo(13);
+    assertWithMessage("end offset of zero int").that(parcel.dataPosition()).isEqualTo(13);
     assertThat(parcel.readByte()).isEqualTo(81);
-    assertThat(parcel.dataPosition()).named("end offset of legacy byte").isEqualTo(14);
+    assertWithMessage("end offset of legacy byte").that(parcel.dataPosition()).isEqualTo(14);
     assertThat(parcel.readInt()).isEqualTo(Integer.MAX_VALUE);
-    assertThat(parcel.dataPosition()).named("end offset of legacy int").isEqualTo(18);
+    assertWithMessage("end offset of legacy int").that(parcel.dataPosition()).isEqualTo(18);
     assertThat(parcel.createByteArray()).isEqualTo(new byte[] {85, 86, 87});
-    assertThat(parcel.dataPosition()).named("end offset of legacy int").isEqualTo(25);
-    assertThat(parcel.dataSize()).named("total size of legacy parcel").isEqualTo(25);
+    assertWithMessage("end offset of legacy int").that(parcel.dataPosition()).isEqualTo(25);
+    assertWithMessage("total size of legacy parcel").that(parcel.dataSize()).isEqualTo(25);
   }
 
   @Test
@@ -1205,17 +1211,17 @@ public class ShadowParcelTest {
         .isEqualTo(300);
     parcel.setDataPosition(0);
     assertThat(parcel.readString()).isEqualTo("");
-    assertThat(parcel.dataPosition()).named("end offset of empty string").isEqualTo(8);
+    assertWithMessage("end offset of empty string").that(parcel.dataPosition()).isEqualTo(8);
     assertThat(parcel.createByteArray()).isEqualTo(new byte[0]);
-    assertThat(parcel.dataPosition()).named("end offset of empty byte array").isEqualTo(12);
+    assertWithMessage("end offset of empty byte array").that(parcel.dataPosition()).isEqualTo(12);
     assertThat(parcel.readInt()).isEqualTo(0);
-    assertThat(parcel.dataPosition()).named("end offset of readInt zeroes").isEqualTo(16);
+    assertWithMessage("end offset of readInt zeroes").that(parcel.dataPosition()).isEqualTo(16);
     assertThat(parcel.readFloat()).isEqualTo(0.0f);
-    assertThat(parcel.dataPosition()).named("end offset of readFloat zeroes").isEqualTo(20);
+    assertWithMessage("end offset of readFloat zeroes").that(parcel.dataPosition()).isEqualTo(20);
     assertThat(parcel.readDouble()).isEqualTo(0.0d);
-    assertThat(parcel.dataPosition()).named("end offset of readDouble zeroes").isEqualTo(28);
+    assertWithMessage("end offset of readDouble zeroes").that(parcel.dataPosition()).isEqualTo(28);
     assertThat(parcel.readLong()).isEqualTo(0L);
-    assertThat(parcel.dataPosition()).named("end offset of readLong zeroes").isEqualTo(36);
+    assertWithMessage("end offset of readLong zeroes").that(parcel.dataPosition()).isEqualTo(36);
     try {
       parcel.readParcelable(Account.class.getClassLoader());
       fail("Should not be able to unparcel something without the required header");
@@ -1352,6 +1358,24 @@ public class ShadowParcelTest {
     } catch (SecurityException e) {
       // Expected
     }
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void testReadWriteFileDescriptor() throws Exception {
+    File file = new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test");
+    RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+    FileDescriptor expectedFileDescriptor = randomAccessFile.getFD();
+
+    parcel.writeFileDescriptor(expectedFileDescriptor);
+    parcel.setDataPosition(0);
+
+    FileDescriptor actualFileDescriptor = parcel.readRawFileDescriptor();
+
+    // Since the test runs in a single process, for simplicity, we can assume the FD isn't changed
+    int expectedFd = ReflectionHelpers.getField(expectedFileDescriptor, "fd");
+    int actualFd = ReflectionHelpers.getField(actualFileDescriptor, "fd");
+    assertThat(actualFd).isEqualTo(expectedFd);
   }
 
   private void assertInvariants() {

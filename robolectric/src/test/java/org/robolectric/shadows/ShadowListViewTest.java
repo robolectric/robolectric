@@ -60,10 +60,10 @@ public class ShadowListViewTest {
     listView.addHeaderView(view3, null, false);
     listView.setAdapter(new ShadowCountingAdapter(2));
     assertThat(listView.getHeaderViewsCount()).isEqualTo(4);
-    assertThat(shadowOf(listView).getHeaderViews().get(0)).isSameAs(view0);
-    assertThat(shadowOf(listView).getHeaderViews().get(1)).isSameAs(view1);
-    assertThat(shadowOf(listView).getHeaderViews().get(2)).isSameAs(view2);
-    assertThat(shadowOf(listView).getHeaderViews().get(3)).isSameAs(view3);
+    assertThat(shadowOf(listView).getHeaderViews().get(0)).isSameInstanceAs(view0);
+    assertThat(shadowOf(listView).getHeaderViews().get(1)).isSameInstanceAs(view1);
+    assertThat(shadowOf(listView).getHeaderViews().get(2)).isSameInstanceAs(view2);
+    assertThat(shadowOf(listView).getHeaderViews().get(3)).isSameInstanceAs(view3);
 
     assertThat((View) listView.findViewById(0)).isNotNull();
     assertThat((View) listView.findViewById(1)).isNotNull();
@@ -78,7 +78,7 @@ public class ShadowListViewTest {
 
     listView.addHeaderView(view);
 
-    assertThat((View) listView.findViewById(42)).isSameAs(view);
+    assertThat((View) listView.findViewById(42)).isSameInstanceAs(view);
   }
 
   @Test
@@ -88,8 +88,8 @@ public class ShadowListViewTest {
     listView.addFooterView(view0);
     listView.addFooterView(view1);
     listView.setAdapter(new ShadowCountingAdapter(3));
-    assertThat(shadowOf(listView).getFooterViews().get(0)).isSameAs(view0);
-    assertThat(shadowOf(listView).getFooterViews().get(1)).isSameAs(view1);
+    assertThat(shadowOf(listView).getFooterViews().get(0)).isSameInstanceAs(view0);
+    assertThat(shadowOf(listView).getFooterViews().get(1)).isSameInstanceAs(view1);
   }
 
   @Test
@@ -99,7 +99,7 @@ public class ShadowListViewTest {
 
     listView.addFooterView(view);
 
-    assertThat((View) listView.findViewById(42)).isSameAs(view);
+    assertThat((View) listView.findViewById(42)).isSameInstanceAs(view);
   }
 
   @Test
@@ -112,8 +112,8 @@ public class ShadowListViewTest {
     prepareListWithThreeItems();
 
     assertThat(listView.getChildCount()).isEqualTo(5);
-    assertThat(listView.getChildAt(0)).isSameAs(header);
-    assertThat(listView.getChildAt(4)).isSameAs(footer);
+    assertThat(listView.getChildAt(0)).isSameInstanceAs(header);
+    assertThat(listView.getChildAt(4)).isSameInstanceAs(footer);
   }
 
   @Test
@@ -156,7 +156,7 @@ public class ShadowListViewTest {
   public void findItemContainingText_shouldFindChildByString() throws Exception {
     ShadowListView shadowListView = prepareListWithThreeItems();
     View item1 = shadowListView.findItemContainingText("Item 1");
-    assertThat(item1).isSameAs(listView.getChildAt(1));
+    assertThat(item1).isSameInstanceAs(listView.getChildAt(1));
   }
 
   @Test

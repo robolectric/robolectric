@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
+import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED;
+import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -18,6 +21,7 @@ import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
+import android.net.ProxyInfo;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -27,7 +31,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowConnectivityManagerTest {
@@ -93,7 +96,7 @@ public class ShadowConnectivityManagerTest {
     shadowOf(connectivityManager).addNetwork(vpnNetwork, vpnNetworkInfo);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(vpnNetwork);
-    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+    assertThat(returnedNetworkInfo).isSameInstanceAs(vpnNetworkInfo);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -251,10 +254,10 @@ public class ShadowConnectivityManagerTest {
     assertThat(networks).asList().hasSize(1);
 
     Network returnedNetwork = networks[0];
-    assertThat(returnedNetwork).isSameAs(vpnNetwork);
+    assertThat(returnedNetwork).isSameInstanceAs(vpnNetwork);
 
     NetworkInfo returnedNetworkInfo = connectivityManager.getNetworkInfo(returnedNetwork);
-    assertThat(returnedNetworkInfo).isSameAs(vpnNetworkInfo);
+    assertThat(returnedNetworkInfo).isSameInstanceAs(vpnNetworkInfo);
   }
 
   @Test @Config(minSdk = LOLLIPOP)
@@ -398,7 +401,7 @@ public class ShadowConnectivityManagerTest {
   public void bindProcessToNetwork_shouldGetBoundNetworkForProcess() {
     Network network = ShadowNetwork.newInstance(789);
     connectivityManager.bindProcessToNetwork(network);
-    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameAs(network);
+    assertThat(connectivityManager.getBoundNetworkForProcess()).isSameInstanceAs(network);
   }
 
   @Test
@@ -478,11 +481,8 @@ public class ShadowConnectivityManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void getNetworkCapabilities() throws Exception {
-    NetworkCapabilities nc = new NetworkCapabilities(null);
-    ReflectionHelpers.callInstanceMethod(
-        nc,
-        "addCapability",
-        ClassParameter.from(int.class, NetworkCapabilities.NET_CAPABILITY_MMS));
+    NetworkCapabilities nc = ShadowNetworkCapabilities.newInstance();
+    shadowOf(nc).addCapability(NetworkCapabilities.NET_CAPABILITY_MMS);
 
     shadowOf(connectivityManager).setNetworkCapabilities(
         shadowOf(connectivityManager).getActiveNetwork(), nc);
@@ -492,6 +492,23 @@ public class ShadowConnectivityManagerTest {
                 .getNetworkCapabilities(shadowOf(connectivityManager).getActiveNetwork())
                 .hasCapability(NetworkCapabilities.NET_CAPABILITY_MMS))
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getNetworkCapabilities_shouldReturnDefaultCapabilities() throws Exception {
+    for (Network network : connectivityManager.getAllNetworks()) {
+      NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(network);
+      assertThat(nc).isNotNull();
+
+      int netId = shadowOf(network).getNetId();
+      if (netId == ShadowConnectivityManager.NET_ID_WIFI) {
+        assertThat(nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)).isTrue();
+      }
+      if (netId == ShadowConnectivityManager.NET_ID_MOBILE) {
+        assertThat(nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)).isTrue();
+      }
+    }
   }
 
   @Test
@@ -538,5 +555,72 @@ public class ShadowConnectivityManagerTest {
     shadowOf(connectivityManager).setLinkProperties(network, null);
 
     assertThat(connectivityManager.getLinkProperties(network)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus() {
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(1);
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_DISABLED);
+
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(2);
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_WHITELISTED);
+
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(3);
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_ENABLED);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus_defaultValueIsDisabled() {
+    assertThat(connectivityManager.getRestrictBackgroundStatus())
+        .isEqualTo(RESTRICT_BACKGROUND_STATUS_DISABLED);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus0() throws Exception{
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(0);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  @Config(minSdk = N)
+  public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus4() throws Exception{
+    shadowOf(connectivityManager).setRestrictBackgroundStatus(4);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getProxyForNetwork() {
+    Network network = connectivityManager.getActiveNetwork();
+    connectivityManager.bindProcessToNetwork(network);
+    ProxyInfo proxyInfo = ProxyInfo.buildDirectProxy("10.11.12.13", 1234);
+
+    shadowOf(connectivityManager).setProxyForNetwork(network, proxyInfo);
+
+    assertThat(connectivityManager.getProxyForNetwork(network)).isEqualTo(proxyInfo);
+    assertThat(connectivityManager.getDefaultProxy()).isEqualTo(proxyInfo);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getProxyForNetwork_shouldReturnNullByDefaultWithBoundProcess() {
+    Network network = connectivityManager.getActiveNetwork();
+    connectivityManager.bindProcessToNetwork(network);
+
+    assertThat(connectivityManager.getProxyForNetwork(network)).isNull();
+    assertThat(connectivityManager.getDefaultProxy()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getProxyForNetwork_shouldReturnNullByDefaultNoBoundProcess() {
+    Network network = connectivityManager.getActiveNetwork();
+
+    assertThat(connectivityManager.getProxyForNetwork(network)).isNull();
+    assertThat(connectivityManager.getDefaultProxy()).isNull();
   }
 }

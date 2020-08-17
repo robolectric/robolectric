@@ -8,7 +8,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Robolectric.buildActivity;
@@ -73,7 +73,7 @@ public class ShadowTextViewTest {
 
     textView.onEditorAction(EditorInfo.IME_ACTION_GO);
 
-    assertThat(actionListener.textView).isSameAs(textView);
+    assertThat(actionListener.textView).isSameInstanceAs(textView);
     assertThat(actionListener.sentImeId).isEqualTo(EditorInfo.IME_ACTION_GO);
   }
 
@@ -83,7 +83,7 @@ public class ShadowTextViewTest {
 
     textView.setOnEditorActionListener(actionListener);
 
-    assertThat(shadowOf(textView).getOnEditorActionListener()).isSameAs(actionListener);
+    assertThat(shadowOf(textView).getOnEditorActionListener()).isSameInstanceAs(actionListener);
   }
 
   @Test
@@ -111,7 +111,7 @@ public class ShadowTextViewTest {
 
     assertNull(textView.getMovementMethod());
     textView.setMovementMethod(movement);
-    assertThat(textView.getMovementMethod()).isSameAs(movement);
+    assertThat(textView.getMovementMethod()).isSameInstanceAs(movement);
   }
 
   @Test
@@ -398,7 +398,7 @@ public class ShadowTextViewTest {
   public void canSetAndGetInputFilters() throws Exception {
     final InputFilter[] expectedFilters = new InputFilter[]{new InputFilter.LengthFilter(1)};
     textView.setFilters(expectedFilters);
-    assertThat(textView.getFilters()).isSameAs(expectedFilters);
+    assertThat(textView.getFilters()).isSameInstanceAs(expectedFilters);
   }
 
   @Test
@@ -494,7 +494,11 @@ public class ShadowTextViewTest {
   }
 
   private void assertEachTextWatcherEventWasInvoked(MockTextWatcher mockTextWatcher) {
-    assertTrue("Expected each TextWatcher event to have been invoked once", mockTextWatcher.methodsCalled.size() == 3);
+    assertTrue("Expected each TextWatcher event to"
+                   + " have"
+                   + " been"
+                   + " invoked"
+                   + " once", mockTextWatcher.methodsCalled.size() == 3);
 
     assertThat(mockTextWatcher.methodsCalled.get(0)).isEqualTo("beforeTextChanged");
     assertThat(mockTextWatcher.methodsCalled.get(1)).isEqualTo("onTextChanged");

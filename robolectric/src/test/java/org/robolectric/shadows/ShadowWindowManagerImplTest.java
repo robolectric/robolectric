@@ -55,7 +55,7 @@ public class ShadowWindowManagerImplTest {
     List<View> views = ((ShadowWindowManagerImpl) shadowOf(windowManager)).getViews();
 
     assertThat(views).hasSize(1);
-    assertThat(views.get(0)).isSameAs(view);
+    assertThat(views.get(0)).isSameInstanceAs(view);
   }
 
   @Test

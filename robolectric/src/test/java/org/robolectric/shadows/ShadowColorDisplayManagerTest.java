@@ -118,27 +118,20 @@ public class ShadowColorDisplayManagerTest {
   }
 
   @Test
-  public void getTransformCapabilities_defaultValue_shouldReturnHundred() {
+  public void getTransformCapabilities_defaultNone_shouldReturnNoCapabilities() {
+    assertThat(getShadowColorDisplayManager().getTransformCapabilities()).isEqualTo(0x0);
+  }
+
+  @Test
+  public void getTransformCapabilities_setToFull_shouldReturnFullCapabilities() {
+    getShadowColorDisplayManager().setTransformCapabilities(0x4);
     assertThat(getShadowColorDisplayManager().getTransformCapabilities()).isEqualTo(0x4);
   }
 
   @Test
-  public void getTransformCapabilities_setToZeroViaShadow_shouldReturnZero() {
-    getShadowColorDisplayManager().setTransformCapabilities(0);
-    assertThat(getShadowColorDisplayManager().getTransformCapabilities()).isEqualTo(0);
-  }
-
-  @Test
-  public void getTransformCapabilities_setToHalfViaShadow_shouldReturnHalf() {
-    getShadowColorDisplayManager().setTransformCapabilities(50);
-    assertThat(getShadowColorDisplayManager().getTransformCapabilities()).isEqualTo(50);
-  }
-
-  @Test
-  public void getTransformCapabilities_setToHundredViaShadow_shouldReturnHundred() {
-    getShadowColorDisplayManager().setTransformCapabilities(0);
-    getShadowColorDisplayManager().setTransformCapabilities(100);
-    assertThat(getShadowColorDisplayManager().getTransformCapabilities()).isEqualTo(100);
+  public void getTransformCapabilities_setToZero_shouldReturnNoCapabilities() {
+    getShadowColorDisplayManager().setTransformCapabilities(0x0);
+    assertThat(getShadowColorDisplayManager().getTransformCapabilities()).isEqualTo(0x0);
   }
 
   private ShadowColorDisplayManager getShadowColorDisplayManager() {

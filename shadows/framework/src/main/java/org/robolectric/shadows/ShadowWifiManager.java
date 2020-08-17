@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -13,12 +14,20 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.net.wifi.WifiUsabilityStatsEntry;
+import android.provider.Settings;
+import android.util.ArraySet;
 import android.util.Pair;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -28,10 +37,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-/**
- * Shadow for {@link android.net.wifi.WifiManager}.
- */
-@Implements(WifiManager.class)
+/** Shadow for {@link android.net.wifi.WifiManager}. */
+@Implements(value = WifiManager.class, looseSignatures = true)
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
 
@@ -43,12 +50,15 @@ public class ShadowWifiManager {
   private List<ScanResult> scanResults;
   private final Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<>();
   private Pair<Integer, Boolean> lastEnabledNetwork;
+  private final Set<Integer> enabledNetworks = new HashSet<>();
   private DhcpInfo dhcpInfo;
-  private boolean isScanAlwaysAvailable = true;
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
+  private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
+      wifiUsabilityStatsListeners = new ConcurrentHashMap<>();
+  private final List<WifiUsabilityScore> usabilityScores = new ArrayList<>();
   @RealObject WifiManager wifiManager;
 
   @Implementation
@@ -125,6 +135,9 @@ public class ShadowWifiManager {
 
   @Implementation
   protected int addNetwork(WifiConfiguration config) {
+    if (config == null) {
+      return -1;
+    }
     int networkId = networkIdToConfiguredNetworks.size();
     config.networkId = -1;
     networkIdToConfiguredNetworks.put(networkId, makeCopy(config, networkId));
@@ -159,9 +172,15 @@ public class ShadowWifiManager {
   }
 
   @Implementation
-  protected boolean enableNetwork(int netId, boolean disableOthers) {
-    lastEnabledNetwork = new Pair<>(netId, disableOthers);
+  protected boolean enableNetwork(int netId, boolean attemptConnect) {
+    lastEnabledNetwork = new Pair<>(netId, attemptConnect);
+    enabledNetworks.add(netId);
     return true;
+  }
+
+  @Implementation
+  protected boolean disableNetwork(int netId) {
+    return enabledNetworks.remove(netId);
   }
 
   @Implementation
@@ -209,7 +228,9 @@ public class ShadowWifiManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean isScanAlwaysAvailable() {
-    return isScanAlwaysAvailable;
+    return Settings.Global.getInt(
+            getContext().getContentResolver(), Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE, 1)
+        == 1;
   }
 
   @HiddenApi
@@ -324,6 +345,11 @@ public class ShadowWifiManager {
     return lastEnabledNetwork;
   }
 
+  /** Whether the network is enabled or not. */
+  public boolean isNetworkEnabled(int netId) {
+    return enabledNetworks.contains(netId);
+  }
+
   /** Returns the number of WifiLocks and MulticastLocks that are currently acquired. */
   public int getActiveLockCount() {
     return activeLockCount.get();
@@ -334,7 +360,10 @@ public class ShadowWifiManager {
   }
 
   public void setIsScanAlwaysAvailable(boolean isScanAlwaysAvailable) {
-    this.isScanAlwaysAvailable = isScanAlwaysAvailable;
+    Settings.Global.putInt(
+        getContext().getContentResolver(),
+        Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE,
+        isScanAlwaysAvailable ? 1 : 0);
   }
 
   private void checkAccessWifiStatePermission() {
@@ -352,6 +381,79 @@ public class ShadowWifiManager {
 
   public WifiConfiguration getWifiConfiguration(int netId) {
     return networkIdToConfiguredNetworks.get(netId);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void addOnWifiUsabilityStatsListener(Object executorObject, Object listenerObject) {
+    Executor executor = (Executor) executorObject;
+    WifiManager.OnWifiUsabilityStatsListener listener =
+        (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
+    wifiUsabilityStatsListeners.put(listener, executor);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void removeOnWifiUsabilityStatsListener(Object listenerObject) {
+    WifiManager.OnWifiUsabilityStatsListener listener =
+        (WifiManager.OnWifiUsabilityStatsListener) listenerObject;
+    wifiUsabilityStatsListeners.remove(listener);
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void updateWifiUsabilityScore(int seqNum, int score, int predictionHorizonSec) {
+    synchronized (usabilityScores) {
+      usabilityScores.add(new WifiUsabilityScore(seqNum, score, predictionHorizonSec));
+    }
+  }
+
+  /**
+   * Returns wifi usability scores previous passed to {@link WifiManager#updateWifiUsabilityScore}
+   */
+  public List<WifiUsabilityScore> getUsabilityScores() {
+    synchronized (usabilityScores) {
+      return ImmutableList.copyOf(usabilityScores);
+    }
+  }
+
+  /**
+   * Clears wifi usability scores previous passed to {@link WifiManager#updateWifiUsabilityScore}
+   */
+  public void clearUsabilityScores() {
+    synchronized (usabilityScores) {
+      usabilityScores.clear();
+    }
+  }
+
+  /**
+   * Post Wifi stats to any listeners registered with {@link
+   * WifiManager#addOnWifiUsabilityStatsListener}
+   */
+  public void postUsabilityStats(
+      int seqNum, boolean isSameBssidAndFreq, WifiUsabilityStatsEntryBuilder statsBuilder) {
+    WifiUsabilityStatsEntry stats = statsBuilder.build();
+
+    Set<Map.Entry<WifiManager.OnWifiUsabilityStatsListener, Executor>> toNotify = new ArraySet<>();
+    toNotify.addAll(wifiUsabilityStatsListeners.entrySet());
+    for (Map.Entry<WifiManager.OnWifiUsabilityStatsListener, Executor> entry : toNotify) {
+      entry
+          .getValue()
+          .execute(
+              new Runnable() {
+                // Using a lambda here means loading the ShadowWifiManager class tries
+                // to load the WifiManager.OnWifiUsabilityStatsListener which fails if
+                // not building against a system API.
+                @Override
+                public void run() {
+                  entry.getKey().onWifiUsabilityStats(seqNum, isSameBssidAndFreq, stats);
+                }
+              });
+    }
+  }
+
+  private Context getContext() {
+    return ReflectionHelpers.getField(wifiManager, "mContext");
   }
 
   @Implements(WifiManager.WifiLock.class)
@@ -372,7 +474,9 @@ public class ShadowWifiManager {
         shadowOf(wifiManager).activeLockCount.getAndIncrement();
       }
       if (refCounted) {
-        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        if (++refCount >= MAX_ACTIVE_LOCKS) {
+          throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        }
       } else {
         locked = true;
       }
@@ -419,7 +523,9 @@ public class ShadowWifiManager {
         shadowOf(wifiManager).activeLockCount.getAndIncrement();
       }
       if (refCounted) {
-        if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        if (++refCount >= MAX_ACTIVE_LOCKS) {
+          throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+        }
       } else {
         locked = true;
       }
@@ -458,5 +564,18 @@ public class ShadowWifiManager {
 
   private static ShadowWifiManager shadowOf(WifiManager o) {
     return Shadow.extract(o);
+  }
+
+  /** Class to record scores passed to WifiManager#updateWifiUsabilityScore */
+  public static class WifiUsabilityScore {
+    public final int seqNum;
+    public final int score;
+    public final int predictionHorizonSec;
+
+    private WifiUsabilityScore(int seqNum, int score, int predictionHorizonSec) {
+      this.seqNum = seqNum;
+      this.score = score;
+      this.predictionHorizonSec = predictionHorizonSec;
+    }
   }
 }

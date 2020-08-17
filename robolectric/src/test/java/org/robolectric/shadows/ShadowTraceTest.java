@@ -6,6 +6,10 @@ import static org.junit.Assert.fail;
 
 import android.os.Trace;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -136,5 +140,51 @@ public class ShadowTraceTest {
 
     assertThat(ShadowTrace.getCurrentSections()).isEmpty();
     assertThat(ShadowTrace.getPreviousSections()).isEmpty();
+  }
+
+  @Test
+  public void toggleEnabledTest() throws Exception {
+    Trace.beginSection("section1");
+    assertThat(ShadowTrace.isEnabled()).isTrue();
+    ShadowTrace.setEnabled(false);
+    assertThat(ShadowTrace.isEnabled()).isFalse();
+    ShadowTrace.setEnabled(true);
+    assertThat(ShadowTrace.isEnabled()).isTrue();
+    Trace.endSection();
+
+  }
+
+  @Test
+  public void traceFromIndependentThreads() throws ExecutionException, InterruptedException {
+    ShadowTrace.doNotUseSetCrashOnIncorrectUsage(true);
+    ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+
+    try {
+      Trace.beginSection("main_looper_trace");
+      Future<?> f = backgroundExecutor.submit(() -> Trace.beginSection("bg_trace"));
+      f.get();
+      Trace.endSection();
+
+      assertThat(ShadowTrace.getPreviousSections()).containsExactly("main_looper_trace");
+      assertThat(ShadowTrace.getCurrentSections()).isEmpty();
+
+      f =
+          backgroundExecutor.submit(
+              new Runnable() {
+                @Override
+                public void run() {
+                  assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
+                  assertThat(ShadowTrace.getPreviousSections()).isEmpty();
+
+                  Trace.endSection();
+
+                  assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
+                  assertThat(ShadowTrace.getCurrentSections()).isEmpty();
+                }
+              });
+      f.get();
+    } finally {
+      backgroundExecutor.shutdown();
+    }
   }
 }

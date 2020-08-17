@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.P;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
@@ -17,7 +17,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(
     className = "libcore.util.TimeZoneFinder",
     minSdk = O,
-    maxSdk = Q,
+    maxSdk = P,
     isInAndroidSdk = false,
     looseSignatures = true)
 public class ShadowTimeZoneFinder {

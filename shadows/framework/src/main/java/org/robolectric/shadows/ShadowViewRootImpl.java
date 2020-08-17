@@ -35,7 +35,7 @@ import org.robolectric.util.reflector.WithType;
 @Implements(value = ViewRootImpl.class, isInAndroidSdk = false)
 public class ShadowViewRootImpl {
 
-  @RealObject private ViewRootImpl realObject;
+  @RealObject protected ViewRootImpl realObject;
 
   @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
   public static IWindowSession getWindowSession(Looper mainLooper) {
@@ -58,12 +58,12 @@ public class ShadowViewRootImpl {
     Rect frame = new Rect();
     display.getRectSize(frame);
 
-    reflector(_ViewRootImpl_.class, realObject).dispatchResized(frame);
+    reflector(ViewRootImplReflector.class, realObject).dispatchResized(frame);
   }
 
-  private Display getDisplay() {
+  protected Display getDisplay() {
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN_MR1) {
-      return reflector(_ViewRootImpl_.class, realObject).getDisplay();
+      return reflector(ViewRootImplReflector.class, realObject).getDisplay();
     } else {
       WindowManager windowManager = (WindowManager) realObject.getView().getContext()
           .getSystemService(Context.WINDOW_SERVICE);
@@ -83,22 +83,22 @@ public class ShadowViewRootImpl {
     if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
       Rect winFrame = new Rect();
       getDisplay().getRectSize(winFrame);
-      reflector(_ViewRootImpl_.class, realObject).setWinFrame(winFrame);
+      reflector(ViewRootImplReflector.class, realObject).setWinFrame(winFrame);
     }
   }
 
   @Resetter
   public static void reset() {
-    _ViewRootImpl_ _viewRootImplStatic_ = reflector(_ViewRootImpl_.class);
-    _viewRootImplStatic_.setRunQueues(new ThreadLocal<>());
-    _viewRootImplStatic_.setFirstDrawHandlers(new ArrayList<>());
-    _viewRootImplStatic_.setFirstDrawComplete(false);
-    _viewRootImplStatic_.setConfigCallbacks(new ArrayList<>());
+    ViewRootImplReflector viewRootImplStatic = reflector(ViewRootImplReflector.class);
+    viewRootImplStatic.setRunQueues(new ThreadLocal<>());
+    viewRootImplStatic.setFirstDrawHandlers(new ArrayList<>());
+    viewRootImplStatic.setFirstDrawComplete(false);
+    viewRootImplStatic.setConfigCallbacks(new ArrayList<>());
   }
 
   /** Accessor interface for {@link ViewRootImpl}'s internals. */
   @ForType(ViewRootImpl.class)
-  interface _ViewRootImpl_ {
+  protected interface ViewRootImplReflector {
     @Static @Accessor("sRunQueues")
     void setRunQueues(ThreadLocal<HandlerActionQueue> threadLocal);
 

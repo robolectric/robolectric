@@ -4,7 +4,6 @@ import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 
 import com.google.errorprone.BugCheckerRefactoringTestHelper;
 import com.google.errorprone.BugPattern;
-import com.google.errorprone.BugPattern.ProvidesFix;
 import java.io.IOException;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -212,7 +211,6 @@ public class DeprecatedMethodsCheckTest {
 
   @BugPattern(
       name = "DeprecatedMethods",
-      providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION,
       summary = "",
       severity = WARNING)
   private static class DeprecatedMethodsCheckForTest extends DeprecatedMethodsCheck {

@@ -178,7 +178,8 @@ public class AndroidManifest implements UsesSdk {
           packageName = getTagAttributeText(manifestDocument, "manifest", "package");
         }
 
-        versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
+        versionCode =
+            getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
         versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
         rClassName = packageName + ".R";
 
@@ -204,7 +205,8 @@ public class AndroidManifest implements UsesSdk {
           parseContentProviders(applicationNode);
         }
 
-        minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
+        minSdkVersion =
+            getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
 
         String targetSdkText =
             getTagAttributeText(manifestDocument, "uses-sdk", "android:targetSdkVersion");
@@ -213,7 +215,8 @@ public class AndroidManifest implements UsesSdk {
           targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
         }
 
-        maxSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
+        maxSdkVersion =
+            getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:maxSdkVersion");
         if (processName == null) {
           processName = packageName;
         }
@@ -228,7 +231,8 @@ public class AndroidManifest implements UsesSdk {
       if (androidManifestFile != null) {
         System.out.println("WARNING: No manifest file found at " + androidManifestFile + ".");
         System.out.println("Falling back to the Android OS resources only.");
-        System.out.println("To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
+        System.out.println(
+            "To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
       }
 
       if (packageName == null || packageName.equals("")) {
@@ -430,7 +434,9 @@ public class AndroidManifest implements UsesSdk {
       activityAttrs.put(ActivityData.getTargetAttr("android"), targetName);
     }
     activityAttrs.put(ActivityData.getNameAttr("android"), activityName);
-    activityDatas.put(activityName, new ActivityData("android", activityAttrs, intentFilterData, targetActivity, metaData));
+    activityDatas.put(
+        activityName,
+        new ActivityData("android", activityAttrs, intentFilterData, targetActivity, metaData));
   }
 
   private List<IntentFilterData> parseIntentFilters(final Node activityNode) {
@@ -536,7 +542,9 @@ public class AndroidManifest implements UsesSdk {
   }
 
   private String resolveClassRef(String maybePartialClassName) {
-    return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
+    return (maybePartialClassName.startsWith("."))
+        ? packageName + maybePartialClassName
+        : maybePartialClassName;
   }
 
   private List<Node> getChildrenTags(final Node node, final String tagName) {
@@ -594,8 +602,8 @@ public class AndroidManifest implements UsesSdk {
    * Returns the minimum Android SDK version that this package expects to be runnable on, as
    * specified in the manifest.
    *
-   * <p>Note that if `targetSdkVersion` isn't set, this value changes the behavior of some Android
-   * code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
+   * <p>Note that if {@link #targetSdkVersion} isn't set, this value changes the behavior of some
+   * Android code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
    *
    * @return the minimum SDK version, or Jelly Bean (16) by default
    */

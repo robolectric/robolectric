@@ -18,6 +18,6 @@ public class ShadowNotificationTest {
     PendingIntent pendingIntent = PendingIntent.getActivity(application, 0, new Intent(), 0);
     Notification notification = new Notification();
     notification.setLatestEventInfo(application, "title", "content", pendingIntent);
-    assertThat(notification.contentIntent).isSameAs(pendingIntent);
+    assertThat(notification.contentIntent).isSameInstanceAs(pendingIntent);
   }
 }

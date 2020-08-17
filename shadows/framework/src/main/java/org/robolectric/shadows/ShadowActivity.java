@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -16,10 +17,13 @@ import android.app.Instrumentation;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
@@ -41,9 +45,11 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.WithType;
@@ -72,9 +78,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
   private ComponentName callingActivity;
+  private String callingPackage;
   private PermissionsRequest lastRequestedPermission;
   private ActivityController controller;
   private boolean inMultiWindowMode = false;
+  private IntentSenderRequest lastIntentSenderRequest;
+  private boolean throwIntentSenderException;
+  private boolean hasReportedFullyDrawn = false;
+
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
   }
@@ -130,6 +141,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected ComponentName getCallingActivity() {
     return callingActivity;
+  }
+
+  public void setCallingPackage(String packageName) {
+    callingPackage = packageName;
+  }
+
+  @Implementation
+  protected String getCallingPackage() {
+    return callingPackage;
   }
 
   @Implementation
@@ -271,7 +291,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Implementation
   protected void runOnUiThread(Runnable action) {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       directlyOn(
           realActivity,
           Activity.class,
@@ -303,6 +323,36 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected int getTaskId() {
     return 0;
+  }
+
+  @Implementation
+  public void startIntentSenderForResult(
+      IntentSender intentSender,
+      int requestCode,
+      @Nullable Intent fillInIntent,
+      int flagsMask,
+      int flagsValues,
+      int extraFlags,
+      Bundle options)
+      throws IntentSender.SendIntentException {
+    if (throwIntentSenderException) {
+      throw new IntentSender.SendIntentException("PendingIntent was canceled");
+    }
+    lastIntentSenderRequest =
+        new IntentSenderRequest(
+            intentSender, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options);
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected void reportFullyDrawn() {
+    hasReportedFullyDrawn = true;
+  }
+
+  /**
+   * @return whether {@code ReportFullyDrawn()} methods has been called.
+   */
+  public boolean getReportFullyDrawn() {
+    return hasReportedFullyDrawn;
   }
 
   /**
@@ -412,7 +462,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return realActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
   }
 
-  /** For internal use only. Not for public use. */
+  @Deprecated
   public void callOnActivityResult(int requestCode, int resultCode, Intent resultData) {
     final ActivityInvoker invoker = new ActivityInvoker();
     invoker
@@ -421,8 +471,34 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /** For internal use only. Not for public use. */
+  public void internalCallDispatchActivityResult(
+      String who, int requestCode, int resultCode, Intent data) {
+    final ActivityInvoker invoker = new ActivityInvoker();
+    if (VERSION.SDK_INT >= VERSION_CODES.P) {
+      invoker
+          .call(
+              "dispatchActivityResult",
+              String.class,
+              Integer.TYPE,
+              Integer.TYPE,
+              Intent.class,
+              String.class)
+          .with(who, requestCode, resultCode, data, "ACTIVITY_RESULT");
+    } else {
+      invoker
+          .call("dispatchActivityResult", String.class, Integer.TYPE, Integer.TYPE, Intent.class)
+          .with(who, requestCode, resultCode, data);
+    }
+  }
+
+  /** For internal use only. Not for public use. */
   public <T extends Activity> void attachController(ActivityController controller) {
     this.controller = controller;
+  }
+
+  /** Sets if startIntentSenderForRequestCode will throw an IntentSender.SendIntentException. */
+  public void setThrowIntentSenderException(boolean throwIntentSenderException) {
+    this.throwIntentSenderException = throwIntentSenderException;
   }
 
   /**
@@ -445,14 +521,29 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       this.requestCode = requestCode;
       this.options = options;
     }
+
+    @Override
+    public String toString() {
+      return super.toString()
+          + "{intent="
+          + intent
+          + ", requestCode="
+          + requestCode
+          + ", options="
+          + options
+          + '}';
+    }
   }
 
   public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
-    int requestCode = shadowInstrumentation.getRequestCodeForIntent(requestIntent);
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
+    TargetAndRequestCode targetAndRequestCode =
+        shadowInstrumentation.getTargetAndRequestCodeForIntent(requestIntent);
 
-    callOnActivityResult(requestCode, resultCode, resultIntent);
+    internalCallDispatchActivityResult(
+        targetAndRequestCode.target, targetAndRequestCode.requestCode, resultCode, resultIntent);
   }
 
   @Implementation
@@ -489,7 +580,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       if (bundle == null) {
         invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class).with(id, dialog);
       } else {
-        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class).with(id, dialog, bundle);
+        invoker
+            .call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class)
+            .with(id, dialog, bundle);
       }
 
       dialogForId.put(id, dialog);
@@ -567,6 +660,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation(minSdk = M)
   protected final void requestPermissions(String[] permissions, int requestCode) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
+    directlyOn(realActivity, Activity.class).requestPermissions(permissions, requestCode);
   }
 
   /**
@@ -620,6 +714,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
+   * Gets the last startIntentSenderForResult request made to this activity.
+   *
+   * @return The IntentSender request details.
+   */
+  public IntentSenderRequest getLastIntentSenderRequest() {
+    return lastIntentSenderRequest;
+  }
+
+  /**
    * Gets the last permission request submitted to this activity.
    *
    * @return The permission request details.
@@ -662,6 +765,34 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     public PermissionsRequest(String[] requestedPermissions, int requestCode) {
       this.requestedPermissions = requestedPermissions;
       this.requestCode = requestCode;
+    }
+  }
+
+  /** Class to holds details of a startIntentSenderForResult request. */
+  public static class IntentSenderRequest {
+    public final IntentSender intentSender;
+    public final int requestCode;
+    @Nullable public final Intent fillInIntent;
+    public final int flagsMask;
+    public final int flagsValues;
+    public final int extraFlags;
+    public final Bundle options;
+
+    public IntentSenderRequest(
+        IntentSender intentSender,
+        int requestCode,
+        @Nullable Intent fillInIntent,
+        int flagsMask,
+        int flagsValues,
+        int extraFlags,
+        Bundle options) {
+      this.intentSender = intentSender;
+      this.requestCode = requestCode;
+      this.fillInIntent = fillInIntent;
+      this.flagsMask = flagsMask;
+      this.flagsValues = flagsValues;
+      this.extraFlags = extraFlags;
+      this.options = options;
     }
   }
 

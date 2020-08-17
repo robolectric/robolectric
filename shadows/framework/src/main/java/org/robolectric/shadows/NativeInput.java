@@ -49,7 +49,7 @@ public class NativeInput {
   /*
    * Maximum number of samples supported per motion event.
    */
-  private static final int MAX_SAMPLES = 2 ^ 16; /* UINT16_MAX */
+  private static final int MAX_SAMPLES = 0xffff; /* UINT16_MAX */
   /*
    * Maximum pointer id value supported in a motion event.
    * Smallest pointer id is 0.
@@ -579,7 +579,10 @@ public class NativeInput {
       mYPrecision = yPrecision;
       mDownTime = downTime;
       mPointerProperties.clear();
-      mPointerProperties.addAll(Arrays.asList(pointerProperties).subList(0, pointerCount));
+      for (int i = 0; i < pointerCount; i++) {
+        PointerProperties copy = new PointerProperties(pointerProperties[i]);
+        mPointerProperties.add(copy);
+      }
       mSampleEventTimes.clear();
       mSamplePointerCoords.clear();
       addSample(eventTime, Arrays.asList(pointerCoords).subList(0, pointerCount));

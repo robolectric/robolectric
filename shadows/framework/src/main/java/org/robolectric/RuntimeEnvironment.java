@@ -1,19 +1,18 @@
 package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
-import com.google.common.base.Preconditions;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.shadows.ShadowBaseLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -43,61 +42,53 @@ public class RuntimeEnvironment {
    * Tests if the given thread is currently set as the main thread.
    *
    * @param thread the thread to test.
-   * @return <tt>true</tt> if the specified thread is the main thread, <tt>false</tt> otherwise.
+   * @return true if the specified thread is the main thread, false otherwise.
    * @see #isMainThread()
    */
   public static boolean isMainThread(Thread thread) {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "isMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     return thread == mainThread;
   }
 
   /**
    * Tests if the current thread is currently set as the main thread.
    *
-   * Not supported in realistic looper mode.
+   * <p>Not supported in realistic looper mode.
    *
-   * @return <tt>true</tt> if the current thread is the main thread, <tt>false</tt> otherwise.
+   * @return true if the current thread is the main thread, false otherwise.
    */
   public static boolean isMainThread() {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "isMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     return isMainThread(Thread.currentThread());
   }
 
   /**
    * Retrieves the main thread. The main thread is the thread to which the main looper is attached.
-   * Defaults to the thread that initialises the <tt>RuntimeEnvironment</tt> class.
+   * Defaults to the thread that initialises the {@link RuntimeEnvironment} class.
    *
-   * Not supported in realistic looper mode.
+   * <p>Not supported in realistic looper mode.
    *
    * @return The main thread.
    * @see #setMainThread(Thread)
    * @see #isMainThread()
    */
   public static Thread getMainThread() {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "getMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     return mainThread;
   }
 
   /**
    * Sets the main thread. The main thread is the thread to which the main looper is attached.
-   * Defaults to the thread that initialises the <tt>RuntimeEnvironment</tt> class.
+   * Defaults to the thread that initialises the {@link RuntimeEnvironment} class.
    *
-   * Not supported in realistic looper mode.
+   * <p>Not supported in realistic looper mode.
    *
    * @param newMainThread the new main thread.
    * @see #setMainThread(Thread)
    * @see #isMainThread()
    */
   public static void setMainThread(Thread newMainThread) {
-    Preconditions.checkState(
-        !ShadowRealisticLooper.useRealisticLooper(),
-        "setMainThread is not supported in realistic looper mode");
+    assertLooperMode(LEGACY);
     mainThread = newMainThread;
   }
 
@@ -133,9 +124,10 @@ public class RuntimeEnvironment {
   /**
    * Overrides the current device configuration.
    *
-   * If `newQualifiers` starts with a plus (`+`), the prior configuration is used as the base
-   * configuration, with the given changes applied additively. Otherwise, default values are used
-   * for unspecified properties, as described [here](http://robolectric.org/device-configuration/).
+   * <p>If {@param newQualifiers} starts with a plus ('+'), the prior configuration is used as the
+   * base configuration, with the given changes applied additively. Otherwise, default values are
+   * used for unspecified properties, as described <a
+   * href="http://robolectric.org/device-configuration/">here</a>.
    *
    * @param newQualifiers the qualifiers to apply
    */
@@ -176,17 +168,12 @@ public class RuntimeEnvironment {
    * {@link android.os.Looper Looper}, and if the global scheduler option is set it is also used for
    * the background scheduler and for all other {@link android.os.Looper Looper}s
    *
-   * Not supported in realistic looper mode.
-   *
    * @return The current master scheduler.
    * @see #setMasterScheduler(Scheduler)
    * see org.robolectric.Robolectric#getForegroundThreadScheduler()
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static Scheduler getMasterScheduler() {
-    Preconditions.checkState(
-        !ShadowBaseLooper.useRealisticLooper(),
-        "cannot use Scheduler APIs when using realistic looper");
     return masterScheduler;
   }
 
@@ -195,17 +182,12 @@ public class RuntimeEnvironment {
    * Note that this method is primarily intended to be called by the Robolectric core setup code.
    * Changing the master scheduler during a test will have unpredictable results.
    *
-   * Not supported in realistic looper mode.
-   *
    * @param masterScheduler the new master scheduler.
    * @see #getMasterScheduler()
    * see org.robolectric.Robolectric#getForegroundThreadScheduler()
    * see org.robolectric.Robolectric#getBackgroundThreadScheduler()
    */
   public static void setMasterScheduler(Scheduler masterScheduler) {
-    Preconditions.checkState(
-        !ShadowBaseLooper.useRealisticLooper(),
-        "cannot use Scheduler APIs when using realistic looper");
     RuntimeEnvironment.masterScheduler = masterScheduler;
   }
 

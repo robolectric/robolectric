@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -24,6 +25,9 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+/**
+ * Tests of the {@link ShadowContextImpl} class
+ */
 @RunWith(AndroidJUnit4.class)
 public class ShadowContextTest {
   private final Context context = ApplicationProvider.getApplicationContext();
@@ -42,7 +46,7 @@ public class ShadowContextTest {
   @Test
   @Config(minSdk = VERSION_CODES.O)
   public void startForegroundService() {
-    Intent intent = new Intent();
+    Intent intent = new Intent().setPackage("dummy.package");
     context.startForegroundService(intent);
     assertThat(ShadowApplication.getInstance().getNextStartedService()).isEqualTo(intent);
   }
@@ -113,6 +117,21 @@ public class ShadowContextTest {
     }
 
     assertThat(cacheTest.exists()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void getExternalCacheDirs_nonEmpty() {
+    assertThat(context.getExternalCacheDirs()).isNotEmpty();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void getExternalCacheDirs_createsDirectories() {
+    File[] externalCacheDirs = context.getExternalCacheDirs();
+    for (File d : externalCacheDirs) {
+      assertThat(d.exists()).isTrue();
+    }
   }
 
   @Test

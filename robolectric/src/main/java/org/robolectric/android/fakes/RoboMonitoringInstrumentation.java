@@ -1,14 +1,16 @@
 package org.robolectric.android.fakes;
 
 import static org.robolectric.shadow.api.Shadow.extract;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.UserHandle;
 import androidx.test.runner.MonitoringInstrumentation;
 import org.robolectric.Robolectric;
@@ -16,6 +18,8 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
 public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
+
+  private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
   @Override
   protected void specifyDexMakerCacheProperty() {
@@ -50,8 +54,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     }
 
     Class<? extends Activity> activityClass;
+    String activityClassName = ai.targetActivity != null ? ai.targetActivity : ai.name;
     try {
-      activityClass = Class.forName(ai.name).asSubclass(Activity.class);
+      activityClass = Class.forName(activityClassName).asSubclass(Activity.class);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
@@ -65,7 +70,6 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       controller.start()
           .postCreate(null)
           .resume()
-          .postResume()
           .visible()
           .windowFocusChanged(true);
     }
@@ -74,6 +78,7 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
   @Override
   public void runOnMainSync(Runnable runner) {
+    shadowMainLooper().idle();
     runner.run();
   }
 
@@ -88,9 +93,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
     return ar;
   }
@@ -107,9 +112,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       Bundle options) {
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
     return ar;
   }
@@ -127,9 +132,9 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
 
     ActivityResult ar =
         super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
-    if (ar != null) {
-      ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+    if (ar != null && who instanceof Activity) {
+      ShadowActivity shadowActivity = extract(who);
+      postDispatchActivityResult(shadowActivity, target, requestCode, ar);
     }
     return ar;
   }
@@ -148,11 +153,23 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     ActivityResult ar =
         super.execStartActivity(
             who, contextThread, token, target, intent, requestCode, options, user);
-    if (ar != null) {
+    if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
-      shadowActivity.callOnActivityResult(requestCode, ar.getResultCode(), ar.getResultData());
+      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
     return ar;
+  }
+
+  private void postDispatchActivityResult(
+      ShadowActivity shadowActivity, String target, int requestCode, ActivityResult ar) {
+    mainThreadHandler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            shadowActivity.internalCallDispatchActivityResult(
+                target, requestCode, ar.getResultCode(), ar.getResultData());
+          }
+        });
   }
 
   @Override
@@ -160,6 +177,6 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
     // intentionally don't call through to super here, to circumvent all the activity
     // waiting/cleanup
     // logic that is unnecessary on Robolectric
-
+    super.restoreUncaughtExceptionHandler();
   }
 }

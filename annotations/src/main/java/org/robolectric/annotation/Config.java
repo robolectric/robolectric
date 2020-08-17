@@ -108,11 +108,11 @@ public @interface Config {
   /**
    * Qualifiers specifying device configuration for this test, such as "fr-normal-port-hdpi".
    *
-   * If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
+   * <p>If the string is prefixed with '+', the qualifiers that follow are overlayed on any more
    * broadly-scoped qualifiers.
    *
-   * See [Device Configuration](http://robolectric.org/device-configuration/) for details.
-   *
+   * @see <a href="http://robolectric.org/device-configuration">Device Configuration</a> for
+   *     details.
    * @return Qualifiers used for device configuration and resource resolution.
    */
   String qualifiers() default DEFAULT_QUALIFIERS;
@@ -257,8 +257,15 @@ public @interface Config {
       //noinspection ConstantConditions
       if (config.sdk() != null && config.sdk().length > 0 &&
           (config.minSdk() != DEFAULT_VALUE_INT || config.maxSdk() != DEFAULT_VALUE_INT)) {
-        throw new IllegalArgumentException("sdk and minSdk/maxSdk may not be specified together" +
-            " (sdk=" + Arrays.toString(config.sdk()) + ", minSdk=" + config.minSdk() + ", maxSdk=" + config.maxSdk() + ")");
+        throw new IllegalArgumentException(
+            "sdk and minSdk/maxSdk may not be specified together"
+                + " (sdk="
+                + Arrays.toString(config.sdk())
+                + ", minSdk="
+                + config.minSdk()
+                + ", maxSdk="
+                + config.maxSdk()
+                + ")");
       }
 
       if (config.minSdk() > DEFAULT_VALUE_INT && config.maxSdk() > DEFAULT_VALUE_INT && config.minSdk() > config.maxSdk()) {

@@ -3,24 +3,34 @@ package org.robolectric.shadows;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ALBUM;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_ARTIST;
 import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
+import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
+
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addException;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addFrame;
 import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addMetadata;
+import static org.robolectric.shadows.ShadowMediaMetadataRetriever.addScaledFrame;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.MediaDataSource;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.util.DataSource;
+
 import java.io.FileDescriptor;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMediaMetadataRetrieverTest {
@@ -57,6 +67,19 @@ public class ShadowMediaMetadataRetrieverTest {
   }
 
   @Test
+  @Config(minSdk = O_MR1)
+  public void getScaledFrameAtTime_shouldDependOnDataSource() {
+    addScaledFrame(toDataSource(path), 1, 1024, 768, bitmap);
+    addScaledFrame(toDataSource(path2), 1, 320, 640, bitmap2);
+    retriever.setDataSource(path);
+    retriever2.setDataSource(path2);
+    assertThat(retriever.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 1024, 768)).isEqualTo(bitmap);
+    assertThat(retriever.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 1024, 768)).isNotEqualTo(bitmap2);
+    assertThat(retriever2.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 320, 640)).isEqualTo(bitmap2);
+    assertThat(retriever2.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 320, 640)).isNotEqualTo(bitmap);
+  }
+
+  @Test
   public void setDataSource_usersSameDataSourceForFileDescriptors() {
     addFrame(fd, 1, bitmap);
     addFrame(fd, 0, 0, 1, bitmap2);
@@ -77,6 +100,47 @@ public class ShadowMediaMetadataRetrieverTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void setDataSource_withDifferentMediaDataSourceAreSameDataSources() {
+    MediaDataSource mediaDataSource1 = new MediaDataSource() {
+      @Override
+      public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
+        return 0;
+      }
+
+      @Override
+      public long getSize() {
+        return 0;
+      }
+
+      @Override
+      public void close() {}
+    };
+    MediaDataSource mediaDataSource2 = new MediaDataSource() {
+      @Override
+      public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
+        return 0;
+      }
+
+      @Override
+      public long getSize() {
+        return 0;
+      }
+
+      @Override
+      public void close() {}
+    };
+    addFrame(DataSource.toDataSource(mediaDataSource1), 1, bitmap);
+    addFrame(DataSource.toDataSource(mediaDataSource2), 1, bitmap2);
+    retriever.setDataSource(mediaDataSource1);
+    retriever2.setDataSource(mediaDataSource2);
+    assertThat(retriever.getFrameAtTime(1)).isEqualTo(bitmap2);
+    assertThat(retriever.getFrameAtTime(1)).isNotEqualTo(bitmap);
+    assertThat(retriever2.getFrameAtTime(1)).isEqualTo(bitmap2);
+    assertThat(retriever2.getFrameAtTime(1)).isNotEqualTo(bitmap);
+  }
+
+  @Test
   public void getFrameAtTime_shouldDependOnTime() {
     Context context = ApplicationProvider.getApplicationContext();
     Uri uri = Uri.parse(path);
@@ -87,6 +151,20 @@ public class ShadowMediaMetadataRetrieverTest {
     assertThat(retriever.getFrameAtTime(13)).isNotEqualTo(bitmap);
     assertThat(retriever.getFrameAtTime(12)).isNotEqualTo(bitmap2);
     assertThat(retriever.getFrameAtTime(13)).isEqualTo(bitmap2);
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void getScaledFrameAtTime_shouldDependOnTime() {
+    Context context = ApplicationProvider.getApplicationContext();
+    Uri uri = Uri.parse(path);
+    addScaledFrame(toDataSource(context, uri), 12, 1024, 768, bitmap);
+    addScaledFrame(toDataSource(context, uri), 13, 320, 640, bitmap2);
+    retriever.setDataSource(context, uri);
+    assertThat(retriever.getScaledFrameAtTime(12, OPTION_CLOSEST_SYNC, 1024, 768)).isEqualTo(bitmap);
+    assertThat(retriever.getScaledFrameAtTime(13, OPTION_CLOSEST_SYNC, 1024, 768)).isNotEqualTo(bitmap);
+    assertThat(retriever.getScaledFrameAtTime(12, OPTION_CLOSEST_SYNC, 320, 640)).isNotEqualTo(bitmap2);
+    assertThat(retriever.getScaledFrameAtTime(13, OPTION_CLOSEST_SYNC, 320, 640)).isEqualTo(bitmap2);
   }
 
   @Test
@@ -112,7 +190,7 @@ public class ShadowMediaMetadataRetrieverTest {
     addException(toDataSource(path2), new IllegalArgumentException());
     retriever.setDataSource(path);
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isEqualTo("The Rolling Stones");
-    assertThat(retriever.getFrameAtTime(1)).isSameAs(bitmap);
+    assertThat(retriever.getFrameAtTime(1)).isSameInstanceAs(bitmap);
     try {
       retriever2.setDataSource(path2);
       fail("Expected exception");
@@ -135,10 +213,10 @@ public class ShadowMediaMetadataRetrieverTest {
       retriever.setDataSource(path);
       fail("Expected exception");
     } catch (Exception caught) {
-      assertThat(caught).isSameAs(e);
-      assertThat(e.getStackTrace()[0].getClassName())
-         .named("Stack trace should originate in Shadow")
-         .isEqualTo(ShadowMediaMetadataRetriever.class.getName());
+      assertThat(caught).isSameInstanceAs(e);
+      assertWithMessage("Stack trace should originate in Shadow")
+          .that(e.getStackTrace()[0].getClassName())
+          .isEqualTo(ShadowMediaMetadataRetriever.class.getName());
     }
   }
 }

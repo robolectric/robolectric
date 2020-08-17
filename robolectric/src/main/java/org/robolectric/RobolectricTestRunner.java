@@ -1,6 +1,5 @@
 package org.robolectric;
 
-
 import android.os.Build;
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
@@ -23,6 +22,7 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.robolectric.android.AndroidInterceptors;
+import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -30,13 +30,13 @@ import org.robolectric.internal.AndroidConfigurer;
 import org.robolectric.internal.AndroidSandbox;
 import org.robolectric.internal.BuckManifestFactory;
 import org.robolectric.internal.DefaultManifestFactory;
-import org.robolectric.internal.Environment;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
 import org.robolectric.internal.MavenManifestFactory;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.SandboxManager;
 import org.robolectric.internal.SandboxTestRunner;
+import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
@@ -52,12 +52,9 @@ import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
 import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
-import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowBaseLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
+import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.Scheduler;
 import org.robolectric.util.inject.Injector;
 
 /**
@@ -72,12 +69,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   private static final Map<ManifestIdentifier, AndroidManifest> appManifestsCache = new HashMap<>();
 
   static {
-    new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+    // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
+    // classloader.
+    new SecureRandom();
   }
 
   protected static Injector.Builder defaultInjector() {
-    return SandboxTestRunner.defaultInjector()
-        .bind(Properties.class, System.getProperties());
+    return SandboxTestRunner.defaultInjector().bind(Properties.class, System.getProperties());
   }
 
   private final SandboxManager sandboxManager;
@@ -117,19 +115,23 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Create a {@link ClassHandler} appropriate for the given arguments.
    *
-   * Robolectric may chose to cache the returned instance, keyed by <tt>shadowMap</tt> and <tt>sdk</tt>.
+   * <p>Robolectric may chose to cache the returned instance, keyed by {@code shadowMap} and {@code
+   * sandbox}.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param shadowMap the {@link ShadowMap} in effect for this test
    * @param sandbox the {@link Sdk} in effect for this test
-   * @return an appropriate {@link ClassHandler}. This implementation returns a {@link ShadowWrangler}.
+   * @return an appropriate {@link ShadowWrangler}.
    * @since 2.3
    */
   @Override
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, ((AndroidSandbox) sandbox).getSdk().getApiLevel(), getInterceptors());
+    int apiLevel = ((AndroidSandbox) sandbox).getSdk().getApiLevel();
+    AndroidSdkShadowMatcher shadowMatcher = new AndroidSdkShadowMatcher(apiLevel);
+    return classHandlerBuilder.build(shadowMap, shadowMatcher, getInterceptors());
   }
 
   @Override
@@ -139,18 +141,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Create an {@link InstrumentationConfiguration} suitable for the provided
-   * {@link FrameworkMethod}.
+   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link
+   * FrameworkMethod}.
    *
-   * Adds configuration for Android using {@link AndroidConfigurer}.
+   * <p>Adds configuration for Android using {@link AndroidConfigurer}.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide additional
+   * <p>Custom TestRunner subclasses may wish to override this method to provide additional
    * configuration.
    *
    * @param method the test method that's about to run
    * @return an {@link InstrumentationConfiguration}
    */
-  @Override @Nonnull
+  @Override
+  @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(final FrameworkMethod method) {
     Configuration configuration = ((RobolectricFrameworkMethod) method).getConfiguration();
     Config config = configuration.get(Config.class);
@@ -164,9 +167,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * An instance of the returned class will be created for each test invocation.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
-   * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link DefaultTestLifecycle}.
+   * @return a class which implements {@link TestLifecycle}. This implementation returns a {@link
+   *     DefaultTestLifecycle}.
    */
   @Nonnull
   protected Class<? extends TestLifecycle> getTestLifecycleClass() {
@@ -188,8 +193,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     boolean includeLegacy(AndroidManifest appManifest) {
       return appManifest.supportsLegacyResourcesMode()
-          &&
-          (this == legacy
+          && (this == legacy
               || (this == best && !appManifest.supportsBinaryResourcesMode())
               || this == both);
     }
@@ -241,9 +245,14 @@ public class RobolectricTestRunner extends SandboxTestRunner {
           last.dontIncludeVariantMarkersInTestName();
         }
       } catch (IllegalArgumentException e) {
-        throw new IllegalArgumentException("failed to configure " +
-            getTestClass().getName() + "." + frameworkMethod.getMethod().getName() +
-            ": " + e.getMessage(), e);
+        throw new IllegalArgumentException(
+            "failed to configure "
+                + getTestClass().getName()
+                + "."
+                + frameworkMethod.getMethod().getName()
+                + ": "
+                + e.getMessage(),
+            e);
       }
     }
     return children;
@@ -261,20 +270,18 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
       throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
     }
-    LooperMode.Mode looperMode = roboMethod.configuration == null ? Mode.LEGACY
-        : roboMethod.configuration.get(LooperMode.Mode.class);
+    LooperMode.Mode looperMode =
+        roboMethod.configuration == null
+            ? Mode.LEGACY
+            : roboMethod.configuration.get(LooperMode.Mode.class);
 
-    if (sdk.isKnown() && !sdk.isSupported()) {
-      throw new AssumptionViolatedException(
-          "Failed to create a Robolectric sandbox: " + sdk.getUnsupportedMessage());
-    } else {
-      return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode,
-          looperMode);
-    }
+    sdk.verifySupportedSdk(method.getDeclaringClass().getName());
+    return sandboxManager.getAndroidSandbox(classLoaderConfig, sdk, resourcesMode, looperMode);
   }
 
   @Override
-  protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
+  protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod)
+      throws Throwable {
     AndroidSandbox androidSandbox = (AndroidSandbox) sandbox;
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
 
@@ -286,26 +293,30 @@ public class RobolectricTestRunner extends SandboxTestRunner {
             ImmutableMap.of("ro.build.version.sdk", "" + sdk.getApiLevel()),
             roboMethod.resourcesMode.name()));
 
-    System.out.println(
-        "[Robolectric] " + roboMethod.getDeclaringClass().getName() + "."
-            + roboMethod.getMethod().getName() + ": sdk=" + sdk.getApiLevel()
-            + "; resources=" + roboMethod.resourcesMode);
+    Logger.lifecycle(
+        roboMethod.getDeclaringClass().getName()
+            + "."
+            + roboMethod.getMethod().getName()
+            + ": sdk="
+            + sdk.getApiLevel()
+            + "; resources="
+            + roboMethod.resourcesMode);
 
     if (roboMethod.resourcesMode == ResourcesMode.LEGACY) {
-      System.out.println(
-          "[Robolectric] NOTICE: legacy resources mode is deprecated; see http://robolectric.org/migrating/#migrating-to-40");
+      Logger.warn(
+          "Legacy resources mode is deprecated; see"
+              + " http://robolectric.org/migrating/#migrating-to-40");
     }
 
-    roboMethod.setStuff(androidSandbox, androidSandbox.getEnvironment());
+    roboMethod.setStuff(androidSandbox, androidSandbox.getTestEnvironment());
     Class<TestLifecycle> cl = androidSandbox.bootstrappedClass(getTestLifecycleClass());
     roboMethod.testLifecycle = ReflectionHelpers.newInstance(cl);
 
     AndroidManifest appManifest = roboMethod.getAppManifest();
 
-    roboMethod.getEnvironment().setUpApplicationState(
-        bootstrappedMethod,
-        roboMethod.getConfiguration(), appManifest
-    );
+    roboMethod
+        .getTestEnvironment()
+        .setUpApplicationState(bootstrappedMethod, roboMethod.getConfiguration(), appManifest);
 
     roboMethod.testLifecycle.beforeTest(bootstrappedMethod);
   }
@@ -314,7 +325,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
     RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
     try {
-      roboMethod.getEnvironment().tearDownApplication();
+      roboMethod.getTestEnvironment().tearDownApplication();
     } finally {
       roboMethod.testLifecycle.afterTest(bootstrappedMethod);
     }
@@ -327,21 +338,23 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     // If the test was interrupted, it will interfere with new AbstractInterruptibleChannels in
     // subsequent tests, e.g. created by Files.newInputStream(), so clear it and warn.
     if (Thread.interrupted()) {
-      System.out.println("WARNING: Test thread was interrupted! " + method.toString());
+      Logger.warn("Test thread was interrupted! " + method.toString());
     }
 
     try {
       // reset static state afterward too, so statics don't defeat GC?
       PerfStatsCollector.getInstance()
           .measure(
-              "reset Android state (after test)", () -> roboMethod.getEnvironment().resetState());
+              "reset Android state (after test)",
+              () -> roboMethod.getTestEnvironment().resetState());
     } finally {
       roboMethod.testLifecycle = null;
       roboMethod.clearContext();
     }
   }
 
-  @Override protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+  @Override
+  protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
     try {
       return new HelperTestRunner(bootstrappedTestClass);
     } catch (InitializationError initializationError) {
@@ -350,9 +363,11 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   /**
-   * Detects which build system is in use and returns the appropriate ManifestFactory implementation.
+   * Detects which build system is in use and returns the appropriate ManifestFactory
+   * implementation.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param config Specification of the SDK version, manifest file, package name, etc.
    */
@@ -412,6 +427,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
   /**
    * Internal use only.
+   *
    * @deprecated Do not use.
    */
   @Deprecated
@@ -424,26 +440,31 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       libraryManifests.add(createAndroidManifest(library));
     }
 
-    return new AndroidManifest(manifestIdentifier.getManifestFile(), manifestIdentifier.getResDir(),
-        manifestIdentifier.getAssetDir(), libraryManifests, manifestIdentifier.getPackageName(),
+    return new AndroidManifest(
+        manifestIdentifier.getManifestFile(),
+        manifestIdentifier.getResDir(),
+        manifestIdentifier.getAssetDir(),
+        libraryManifests,
+        manifestIdentifier.getPackageName(),
         manifestIdentifier.getApkFile());
   }
-
 
   /**
    * Compute the effective Robolectric configuration for a given test method.
    *
-   * Configuration information is collected from package-level <tt>robolectric.properties</tt> files
-   * and {@link Config} annotations on test classes, superclasses, and methods.
+   * <p>Configuration information is collected from package-level {@code robolectric.properties}
+   * files and {@link Config} annotations on test classes, superclasses, and methods.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param method the test method
    * @return the effective Robolectric configuration for the given test method
-   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. This
    *     method will be removed in Robolectric 4.3.
    * @since 2.0
+   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+   *     details.
    */
   @Deprecated
   public Config getConfig(Method method) {
@@ -453,7 +474,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Calculate the configuration for a given test method.
    *
-   * Temporarily visible for migration.
+   * <p>Temporarily visible for migration.
+   *
    * @deprecated Going away before 4.2. DO NOT SHIP.
    */
   @Deprecated
@@ -475,19 +497,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   /**
    * Provides the base Robolectric configuration {@link Config} used for all tests.
    *
-   * Configuration provided for specific packages, test classes, and test method
-   * configurations will override values provided here.
+   * <p>Configuration provided for specific packages, test classes, and test method configurations
+   * will override values provided here.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide
-   * alternate configuration. Consider using a {@link Config.Builder}.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration. Consider using a {@link Config.Builder}.
    *
-   * The default implementation has appropriate values for most use cases.
+   * <p>The default implementation has appropriate values for most use cases.
    *
    * @return global {@link Config} object
-   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. See
-   *     [Migration Notes](http://robolectric.org/migrating/#migrating-to-40) for details. This
+   * @deprecated Provide a service implementation of {@link GlobalConfigProvider} instead. This
    *     method will be removed in Robolectric 4.3.
    * @since 3.1.3
+   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
+   *     details.
    */
   @Deprecated
   protected Config buildGlobalConfig() {
@@ -506,19 +529,21 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  @Override @Nonnull
+  @Override
+  @Nonnull
   protected Class<?>[] getExtraShadows(FrameworkMethod frameworkMethod) {
-    Config config = ((RobolectricFrameworkMethod) frameworkMethod).getConfiguration().get(Config.class);
+    Config config =
+        ((RobolectricFrameworkMethod) frameworkMethod).getConfiguration().get(Config.class);
     return config.shadows();
   }
 
   @Override
-  protected void afterClass() {
-  }
+  protected void afterClass() {}
 
   @Override
   public Object createTest() throws Exception {
-    throw new UnsupportedOperationException("this should always be invoked on the HelperTestRunner!");
+    throw new UnsupportedOperationException(
+        "this should always be invoked on the HelperTestRunner!");
   }
 
   @VisibleForTesting
@@ -531,7 +556,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       super(bootstrappedTestClass);
     }
 
-    @Override protected Object createTest() throws Exception {
+    @Override
+    protected Object createTest() throws Exception {
       Object test = super.createTest();
       RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
       roboMethod.testLifecycle.prepareTest(test);
@@ -541,71 +567,34 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Override
     protected Statement methodBlock(FrameworkMethod method) {
       RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) this.frameworkMethod;
-      // TODO(brettchabot): move to Environment/AndroidEnvironment
-      return new LooperDiagnosingStatement(
-          roboMethod.getSandbox().getRobolectricClassLoader(), super.methodBlock(method));
-    }
-  }
-
-  private static class LooperDiagnosingStatement extends Statement {
-
-    private final Statement baseStatement;
-    private final ClassLoader robolectricClassLoader;
-
-    public LooperDiagnosingStatement(ClassLoader robolectricClassLoader, Statement methodBlock) {
-      this.baseStatement = methodBlock;
-      this.robolectricClassLoader = robolectricClassLoader;
-    }
-
-    @Override
-    public void evaluate() throws Throwable {
-      try {
-        baseStatement.evaluate();
-      } catch (Throwable t) {
-        if (hasUnexecutedRunnables()) {
-          throw new Exception(
-              "Main looper has queued unexecuted runnables. "
-                  + "This might be the cause of the test failure. "
-                  + "You might need a shadowMainLooper().idle() call.",
-              t);
+      Statement baseStatement = super.methodBlock(method);
+      return new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+          try {
+            baseStatement.evaluate();
+          } catch (org.junit.internal.AssumptionViolatedException e) {
+            // catch JUnit's internal AssumptionViolatedException that is the ancestor of all
+            // AssumptionViolatedExceptions, including Truth's ThrowableAssumptionViolatedException.
+            throw e;
+          } catch (Throwable t) {
+            roboMethod.getTestEnvironment().checkStateAfterTestFailure(t);
+            throw t;
+          }
         }
-        throw t;
-      }
-    }
-
-    private boolean hasUnexecutedRunnables() {
-      // use reflection to access state, because these objects need to get loaded from sandbox
-      // class loader, not the current classloader
-      boolean useRealisticLooper = ReflectionHelpers.callStaticMethod(
-          robolectricClassLoader, ShadowBaseLooper.class.getName(), "useRealisticLooper");
-      if (useRealisticLooper) {
-        Boolean isIdle =
-            ReflectionHelpers.callStaticMethod(
-                robolectricClassLoader, ShadowRealisticLooper.class.getName(), "isMainLooperIdle");
-        return !isIdle.booleanValue();
-      } else {
-        Object shadowAppInstance =
-            ReflectionHelpers.callStaticMethod(
-                robolectricClassLoader, ShadowApplication.class.getName(), "getInstance");
-        if (shadowAppInstance != null) {
-          Scheduler scheduler =
-              ReflectionHelpers
-                  .callInstanceMethod(shadowAppInstance, "getForegroundThreadScheduler");
-          return scheduler.areAnyRunnable();
-        }
-        return false;
-      }
+      };
     }
   }
 
   /**
-   * Fields in this class must be serializable using [XStream](https://x-stream.github.io/).
+   * Fields in this class must be serializable using <a
+   * href="https://x-stream.github.io/">XStream</a>.
    */
-  static final class RobolectricFrameworkMethod extends FrameworkMethod {
+  public static class RobolectricFrameworkMethod extends FrameworkMethod {
 
     private static final AtomicInteger NEXT_ID = new AtomicInteger();
     private static final Map<Integer, TestExecutionContext> CONTEXT = new HashMap<>();
-    
+
     private final int id;
 
     @Nonnull private final AndroidManifest appManifest;
@@ -616,6 +605,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private boolean includeVariantMarkersInTestName = true;
     TestLifecycle testLifecycle;
+
+    protected RobolectricFrameworkMethod(RobolectricFrameworkMethod other) {
+      this(
+          other.getMethod(),
+          other.appManifest,
+          other.getSdk(),
+          other.configuration,
+          other.resourcesMode,
+          other.defaultResModeStrategy,
+          other.alwaysIncludeVariantMarkersInName);
+
+      includeVariantMarkersInTestName = other.includeVariantMarkersInTestName;
+      testLifecycle = other.testLifecycle;
+    }
 
     RobolectricFrameworkMethod(
         @Nonnull Method method,
@@ -669,19 +672,19 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return getContext().sdk;
     }
 
-    void setStuff(Sandbox sandbox, Environment environment) {
+    void setStuff(Sandbox sandbox, TestEnvironment testEnvironment) {
       TestExecutionContext context = getContext();
       context.sandbox = sandbox;
-      context.environment = environment;
+      context.testEnvironment = testEnvironment;
     }
 
     Sandbox getSandbox() {
       return getContext().sandbox;
     }
 
-    Environment getEnvironment() {
+    TestEnvironment getTestEnvironment() {
       TestExecutionContext context = getContext();
-      return context == null ? null : context.environment;
+      return context == null ? null : context.testEnvironment;
     }
 
     public boolean isLegacy() {
@@ -739,7 +742,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
       private final Sdk sdk;
       private Sandbox sandbox;
-      private Environment environment;
+      private TestEnvironment testEnvironment;
 
       TestExecutionContext(Sdk sdk) {
         this.sdk = sdk;

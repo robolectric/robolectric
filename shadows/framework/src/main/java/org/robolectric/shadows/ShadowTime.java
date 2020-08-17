@@ -252,63 +252,157 @@ public class ShadowTime {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  protected boolean parse3339(String rfc3339String) {
-    SimpleDateFormat formatter =  new SimpleDateFormat();
-    // Special case Date without time first
-    if (rfc3339String.matches("\\d{4}-\\d{2}-\\d{2}")) {
-      final TimeZone tz = TimeZone.getTimeZone(time.timezone);
-      formatter.applyLocalizedPattern("yyyy-MM-dd");
-      // Make sure we inferFromValue the date in the context of the specified time zone
-      // instead of the system default time zone.
-      formatter.setTimeZone(tz);
-      Calendar calendar = Calendar.getInstance(tz, Locale.getDefault());
-      try {
-        calendar.setTime(formatter.parse(rfc3339String));
-      } catch (java.text.ParseException e) {
-        throwTimeFormatException(e.getLocalizedMessage());
+  protected boolean nativeParse3339(String s) {
+    // In lollipop, the native implementation was replaced with java
+    // this is a copy of the aosp-pie implementation
+    int len = s.length();
+    if (len < 10) {
+      throwTimeFormatException("String too short --- expected at least 10 characters.");
+    }
+    boolean inUtc = false;
+
+    // year
+    int n = getChar(s, 0, 1000);
+    n += getChar(s, 1, 100);
+    n += getChar(s, 2, 10);
+    n += getChar(s, 3, 1);
+    time.year = n;
+
+    checkChar(s, 4, '-');
+
+    // month
+    n = getChar(s, 5, 10);
+    n += getChar(s, 6, 1);
+    --n;
+    time.month = n;
+
+    checkChar(s, 7, '-');
+
+    // day
+    n = getChar(s, 8, 10);
+    n += getChar(s, 9, 1);
+    time.monthDay = n;
+
+    if (len >= 19) {
+      // T
+      checkChar(s, 10, 'T');
+      time.allDay = false;
+
+      // hour
+      n = getChar(s, 11, 10);
+      n += getChar(s, 12, 1);
+
+      // Note that this.hour is not set here. It is set later.
+      int hour = n;
+
+      checkChar(s, 13, ':');
+
+      // minute
+      n = getChar(s, 14, 10);
+      n += getChar(s, 15, 1);
+      // Note that this.minute is not set here. It is set later.
+      int minute = n;
+
+      checkChar(s, 16, ':');
+
+      // second
+      n = getChar(s, 17, 10);
+      n += getChar(s, 18, 1);
+      time.second = n;
+
+      // skip the '.XYZ' -- we don't care about subsecond precision.
+
+      int tzIndex = 19;
+      if (tzIndex < len && s.charAt(tzIndex) == '.') {
+        do {
+          tzIndex++;
+        } while (tzIndex < len && Character.isDigit(s.charAt(tzIndex)));
       }
-      time.second = time.minute = time.hour = 0;
-      time.monthDay = calendar.get(Calendar.DAY_OF_MONTH);
-      time.month = calendar.get(Calendar.MONTH);
-      time.year = calendar.get(Calendar.YEAR);
-      time.weekDay = calendar.get(Calendar.DAY_OF_WEEK) - Calendar.SUNDAY;
-      time.yearDay = calendar.get(Calendar.DAY_OF_YEAR);
-      time.isDst = calendar.get(Calendar.DST_OFFSET) != 0 ? 1 : 0;
+
+      int offset = 0;
+      if (len > tzIndex) {
+        char c = s.charAt(tzIndex);
+        // NOTE: the offset is meant to be subtracted to get from local time
+        // to UTC.  we therefore use 1 for '-' and -1 for '+'.
+        switch (c) {
+          case 'Z':
+            // Zulu time -- UTC
+            offset = 0;
+            break;
+          case '-':
+            offset = 1;
+            break;
+          case '+':
+            offset = -1;
+            break;
+          default:
+            throwTimeFormatException(
+                String.format(
+                    "Unexpected character 0x%02d at position %d.  Expected + or -",
+                    (int) c, tzIndex));
+        }
+        inUtc = true;
+
+        if (offset != 0) {
+          if (len < tzIndex + 6) {
+            throwTimeFormatException(
+                String.format("Unexpected length; should be %d characters", tzIndex + 6));
+          }
+
+          // hour
+          n = getChar(s, tzIndex + 1, 10);
+          n += getChar(s, tzIndex + 2, 1);
+          n *= offset;
+          hour += n;
+
+          // minute
+          n = getChar(s, tzIndex + 4, 10);
+          n += getChar(s, tzIndex + 5, 1);
+          n *= offset;
+          minute += n;
+        }
+      }
+      time.hour = hour;
+      time.minute = minute;
+
+      if (offset != 0) {
+        time.normalize(false);
+      }
+    } else {
       time.allDay = true;
-      return false;
+      time.hour = 0;
+      time.minute = 0;
+      time.second = 0;
     }
 
-    // Store a string normalized for SimpleDateFormat;
-    String dateString = rfc3339String
-        // Look-ahead to remove the colon followed by minutes in timezone
-        .replaceFirst(":(?=\\d{2}$)", "")
-        // Look-behind to pad with minutes any timezone only defines hours
-        .replaceFirst("(?<=[+-]\\d{2})$", "00")
-        // If it ends with a Z, just replace it with no offset
-        .replaceFirst("(Z)$", "+0000");
-
-    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-    formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ssZ");
-    long millisInUtc = time.toMillis(false);
-    try {
-      millisInUtc = formatter.parse(dateString).getTime();
-    } catch (java.text.ParseException e1) {
-      // Try again with fractional seconds.
-      formatter.applyLocalizedPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-      formatter.setLenient(true);
-      try {
-        millisInUtc = formatter.parse(dateString).getTime();
-      } catch (java.text.ParseException e2) {
-        throwTimeFormatException(e2.getLocalizedMessage());
-      }
-    }
-    // Clear to UTC, then set time;
-    clear("UTC");
-    set(millisInUtc);
-    return true;
+    time.weekDay = 0;
+    time.yearDay = 0;
+    time.isDst = -1;
+    time.gmtoff = 0;
+    return inUtc;
   }
 
-  private void throwTimeFormatException(String optionalMessage) {
+  private static int getChar(String s, int spos, int mul) {
+    char c = s.charAt(spos);
+    if (Character.isDigit(c)) {
+      return Character.getNumericValue(c) * mul;
+    } else {
+      throwTimeFormatException("Parse error at pos=" + spos);
+    }
+    return -1;
+  }
+
+  private void checkChar(String s, int spos, char expected) {
+    char c = s.charAt(spos);
+    if (c != expected) {
+      throwTimeFormatException(
+          String.format(
+              "Unexpected character 0x%02d at pos=%d.  Expected 0x%02d (\'%c\').",
+              (int) c, spos, (int) expected, expected));
+    }
+  }
+
+  private static void throwTimeFormatException(String optionalMessage) {
     throw ReflectionHelpers.callConstructor(TimeFormatException.class, from(String.class, optionalMessage == null ? "fail" : optionalMessage));
   }
 

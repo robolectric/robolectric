@@ -6,28 +6,39 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothSocket;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
 import android.os.Handler;
 import android.os.ParcelUuid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
-
   public static BluetoothDevice newInstance(String address) {
     return ReflectionHelpers.callConstructor(
         BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));
   }
+
+  @Resetter
+  public static void reset() {
+    bluetoothSocket = null;
+  }
+
+  private static BluetoothSocket bluetoothSocket = null;
 
   @RealObject private BluetoothDevice realBluetoothDevice;
   private String name;
@@ -38,6 +49,11 @@ public class ShadowBluetoothDevice {
   private int fetchUuidsWithSdpCount = 0;
   private int type = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
   private final List<BluetoothGatt> bluetoothGatts = new ArrayList<>();
+  private Boolean pairingConfirmation = null;
+  private byte[] pin = null;
+  private String alias;
+  private boolean shouldThrowOnGetAliasName = false;
+  private BluetoothClass bluetoothClass = null;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -60,9 +76,54 @@ public class ShadowBluetoothDevice {
     this.name = name;
   }
 
+  /**
+   * Sets the alias name of the device.
+   *
+   * <p>Alias is the locally modified name of a remote device.
+   *
+   * <p>Alias Name is not part of the supported SDK, and accessed via reflection.
+   *
+   * @param alias alias name.
+   */
+  public void setAlias(String alias) {
+    this.alias = alias;
+  }
+
+  /**
+   * Sets if a runtime exception is thrown when the alias name of the device is accessed.
+   *
+   * <p>Intended to replicate what may happen if the unsupported SDK is changed.
+   *
+   * <p>Alias is the locally modified name of a remote device.
+   *
+   * <p>Alias Name is not part of the supported SDK, and accessed via reflection.
+   *
+   * @param shouldThrow if getAliasName() should throw when called.
+   */
+  public void setThrowOnGetAliasName(boolean shouldThrow) {
+    shouldThrowOnGetAliasName = shouldThrow;
+  }
+
   @Implementation
   protected String getName() {
     return name;
+  }
+
+  @Implementation
+  protected String getAlias() {
+    return alias;
+  }
+
+  @Implementation
+  protected String getAliasName() throws ReflectiveOperationException {
+    // Mimicking if the officially supported function is changed.
+    if (shouldThrowOnGetAliasName) {
+      throw new ReflectiveOperationException("Exception on getAliasName");
+    }
+
+    // Matches actual implementation.
+    String name = getAlias();
+    return name != null ? name : getName();
   }
 
   /** Sets the return value for {@link BluetoothDevice#getType}. */
@@ -89,7 +150,7 @@ public class ShadowBluetoothDevice {
   /**
    * Overrides behavior of {@link BluetoothDevice#getUuids} to return pre-set result.
    *
-   * @returns Value set by calling {@link ShadowBluetoothDevice#setUuids}. If setUuids has not
+   * @return Value set by calling {@link ShadowBluetoothDevice#setUuids}. If setUuids has not
    *     previously been called, will return null.
    */
   @Implementation
@@ -123,6 +184,44 @@ public class ShadowBluetoothDevice {
   @Implementation
   protected boolean createBond() {
     return createdBond;
+  }
+
+  @Implementation
+  protected boolean setPin(byte[] pin) {
+    this.pin = pin;
+    return true;
+  }
+
+  /**
+   * Get the PIN previously set with a call to {@link BluetoothDevice#setPin(byte[])}, or null if no
+   * PIN has been set.
+   */
+  public byte[] getPin() {
+    return pin;
+  }
+
+  @Implementation
+  public boolean setPairingConfirmation(boolean confirm) {
+    this.pairingConfirmation = confirm;
+    return true;
+  }
+
+  /**
+   * Get the confirmation value previously set with a call to {@link
+   * BluetoothDevice#setPairingConfirmation(boolean)}, or null if no value is set.
+   */
+  public Boolean getPairingConfirmation() {
+    return pairingConfirmation;
+  }
+
+  @Implementation
+  protected BluetoothSocket createRfcommSocketToServiceRecord(UUID uuid) throws IOException {
+    synchronized (ShadowBluetoothDevice.class) {
+      if (bluetoothSocket == null) {
+        bluetoothSocket = Shadow.newInstanceOf(BluetoothSocket.class);
+      }
+    }
+    return bluetoothSocket;
   }
 
   /** Sets value of the return result for {@link BluetoothDevice#fetchUuidsWithSdp}. */
@@ -198,5 +297,21 @@ public class ShadowBluetoothDevice {
       BluetoothGattCallback gattCallback = shadowBluetoothGatt.getGattCallback();
       gattCallback.onConnectionStateChange(bluetoothGatt, status, newState);
     }
+  }
+
+  /**
+   * Overrides behavior of {@link BluetoothDevice#getBluetoothClass} to return pre-set result.
+   *
+   * @return Value set by calling {@link ShadowBluetoothDevice#setBluetoothClass}. If setType has
+   *     not previously been called, will return null.
+   */
+  @Implementation
+  public BluetoothClass getBluetoothClass() {
+    return bluetoothClass;
+  }
+
+  /** Sets the return value for {@link BluetoothDevice#getBluetoothClass}. */
+  public void setBluetoothClass(BluetoothClass bluetoothClass) {
+    this.bluetoothClass = bluetoothClass;
   }
 }

@@ -31,10 +31,11 @@ public class PausedExecutorServiceTest {
   @Test
   public void executionRunsInBackgroundThread() throws ExecutionException, InterruptedException {
     final Thread testThread = Thread.currentThread();
-    executorService.execute(() -> {
-      assertThat(Thread.currentThread()).isNotSameAs(testThread);
-      executedTasksRecord.add("task ran");
-    });
+    executorService.execute(
+        () -> {
+          assertThat(Thread.currentThread()).isNotSameInstanceAs(testThread);
+          executedTasksRecord.add("task ran");
+        });
     executorService.runAll();
     assertThat(executedTasksRecord).containsExactly("task ran");
   }

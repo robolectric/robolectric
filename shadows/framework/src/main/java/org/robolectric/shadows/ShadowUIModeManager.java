@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowUIModeManager {
   public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
   public int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+  public int lastFlags;
 
   private static final ImmutableSet<Integer> VALID_NIGHT_MODES =
       ImmutableSet.of(
@@ -24,11 +25,13 @@ public class ShadowUIModeManager {
   @Implementation
   public void enableCarMode(int flags) {
     currentModeType = Configuration.UI_MODE_TYPE_CAR;
+    lastFlags = flags;
   }
 
   @Implementation
   public void disableCarMode(int flags) {
     currentModeType = Configuration.UI_MODE_TYPE_NORMAL;
+    lastFlags = flags;
   }
 
   @Implementation

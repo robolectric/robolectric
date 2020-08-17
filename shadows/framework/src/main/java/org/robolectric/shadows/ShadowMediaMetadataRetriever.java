@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.MediaDataSource;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import java.io.FileDescriptor;
@@ -19,6 +22,7 @@ public class ShadowMediaMetadataRetriever {
   private DataSource dataSource;
   private static final Map<DataSource, Map<Integer, String>> metadata = new HashMap<>();
   private static final Map<DataSource, Map<Long, Bitmap>> frames = new HashMap<>();
+  private static final Map<DataSource, Map<String, Bitmap>> scaledFrames = new HashMap<>();
   private static final Map<DataSource, RuntimeException> exceptions = new HashMap<>();
 
   public void setDataSource(DataSource dataSource) {
@@ -50,6 +54,11 @@ public class ShadowMediaMetadataRetriever {
     setDataSource(toDataSource(fd, offset, length));
   }
 
+  @Implementation(minSdk = M)
+  protected void setDataSource(MediaDataSource mediaDataSource) {
+    setDataSource(toDataSource(mediaDataSource));
+  }
+
   @Implementation
   protected String extractMetadata(int keyCode) {
     if (metadata.containsKey(dataSource)) {
@@ -64,13 +73,18 @@ public class ShadowMediaMetadataRetriever {
             frames.get(dataSource).get(timeUs) : null);
   }
 
+  @Implementation(minSdk = O_MR1)
+  protected Bitmap getScaledFrameAtTime(long timeUs, int option, int dstWidth, int dstHeight) {
+    return (scaledFrames.containsKey(dataSource) ?
+            scaledFrames.get(dataSource).get(getScaledFrameKey(timeUs, dstWidth, dstHeight)) : null);
+  }
+
   /**
-   * Configures an exception to be thrown when {@link #setDataSource}
-   * is called for the given data source.
+   * Configures an exception to be thrown when {@link #setDataSource} is called for the given data
+   * source.
    *
    * @param ds the data source that will trigger an exception
-   * @param e the exception to trigger, or <tt>null</tt> to
-   * avoid throwing an exception.
+   * @param e the exception to trigger, or null to avoid throwing an exception.
    */
   public static void addException(DataSource ds, RuntimeException e) {
     exceptions.put(ds, e);
@@ -84,14 +98,14 @@ public class ShadowMediaMetadataRetriever {
   }
 
   /**
-   * Adds the given keyCode/value pair for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(String)} and
-   * then calls {@link #addMetadata(DataSource, int, String)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addMetadata(DataSource, int, String)} directly.
+   * Adds the given keyCode/value pair for the given data source. Uses {@code path} to call {@link
+   * org.robolectric.shadows.util.DataSource#toDataSource(String)} and then calls {@link
+   * #addMetadata(DataSource, int, String)}. This method is retained mostly for backwards
+   * compatibility; you can call {@link #addMetadata(DataSource, int, String)} directly.
    *
    * @param path the path to the data source whose metadata is being set.
-   * @param keyCode the keyCode for the metadata being set, as used by {@link MediaMetadataRetriever#extractMetadata(int)}.
+   * @param keyCode the keyCode for the metadata being set, as used by {@link
+   *     MediaMetadataRetriever#extractMetadata(int)}.
    * @param value the value for the specified metadata.
    */
   public static void addMetadata(String path, int keyCode, String value) {
@@ -105,16 +119,21 @@ public class ShadowMediaMetadataRetriever {
     frames.get(ds).put(time, bitmap);
   }
 
+  public static void addScaledFrame(DataSource ds, long time, int dstWidth, int dstHeight, Bitmap bitmap) {
+    if (!scaledFrames.containsKey(ds)) {
+      scaledFrames.put(ds, new HashMap<String, Bitmap>());
+    }
+    scaledFrames.get(ds).put(getScaledFrameKey(time, dstWidth, dstHeight), bitmap);
+  }
+
   /**
-   * Adds the given bitmap at the given time for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(String)} and
-   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
+   * Adds the given bitmap at the given time for the given data source. Uses {@code path} to call
+   * {@link org.robolectric.shadows.util.DataSource#toDataSource(String)} and then calls {@link
+   * #addFrame(DataSource, long, Bitmap)}. This method is retained mostly for backwards
+   * compatibility; you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
    *
    * @param path the path to the data source.
-   * @param time the playback time at which the specified bitmap
-   * should be retrieved.
+   * @param time the playback time at which the specified bitmap should be retrieved.
    * @param bitmap the bitmap to retrieve.
    */
   public static void addFrame(String path, long time, Bitmap bitmap) {
@@ -122,16 +141,14 @@ public class ShadowMediaMetadataRetriever {
   }
 
   /**
-   * Adds the given bitmap at the given time for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(Context, Uri)} and
-   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
+   * Adds the given bitmap at the given time for the given data source. Uses {@code path} to call
+   * {@link org.robolectric.shadows.util.DataSource#toDataSource(Context, Uri)} and then calls
+   * {@link #addFrame(DataSource, long, Bitmap)}. This method is retained mostly for backwards
+   * compatibility; you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
    *
    * @param context the Context object to match on the data source.
    * @param uri the Uri of the data source.
-   * @param time the playback time at which the specified bitmap
-   * should be retrieved.
+   * @param time the playback time at which the specified bitmap should be retrieved.
    * @param bitmap the bitmap to retrieve.
    */
   public static void addFrame(Context context, Uri uri, long time, Bitmap bitmap) {
@@ -139,16 +156,14 @@ public class ShadowMediaMetadataRetriever {
   }
 
   /**
-   * Adds the given bitmap at the given time for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(String, Map)} and
-   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
+   * Adds the given bitmap at the given time for the given data source. Uses {@code path} to call
+   * {@link org.robolectric.shadows.util.DataSource#toDataSource(String, Map)} and then calls {@link
+   * #addFrame(DataSource, long, Bitmap)}. This method is retained mostly for backwards
+   * compatibility; you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
    *
    * @param uri the Uri of the data source.
    * @param headers the headers to use when requesting the specified uri.
-   * @param time the playback time at which the specified bitmap
-   * should be retrieved.
+   * @param time the playback time at which the specified bitmap should be retrieved.
    * @param bitmap the bitmap to retrieve.
    */
   public static void addFrame(String uri, Map<String, String> headers, long time, Bitmap bitmap) {
@@ -156,15 +171,13 @@ public class ShadowMediaMetadataRetriever {
   }
 
   /**
-   * Adds the given bitmap at the given time for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(FileDescriptor)} and
-   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
+   * Adds the given bitmap at the given time for the given data source. Uses {@code path} to call
+   * {@link org.robolectric.shadows.util.DataSource#toDataSource(FileDescriptor)} and then calls
+   * {@link #addFrame(DataSource, long, Bitmap)}. This method is retained mostly for backwards
+   * compatibility; you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
    *
    * @param fd file descriptor of the data source.
-   * @param time the playback time at which the specified bitmap
-   * should be retrieved.
+   * @param time the playback time at which the specified bitmap should be retrieved.
    * @param bitmap the bitmap to retrieve.
    */
   public static void addFrame(FileDescriptor fd, long time, Bitmap bitmap) {
@@ -172,21 +185,19 @@ public class ShadowMediaMetadataRetriever {
   }
 
   /**
-   * Adds the given bitmap at the given time for the given data source.
-   * Uses <tt>path</tt> to call {@link org.robolectric.shadows.util.DataSource#toDataSource(FileDescriptor, long, long)} and
-   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This
-   * method is retained mostly for backwards compatibility;
-   * you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
+   * Adds the given bitmap at the given time for the given data source. Uses {@code path} to call
+   * {@link org.robolectric.shadows.util.DataSource#toDataSource(FileDescriptor, long, long)} and
+   * then calls {@link #addFrame(DataSource, long, Bitmap)}. This method is retained mostly for
+   * backwards compatibility; you can call {@link #addFrame(DataSource, long, Bitmap)} directly.
    *
    * @param fd file descriptor of the data source.
    * @param offset the byte offset within the specified file from which to start reading the data.
    * @param length the number of bytes to read from the file.
-   * @param time the playback time at which the specified bitmap
-   * should be retrieved.
+   * @param time the playback time at which the specified bitmap should be retrieved.
    * @param bitmap the bitmap to retrieve.
    */
-  public static void addFrame(FileDescriptor fd, long offset, long length,
-                              long time, Bitmap bitmap) {
+  public static void addFrame(
+      FileDescriptor fd, long offset, long length, long time, Bitmap bitmap) {
     addFrame(toDataSource(fd, offset, length), time, bitmap);
   }
 
@@ -194,6 +205,11 @@ public class ShadowMediaMetadataRetriever {
   public static void reset() {
     metadata.clear();
     frames.clear();
+    scaledFrames.clear();
     exceptions.clear();
+  }
+
+  private static String getScaledFrameKey(long time, int dstWidth, int dstHeight) {
+    return String.format("%d_%dx%d", time, dstWidth, dstHeight);
   }
 }

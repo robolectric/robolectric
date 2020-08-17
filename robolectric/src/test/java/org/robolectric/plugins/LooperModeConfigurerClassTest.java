@@ -10,9 +10,9 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowBaseLooper;
+import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowRealisticLooper;
+import org.robolectric.shadows.ShadowPausedLooper;
 
 /**
  * Unit tests for classes annotated with @LooperMode.
@@ -23,30 +23,30 @@ public class LooperModeConfigurerClassTest {
 
   @Test
   public void defaultsToClass() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.PAUSED);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.PAUSED);
   }
 
   @Test
   @LooperMode(Mode.LEGACY)
   public void overriddenAtMethod() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.LEGACY);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
   }
 
   @Test
   @LooperMode(Mode.LEGACY)
   public void shouldUseLegacyShadows() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.LEGACY);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
 
-    ShadowBaseLooper looper = Shadow.extract(Looper.getMainLooper());
-    assertThat(looper).isInstanceOf(ShadowLooper.class);
+    ShadowLooper looper = Shadow.extract(Looper.getMainLooper());
+    assertThat(looper).isInstanceOf(ShadowLegacyLooper.class);
   }
 
   @Test
   @LooperMode(Mode.PAUSED)
   public void shouldUseRealisticShadows() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.PAUSED);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.PAUSED);
 
-    ShadowBaseLooper looper = Shadow.extract(Looper.getMainLooper());
-    assertThat(looper).isInstanceOf(ShadowRealisticLooper.class);
+    ShadowLooper looper = Shadow.extract(Looper.getMainLooper());
+    assertThat(looper).isInstanceOf(ShadowPausedLooper.class);
   }
 }

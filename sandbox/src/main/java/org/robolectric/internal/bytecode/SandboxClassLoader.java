@@ -2,7 +2,6 @@ package org.robolectric.internal.bytecode;
 
 import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
 import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -15,7 +14,6 @@ import java.net.URLClassLoader;
 import javax.inject.Inject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 /**
@@ -23,7 +21,6 @@ import org.robolectric.util.Util;
  * shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader {
-  private final ClassLoader erstwhileClassLoader;
   private final InstrumentationConfiguration config;
   private final ResourceProvider resourceProvider;
   private final ClassInstrumentor classInstrumentor;
@@ -45,8 +42,7 @@ public class SandboxClassLoader extends URLClassLoader {
   public SandboxClassLoader(
       ClassLoader erstwhileClassLoader, InstrumentationConfiguration config,
       ResourceProvider resourceProvider, ClassInstrumentor classInstrumentor) {
-    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader.getParent());
-    this.erstwhileClassLoader = erstwhileClassLoader;
+    super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader);
 
     this.config = config;
     this.resourceProvider = resourceProvider;
@@ -106,12 +102,26 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   @Override
-  protected Class<?> findClass(String name) throws ClassNotFoundException {
-    if (config.shouldAcquire(name)) {
-      return PerfStatsCollector.getInstance().measure("load sandboxed class",
-          () -> maybeInstrumentClass(name));
-    } else {
-      return erstwhileClassLoader.loadClass(name);
+  public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    synchronized (getClassLoadingLock(name)) {
+      Class<?> loadedClass = findLoadedClass(name);
+      if (loadedClass != null) {
+        return loadedClass;
+      }
+
+      if (config.shouldAcquire(name)) {
+        loadedClass =
+            PerfStatsCollector.getInstance()
+                .measure("load sandboxed class", () -> maybeInstrumentClass(name));
+      } else {
+        loadedClass = getParent().loadClass(name);
+      }
+
+      if (resolve) {
+        resolveClass(loadedClass);
+      }
+
+      return loadedClass;
     }
   }
 
@@ -146,19 +156,19 @@ public class SandboxClassLoader extends URLClassLoader {
     return origClassBytes;
   }
 
-  @Override
-  protected Package getPackage(String name) {
-    Package aPackage = super.getPackage(name);
-    if (aPackage != null) {
-      return aPackage;
-    }
-
-    return ReflectionHelpers.callInstanceMethod(erstwhileClassLoader, "getPackage",
-        from(String.class, name));
-  }
-
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
-    String classFilename = className.replace('.', '/') + ".class";
+    // Mockito shipped a workaround to work with the (previously broken) SandboxClassLoader:
+    // https://github.com/mockito/mockito/issues/845
+    // We need to special-case this one file to make sure the integration with the inline-mockmaker
+    // does not break. At some point we have to revert this workaround, which would constitute a
+    // breaking change if Robolectric is used in combination with an old version of Mockito. At the
+    // same time, Mockito needs to remove their workaround and make sure it works with both the old
+    // (broken) and new ClassLoader.
+    String extension =
+        className.equals("org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher")
+            ? "raw"
+            : "class";
+    String classFilename = className.replace('.', '/') + "." + extension;
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
       if (classBytesStream == null) {
         throw new ClassNotFoundException(className);

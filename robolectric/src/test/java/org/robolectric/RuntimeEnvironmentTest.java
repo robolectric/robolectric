@@ -1,6 +1,7 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -9,7 +10,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.shadows.ShadowRealisticLooper;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
@@ -17,24 +19,24 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void setMainThread_forCurrentThread() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     RuntimeEnvironment.setMainThread(Thread.currentThread());
-    assertThat(RuntimeEnvironment.getMainThread()).isSameAs(Thread.currentThread());
+    assertThat(RuntimeEnvironment.getMainThread()).isSameInstanceAs(Thread.currentThread());
   }
 
   @Test
   public void setMainThread_forNewThread() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
-    assertThat(RuntimeEnvironment.getMainThread()).isSameAs(t);
+    assertThat(RuntimeEnvironment.getMainThread()).isSameInstanceAs(t);
   }
 
   @Test
   public void isMainThread_forNewThread_withoutSwitch() throws InterruptedException {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -50,13 +52,13 @@ public class RuntimeEnvironmentTest {
     if (!finished.await(1000, MILLISECONDS)) {
       throw new InterruptedException("Thread " + t + " didn't finish timely");
     }
-    assertThat(RuntimeEnvironment.isMainThread()).named("testThread").isTrue();
-    assertThat(res.get()).named("thread t").isFalse();
+    assertWithMessage("testThread").that(RuntimeEnvironment.isMainThread()).isTrue();
+    assertWithMessage("thread t").that(res.get()).isFalse();
   }
 
   @Test
   public void isMainThread_forNewThread_withSwitch() throws InterruptedException {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     final AtomicBoolean res = new AtomicBoolean();
     final CountDownLatch finished = new CountDownLatch(1);
@@ -72,13 +74,13 @@ public class RuntimeEnvironmentTest {
     if (!finished.await(1000, MILLISECONDS)) {
       throw new InterruptedException("Thread " + t + " didn't finish timely");
     }
-    assertThat(RuntimeEnvironment.isMainThread()).named("testThread").isFalse();
-    assertThat(res.get()).named("thread t").isTrue();
+    assertWithMessage("testThread").that(RuntimeEnvironment.isMainThread()).isFalse();
+    assertWithMessage("thread t").that(res.get()).isTrue();
   }
 
   @Test
   public void isMainThread_withArg_forNewThread_withSwitch() throws InterruptedException {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     Thread t = new Thread();
     RuntimeEnvironment.setMainThread(t);
@@ -87,10 +89,10 @@ public class RuntimeEnvironmentTest {
 
   @Test
   public void getSetMasterScheduler() {
-    assume().that(ShadowRealisticLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
 
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
-    assertThat(RuntimeEnvironment.getMasterScheduler()).isSameAs(s);
+    assertThat(RuntimeEnvironment.getMasterScheduler()).isSameInstanceAs(s);
   }
 }

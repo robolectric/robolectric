@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.SystemClock;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.annotation.LooperMode;
 
 public class ShadowSystem {
 
@@ -12,10 +13,10 @@ public class ShadowSystem {
    */
   @SuppressWarnings("unused")
   public static long nanoTime() {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       return TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis());
     } else {
-      return ShadowSystemClock.nanoTime();
+      return ShadowLegacySystemClock.nanoTime();
     }
   }
 
@@ -26,10 +27,10 @@ public class ShadowSystem {
    */
   @SuppressWarnings("unused")
   public static long currentTimeMillis() {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       return SystemClock.uptimeMillis();
     } else {
-      return ShadowSystemClock.currentTimeMillis();
+      return ShadowLegacySystemClock.currentTimeMillis();
     }
   }
 }

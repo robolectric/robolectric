@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.annotation.NonNull;
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.usage.UsageEvents;
@@ -8,6 +11,7 @@ import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.app.usage.UsageStatsManager.StandbyBuckets;
+import android.app.usage.UsageStatsManager.UsageSource;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -20,6 +24,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
 import com.google.common.collect.SetMultimap;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +45,10 @@ import org.robolectric.annotation.Resetter;
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
+
+  @UsageSource
+  private static int currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
+
   private static final NavigableMap<Long, Event> eventsByTimeStamp =
       Maps.synchronizedNavigableMap(Maps.newTreeMap());
 
@@ -137,28 +146,22 @@ public class ShadowUsageStatsManager {
   public static final class UsageSessionObserver {
     private final int observerId;
     private final List<String> packageNames;
-    private final long sessionStepTime;
-    private final TimeUnit sessionStepTimeUnit;
-    private final long thresholdTime;
-    private final TimeUnit thresholdTimeUnit;
+    private final Duration sessionStepDuration;
+    private final Duration thresholdDuration;
     private final PendingIntent sessionStepTriggeredIntent;
     private final PendingIntent sessionEndedIntent;
 
     public UsageSessionObserver(
         int observerId,
         @NonNull List<String> packageNames,
-        long sessionStepTime,
-        @NonNull TimeUnit sessionStepTimeUnit,
-        long thresholdTime,
-        @NonNull TimeUnit thresholdTimeUnit,
+        Duration sessionStepDuration,
+        Duration thresholdDuration,
         @NonNull PendingIntent sessionStepTriggeredIntent,
         @NonNull PendingIntent sessionEndedIntent) {
       this.observerId = observerId;
       this.packageNames = packageNames;
-      this.sessionStepTime = sessionStepTime;
-      this.sessionStepTimeUnit = sessionStepTimeUnit;
-      this.thresholdTime = thresholdTime;
-      this.thresholdTimeUnit = thresholdTimeUnit;
+      this.sessionStepDuration = sessionStepDuration;
+      this.thresholdDuration = thresholdDuration;
       this.sessionStepTriggeredIntent = sessionStepTriggeredIntent;
       this.sessionEndedIntent = sessionEndedIntent;
     }
@@ -172,22 +175,12 @@ public class ShadowUsageStatsManager {
       return packageNames;
     }
 
-    public long getSessionStepTime() {
-      return sessionStepTime;
+    public Duration getSessionStepDuration() {
+      return sessionStepDuration;
     }
 
-    @NonNull
-    public TimeUnit getSessionStepTimeUnit() {
-      return sessionStepTimeUnit;
-    }
-
-    public long getThresholdTime() {
-      return thresholdTime;
-    }
-
-    @NonNull
-    public TimeUnit getThresholdTimeUnit() {
-      return thresholdTimeUnit;
+    public Duration getThresholdDuration() {
+      return thresholdDuration;
     }
 
     @NonNull
@@ -211,10 +204,8 @@ public class ShadowUsageStatsManager {
       UsageSessionObserver that = (UsageSessionObserver) o;
       return observerId == that.observerId
           && packageNames.equals(that.packageNames)
-          && sessionStepTime == that.sessionStepTime
-          && sessionStepTimeUnit == that.sessionStepTimeUnit
-          && thresholdTime == that.thresholdTime
-          && thresholdTimeUnit == that.thresholdTimeUnit
+          && sessionStepDuration.equals(that.sessionStepDuration)
+          && thresholdDuration.equals(that.thresholdDuration)
           && sessionStepTriggeredIntent.equals(that.sessionStepTriggeredIntent)
           && sessionEndedIntent.equals(that.sessionEndedIntent);
     }
@@ -223,18 +214,95 @@ public class ShadowUsageStatsManager {
     public int hashCode() {
       int result = observerId;
       result = 31 * result + packageNames.hashCode();
-      result = 31 * result + (int) (sessionStepTime ^ (sessionStepTime >>> 32));
-      result = 31 * result + sessionStepTimeUnit.hashCode();
-      result = 31 * result + (int) (thresholdTime ^ (thresholdTime >>> 32));
-      result = 31 * result + thresholdTimeUnit.hashCode();
+      result = 31 * result + sessionStepDuration.hashCode();
+      result = 31 * result + thresholdDuration.hashCode();
       result = 31 * result + sessionStepTriggeredIntent.hashCode();
       result = 31 * result + sessionEndedIntent.hashCode();
       return result;
     }
   }
 
-  private static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
+  protected static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
       new LinkedHashMap<>();
+
+  /**
+   * App usage limit observer registered via {@link
+   * UsageStatsManager#registerAppUsageLimitObserver(int, String[], Duration, Duration,
+   * PendingIntent)}.
+   */
+  public static final class AppUsageLimitObserver {
+    private final int observerId;
+    private final ImmutableList<String> packageNames;
+    private final Duration timeLimit;
+    private final Duration timeUsed;
+    private final PendingIntent callbackIntent;
+
+    public AppUsageLimitObserver(
+        int observerId,
+        @NonNull List<String> packageNames,
+        @NonNull Duration timeLimit,
+        @NonNull Duration timeUsed,
+        @NonNull PendingIntent callbackIntent) {
+      this.observerId = observerId;
+      this.packageNames = ImmutableList.copyOf(packageNames);
+      this.timeLimit = checkNotNull(timeLimit);
+      this.timeUsed = checkNotNull(timeUsed);
+      this.callbackIntent = checkNotNull(callbackIntent);
+    }
+
+    public int getObserverId() {
+      return observerId;
+    }
+
+    @NonNull
+    public ImmutableList<String> getPackageNames() {
+      return packageNames;
+    }
+
+    @NonNull
+    public Duration getTimeLimit() {
+      return timeLimit;
+    }
+
+    @NonNull
+    public Duration getTimeUsed() {
+      return timeUsed;
+    }
+
+    @NonNull
+    public PendingIntent getCallbackIntent() {
+      return callbackIntent;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      AppUsageLimitObserver that = (AppUsageLimitObserver) o;
+      return observerId == that.observerId
+          && packageNames.equals(that.packageNames)
+          && timeLimit.equals(that.timeLimit)
+          && timeUsed.equals(that.timeUsed)
+          && callbackIntent.equals(that.callbackIntent);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = observerId;
+      result = 31 * result + packageNames.hashCode();
+      result = 31 * result + timeLimit.hashCode();
+      result = 31 * result + timeUsed.hashCode();
+      result = 31 * result + callbackIntent.hashCode();
+      return result;
+    }
+  }
+
+  private static final Map<Integer, AppUsageLimitObserver> appUsageLimitObserversById =
+      Maps.newConcurrentMap();
 
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
@@ -426,10 +494,8 @@ public class ShadowUsageStatsManager {
   protected void registerUsageSessionObserver(
       int observerId,
       String[] packages,
-      long sessionStepTime,
-      TimeUnit sessionStepTimeUnit,
-      long thresholdTime,
-      TimeUnit thresholdTimeUnit,
+      Duration sessionStepDuration,
+      Duration thresholdTimeDuration,
       PendingIntent sessionStepTriggeredIntent,
       PendingIntent sessionEndedIntent) {
     usageSessionObserversById.put(
@@ -437,10 +503,8 @@ public class ShadowUsageStatsManager {
         new UsageSessionObserver(
             observerId,
             ImmutableList.copyOf(packages),
-            sessionStepTime,
-            sessionStepTimeUnit,
-            thresholdTime,
-            thresholdTimeUnit,
+            sessionStepDuration,
+            thresholdTimeDuration,
             sessionStepTriggeredIntent,
             sessionEndedIntent));
   }
@@ -464,7 +528,7 @@ public class ShadowUsageStatsManager {
    */
   public void triggerRegisteredSessionStepObserver(int observerId, long timeUsedInMillis) {
     UsageSessionObserver observer = usageSessionObserversById.get(observerId);
-    long sessionStepTimeInMillis = observer.sessionStepTimeUnit.toMillis(observer.sessionStepTime);
+    long sessionStepTimeInMillis = observer.sessionStepDuration.toMillis();
     Intent intent =
         new Intent()
             .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
@@ -493,6 +557,62 @@ public class ShadowUsageStatsManager {
   }
 
   /**
+   * Registers an app usage limit observer that receives a callback on {@code callbackIntent} when
+   * the sum of usages of apps and tokens in {@code observedEntities} exceeds {@code timeLimit -
+   * timeUsed}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @HiddenApi
+  protected void registerAppUsageLimitObserver(
+      int observerId,
+      String[] observedEntities,
+      Duration timeLimit,
+      Duration timeUsed,
+      PendingIntent callbackIntent) {
+    appUsageLimitObserversById.put(
+        observerId,
+        new AppUsageLimitObserver(
+            observerId,
+            ImmutableList.copyOf(observedEntities),
+            timeLimit,
+            timeUsed,
+            callbackIntent));
+  }
+
+  /** Unregisters the app usage limit observer specified by {@code observerId}. */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @HiddenApi
+  protected void unregisterAppUsageLimitObserver(int observerId) {
+    appUsageLimitObserversById.remove(observerId);
+  }
+
+  /**
+   * Returns the {@link AppUsageLimitObserver}s currently registered in {@link UsageStatsManager}.
+   */
+  public ImmutableList<AppUsageLimitObserver> getRegisteredAppUsageLimitObservers() {
+    return ImmutableList.copyOf(appUsageLimitObserversById.values());
+  }
+
+  /**
+   * Triggers a currently registered {@link AppUsageLimitObserver} with {@code observerId}.
+   *
+   * <p>The observer will still be registered afterwards.
+   */
+  public void triggerRegisteredAppUsageLimitObserver(int observerId, Duration timeUsed) {
+    AppUsageLimitObserver observer = appUsageLimitObserversById.get(observerId);
+    Intent intent =
+        new Intent()
+            .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
+            .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, observer.timeLimit.toMillis())
+            .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsed.toMillis());
+    try {
+      observer.callbackIntent.send(RuntimeEnvironment.application, 0, intent);
+    } catch (CanceledException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
    * the standby bucket value has never been set, return {@link
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
@@ -508,14 +628,29 @@ public class ShadowUsageStatsManager {
     currentAppStandbyBucket = bucket;
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @UsageSource
+  @HiddenApi
+  protected int getUsageSource() {
+    return currentUsageSource;
+  }
+
+  /** Sets what app usage observers will consider the source of usage for an activity. */
+  @TargetApi(Build.VERSION_CODES.Q)
+  public void setUsageSource(@UsageSource int usageSource) {
+    currentUsageSource = usageSource;
+  }
+
   @Resetter
   public static void reset() {
     currentAppStandbyBucket = UsageStatsManager.STANDBY_BUCKET_ACTIVE;
+    currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
     eventsByTimeStamp.clear();
 
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
     usageSessionObserversById.clear();
+    appUsageLimitObserversById.clear();
   }
 
   /**
@@ -620,6 +755,24 @@ public class ShadowUsageStatsManager {
 
     public EventBuilder setShortcutId(String shortcutId) {
       event.mShortcutId = shortcutId;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setInstanceId(int instanceId) {
+      event.mInstanceId = instanceId;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setTaskRootPackage(String taskRootPackage) {
+      event.mTaskRootPackage = taskRootPackage;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.Q)
+    public EventBuilder setTaskRootClass(String taskRootClass) {
+      event.mTaskRootClass = taskRootClass;
       return this;
     }
   }

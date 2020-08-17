@@ -12,10 +12,14 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.TypedValue;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +30,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Join;
+import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -47,7 +52,8 @@ public class ShadowBitmapFactory {
 
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
-      ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+      ReflectionHelpers.callInstanceMethod(
+          bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
     }
     return bitmap;
   }
@@ -76,7 +82,17 @@ public class ShadowBitmapFactory {
 
   @Implementation
   protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-    Bitmap bitmap = create("file:" + pathName, options);
+    // If a real file is used, attempt to get the image size from that file.
+    Point imageSizeFromStream = null;
+    if (pathName != null && new File(pathName).exists()) {
+      try (FileInputStream fileInputStream = new FileInputStream(pathName);
+          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
+        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+      } catch (IOException e) {
+        Logger.warn("Error getting size of bitmap file", e);
+      }
+    }
+    Bitmap bitmap = create("file:" + pathName, options, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
     return bitmap;
@@ -86,7 +102,17 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
-    Bitmap bitmap = create("fd:" + fd, opts);
+    Point imageSizeFromStream = null;
+    // If a real FileDescriptor is used, attempt to get the image size.
+    if (fd != null && fd.valid()) {
+      try (FileInputStream fileInputStream = new FileInputStream(fd);
+          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
+        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+      } catch (IOException e) {
+        Logger.warn("Error getting size of bitmap file", e);
+      }
+    }
+    Bitmap bitmap = create("fd:" + fd, opts, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
@@ -125,9 +151,19 @@ public class ShadowBitmapFactory {
         : null;
     Point imageSize = (is instanceof NamedStream) ? null : getImageSizeFromStream(is);
     Bitmap bitmap = create(name, opts, imageSize);
-    bitmap.setNinePatchChunk(ninePatchChunk);
+    ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk",
+            ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
+
+    try {
+      if (is != null && opts != null) {
+        is.reset();
+        opts.outMimeType = URLConnection.guessContentTypeFromStream(is);
+      }
+    } catch (IOException e) {
+      // ignore
+    }
     return bitmap;
   }
 
@@ -203,7 +239,9 @@ public class ShadowBitmapFactory {
   }
 
   public static void provideWidthAndHeightHints(int resourceId, int width, int height) {
-    widthAndHeightMap.put("resource:" + RuntimeEnvironment.application.getResources().getResourceName(resourceId), new Point(width, height));
+    widthAndHeightMap.put(
+        "resource:" + RuntimeEnvironment.application.getResources().getResourceName(resourceId),
+        new Point(width, height));
   }
 
   public static void provideWidthAndHeightHints(String file, int width, int height) {

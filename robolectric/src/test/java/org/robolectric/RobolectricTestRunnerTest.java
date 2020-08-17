@@ -5,7 +5,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.RobolectricTestRunner.defaultInjector;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
 import android.app.Application;
@@ -28,6 +28,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.junit.After;
+import org.junit.AssumptionViolatedException;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
@@ -43,15 +44,16 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.model.FrameworkMethod;
 import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
-import org.robolectric.android.internal.AndroidEnvironment;
+import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
-import org.robolectric.internal.AndroidSandbox.EnvironmentSpec;
+import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
+import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
@@ -142,7 +144,7 @@ public class RobolectricTestRunnerTest {
     }.getChildren();
     Config config = ((RobolectricFrameworkMethod) children.get(0))
         .getConfiguration().get(Config.class);
-    assertThat(config).isSameAs(overriddenConfig);
+    assertThat(config).isSameInstanceAs(overriddenConfig);
   }
 
   @Test
@@ -151,8 +153,8 @@ public class RobolectricTestRunnerTest {
         new SingleSdkRobolectricTestRunner(
             TestWithTwoMethods.class,
             SingleSdkRobolectricTestRunner.defaultInjector()
-                .bind(EnvironmentSpec.class,
-                    new EnvironmentSpec(AndroidEnvironmentWithFailingSetUp.class))
+                .bind(TestEnvironmentSpec.class,
+                    new TestEnvironmentSpec(AndroidTestEnvironmentWithFailingSetUp.class))
                 .build());
     runner.run(notifier);
     assertThat(events).containsExactly(
@@ -285,19 +287,27 @@ public class RobolectricTestRunnerTest {
             "finished: failWithNoRunnables",
             "started: failWithUnexecutedRunnables",
             "failure: Main looper has queued unexecuted runnables. This might be the cause of the"
-                + " test failure. You might need a shadowMainLooper().idle() call.",
-            "finished: failWithUnexecutedRunnables");
+                + " test failure. You might need a shadowOf(getMainLooper()).idle() call.",
+            "finished: failWithUnexecutedRunnables",
+            "started: assumptionViolationWithNoRunnables",
+            "ignored: assumptionViolationWithNoRunnables: assumption violated",
+            "finished: assumptionViolationWithNoRunnables",
+            "started: assumptionViolationWithUnexecutedRunnables",
+            "ignored: assumptionViolationWithUnexecutedRunnables: assumption violated",
+            "finished: assumptionViolationWithUnexecutedRunnables");
   }
 
   /////////////////////////////
 
-  public static class AndroidEnvironmentWithFailingSetUp extends AndroidEnvironment {
+  /** To simulate failures. */
+  public static class AndroidTestEnvironmentWithFailingSetUp extends AndroidTestEnvironment {
 
-    public AndroidEnvironmentWithFailingSetUp(
+    public AndroidTestEnvironmentWithFailingSetUp(
         @Named("runtimeSdk") Sdk runtimeSdk,
         @Named("compileSdk") Sdk compileSdk,
-        ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders) {
-      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders);
+        ResourcesMode resourcesMode, ApkLoader apkLoader, ShadowProvider[] shadowProviders,
+        TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
+      super(runtimeSdk, compileSdk, resourcesMode, apkLoader, shadowProviders, lifecyclePlugins);
     }
 
     @Override
@@ -422,6 +432,18 @@ public class RobolectricTestRunnerTest {
     @Test
     public void failWithNoRunnables() {
       fail("failing with no runnables");
+    }
+
+    @Test
+    public void assumptionViolationWithUnexecutedRunnables() {
+      shadowMainLooper().pause();
+      new Handler(Looper.getMainLooper()).post(() -> {});
+      throw new AssumptionViolatedException("assumption violated");
+    }
+
+    @Test
+    public void assumptionViolationWithNoRunnables() {
+      throw new AssumptionViolatedException("assumption violated");
     }
   }
 

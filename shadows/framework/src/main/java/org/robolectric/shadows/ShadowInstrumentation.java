@@ -8,10 +8,12 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
+import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.Fragment;
@@ -32,7 +34,9 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
+import android.text.TextUtils;
 import android.util.Pair;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -48,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -55,6 +60,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
+import org.robolectric.util.Logger;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -63,32 +69,47 @@ public class ShadowInstrumentation {
 
   @RealObject private Instrumentation realObject;
 
-  private List<Intent> startedActivities = new ArrayList<>();
-  private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
-  private Map<FilterComparison, Integer> intentRequestCodeMap = new HashMap<>();
-  private List<Intent.FilterComparison> startedServices = new ArrayList<>();
-  private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
-  private List<Intent> broadcastIntents = new ArrayList<>();
-  private List<ServiceConnection> boundServiceConnections =
+  private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
+  private final List<IntentForResult> startedActivitiesForResults =
       Collections.synchronizedList(new ArrayList<>());
-  private List<ServiceConnection> unboundServiceConnections =
+  private final Map<FilterComparison, TargetAndRequestCode> intentRequestCodeMap =
+      Collections.synchronizedMap(new HashMap<>());
+  private final List<Intent.FilterComparison> startedServices =
       Collections.synchronizedList(new ArrayList<>());
-  private List<Wrapper> registeredReceivers = new ArrayList<>();
+  private final List<Intent.FilterComparison> stoppedServices =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<Intent> broadcastIntents = Collections.synchronizedList(new ArrayList<>());
+  private final Map<UserHandle, List<Intent>> broadcastIntentsForUser =
+      Collections.synchronizedMap(new HashMap<>());
+  private final List<ServiceConnection> boundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<ServiceConnection> unboundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
+
+  @GuardedBy("itself")
+  private final List<Wrapper> registeredReceivers = new ArrayList<>();
   // map of pid+uid to granted permissions
-  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
+  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap =
+      Collections.synchronizedMap(new HashMap<>());
   private boolean unbindServiceShouldThrowIllegalArgument = false;
-  private Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
-      serviceConnectionDataForIntent = new HashMap<>();
+  private SecurityException exceptionForBindService = null;
+  private final Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
+      serviceConnectionDataForIntent = Collections.synchronizedMap(new HashMap<>());
   // default values for bindService
   private ServiceConnectionDataWrapper defaultServiceConnectionData =
       new ServiceConnectionDataWrapper(null, null);
-  private List<String> unbindableActions = new ArrayList<>();
-  private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
+  private final List<String> unbindableActions = Collections.synchronizedList(new ArrayList<>());
+  private final List<ComponentName> unbindableComponents =
+      Collections.synchronizedList(new ArrayList<>());
+  private final Map<String, Intent> stickyIntents =
+      Collections.synchronizedMap(new LinkedHashMap<>());
   private Handler mainHandler;
-  private Map<ServiceConnection, ServiceConnectionDataWrapper>
-      serviceConnectionDataForServiceConnection = new HashMap<>();
+  private final Map<ServiceConnection, ServiceConnectionDataWrapper>
+      serviceConnectionDataForServiceConnection = Collections.synchronizedMap(new HashMap<>());
 
   private boolean checkActivities;
+  // This will default to False in the future to correctly mirror real Android behavior.
+  private boolean unbindServiceCallsOnServiceDisconnected = true;
 
   @Implementation(minSdk = P)
   protected Activity startActivitySync(Intent intent, Bundle options) {
@@ -106,7 +127,7 @@ public class ShadowInstrumentation {
       Bundle options) {
 
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, null, requestCode, options);
 
     if (who == null) {
       return null;
@@ -125,13 +146,14 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, null, requestCode, options);
     return null;
   }
 
-  private void logStartedActivity(Intent intent, int requestCode, Bundle options) {
+  private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
     startedActivities.add(intent);
-    intentRequestCodeMap.put(new FilterComparison(intent), requestCode);
+    intentRequestCodeMap.put(
+        new FilterComparison(intent), new TargetAndRequestCode(target, requestCode));
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
   }
 
@@ -174,12 +196,17 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, target, requestCode, options);
 
     return directlyOn(realObject, Instrumentation.class)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
+  /**
+   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, String, Intent, int, Bundle).
+   *
+   * <p>Currently ignores the user.
+   */
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected ActivityResult execStartActivity(
       Context who,
@@ -190,7 +217,7 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options,
       UserHandle user) {
-    throw new UnsupportedOperationException("Implement me!!");
+    return execStartActivity(who, contextThread, token, resultWho, intent, requestCode, options);
   }
 
   @Implementation(minSdk = M, maxSdk = P)
@@ -207,8 +234,9 @@ public class ShadowInstrumentation {
     throw new UnsupportedOperationException("Implement me!!");
   }
 
-  void sendOrderedBroadcast(
+  void sendOrderedBroadcastAsUser(
       Intent intent,
+      UserHandle userHandle,
       String receiverPermission,
       BroadcastReceiver resultReceiver,
       Handler scheduler,
@@ -216,29 +244,34 @@ public class ShadowInstrumentation {
       String initialData,
       Bundle initialExtras,
       Context context) {
-    List<Wrapper> receivers = getAppropriateWrappers(intent, receiverPermission);
+    List<Wrapper> receivers =
+        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
     sortByPriority(receivers);
-    receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
+    if (resultReceiver != null) {
+      receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
+    }
     postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras, context);
   }
 
   void assertNoBroadcastListenersOfActionRegistered(ContextWrapper context, String action) {
-    for (Wrapper registeredReceiver : registeredReceivers) {
-      if (registeredReceiver.context == context.getBaseContext()) {
-        Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
-        while (actions.hasNext()) {
-          if (actions.next().equals(action)) {
-            RuntimeException e =
-                new IllegalStateException(
-                    "Unexpected BroadcastReceiver on "
-                        + context
-                        + " with action "
-                        + action
-                        + " "
-                        + registeredReceiver.broadcastReceiver
-                        + " that was originally registered here:");
-            e.setStackTrace(registeredReceiver.exception.getStackTrace());
-            throw e;
+    synchronized (registeredReceivers) {
+      for (Wrapper registeredReceiver : registeredReceivers) {
+        if (registeredReceiver.context == context.getBaseContext()) {
+          Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
+          while (actions.hasNext()) {
+            if (actions.next().equals(action)) {
+              RuntimeException e =
+                  new IllegalStateException(
+                      "Unexpected BroadcastReceiver on "
+                          + context
+                          + " with action "
+                          + action
+                          + " "
+                          + registeredReceiver.broadcastReceiver
+                          + " that was originally registered here:");
+              e.setStackTrace(registeredReceiver.exception.getStackTrace());
+              throw e;
+            }
           }
         }
       }
@@ -246,32 +279,74 @@ public class ShadowInstrumentation {
   }
 
   /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
-  private List<Wrapper> getAppropriateWrappers(Intent intent, String receiverPermission) {
+  private List<Wrapper> getAppropriateWrappers(
+      Context context, @Nullable UserHandle userHandle, Intent intent, String receiverPermission) {
     broadcastIntents.add(intent);
+
+    if (userHandle != null) {
+      List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
+      if (intentsForUser == null) {
+        intentsForUser = new ArrayList<>();
+        broadcastIntentsForUser.put(userHandle, intentsForUser);
+      }
+      intentsForUser.add(intent);
+    }
 
     List<Wrapper> result = new ArrayList<>();
 
     List<Wrapper> copy = new ArrayList<>();
-    copy.addAll(registeredReceivers);
-    String intentClass =
-        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
+    synchronized (registeredReceivers) {
+      copy.addAll(registeredReceivers);
+    }
+
     for (Wrapper wrapper : copy) {
-      if ((hasMatchingPermission(wrapper.broadcastPermission, receiverPermission)
-              && wrapper.intentFilter.matchAction(intent.getAction()))
-          || (intentClass != null
-              && intentClass.equals(wrapper.broadcastReceiver.getClass().getName()))) {
-        final int match =
-            wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
-        if (match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE) {
-          result.add(wrapper);
-        }
+      if (broadcastReceiverMatchesIntent(context, wrapper, intent, receiverPermission)) {
+        result.add(wrapper);
       }
     }
+    System.err.format("Intent = %s; Matching wrappers: %s\n", intent, result);
     return result;
   }
 
+  private static boolean broadcastReceiverMatchesIntent(
+      Context broadcastContext, Wrapper wrapper, Intent intent, String receiverPermission) {
+    String intentClass =
+        intent.getComponent() != null ? intent.getComponent().getClassName() : null;
+    boolean matchesIntentClass =
+        intentClass != null && intentClass.equals(wrapper.broadcastReceiver.getClass().getName());
+
+    // The receiver must hold the permission specified by sendBroadcast, and the broadcaster must
+    // hold the permission specified by registerReceiver.
+    boolean hasPermissionFromManifest =
+        hasRequiredPermissionForBroadcast(wrapper.context, receiverPermission)
+            && hasRequiredPermissionForBroadcast(broadcastContext, wrapper.broadcastPermission);
+    // Many existing tests don't declare manifest permissions, relying on the old equality check.
+    boolean hasPermissionForBackwardsCompatibility =
+        TextUtils.equals(receiverPermission, wrapper.broadcastPermission);
+    boolean hasPermission = hasPermissionFromManifest || hasPermissionForBackwardsCompatibility;
+
+    boolean matchesAction = wrapper.intentFilter.matchAction(intent.getAction());
+
+    final int match =
+        wrapper.intentFilter.matchData(intent.getType(), intent.getScheme(), intent.getData());
+    boolean matchesDataAndType =
+        match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE;
+
+    return matchesIntentClass || (hasPermission && matchesAction && matchesDataAndType);
+  }
+
+  /** A null {@code requiredPermission} indicates that no permission is required. */
+  private static boolean hasRequiredPermissionForBroadcast(
+      Context context, @Nullable String requiredPermission) {
+    return requiredPermission == null
+        || RuntimeEnvironment.application
+                .getPackageManager()
+                .checkPermission(requiredPermission, context.getPackageName())
+            == PERMISSION_GRANTED;
+  }
+
   private void postIntent(
-      Intent intent, Wrapper wrapper, final AtomicBoolean abort, Context context) {
+      Intent intent, Wrapper wrapper, final AtomicBoolean abort, Context context, int resultCode) {
     final Handler scheduler =
         (wrapper.scheduler != null) ? wrapper.scheduler : getMainHandler(context);
     final BroadcastReceiver receiver = wrapper.broadcastReceiver;
@@ -281,17 +356,19 @@ public class ShadowInstrumentation {
         new Runnable() {
           @Override
           public void run() {
-            receiver.setPendingResult(ShadowBroadcastPendingResult.create(0, null, null, false));
+            receiver.setPendingResult(
+                ShadowBroadcastPendingResult.create(resultCode, null, null, false));
             shReceiver.onReceive(context, broadcastIntent, abort);
           }
         });
   }
 
-  private void postToWrappers(List<Wrapper> wrappers, Intent intent, Context context) {
+  private void postToWrappers(
+      List<Wrapper> wrappers, Intent intent, Context context, int resultCode) {
     AtomicBoolean abort =
         new AtomicBoolean(false); // abort state is shared among all broadcast receivers
     for (Wrapper wrapper : wrappers) {
-      postIntent(intent, wrapper, abort, context);
+      postIntent(intent, wrapper, abort, context, resultCode);
     }
   }
 
@@ -376,14 +453,32 @@ public class ShadowInstrumentation {
    * @param context
    * @param intent the {@code Intent} to broadcast todo: enqueue the Intent for later inspection
    */
-  void sendBroadcastWithPermission(Intent intent, String receiverPermission, Context context) {
-    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
-    postToWrappers(wrappers, intent, context);
+  void sendBroadcastWithPermission(
+      Intent intent, UserHandle userHandle, String receiverPermission, Context context) {
+    sendBroadcastWithPermission(intent, userHandle, receiverPermission, context, 0);
+  }
+
+  void sendBroadcastWithPermission(
+      Intent intent, String receiverPermission, Context context, int resultCode) {
+    sendBroadcastWithPermission(
+        intent, /*userHandle=*/ null, receiverPermission, context, resultCode);
+  }
+
+  void sendBroadcastWithPermission(
+      Intent intent,
+      UserHandle userHandle,
+      String receiverPermission,
+      Context context,
+      int resultCode) {
+    List<Wrapper> wrappers =
+        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
+    postToWrappers(wrappers, intent, context, resultCode);
   }
 
   void sendOrderedBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context) {
-    List<Wrapper> wrappers = getAppropriateWrappers(intent, receiverPermission);
+    List<Wrapper> wrappers =
+        getAppropriateWrappers(context, /*userHandle=*/ null, intent, receiverPermission);
     // sort by the decrease of priorities
     sortByPriority(wrappers);
 
@@ -404,6 +499,20 @@ public class ShadowInstrumentation {
 
   List<Intent> getBroadcastIntents() {
     return broadcastIntents;
+  }
+
+  List<Intent> getBroadcastIntentsForUser(UserHandle userHandle) {
+    List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
+    if (intentsForUser == null) {
+      intentsForUser = new ArrayList<>();
+      broadcastIntentsForUser.put(userHandle, intentsForUser);
+    }
+    return intentsForUser;
+  }
+
+  void clearBroadcastIntents() {
+    broadcastIntents.clear();
+    broadcastIntentsForUser.clear();
   }
 
   Intent getNextStartedActivity() {
@@ -430,6 +539,7 @@ public class ShadowInstrumentation {
    */
   void clearNextStartedActivities() {
     startedActivities.clear();
+    startedActivitiesForResults.clear();
   }
 
   IntentForResult getNextStartedActivityForResult() {
@@ -452,13 +562,12 @@ public class ShadowInstrumentation {
     this.checkActivities = checkActivities;
   }
 
-  int getRequestCodeForIntent(Intent requestIntent) {
-    Integer requestCode = intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent));
-    if (requestCode == null) {
-      throw new RuntimeException(
-          "No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
-    }
-    return requestCode;
+  TargetAndRequestCode getTargetAndRequestCodeForIntent(Intent requestIntent) {
+    return checkNotNull(
+        intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent)),
+        "No intent matches %s among %s",
+        requestIntent,
+        intentRequestCodeMap.keySet());
   }
 
   protected ComponentName startService(Intent intent) {
@@ -474,10 +583,27 @@ public class ShadowInstrumentation {
     return startedServices.contains(new Intent.FilterComparison(name));
   }
 
+  /**
+   * Set the default IBinder implementation that will be returned when the service is bound using
+   * the specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful
+   * for testing the ServiceConnection implementation.
+   *
+   * @param name The ComponentName of the Service
+   * @param service The IBinder implementation to return when the service is bound.
+   */
   void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
     defaultServiceConnectionData = new ServiceConnectionDataWrapper(name, service);
   }
 
+  /**
+   * Set the IBinder implementation that will be returned when the service is bound using the
+   * specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful for
+   * testing the ServiceConnection implementation.
+   *
+   * @param intent The exact Intent used in Context#bindService(...)
+   * @param name The ComponentName of the Service
+   * @param service The IBinder implementation to return when the service is bound.
+   */
   void setComponentNameAndServiceForBindServiceForIntent(
       Intent intent, ComponentName name, IBinder service) {
     serviceConnectionDataForIntent.put(
@@ -488,20 +614,22 @@ public class ShadowInstrumentation {
       final Intent intent, final ServiceConnection serviceConnection, int i) {
     boundServiceConnections.add(serviceConnection);
     unboundServiceConnections.remove(serviceConnection);
-    if (unbindableActions.contains(intent.getAction())) {
+    if (exceptionForBindService != null) {
+      throw exceptionForBindService;
+    }
+    final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
+    final ServiceConnectionDataWrapper serviceConnectionDataWrapper =
+        serviceConnectionDataForIntent.getOrDefault(filterComparison, defaultServiceConnectionData);
+    if (unbindableActions.contains(intent.getAction())
+        || unbindableComponents.contains(intent.getComponent())
+        || unbindableComponents.contains(
+            serviceConnectionDataWrapper.componentNameForBindService)) {
       return false;
     }
-    startedServices.add(new Intent.FilterComparison(intent));
+    startedServices.add(filterComparison);
     Handler handler = new Handler(Looper.getMainLooper());
     handler.post(
         () -> {
-          final ServiceConnectionDataWrapper serviceConnectionDataWrapper;
-          final Intent.FilterComparison filterComparison = new Intent.FilterComparison(intent);
-          if (serviceConnectionDataForIntent.containsKey(filterComparison)) {
-            serviceConnectionDataWrapper = serviceConnectionDataForIntent.get(filterComparison);
-          } else {
-            serviceConnectionDataWrapper = defaultServiceConnectionData;
-          }
           serviceConnectionDataForServiceConnection.put(
               serviceConnection, serviceConnectionDataWrapper);
           serviceConnection.onServiceConnected(
@@ -509,6 +637,10 @@ public class ShadowInstrumentation {
               serviceConnectionDataWrapper.binderForBindService);
         });
     return true;
+  }
+
+  protected void setUnbindServiceCallsOnServiceDisconnected(boolean flag) {
+    unbindServiceCallsOnServiceDisconnected = flag;
   }
 
   protected void unbindService(final ServiceConnection serviceConnection) {
@@ -528,8 +660,16 @@ public class ShadowInstrumentation {
           } else {
             serviceConnectionDataWrapper = defaultServiceConnectionData;
           }
-          serviceConnection.onServiceDisconnected(
-              serviceConnectionDataWrapper.componentNameForBindService);
+          if (unbindServiceCallsOnServiceDisconnected) {
+            Logger.warn(
+                "Configured to call onServiceDisconnected when unbindService is called. This is"
+                    + " not accurate Android behavior. Please update your tests and call"
+                    + " ShadowActivity#setUnbindCallsOnServiceDisconnected(false). This will"
+                    + " become default behavior in the future, which may break your tests if you"
+                    + " are expecting this inaccurate behavior.");
+            serviceConnection.onServiceDisconnected(
+                serviceConnectionDataWrapper.componentNameForBindService);
+          }
         });
   }
 
@@ -541,6 +681,10 @@ public class ShadowInstrumentation {
     unbindServiceShouldThrowIllegalArgument = flag;
   }
 
+  void setThrowInBindService(SecurityException e) {
+    exceptionForBindService = e;
+  }
+
   protected List<ServiceConnection> getUnboundServiceConnections() {
     return unboundServiceConnections;
   }
@@ -549,8 +693,17 @@ public class ShadowInstrumentation {
     unbindableActions.add(action);
   }
 
+  void declareComponentUnbindable(ComponentName component) {
+    checkNotNull(component);
+    unbindableComponents.add(component);
+  }
+
   public List<String> getUnbindableActions() {
     return unbindableActions;
+  }
+
+  List<ComponentName> getUnbindableComponents() {
+    return unbindableComponents;
   }
 
   /**
@@ -604,7 +757,8 @@ public class ShadowInstrumentation {
   }
 
   void sendBroadcast(Intent intent, Context context) {
-    sendBroadcastWithPermission(intent, null, context);
+    sendBroadcastWithPermission(
+        intent, /*userHandle=*/ null, /*receiverPermission=*/ null, context);
   }
 
   Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, Context context) {
@@ -627,8 +781,10 @@ public class ShadowInstrumentation {
       Handler scheduler,
       Context context) {
     if (receiver != null) {
-      registeredReceivers.add(
-          new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
+      synchronized (registeredReceivers) {
+        registeredReceivers.add(
+            new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
+      }
     }
     return processStickyIntents(filter, receiver, context);
   }
@@ -655,29 +811,37 @@ public class ShadowInstrumentation {
 
   void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
     boolean found = false;
-    Iterator<Wrapper> iterator = registeredReceivers.iterator();
-    while (iterator.hasNext()) {
-      Wrapper wrapper = iterator.next();
-      if (wrapper.broadcastReceiver == broadcastReceiver) {
-        iterator.remove();
-        found = true;
+
+    synchronized (registeredReceivers) {
+      Iterator<Wrapper> iterator = registeredReceivers.iterator();
+      while (iterator.hasNext()) {
+        Wrapper wrapper = iterator.next();
+        if (wrapper.broadcastReceiver == broadcastReceiver) {
+          iterator.remove();
+          found = true;
+        }
       }
     }
+
     if (!found) {
       throw new IllegalArgumentException("Receiver not registered: " + broadcastReceiver);
     }
   }
 
   void clearRegisteredReceivers() {
-    registeredReceivers.clear();
+    synchronized (registeredReceivers) {
+      registeredReceivers.clear();
+    }
   }
 
   /** @deprecated use PackageManager.queryBroadcastReceivers instead */
   @Deprecated
   boolean hasReceiverForIntent(Intent intent) {
-    for (Wrapper wrapper : registeredReceivers) {
-      if (wrapper.intentFilter.matchAction(intent.getAction())) {
-        return true;
+    synchronized (registeredReceivers) {
+      for (Wrapper wrapper : registeredReceivers) {
+        if (wrapper.intentFilter.matchAction(intent.getAction())) {
+          return true;
+        }
       }
     }
     return false;
@@ -687,17 +851,25 @@ public class ShadowInstrumentation {
   @Deprecated
   List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
     ArrayList<BroadcastReceiver> broadcastReceivers = new ArrayList<>();
-    for (Wrapper wrapper : registeredReceivers) {
-      if (wrapper.intentFilter.matchAction(intent.getAction())) {
-        broadcastReceivers.add(wrapper.getBroadcastReceiver());
+
+    synchronized (registeredReceivers) {
+      for (Wrapper wrapper : registeredReceivers) {
+        if (wrapper.intentFilter.matchAction(intent.getAction())) {
+          broadcastReceivers.add(wrapper.getBroadcastReceiver());
+        }
       }
     }
     return broadcastReceivers;
   }
 
-  /** @return list of {@link Wrapper}s for registered receivers */
-  List<Wrapper> getRegisteredReceivers() {
-    return registeredReceivers;
+  /** @return copy of the list of {@link Wrapper}s for registered receivers */
+  ImmutableList<Wrapper> getRegisteredReceivers() {
+    ImmutableList<Wrapper> copy;
+    synchronized (registeredReceivers) {
+      copy = ImmutableList.copyOf(registeredReceivers);
+    }
+
+    return copy;
   }
 
   int checkPermission(String permission, int pid, int uid) {
@@ -733,10 +905,6 @@ public class ShadowInstrumentation {
     }
   }
 
-  private boolean hasMatchingPermission(String permission1, String permission2) {
-    return permission1 == null ? permission2 == null : permission1.equals(permission2);
-  }
-
   private Handler getMainHandler(Context context) {
     if (mainHandler == null) {
       mainHandler = new Handler(context.getMainLooper());
@@ -764,7 +932,6 @@ public class ShadowInstrumentation {
         @WithType("android.app.IInstrumentationWatcher") Object watcher,
         @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
   }
-
 
   private static final class BroadcastResultHolder {
     private final int resultCode;
@@ -799,6 +966,16 @@ public class ShadowInstrumentation {
         ComponentName componentNameForBindService, IBinder binderForBindService) {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
+    }
+  }
+
+  static final class TargetAndRequestCode {
+    final String target;
+    final int requestCode;
+
+    private TargetAndRequestCode(String target, int requestCode) {
+      this.target = target;
+      this.requestCode = requestCode;
     }
   }
 

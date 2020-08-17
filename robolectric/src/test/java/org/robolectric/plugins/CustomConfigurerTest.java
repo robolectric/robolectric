@@ -11,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Properties;
 import javax.annotation.Nonnull;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -111,6 +112,7 @@ public class CustomConfigurerTest {
     HierarchicalConfigurationStrategy configurationStrategy =
         new HierarchicalConfigurationStrategy(
             new ConfigConfigurer(new PackagePropertiesLoader()),
+            new LooperModeConfigurer(new Properties()),
             new SomeConfigConfigurer());
 
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(

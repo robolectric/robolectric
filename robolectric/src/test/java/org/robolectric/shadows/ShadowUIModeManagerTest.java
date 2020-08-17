@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.app.UiModeManager;
 import android.content.Context;
@@ -31,12 +32,15 @@ public class ShadowUIModeManagerTest {
   @Config(minSdk = M)
   public void testModeSwitch() {
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_UNDEFINED);
+    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(0);
 
-    uiModeManager.enableCarMode(0);
+    uiModeManager.enableCarMode(1);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_CAR);
+    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(1);
 
-    uiModeManager.disableCarMode(0);
+    uiModeManager.disableCarMode(2);
     assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_NORMAL);
+    assertThat(shadowOf(uiModeManager).lastFlags).isEqualTo(2);
   }
 
   private static final int INVALID_NIGHT_MODE = -4242;

@@ -3,6 +3,7 @@ package org.robolectric.android.controller;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -48,6 +49,7 @@ public class FragmentControllerTest {
     final LoginFragment fragment = new LoginFragment();
     FragmentController.of(fragment).create();
 
+    shadowMainLooper().idle();
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
     assertThat(fragment.isAdded()).isTrue();
@@ -59,6 +61,7 @@ public class FragmentControllerTest {
   public void attachedAfterCreate_customizedViewId() {
     final LoginFragment fragment = new LoginFragment();
     FragmentController.of(fragment, CustomizedViewIdLoginActivity.class).create(VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY, null);
+    shadowMainLooper().idle();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -71,6 +74,7 @@ public class FragmentControllerTest {
   public void attachedAfterCreate_customActivity() {
     final LoginFragment fragment = new LoginFragment();
     FragmentController.of(fragment, LoginActivity.class).create();
+    shadowMainLooper().idle();
 
     assertThat(fragment.getView()).isNotNull();
     assertThat(fragment.getActivity()).isNotNull();
@@ -128,6 +132,7 @@ public class FragmentControllerTest {
     Intent intent = new Intent("test_action");
     intent.putExtra("test_key", "test_value");
     FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class, intent).create();
+    shadowMainLooper().idle();
 
     Intent intentInFragment = controller.get().getActivity().getIntent();
     assertThat(intentInFragment.getAction()).isEqualTo("test_action");
@@ -152,6 +157,7 @@ public class FragmentControllerTest {
     final FragmentController<LoginFragment> controller = FragmentController.of(fragment, LoginActivity.class);
 
     controller.create();
+    shadowMainLooper().idle();
     assertThat(controller.get().getView()).isNotNull();
     controller.start().resume();
     assertThat(fragment.isVisible()).isFalse();

@@ -19,6 +19,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioAttributes.AttributeUsage;
 import android.os.Binder;
 import android.os.Build;
+import android.util.LongSparseArray;
+import android.util.LongSparseLongArray;
 import com.android.internal.app.IAppOpsService;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -47,11 +49,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
-  private static final long OP_TIME = 1400000000L;
-  private static final long REJECT_TIME = 0L;
-  private static final int DURATION = 10;
-  private static final int PROXY_UID = 0;
-  private static final String PROXY_PACKAGE = "";
+  protected static final long OP_TIME = 1400000000L;
+  protected static final long REJECT_TIME = 0L;
+  protected static final int DURATION = 10;
+  protected static final int PROXY_UID = 0;
+  protected static final String PROXY_PACKAGE = "";
 
   @RealObject private AppOpsManager realObject;
 
@@ -123,6 +125,24 @@ public class ShadowAppOpsManager {
     return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
+  private int unsafeCheckOpRawNoThrow(int op, int uid, String packageName) {
+    Integer mode = appModeMap.get(getOpMapKey(uid, packageName, op));
+    if (mode == null) {
+      return AppOpsManager.MODE_ALLOWED;
+    }
+    return mode;
+  }
+
+  /**
+   * Like {@link #unsafeCheckOpNoThrow(String, int, String)} but returns the <em>raw</em> mode
+   * associated with the op. Does not throw a security exception, does not translate {@link
+   * AppOpsManager#MODE_FOREGROUND}.
+   */
+  @Implementation(minSdk = Q)
+  public int unsafeCheckOpRawNoThrow(String op, int uid, String packageName) {
+    return unsafeCheckOpRawNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
+  }
+
   @Implementation(minSdk = P)
   @Deprecated // renamed to unsafeCheckOpNoThrow
   protected int checkOpNoThrow(String op, int uid, String packageName) {
@@ -138,11 +158,8 @@ public class ShadowAppOpsManager {
   @Implementation(minSdk = KITKAT)
   @HiddenApi
   public int checkOpNoThrow(int op, int uid, String packageName) {
-    Integer mode = appModeMap.get(getOpMapKey(uid, packageName, op));
-    if (mode == null) {
-      return AppOpsManager.MODE_ALLOWED;
-    }
-    return mode;
+    int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
+    return mode == AppOpsManager.MODE_FOREGROUND ? AppOpsManager.MODE_ALLOWED : mode;
   }
 
   @Implementation(minSdk = KITKAT)
@@ -151,6 +168,12 @@ public class ShadowAppOpsManager {
 
     // Permission check not currently implemented in this shadow.
     return AppOpsManager.MODE_ALLOWED;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected int noteOpNoThrow(int op, int uid, String packageName) {
+    mStoredOps.put(getInternalKey(uid, packageName), op);
+    return checkOpNoThrow(op, uid, packageName);
   }
 
   @Implementation(minSdk = M)
@@ -237,7 +260,7 @@ public class ShadowAppOpsManager {
           ClassParameter.from(long.class, OP_TIME),
           ClassParameter.from(long.class, REJECT_TIME),
           ClassParameter.from(int.class, DURATION));
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.Q) {
       return ReflectionHelpers.callConstructor(
           OpEntry.class,
           ClassParameter.from(int.class, op),
@@ -247,6 +270,34 @@ public class ShadowAppOpsManager {
           ClassParameter.from(int.class, DURATION),
           ClassParameter.from(int.class, PROXY_UID),
           ClassParameter.from(String.class, PROXY_PACKAGE));
+    } else {
+      final long key =
+          AppOpsManager.makeKey(AppOpsManager.UID_STATE_TOP, AppOpsManager.OP_FLAG_SELF);
+
+      final LongSparseLongArray accessTimes = new LongSparseLongArray();
+      accessTimes.put(key, OP_TIME);
+
+      final LongSparseLongArray rejectTimes = new LongSparseLongArray();
+      rejectTimes.put(key, REJECT_TIME);
+
+      final LongSparseLongArray durations = new LongSparseLongArray();
+      durations.put(key, DURATION);
+
+      final LongSparseLongArray proxyUids = new LongSparseLongArray();
+      proxyUids.put(key, PROXY_UID);
+
+      final LongSparseArray<String> proxyPackages = new LongSparseArray<>();
+      proxyPackages.put(key, PROXY_PACKAGE);
+
+      return new OpEntry(
+          op,
+          false,
+          AppOpsManager.MODE_ALLOWED,
+          accessTimes,
+          rejectTimes,
+          durations,
+          proxyUids,
+          proxyPackages);
     }
   }
 

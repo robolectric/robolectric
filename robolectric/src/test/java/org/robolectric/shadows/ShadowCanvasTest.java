@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowCanvas.RoundRectPaintHistoryEvent;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowCanvasTest {
@@ -49,7 +50,8 @@ public class ShadowCanvasTest {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new Rect(5,6,7,8), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg at (5,6) with height=2 and width=2 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg at (5,6) with height=2 and width=2 taken from"
+                     + " Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
   }
 
   @Test
@@ -57,7 +59,8 @@ public class ShadowCanvasTest {
     Canvas canvas = new Canvas(targetBitmap);
     canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new RectF(5.0f,6.0f,7.5f,8.5f), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg at (5.0,6.0) with height=2.5 and width=2.5 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg at (5.0,6.0) with height=2.5 and width=2.5 taken"
+                     + " from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
   }
 
   @Test
@@ -66,11 +69,13 @@ public class ShadowCanvasTest {
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n" +
-        "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]", shadowOf(canvas).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n"
+                     + "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={},"
+                     + " post=[]]", shadowOf(canvas).getDescription());
 
-    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n" +
-        "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]", shadowOf(targetBitmap).getDescription());
+    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n"
+                     + "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={},"
+                     + " post=[]]", shadowOf(targetBitmap).getDescription());
   }
 
   @Test
@@ -79,8 +84,9 @@ public class ShadowCanvasTest {
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
     canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
 
-    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n" +
-        "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]", ShadowCanvas.visualize(canvas));
+    assertEquals("Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={}, post=[]]\n"
+                     + "Bitmap for file:/an/image.jpg transformed by Matrix[pre=[], set={},"
+                     + " post=[]]", ShadowCanvas.visualize(canvas));
 
   }
 
@@ -154,8 +160,13 @@ public class ShadowCanvasTest {
     assertEquals("Path " + shadowOf(path1).getPoints().toString() + "\n"
         + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(canvas).getDescription());
 
-    assertEquals("Path " + shadowOf(path1).getPoints().toString() + "\n"
-        + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(targetBitmap).getDescription());
+    assertEquals(
+        "Path "
+            + shadowOf(path1).getPoints().toString()
+            + "\n"
+            + "Path "
+            + shadowOf(path2).getPoints().toString(),
+        shadowOf(targetBitmap).getDescription());
   }
 
   @Test
@@ -274,12 +285,12 @@ public class ShadowCanvasTest {
     assertThat(shadowCanvas.getDrawnCircle(0).centerX).isEqualTo(1.0f);
     assertThat(shadowCanvas.getDrawnCircle(0).centerY).isEqualTo(2.0f);
     assertThat(shadowCanvas.getDrawnCircle(0).radius).isEqualTo(3.0f);
-    assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameAs(paint0);
+    assertThat(shadowCanvas.getDrawnCircle(0).paint).isSameInstanceAs(paint0);
 
     assertThat(shadowCanvas.getDrawnCircle(1).centerX).isEqualTo(4.0f);
     assertThat(shadowCanvas.getDrawnCircle(1).centerY).isEqualTo(5.0f);
     assertThat(shadowCanvas.getDrawnCircle(1).radius).isEqualTo(6.0f);
-    assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameAs(paint1);
+    assertThat(shadowCanvas.getDrawnCircle(1).paint).isSameInstanceAs(paint1);
   }
 
   @Test
@@ -297,13 +308,13 @@ public class ShadowCanvasTest {
     assertThat(shadowCanvas.getDrawnArc(0).startAngle).isEqualTo(1f);
     assertThat(shadowCanvas.getDrawnArc(0).sweepAngle).isEqualTo(2f);
     assertThat(shadowCanvas.getDrawnArc(0).useCenter).isTrue();
-    assertThat(shadowCanvas.getDrawnArc(0).paint).isSameAs(paint0);
+    assertThat(shadowCanvas.getDrawnArc(0).paint).isSameInstanceAs(paint0);
 
     assertThat(shadowCanvas.getDrawnArc(1).oval).isEqualTo(oval1);
     assertThat(shadowCanvas.getDrawnArc(1).startAngle).isEqualTo(3f);
     assertThat(shadowCanvas.getDrawnArc(1).sweepAngle).isEqualTo(4f);
     assertThat(shadowCanvas.getDrawnArc(1).useCenter).isFalse();
-    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameAs(paint1);
+    assertThat(shadowCanvas.getDrawnArc(1).paint).isSameInstanceAs(paint1);
   }
 
   @Test
@@ -322,6 +333,15 @@ public class ShadowCanvasTest {
     canvas.drawRect(1f, 2f, 3f, 4f, new Paint());
     ShadowCanvas shadowCanvas = shadowOf(canvas);
     assertThat(shadowCanvas.getRectPaintHistoryCount()).isEqualTo(2);
+  }
+
+  @Test
+  public void getRoundRectHistoryCount_shouldReturnTotalNumberOfDrawRoundRectEvents() {
+    Canvas canvas = new Canvas();
+    canvas.drawRoundRect(new RectF(), 1f, 1f, new Paint());
+    canvas.drawRoundRect(new RectF(), 1f, 1f, new Paint());
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+    assertThat(shadowCanvas.getRoundRectPaintHistoryCount()).isEqualTo(2);
   }
 
   @Test
@@ -419,5 +439,61 @@ public class ShadowCanvasTest {
     assertThat(shadowCanvas.getDrawnRect(1).bottom).isEqualTo(8f);
     assertThat(shadowCanvas.getDrawnRect(1).rect).isEqualTo(rect1);
     assertThat(shadowCanvas.getDrawnRect(1).paint.getColor()).isEqualTo(Color.BLACK);
+  }
+
+  @Test
+  public void drawRoundRect_shouldRecordRoundRectHistoryEvents() {
+    Canvas canvas = new Canvas();
+    Paint paint0 = new Paint();
+    paint0.setColor(Color.WHITE);
+    Paint paint1 = new Paint();
+    paint1.setColor(Color.BLACK);
+    RectF rect0 = new RectF(0f, 0f, 5f, 5f);
+    RectF rect1 = new RectF(5f, 5f, 15f, 15f);
+
+    canvas.drawRoundRect(rect0, 1f, 2f, paint0);
+    canvas.drawRoundRect(rect1, 2f, 2f, paint1);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    RoundRectPaintHistoryEvent roundRectPaintHistoryEvent = shadowCanvas.getDrawnRoundRect(0);
+    assertThat(roundRectPaintHistoryEvent.left).isEqualTo(0f);
+    assertThat(roundRectPaintHistoryEvent.top).isEqualTo(0f);
+    assertThat(roundRectPaintHistoryEvent.right).isEqualTo(5f);
+    assertThat(roundRectPaintHistoryEvent.bottom).isEqualTo(5f);
+    assertThat(roundRectPaintHistoryEvent.rx).isEqualTo(1f);
+    assertThat(roundRectPaintHistoryEvent.ry).isEqualTo(2f);
+    assertThat(roundRectPaintHistoryEvent.rect).isEqualTo(rect0);
+    assertThat(roundRectPaintHistoryEvent.paint.getColor()).isEqualTo(Color.WHITE);
+
+    roundRectPaintHistoryEvent = shadowCanvas.getDrawnRoundRect(1);
+    assertThat(roundRectPaintHistoryEvent.left).isEqualTo(5f);
+    assertThat(roundRectPaintHistoryEvent.top).isEqualTo(5f);
+    assertThat(roundRectPaintHistoryEvent.right).isEqualTo(15f);
+    assertThat(roundRectPaintHistoryEvent.bottom).isEqualTo(15f);
+    assertThat(roundRectPaintHistoryEvent.rx).isEqualTo(2f);
+    assertThat(roundRectPaintHistoryEvent.ry).isEqualTo(2f);
+    assertThat(roundRectPaintHistoryEvent.rect).isEqualTo(rect1);
+    assertThat(roundRectPaintHistoryEvent.paint.getColor()).isEqualTo(Color.BLACK);
+  }
+
+  @Test
+  public void getLastDrawnRoundRect_getsLastRecordedRoundRectHistoryEvent() {
+    Canvas canvas = new Canvas();
+    Paint paint0 = new Paint();
+    paint0.setColor(Color.WHITE);
+    RectF rect0 = new RectF(0f, 0f, 5f, 5f);
+
+    canvas.drawRoundRect(rect0, 1f, 2f, paint0);
+
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+    RoundRectPaintHistoryEvent roundRectPaintHistoryEvent = shadowCanvas.getLastDrawnRoundRect();
+    assertThat(roundRectPaintHistoryEvent.left).isEqualTo(0f);
+    assertThat(roundRectPaintHistoryEvent.top).isEqualTo(0f);
+    assertThat(roundRectPaintHistoryEvent.right).isEqualTo(5f);
+    assertThat(roundRectPaintHistoryEvent.bottom).isEqualTo(5f);
+    assertThat(roundRectPaintHistoryEvent.rx).isEqualTo(1f);
+    assertThat(roundRectPaintHistoryEvent.ry).isEqualTo(2f);
+    assertThat(roundRectPaintHistoryEvent.rect).isEqualTo(rect0);
+    assertThat(roundRectPaintHistoryEvent.paint.getColor()).isEqualTo(Color.WHITE);
   }
 }

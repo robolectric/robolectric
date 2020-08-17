@@ -3,24 +3,33 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
 import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.IDevicePolicyManager;
+import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -29,7 +38,9 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Process;
+import android.os.UserHandle;
 import android.text.TextUtils;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,24 +95,33 @@ public class ShadowDevicePolicyManager {
   private long maximumTimeToLock = 0;
   private boolean cameraDisabled;
   private boolean isActivePasswordSufficient;
+  @PasswordComplexity private int passwordComplexity;
 
   private int wipeCalled;
   private int storageEncryptionStatus;
+  private int permissionPolicy;
   private boolean storageEncryptionRequested;
   private final Set<String> wasHiddenPackages = new HashSet<>();
   private final Set<String> accountTypesWithManagementDisabled = new HashSet<>();
   private final Set<String> systemAppsEnabled = new HashSet<>();
   private final Set<String> uninstallBlockedPackages = new HashSet<>();
   private final Set<String> suspendedPackages = new HashSet<>();
+  private final Set<String> affiliationIds = new HashSet<>();
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> longSupportMessageMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
-  private String[] lockTaskPackages = new String[0];
+  private final List<String> lockTaskPackages = new ArrayList<>();
   private Context context;
   private ApplicationPackageManager applicationPackageManager;
+  private SystemUpdatePolicy policy;
+  private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
+  private boolean isDeviceProvisioned;
+  private boolean isDeviceProvisioningConfigApplied;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -252,8 +272,17 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected boolean isUninstallBlocked(ComponentName admin, String packageName) {
-    enforceActiveAdmin(admin);
+  protected boolean isUninstallBlocked(@Nullable ComponentName admin, String packageName) {
+    if (admin == null) {
+      // Starting from LOLLIPOP_MR1, the behavior of this API is changed such that passing null as
+      // the admin parameter will return if any admin has blocked the uninstallation. Before L MR1,
+      // passing null will cause a NullPointerException to be raised.
+      if (Build.VERSION.SDK_INT < LOLLIPOP_MR1) {
+        throw new NullPointerException("ComponentName is null");
+      }
+    } else {
+      enforceActiveAdmin(admin);
+    }
     return uninstallBlockedPackages.contains(packageName);
   }
 
@@ -276,8 +305,8 @@ public class ShadowDevicePolicyManager {
   }
 
   /**
-   * Returns the human-readable name of the profile owner for a user if set using
-   * {@link #setProfileOwnerName}, otherwise `null`.
+   * Returns the human-readable name of the profile owner for a user if set using {@link
+   * #setProfileOwnerName}, otherwise null.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected String getProfileOwnerNameAsUser(int userId) {
@@ -686,6 +715,11 @@ public class ShadowDevicePolicyManager {
       return false;
     }
     lastSetPassword = password;
+    boolean secure = !password.isEmpty();
+    KeyguardManager keyguardManager =
+        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    shadowOf(keyguardManager).setIsDeviceSecure(secure);
+    shadowOf(keyguardManager).setIsKeyguardSecure(secure);
     return true;
   }
 
@@ -715,6 +749,11 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
     passwordResetTokens.put(admin, token);
     componentsWithActivatedTokens.remove(admin);
+    KeyguardManager keyguardManager =
+        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    if (!keyguardManager.isDeviceSecure()) {
+      activateResetToken(admin);
+    }
     return true;
   }
 
@@ -919,6 +958,43 @@ public class ShadowDevicePolicyManager {
     return isActivePasswordSufficient;
   }
 
+  /** Sets whether the device is provisioned. */
+  public void setDeviceProvisioned(boolean isProvisioned) {
+    isDeviceProvisioned = isProvisioned;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected boolean isDeviceProvisioned() {
+    return isDeviceProvisioned;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected void setDeviceProvisioningConfigApplied() {
+    isDeviceProvisioningConfigApplied = true;
+  }
+
+  @Implementation(minSdk = O)
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.MANAGE_USERS)
+  protected boolean isDeviceProvisioningConfigApplied() {
+    return isDeviceProvisioningConfigApplied;
+  }
+
+  /** Sets the password complexity. */
+  public void setPasswordComplexity(@PasswordComplexity int passwordComplexity) {
+    this.passwordComplexity = passwordComplexity;
+  }
+
+  @PasswordComplexity
+  @Implementation(minSdk = Q)
+  protected int getPasswordComplexity() {
+    return passwordComplexity;
+  }
+
   private boolean passwordMeetsRequirements(String password) {
     int digit = 0;
     int alpha = 0;
@@ -1045,13 +1121,44 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   protected void setLockTaskPackages(@NonNull ComponentName admin, String[] packages) {
     enforceDeviceOwnerOrProfileOwner(admin);
-    lockTaskPackages = packages.clone();
+    lockTaskPackages.clear();
+    Collections.addAll(lockTaskPackages, packages);
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected String[] getLockTaskPackages(@NonNull ComponentName admin) {
     enforceDeviceOwnerOrProfileOwner(admin);
-    return lockTaskPackages.clone();
+    return lockTaskPackages.toArray(new String[0]);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected boolean isLockTaskPermitted(@NonNull String pkg) {
+    return lockTaskPackages.contains(pkg);
+  }
+
+  @Implementation(minSdk = O)
+  protected void setAffiliationIds(@NonNull ComponentName admin, @NonNull Set<String> ids) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    affiliationIds.clear();
+    affiliationIds.addAll(ids);
+  }
+
+  @Implementation(minSdk = O)
+  protected Set<String> getAffiliationIds(@NonNull ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return affiliationIds;
+  }
+
+  @Implementation(minSdk = M)
+  protected void setPermissionPolicy(@NonNull ComponentName admin, int policy) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    permissionPolicy = policy;
+  }
+
+  @Implementation(minSdk = M)
+  protected int getPermissionPolicy(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return permissionPolicy;
   }
 
   /**
@@ -1071,5 +1178,94 @@ public class ShadowDevicePolicyManager {
     } else {
       policyGrantedSet.add(usesPolicy);
     }
+  }
+
+  @Implementation(minSdk = M)
+  protected SystemUpdatePolicy getSystemUpdatePolicy() {
+    return policy;
+  }
+
+  @Implementation(minSdk = M)
+  protected void setSystemUpdatePolicy(ComponentName admin, SystemUpdatePolicy policy) {
+    this.policy = policy;
+  }
+
+  /**
+   * Sets the system update policy.
+   *
+   * @see #setSystemUpdatePolicy(ComponentName, SystemUpdatePolicy)
+   */
+  public void setSystemUpdatePolicy(SystemUpdatePolicy policy) {
+    setSystemUpdatePolicy(null, policy);
+  }
+
+  /**
+   * Set the list of target users that the calling device or profile owner can use when calling
+   * {@link #bindDeviceAdminServiceAsUser}.
+   *
+   * @see #getBindDeviceAdminTargetUsers(ComponentName)
+   */
+  public void setBindDeviceAdminTargetUsers(List<UserHandle> bindDeviceAdminTargetUsers) {
+    this.bindDeviceAdminTargetUsers = bindDeviceAdminTargetUsers;
+  }
+
+  /**
+   * Returns the list of target users that the calling device or profile owner can use when calling
+   * {@link #bindDeviceAdminServiceAsUser}.
+   *
+   * @see #setBindDeviceAdminTargetUsers(List)
+   */
+  @Implementation(minSdk = O)
+  protected List<UserHandle> getBindDeviceAdminTargetUsers(ComponentName admin) {
+    return bindDeviceAdminTargetUsers;
+  }
+
+  /**
+   * Bind to the same package in another user.
+   *
+   * <p>This validates that the targetUser is one from {@link
+   * #getBindDeviceAdminTargetUsers(ComponentName)} but does not actually bind to a different user,
+   * instead binding to the same user.
+   *
+   * <p>It also does not validate the service being bound to.
+   */
+  @Implementation(minSdk = O)
+  protected boolean bindDeviceAdminServiceAsUser(
+      ComponentName admin,
+      Intent serviceIntent,
+      ServiceConnection conn,
+      int flags,
+      UserHandle targetUser) {
+    if (!getBindDeviceAdminTargetUsers(admin).contains(targetUser)) {
+      throw new SecurityException("Not allowed to bind to target user id");
+    }
+
+    return context.bindServiceAsUser(serviceIntent, conn, flags, targetUser);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setShortSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    shortSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getShortSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return shortSupportMessageMap.get(admin);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setLongSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    longSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getLongSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return longSupportMessageMap.get(admin);
   }
 }

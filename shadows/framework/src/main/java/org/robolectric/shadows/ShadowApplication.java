@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
+import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.ActivityThread;
 import android.app.Application;
@@ -18,7 +20,7 @@ import android.os.PowerManager;
 import android.widget.ListPopupWindow;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +30,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
+import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.reflector.Reflector;
 
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
@@ -48,9 +53,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   private ListPopupWindow latestListPopupWindow;
 
   /**
-   * @deprecated Use
-   *     `shadowOf({@link androidx.test.core.app.ApplicationProvider#getApplicationContext})`
-   *     instead.
+   * @deprecated Use {@code shadowOf({@link ApplicationProvider#getApplicationContext()})} instead.
    */
   @Deprecated
   public static ShadowApplication getInstance() {
@@ -66,6 +69,15 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   public static void runBackgroundTasks() {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
+  }
+
+  /** Configures the value to be returned by {@link Application#getProcessName()}. */
+  public static void setProcessName(String processName) {
+    // No need for a @Resetter because the whole ActivityThread is reset before each test.
+    _ActivityThread_ activityThread =
+        Reflector.reflector(_ActivityThread_.class, ShadowActivityThread.currentActivityThread());
+    Reflector.reflector(_AppBindData_.class, activityThread.getBoundApplication())
+        .setProcessName(processName);
   }
 
   /**
@@ -98,10 +110,20 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @return  Background scheduler.
    */
   public Scheduler getBackgroundThreadScheduler() {
-    Preconditions.checkState(
-        !ShadowBaseLooper.useRealisticLooper(),
-        "cannot use Scheduler APIs when using realistic looper");
+    assertLooperMode(LEGACY);
     return backgroundScheduler;
+  }
+
+  /**
+   *  Sets whether or not calls to unbindService should call onServiceDisconnected().
+   *
+   * The default for this is currently {@code true} because that is the historical behavior.
+   * However, this does not correctly mirror Android's actual behavior. This value will eventually
+   * default to {@code false} once users have had a chance to migrate, and eventually the option
+   * will be removed altogether.
+   */
+  public void setUnbindServiceCallsOnServiceDisconnected(boolean flag) {
+    getShadowInstrumentation().setUnbindServiceCallsOnServiceDisconnected(flag);
   }
 
   public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
@@ -126,6 +148,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     getShadowInstrumentation().setUnbindServiceShouldThrowIllegalArgument(flag);
   }
 
+  /**
+   * Configures the ShadowApplication so that calls to bindService will throw the given
+   * SecurityException.
+   */
+  public void setThrowInBindService(SecurityException e) {
+    getShadowInstrumentation().setThrowInBindService(e);
+  }
+
   public List<ServiceConnection> getUnboundServiceConnections() {
     return getShadowInstrumentation().getUnboundServiceConnections();
   }
@@ -142,14 +172,12 @@ public class ShadowApplication extends ShadowContextWrapper {
     return getShadowInstrumentation().getReceiversForIntent(intent);
   }
 
-  /**
-   * @return list of {@link Wrapper}s for registered receivers
-   */
-  public List<Wrapper> getRegisteredReceivers() {
+  /** @return list of {@link Wrapper}s for registered receivers */
+  public ImmutableList<Wrapper> getRegisteredReceivers() {
     return getShadowInstrumentation().getRegisteredReceivers();
   }
 
-  /** Removes all registered receivers. */
+  /** Clears the list of {@link Wrapper}s for registered receivers */
   public void clearRegisteredReceivers() {
     getShadowInstrumentation().clearRegisteredReceivers();
   }
@@ -192,6 +220,14 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   public void declareActionUnbindable(String action) {
     getShadowInstrumentation().declareActionUnbindable(action);
+  }
+
+  /**
+   * Configures the ShadowApplication so that bindService calls for the given ComponentName return
+   * false and do not call onServiceConnected.
+   */
+  public void declareComponentUnbindable(ComponentName component) {
+    getShadowInstrumentation().declareComponentUnbindable(component);
   }
 
   public PowerManager.WakeLock getLatestWakeLock() {

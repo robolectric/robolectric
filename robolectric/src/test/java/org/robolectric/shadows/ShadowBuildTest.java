@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -38,6 +39,12 @@ public class ShadowBuildTest {
   }
 
   @Test
+  public void setProduct() {
+    ShadowBuild.setProduct("robo_product");
+    assertThat(Build.PRODUCT).isEqualTo("robo_product");
+  }
+
+  @Test
   public void setVersionRelease() {
     ShadowBuild.setVersionRelease("robo_release");
     assertThat(VERSION.RELEASE).isEqualTo("robo_release");
@@ -50,6 +57,13 @@ public class ShadowBuildTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void setVersionSecurityPatch() {
+    ShadowBuild.setVersionSecurityPatch("2019-02-05");
+    assertThat(VERSION.SECURITY_PATCH).isEqualTo("2019-02-05");
+  }
+
+  @Test
   public void setModel() {
     ShadowBuild.setModel("robo_model");
     assertThat(Build.MODEL).isEqualTo("robo_model");
@@ -59,6 +73,18 @@ public class ShadowBuildTest {
   public void setManufacturer() {
     ShadowBuild.setManufacturer("robo_manufacturer");
     assertThat(Build.MANUFACTURER).isEqualTo("robo_manufacturer");
+  }
+
+  @Test
+  public void setBrand() {
+    ShadowBuild.setBrand("robo_brand");
+    assertThat(Build.BRAND).isEqualTo("robo_brand");
+  }
+
+  @Test
+  public void setHardware() {
+    ShadowBuild.setHardware("robo_hardware");
+    assertThat(Build.HARDWARE).isEqualTo("robo_hardware");
   }
 
   @Test

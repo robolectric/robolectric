@@ -2,13 +2,19 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -109,7 +115,8 @@ public class ShadowCameraManagerTest {
   public void testGetCameraCharacteristicsRecognizedCameraId() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
-    assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0)).isSameAs(characteristics);
+    assertThat(cameraManager.getCameraCharacteristics(CAMERA_ID_0))
+        .isSameInstanceAs(characteristics);
   }
 
   @Test
@@ -162,5 +169,75 @@ public class ShadowCameraManagerTest {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
     cameraManager.setTorchMode(CAMERA_ID_0, ENABLE);
     assertThat(shadowOf(cameraManager).getTorchMode(CAMERA_ID_0)).isEqualTo(ENABLE);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void openCamera() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    CameraStateCallback mockCallback = mock(CameraStateCallback.class);
+    cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler());
+    shadowOf(Looper.myLooper()).idle();
+    verify(mockCallback).onOpened(any(CameraDevice.class));
+  }
+
+  @Test
+  public void testRemoveCameraNullCameraId() {
+    try {
+      shadowOf(cameraManager).removeCamera(null);
+      fail();
+    } catch (NullPointerException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void testRemoveCameraNoExistingId() {
+    try {
+      shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void testRemoveCameraAddCameraSucceedsAfterwards() {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    // Repeated call to add CAMERA_ID_0 succeeds and does not throw IllegalArgumentException.
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+  }
+
+  @Test
+  public void testRemoveCameraRemovedCameraIsNotInCameraIdList() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_1, characteristics);
+
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    assertThat(cameraManager.getCameraIdList()).hasLength(1);
+    assertThat(cameraManager.getCameraIdList()[0]).isEqualTo(CAMERA_ID_1);
+  }
+
+  private static class CameraStateCallback extends CameraDevice.StateCallback {
+
+    @Override
+    public void onOpened(CameraDevice camera) {
+      assertThat(camera.getId()).isEqualTo(CAMERA_ID_0);
+    }
+
+    @Override
+    public void onDisconnected(CameraDevice camera) {
+      fail();
+    }
+
+    @Override
+    public void onError(CameraDevice camera, int error) {
+      fail();
+    }
   }
 }

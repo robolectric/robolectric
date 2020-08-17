@@ -112,7 +112,7 @@ public class ConfigTest {
 
     Config withMore = overlay(withString,
         new Builder().setShadows(new Class[]{Map.class, String.class}).build());
-    assertThat(withMore.shadows()).asList().containsAllOf(String.class, Map.class, String.class);
+    assertThat(withMore.shadows()).asList().containsAtLeast(String.class, Map.class, String.class);
   }
 
   @Test
@@ -158,7 +158,8 @@ public class ConfigTest {
       fail();
     } catch (IllegalArgumentException e) {
       assertThat(e.getMessage())
-          .isEqualTo("sdk and minSdk/maxSdk may not be specified together (sdk=[16, 17, 18], minSdk=16, maxSdk=18)");
+          .isEqualTo("sdk and minSdk/maxSdk may not be specified together (sdk=[16, 17, 18],"
+                         + " minSdk=16, maxSdk=18)");
     }
   }
 

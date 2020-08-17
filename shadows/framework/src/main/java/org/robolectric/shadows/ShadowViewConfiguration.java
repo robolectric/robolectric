@@ -23,10 +23,12 @@ package org.robolectric.shadows;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
@@ -64,7 +66,7 @@ public class ShadowViewConfiguration {
   private int pagingTouchSlop;
   private int doubleTapSlop;
   private int windowTouchSlop;
-  private boolean hasPermanentMenuKey = false;
+  private static boolean hasPermanentMenuKey = true;
 
   @RealObject
   private ViewConfiguration realViewConfiguration;
@@ -89,6 +91,11 @@ public class ShadowViewConfiguration {
     ViewConfiguration viewConfiguration = Shadow.newInstanceOf(ViewConfiguration.class);
     ShadowViewConfiguration shadowViewConfiguration = Shadow.extract(viewConfiguration);
     shadowViewConfiguration.setup(context);
+
+    if (RuntimeEnvironment.getApiLevel() >= android.os.Build.VERSION_CODES.Q) {
+      ReflectionHelpers.setField(viewConfiguration, "mConstructedWithContext", true);
+    }
+
     return viewConfiguration;
   }
 
@@ -232,7 +239,7 @@ public class ShadowViewConfiguration {
     return hasPermanentMenuKey;
   }
 
-  public void setHasPermanentMenuKey(boolean value) {
-    this.hasPermanentMenuKey = value;
+  public static void setHasPermanentMenuKey(boolean value) {
+    hasPermanentMenuKey = value;
   }
 }

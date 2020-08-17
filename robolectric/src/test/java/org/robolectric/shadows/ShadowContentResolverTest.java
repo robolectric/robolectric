@@ -1,10 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.mockito.Matchers.same;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -47,6 +52,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
@@ -124,32 +130,59 @@ public class ShadowContentResolverTest {
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
     assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getInsertStatements().get(0).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
-    assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo")).isEqualTo("bar");
+    assertThat(
+            shadowContentResolver
+                .getInsertStatements()
+                .get(0)
+                .getContentValues()
+                .getAsString("foo"))
+        .isEqualTo("bar");
 
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
     contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
     assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(2);
-    assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello")).isEqualTo("world");
+    assertThat(
+            shadowContentResolver
+                .getInsertStatements()
+                .get(1)
+                .getContentValues()
+                .getAsString("hello"))
+        .isEqualTo("world");
   }
 
   @Test
   public void insert_shouldTrackUpdateStatements() {
     ContentValues contentValues = new ContentValues();
     contentValues.put("foo", "bar");
-    contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
+    contentResolver.update(
+        EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] {"awesome"});
     assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(1);
     assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo")).isEqualTo("bar");
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere()).isEqualTo("robolectric");
-    assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs()).isEqualTo(new String[]{"awesome"});
+    assertThat(
+            shadowContentResolver
+                .getUpdateStatements()
+                .get(0)
+                .getContentValues()
+                .getAsString("foo"))
+        .isEqualTo("bar");
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere())
+        .isEqualTo("robolectric");
+    assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs())
+        .isEqualTo(new String[] {"awesome"});
 
     contentValues = new ContentValues();
     contentValues.put("hello", "world");
     contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
     assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(2);
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
-    assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello")).isEqualTo("world");
+    assertThat(
+            shadowContentResolver
+                .getUpdateStatements()
+                .get(1)
+                .getContentValues()
+                .getAsString("hello"))
+        .isEqualTo("world");
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere()).isNull();
     assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs()).isNull();
   }
@@ -188,13 +221,15 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getContentProvider()).isNull();
     assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
-    assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo("5");
+    assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0])
+        .isEqualTo("5");
 
     assertThat(contentResolver.delete(uri21, "foo", new String[]{"bar"})).isEqualTo(1);
     assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(2);
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri()).isEqualTo(uri21);
     assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere()).isEqualTo("foo");
-    assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0]).isEqualTo("bar");
+    assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0])
+        .isEqualTo("bar");
   }
 
   @Test
@@ -202,7 +237,8 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.query(null, null, null, null, null)).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
+    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null))
+        .isSameInstanceAs(cursor);
   }
 
   @Test
@@ -210,7 +246,10 @@ public class ShadowContentResolverTest {
     assertThat(shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isNull();
     BaseCursor cursor = new BaseCursor();
     shadowContentResolver.setCursor(cursor);
-    assertThat((BaseCursor) shadowContentResolver.query(null, null, null, null, null, new CancellationSignal())).isSameAs(cursor);
+    assertThat(
+            (BaseCursor)
+                shadowContentResolver.query(null, null, null, null, null, new CancellationSignal()))
+        .isSameInstanceAs(cursor);
   }
 
   @Test
@@ -223,8 +262,10 @@ public class ShadowContentResolverTest {
     shadowContentResolver.setCursor(uri21, cursor21);
     shadowContentResolver.setCursor(uri22, cursor22);
 
-    assertThat((BaseCursor) shadowContentResolver.query(uri21, null, null, null, null)).isSameAs(cursor21);
-    assertThat((BaseCursor) shadowContentResolver.query(uri22, null, null, null, null)).isSameAs(cursor22);
+    assertThat((BaseCursor) shadowContentResolver.query(uri21, null, null, null, null))
+        .isSameInstanceAs(cursor21);
+    assertThat((BaseCursor) shadowContentResolver.query(uri22, null, null, null, null))
+        .isSameInstanceAs(cursor22);
   }
 
   @Test
@@ -247,6 +288,29 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void query_shouldKnowWhatIsInBundle() {
+    String[] projection = {};
+    String selection = "select";
+    String[] selectionArgs = {};
+    String sortOrder = "order";
+    Bundle queryArgs = new Bundle();
+    queryArgs.putString(QUERY_ARG_SQL_SELECTION, selection);
+    queryArgs.putStringArray(QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs);
+    queryArgs.putString(QUERY_ARG_SQL_SORT_ORDER, sortOrder);
+
+    QueryParamTrackingCursor testCursor = new QueryParamTrackingCursor();
+    shadowContentResolver.setCursor(testCursor);
+    Cursor cursor = shadowContentResolver.query(uri21, projection, queryArgs, null);
+    assertThat((QueryParamTrackingCursor) cursor).isEqualTo(testCursor);
+    assertThat(testCursor.uri).isEqualTo(uri21);
+    assertThat(testCursor.projection).isEqualTo(projection);
+    assertThat(testCursor.selection).isEqualTo(selection);
+    assertThat(testCursor.selectionArgs).isEqualTo(selectionArgs);
+    assertThat(testCursor.sortOrder).isEqualTo(sortOrder);
+  }
+
+  @Test
   public void acquireUnstableProvider_shouldDefaultToNull() {
     assertThat(contentResolver.acquireUnstableProvider(uri21)).isNull();
   }
@@ -256,14 +320,16 @@ public class ShadowContentResolverTest {
     ContentProvider cp = mock(ContentProvider.class);
     ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
     final Uri uri = Uri.parse("content://" + AUTHORITY);
-    assertThat(contentResolver.acquireUnstableProvider(uri)).isSameAs(cp.getIContentProvider());
+    assertThat(contentResolver.acquireUnstableProvider(uri))
+        .isSameInstanceAs(cp.getIContentProvider());
   }
 
   @Test
   public void acquireUnstableProvider_shouldReturnWithString() {
     ContentProvider cp = mock(ContentProvider.class);
     ShadowContentResolver.registerProviderInternal(AUTHORITY, cp);
-    assertThat(contentResolver.acquireUnstableProvider(AUTHORITY)).isSameAs(cp.getIContentProvider());
+    assertThat(contentResolver.acquireUnstableProvider(AUTHORITY))
+        .isSameInstanceAs(cp.getIContentProvider());
   }
 
   @Test
@@ -317,6 +383,22 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void openInputStream_returnsNewStreamEachTimeFromRegisteredSupplier() throws Exception {
+    shadowContentResolver.registerInputStreamSupplier(
+        uri21, () -> new ByteArrayInputStream("ourStream".getBytes(UTF_8)));
+    InputStream inputStream1 = contentResolver.openInputStream(uri21);
+    byte[] data1 = new byte[9];
+    inputStream1.read(data1);
+    inputStream1.close();
+    InputStream inputStream2 = contentResolver.openInputStream(uri21);
+    byte[] data2 = new byte[9];
+    inputStream2.read(data2);
+    inputStream2.close();
+    assertThat(new String(data1, UTF_8)).isEqualTo("ourStream");
+    assertThat(new String(data2, UTF_8)).isEqualTo("ourStream");
+  }
+
+  @Test
   public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
     assertThat(contentResolver.openOutputStream(uri21)).isInstanceOf(OutputStream.class);
   }
@@ -348,6 +430,49 @@ public class ShadowContentResolverTest {
 
     contentResolver.openOutputStream(uri21).write(5);
     assertThat(callCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void openOutputStream_shouldReturnNewStreamFromRegisteredSupplier() throws Exception {
+    final Uri uri = Uri.parse("content://registeredProvider/path");
+
+    AtomicInteger streamCreateCount = new AtomicInteger();
+    shadowOf(contentResolver)
+        .registerOutputStreamSupplier(
+            uri,
+            () -> {
+              streamCreateCount.incrementAndGet();
+              AtomicBoolean isClosed = new AtomicBoolean();
+              isClosed.set(false);
+              OutputStream outputStream =
+                  new OutputStream() {
+                    @Override
+                    public void close() {
+                      isClosed.set(true);
+                    }
+
+                    @Override
+                    public void write(int arg0) throws IOException {
+                      if (isClosed.get()) {
+                        throw new IOException();
+                      }
+                    }
+
+                    @Override
+                    public String toString() {
+                      return "outputstream for " + uri;
+                    }
+                  };
+              return outputStream;
+            });
+
+    assertThat(streamCreateCount.get()).isEqualTo(0);
+    OutputStream outputStream1 = contentResolver.openOutputStream(uri);
+    outputStream1.close();
+    assertThat(streamCreateCount.get()).isEqualTo(1);
+
+    contentResolver.openOutputStream(uri).write(5);
+    assertThat(streamCreateCount.get()).isEqualTo(2);
   }
 
   @Test
@@ -663,6 +788,27 @@ public class ShadowContentResolverTest {
   }
 
   @Test
+  public void shouldThrowConfiguredExceptionWhenRegisteringContentObservers() {
+    ShadowContentResolver scr = shadowOf(contentResolver);
+    scr.setRegisterContentProviderException(EXTERNAL_CONTENT_URI, new SecurityException());
+    try {
+      contentResolver.registerContentObserver(
+          EXTERNAL_CONTENT_URI, true, new TestContentObserver(null));
+      fail();
+    } catch (SecurityException expected) {}
+  }
+
+  @Test
+  public void shouldClearConfiguredExceptionForRegisteringContentObservers() {
+    ShadowContentResolver scr = shadowOf(contentResolver);
+    scr.setRegisterContentProviderException(EXTERNAL_CONTENT_URI, new SecurityException());
+    scr.clearRegisterContentProviderException(EXTERNAL_CONTENT_URI);
+    // Should not throw the SecurityException.
+    contentResolver.registerContentObserver(
+        EXTERNAL_CONTENT_URI, true, new TestContentObserver(null));
+  }
+
+  @Test
   public void shouldRegisterContentObservers() {
     TestContentObserver co = new TestContentObserver(null);
     ShadowContentResolver scr = shadowOf(contentResolver);
@@ -751,7 +897,9 @@ public class ShadowContentResolverTest {
   public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException, RemoteException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
 
-    AssetFileDescriptor afd = contentResolver.openTypedAssetFileDescriptor(Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
+    AssetFileDescriptor afd =
+        contentResolver.openTypedAssetFileDescriptor(
+            Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
 
     FileDescriptor descriptor = afd.getFileDescriptor();
     assertThat(descriptor).isNotNull();
@@ -767,21 +915,21 @@ public class ShadowContentResolverTest {
     Uri uri = Uri.parse("content://" + AUTHORITY + "/whatever");
     contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
     assertThat(permissions).hasSize(1);
-    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).getUri()).isSameInstanceAs(uri);
     assertThat(permissions.get(0).isReadPermission()).isTrue();
     assertThat(permissions.get(0).isWritePermission()).isFalse();
 
     // Take the write permission for the uri.
     contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
     assertThat(permissions).hasSize(1);
-    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).getUri()).isSameInstanceAs(uri);
     assertThat(permissions.get(0).isReadPermission()).isTrue();
     assertThat(permissions.get(0).isWritePermission()).isTrue();
 
     // Release the read permission for the uri.
     contentResolver.releasePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
     assertThat(permissions).hasSize(1);
-    assertThat(permissions.get(0).getUri()).isSameAs(uri);
+    assertThat(permissions.get(0).getUri()).isSameInstanceAs(uri);
     assertThat(permissions.get(0).isReadPermission()).isFalse();
     assertThat(permissions.get(0).isWritePermission()).isTrue();
 

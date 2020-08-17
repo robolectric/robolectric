@@ -1,6 +1,7 @@
 package org.robolectric.util;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
@@ -83,13 +84,26 @@ public class ReflectionHelpersTest {
   }
 
   @Test
+  public void getFinalStaticFieldReflectively_withField_getsStaticField() throws Exception {
+    Field field = ExampleBase.class.getDeclaredField("BASE");
+
+    int result = ReflectionHelpers.getStaticField(field);
+    assertThat(result).isEqualTo(8);
+  }
+
+  @Test
+  public void getFinalStaticFieldReflectively_withFieldName_getsStaticField() throws Exception {
+    assertThat((int) ReflectionHelpers.getStaticField(ExampleBase.class, "BASE")).isEqualTo(8);
+  }
+
+  @Test
   public void setStaticFieldReflectively_withField_setsStaticFields() throws Exception {
     Field field = ExampleDescendant.class.getDeclaredField("DESCENDANT");
     int startingValue = ReflectionHelpers.getStaticField(field);
 
     ReflectionHelpers.setStaticField(field, 7);
-    assertThat(startingValue).named("startingValue").isEqualTo(6);
-    assertThat(ExampleDescendant.DESCENDANT).named("DESCENDENT").isEqualTo(7);
+    assertWithMessage("startingValue").that(startingValue).isEqualTo(6);
+    assertWithMessage("DESCENDENT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
 
     /// Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(field, startingValue);
@@ -100,11 +114,25 @@ public class ReflectionHelpersTest {
     int startingValue = ReflectionHelpers.getStaticField(ExampleDescendant.class, "DESCENDANT");
 
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", 7);
-    assertThat(startingValue).named("startingValue").isEqualTo(6);
-    assertThat(ExampleDescendant.DESCENDANT).named("DESCENDENT").isEqualTo(7);
+    assertWithMessage("startingValue").that(startingValue).isEqualTo(6);
+    assertWithMessage("DESCENDENT").that(ExampleDescendant.DESCENDANT).isEqualTo(7);
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", startingValue);
+  }
+
+  @Test
+  public void setFinalStaticFieldReflectively_withFieldName_setsStaticFields() {
+    int startingValue = ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD");
+
+    ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", 101);
+    assertWithMessage("startingValue").that(startingValue).isEqualTo(100);
+    assertWithMessage("BASE")
+        .that((int) ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD"))
+        .isEqualTo(101);
+
+    // Reset the value to avoid test pollution
+    ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", startingValue);
   }
 
   @Test
@@ -257,8 +285,8 @@ public class ReflectionHelpersTest {
   @Test
   public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
     ExampleClass ec = ReflectionHelpers.callConstructor(ExampleClass.class, ClassParameter.from(int.class, 16));
-    assertThat(ec.index).named("index").isEqualTo(16);
-    assertThat(ec.name).named("name").isNull();
+    assertWithMessage("index").that(ec.index).isEqualTo(16);
+    assertWithMessage("name").that(ec.name).isNull();
   }
 
   @SuppressWarnings("serial")
@@ -336,6 +364,11 @@ public class ReflectionHelpersTest {
     private static void staticThrowError() {
       throw new TestError();
     }
+  }
+
+  @SuppressWarnings("unused")
+  private static class ExampleWithFinalStatic {
+    private static final int FIELD = 100;
   }
 
   private static class ThrowsError {

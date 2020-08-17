@@ -51,37 +51,44 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
 
   public IntentServiceController<T> bind() {
     invokeWhilePaused("onBind", from(Intent.class, getIntent()));
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 
   @Override public IntentServiceController<T> create() {
     invokeWhilePaused("onCreate");
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 
   @Override public IntentServiceController<T> destroy() {
     invokeWhilePaused("onDestroy");
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 
   public IntentServiceController<T> rebind() {
     invokeWhilePaused("onRebind", from(Intent.class, getIntent()));
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 
   public IntentServiceController<T> startCommand(final int flags, final int startId) {
     final IntentServiceController<T> intentServiceController = handleIntent();
     get().stopSelf(startId);
+    shadowMainLooper.idleIfPaused();
     return intentServiceController;
   }
 
   public IntentServiceController<T> unbind() {
     invokeWhilePaused("onUnbind", from(Intent.class, getIntent()));
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 
   public IntentServiceController<T> handleIntent() {
     invokeWhilePaused("onHandleIntent", from(Intent.class, getIntent()));
+    shadowMainLooper.idleIfPaused();
     return this;
   }
 }

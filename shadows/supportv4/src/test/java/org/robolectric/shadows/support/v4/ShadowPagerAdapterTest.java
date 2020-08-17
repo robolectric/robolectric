@@ -3,20 +3,21 @@ package org.robolectric.shadows.support.v4;
 import static org.junit.Assert.assertTrue;
 
 import android.database.DataSetObserver;
-import android.support.v4.view.PagerAdapter;
 import android.view.View;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import android.support.v4.view.PagerAdapter;
 import java.lang.reflect.Method;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowPagerAdapterTest {
   @Test
   public void shouldNotifyDataSetChanged() throws Exception {
     NullPagerAdapter pagerAdapter = new NullPagerAdapter();
     TestDataSetObserver datasetObserver = new TestDataSetObserver();
-    Method method = PagerAdapter.class.getDeclaredMethod("registerDataSetObserver", DataSetObserver.class);
+    Method method =
+        PagerAdapter.class.getDeclaredMethod("registerDataSetObserver", DataSetObserver.class);
     method.setAccessible(true);
     method.invoke(pagerAdapter, datasetObserver);
     pagerAdapter.notifyDataSetChanged();

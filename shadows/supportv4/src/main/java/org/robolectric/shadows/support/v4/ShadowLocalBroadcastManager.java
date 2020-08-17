@@ -35,16 +35,20 @@ public class ShadowLocalBroadcastManager {
 
   @Implementation
   protected void registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    registeredReceivers.add(new Wrapper(receiver, filter));
+    synchronized (registeredReceivers) {
+      registeredReceivers.add(new Wrapper(receiver, filter));
+    }
   }
 
   @Implementation
   protected void unregisterReceiver(BroadcastReceiver receiver) {
-    Iterator<Wrapper> iterator = registeredReceivers.iterator();
-    while (iterator.hasNext()) {
-      Wrapper wrapper = iterator.next();
-      if (wrapper.broadcastReceiver == receiver) {
-        iterator.remove();
+    synchronized (registeredReceivers) {
+      Iterator<Wrapper> iterator = registeredReceivers.iterator();
+      while (iterator.hasNext()) {
+        Wrapper wrapper = iterator.next();
+        if (wrapper.broadcastReceiver == receiver) {
+          iterator.remove();
+        }
       }
     }
   }
@@ -52,7 +56,9 @@ public class ShadowLocalBroadcastManager {
   @Implementation
   protected boolean sendBroadcast(Intent intent) {
     boolean sent = false;
-    sentBroadcastIntents.add(intent);
+    synchronized (sentBroadcastIntents) {
+      sentBroadcastIntents.add(intent);
+    }
     List<Wrapper> copy = new ArrayList<>();
     copy.addAll(registeredReceivers);
     for (Wrapper wrapper : copy) {

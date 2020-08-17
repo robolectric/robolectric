@@ -30,13 +30,14 @@ public class InlineExecutorServiceTest {
   @Test
   public void executionRunsInBackgroundThread() {
     final Thread testThread = Thread.currentThread();
-    executorService.execute(new Runnable() {
-      @Override
-      public void run() {
-        assertThat(Thread.currentThread()).isNotSameAs(testThread);
-        executedTasksRecord.add("task ran");
-      }
-    });
+    executorService.execute(
+        new Runnable() {
+          @Override
+          public void run() {
+            assertThat(Thread.currentThread()).isNotSameInstanceAs(testThread);
+            executedTasksRecord.add("task ran");
+          }
+        });
     assertThat(executedTasksRecord).containsExactly("task ran");
   }
 

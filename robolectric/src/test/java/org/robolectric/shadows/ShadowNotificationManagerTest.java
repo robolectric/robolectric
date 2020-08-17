@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.app.AutomaticZenRule;
 import android.app.Notification;
@@ -22,20 +23,24 @@ import android.service.notification.StatusBarNotification;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
+@LooperMode(PAUSED)
 public class ShadowNotificationManagerTest {
   private NotificationManager notificationManager;
   private Notification notification1 = new Notification();
   private Notification notification2 = new Notification();
 
-  @Before public void setUp() {
+  @Before
+  public void setUp() {
     notificationManager =
         (NotificationManager)
             ApplicationProvider.getApplicationContext()
@@ -46,10 +51,12 @@ public class ShadowNotificationManagerTest {
   @Config(minSdk = Build.VERSION_CODES.M)
   public void getCurrentInterruptionFilter() {
     // Sensible default
-    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_ALL);
+    assertThat(notificationManager.getCurrentInterruptionFilter())
+        .isEqualTo(INTERRUPTION_FILTER_ALL);
 
     notificationManager.setInterruptionFilter(INTERRUPTION_FILTER_PRIORITY);
-    assertThat(notificationManager.getCurrentInterruptionFilter()).isEqualTo(INTERRUPTION_FILTER_PRIORITY);
+    assertThat(notificationManager.getCurrentInterruptionFilter())
+        .isEqualTo(INTERRUPTION_FILTER_PRIORITY);
   }
 
   @Test
@@ -68,9 +75,9 @@ public class ShadowNotificationManagerTest {
     notificationManager.createNotificationChannel(new NotificationChannel("id", "name", 1));
 
     assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
-    NotificationChannel channel = (NotificationChannel)shadowOf(notificationManager)
-        .getNotificationChannel("id");
-    assertThat(channel.getName()).isEqualTo("name");
+    NotificationChannel channel =
+        (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
+    assertThat(channel.getName().toString()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 
@@ -80,9 +87,9 @@ public class ShadowNotificationManagerTest {
     notificationManager.createNotificationChannelGroup(new NotificationChannelGroup("id", "name"));
 
     assertThat(shadowOf(notificationManager).getNotificationChannelGroups()).hasSize(1);
-    NotificationChannelGroup group = (NotificationChannelGroup)shadowOf(notificationManager)
-        .getNotificationChannelGroup("id");
-    assertThat(group.getName()).isEqualTo("name");
+    NotificationChannelGroup group =
+        (NotificationChannelGroup) shadowOf(notificationManager).getNotificationChannelGroup("id");
+    assertThat(group.getName().toString()).isEqualTo("name");
   }
 
   @Test
@@ -96,10 +103,10 @@ public class ShadowNotificationManagerTest {
     assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(2);
     NotificationChannel channel =
         (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
-    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getName().toString()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
     channel = (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id2");
-    assertThat(channel.getName()).isEqualTo("name2");
+    assertThat(channel.getName().toString()).isEqualTo("name2");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 
@@ -119,7 +126,7 @@ public class ShadowNotificationManagerTest {
         new NotificationChannel(channelId, "otherName", 2));
     assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
     NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
-    assertThat(channel.getName()).isEqualTo("name");
+    assertThat(channel.getName().toString()).isEqualTo("name");
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 
@@ -471,6 +478,48 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void testNotify_setsPostTime() throws Exception {
+    long startTimeMillis = ShadowSystem.currentTimeMillis();
+
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 1000.
+    notificationManager.notify(1, notification1);
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 2000.
+    notificationManager.notify(2, notification2);
+
+    assertThat(getStatusBarNotification(1).getPostTime()).isEqualTo(startTimeMillis + 1000);
+    assertThat(getStatusBarNotification(2).getPostTime()).isEqualTo(startTimeMillis + 2000);
+  }
+
+  @Test
+  public void testNotify_withLimitEnforced() throws Exception {
+    shadowOf(notificationManager).setEnforceMaxNotificationLimit(true);
+
+    for (int i = 0; i < 25; i++) {
+      Notification notification = new Notification();
+      notificationManager.notify(i, notification);
+    }
+    assertEquals(25, shadowOf(notificationManager).size());
+    notificationManager.notify("26tag", 26, notification1);
+    assertEquals(25, shadowOf(notificationManager).size());
+    assertNull(shadowOf(notificationManager).getNotification("26tag", 26));
+
+    shadowOf(notificationManager).setEnforceMaxNotificationLimit(false);
+  }
+
+  @Test
+  public void testNotify_withLimitNotEnforced() throws Exception {
+    for (int i = 0; i < 25; i++) {
+      Notification notification = new Notification();
+      notificationManager.notify(i, notification);
+    }
+    assertEquals(25, shadowOf(notificationManager).size());
+    notificationManager.notify("26tag", 26, notification1);
+    assertEquals(26, shadowOf(notificationManager).size());
+    assertEquals(notification1, shadowOf(notificationManager).getNotification("26tag", 26));
+  }
+
+  @Test
   public void testCancel() throws Exception {
     notificationManager.notify(1, notification1);
     notificationManager.cancel(1);
@@ -513,6 +562,74 @@ public class ShadowNotificationManagerTest {
         .containsExactly(notification1, notification2);
   }
 
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testSetNotificationDelegate() throws Exception {
+    notificationManager.setNotificationDelegate("com.example.myapp");
+
+    assertThat(notificationManager.getNotificationDelegate()).isEqualTo("com.example.myapp");
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testSetNotificationDelegate_null() throws Exception {
+    notificationManager.setNotificationDelegate("com.example.myapp");
+    notificationManager.setNotificationDelegate(null);
+
+    assertThat(notificationManager.getNotificationDelegate()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_isFalseWhenNoDelegateIsSet() throws Exception {
+    assertThat(notificationManager.canNotifyAsPackage("some.package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_isTrueWhenDelegateIsSet() throws Exception {
+    String pkg = "some.package";
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg, true);
+    assertThat(notificationManager.canNotifyAsPackage(pkg)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_isFalseWhenDelegateIsUnset() throws Exception {
+    String pkg = "some.package";
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg, true);
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg, false);
+    assertThat(notificationManager.canNotifyAsPackage(pkg)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_isFalseWhenOtherDelegateIsSet() throws Exception {
+    shadowOf(notificationManager).setCanNotifyAsPackage("other.package", true);
+    assertThat(notificationManager.canNotifyAsPackage("some.package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void testCanNotifyAsPackage_workAsExpectedWhenMultipleDelegatesSetAndUnset()
+      throws Exception {
+    String pkg1 = "some.package";
+    String pkg2 = "another.package";
+    // When pkg1 and pkg2 where set for delegation
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg1, true);
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg2, true);
+    assertThat(notificationManager.canNotifyAsPackage(pkg1)).isTrue();
+    assertThat(notificationManager.canNotifyAsPackage(pkg2)).isTrue();
+    // When pkg1 unset
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg1, false);
+    assertThat(notificationManager.canNotifyAsPackage(pkg1)).isFalse();
+    assertThat(notificationManager.canNotifyAsPackage(pkg2)).isTrue();
+    // When pkg2 unset
+    shadowOf(notificationManager).setCanNotifyAsPackage(pkg2, false);
+    assertThat(notificationManager.canNotifyAsPackage(pkg1)).isFalse();
+    assertThat(notificationManager.canNotifyAsPackage(pkg2)).isFalse();
+  }
+
   private static List<Notification> asNotificationList(
       StatusBarNotification[] statusBarNotifications) {
     List<Notification> notificationList = new ArrayList<>(statusBarNotifications.length);
@@ -520,5 +637,15 @@ public class ShadowNotificationManagerTest {
       notificationList.add(statusBarNotification.getNotification());
     }
     return notificationList;
+  }
+
+  private StatusBarNotification getStatusBarNotification(int id) {
+    for (StatusBarNotification statusBarNotification :
+        shadowOf(notificationManager).getActiveNotifications()) {
+      if (statusBarNotification.getTag() == null && statusBarNotification.getId() == id) {
+        return statusBarNotification;
+      }
+    }
+    return null;
   }
 }

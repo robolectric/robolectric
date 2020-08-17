@@ -57,7 +57,7 @@ public class SQLiteOpenHelperTest {
     SQLiteDatabase db1 = helper.getReadableDatabase();
     SQLiteDatabase db2 = helper.getReadableDatabase();
 
-    assertThat(db1).isSameAs(db2);
+    assertThat(db1).isSameInstanceAs(db2);
   }
 
   @Test
@@ -79,7 +79,7 @@ public class SQLiteOpenHelperTest {
     SQLiteDatabase db1 = helper.getWritableDatabase();
     SQLiteDatabase db2 = helper.getWritableDatabase();
 
-    assertThat(db1).isSameAs(db2);
+    assertThat(db1).isSameInstanceAs(db2);
   }
 
   @Test

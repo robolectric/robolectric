@@ -33,6 +33,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -356,6 +357,7 @@ static class Connections {
   private final AtomicLong pointerCounter = new AtomicLong(0);
   private final Map<Long, SQLiteStatement> statementsMap = new HashMap<>();
   private final Map<Long, SQLiteConnection> connectionsMap = new HashMap<>();
+  private final Map<Long, List<Long>> statementPtrsForConnection = new HashMap<>();
 
   private ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
 
@@ -402,6 +404,7 @@ static class Connections {
 
       final long connectionPtr = pointerCounter.incrementAndGet();
       connectionsMap.put(connectionPtr, dbConnection);
+      statementPtrsForConnection.put(connectionPtr, new ArrayList<>());
       return connectionPtr;
     }
   }
@@ -423,6 +426,7 @@ static class Connections {
 
       final long statementPtr = pointerCounter.incrementAndGet();
       statementsMap.put(statementPtr, statement);
+      statementPtrsForConnection.get(connectionPtr).add(statementPtr);
       return statementPtr;
     }
   }
@@ -438,6 +442,7 @@ static class Connections {
         }
       });
       connectionsMap.remove(connectionPtr);
+      statementPtrsForConnection.remove(connectionPtr);
     }
   }
 
@@ -452,6 +457,7 @@ static class Connections {
       dbExecutor = Executors.newSingleThreadExecutor();
       connectionsMap.clear();
       statementsMap.clear();
+      statementPtrsForConnection.clear();
     }
 
     shutdownDbExecutor(oldDbExecutor, openConnections);
@@ -499,15 +505,17 @@ static class Connections {
     synchronized (lock) {
       getConnection(connectionPtr); // check connection
 
-      final SQLiteStatement statement = statementsMap.get(pointerCounter.get());
-      if (statement != null) {
-          execute("cancel", new Callable<Void>() {
-          @Override
-          public Void call() throws Exception {
-            statement.cancel();
-            return null;
-          }
-        });
+      for (Long statementPtr : statementPtrsForConnection.get(connectionPtr)) {
+        final SQLiteStatement statement = statementsMap.get(statementPtr);
+        if (statement != null) {
+            execute("cancel", new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+              statement.cancel();
+              return null;
+            }
+          });
+        }
       }
     }
   }

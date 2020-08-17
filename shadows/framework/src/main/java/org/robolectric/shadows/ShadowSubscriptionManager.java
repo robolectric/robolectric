@@ -5,7 +5,9 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
+import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.SubscriptionManager.OnSubscriptionsChangedListener;
@@ -171,6 +173,22 @@ public class ShadowSubscriptionManager {
   }
 
   /**
+   * @return the maximum number of active subscriptions that will be returned by {@link
+   *     #getActiveSubscriptionInfoList} and the value returned by {@link
+   *     #getActiveSubscriptionInfoCount}.
+   */
+  @Implementation(minSdk = LOLLIPOP_MR1)
+  protected int getActiveSubscriptionInfoCountMax() {
+    List<SubscriptionInfo> infoList = getActiveSubscriptionInfoList();
+
+    if (infoList == null) {
+      return getActiveSubscriptionInfoCount();
+    }
+
+    return Math.max(getActiveSubscriptionInfoList().size(), getActiveSubscriptionInfoCount());
+  }
+
+  /**
    * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} if it can find
    * one with the specified slot index or null if none found.
    */
@@ -239,6 +257,7 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected void addOnSubscriptionsChangedListener(OnSubscriptionsChangedListener listener) {
     listeners.add(listener);
+    listener.onSubscriptionsChanged();
   }
 
   /**
@@ -417,7 +436,20 @@ public class ShadowSubscriptionManager {
     }
 
     public SubscriptionInfoBuilder setMnc(String mnc) {
-      ReflectionHelpers.setField(subscriptionInfo, "mMnc", mnc);
+      if (VERSION.SDK_INT < Q) {
+        ReflectionHelpers.setField(subscriptionInfo, "mMnc", Integer.valueOf(mnc));
+      } else {
+        ReflectionHelpers.setField(subscriptionInfo, "mMnc", mnc);
+      }
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setMcc(String mcc) {
+      if (VERSION.SDK_INT < Q) {
+        ReflectionHelpers.setField(subscriptionInfo, "mMcc", Integer.valueOf(mcc));
+      } else {
+        ReflectionHelpers.setField(subscriptionInfo, "mMcc", mcc);
+      }
       return this;
     }
 

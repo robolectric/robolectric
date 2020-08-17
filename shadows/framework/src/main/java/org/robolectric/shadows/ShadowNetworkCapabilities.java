@@ -42,4 +42,26 @@ public class ShadowNetworkCapabilities {
         "removeTransportType",
         ClassParameter.from(int.class, transportType));
   }
+
+  /** Adds {@code capability} to the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation
+  public NetworkCapabilities addCapability(int capability) {
+    return directlyOn(
+        realNetworkCapabilities,
+        NetworkCapabilities.class,
+        "addCapability",
+        ClassParameter.from(int.class, capability));
+  }
+
+  /** Removes {@code capability} from the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation
+  public NetworkCapabilities removeCapability(int capability) {
+    return directlyOn(
+        realNetworkCapabilities,
+        NetworkCapabilities.class,
+        "removeCapability",
+        ClassParameter.from(int.class, capability));
+  }
 }

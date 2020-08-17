@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
+import android.view.WindowManager;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 import javax.annotation.Nullable;
@@ -163,10 +164,14 @@ public class ActivityController<T extends Activity>
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(
         () -> {
+          // emulate logic of ActivityThread#handleResumeActivity
+          component.getWindow().getAttributes().type =
+              WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
           _component_.setDecor(component.getWindow().getDecorView());
           ReflectionHelpers.callInstanceMethod(component, "makeVisible");
         });
 
+    shadowMainLooper.idleIfPaused();
     ViewRootImpl root = getViewRoot();
     // root can be null if activity does not have content attached, or if looper is paused.
     // this is unusual but leave the check here for legacy compatibility
@@ -269,12 +274,13 @@ public class ActivityController<T extends Activity>
   /**
    * Applies the current system configuration to the Activity.
    *
-   * This can be used in conjunction with {@link RuntimeEnvironment#setQualifiers(String)} to
+   * <p>This can be used in conjunction with {@link RuntimeEnvironment#setQualifiers(String)} to
    * simulate configuration changes.
    *
-   * If the activity is configured to handle changes without being recreated,
-   * {@link Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity
-   * is recreated as described [here](https://developer.android.com/guide/topics/resources/runtime-changes.html).
+   * <p>If the activity is configured to handle changes without being recreated, {@link
+   * Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity is
+   * recreated as described <a
+   * href="https://developer.android.com/guide/topics/resources/runtime-changes.html">here</a>.
    *
    * @return ActivityController instance
    */
@@ -285,9 +291,10 @@ public class ActivityController<T extends Activity>
   /**
    * Performs a configuration change on the Activity.
    *
-   * If the activity is configured to handle changes without being recreated,
-   * {@link Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity
-   * is recreated as described [here](https://developer.android.com/guide/topics/resources/runtime-changes.html).
+   * <p>If the activity is configured to handle changes without being recreated, {@link
+   * Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity is
+   * recreated as described <a
+   * href="https://developer.android.com/guide/topics/resources/runtime-changes.html">here</a>.
    *
    * @param newConfiguration The new configuration to be set.
    * @return ActivityController instance

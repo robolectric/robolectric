@@ -6,6 +6,7 @@ include ":junit"
 include ":utils"
 include ":utils:reflector"
 include ":pluginapi"
+include ":plugins:accessibility-deprecated"
 include ":plugins:maven-dependency-resolver"
 include ":processor"
 include ":resources"
@@ -27,4 +28,6 @@ include ":integration_tests:powermock"
 include ':integration_tests:androidx'
 include ':integration_tests:androidx_test'
 include ':integration_tests:ctesque'
+include ':integration_tests:security-providers'
 include ':testapp'
+include ":integration_tests:mockk"

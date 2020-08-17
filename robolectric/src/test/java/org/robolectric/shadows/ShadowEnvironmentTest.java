@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -13,6 +14,8 @@ import android.os.Environment;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -37,6 +40,23 @@ public class ShadowEnvironmentTest {
   @Test
   public void getExternalStorageDirectory_shouldReturnDirectory() {
     assertThat(Environment.getExternalStorageDirectory().exists()).isTrue();
+  }
+
+  @Test
+  public void setExternalStorageDirectory_shouldReturnDirectory() {
+    // state prior to override
+    File defaultDir = Environment.getExternalStorageDirectory();
+    // override
+    Path expectedPath = FileSystems.getDefault().getPath("/tmp", "foo");
+    ShadowEnvironment.setExternalStorageDirectory(expectedPath);
+    File override = Environment.getExternalStorageDirectory();
+    assertThat(override.getAbsolutePath()).isEqualTo(expectedPath.toAbsolutePath().toString());
+
+    // restore default value by supplying {@code null}
+    ShadowEnvironment.setExternalStorageDirectory(null);
+
+    // verify default
+    assertThat(defaultDir).isEqualTo(Environment.getExternalStorageDirectory());
   }
 
   @Test
@@ -81,6 +101,15 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void isExternalStorageLegacy_shouldReturnSavedValue() {
+    final File file = new File("/mnt/media/file");
+    assertThat(Environment.isExternalStorageLegacy(file)).isFalse();
+    ShadowEnvironment.setIsExternalStorageLegacy(true);
+    assertThat(Environment.isExternalStorageLegacy(file)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void storageIsLazy() {
     assertNull(ShadowEnvironment.EXTERNAL_CACHE_DIR);
@@ -121,6 +150,15 @@ public class ShadowEnvironmentTest {
     assertThat(Environment.isExternalStorageEmulated()).isTrue();
     ShadowEnvironment.reset();
     assertThat(Environment.isExternalStorageEmulated()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isExternalStorageLegacyNoArg_shouldReturnSavedValue() {
+    ShadowEnvironment.setIsExternalStorageLegacy(true);
+    assertThat(Environment.isExternalStorageLegacy()).isTrue();
+    ShadowEnvironment.reset();
+    assertThat(Environment.isExternalStorageLegacy()).isFalse();
   }
 
   // TODO: failing test

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
@@ -11,11 +12,13 @@ import android.content.Context;
 import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import org.robolectric.RuntimeEnvironment;
@@ -28,13 +31,18 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
 public class ShadowSettings {
+
   @Implements(value = Settings.System.class)
   public static class ShadowSystem {
     private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap = new WeakHashMap<ContentResolver, Map<String, Object>>();
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.System.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -59,7 +67,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.System.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -79,7 +91,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putLong(ContentResolver cr, String name, long value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.System.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -104,6 +120,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.System.getUriFor(name), null);
+        }
+      }
       get(cr).put(name, value);
       return true;
     }
@@ -142,7 +163,28 @@ public class ShadowSettings {
     private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap =
         new WeakHashMap<ContentResolver, Map<String, Object>>();
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
+    private static final HashMap<String, Object> SECURE_DEFAULTS = new HashMap<>();
+
+    // source of truth for initial location state
+    static final boolean INITIAL_GPS_PROVIDER_STATE = true;
+    static final boolean INITIAL_NETWORK_PROVIDER_STATE = false;
+
+    static {
+      if (INITIAL_GPS_PROVIDER_STATE && INITIAL_NETWORK_PROVIDER_STATE) {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_HIGH_ACCURACY);
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "gps,network");
+      } else if (INITIAL_GPS_PROVIDER_STATE) {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_SENSORS_ONLY);
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "gps");
+      } else if (INITIAL_NETWORK_PROVIDER_STATE) {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_BATTERY_SAVING);
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "network");
+      } else {
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_OFF);
+      }
+    }
+
+    @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = P)
     @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
     protected static boolean setLocationProviderEnabledForUser(
         ContentResolver cr, String provider, boolean enabled, int uid) {
@@ -155,8 +197,9 @@ public class ShadowSettings {
       updateEnabledProviders(cr, provider, enabled);
     }
 
-    private static boolean updateEnabledProviders(
-        ContentResolver cr, String provider, boolean enabled) {
+    // only for use locally and by ShadowLocationManager, which requires a tight integration with
+    // ShadowSettings due to historical weirdness between LocationManager and Settings.
+    static boolean updateEnabledProviders(ContentResolver cr, String provider, boolean enabled) {
       Set<String> providers = new HashSet<>();
       String oldProviders =
           Settings.Secure.getString(cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
@@ -176,20 +219,26 @@ public class ShadowSettings {
     }
 
     @Implementation
-    protected static boolean putInt(ContentResolver resolver, String name, int value) {
+    protected static boolean putInt(ContentResolver cr, String name, int value) {
+      boolean changed = !Objects.equals(get(cr).put(name, value), value);
+
       if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() <= P) {
-        // set provider settings as well
+        // do this after setting location mode but before invoking contentobservers, so that
+        // observers for both settings will see the correct values
         boolean gps =
             (value == Settings.Secure.LOCATION_MODE_SENSORS_ONLY
                 || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
         boolean network =
             (value == Settings.Secure.LOCATION_MODE_BATTERY_SAVING
                 || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
-        Settings.Secure.setLocationProviderEnabled(resolver, LocationManager.GPS_PROVIDER, gps);
-        Settings.Secure.setLocationProviderEnabled(
-            resolver, LocationManager.NETWORK_PROVIDER, network);
+        Settings.Secure.setLocationProviderEnabled(cr, LocationManager.GPS_PROVIDER, gps);
+        Settings.Secure.setLocationProviderEnabled(cr, LocationManager.NETWORK_PROVIDER, network);
       }
-      get(resolver).put(name, value);
+
+      if (changed && cr != null) {
+        cr.notifyChange(Settings.Secure.getUriFor(name), null);
+      }
+
       return true;
     }
 
@@ -201,39 +250,39 @@ public class ShadowSettings {
     }
 
     @Implementation
-    protected static int getInt(ContentResolver resolver, String name)
+    protected static int getInt(ContentResolver cr, String name)
         throws Settings.SettingNotFoundException {
       if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP
+          && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return Shadow.directlyOn(
             Settings.Secure.class,
             "getLocationModeForUser",
-            ClassParameter.from(ContentResolver.class, resolver),
+            ClassParameter.from(ContentResolver.class, cr),
             ClassParameter.from(int.class, 0));
       }
 
-      if (get(resolver).get(name) instanceof Integer) {
-        return (Integer) get(resolver).get(name);
+      if (get(cr).get(name) instanceof Integer) {
+        return (Integer) get(cr).get(name);
       } else {
         throw new Settings.SettingNotFoundException(name);
       }
     }
 
     @Implementation
-    protected static int getInt(ContentResolver resolver, String name, int def) {
+    protected static int getInt(ContentResolver cr, String name, int def) {
       if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= LOLLIPOP
+          && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return Shadow.directlyOn(
             Settings.Secure.class,
             "getLocationModeForUser",
-            ClassParameter.from(ContentResolver.class, resolver),
+            ClassParameter.from(ContentResolver.class, cr),
             ClassParameter.from(int.class, 0));
       }
-      Integer v = (Integer) get(resolver).get(name);
+      Integer v = (Integer) get(cr).get(name);
       try {
         return v != null ? v : def;
       } catch (NumberFormatException e) {
@@ -243,7 +292,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Secure.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -263,7 +316,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putLong(ContentResolver cr, String name, long value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Secure.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -288,7 +345,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Secure.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -314,7 +375,7 @@ public class ShadowSettings {
     private static Map<String, Object> get(ContentResolver cr) {
       Map<String, Object> map = dataMap.get(cr);
       if (map == null) {
-        map = new HashMap<>();
+        map = new HashMap<>(SECURE_DEFAULTS);
         dataMap.put(cr, map);
       }
       return map;
@@ -328,7 +389,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Global.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -353,7 +418,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Global.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -373,7 +442,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putLong(ContentResolver cr, String name, long value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Global.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -398,7 +471,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      get(cr).put(name, value);
+      if (!Objects.equals(get(cr).put(name, value), value)) {
+        if (cr != null) {
+          cr.notifyChange(Settings.Global.getUriFor(name), null);
+        }
+      }
       return true;
     }
 
@@ -465,12 +542,15 @@ public class ShadowSettings {
    * @param use24HourTimeFormat new status for the time setting
    */
   public static void set24HourTimeFormat(boolean use24HourTimeFormat) {
-    Settings.System.putString(RuntimeEnvironment.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? "24" : "12");
+    Settings.System.putString(
+        RuntimeEnvironment.application.getContentResolver(),
+        Settings.System.TIME_12_24,
+        use24HourTimeFormat ? "24" : "12");
   }
 
   private static boolean canDrawOverlays = false;
 
-  /** @return `false` by default, or the value specified via {@link #setCanDrawOverlays(boolean)} */
+  /** @return false by default, or the value specified via {@link #setCanDrawOverlays(boolean)} */
   @Implementation(minSdk = M)
   protected static boolean canDrawOverlays(Context context) {
     return canDrawOverlays;

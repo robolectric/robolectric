@@ -1,32 +1,37 @@
 package org.robolectric.gradle;
 
-import static org.gradle.api.internal.artifacts.ArtifactAttributes.ARTIFACT_FORMAT;
-
 import com.android.build.gradle.internal.dependency.ExtractAarTransform;
 import com.google.common.base.Joiner;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
+import org.gradle.api.artifacts.transform.TransformOutputs;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.compile.JavaCompile;
+import org.jetbrains.annotations.NotNull;
 
-/** Resolve aar dependencies into jars for non-Android projects. */
+import javax.inject.Inject;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.gradle.api.internal.artifacts.ArtifactAttributes.ARTIFACT_FORMAT;
+
+/**
+ * Resolve aar dependencies into jars for non-Android projects.
+ */
 public class AarDepsPlugin implements Plugin<Project> {
   @Override
   public void apply(Project project) {
     project
         .getDependencies()
-        .registerTransform(
-            reg -> {
-              reg.getFrom().attribute(ARTIFACT_FORMAT, "aar");
-              reg.getTo().attribute(ARTIFACT_FORMAT, "jar");
-              reg.artifactTransform(ClassesJarExtractor.class);
-            });
+        .registerTransform(ClassesJarExtractor.class, reg -> {
+          reg.getParameters().getProjectName().set(project.getName());
+          reg.getFrom().attribute(ARTIFACT_FORMAT, "aar");
+          reg.getTo().attribute(ARTIFACT_FORMAT, "jar");
+        });
 
     project.afterEvaluate(
         p ->
@@ -72,15 +77,38 @@ public class AarDepsPlugin implements Plugin<Project> {
     return bad;
   }
 
-  static class ClassesJarExtractor extends ExtractAarTransform {
+  public static abstract class ClassesJarExtractor extends ExtractAarTransform {
+    @Inject
+    public ClassesJarExtractor() {
+    }
+
     @Override
-    public List<File> transform(File input) {
-      List<File> out = super.transform(input);
-      File classesJar = new File(out.get(0), "jars/classes.jar");
-      // jar needs a quasi-unique name or IntelliJ Gradle/Android plugins get confused...
-      File renamed = new File(classesJar.getParent(), input.getName().replace(".aar", ".jar"));
-      classesJar.renameTo(renamed);
-      return Collections.singletonList(renamed);
+    public void transform(@NotNull TransformOutputs outputs) {
+      AtomicReference<File> classesJarFile = new AtomicReference<>();
+      AtomicReference<File> outJarFile = new AtomicReference<>();
+      super.transform(new TransformOutputs() {
+        // This is the one that ExtractAarTransform calls.
+        @Override
+        public File dir(Object o) {
+          // ExtractAarTransform needs a place to extract the AAR. We don't really need to
+          // register this as an output, but it'd be tricky to avoid it.
+          File dir = outputs.dir(o);
+
+          // Also, register our jar file. Its name needs to be quasi-unique or
+          // IntelliJ Gradle/Android plugins get confused.
+          classesJarFile.set(new File(new File(dir, "jars"), "classes.jar"));
+          outJarFile.set(new File(new File(dir, "jars"), o + ".jar"));
+          outputs.file(o + "/jars/" + o + ".jar");
+          return outputs.dir(o);
+        }
+
+        @Override
+        public File file(Object o) {
+          throw new IllegalStateException("shouldn't be called");
+        }
+      });
+
+      classesJarFile.get().renameTo(outJarFile.get());
     }
   }
 }

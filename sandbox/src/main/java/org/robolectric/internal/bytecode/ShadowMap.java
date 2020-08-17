@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadow.api.ShadowPicker;
 
 /**
@@ -56,12 +57,14 @@ public class ShadowMap {
     this.shadowPickers = ImmutableMap.copyOf(shadowPickers);
   }
 
-  public ShadowInfo getShadowInfo(Class<?> clazz, int apiLevel) {
+  public ShadowInfo getShadowInfo(Class<?> clazz, ShadowMatcher shadowMatcher) {
     String instrumentedClassName = clazz.getName();
 
     ShadowInfo shadowInfo = overriddenShadows.get(instrumentedClassName);
     if (shadowInfo == null) {
       shadowInfo = checkShadowPickers(instrumentedClassName, clazz);
+    } else if (shadowInfo.hasShadowPicker()) {
+      shadowInfo = pickShadow(instrumentedClassName, clazz, shadowInfo);
     }
 
     if (shadowInfo == null && clazz.getClassLoader() != null) {
@@ -80,7 +83,7 @@ public class ShadowMap {
       }
     }
 
-    if (shadowInfo != null && !shadowInfo.supportsSdk(apiLevel)) {
+    if (shadowInfo != null && !shadowMatcher.matches(shadowInfo)) {
       return null;
     }
 
@@ -94,10 +97,15 @@ public class ShadowMap {
       return null;
     }
 
-    ClassLoader classLoader = clazz.getClassLoader();
+    return pickShadow(instrumentedClassName, clazz, shadowPickerClassName);
+  }
+
+  private ShadowInfo pickShadow(String instrumentedClassName, Class<?> clazz,
+      String shadowPickerClassName) {
+    ClassLoader sandboxClassLoader = clazz.getClassLoader();
     try {
       Class<? extends ShadowPicker<?>> shadowPickerClass =
-          (Class<? extends ShadowPicker<?>>) classLoader.loadClass(shadowPickerClassName);
+          (Class<? extends ShadowPicker<?>>) sandboxClassLoader.loadClass(shadowPickerClassName);
       ShadowPicker<?> shadowPicker = shadowPickerClass.getDeclaredConstructor().newInstance();
       Class<?> selectedShadowClass = shadowPicker.pickShadowClass();
       if (selectedShadowClass == null) {
@@ -117,6 +125,11 @@ public class ShadowMap {
       throw new RuntimeException("Failed to resolve shadow picker for " + instrumentedClassName,
           e);
     }
+  }
+
+  private ShadowInfo pickShadow(
+      String instrumentedClassName, Class<?> clazz, ShadowInfo shadowInfo) {
+    return pickShadow(instrumentedClassName, clazz, shadowInfo.getShadowPickerClass().getName());
   }
 
   public static ShadowInfo obtainShadowInfo(Class<?> clazz) {

@@ -24,6 +24,7 @@ import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLTree;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -53,11 +54,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 //
 // namespace android {
 
-  private static final String FRAMEWORK_APK_PATH =
+  protected static final String FRAMEWORK_APK_PATH =
       ReflectionHelpers.getStaticField(AssetManager.class, "FRAMEWORK_APK_PATH");
 
   private static final HashMap<Key, WeakReference<ApkAssets>> cachedApkAssets =
       new HashMap<>();
+  private static final HashMap<Key, Long> cachedNativePtrs = new HashMap<>();
 
   @RealObject private ApkAssets realApkAssets;
 
@@ -73,10 +75,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     long getNativePtr();
   }
 
+
   /**
    * Caching key for {@link ApkAssets}.
    */
-  private static class Key {
+  protected static class Key {
     private final FileDescriptor fd;
     private final String path;
     private final boolean system;
@@ -115,11 +118,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   }
 
   @FunctionalInterface
-  private interface ApkAssetMaker {
+  protected interface ApkAssetMaker {
     ApkAssets call();
   }
 
-  private static ApkAssets getFromCacheOrLoad(Key key, ApkAssetMaker callable) {
+  protected static ApkAssets getFromCacheOrLoad(Key key, ApkAssetMaker callable) {
     synchronized (cachedApkAssets) {
       WeakReference<ApkAssets> cachedRef = cachedApkAssets.get(key);
       ApkAssets apkAssets;
@@ -129,11 +132,15 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
           return apkAssets;
         } else {
           cachedApkAssets.remove(key);
+          long nativePtr = cachedNativePtrs.remove(key);
+          Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(nativePtr);
         }
       }
 
       apkAssets = callable.call();
       cachedApkAssets.put(key, new WeakReference<>(apkAssets));
+      long nativePtr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
+      cachedNativePtrs.put(key, nativePtr);
       return apkAssets;
     }
   }
@@ -243,11 +250,17 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
   }
 
+
+
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
-//                               jstring friendly_name, jboolean system, jboolean force_shared_lib) {
+  //                               jstring friendly_name, jboolean system, jboolean
+  // force_shared_lib) {
   @Implementation
-  protected static long nativeLoadFromFd(FileDescriptor file_descriptor,
-      String friendly_name, boolean system, boolean force_shared_lib) {
+  protected static long nativeLoadFromFd(
+      FileDescriptor file_descriptor,
+      String friendly_name,
+      boolean system,
+      boolean force_shared_lib) {
     String friendly_name_utf8 = friendly_name;
     if (friendly_name_utf8 == null) {
       return 0;
@@ -277,13 +290,6 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     //   return 0;
     // }
     // return ShadowArscAssetManager9.NATIVE_APK_ASSETS_REGISTRY.getNativeObjectId(apk_assets);
-  }
-
-  // static void NativeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
-  @Implementation
-  protected static void nativeDestroy(long ptr) {
-    // delete reinterpret_cast<ApkAssets>(ptr);
-    Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(ptr);
   }
 
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {

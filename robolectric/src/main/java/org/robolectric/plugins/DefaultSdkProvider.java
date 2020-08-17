@@ -70,7 +70,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(O, new DefaultSdk(O, "8.0.0_r4", "r1", "REL", 8));
     knownSdks.put(O_MR1, new DefaultSdk(O_MR1, "8.1.0", "4611349", "REL", 8));
     knownSdks.put(P, new DefaultSdk(P, "9", "4913185-2", "REL", 8));
-    knownSdks.put(Q, new DefaultSdk(Q, "Q", "5283294", "Q", 9));
+    knownSdks.put(Q, new DefaultSdk(Q, "10", "5803371", "REL", 9));
   }
 
   @Override
@@ -147,6 +147,14 @@ public class DefaultSdkProvider implements SdkProvider {
           getApiLevel(),
           requiredJavaVersion,
           RUNNING_JAVA_VERSION);
+    }
+
+    @Override
+    public void verifySupportedSdk(String testClassName) {
+      if (isKnown() && !isSupported()) {
+        throw new UnsupportedOperationException(
+            "Failed to create a Robolectric sandbox: " + getUnsupportedMessage());
+      }
     }
   }
 }

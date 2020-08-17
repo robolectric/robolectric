@@ -18,6 +18,6 @@ public class ShadowActivityGroupTest {
   Activity activity = new Activity();
   shadowOf(activityGroup).setCurrentActivity(activity);
 
-    assertThat(activityGroup.getCurrentActivity()).isSameAs(activity);
+    assertThat(activityGroup.getCurrentActivity()).isSameInstanceAs(activity);
   }
 }

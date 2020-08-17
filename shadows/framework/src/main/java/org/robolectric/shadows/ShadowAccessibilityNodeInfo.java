@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Rect;
@@ -21,6 +22,7 @@ import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionItemInfo;
 import android.view.accessibility.AccessibilityNodeInfo.RangeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -107,6 +109,8 @@ public class ShadowAccessibilityNodeInfo {
 
   private static final int CAN_OPEN_POPUP_MASK = 0x00100000; //19
 
+  private static final int TEXT_ENTRY_KEY_MASK = 0x00200000; // 29
+
   /**
    * Uniquely identifies the origin of the AccessibilityNodeInfo for equality
    * testing. Two instances that come from the same node info should have the
@@ -185,7 +189,8 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void __constructor__() {
-    ReflectionHelpers.setStaticField(AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
+    ReflectionHelpers.setStaticField(
+        AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
   }
 
   @Implementation
@@ -401,6 +406,11 @@ public class ShadowAccessibilityNodeInfo {
     return ((propertyFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
   }
 
+  @Implementation(minSdk = Q)
+  protected boolean isTextEntryKey() {
+    return ((propertyFlags & TEXT_ENTRY_KEY_MASK) != 0);
+  }
+
   @Implementation
   protected boolean isCheckable() {
     return ((propertyFlags & CHECKABLE_MASK) != 0);
@@ -555,6 +565,12 @@ public class ShadowAccessibilityNodeInfo {
   protected void setVisibleToUser(boolean isVisibleToUser) {
     propertyFlags =
         (propertyFlags & ~VISIBLE_TO_USER_MASK) | (isVisibleToUser ? VISIBLE_TO_USER_MASK : 0);
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setTextEntryKey(boolean isTextEntrykey) {
+    propertyFlags =
+        (propertyFlags & ~TEXT_ENTRY_KEY_MASK) | (isTextEntrykey ? TEXT_ENTRY_KEY_MASK : 0);
   }
 
   @Implementation
@@ -969,10 +985,10 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation(minSdk = LOLLIPOP)
   protected List<AccessibilityAction> getActionList() {
     if (actionsArray == null) {
-      return Collections.emptyList();
+      return ImmutableList.of();
     }
 
-    return actionsArray;
+    return ImmutableList.copyOf(actionsArray);
   }
 
   @Implementation
@@ -1134,6 +1150,7 @@ public class ShadowAccessibilityNodeInfo {
       newShadow.inputType = inputType;
       newShadow.liveRegion = liveRegion;
       newShadow.rangeInfo = rangeInfo;
+      newShadow.realAccessibilityNodeInfo.getExtras().putAll(realAccessibilityNodeInfo.getExtras());
     }
     if (getApiLevel() >= LOLLIPOP) {
       newShadow.maxTextLength = maxTextLength;
@@ -1171,7 +1188,9 @@ public class ShadowAccessibilityNodeInfo {
       if (object == null) {
         return false;
       }
-
+      if (!(object instanceof StrictEqualityNodeWrapper)) {
+        return false;
+      }
       final StrictEqualityNodeWrapper wrapper = (StrictEqualityNodeWrapper) object;
       return mInfo == wrapper.mInfo;
     }
@@ -1192,7 +1211,12 @@ public class ShadowAccessibilityNodeInfo {
 
     @Implementation
     protected void __constructor__(int id, CharSequence label) {
-      if (((id & (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK")) == 0) && Integer.bitCount(id) != 1) {
+      if (((id
+                  & (int)
+                      ReflectionHelpers.getStaticField(
+                          AccessibilityNodeInfo.class, "ACTION_TYPE_MASK"))
+              == 0)
+          && Integer.bitCount(id) != 1) {
         throw new IllegalArgumentException("Invalid standard action id");
       }
       this.id = id;
@@ -1266,7 +1290,9 @@ public class ShadowAccessibilityNodeInfo {
   }
   
   private static int getLastLegacyActionFromFrameWork() {
-    return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
+    return (int)
+        ReflectionHelpers.getStaticField(
+            AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
   }
 
   /**
@@ -1280,5 +1306,17 @@ public class ShadowAccessibilityNodeInfo {
 
   public interface OnPerformActionListener {
     boolean onPerformAccessibilityAction(int action, Bundle arguments);
+  }
+
+  @Override
+  @Implementation
+  public String toString() {
+    return "ShadowAccessibilityNodeInfo@"
+        + System.identityHashCode(this)
+        + ":{text:"
+        + text
+        + ", className:"
+        + className
+        + "}";
   }
 }

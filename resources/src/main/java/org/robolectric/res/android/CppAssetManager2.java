@@ -863,7 +863,7 @@ public class CppAssetManager2 {
 
       // Create a reference since we can't represent this complex type as a Res_value.
       out_value.set(new Res_value((byte) Res_value.TYPE_REFERENCE, resid));
-      out_selected_config.set(entry.get().config);
+      out_selected_config.set(new ResTable_config(entry.get().config));
       out_flags.set(entry.get().type_flags);
       return cookie;
     }
@@ -877,7 +877,7 @@ public class CppAssetManager2 {
     // Convert the package ID to the runtime assigned package ID.
     entry.get().dynamic_ref_table.lookupResourceValue(out_value);
 
-    out_selected_config.set(entry.get().config);
+    out_selected_config.set(new ResTable_config(entry.get().config));
     out_flags.set(entry.get().type_flags);
     return cookie;
   }

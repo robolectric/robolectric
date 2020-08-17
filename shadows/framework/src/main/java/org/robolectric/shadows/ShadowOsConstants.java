@@ -16,8 +16,34 @@ public final class ShadowOsConstants {
     int errnos = 1;
     try {
       for (Field field : OsConstants.class.getDeclaredFields()) {
-        if (ERRNO_PATTERN.matcher(field.getName()).matches() && field.getType() == int.class) {
+        final String fieldName = field.getName();
+
+        if (ERRNO_PATTERN.matcher(fieldName).matches() && field.getType() == int.class) {
           field.setInt(null, errnos++);
+        }
+        // Type of file.
+        if (fieldName.equals(OsConstantsValues.S_IFMT)) {
+          field.setInt(null, OsConstantsValues.S_IFMT_VALUE);
+          continue;
+        }
+        // Directory.
+        if (fieldName.equals(OsConstantsValues.S_IFDIR)) {
+          field.setInt(null, OsConstantsValues.S_IFDIR_VALUE);
+          continue;
+        }
+        // Regular file.
+        if (fieldName.equals(OsConstantsValues.S_IFREG)) {
+          field.setInt(null, OsConstantsValues.S_IFREG_VALUE);
+          continue;
+        }
+        // Symbolic link.
+        if (fieldName.equals(OsConstantsValues.S_IFLNK)) {
+          field.setInt(null, OsConstantsValues.S_IFLNK_VALUE);
+        }
+
+        // File open modes.
+        if (OsConstantsValues.OPEN_MODE_VALUES.containsKey(fieldName)) {
+          field.setInt(null, OsConstantsValues.OPEN_MODE_VALUES.get(fieldName));
         }
       }
     } catch (ReflectiveOperationException e) {

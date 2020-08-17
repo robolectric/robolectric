@@ -29,7 +29,7 @@ public class ShadowAppWidgetHostTest {
 
   @Test
   public void shouldKnowItsContext() throws Exception {
-    assertThat(shadowAppWidgetHost.getContext()).isSameAs(context);
+    assertThat(shadowAppWidgetHost.getContext()).isSameInstanceAs(context);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class ShadowAppWidgetHostTest {
   @Test
   public void createView_shouldSetViewsContext() throws Exception {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
-    assertThat(hostView.getContext()).isSameAs(context);
+    assertThat(hostView.getContext()).isSameInstanceAs(context);
   }
 
   @Test
@@ -59,12 +59,12 @@ public class ShadowAppWidgetHostTest {
   public void createView_shouldSetViewsAppWidgetInfo() throws Exception {
     AppWidgetProviderInfo info = new AppWidgetProviderInfo();
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, info);
-    assertThat(hostView.getAppWidgetInfo()).isSameAs(info);
+    assertThat(hostView.getAppWidgetInfo()).isSameInstanceAs(info);
   }
 
   @Test
   public void createView_shouldSetHostViewsHost() throws Exception {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
-    assertThat(shadowOf(hostView).getHost()).isSameAs(appWidgetHost);
+    assertThat(shadowOf(hostView).getHost()).isSameInstanceAs(appWidgetHost);
   }
 }

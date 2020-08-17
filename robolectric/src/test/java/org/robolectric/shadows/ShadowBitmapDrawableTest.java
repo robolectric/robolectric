@@ -41,14 +41,15 @@ public class ShadowBitmapDrawableTest {
   @Test
   public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
-    assertThat(shadowOf(drawable.getBitmap()).getDescription()).isEqualTo("Bitmap for resource:org.robolectric:drawable/an_image");
+    assertThat(shadowOf(drawable.getBitmap()).getDescription()).isEqualTo("Bitmap for"
+                                                                              + " resource:org.robolectric:drawable/an_image");
   }
 
   @Test
   public void mutate_createsDeepCopy() throws Exception {
     BitmapDrawable original = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     Drawable mutated = original.mutate();
-    assertThat(original).isNotSameAs(mutated);
+    assertThat(original).isNotSameInstanceAs(mutated);
     assertThat(mutated instanceof BitmapDrawable).isTrue();
     assertThat(mutated.getIntrinsicHeight()).isEqualTo(original.getIntrinsicHeight());
     assertThat(mutated.getIntrinsicWidth()).isEqualTo(original.getIntrinsicWidth());
@@ -61,13 +62,16 @@ public class ShadowBitmapDrawableTest {
     Canvas canvas = new Canvas();
     drawable.draw(canvas);
 
-    assertThat(shadowOf(canvas).getDescription()).isEqualTo("Bitmap for resource:org.robolectric:drawable/an_image");
+    assertThat(shadowOf(canvas).getDescription()).isEqualTo("Bitmap for"
+                                                                + " resource:org.robolectric:drawable/an_image");
   }
 
   @Test
   public void shouldInheritSourceStringFromDrawableDotCreateFromStream() throws Exception {
     InputStream emptyInputStream = new ByteArrayInputStream("".getBytes(UTF_8));
-    BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(emptyInputStream, "source string value");
+    BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(emptyInputStream, "source"
+                                                                                               + " string"
+                                                                                               + " value");
     assertThat(shadowOf(drawable).getSource()).isEqualTo("source string value");
   }
 
@@ -78,7 +82,10 @@ public class ShadowBitmapDrawableTest {
     Canvas canvas = new Canvas();
     drawable.draw(canvas);
 
-    assertThat(shadowOf(canvas).getDescription()).isEqualTo("Bitmap for resource:org.robolectric:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>");
+    assertThat(shadowOf(canvas).getDescription()).isEqualTo("Bitmap for"
+                                                                + " resource:org.robolectric:drawable/an_image"
+                                                                + " with"
+                                                                + " ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>");
   }
 
   @Test

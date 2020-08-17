@@ -21,6 +21,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
@@ -33,11 +34,11 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
 import org.robolectric.pluginapi.perf.PerfStatsReporter;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.Util;
@@ -59,6 +60,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private final ClassInstrumentor classInstrumentor;
   private final Interceptors interceptors;
   private final ShadowProviders shadowProviders;
+  protected final ClassHandlerBuilder classHandlerBuilder;
 
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
@@ -73,6 +75,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     classInstrumentor = injector.getInstance(ClassInstrumentor.class);
     interceptors = new Interceptors(findInterceptors());
     shadowProviders = injector.getInstance(ShadowProviders.class);
+    classHandlerBuilder = injector.getInstance(ClassHandlerBuilder.class);
     perfStatsReporters = Arrays.asList(injector.getInstance(PerfStatsReporter[].class));
   }
 
@@ -144,20 +147,28 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
    */
   @Nonnull
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder()
-        .doNotAcquirePackage("java.")
-        .doNotAcquirePackage("sun.")
-        .doNotAcquirePackage("org.robolectric.annotation.")
-        .doNotAcquirePackage("org.robolectric.internal.")
-        .doNotAcquirePackage("org.robolectric.pluginapi.")
-        .doNotAcquirePackage("org.robolectric.util.")
-        .doNotAcquirePackage("org.junit.");
+    InstrumentationConfiguration.Builder builder =
+        InstrumentationConfiguration.newBuilder()
+            .doNotAcquirePackage("java.")
+            .doNotAcquirePackage("jdk.internal.")
+            .doNotAcquirePackage("sun.")
+            .doNotAcquirePackage("org.robolectric.annotation.")
+            .doNotAcquirePackage("org.robolectric.internal.")
+            .doNotAcquirePackage("org.robolectric.pluginapi.")
+            .doNotAcquirePackage("org.robolectric.util.")
+            .doNotAcquirePackage("org.junit");
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
     for (String pkg : customPackages.split(",")) {
       if (!pkg.isEmpty()) {
         builder.doNotAcquirePackage(pkg);
       }
+    }
+
+    String customClassesRegex =
+        System.getProperty("org.robolectric.classesToNotInstrumentRegex", "");
+    if (!customClassesRegex.isEmpty()) {
+      builder.setDoNotInstrumentClassRegex(customClassesRegex);
     }
 
     for (Class<?> shadowClass : getExtraShadows(method)) {
@@ -319,11 +330,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * For tests with a timeout, we need to wrap the test method execution (but not `@Before`s or
-     * `@After`s) in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
-     * statement causes the test method (but not `@Before`s or `@After`s) to be run on a short-lived
-     * thread. This is inadequate for our purposes; we want to guarantee that every entry point to
-     * test code is run from the same thread.
+     * For tests with a timeout, we need to wrap the test method execution (but not {@code @Before}s
+     * or {@code @After}s in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
+     * statement causes the test method (but not {@code @Before}s or {@code @After}s) to be run on a
+     * short-lived thread. This is inadequate for our purposes; we want to guarantee that every
+     * entry point to test code is run from the same thread.
      */
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {
@@ -373,7 +384,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Nonnull
   protected ClassHandler createClassHandler(ShadowMap shadowMap, Sandbox sandbox) {
-    return new ShadowWrangler(shadowMap, 0, interceptors);
+    return classHandlerBuilder.build(shadowMap, ShadowMatcher.MATCH_ALL, interceptors);
   }
 
   /**

@@ -80,13 +80,13 @@ public class ShadowRenderNodeQ {
   }
 
   @Implementation
-  protected boolean setRotation(float rotation) {
+  protected boolean setRotationZ(float rotation) {
     this.rotation = rotation;
     return true;
   }
 
   @Implementation
-  protected float getRotation() {
+  protected float getRotationZ() {
     return rotation;
   }
 

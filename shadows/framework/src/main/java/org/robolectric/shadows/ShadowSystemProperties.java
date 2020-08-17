@@ -5,10 +5,12 @@ import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Properties;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = SystemProperties.class, isInAndroidSdk = false)
 public class ShadowSystemProperties {
@@ -109,6 +111,7 @@ public class ShadowSystemProperties {
 
   @Resetter
   public static synchronized void reset() {
+    ReflectionHelpers.setStaticField(SystemProperties.class, "sChangeCallbacks", new ArrayList<>());
     buildProperties = null;
   }
 }

@@ -71,19 +71,26 @@ public class ReflectionHelpers {
 
   public static <T> T createDelegatingProxy(Class<T> clazz, final Object delegate) {
     final Class delegateClass = delegate.getClass();
-    return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
-        new Class[]{clazz}, new InvocationHandler() {
-          @Override
-          public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            try {
-              Method delegateMethod = delegateClass.getMethod(method.getName(), method.getParameterTypes());
-              delegateMethod.setAccessible(true);
-              return delegateMethod.invoke(delegate, args);
-            } catch (NoSuchMethodException e) {
-              return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
-            }
-          }
-        });
+    return (T)
+        Proxy.newProxyInstance(
+            clazz.getClassLoader(),
+            new Class[] {clazz},
+            new InvocationHandler() {
+              @Override
+              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                try {
+                  Method delegateMethod =
+                      delegateClass.getMethod(method.getName(), method.getParameterTypes());
+                  delegateMethod.setAccessible(true);
+                  return delegateMethod.invoke(delegate, args);
+                } catch (NoSuchMethodException e) {
+                  return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+                } catch (InvocationTargetException e) {
+                  // Required to propagate the correct throwable.
+                  throw e.getTargetException();
+                }
+              }
+            });
   }
 
   public static <A extends Annotation> A defaultsFor(Class<A> annotation) {
@@ -430,17 +437,19 @@ public class ReflectionHelpers {
 
   private static void makeFieldVeryAccessible(Field field) {
     field.setAccessible(true);
-
-    try {
-      Field modifiersField = Field.class.getDeclaredField("modifiers");
-      modifiersField.setAccessible(true);
+    // remove 'final' modifier if present
+    if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
       try {
-        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException(e);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        try {
+          modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        } catch (IllegalAccessException e) {
+          throw new AssertionError(e);
+        }
+      } catch (NoSuchFieldException e) {
+        // ignore missing fields
       }
-    } catch (NoSuchFieldException e) {
-      // ignore missing fields
     }
   }
 

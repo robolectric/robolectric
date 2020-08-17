@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
@@ -60,8 +61,7 @@ public class ShadowUsbManagerTest {
     assertThat(usbManager.getDeviceList()).isEmpty();
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice1, true);
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice2, true);
-    assertThat(usbManager.getDeviceList().values())
-        .containsExactly(usbDevice1, usbDevice2);
+    assertThat(usbManager.getDeviceList().values()).containsExactly(usbDevice1, usbDevice2);
   }
 
   @Test
@@ -121,6 +121,26 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void getPortStatus_shouldReturnStatusForCorrespondingPort() {
+    shadowOf(usbManager).addPort("port1");
+    shadowOf(usbManager).addPort("port2");
+    shadowOf(usbManager)
+        .addPort(
+            "port3",
+            UsbPortStatus.MODE_DUAL,
+            UsbPortStatus.POWER_ROLE_SINK,
+            UsbPortStatus.DATA_ROLE_DEVICE,
+            /*statusSupportedRoleCombinations=*/ 0);
+
+    UsbPortStatus portStatus = (UsbPortStatus) shadowOf(usbManager).getPortStatus("port3");
+    assertThat(portStatus.getCurrentMode()).isEqualTo(UsbPortStatus.MODE_DUAL);
+    assertThat(portStatus.getCurrentPowerRole()).isEqualTo(UsbPortStatus.POWER_ROLE_SINK);
+    assertThat(portStatus.getCurrentDataRole()).isEqualTo(UsbPortStatus.DATA_ROLE_DEVICE);
+    assertThat(portStatus.getSupportedRoleCombinations()).isEqualTo(0);
+  }
+
+  @Test
   @Config(minSdk = M)
   public void clearPorts_shouldRemoveAllPorts() {
     shadowOf(usbManager).addPort("port1");
@@ -148,13 +168,13 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.Q)
+  @Config(minSdk = Q)
   public void setPortRoles_sinkHost_shouldSetPortStatus_Q() {
     shadowOf(usbManager).addPort("port1");
 
     List<UsbPort> usbPorts = getUsbPorts();
-    _usbManager_().setPortRoles(
-        usbPorts.get(0), UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.DATA_ROLE_HOST);
+    _usbManager_()
+        .setPortRoles(usbPorts.get(0), UsbPortStatus.POWER_ROLE_SINK, UsbPortStatus.DATA_ROLE_HOST);
 
     UsbPortStatus usbPortStatus = _usbManager_().getPortStatus(usbPorts.get(0));
     assertThat(usbPortStatus.getCurrentPowerRole()).isEqualTo(UsbPortStatus.POWER_ROLE_SINK);
@@ -167,8 +187,7 @@ public class ShadowUsbManagerTest {
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice1, false);
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice2, false);
 
-    assertThat(usbManager.getDeviceList().values())
-        .containsExactly(usbDevice1, usbDevice2);
+    assertThat(usbManager.getDeviceList().values()).containsExactly(usbDevice1, usbDevice2);
 
     shadowOf(usbManager).removeUsbDevice(usbDevice1);
     assertThat(usbManager.getDeviceList().values()).containsExactly(usbDevice2);
@@ -200,5 +219,4 @@ public class ShadowUsbManagerTest {
   private _UsbManager_ _usbManager_() {
     return reflector(_UsbManager_.class, usbManager);
   }
-
 }

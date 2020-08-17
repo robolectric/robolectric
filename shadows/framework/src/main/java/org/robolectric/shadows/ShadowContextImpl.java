@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
@@ -56,6 +57,7 @@ public class ShadowContextImpl {
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
+  private int userId = 0;
 
   /**
    * Returns the handle to a system-level service by name. If the service is not available in
@@ -151,30 +153,31 @@ public class ShadowContextImpl {
 
   @Implementation
   protected void sendBroadcast(Intent intent) {
-    getShadowInstrumentation().sendBroadcastWithPermission(intent, null, realContextImpl);
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(
+            intent, /*userHandle=*/ null, /*receiverPermission=*/ null, realContextImpl);
   }
 
   @Implementation
   protected void sendBroadcast(Intent intent, String receiverPermission) {
     getShadowInstrumentation()
-        .sendBroadcastWithPermission(intent, receiverPermission, realContextImpl);
+        .sendBroadcastWithPermission(
+            intent, /*userHandle=*/ null, receiverPermission, realContextImpl);
   }
 
-  /** Forwards the call to {@link #sendBroadcast(Intent)}, disregarding {@code user} param. */
   @Implementation(minSdk = JELLY_BEAN_MR1)
   @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
   protected void sendBroadcastAsUser(@RequiresPermission Intent intent, UserHandle user) {
-    sendBroadcast(intent);
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(intent, user, /*receiverPermission=*/ null, realContextImpl);
   }
 
-  /**
-   * Forwards the call to {@link #sendBroadcast(Intent,String)}, disregarding {@code user} param.
-   */
   @Implementation(minSdk = JELLY_BEAN_MR1)
   @RequiresPermission(android.Manifest.permission.INTERACT_ACROSS_USERS)
   protected void sendBroadcastAsUser(
       @RequiresPermission Intent intent, UserHandle user, @Nullable String receiverPermission) {
-    sendBroadcast(intent, receiverPermission);
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(intent, user, receiverPermission, realContextImpl);
   }
 
   @Implementation
@@ -193,8 +196,9 @@ public class ShadowContextImpl {
       String initialData,
       Bundle initialExtras) {
     getShadowInstrumentation()
-        .sendOrderedBroadcast(
+        .sendOrderedBroadcastAsUser(
             intent,
+            /*userHandle=*/ null,
             receiverPermission,
             resultReceiver,
             scheduler,
@@ -204,8 +208,11 @@ public class ShadowContextImpl {
             realContextImpl);
   }
 
-  /** Behaves as {@link #sendOrderedBroadcast} and currently ignores userHandle. */
-  @Implementation(minSdk = KITKAT)
+  /**
+   * Allows the test to query for the broadcasts for specific users, for everything else behaves as
+   * {@link #sendOrderedBroadcastAsUser}.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
   protected void sendOrderedBroadcastAsUser(
       Intent intent,
       UserHandle userHandle,
@@ -215,18 +222,20 @@ public class ShadowContextImpl {
       int initialCode,
       String initialData,
       Bundle initialExtras) {
-    sendOrderedBroadcast(
-        intent,
-        receiverPermission,
-        resultReceiver,
-        scheduler,
-        initialCode,
-        initialData,
-        initialExtras
-    );
+    getShadowInstrumentation()
+        .sendOrderedBroadcastAsUser(
+            intent,
+            userHandle,
+            receiverPermission,
+            resultReceiver,
+            scheduler,
+            initialCode,
+            initialData,
+            initialExtras,
+            realContextImpl);
   }
 
-  /** Behaves as {@link #sendOrderedBroadcast}. Currently ignores userHandle, appOp, and options. */
+  /** Behaves as {@link #sendOrderedBroadcastAsUser}. Currently ignores appOp and options. */
   @Implementation(minSdk = M)
   protected void sendOrderedBroadcastAsUser(
       Intent intent,
@@ -239,15 +248,15 @@ public class ShadowContextImpl {
       int initialCode,
       String initialData,
       Bundle initialExtras) {
-    sendOrderedBroadcast(
+    sendOrderedBroadcastAsUser(
         intent,
+        userHandle,
         receiverPermission,
         resultReceiver,
         scheduler,
         initialCode,
         initialData,
-        initialExtras
-    );
+        initialExtras);
   }
 
 
@@ -295,21 +304,24 @@ public class ShadowContextImpl {
 
   @Implementation
   protected ComponentName startService(Intent service) {
+    validateServiceIntent(service);
     return getShadowInstrumentation().startService(service);
   }
 
   @Implementation(minSdk = O)
   protected ComponentName startForegroundService(Intent service) {
-    return getShadowInstrumentation().startService(service);
+    return startService(service);
   }
 
   @Implementation
   protected boolean stopService(Intent name) {
+    validateServiceIntent(name);
     return getShadowInstrumentation().stopService(name);
   }
 
   @Implementation
   protected boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+    validateServiceIntent(intent);
     return getShadowInstrumentation().bindService(intent, serviceConnection, i);
   }
 
@@ -317,7 +329,7 @@ public class ShadowContextImpl {
   @Implementation(minSdk = LOLLIPOP)
   protected boolean bindServiceAsUser(
       Intent intent, final ServiceConnection serviceConnection, int i, UserHandle userHandle) {
-    return getShadowInstrumentation().bindService(intent, serviceConnection, i);
+    return bindService(intent, serviceConnection, i);
   }
 
   @Implementation
@@ -325,14 +337,39 @@ public class ShadowContextImpl {
     getShadowInstrumentation().unbindService(serviceConnection);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected int getUserId() {
-    return 0;
+  // This is a private method in ContextImpl so we copy the relevant portions of it here.
+  private void validateServiceIntent(Intent service) {
+    if (service.getComponent() == null
+        && service.getPackage() == null
+        && realContextImpl.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {
+      throw new IllegalArgumentException("Service Intent must be explicit: " + service);
+    }
   }
 
-  @Implementation
-  protected File getExternalCacheDir() {
-    return Environment.getExternalStorageDirectory();
+  /**
+   * Behaves as {@link #startActivity}. The user parameter is ignored.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
+    // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
+    // properly shadowed.
+    directlyOn(
+        realContextImpl,
+        ShadowContextImpl.CLASS_NAME,
+        "startActivity",
+        ClassParameter.from(Intent.class, intent),
+        ClassParameter.from(Bundle.class, options)
+    );
+  }
+
+  /* Set the user id returned by {@link #getUserId()}. */
+  public void setUserId(int userId) {
+    this.userId = userId;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected int getUserId() {
+    return userId;
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)

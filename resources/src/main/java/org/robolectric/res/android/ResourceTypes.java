@@ -9,6 +9,7 @@ import static org.robolectric.res.android.Util.SIZEOF_SHORT;
 import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1192,7 +1193,9 @@ public static class ResTable_ref
       entryCount = buf.getInt(offset + ResChunk_header.SIZEOF + 4);
       entriesStart = buf.getInt(offset + ResChunk_header.SIZEOF + 8);
 
-      buf.position(offset + ResChunk_header.SIZEOF + 12);
+      // Cast to Buffer because generated covariant return type that returns ByteBuffer is not
+      // available on Java 8
+      ((Buffer) buf).position(offset + ResChunk_header.SIZEOF + 12);
       config = ResTable_config.createConfig(buf);
     }
 
@@ -1567,7 +1570,9 @@ public static class ResTable_ref
     public FutureWriter(ByteBuffer buf, int size) {
       this.buf = buf;
       this.position = buf.position();
-      buf.position(position + size);
+      // Cast to Buffer because generated covariant return type that returns ByteBuffer is not
+      // available on Java 8
+      ((Buffer) buf).position(position + size);
     }
 
     abstract protected void put(int position, T value);

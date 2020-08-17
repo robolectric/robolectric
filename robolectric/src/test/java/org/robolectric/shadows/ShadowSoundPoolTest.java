@@ -158,6 +158,24 @@ public class ShadowSoundPoolTest {
     assertThat(shadowOf(soundPool).wasResourcePlayed(R.raw.sound)).isFalse();
   }
 
+  @Test
+  public void loadSoundWithResId_positiveId () {
+    SoundPool soundPool = createSoundPool();
+
+    int soundId = soundPool.load(ApplicationProvider.getApplicationContext(), R.raw.sound, 1);
+
+    assertThat(soundId).isGreaterThan(0);
+  }
+
+  @Test
+  public void loadSoundWithPath_positiveId () {
+    SoundPool soundPool = createSoundPool();
+
+    int soundId = soundPool.load("/mnt/sdcard/sound.wav", 1);
+
+    assertThat(soundId).isGreaterThan(0);
+  }
+
   private SoundPool createSoundPool() {
     return RuntimeEnvironment.getApiLevel() >= LOLLIPOP
         ? new SoundPool.Builder().build()

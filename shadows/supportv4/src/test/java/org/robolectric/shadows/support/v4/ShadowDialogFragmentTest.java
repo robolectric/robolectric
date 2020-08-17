@@ -5,7 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -17,6 +18,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
@@ -24,11 +26,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowDialog;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class ShadowDialogFragmentTest {
 
   private FragmentActivity activity;
@@ -181,9 +181,5 @@ public class ShadowDialogFragmentTest {
     public void returnThisDialogFromOnCreateDialog(Dialog dialog) {
       returnThisDialogFromOnCreateDialog = dialog;
     }
-  }
-
-  private static ShadowDialog shadowOf(Dialog dialog) {
-    return (ShadowDialog) Shadow.extract(dialog);
   }
 }

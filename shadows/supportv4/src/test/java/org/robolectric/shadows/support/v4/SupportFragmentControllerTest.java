@@ -1,9 +1,6 @@
 package org.robolectric.shadows.support.v4;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,14 +11,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import org.junit.Before;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.shadows.ShadowBaseLooper;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+@RunWith(AndroidJUnit4.class)
 public class SupportFragmentControllerTest {
 
   private static final int VIEW_ID_CUSTOMIZED_LOGIN_ACTIVITY = 123;
@@ -101,7 +98,7 @@ public class SupportFragmentControllerTest {
 
   @Test
   public void isPaused() {
-    final LoginFragment fragment = spy(new LoginFragment());
+    final LoginFragment fragment = new LoginFragment();
     SupportFragmentController.of(fragment, LoginActivity.class).create().start().resume().pause();
 
     assertThat(fragment.getView()).isNotNull();
@@ -109,13 +106,12 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isFalse();
 
-    verify(fragment).onResume();
-    verify(fragment).onPause();
+    assertThat(fragment.transcript).containsAtLeast("onResume", "onPause");
   }
 
   @Test
   public void isStopped() {
-    final LoginFragment fragment = spy(new LoginFragment());
+    final LoginFragment fragment = new LoginFragment();
     SupportFragmentController.of(fragment, LoginActivity.class).create().start().resume().pause().stop();
 
     assertThat(fragment.getView()).isNotNull();
@@ -123,10 +119,7 @@ public class SupportFragmentControllerTest {
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isFalse();
 
-    verify(fragment).onStart();
-    verify(fragment).onResume();
-    verify(fragment).onPause();
-    verify(fragment).onStop();
+    assertThat(fragment.transcript).containsAtLeast("onStart", "onResume", "onPause", "onStop");
   }
 
   @Test
@@ -172,9 +165,35 @@ public class SupportFragmentControllerTest {
   }
 
   public static class LoginFragment extends Fragment {
+    public List<String> transcript = new ArrayList<>();
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
+    }
+
+    @Override
+    public void onStart() {
+      super.onStart();
+      transcript.add("onStart");
+    }
+
+    @Override
+    public void onResume() {
+      super.onResume();
+      transcript.add("onResume");
+    }
+
+    @Override
+    public void onPause() {
+      super.onPause();
+      transcript.add("onPause");
+    }
+
+    @Override
+    public void onStop() {
+      super.onStop();
+      transcript.add("onStop");
     }
   }
 

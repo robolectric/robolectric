@@ -3,10 +3,10 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Application;
 import android.app.backup.BackupManager;
@@ -46,6 +46,19 @@ public class ShadowBackupManagerTest {
 
     shadowOf(backupManager).addAvailableRestoreSets(123L, Arrays.asList("foo.bar", "bar.baz"));
     shadowOf(backupManager).addAvailableRestoreSets(456L, Arrays.asList("hello.world"));
+  }
+
+  @Test
+  public void dataChanged() {
+    assertThat(shadowOf(backupManager).isDataChanged()).isFalse();
+    assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(0);
+
+    for (int i = 1; i <= 3; i++) {
+      backupManager.dataChanged();
+
+      assertThat(shadowOf(backupManager).isDataChanged()).isTrue();
+      assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(i);
+    }
   }
 
   @Test
@@ -163,17 +176,10 @@ public class ShadowBackupManagerTest {
   }
 
   private static <T, F> Correspondence<T, F> fieldCorrespondence(String fieldName) {
-    return new Correspondence<T, F>() {
-      @Override
-      public boolean compare(T actual, F expected) {
-        return Objects.equals(ReflectionHelpers.getField(actual, fieldName), expected);
-      }
-
-      @Override
-      public String toString() {
-        return "field \"" + fieldName + "\" matches";
-      }
-    };
+    return Correspondence.from(
+        (actual, expected) ->
+            Objects.equals(ReflectionHelpers.getField(actual, fieldName), expected),
+        "field \"" + fieldName + "\" matches");
   }
 
   private static class TestRestoreObserver extends RestoreObserver {}

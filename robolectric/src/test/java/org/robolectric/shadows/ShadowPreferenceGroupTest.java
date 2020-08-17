@@ -85,8 +85,8 @@ public class ShadowPreferenceGroupTest {
     group.addPreference(pref1);
     group.addPreference(pref2);
 
-    assertThat(group.getPreference(0)).isSameAs(pref1);
-    assertThat(group.getPreference(1)).isSameAs(pref2);
+    assertThat(group.getPreference(0)).isSameInstanceAs(pref1);
+    assertThat(group.getPreference(1)).isSameInstanceAs(pref2);
   }
 
   @Test
@@ -132,8 +132,8 @@ public class ShadowPreferenceGroupTest {
     group.addPreference(pref1);
     group.addPreference(pref2);
 
-    assertThat(group.findPreference(pref1.getKey())).isSameAs(pref1);
-    assertThat(group.findPreference(pref2.getKey())).isSameAs(pref2);
+    assertThat(group.findPreference(pref1.getKey())).isSameInstanceAs(pref1);
+    assertThat(group.findPreference(pref2.getKey())).isSameInstanceAs(pref2);
   }
 
   @Test
@@ -145,7 +145,7 @@ public class ShadowPreferenceGroupTest {
     group.addPreference(pref1);
     group.addPreference(group2);
 
-    assertThat(group.findPreference(pref2.getKey())).isSameAs(pref2);
+    assertThat(group.findPreference(pref2.getKey())).isSameInstanceAs(pref2);
   }
 
   @Test

@@ -12,8 +12,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.IAccessibilityManager;
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -30,6 +33,7 @@ public class ShadowAccessibilityManager {
   private static final Object sInstanceSync = new Object();
 
   @RealObject AccessibilityManager realAccessibilityManager;
+  private final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
   private boolean enabled;
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
@@ -67,6 +71,7 @@ public class ShadowAccessibilityManager {
     } else {
       AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
       ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
+      ReflectionHelpers.setField(accessibilityManager, "mService", ReflectionHelpers.createNullProxy(IAccessibilityManager.class));
       return accessibilityManager;
     }
   }
@@ -116,6 +121,21 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
+  protected void sendAccessibilityEvent(AccessibilityEvent event) {
+    sentAccessibilityEvents.add(event);
+    Shadow.directlyOn(realAccessibilityManager, AccessibilityManager.class)
+        .sendAccessibilityEvent(event);
+  }
+
+  /**
+   * Returns a list of all {@linkplain AccessibilityEvent accessibility events} that have been
+   * sent via {@link #sendAccessibilityEvent}.
+   */
+  public ImmutableList<AccessibilityEvent> getSentAccessibilityEvents() {
+    return ImmutableList.copyOf(sentAccessibilityEvents);
+  }
+
+  @Implementation
   protected boolean isEnabled() {
     return enabled;
   }
@@ -136,7 +156,7 @@ public class ShadowAccessibilityManager {
 
   /**
    * Returns {@code true} by default, or the value specified via {@link
-   * #setAccessibilityButtonSupported(boolean)}
+   * #setAccessibilityButtonSupported(boolean)}.
    */
   @Implementation(minSdk = O_MR1)
   protected static boolean isAccessibilityButtonSupported() {

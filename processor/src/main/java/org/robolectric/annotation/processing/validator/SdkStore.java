@@ -5,8 +5,6 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
 
-import com.sun.tools.javac.code.Type.ArrayType;
-import com.sun.tools.javac.code.Type.TypeVar;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +27,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -105,10 +105,10 @@ public class SdkStore {
   }
 
   private static String canonicalize(TypeMirror typeMirror) {
-    if (typeMirror instanceof TypeVar) {
-      return ((TypeVar) typeMirror).getUpperBound().toString();
+    if (typeMirror instanceof TypeVariable) {
+      return ((TypeVariable) typeMirror).getUpperBound().toString();
     } else if (typeMirror instanceof ArrayType) {
-      return canonicalize(((ArrayType) typeMirror).elemtype) + "[]";
+      return canonicalize(((ArrayType) typeMirror).getComponentType()) + "[]";
     } else {
       return typeMirror.toString();
     }
@@ -134,16 +134,16 @@ public class SdkStore {
     }
 
     /**
-     * Matches an `@Implementation` method against the framework method for this SDK.
+     * Matches an {@code @Implementation} method against the framework method for this SDK.
      *
      * @param sdkClassElem the framework class being shadowed
-     * @param methodElement the `@Implementation` method declaration to check
-     * @param looseSignatures if `true`, also match any framework method with the same class,
-     *     name, return type, and arity of parameters.
-     * @return a string describing any problems with this method, or `null` if it checks out.
+     * @param methodElement the {@code @Implementation} method declaration to check
+     * @param looseSignatures if true, also match any framework method with the same class, name,
+     *     return type, and arity of parameters.
+     * @return a string describing any problems with this method, or null if it checks out.
      */
-    public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
-        boolean looseSignatures) {
+    public String verifyMethod(
+        TypeElement sdkClassElem, ExecutableElement methodElement, boolean looseSignatures) {
       String className = getClassFQName(sdkClassElem);
       ClassInfo classInfo = getClassInfo(className);
 
@@ -235,12 +235,13 @@ public class SdkStore {
     }
 
     /**
-     * Determine the API level for this SDK jar by inspecting its `build.prop` file.
+     * Determine the API level for this SDK jar by inspecting its {@code build.prop} file.
      *
-     * If the `ro.build.version.codename` value isn't `REL`, this is an unreleased SDK, which
-     * is represented as `10000` (see {@link android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
+     * <p>If the {@code ro.build.version.codename} value isn't {@code REL}, this is an unreleased
+     * SDK, which is represented as 10000 (see {@link
+     * android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
      *
-     * @return the API level, or `10000`
+     * @return the API level, or 10000
      */
     private int readSdkInt() {
       Properties properties = new Properties();

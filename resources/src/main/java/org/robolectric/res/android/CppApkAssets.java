@@ -56,6 +56,7 @@ public class CppApkAssets {
   public CppApkAssets(ZipArchiveHandle zip_handle_, String path_) {
     this.zip_handle_ = zip_handle_;
     this.path_ = path_;
+    this.zipFileRO = new ZipFileRO(zip_handle_, zip_handle_.zipFile.getName());
   }
 
   public String GetPath() { return path_; }
@@ -81,6 +82,7 @@ public class CppApkAssets {
 //       std::unique_ptr<typename std::remove_pointer<::ZipArchiveHandle>::type, ZipArchivePtrCloser>;
 
   ZipArchiveHandle zip_handle_;
+  private final ZipFileRO zipFileRO;
   private String path_;
   Asset resources_asset_;
   Asset idmap_asset_;
@@ -279,7 +281,6 @@ public class CppApkAssets {
     CHECK(zip_handle_ != null);
 
     String name = path;
-    ZipFileRO zipFileRO = ZipFileRO.open(zip_handle_.zipFile.getName());
     ZipEntryRO entry;
     entry = zipFileRO.findEntryByName(name);
     // int result = FindEntry(zip_handle_.get(), name, &entry);

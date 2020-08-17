@@ -23,7 +23,7 @@ public class ShadowSpannableStringTest {
 
   @Test
   public void testToString() {
-    assertThat(spanStr.toString()).isSameAs(TEST_STRING);
+    assertThat(spanStr.toString()).isSameInstanceAs(TEST_STRING);
   }
 
   @Test
@@ -47,7 +47,7 @@ public class ShadowSpannableStringTest {
     Object[] spans = spanStr.getSpans(0, TEST_STRING.length(), Object.class);
     assertThat(spans).isNotNull();
     assertThat(spans.length).isEqualTo(1);
-    assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
+    assertThat((UnderlineSpan) spans[0]).isSameInstanceAs(s2);
   }
 
   @Test
@@ -65,35 +65,35 @@ public class ShadowSpannableStringTest {
     spans = spanStr.getSpans(0, TEST_STRING.length(), URLSpan.class);
     assertThat(spans).isNotNull();
     assertThat(spans.length).isEqualTo(1);
-    assertThat((URLSpan) spans[0]).isSameAs(s1);
+    assertThat((URLSpan) spans[0]).isSameInstanceAs(s1);
 
     spans = spanStr.getSpans(11, 35, Object.class);
     assertThat(spans).isNotNull();
     assertThat(spans.length).isEqualTo(1);
-    assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
+    assertThat((UnderlineSpan) spans[0]).isSameInstanceAs(s2);
 
     spans = spanStr.getSpans(21, 35, Object.class);
     assertThat(spans).isNotNull();
     assertThat(spans.length).isEqualTo(1);
-    assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
+    assertThat((UnderlineSpan) spans[0]).isSameInstanceAs(s2);
 
     spans = spanStr.getSpans(5, 15, Object.class);
     assertThat(spans).isNotNull();
     assertThat(spans.length).isEqualTo(1);
-    assertThat((URLSpan) spans[0]).isSameAs(s1);
+    assertThat((URLSpan) spans[0]).isSameInstanceAs(s1);
   }
 
   private void assertBothSpans(URLSpan s1, UnderlineSpan s2) {
     Object[] spans = spanStr.getSpans(0, TEST_STRING.length(), Object.class);
     if (spans[0] instanceof URLSpan) {
-      assertThat((URLSpan) spans[0]).isSameAs(s1);
+      assertThat((URLSpan) spans[0]).isSameInstanceAs(s1);
     } else {
-      assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
+      assertThat((UnderlineSpan) spans[0]).isSameInstanceAs(s2);
     }
     if (spans[1] instanceof UnderlineSpan) {
-      assertThat((UnderlineSpan) spans[1]).isSameAs(s2);
+      assertThat((UnderlineSpan) spans[1]).isSameInstanceAs(s2);
     } else {
-      assertThat((URLSpan) spans[1]).isSameAs(s1);
+      assertThat((URLSpan) spans[1]).isSameInstanceAs(s1);
     }
   }
 

@@ -284,20 +284,20 @@ public class ShadowBitmapTest {
   public void bitmapsAreReused() {
     Bitmap b = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     Bitmap b1 = Bitmap.createBitmap(b, 0, 0, 10, 10);
-    assertThat(b1).isSameAs(b);
+    assertThat(b1).isSameInstanceAs(b);
     Bitmap b2 = Bitmap.createBitmap(b, 0, 0, 10, 10, null, false);
-    assertThat(b2).isSameAs(b);
+    assertThat(b2).isSameInstanceAs(b);
     Bitmap b3 = Bitmap.createScaledBitmap(b, 10, 10, false);
-    assertThat(b3).isSameAs(b);
+    assertThat(b3).isSameInstanceAs(b);
   }
 
   @Test
   public void equalsSizeTransformReturnsOriginal() {
     Bitmap b1 = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     Bitmap b2 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, false);
-    assertThat(b1).isSameAs(b2);
+    assertThat(b1).isSameInstanceAs(b2);
     Bitmap b3 = Bitmap.createBitmap(b1, 0, 0, 10, 10, null, true);
-    assertThat(b1).isSameAs(b3);
+    assertThat(b1).isSameInstanceAs(b3);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -633,6 +633,48 @@ public class ShadowBitmapTest {
     Bitmap original2 = Bitmap.createBitmap(2, 2, Bitmap.Config.ARGB_8888);
     original2.setPixels(pixels, 0, 1, 0, 0, 2, 2);
     assertThat(original1.sameAs(original2)).isTrue();
+  }
+
+  @Test
+  public void extractAlpha() {
+    int[] pixels = new int[] {0xFF000000, 0x00000000, 0x88999999, 0x12345678};
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 2, /* height= */ 2, Bitmap.Config.ARGB_8888);
+    bitmap.setPixels(
+        pixels,
+        /* offset= */ 0,
+        /* stride= */ 2,
+        /* x= */ 0,
+        /* y= */ 0,
+        /* width= */ 2,
+        /* height= */ 2);
+
+    Bitmap alpha = bitmap.extractAlpha();
+
+    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
+    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
+    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
+    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+  }
+
+  @Test
+  public void extractAlpha_withArgs() {
+    int[] pixels = new int[] {0xFF000000, 0x00000000, 0x88999999, 0x12345678};
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 2, /* height= */ 2, Bitmap.Config.ARGB_8888);
+    bitmap.setPixels(
+        pixels,
+        /* offset= */ 0,
+        /* stride= */ 2,
+        /* x= */ 0,
+        /* y= */ 0,
+        /* width= */ 2,
+        /* height= */ 2);
+
+    Bitmap alpha = bitmap.extractAlpha(/* paint= */ null, /* offsetXY= */ new int[2]);
+
+    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
+    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
+    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
+    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
   }
 
   private static Bitmap create(String name) {

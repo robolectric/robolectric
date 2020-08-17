@@ -25,7 +25,7 @@ Copy all required Android dependencies into your local Maven repository:
 
 Perform a full build of all shadows:
 
-    ./gradlew clean assemble install compileTest
+    ./gradlew clean assemble install compileTestJava
 
 ## Building and Testing
 

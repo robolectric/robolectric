@@ -8,6 +8,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 
 import android.app.Application;
+import android.os.SystemClock;
 import android.text.format.DateUtils;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -17,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDateUtilsTest {
@@ -75,9 +77,9 @@ public class ShadowDateUtilsTest {
 
   @Test
   public void isToday_shouldReturnFalseForNotToday() {
-    assume().that(ShadowBaseLooper.useRealisticLooper()).isFalse();
+    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     long today = java.util.Calendar.getInstance().getTimeInMillis();
-    ShadowSystemClock.setCurrentTimeMillis(today);
+    SystemClock.setCurrentTimeMillis(today);
 
     assertThat(DateUtils.isToday(today)).isTrue();
     assertThat(DateUtils.isToday(today + (86400 * 1000)  /* 24 hours */)).isFalse();

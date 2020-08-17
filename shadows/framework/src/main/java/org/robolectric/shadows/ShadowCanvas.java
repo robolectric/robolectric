@@ -26,6 +26,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)
 public class ShadowCanvas {
+  private final List<RoundRectPaintHistoryEvent> roundRectPaintEvents = new ArrayList<>();
   private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<>();
   private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<>();
   private List<ArcPaintHistoryEvent> arcPaintEvents = new ArrayList<>();
@@ -203,6 +204,13 @@ public class ShadowCanvas {
   }
 
   @Implementation
+  protected void drawRoundRect(RectF rect, float rx, float ry, Paint paint) {
+    roundRectPaintEvents.add(
+        new RoundRectPaintHistoryEvent(
+            rect.left, rect.top, rect.right, rect.bottom, rx, ry, paint));
+  }
+
+  @Implementation
   protected void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
     linePaintEvents.add(new LinePaintHistoryEvent(startX, startY, stopX, stopY, paint));
   }
@@ -299,6 +307,7 @@ public class ShadowCanvas {
     pathPaintEvents.clear();
     circlePaintEvents.clear();
     rectPaintEvents.clear();
+    roundRectPaintEvents.clear();
     linePaintEvents.clear();
     ovalPaintEvents.clear();
     ShadowBitmap shadowBitmap = Shadow.extract(targetBitmap);
@@ -345,6 +354,18 @@ public class ShadowCanvas {
 
   public int getRectPaintHistoryCount() {
     return rectPaintEvents.size();
+  }
+
+  public RoundRectPaintHistoryEvent getDrawnRoundRect(int i) {
+    return roundRectPaintEvents.get(i);
+  }
+
+  public RoundRectPaintHistoryEvent getLastDrawnRoundRect() {
+    return roundRectPaintEvents.get(roundRectPaintEvents.size() - 1);
+  }
+
+  public int getRoundRectPaintHistoryCount() {
+    return roundRectPaintEvents.size();
   }
 
   public LinePaintHistoryEvent getDrawnLine(int i) {
@@ -414,6 +435,34 @@ public class ShadowCanvas {
       this.top = top;
       this.right = right;
       this.bottom = bottom;
+    }
+  }
+
+  /** Captures round rectangle drawing events */
+  public static class RoundRectPaintHistoryEvent {
+    public final Paint paint;
+    public final RectF rect;
+    public final float left;
+    public final float top;
+    public final float right;
+    public final float bottom;
+    public final float rx;
+    public final float ry;
+
+    private RoundRectPaintHistoryEvent(
+        float left, float top, float right, float bottom, float rx, float ry, Paint paint) {
+      this.rect = new RectF(left, top, right, bottom);
+      this.paint = new Paint(paint);
+      this.paint.setColor(paint.getColor());
+      this.paint.setStrokeWidth(paint.getStrokeWidth());
+      this.paint.setTextSize(paint.getTextSize());
+      this.paint.setStyle(paint.getStyle());
+      this.left = left;
+      this.top = top;
+      this.right = right;
+      this.bottom = bottom;
+      this.rx = rx;
+      this.ry = ry;
     }
   }
 

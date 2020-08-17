@@ -4,11 +4,15 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.slice.SliceManager;
+import android.app.slice.SliceSpec;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,5 +71,26 @@ public final class ShadowSliceManagerTest {
     sliceManager.revokeSlicePermission(PACKAGE_NAME_1, sliceUri1);
     assertThat(sliceManager.checkSlicePermission(sliceUri1, /* pid= */ 1, PACKAGE_1_UID))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
+  }
+
+  @Test
+  public void testPinSlice_getPinnedSlicesReturnCorrectList() {
+    SliceSpec sliceSpec = new SliceSpec("androidx.slice.BASIC", 1);
+    sliceManager.pinSlice(sliceUri1, new HashSet<>(ImmutableList.of(sliceSpec)));
+
+    assertThat(sliceManager.getPinnedSlices()).contains(sliceUri1);
+    Set<SliceSpec> sliceSpecSet = sliceManager.getPinnedSpecs(sliceUri1);
+    assertThat(sliceSpecSet).hasSize(1);
+    assertThat(sliceSpecSet).contains(sliceSpec);
+  }
+
+  @Test
+  public void testUnpinSlice_getPinnedSlicesReturnCorrectList() {
+    SliceSpec sliceSpec = new SliceSpec("androidx.slice.BASIC", 1);
+    sliceManager.pinSlice(sliceUri1, new HashSet<>(ImmutableList.of(sliceSpec)));
+    sliceManager.unpinSlice(sliceUri1);
+
+    assertThat(sliceManager.getPinnedSlices()).isEmpty();
+    assertThat(sliceManager.getPinnedSpecs(sliceUri1)).isEmpty();
   }
 }

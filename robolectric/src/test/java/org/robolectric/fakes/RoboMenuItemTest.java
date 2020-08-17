@@ -96,7 +96,7 @@ public class RoboMenuItemTest {
     assertThat(item).isNotNull();
     item = item.setActionProvider(null);
     assertThat(item).isNotNull();
-    item = item.setActionView(0);
+    item = item.setActionView(R.layout.custom_layout);
     assertThat(item).isNotNull();
     item = item.setActionView(null);
     assertThat(item).isNotNull();
@@ -146,7 +146,7 @@ public class RoboMenuItemTest {
     assertThat(testDrawable).isNotNull();
     assertThat(item.getIcon()).isNull();
     item.setIcon(testDrawable);
-    assertThat(item.getIcon()).isSameAs(testDrawable);
+    assertThat(item.getIcon()).isSameInstanceAs(testDrawable);
   }
 
   @Test
@@ -158,7 +158,7 @@ public class RoboMenuItemTest {
 
   @Test
   public void setOnActionExpandListener_shouldReturnMenuItem() throws Exception {
-    assertThat(item.setOnActionExpandListener(listener)).isSameAs(item);
+    assertThat(item.setOnActionExpandListener(listener)).isSameInstanceAs(item);
   }
 
   static class TestOnActionExpandListener implements MenuItem.OnActionExpandListener {

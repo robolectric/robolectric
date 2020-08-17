@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
+import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -53,6 +54,24 @@ public class ShadowParcelFileDescriptor {
     }
     ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
     shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));
+    if ((mode & ParcelFileDescriptor.MODE_TRUNCATE) != 0) {
+      try {
+        shadowParcelFileDescriptor.file.setLength(0);
+      } catch (IOException ioe) {
+        FileNotFoundException fnfe = new FileNotFoundException("Unable to truncate");
+        fnfe.initCause(ioe);
+        throw fnfe;
+      }
+    }
+    if ((mode & ParcelFileDescriptor.MODE_APPEND) != 0) {
+      try {
+        shadowParcelFileDescriptor.file.seek(shadowParcelFileDescriptor.file.length());
+      } catch (IOException ioe) {
+        FileNotFoundException fnfe = new FileNotFoundException("Unable to append");
+        fnfe.initCause(ioe);
+        throw fnfe;
+      }
+    }
     return pfd;
   }
 
@@ -67,8 +86,6 @@ public class ShadowParcelFileDescriptor {
       case ParcelFileDescriptor.MODE_READ_WRITE:
         return "rw";
     }
-
-    // TODO: this probably should be an error that we reach here, but default to 'rw' for now
     return "rw";
   }
 
@@ -76,7 +93,8 @@ public class ShadowParcelFileDescriptor {
   protected static ParcelFileDescriptor[] createPipe() throws IOException {
     File file =
         new File(
-            RuntimeEnvironment.getTempDirectory().create(PIPE_TMP_DIR).toFile(), PIPE_FILE_NAME);
+            RuntimeEnvironment.getTempDirectory().createIfNotExists(PIPE_TMP_DIR).toFile(),
+            PIPE_FILE_NAME + "-" + UUID.randomUUID());
     if (!file.createNewFile()) {
       throw new IOException("Cannot create pipe file: " + file.getAbsolutePath());
     }
@@ -105,7 +123,8 @@ public class ShadowParcelFileDescriptor {
     try {
       return file.length();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      // This might occur when the file object has been closed.
+      return -1;
     }
   }
 

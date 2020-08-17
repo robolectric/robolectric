@@ -51,15 +51,15 @@ public class SdkCollectionTest {
 
   @Test
   public void shouldCacheSdks() throws Exception {
-    assertThat(sdkCollection.getSdk(1234)).isSameAs(fakeSdk1234);
-    assertThat(sdkCollection.getSdk(1234)).isSameAs(fakeSdk1234);
+    assertThat(sdkCollection.getSdk(1234)).isSameInstanceAs(fakeSdk1234);
+    assertThat(sdkCollection.getSdk(1234)).isSameInstanceAs(fakeSdk1234);
 
     verify(mockSdkProvider, times(1)).getSdks();
   }
 
   @Test
   public void getMaxSupportedSdk() throws Exception {
-    assertThat(sdkCollection.getMaxSupportedSdk()).isSameAs(fakeSdk1236);
+    assertThat(sdkCollection.getMaxSupportedSdk()).isSameInstanceAs(fakeSdk1236);
   }
 
   @Test

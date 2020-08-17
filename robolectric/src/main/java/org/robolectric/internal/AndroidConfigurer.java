@@ -66,6 +66,7 @@ public class AndroidConfigurer {
 
     builder
         .doNotAcquirePackage("javax.")
+        .doNotAcquirePackage("jdk.internal.")
         .doNotAcquirePackage("org.junit")
         .doNotAcquirePackage("org.hamcrest")
         .doNotAcquirePackage("org.robolectric.annotation.")
@@ -79,10 +80,15 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("com.sun.")
         .doNotAcquirePackage("org.w3c.")
         .doNotAcquirePackage("org.xml.")
-        .doNotAcquirePackage("org.specs2")  // allows for android projects with mixed scala\java tests to be
-        .doNotAcquirePackage("scala.")      //  run with Maven Surefire (see the RoboSpecs project on github)
+        .doNotAcquirePackage(
+            "org.specs2") // allows for android projects with mixed scala\java tests to be
+        .doNotAcquirePackage(
+            "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
-         // Fix #958: SQLite native library must be loaded once.
+        .doNotAcquirePackage("io.mockk.")
+        .doNotAcquirePackage("org.bouncycastle.")
+        .doNotAcquirePackage("org.conscrypt.")
+        // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")
         .doNotAcquirePackage("org.jacoco.");
 
@@ -111,13 +117,22 @@ public class AndroidConfigurer {
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
-    // Room's migration package uses GSON and reflection to create Java classes from JSON files.
-    // This results in an error where two __robo_data__ fields get added to the same object.
-    builder.doNotInstrumentPackage("androidx.room.migration");
+    // exclude arch libraries from instrumentation. These are just android libs and no one
+    // should need to shadow them
+    builder.doNotInstrumentPackage("androidx.room");
+    builder.doNotInstrumentPackage("androidx.arch");
+    builder.doNotInstrumentPackage("android.arch");
+    builder.doNotInstrumentPackage("androidx.lifecycle");
+    builder.doNotInstrumentPackage("androidx.paging");
+    builder.doNotInstrumentPackage("androidx.work");
+
+    // exclude Compose libraries from instrumentation. These are written in Kotlin and
+    // fail on any usage due to DefaultConstructorMarker being inaccessible.
+    builder.doNotInstrumentPackage("androidx.compose");
+    builder.doNotInstrumentPackage("androidx.ui");
+
     builder.doNotInstrumentPackage("androidx.test");
-    builder.doNotInstrumentPackage("android.arch.persistence.room.migration");
     builder.doNotInstrumentPackage("android.support.test");
-    builder.doNotInstrumentClass("androidx.room.CoroutinesRoom$Companion");
 
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);

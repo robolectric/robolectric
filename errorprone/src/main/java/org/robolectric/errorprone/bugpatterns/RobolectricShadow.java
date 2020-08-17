@@ -4,7 +4,6 @@ import static com.google.errorprone.BugPattern.SeverityLevel.SUGGESTION;
 import static com.google.errorprone.matchers.Matchers.hasAnnotation;
 
 import com.google.errorprone.BugPattern;
-import com.google.errorprone.BugPattern.ProvidesFix;
 import com.google.errorprone.BugPattern.StandardTags;
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.bugpatterns.BugChecker;
@@ -49,8 +48,7 @@ import org.robolectric.annotation.Implements;
     summary = "Robolectric @Implementation methods should be protected.",
     severity = SUGGESTION,
     documentSuppression = false,
-    tags = StandardTags.REFACTORING,
-    providesFix = ProvidesFix.REQUIRES_HUMAN_ATTENTION)
+    tags = StandardTags.REFACTORING)
 public final class RobolectricShadow extends BugChecker implements ClassTreeMatcher {
   private static final Matcher<ClassTree> implementsClassMatcher = hasAnnotation(Implements.class);
 
@@ -118,19 +116,6 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
         int end = node.getEndPos((DCDocComment) getCurrentPath().getDocComment());
 
         fixes.add(Optional.of(SuggestedFix.replace(start, end, "")));
-
-        // int endPos = startPos + node.getSignature().length();
-        // String oldName = node.getSignature();
-        // int idx = oldName.indexOf('#');
-        // if (idx != -1) {
-        //   startPos += idx + 1;
-        // }
-        // state.reportMatch(
-        //     describeMatch(
-        //         state.getPath().getLeaf(), SuggestedFix.replace(startPos, endPos, with)));
-
-        // int start = element.pos;
-        // fixes.add(Optional.of(SuggestedFix.replace(start, element.getEndPos())));
       }
       return super.visitStartElement(startElementTree, aVoid);
     }

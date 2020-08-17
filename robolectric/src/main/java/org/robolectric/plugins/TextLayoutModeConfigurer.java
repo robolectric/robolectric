@@ -7,7 +7,7 @@ import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.annotation.TextLayoutMode.Mode;
 import org.robolectric.pluginapi.config.Configurer;
 
-/** Provides configuration to Robolectric for its `@`{@link TextLayoutMode} annotation. */
+/** Provides configuration to Robolectric for its &#064;{@link TextLayoutMode} annotation. */
 @AutoService(Configurer.class)
 public class TextLayoutModeConfigurer implements Configurer<TextLayoutMode.Mode> {
 
@@ -19,8 +19,7 @@ public class TextLayoutModeConfigurer implements Configurer<TextLayoutMode.Mode>
   @Nonnull
   @Override
   public TextLayoutMode.Mode defaultConfig() {
-    // TODO: switch to REALISTIC
-    return TextLayoutMode.Mode.LEGACY;
+    return TextLayoutMode.Mode.REALISTIC;
   }
 
   @Override

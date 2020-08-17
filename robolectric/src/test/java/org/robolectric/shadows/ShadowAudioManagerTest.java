@@ -1,37 +1,60 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.content.Context;
 import android.media.AudioAttributes;
+import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
+import android.media.AudioRecordingConfiguration;
+import android.media.MediaRecorder.AudioSource;
+import android.media.audiopolicy.AudioPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAudioManagerTest {
-  private final AudioManager audioManager =
-      new AudioManager((Application) ApplicationProvider.getApplicationContext());
   private final AudioManager.OnAudioFocusChangeListener listener =
       new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {}
       };
 
+  private Context appContext;
+  private AudioManager audioManager;
+
+  @Before
+  public void setUp() {
+    appContext = ApplicationProvider.getApplicationContext();
+    audioManager = new AudioManager((Application) appContext);
+  }
+
   @Test
   public void requestAudioFocus_shouldRecordArgumentsOfMostRecentCall() {
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest()).isNull();
     audioManager.requestAudioFocus(listener, 999, 888);
-    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener).isSameAs(listener);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener)
+        .isSameInstanceAs(listener);
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType).isEqualTo(999);
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint).isEqualTo(888);
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest().audioFocusRequest).isNull();
@@ -89,7 +112,8 @@ public class ShadowAudioManagerTest {
     assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusListener()).isNull();
 
     audioManager.abandonAudioFocus(listener);
-    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusListener()).isSameAs(listener);
+    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusListener())
+        .isSameInstanceAs(listener);
   }
 
   @Test
@@ -98,7 +122,8 @@ public class ShadowAudioManagerTest {
     android.media.AudioFocusRequest request =
         new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build();
     audioManager.abandonAudioFocusRequest(request);
-    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusRequest()).isSameAs(request);
+    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusRequest())
+        .isSameInstanceAs(request);
   }
 
   @Test
@@ -264,6 +289,13 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  public void isBluetoothScoAvailableOffCall() {
+    assertThat(audioManager.isBluetoothScoAvailableOffCall()).isFalse();
+    shadowOf(audioManager).setIsBluetoothScoAvailableOffCall(true);
+    assertThat(audioManager.isBluetoothScoAvailableOffCall()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getActivePlaybackConfigurations() {
     assertThat(audioManager.getActivePlaybackConfigurations()).isEmpty();
@@ -282,6 +314,31 @@ public class ShadowAudioManagerTest {
     assertThat(playbackConfigurations).hasSize(2);
     assertThat(playbackConfigurations.get(0).getAudioAttributes()).isEqualTo(movieAttribute);
     assertThat(playbackConfigurations.get(1).getAudioAttributes()).isEqualTo(musicAttribute);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setActivePlaybackConfigurations_withCallbackRegistered_notifiesCallback() {
+    AudioManager.AudioPlaybackCallback callback = mock(AudioManager.AudioPlaybackCallback.class);
+    audioManager.registerAudioPlaybackCallback(callback, null);
+
+    List<AudioAttributes> audioAttributes = new ArrayList<>();
+    shadowOf(audioManager).setActivePlaybackConfigurationsFor(audioAttributes, true);
+
+    verify(callback).onPlaybackConfigChanged(any());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void unregisterAudioPlaybackCallback_removesCallback() {
+    AudioManager.AudioPlaybackCallback callback = mock(AudioManager.AudioPlaybackCallback.class);
+    audioManager.registerAudioPlaybackCallback(callback, null);
+
+    audioManager.unregisterAudioPlaybackCallback(callback);
+    List<AudioAttributes> audioAttributes = new ArrayList<>();
+    shadowOf(audioManager).setActivePlaybackConfigurationsFor(audioAttributes, true);
+
+    verifyZeroInteractions(callback);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -345,7 +402,202 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = M)
+  public void adjustStreamVolume_lower() {
+    shadowOf(audioManager).setStreamVolume(7);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isLessThan(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void adjustStreamVolume_lowerAtMinVolume_remainsSame() {
+    shadowOf(audioManager).setStreamVolume(1);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isEqualTo(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void adjustStreamVolume_raise() {
+    shadowOf(audioManager).setStreamVolume(7);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isGreaterThan(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void adjustStreamVolume_raiseAtMaxVolume_remainsSame() {
+    shadowOf(audioManager).setStreamVolume(7);
+    shadowOf(audioManager).setStreamMaxVolume(7);
+    int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+
+    audioManager.adjustStreamVolume(
+            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
+
+    int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+    assertThat(volumeAfter).isEqualTo(volumeBefore);
+  }
+
+  @Test
+  @Config(minSdk = M)
   public void isStreamMute_defaultFalse() {
     assertThat(audioManager.isStreamMute(AudioManager.STREAM_VOICE_CALL)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getActiveRecordingConfigurations_defaultEmptyList() {
+    assertThat(audioManager.getActiveRecordingConfigurations()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getActiveRecordingConfigurations_returnsSpecifiedList() {
+    ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
+    configurations.add(
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
+    shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
+
+    assertThat(audioManager.getActiveRecordingConfigurations()).isEqualTo(configurations);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setActiveRecordingConfigurations_notifiesCallback() {
+    AudioManager.AudioRecordingCallback callback = mock(AudioManager.AudioRecordingCallback.class);
+    audioManager.registerAudioRecordingCallback(callback, null);
+
+    ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
+    configurations.add(
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
+    shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
+
+    verify(callback).onRecordingConfigChanged(configurations);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void unregisterAudioRecordingCallback_removesCallback() {
+    AudioManager.AudioRecordingCallback callback = mock(AudioManager.AudioRecordingCallback.class);
+    audioManager.registerAudioRecordingCallback(callback, null);
+
+    audioManager.unregisterAudioRecordingCallback(callback);
+
+    ArrayList<AudioRecordingConfiguration> configurations = new ArrayList<>();
+    configurations.add(
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
+    shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
+
+    verifyZeroInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void createActiveRecordingConfiguration_createsProperConfiguration() {
+    AudioRecordingConfiguration configuration =
+        shadowOf(audioManager)
+            .createActiveRecordingConfiguration(
+                12345, AudioSource.VOICE_RECOGNITION, "com.example.android.application");
+
+    assertThat(configuration.getClientAudioSessionId()).isEqualTo(12345);
+    assertThat(configuration.getClientAudioSource()).isEqualTo(AudioSource.VOICE_RECOGNITION);
+    assertThat(configuration.getClientFormat().getEncoding())
+        .isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
+    assertThat(configuration.getClientFormat().getSampleRate()).isEqualTo(16000);
+    assertThat(configuration.getClientFormat().getChannelMask())
+        .isEqualTo(AudioFormat.CHANNEL_OUT_MONO);
+    assertThat(configuration.getFormat().getEncoding()).isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
+    assertThat(configuration.getFormat().getSampleRate()).isEqualTo(16000);
+    assertThat(configuration.getFormat().getChannelMask()).isEqualTo(AudioFormat.CHANNEL_OUT_MONO);
+  }
+
+  @Test(expected = NullPointerException.class)
+  @Config(minSdk = P)
+  public void registerAudioPolicy_nullAudioPolicy_throwsException() {
+    audioManager.registerAudioPolicy(null);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void registerAudioPolicy_alreadyRegistered_returnsError() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+    audioManager.registerAudioPolicy(audioPolicy);
+
+    assertThat(audioManager.registerAudioPolicy(audioPolicy)).isEqualTo(AudioManager.ERROR);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void registerAudioPolicy_noPreviouslyRegistered_returnsSuccess() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+
+    assertThat(audioManager.registerAudioPolicy(audioPolicy)).isEqualTo(AudioManager.SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void isAnyAudioPolicyRegistered_noPoliciesRegistered_returnsFalse() {
+    assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void isAnyAudioPolicyRegistered_afterPolicyRegistered_returnsTrue() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+
+    audioManager.registerAudioPolicy(audioPolicy);
+
+    assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isAnyAudioPolicyRegistered_afterPolicyRegisteredAndUnregistered_returnsFalse() {
+    AudioPolicy audioPolicy = new AudioPolicy.Builder(appContext).build();
+
+    audioManager.registerAudioPolicy(audioPolicy);
+    audioManager.unregisterAudioPolicy(audioPolicy);
+
+    assertThat(shadowOf(audioManager).isAnyAudioPolicyRegistered()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void generateAudioSessionId_returnsPositiveValues() {
+    int audioSessionId = audioManager.generateAudioSessionId();
+    int audioSessionId2 = audioManager.generateAudioSessionId();
+
+    assertThat(audioSessionId).isGreaterThan(0);
+    assertThat(audioSessionId2).isGreaterThan(0);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void generateAudioSessionId_returnsDistinctValues() {
+    int audioSessionId = audioManager.generateAudioSessionId();
+    int audioSessionId2 = audioManager.generateAudioSessionId();
+
+    assertThat(audioSessionId).isNotEqualTo(audioSessionId2);
   }
 }

@@ -257,9 +257,15 @@ public class ImplementsValidator extends Validator {
 
   private void captureJavadoc(TypeElement elem) {
     List<String> imports = new ArrayList<>();
-    List<? extends ImportTree> importLines = Trees.instance(env).getPath(elem).getCompilationUnit().getImports();
-    for (ImportTree importLine : importLines) {
-      imports.add(importLine.getQualifiedIdentifier().toString());
+    try {
+      List<? extends ImportTree> importLines =
+          Trees.instance(env).getPath(elem).getCompilationUnit().getImports();
+      for (ImportTree importLine : importLines) {
+        imports.add(importLine.getQualifiedIdentifier().toString());
+      }
+    } catch (IllegalArgumentException e) {
+      // Trees relies on javac APIs and is not available in all annotation processing
+      // implementations
     }
 
     List<TypeElement> enclosedTypes = ElementFilter.typesIn(elem.getEnclosedElements());

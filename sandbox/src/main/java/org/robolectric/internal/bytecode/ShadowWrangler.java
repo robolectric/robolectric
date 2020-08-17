@@ -6,6 +6,7 @@ import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
 
+import com.google.auto.service.AutoService;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -21,14 +22,27 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.robolectric.annotation.Implementation;
+import javax.annotation.Priority;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
-import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
-import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * ShadowWrangler matches shadowed classes up with corresponding shadows based on a {@link ShadowMap}.
+ *
+ * ShadowWrangler has no specific knowledge of Android SDK levels or other peculiarities of the affected classes
+ * and shadows.
+ *
+ * To apply additional rules about which shadow classes and methods are considered matches, pass in a
+ * {@link ShadowMatcher}.
+ *
+ * ShadowWrangler is Robolectric's default {@link ClassHandler} implementation. To inject your own,
+ * create a subclass and annotate it with {@link AutoService}(ClassHandler).
+ */
 @SuppressWarnings("NewApi")
+@AutoService(ClassHandler.class)
+@Priority(Integer.MIN_VALUE)
 public class ShadowWrangler implements ClassHandler {
   public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
     @Override
@@ -61,16 +75,13 @@ public class ShadowWrangler implements ClassHandler {
     }
   }
 
-  public static final Implementation IMPLEMENTATION_DEFAULTS =
-      ReflectionHelpers.defaultsFor(Implementation.class);
-
   private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
   private static final Class<?>[] NO_ARGS = new Class<?>[0];
   static final Object NO_SHADOW = new Object();
   private static final MethodHandle NO_SHADOW_HANDLE = constant(Object.class, NO_SHADOW);
   private final ShadowMap shadowMap;
   private final Interceptors interceptors;
-  private final int apiLevel;
+  private final ShadowMatcher shadowMatcher;
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
         @Override
@@ -82,7 +93,7 @@ public class ShadowWrangler implements ClassHandler {
   /** key is instrumented class */
   private final ClassValueMap<ShadowInfo> cachedShadowInfos = new ClassValueMap<ShadowInfo>() {
     @Override protected ShadowInfo computeValue(Class<?> type) {
-      return shadowMap.getShadowInfo(type, apiLevel);
+      return shadowMap.getShadowInfo(type, shadowMatcher);
     }
   };
 
@@ -95,14 +106,14 @@ public class ShadowWrangler implements ClassHandler {
     }
   };
 
-  public ShadowWrangler(ShadowMap shadowMap, int apiLevel, Interceptors interceptors) {
+  public ShadowWrangler(ShadowMap shadowMap, ShadowMatcher shadowMatcher, Interceptors interceptors) {
     this.shadowMap = shadowMap;
-    this.apiLevel = apiLevel;
+    this.shadowMatcher = shadowMatcher;
     this.interceptors = interceptors;
   }
 
   public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
-    Class primitiveClass = RoboType.findPrimitiveClass(paramType);
+    Class<?> primitiveClass = RoboType.findPrimitiveClass(paramType);
     if (primitiveClass != null) return primitiveClass;
 
     int arrayLevel = 0;
@@ -134,7 +145,8 @@ public class ShadowWrangler implements ClassHandler {
       Method method = pickShadowMethod(clazz,
           ShadowConstants.STATIC_INITIALIZER_METHOD_NAME, NO_ARGS);
 
-      // if we got back DO_NOTHING_METHOD that means the shadow is `callThroughByDefault = false`;
+      // if we got back DO_NOTHING_METHOD that means the shadow is {@code callThroughByDefault =
+      // false};
       // for backwards compatibility we'll still perform static initialization though for now.
       if (method == DO_NOTHING_METHOD) {
         method = null;
@@ -245,13 +257,12 @@ public class ShadowWrangler implements ClassHandler {
   }
 
   /**
-   * Searches for an `@Implementation` method on a given shadow class.
+   * Searches for an {@code @Implementation} method on a given shadow class.
    *
    * <p>If the shadow class allows loose signatures, search for them.
    *
-   * <p>If the shadow class doesn't have such a method, but does hav a superclass which implements
-   * the same class as it, recursively call {@link #findShadowMethod(Class)} with the shadow
-   * superclass.
+   * <p>If the shadow class doesn't have such a method, but does have a superclass which implements
+   * the same class as it, call ourself recursively with the shadow superclass.
    */
   private Method findShadowMethod(
       Class<?> definingClass,
@@ -276,7 +287,7 @@ public class ShadowWrangler implements ClassHandler {
         ShadowInfo shadowSuperclassInfo = ShadowMap.obtainShadowInfo(shadowSuperclass, true);
         if (shadowSuperclassInfo != null
             && shadowSuperclassInfo.isShadowOf(definingClass)
-            && shadowSuperclassInfo.supportsSdk(apiLevel)) {
+            && shadowMatcher.matches(shadowSuperclassInfo)) {
 
           method =
               findShadowMethod(definingClass, name, types, shadowSuperclassInfo, shadowSuperclass);
@@ -320,25 +331,7 @@ public class ShadowWrangler implements ClassHandler {
       return false;
     }
 
-    Implementation implementation = getImplementationAnnotation(method);
-    return matchesSdk(implementation);
-  }
-
-  private boolean matchesSdk(Implementation implementation) {
-    return implementation.minSdk() <= apiLevel && (implementation.maxSdk() == -1 || implementation.maxSdk() >= apiLevel);
-  }
-
-  private static Implementation getImplementationAnnotation(Method method) {
-    if (method == null) {
-      return null;
-    }
-    Implementation implementation = method.getAnnotation(Implementation.class);
-    if (implementation == null) {
-      Logger.warn("No @Implementation annotation on " + method);
-    }
-    return implementation == null
-        ? IMPLEMENTATION_DEFAULTS
-        : implementation;
+    return shadowMatcher.matches(method);
   }
 
   @Override
@@ -442,7 +435,8 @@ public class ShadowWrangler implements ClassHandler {
 
       return mh; // (instance)
     } catch (IllegalAccessException | ClassNotFoundException e) {
-      throw new RuntimeException("Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
+      throw new RuntimeException(
+          "Could not instantiate shadow " + shadowClassName + " for " + theClass, e);
     }
   }
 
@@ -498,8 +492,17 @@ public class ShadowWrangler implements ClassHandler {
             throw e1.getCause();
           }
         } else {
-          throw new IllegalArgumentException("attempted to invoke " + shadowMethod
-              + (shadow == null ? "" : " on instance of " + shadow.getClass() + ", but " + shadow.getClass().getSimpleName() + " doesn't extend " + shadowMethod.getDeclaringClass().getSimpleName()));
+          throw new IllegalArgumentException(
+              "attempted to invoke "
+                  + shadowMethod
+                  + (shadow == null
+                      ? ""
+                      : " on instance of "
+                          + shadow.getClass()
+                          + ", but "
+                          + shadow.getClass().getSimpleName()
+                          + " doesn't extend "
+                          + shadowMethod.getDeclaringClass().getSimpleName()));
         }
       } catch (InvocationTargetException e) {
         throw e.getCause();

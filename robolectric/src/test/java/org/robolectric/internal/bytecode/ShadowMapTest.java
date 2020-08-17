@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.internal.ShadowProvider;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadows.ShadowActivity;
 
 @RunWith(JUnit4.class)
@@ -50,14 +51,14 @@ public class ShadowMapTest {
 
   @Test public void shouldLookUpShadowClassesByNamingConvention() throws Exception {
     ShadowMap map = baseShadowMap.newBuilder().build();
-    assertThat(map.getShadowInfo(Activity.class, -1)).isNull();
+    assertThat(map.getShadowInfo(Activity.class, ShadowMatcher.MATCH_ALL)).isNull();
   }
 
   @Test public void shouldNotReturnMismatchedClassesJustBecauseTheSimpleNameMatches() throws Exception {
     ShadowMap map = baseShadowMap.newBuilder()
         .addShadowClasses(ShadowActivity.class)
         .build();
-    assertThat(map.getShadowInfo(android.app.Activity.class, -1).shadowClassName)
+    assertThat(map.getShadowInfo(android.app.Activity.class, ShadowMatcher.MATCH_ALL).shadowClassName)
         .isEqualTo(ShadowActivity.class.getName());
   }
 

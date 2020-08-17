@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -406,8 +407,8 @@ public class ShadowLayoutInflaterTest {
       exception = e;
     }
     assertNotNull(exception);
-    assertThat(exception.getMessage())
-        .named("The error message should contain the id name of the faulty button")
+    assertWithMessage("The error message should contain the id name of the faulty button")
+        .that(exception.getMessage())
         .contains("invalid_onclick_button");
   }
 

@@ -13,7 +13,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowBluetoothSocket {
   private final PipedOutputStream inputStreamFeeder = new PipedOutputStream();
   private final PipedInputStream outputStreamSink = new PipedInputStream();
-  private final OutputStream outputStream;
+  private OutputStream outputStream;
   private final InputStream inputStream;
 
   private enum SocketState {
@@ -32,6 +32,14 @@ public class ShadowBluetoothSocket {
       // Shouldn't happen. Rethrow as an unchecked exception.
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Set the output stream. {@code write()} operations on this stream can be observed to verify
+   * expected behavior.
+   */
+  public void setOutputStream(PipedOutputStream outputStream) {
+    this.outputStream = outputStream;
   }
 
   /**

@@ -29,7 +29,7 @@ public class ShadowHttpResponseCacheTest {
     assertThat(HttpResponseCache.getInstalled()).isNull();
     HttpResponseCache cache = HttpResponseCache.install(File.createTempFile("foo", "bar"), 42);
     HttpResponseCache installed = HttpResponseCache.getInstalled();
-    assertThat(installed).isSameAs(cache);
+    assertThat(installed).isSameInstanceAs(cache);
     assertThat(installed.maxSize()).isEqualTo(42);
   }
 

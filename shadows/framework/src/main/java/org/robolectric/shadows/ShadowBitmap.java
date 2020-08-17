@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
@@ -341,7 +342,12 @@ public class ShadowBitmap {
   @Implementation
   protected static Bitmap createBitmap(int[] colors, int width, int height, Bitmap.Config config) {
     if (colors.length != width * height) {
-      throw new IllegalArgumentException("array length (" + colors.length + ") did not match width * height (" + (width * height) + ")");
+      throw new IllegalArgumentException(
+          "array length ("
+              + colors.length
+              + ") did not match width * height ("
+              + (width * height)
+              + ")");
     }
 
     Bitmap newBitmap = Bitmap.createBitmap(width, height, config);
@@ -436,7 +442,7 @@ public class ShadowBitmap {
     shadowBitmap.width = getWidth();
     if (colors != null) {
       shadowBitmap.colors = new int[colors.length];
-      System.arraycopy(shadowBitmap.colors, 0, colors, 0, colors.length);
+      System.arraycopy(colors, 0, shadowBitmap.colors, 0, colors.length);
     }
     return newBitmap;
   }
@@ -495,6 +501,15 @@ public class ShadowBitmap {
     }
 
     return createBitmap(alphaPixels, getWidth(), getHeight(), Bitmap.Config.ALPHA_8);
+  }
+
+  /**
+   * This shadow implementation ignores the given paint and offsetXY and simply calls {@link
+   * #extractAlpha()}.
+   */
+  @Implementation
+  protected Bitmap extractAlpha(Paint paint, int[] offsetXY) {
+    return extractAlpha();
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)

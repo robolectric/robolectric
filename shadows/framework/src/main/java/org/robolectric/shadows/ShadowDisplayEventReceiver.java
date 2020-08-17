@@ -7,13 +7,12 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.os.MessageQueue;
 import android.view.DisplayEventReceiver;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -34,7 +33,7 @@ public class ShadowDisplayEventReceiver {
 
   protected @RealObject DisplayEventReceiver receiver;
 
-  private static final long VSYNC_DELAY_MS = 1;
+  private static final Duration VSYNC_DELAY = Duration.ofMillis(1);
 
   @Implementation(minSdk = O)
   protected static long nativeInit(
@@ -89,7 +88,7 @@ public class ShadowDisplayEventReceiver {
           "onVsync",
           ClassParameter.from(long.class, ShadowSystem.nanoTime()),
           ClassParameter.from(int.class, 1));
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() < Q) {
       ReflectionHelpers.callInstanceMethod(
           DisplayEventReceiver.class,
           receiver,
@@ -98,6 +97,8 @@ public class ShadowDisplayEventReceiver {
           ClassParameter.from(int.class, 0), /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */
           ClassParameter.from(int.class, 1)
       );
+    } else {
+      receiver.onVsync(ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
     }
   }
 
@@ -112,7 +113,7 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       // simulate an immediate callback
       DisplayEventReceiver receiver = receiverRef.get();
-      ShadowRealisticSystemClock.advanceBy(VSYNC_DELAY_MS, TimeUnit.MILLISECONDS);
+      ShadowSystemClock.advanceBy(VSYNC_DELAY);
       if (receiver != null) {
         ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
         shadowReceiver.onVsync();

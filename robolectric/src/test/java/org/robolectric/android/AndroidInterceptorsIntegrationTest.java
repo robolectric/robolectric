@@ -11,12 +11,12 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.internal.bytecode.InvokeDynamicSupport;
-import org.robolectric.shadows.ShadowBaseLooper;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -25,22 +25,28 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class AndroidInterceptorsIntegrationTest {
 
   @Test
-  public void systemLogE_shouldWriteToStderr() throws Throwable {
+  public void systemLog_shouldWriteToStderr() throws Throwable {
     PrintStream stderr = System.err;
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     PrintStream printStream = new PrintStream(stream);
     System.setErr(printStream);
     try {
-      invokeDynamic(System.class, "logE", void.class, ClassParameter.from(String.class, "hello"));
-      invokeDynamic(
-          System.class,
-          "logE",
-          void.class,
-          ClassParameter.from(String.class, "world"),
-          ClassParameter.from(Throwable.class, new Throwable("throw")));
-      assertThat(stream.toString())
-          .isEqualTo(String.format("System.logE: hello%n"
-              + "System.logE: worldjava.lang.Throwable: throw%n"));
+      for (String methodName : new String[] {"logE", "logW"}) {
+        stream.reset();
+        invokeDynamic(
+            System.class, methodName, void.class, ClassParameter.from(String.class, "hello"));
+        invokeDynamic(
+            System.class,
+            methodName,
+            void.class,
+            ClassParameter.from(String.class, "world"),
+            ClassParameter.from(Throwable.class, new Throwable("throw")));
+        // Due to the possibility of running tests in Parallel, assertions checking stderr contents
+        // should not assert equality.
+        assertThat(stream.toString().split("\\r?\\n")).asList().containsAtLeast(String.format(
+            "System.%s: hello", methodName), String.format(
+            "System.%s: worldjava.lang.Throwable: throw", methodName)).inOrder();
+      }
     } finally {
       System.setErr(stderr);
     }
@@ -48,7 +54,7 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemNanoTime_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       SystemClock.setCurrentTimeMillis(200);
     } else {
       ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
@@ -60,7 +66,7 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemCurrentTimeMillis_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       SystemClock.setCurrentTimeMillis(200);
     } else {
       ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());

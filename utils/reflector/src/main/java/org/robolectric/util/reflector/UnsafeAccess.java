@@ -5,6 +5,8 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.ProtectionDomain;
+import org.robolectric.util.Util;
 import sun.misc.Unsafe;
 
 /** Access to sun.misc.Unsafe and the various scary things within. */
@@ -12,9 +14,7 @@ import sun.misc.Unsafe;
 public class UnsafeAccess {
 
   private static final Danger DANGER =
-      getJavaVersion() < 11
-          ? new DangerPre11()
-          : new Danger11Plus();
+      Util.getJavaVersion() < 11 ? new DangerPre11() : new Danger11Plus();
 
   interface Danger {
     <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode);
@@ -26,21 +26,44 @@ public class UnsafeAccess {
 
   private static class DangerPre11 implements Danger {
     private final Unsafe unsafe;
+    private final Method defineClassMethod;
 
     {
       try {
         Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
         unsafeField.setAccessible(true);
         unsafe = (Unsafe) unsafeField.get(null);
-      } catch (NoSuchFieldException | IllegalAccessException e) {
+        defineClassMethod =
+            Unsafe.class.getMethod(
+                "defineClass",
+                String.class,
+                byte[].class,
+                int.class,
+                int.class,
+                ClassLoader.class,
+                ProtectionDomain.class);
+      } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException e) {
         throw new AssertionError(e);
       }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
-      return unsafe.defineClass(
-          reflectorClassName, bytecode, 0, bytecode.length, iClass.getClassLoader(), null);
+      // use reflection to call since this method does not exist on JDK11
+      try {
+        return (Class<?>)
+            defineClassMethod.invoke(
+                unsafe,
+                reflectorClassName,
+                bytecode,
+                0,
+                bytecode.length,
+                iClass.getClassLoader(),
+                null);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new AssertionError(e);
+      }
     }
   }
 
@@ -75,27 +98,5 @@ public class UnsafeAccess {
         throw new AssertionError(e);
       }
     }
-  }
-
-  /**
-   * Returns the Java version as an int value.
-   *
-   * @return the Java version as an int value (8, 9, etc.)
-   */
-  private static int getJavaVersion() {
-    String version = System.getProperty("java.version");
-    assert version != null;
-    if (version.startsWith("1.")) {
-      version = version.substring(2);
-    }
-    // Allow these formats:
-    // 1.8.0_72-ea
-    // 9-ea
-    // 9
-    // 9.0.1
-    int dotPos = version.indexOf('.');
-    int dashPos = version.indexOf('-');
-    return Integer.parseInt(
-        version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : 1));
   }
 }

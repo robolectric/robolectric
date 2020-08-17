@@ -75,7 +75,7 @@ public class ShadowStorageManager {
   public StorageVolume getStorageVolume(File file) {
     for (StorageVolume volume : storageVolumeList) {
       File volumeFile = volume.getPathFile();
-      if (file.getAbsolutePath().equals(volumeFile.getAbsolutePath())) {
+      if (file.getAbsolutePath().startsWith(volumeFile.getAbsolutePath())) {
         return volume;
       }
     }

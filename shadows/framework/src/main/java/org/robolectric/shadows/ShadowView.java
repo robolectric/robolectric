@@ -2,9 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.shadows.ShadowBaseLooper.shadowMainLooper;
+import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -31,14 +32,18 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import org.robolectric.android.AccessibilityUtil;
+import java.util.HashSet;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.pluginapi.AccessibilityChecker;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
+import org.robolectric.util.inject.Injector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -53,6 +58,8 @@ public class ShadowView {
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
   private View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener;
+  private final HashSet<View.OnAttachStateChangeListener> onAttachStateChangeListeners =
+      new HashSet<>();
   private boolean wasInvalidated;
   private View.OnTouchListener onTouchListener;
   protected AttributeSet attributeSet;
@@ -165,6 +172,20 @@ public class ShadowView {
       View.OnCreateContextMenuListener onCreateContextMenuListener) {
     this.onCreateContextMenuListener = onCreateContextMenuListener;
     directly().setOnCreateContextMenuListener(onCreateContextMenuListener);
+  }
+
+  @Implementation
+  protected void addOnAttachStateChangeListener(
+      View.OnAttachStateChangeListener onAttachStateChangeListener) {
+    onAttachStateChangeListeners.add(onAttachStateChangeListener);
+    directly().addOnAttachStateChangeListener(onAttachStateChangeListener);
+  }
+
+  @Implementation
+  protected void removeOnAttachStateChangeListener(
+      View.OnAttachStateChangeListener onAttachStateChangeListener) {
+    onAttachStateChangeListeners.remove(onAttachStateChangeListener);
+    directly().removeOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
   @Implementation
@@ -333,7 +354,7 @@ public class ShadowView {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
 
-    AccessibilityUtil.checkViewIfCheckingEnabled(realView);
+    getAccessibilityChecker().checkViewAccessibility(realView);
     boolean res = realView.performClick();
     shadowMainLooper().idleIfPaused();
     return res;
@@ -374,6 +395,11 @@ public class ShadowView {
     return onCreateContextMenuListener;
   }
 
+  /** @return Returns the attached listeners, or the empty set if none are present. */
+  public Set<View.OnAttachStateChangeListener> getOnAttachStateChangeListeners() {
+    return onAttachStateChangeListeners;
+  }
+
   // @Implementation
   // protected Bitmap getDrawingCache() {
   //   return ReflectionHelpers.callConstructor(Bitmap.class);
@@ -381,7 +407,7 @@ public class ShadowView {
 
   @Implementation
   protected boolean post(Runnable action) {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       return directly().post(action);
     } else {
       ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
@@ -391,7 +417,7 @@ public class ShadowView {
 
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       return directly().postDelayed(action, delayMills);
     } else {
       ShadowApplication.getInstance()
@@ -403,7 +429,7 @@ public class ShadowView {
 
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       directly().postInvalidateDelayed(delayMilliseconds);
     } else {
       ShadowApplication.getInstance()
@@ -421,10 +447,10 @@ public class ShadowView {
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    if (ShadowBaseLooper.useRealisticLooper()) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       return directlyOn(realView, View.class).removeCallbacks(callback);
     } else {
-      ShadowLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+      ShadowLegacyLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
       shadowLooper.getScheduler().remove(callback);
       return true;
     }
@@ -523,7 +549,7 @@ public class ShadowView {
               !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
-        // TODO: get the correct value for ShadowRealisticLooper mode
+        // TODO: get the correct value for ShadowPausedLooper mode
         elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
         Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
       } else {
@@ -605,6 +631,24 @@ public class ShadowView {
     directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
   }
 
+  @Implementation
+  protected void getWindowVisibleDisplayFrame(Rect outRect) {
+    // TODO: figure out how to simulate this logic instead
+    // if (mAttachInfo != null) {
+    //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
+
+    ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
+  }
+
+  @Implementation(minSdk = N)
+  protected void getWindowDisplayFrame(Rect outRect) {
+    // TODO: figure out how to simulate this logic instead
+    // if (mAttachInfo != null) {
+    //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
+
+    ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
+  }
+
   private View directly() {
     return directlyOn(realView, View.class);
   }
@@ -648,5 +692,26 @@ public class ShadowView {
 
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
+  }
+
+  /**
+   * Remove after 4.4.
+   * @deprecated Transitional use only.
+   */
+  @Deprecated
+  private static AccessibilityChecker accessibilityChecker;
+
+  /**
+   * Remove after 4.4.
+   * @deprecated Transitional use only.
+   */
+  @Deprecated
+  private static synchronized AccessibilityChecker getAccessibilityChecker() {
+    if (accessibilityChecker == null) {
+      // This isn't how Injector is intended to be used, but this will disappear soon.
+      // Please don't cargo-cult.
+      accessibilityChecker = new Injector().getInstance(AccessibilityChecker.class);
+    }
+    return accessibilityChecker;
   }
 }

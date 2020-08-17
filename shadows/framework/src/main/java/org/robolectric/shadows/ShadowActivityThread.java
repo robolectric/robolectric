@@ -83,6 +83,9 @@ public class ShadowActivityThread {
     @Accessor("mBoundApplication")
     void setBoundApplication(Object data);
 
+    @Accessor("mBoundApplication")
+    Object getBoundApplication();
+
     @Accessor("mCompatConfiguration")
     void setCompatConfiguration(Configuration configuration);
 

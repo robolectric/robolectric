@@ -1,12 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.icu.util.TimeZone;
-import android.os.Build;
-import android.os.Build.VERSION;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,11 +20,20 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowTimeZoneFinderTest {
 
   @Test
-  @Config(minSdk = O, maxSdk = Q)
+  @Config(minSdk = O, maxSdk = P)
   public void lookupTimeZonesByCountry_shouldReturnExpectedTimeZones() throws Exception {
-    String className =
-        isExperimental() ? "libcore.timezone.TimeZoneFinder" : "libcore.util.TimeZoneFinder";
-    Class<?> cls = Class.forName(className);
+    Class<?> cls = Class.forName("libcore.util.TimeZoneFinder");
+    lookupTimeZonesByCountryAndAssert(cls);
+  }
+
+  @Test
+  @Config(minSdk = Q, maxSdk = Q)
+  public void lookupTimeZonesByCountry_shouldReturnExpectedTimeZones_Q() throws Exception {
+    Class<?> cls = Class.forName("libcore.timezone.TimeZoneFinder");
+    lookupTimeZonesByCountryAndAssert(cls);
+  }
+
+  private void lookupTimeZonesByCountryAndAssert(Class<?> cls) {
     Object timeZoneFinder = ReflectionHelpers.callStaticMethod(cls, "getInstance");
     List<TimeZone> timezones =
         ReflectionHelpers.callInstanceMethod(
@@ -35,14 +43,6 @@ public class ShadowTimeZoneFinderTest {
             ClassParameter.from(String.class, "us"));
 
     assertThat(timezones.stream().map(TimeZone::getID).collect(Collectors.toList()))
-        .containsAllOf("America/Los_Angeles", "America/New_York", "Pacific/Honolulu");
-  }
-
-  private boolean isExperimental() {
-    try {
-      return Integer.parseInt(VERSION.INCREMENTAL) > 5283294;
-    } catch (NumberFormatException e) {
-      return false;
-    }
+        .containsAtLeast("America/Los_Angeles", "America/New_York", "Pacific/Honolulu");
   }
 }

@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
 import android.app.PendingIntent;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
+import androidx.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import java.util.ArrayList;
@@ -27,9 +32,11 @@ public class ShadowSmsManager {
     }
   }
 
-  private TextSmsParams lastTextSmsParams;
-  private TextMultipartParams lastTextMultipartParams;
-  private DataMessageParams lastDataParams;
+  // SMS functionality
+
+  protected TextSmsParams lastTextSmsParams;
+  protected TextMultipartParams lastTextMultipartParams;
+  protected DataMessageParams lastDataParams;
 
   @Implementation
   protected void sendDataMessage(
@@ -82,44 +89,32 @@ public class ShadowSmsManager {
     lastTextMultipartParams = new TextMultipartParams(destinationAddress, scAddress, parts, sentIntents, deliveryIntents);
   }
 
-  /**
-   * @return Parameters for last call to {@code sendDataMessage}.
-   */
+  /** @return Parameters for last call to {@link #sendDataMessage}. */
   public DataMessageParams getLastSentDataMessageParams() {
     return lastDataParams;
   }
 
-  /**
-   * Clear last recorded parameters for {@code sendDataMessage}.
-   */
+  /** Clear last recorded parameters for {@link #sendDataMessage}. */
   public void clearLastSentDataMessageParams() {
     lastDataParams = null;
   }
 
-  /**
-   * @return Parameters for last call to {@code sendTextMessage}.
-   */
+  /** @return Parameters for last call to {@link #sendTextMessage}. */
   public TextSmsParams getLastSentTextMessageParams() {
     return lastTextSmsParams;
   }
 
-  /**
-   * Clear last recorded parameters for {@code sendTextMessage}.
-   */
+  /** Clear last recorded parameters for {@link #sendTextMessage}. */
   public void clearLastSentTextMessageParams() {
     lastTextSmsParams = null;
   }
 
-  /**
-   * @return Parameters for last call to {@code sendMultipartTextMessage}.
-   */
+  /** @return Parameters for last call to {@link #sendMultipartTextMessage}. */
   public TextMultipartParams getLastSentMultipartTextMessageParams() {
     return lastTextMultipartParams;
   }
 
-  /**
-   * Clear last recorded parameters for {@code sendMultipartTextMessage}.
-   */
+  /** Clear last recorded parameters for {@link #sendMultipartTextMessage}. */
   public void clearLastSentMultipartTextMessageParams() {
     lastTextMultipartParams = null;
   }
@@ -172,13 +167,25 @@ public class ShadowSmsManager {
     private final String text;
     private final PendingIntent sentIntent;
     private final PendingIntent deliveryIntent;
+    private final long messageId;
 
     public TextSmsParams(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+      this(destinationAddress, scAddress, text, sentIntent, deliveryIntent, 0L);
+    }
+
+    public TextSmsParams(
+        String destinationAddress,
+        String scAddress,
+        String text,
+        PendingIntent sentIntent,
+        PendingIntent deliveryIntent,
+        long messageId) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.text = text;
       this.sentIntent = sentIntent;
       this.deliveryIntent = deliveryIntent;
+      this.messageId = messageId;
     }
 
     public String getDestinationAddress() {
@@ -200,21 +207,37 @@ public class ShadowSmsManager {
     public PendingIntent getDeliveryIntent() {
       return deliveryIntent;
     }
+
+    public long getMessageId() {
+      return messageId;
+    }
   }
 
   public static class TextMultipartParams {
     private final String destinationAddress;
     private final String scAddress;
-    private final ArrayList<String> parts;
-    private final ArrayList<PendingIntent> sentIntents;
-    private final ArrayList<PendingIntent> deliveryIntents;
+    private final List<String> parts;
+    private final List<PendingIntent> sentIntents;
+    private final List<PendingIntent> deliveryIntents;
+    private final long messageId;
 
     public TextMultipartParams(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+      this(destinationAddress, scAddress, parts, sentIntents, deliveryIntents, 0L);
+    }
+
+    public TextMultipartParams(
+        String destinationAddress,
+        String scAddress,
+        List<String> parts,
+        List<PendingIntent> sentIntents,
+        List<PendingIntent> deliveryIntents,
+        long messageId) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.parts = parts;
       this.sentIntents = sentIntents;
       this.deliveryIntents = deliveryIntents;
+      this.messageId = messageId;
     }
 
     public String getDestinationAddress() {
@@ -235,6 +258,141 @@ public class ShadowSmsManager {
 
     public List<android.app.PendingIntent> getDeliveryIntents() {
       return deliveryIntents;
+    }
+
+    public long getMessageId() {
+      return messageId;
+    }
+  }
+
+  // MMS functionality
+
+  private SendMultimediaMessageParams lastSentMultimediaMessageParams;
+  private DownloadMultimediaMessageParams lastDownloadedMultimediaMessageParams;
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void sendMultimediaMessage(
+      Context context,
+      Uri contentUri,
+      @Nullable String locationUrl,
+      @Nullable Bundle configOverrides,
+      @Nullable PendingIntent sentIntent) {
+    if (contentUri == null || TextUtils.isEmpty(contentUri.getHost())) {
+      throw new IllegalArgumentException("Invalid contentUri");
+    }
+
+    lastSentMultimediaMessageParams =
+        new SendMultimediaMessageParams(contentUri, locationUrl, configOverrides, sentIntent);
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void downloadMultimediaMessage(
+      Context context,
+      String locationUrl,
+      Uri contentUri,
+      @Nullable Bundle configOverrides,
+      @Nullable PendingIntent sentIntent) {
+    if (contentUri == null || TextUtils.isEmpty(contentUri.getHost())) {
+      throw new IllegalArgumentException("Invalid contentUri");
+    }
+
+    if (TextUtils.isEmpty(locationUrl)) {
+      throw new IllegalArgumentException("Invalid locationUrl");
+    }
+
+    lastDownloadedMultimediaMessageParams =
+        new DownloadMultimediaMessageParams(contentUri, locationUrl, configOverrides, sentIntent);
+  }
+
+  /** @return Parameters for last call to {@link #sendMultimediaMessage}. */
+  public SendMultimediaMessageParams getLastSentMultimediaMessageParams() {
+    return lastSentMultimediaMessageParams;
+  }
+
+  /** Clear last recorded parameters for {@link #sendMultimediaMessage}. */
+  public void clearLastSentMultimediaMessageParams() {
+    lastSentMultimediaMessageParams = null;
+  }
+
+  /** @return Parameters for last call to {@link #downloadMultimediaMessage}. */
+  public DownloadMultimediaMessageParams getLastDownloadedMultimediaMessageParams() {
+    return lastDownloadedMultimediaMessageParams;
+  }
+
+  /** Clear last recorded parameters for {@link #downloadMultimediaMessage}. */
+  public void clearLastDownloadedMultimediaMessageParams() {
+    lastDownloadedMultimediaMessageParams = null;
+  }
+
+  /**
+   * Base class for testable parameters from calls to either {@link #downloadMultimediaMessage} or
+   * {@link #downloadMultimediaMessage}.
+   */
+  public abstract static class MultimediaMessageParams {
+    private final Uri contentUri;
+    protected final String locationUrl;
+    @Nullable private final Bundle configOverrides;
+    @Nullable protected final PendingIntent pendingIntent;
+
+    protected MultimediaMessageParams(
+        Uri contentUri,
+        String locationUrl,
+        @Nullable Bundle configOverrides,
+        @Nullable PendingIntent pendingIntent) {
+      this.contentUri = contentUri;
+      this.locationUrl = locationUrl;
+      this.configOverrides = configOverrides;
+      this.pendingIntent = pendingIntent;
+    }
+
+    public Uri getContentUri() {
+      return contentUri;
+    }
+
+    @Nullable
+    public Bundle getConfigOverrides() {
+      return configOverrides;
+    }
+  }
+
+  /** Testable parameters from calls to {@link #sendMultimediaMessage}. */
+  public static final class SendMultimediaMessageParams extends MultimediaMessageParams {
+    protected SendMultimediaMessageParams(
+        Uri contentUri,
+        @Nullable String locationUrl,
+        @Nullable Bundle configOverrides,
+        @Nullable PendingIntent pendingIntent) {
+      super(contentUri, locationUrl, configOverrides, pendingIntent);
+    }
+
+    @Nullable
+    public String getLocationUrl() {
+      return locationUrl;
+    }
+
+    @Nullable
+    public PendingIntent getSentIntent() {
+      return pendingIntent;
+    }
+  }
+
+  /** Testable parameters from calls to {@link #downloadMultimediaMessage}. */
+  public static final class DownloadMultimediaMessageParams extends MultimediaMessageParams {
+    protected DownloadMultimediaMessageParams(
+        Uri contentUri,
+        String locationUrl,
+        @Nullable Bundle configOverrides,
+        @Nullable PendingIntent pendingIntent) {
+      super(contentUri, locationUrl, configOverrides, pendingIntent);
+    }
+
+    public String getLocationUrl() {
+      return locationUrl;
+    }
+
+    @Nullable
+    public PendingIntent getDownloadedIntent() {
+      return pendingIntent;
     }
   }
 }

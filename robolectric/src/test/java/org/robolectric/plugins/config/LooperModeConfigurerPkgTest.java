@@ -17,12 +17,12 @@ public class LooperModeConfigurerPkgTest {
 
   @Test
   public void fromPkg() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.PAUSED);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.PAUSED);
   }
 
   @Test
   @LooperMode(Mode.LEGACY)
   public void overriddenAtMethod() {
-    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameAs(Mode.LEGACY);
+    assertThat(ConfigurationRegistry.get(LooperMode.Mode.class)).isSameInstanceAs(Mode.LEGACY);
   }
 }

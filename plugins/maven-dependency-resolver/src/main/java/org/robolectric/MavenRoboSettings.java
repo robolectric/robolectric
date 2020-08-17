@@ -14,8 +14,9 @@ public class MavenRoboSettings {
   private static String mavenRepositoryPassword;
 
   static {
-    mavenRepositoryId = System.getProperty("robolectric.dependency.repo.id", "sonatype");
-    mavenRepositoryUrl = System.getProperty("robolectric.dependency.repo.url", "https://oss.sonatype.org/content/groups/public/");
+    mavenRepositoryId = System.getProperty("robolectric.dependency.repo.id", "mavenCentral");
+    mavenRepositoryUrl =
+        System.getProperty("robolectric.dependency.repo.url", "https://repo1.maven.org/maven2");
     mavenRepositoryUserName = System.getProperty("robolectric.dependency.repo.username");
     mavenRepositoryPassword = System.getProperty("robolectric.dependency.repo.password");
   }

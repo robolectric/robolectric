@@ -98,6 +98,14 @@ public final class EspressoTest {
         .check(matches(withText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org")));
   }
 
+  /** use typeText with a inputType phone */
+  @Test
+  public void typeText_phone() throws Exception {
+    onView(withId(R.id.edit_text_phone)).perform(typeText("411"));
+
+    onView(withId(R.id.edit_text_phone)).check(matches(withText("411")));
+  }
+
   @Test
   public void textView() {
     onView(withText("Text View"))

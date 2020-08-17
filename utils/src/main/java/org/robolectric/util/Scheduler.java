@@ -4,6 +4,7 @@ import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.concurrent.TimeUnit;
@@ -22,9 +23,9 @@ import java.util.concurrent.TimeUnit;
  *       Scheduler will automatically run any {@link Runnable}s that are scheduled to run at or
  *       before the Scheduler's current time, but it won't automatically run any future events. To
  *       run future events the Scheduler needs to have its clock advanced.
- *   <li>idling constantly: if {@link #idleConstantly(boolean)} is called with <tt>true</tt>, then
- *       the Scheduler will continue looping through posted events (including future events),
- *       advancing its clock as it goes.
+ *   <li>idling constantly: if {@link #idleConstantly(boolean)} is called with true, then the
+ *       Scheduler will continue looping through posted events (including future events), advancing
+ *       its clock as it goes.
  * </ul>
  */
 public class Scheduler {
@@ -33,18 +34,16 @@ public class Scheduler {
    * Describes the current state of a {@link Scheduler}.
    */
   public enum IdleState {
-    /**
-     * The <tt>Scheduler</tt> will not automatically advance the clock nor execute any runnables.
-     */
+    /** The {@link Scheduler} will not automatically advance the clock nor execute any runnables. */
     PAUSED,
     /**
-     * The <tt>Scheduler</tt>'s clock won't automatically advance the clock but will automatically
+     * The {@link Scheduler}'s clock won't automatically advance the clock but will automatically
      * execute any runnables scheduled to execute at or before the current time.
      */
     UNPAUSED,
     /**
-     * The <tt>Scheduler</tt> will automatically execute any runnables (past, present or future)
-     * as soon as they are posted and advance the clock if necessary.
+     * The {@link Scheduler} will automatically execute any runnables (past, present or future) as
+     * soon as they are posted and advance the clock if necessary.
      */
     CONSTANT_IDLE
   }
@@ -63,8 +62,9 @@ public class Scheduler {
   private volatile IdleState idleState = UNPAUSED;
 
   /**
-   * Retrieves the current idling state of this <tt>Scheduler</tt>.
-   * @return The current idle state of this <tt>Scheduler</tt>.
+   * Retrieves the current idling state of this {@link Scheduler}.
+   *
+   * @return The current idle state of this {@link Scheduler}.
    * @see #setIdleState(IdleState)
    * @see #isPaused()
    */
@@ -73,11 +73,12 @@ public class Scheduler {
   }
 
   /**
-   * Sets the current idling state of this <tt>Scheduler</tt>. If transitioning to the
-   * {@link IdleState#UNPAUSED} state any tasks scheduled to be run at or before the current time
-   * will be run, and if transitioning to the {@link IdleState#CONSTANT_IDLE} state all scheduled
-   * tasks will be run and the clock advanced to the time of the last runnable.
-   * @param idleState The new idle state of this <tt>Scheduler</tt>.
+   * Sets the current idling state of this {@link Scheduler}. If transitioning to the {@link
+   * IdleState#UNPAUSED} state any tasks scheduled to be run at or before the current time will be
+   * run, and if transitioning to the {@link IdleState#CONSTANT_IDLE} state all scheduled tasks will
+   * be run and the clock advanced to the time of the last runnable.
+   *
+   * @param idleState The new idle state of this {@link Scheduler}.
    * @see #setIdleState(IdleState)
    * @see #isPaused()
    */
@@ -104,7 +105,7 @@ public class Scheduler {
   }
 
   /**
-   * Pause the scheduler. Equivalent to <tt>setIdleState(PAUSED)</tt>.
+   * Pause the scheduler. Equivalent to {@code setIdleState(PAUSED)}.
    *
    * @see #unPause()
    * @see #setIdleState(IdleState)
@@ -114,7 +115,7 @@ public class Scheduler {
   }
 
   /**
-   * Un-pause the scheduler. Equivalent to <tt>setIdleState(UNPAUSED)</tt>.
+   * Un-pause the scheduler. Equivalent to {@code setIdleState(UNPAUSED)}.
    *
    * @see #pause()
    * @see #setIdleState(IdleState)
@@ -126,7 +127,7 @@ public class Scheduler {
   /**
    * Determine if the scheduler is paused.
    *
-   * @return  <tt>true</tt> if it is paused.
+   * @return true if it is paused.
    */
   public boolean isPaused() {
     return idleState == PAUSED;
@@ -309,15 +310,34 @@ public class Scheduler {
     return runnables.size();
   }
 
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  public synchronized Duration getNextScheduledTaskTime() {
+    return runnables.isEmpty() ? Duration.ZERO : Duration.ofMillis(runnables.peek().scheduledTime);
+  }
+
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  public synchronized Duration getLastScheduledTaskTime() {
+    if (runnables.isEmpty()) {
+      return Duration.ZERO;
+    }
+    long currentMaxTime = currentTime;
+    for (ScheduledRunnable scheduled : runnables) {
+      if (currentMaxTime < scheduled.scheduledTime) {
+        currentMaxTime = scheduled.scheduledTime;
+      }
+
+    }
+    return Duration.ofMillis(currentMaxTime);
+  }
+
   /**
    * Set the idle state of the Scheduler. If necessary, the clock will be advanced and runnables
    * executed as required by the newly-set state.
    *
-   * @param shouldIdleConstantly  If <tt>true</tt> the idle state will be set to
-   *                              {@link IdleState#CONSTANT_IDLE}, otherwise it will be set to
-   *                              {@link IdleState#UNPAUSED}.
+   * @param shouldIdleConstantly If true the idle state will be set to {@link
+   *     IdleState#CONSTANT_IDLE}, otherwise it will be set to {@link IdleState#UNPAUSED}.
    * @deprecated This method is ambiguous in how it should behave when turning off constant idle.
-   * Use {@link #setIdleState(IdleState)} instead to explicitly set the state.
+   *     Use {@link #setIdleState(IdleState)} instead to explicitly set the state.
    */
   @Deprecated
   public void idleConstantly(boolean shouldIdleConstantly) {

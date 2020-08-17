@@ -1,167 +1,91 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static org.robolectric.RuntimeEnvironment.isMainThread;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static android.os.Looper.getMainLooper;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.os.Looper;
-import android.os.MessageQueue;
-import java.util.Collections;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.time.Duration;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
-import org.robolectric.RoboSettings;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
 /**
- * Robolectric enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
- * that are scheduled to run immediately can be triggered by calling {@link #idle()}.
+ * The base shadow API class for controlling Loopers.
  *
- * @see ShadowMessageQueue
+ * <p>It will delegate calls to the appropriate shadow based on the current LooperMode.
  */
-@Implements(value = Looper.class /*, shadowPicker = ShadowBaseLooper.Picker.class */)
-@SuppressWarnings("SynchronizeOnNonFinalField")
-public class ShadowLooper extends ShadowBaseLooper {
+@Implements(value = Looper.class, shadowPicker = ShadowLooper.Picker.class)
+public abstract class ShadowLooper {
 
-  // Replaced SoftThreadLocal with a WeakHashMap, because ThreadLocal make it impossible to access their contents from other
-  // threads, but we need to be able to access the loopers for all threads so that we can shut them down when resetThreadLoopers()
-  // is called. This also allows us to implement the useful getLooperForThread() method.
-  // Note that the main looper is handled differently and is not put in this hash, because we need to be able to
-  // "switch" the thread that the main looper is associated with.
-  private static Map<Thread, Looper> loopingLoopers = Collections.synchronizedMap(new WeakHashMap<Thread, Looper>());
-
-  private static Looper mainLooper;
-
-  private @RealObject Looper realObject;
-
-  boolean quit;
-
-  @Resetter
-  public static synchronized void resetThreadLoopers() {
-    if (ShadowBaseLooper.useRealisticLooper()) {
-      // ignore if realistic looper
-      return;
-    }
-    // Blech. We need to keep the main looper because somebody might refer to it in a static
-    // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented from
-    // being garbage collected.
-    if (!isMainThread()) {
-      throw new IllegalStateException("you should only be calling this from the main thread!");
-    }
-    synchronized (loopingLoopers) {
-      for (Looper looper : loopingLoopers.values()) {
-        synchronized (looper) {
-          if (!shadowOf(looper).quit) {
-            looper.quit();
-          } else {
-            // Reset the schedulers of all loopers. This prevents un-run tasks queued up in static
-            // background handlers from leaking to subsequent tests.
-            shadowOf(looper).getScheduler().reset();
-            shadowOf(looper.getQueue()).reset();
-          }
-        }
-      }
-    }
-    // Because resetStaticState() is called by AndroidEnvironment on startup before prepareMainLooper() is
-    // called, this might be null on that occasion.
-    if (mainLooper != null) {
-      shadowOf(mainLooper).reset();
+  public static void assertLooperMode(LooperMode.Mode expectedMode) {
+    LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
+    if (looperMode != expectedMode) {
+      throw new IllegalStateException("this action is not supported in " + looperMode + " mode.");
     }
   }
 
-  @Implementation
-  protected void __constructor__(boolean quitAllowed) {
-    invokeConstructor(Looper.class, realObject, from(boolean.class, quitAllowed));
-    if (isMainThread()) {
-      mainLooper = realObject;
-    } else {
-      loopingLoopers.put(Thread.currentThread(), realObject);
-    }
-    resetScheduler();
+  private static ShadowLooper shadowLooper(Looper looper) {
+    return Shadow.extract(looper);
   }
 
-  @Implementation
-  protected static Looper getMainLooper() {
-    return mainLooper;
-  }
-
-  @Implementation
-  protected static Looper myLooper() {
-    return getLooperForThread(Thread.currentThread());
-  }
-
-  @Implementation
-  protected static void loop() {
-    shadowOf(Looper.myLooper()).doLoop();
-  }
-
-  private void doLoop() {
-    if (realObject != Looper.getMainLooper()) {
-      synchronized (realObject) {
-        while (!quit) {
-          try {
-            realObject.wait();
-          } catch (InterruptedException ignore) {
-          }
-        }
-      }
-    }
-  }
-
-  @Implementation
-  protected void quit() {
-    if (realObject == Looper.getMainLooper()) throw new RuntimeException("Main thread not allowed to quit");
-    quitUnchecked();
-  }
-
-  @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected void quitSafely() {
-    quit();
-  }
-
-  public void quitUnchecked() {
-    synchronized (realObject) {
-      quit = true;
-      realObject.notifyAll();
-      getScheduler().reset();
-      shadowOf(realObject.getQueue()).reset();
-    }
-  }
-
-  public boolean hasQuit() {
-    synchronized (realObject) {
-      return quit;
-    }
-  }
-
-  /** @deprecated Use `shadowOf({@link Looper#getMainLooper()})` instead. */
+  /** @deprecated Use {@code shadowOf({@link Looper#getMainLooper()})} instead. */
   @Deprecated
   public static ShadowLooper getShadowMainLooper() {
-    return shadowOf(Looper.getMainLooper());
+    return shadowLooper(getMainLooper());
   }
-  
+
+  // TODO: should probably remove this
+  public static ShadowLooper shadowMainLooper() {
+    return shadowLooper(getMainLooper());
+  }
+
   public static Looper getLooperForThread(Thread thread) {
-    return isMainThread(thread) ? mainLooper : loopingLoopers.get(thread);
+    if (looperMode() == LEGACY) {
+      return ShadowLegacyLooper.getLooperForThread(thread);
+    }
+    throw new UnsupportedOperationException(
+        "this action is not supported in " + looperMode() + " mode.");
+  }
+
+  /** Return all created loopers. */
+  public static Collection<Looper> getAllLoopers() {
+    if (looperMode() == LEGACY) {
+      return ShadowLegacyLooper.getLoopers();
+    } else {
+      return ShadowPausedLooper.getLoopers();
+    }
+  }
+
+  /** Should not be called directly - Robolectric internal use only. */
+  public static void resetThreadLoopers() {
+    if (looperMode() == LEGACY) {
+      ShadowLegacyLooper.resetThreadLoopers();
+      return;
+    }
+    throw new UnsupportedOperationException(
+        "this action is not supported in " + looperMode() + " mode.");
+  }
+
+  /** Return the current {@link LooperMode}. */
+  public static LooperMode.Mode looperMode() {
+    return ConfigurationRegistry.get(LooperMode.Mode.class);
   }
 
   /**
-   * Pauses execution of tasks posted to the ShadowLooper. This means that during tests, tasks sent
-   * to the looper will not execute immediately, but will be queued in a way that is similar to how
-   * a real looper works. These queued tasks must be executed explicitly by calling {@link
+   * Pauses execution of tasks posted to the ShadowLegacyLooper. This means that during tests, tasks
+   * sent to the looper will not execute immediately, but will be queued in a way that is similar to
+   * how a real looper works. These queued tasks must be executed explicitly by calling {@link
    * #runToEndOftasks} or a similar method, otherwise they will not run at all before your test
    * ends.
    *
    * @param looper the looper to pause
    */
   public static void pauseLooper(Looper looper) {
-    shadowOf(looper).pause();
+    shadowLooper(looper).pause();
   }
 
   /**
@@ -177,11 +101,11 @@ public class ShadowLooper extends ShadowBaseLooper {
    * @param looper the looper to pause
    */
   public static void unPauseLooper(Looper looper) {
-    shadowOf(looper).unPause();
+    shadowLooper(looper).unPause();
   }
 
   /**
-   * Puts the main ShadowLooper in an "paused" state.
+   * Puts the main ShadowLegacyLooper in an "paused" state.
    *
    * @see #pauseLooper
    */
@@ -190,7 +114,7 @@ public class ShadowLooper extends ShadowBaseLooper {
   }
 
   /**
-   * Puts the main ShadowLooper in an "unpaused" state.
+   * Puts the main ShadowLegacyLooper in an "unpaused" state.
    *
    * @see #unPauseLooper
    */
@@ -223,12 +147,13 @@ public class ShadowLooper extends ShadowBaseLooper {
   public static void runMainLooperToNextTask() {
     getShadowMainLooper().runToNextTask();
   }
-    
+
   /**
-   * Runs any immediately runnable tasks previously queued on the UI thread,
-   * e.g. by {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
+   * Runs any immediately runnable tasks previously queued on the UI thread, e.g. by {@link
+   * android.app.Activity#runOnUiThread(Runnable)} or {@link
+   * android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * **Note:** calling this method does not pause or un-pause the scheduler.
+   * <p>**Note:** calling this method does not pause or un-pause the scheduler.
    *
    * @see #runUiThreadTasksIncludingDelayedTasks
    */
@@ -237,186 +162,176 @@ public class ShadowLooper extends ShadowBaseLooper {
   }
 
   /**
-   * Runs all runnable tasks (pending and future) that have been queued on the UI thread. Such tasks may be queued by
-   * e.g. {@link android.app.Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
+   * Runs all runnable tasks (pending and future) that have been queued on the UI thread. Such tasks
+   * may be queued by e.g. {@link android.app.Activity#runOnUiThread(Runnable)} or {@link
+   * android.os.AsyncTask#onPostExecute(Object)}.
    *
-   * **Note:** calling this method does not pause or un-pause the scheduler, however the clock is advanced as
-   * future tasks are run.
-   * 
+   * <p>**Note:** calling this method does not pause or un-pause the scheduler, however the clock is
+   * advanced as future tasks are run.
+   *
    * @see #runUiThreadTasks
    */
   public static void runUiThreadTasksIncludingDelayedTasks() {
     getShadowMainLooper().runToEndOfTasks();
   }
 
+  public abstract void quitUnchecked();
+
+  public abstract boolean hasQuit();
+
+  /** Executes all posted tasks scheduled before or at the current time. */
+  public abstract void idle();
+
   /**
-   * Causes {@link Runnable}s that have been scheduled to run immediately to actually run. Does not advance the
-   * scheduler's clock;
+   * Advances the system clock by the given time, then executes all posted tasks scheduled before or
+   * at the given time.
    */
-  public void idle() {
-    idle(0, TimeUnit.MILLISECONDS);
+  public abstract void idleFor(long time, TimeUnit timeUnit);
+
+  /** A variant of {@link #idleFor(long, TimeUnit)} that accepts a Duration. */
+  @SuppressWarnings("AndroidJdkLibsChecker")
+  public void idleFor(Duration duration) {
+    idleFor(duration.toMillis(), TimeUnit.MILLISECONDS);
   }
 
-  @Override
-  public void idleFor(long time, TimeUnit timeUnit) {
-    idle(time, timeUnit);
-  }
+  /** Returns true if there are no pending tasks scheduled to be executed before current time. */
+  public abstract boolean isIdle();
 
-  @Override
-  public void idleIfPaused() {
-    // ignore
-  }
+  /** Not supported for the main Looper in {@link LooperMode.Mode.PAUSED}. */
+  public abstract void unPause();
+
+  public abstract boolean isPaused();
 
   /**
-   * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
-   * run while advancing the scheduler's clock.
+   * Control the paused state of the Looper.
+   *
+   * <p>Not supported for the main Looper in {@link LooperMode.Mode.PAUSED}.
+   */
+  public abstract boolean setPaused(boolean shouldPause);
+
+  /** Only supported for {@link LooperMode.Mode.LEGACY}. */
+  public abstract void resetScheduler();
+
+  /** Causes all enqueued tasks to be discarded, and pause state to be reset */
+  public abstract void reset();
+
+  /**
+   * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
+   * tasks. This scheduler is managed by the Looper's associated queue.
+   *
+   * <p>Only supported for {@link LooperMode.Mode.LEGACY}.
+   *
+   * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued
+   *     tasks.
+   */
+  public abstract Scheduler getScheduler();
+
+  /**
+   * Runs the current task with the looper paused.
+   *
+   * <p>When LooperMode is PAUSED, this will execute all pending tasks scheduled before the current
+   * time.
+   */
+  public abstract void runPaused(Runnable run);
+
+  /**
+   * Helper method to selectively call idle() only if LooperMode is PAUSED.
+   *
+   * <p>Intended for backwards compatibility, to avoid changing behavior for tests still using
+   * LEGACY LooperMode.
+   */
+  public abstract void idleIfPaused();
+
+  /**
+   * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis}
+   * milliseconds to run while advancing the scheduler's clock.
    *
    * @deprecated Use {@link #idle(long, TimeUnit)}.
    */
   @Deprecated
   public void idle(long intervalMillis) {
-    idle(intervalMillis, TimeUnit.MILLISECONDS);
+    idleFor(Duration.ofMillis(intervalMillis));
   }
 
   /**
-   * Causes {@link Runnable}s that have been scheduled to run within the next specified amount of time to run while
-   * advancing the scheduler's clock.
+   * Causes {@link Runnable}s that have been scheduled to run within the next specified amount of
+   * time to run while advancing the clock.
+   *
+   * @deprecated use {@link idleFor(amount, unit)}
    */
+  @Deprecated
   public void idle(long amount, TimeUnit unit) {
-    getScheduler().advanceBy(amount, unit);
+    idleFor(amount, unit);
   }
 
-  public void idleConstantly(boolean shouldIdleConstantly) {
-    getScheduler().idleConstantly(shouldIdleConstantly);
-  }
+  public abstract void idleConstantly(boolean shouldIdleConstantly);
 
   /**
-   * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the scheduler's clock to the
-   * start time of the last scheduled {@link Runnable}.
+   * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the clock
+   * to the start time of the last scheduled {@link Runnable}.
    */
-  public void runToEndOfTasks() {
-    getScheduler().advanceToLastPostedRunnable();
-  }
+  public abstract void runToEndOfTasks();
 
   /**
-   * Causes the next {@link Runnable}(s) that have been scheduled to run while advancing the scheduler's clock to its
-   * start time. If more than one {@link Runnable} is scheduled to run at this time then they will all be run.
+   * Causes the next {@link Runnable}(s) that have been scheduled to run while advancing the clock
+   * to its start time. If more than one {@link Runnable} is scheduled to run at this time then they
+   * will all be run.
    */
-  public void runToNextTask() {
-    getScheduler().advanceToNextPostedRunnable();
-  }
+  public abstract void runToNextTask();
 
   /**
-   * Causes only one of the next {@link Runnable}s that have been scheduled to run while advancing the scheduler's
-   * clock to its start time. Only one {@link Runnable} will run even if more than one has ben scheduled to run at the
-   * same time.
+   * Causes only one of the next {@link Runnable}s that have been scheduled to run while advancing
+   * the clock to its start time. Only one {@link Runnable} will run even if more than one has been
+   * scheduled to run at the same time.
    */
-  public void runOneTask() {
-    getScheduler().runOneTask();
-  }
+  public abstract void runOneTask();
 
   /**
    * Enqueue a task to be run later.
    *
-   * @param runnable    the task to be run
+   * @param runnable the task to be run
    * @param delayMillis how many milliseconds into the (virtual) future to run it
    * @return true if the runnable is enqueued
    * @see android.os.Handler#postDelayed(Runnable,long)
    * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
    */
   @Deprecated
-  public boolean post(Runnable runnable, long delayMillis) {
-    if (!quit) {
-      getScheduler().postDelayed(runnable, delayMillis, TimeUnit.MILLISECONDS);
-      return true;
-    } else {
-      return false;
-    }
-  }
-  
+  public abstract boolean post(Runnable runnable, long delayMillis);
+
   /**
    * Enqueue a task to be run ahead of all other delayed tasks.
    *
-   * @param runnable    the task to be run
+   * @param runnable the task to be run
    * @return true if the runnable is enqueued
    * @see android.os.Handler#postAtFrontOfQueue(Runnable)
    * @deprecated Use a {@link android.os.Handler} instance to post to a looper.
    */
   @Deprecated
-  public boolean postAtFrontOfQueue(Runnable runnable) {
-    if (!quit) {
-      getScheduler().postAtFrontOfQueue(runnable);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public void pause() {
-    getScheduler().pause();
-  }
-
-  public void unPause() {
-    getScheduler().unPause();
-  }
-
-  public boolean isPaused() {
-    return getScheduler().isPaused();
-  }
-
-  public boolean setPaused(boolean shouldPause) {
-    boolean wasPaused = isPaused();
-    if (shouldPause) {
-      pause();
-    } else {
-      unPause();
-    }
-    return wasPaused;
-  }
-
-  public void resetScheduler() {
-    ShadowMessageQueue shadowMessageQueue = shadowOf(realObject.getQueue());
-    if (realObject == Looper.getMainLooper() || RoboSettings.isUseGlobalScheduler()) {
-      shadowMessageQueue.setScheduler(RuntimeEnvironment.getMasterScheduler());
-    } else {
-      shadowMessageQueue.setScheduler(new Scheduler());
-    }
-  }
+  public abstract boolean postAtFrontOfQueue(Runnable runnable);
 
   /**
-   * Causes all enqueued tasks to be discarded, and pause state to be reset
-   */
-  public void reset() {
-    shadowOf(realObject.getQueue()).reset();
-    resetScheduler();
-
-    quit = false;
-  }
-
-  /**
-   * Returns the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
-   * This scheduler is managed by the Looper's associated queue.
+   * Pause the looper.
    *
-   * @return the {@link org.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+   * <p>Has no practical effect for realistic looper, since it is always paused.
    */
-  public Scheduler getScheduler() {
-    return shadowOf(realObject.getQueue()).getScheduler();
-  }
+  public abstract void pause();
 
-  public void runPaused(Runnable r) {
-    boolean wasPaused = setPaused(true);
-    try {
-      r.run();
-    } finally {
-      if (!wasPaused) unPause();
+  /**
+   * @return the scheduled time of the next posted task; Duration.ZERO if there is no currently
+   *     scheduled task.
+   */
+  public abstract Duration getNextScheduledTaskTime();
+
+  /**
+   * @return the scheduled time of the last posted task; Duration.ZERO 0 if there is no currently
+   *     scheduled task.
+   */
+  public abstract Duration getLastScheduledTaskTime();
+
+  public static class Picker extends LooperShadowPicker<ShadowLooper> {
+
+    public Picker() {
+      super(ShadowLegacyLooper.class, ShadowPausedLooper.class);
     }
-  }
-
-  private static ShadowLooper shadowOf(Looper looper) {
-    return Shadow.extract(looper);
-  }
-
-  private static ShadowMessageQueue shadowOf(MessageQueue mq) {
-    return Shadow.extract(mq);
   }
 }

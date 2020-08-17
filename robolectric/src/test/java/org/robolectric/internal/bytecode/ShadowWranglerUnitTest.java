@@ -9,8 +9,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.android.AndroidInterceptors;
+import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
 
 @SuppressWarnings("unchecked")
@@ -18,11 +20,17 @@ import org.robolectric.util.Function;
 public class ShadowWranglerUnitTest {
   private ShadowWrangler shadowWrangler;
   private Interceptors interceptors;
+  private ShadowMatcher sdk18 = new AndroidSdkShadowMatcher(18);
+  private ShadowMatcher sdk19 = new AndroidSdkShadowMatcher(19);
+  private ShadowMatcher sdk20 = new AndroidSdkShadowMatcher(20);
+  private ShadowMatcher sdk21 = new AndroidSdkShadowMatcher(21);
+  private ShadowMatcher sdk22 = new AndroidSdkShadowMatcher(22);
+  private ShadowMatcher sdk23 = new AndroidSdkShadowMatcher(23);
 
   @Before
   public void setup() throws Exception {
     interceptors = new Interceptors(AndroidInterceptors.all());
-    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, 23, interceptors);
+    shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY, sdk23, interceptors);
   }
 
   @Test
@@ -38,7 +46,7 @@ public class ShadowWranglerUnitTest {
     MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
     Function<Object,Object> handler = interceptors.getInterceptionHandler(methodSignature);
 
-    assertThat(handler).isNotSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
+    assertThat(handler).isNotSameInstanceAs(ShadowWrangler.DO_NOTHING_HANDLER);
   }
 
   @Test
@@ -70,30 +78,30 @@ public class ShadowWranglerUnitTest {
   public void shadowClassWithSdkRange() throws Throwable {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
     String methodName = internalName(DummyClass.class) + "/methodWithoutRange()V";
-    assertThat(new ShadowWrangler(shadowMap, 18, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk18, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.methodWithoutRange()");
-    assertThat(new ShadowWrangler(shadowMap, 23, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk23, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
   }
 
   @Test
   public void shadowMethodWithSdkRange() throws Throwable {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
     String methodName = internalName(DummyClass.class) + "/methodFor20()V";
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
-    assertThat(new ShadowWrangler(shadowMap, 20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.methodFor20()");
-    assertThat(new ShadowWrangler(shadowMap, 21, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk21, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
   }
 
   @Test
   public void shadowMethodWithMinSdk() throws Throwable {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
     String methodName = internalName(DummyClass.class) + "/methodMin20()V";
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
-    assertThat(new ShadowWrangler(shadowMap, 20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.methodMin20()");
-    assertThat(new ShadowWrangler(shadowMap, 21, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk21, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.methodMin20()");
   }
 
@@ -101,47 +109,51 @@ public class ShadowWranglerUnitTest {
   public void shadowMethodWithMaxSdk() throws Throwable {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
     String methodName = internalName(DummyClass.class) + "/methodMax20()V";
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.methodMax20()");
-    assertThat(new ShadowWrangler(shadowMap, 20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.methodMax20()");
-    assertThat(new ShadowWrangler(shadowMap, 21, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk21, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
   }
 
   @Test
   public void shadowConstructor() throws Throwable {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class).build();
     String methodName = internalName(DummyClass.class) + "/__constructor__()V";
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
-    assertThat(new ShadowWrangler(shadowMap, 20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk20, interceptors).methodInvoked(methodName, false, DummyClass.class).describe())
         .contains("ShadowDummyClass.__constructor__()");
-    assertThat(new ShadowWrangler(shadowMap, 21, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
+    assertThat(new ShadowWrangler(shadowMap, sdk21, interceptors).methodInvoked(methodName, false, DummyClass.class)).isNull();
   }
 
   @Test
   public void whenChildShadowHasNarrowerSdk_createShadowFor_shouldReturnSuperShadowSometimes() throws Exception {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class, ShadowChildOfDummyClass.class).build();
-    assertThat(new ShadowWrangler(shadowMap, 18, interceptors).createShadowFor(new ChildOfDummyClass()))
-        .isSameAs(ShadowWrangler.NO_SHADOW);
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).createShadowFor(new ChildOfDummyClass()))
+    assertThat(
+            new ShadowWrangler(shadowMap, sdk18, interceptors)
+                .createShadowFor(new ChildOfDummyClass()))
+        .isSameInstanceAs(ShadowWrangler.NO_SHADOW);
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).createShadowFor(new ChildOfDummyClass()))
         .isInstanceOf(ShadowDummyClass.class);
-    assertThat(new ShadowWrangler(shadowMap, 20, interceptors).createShadowFor(new ChildOfDummyClass()))
+    assertThat(new ShadowWrangler(shadowMap, sdk20, interceptors).createShadowFor(new ChildOfDummyClass()))
         .isInstanceOf(ShadowChildOfDummyClass.class);
-    assertThat(new ShadowWrangler(shadowMap, 21, interceptors).createShadowFor(new ChildOfDummyClass()))
+    assertThat(new ShadowWrangler(shadowMap, sdk21, interceptors).createShadowFor(new ChildOfDummyClass()))
         .isInstanceOf(ShadowChildOfDummyClass.class);
-    assertThat(new ShadowWrangler(shadowMap, 22, interceptors).createShadowFor(new ChildOfDummyClass()))
-        .isSameAs(ShadowWrangler.NO_SHADOW);
+    assertThat(
+            new ShadowWrangler(shadowMap, sdk22, interceptors)
+                .createShadowFor(new ChildOfDummyClass()))
+        .isSameInstanceAs(ShadowWrangler.NO_SHADOW);
   }
 
   @Test
   public void whenChildShadowHasNarrowerSdk_shouldCallAppropriateShadowMethod() throws Exception {
     ShadowMap shadowMap = new ShadowMap.Builder().addShadowClasses(ShadowDummyClass.class, ShadowChildOfDummyClass.class).build();
     String methodName = internalName(ChildOfDummyClass.class) + "/methodWithoutRange()V";
-    assertThat(new ShadowWrangler(shadowMap, 19, interceptors).methodInvoked(methodName, false, ChildOfDummyClass.class))
+    assertThat(new ShadowWrangler(shadowMap, sdk19, interceptors).methodInvoked(methodName, false, ChildOfDummyClass.class))
         .isNull();
-    assertThat(new ShadowWrangler(shadowMap, 20, interceptors).methodInvoked(methodName, false, ChildOfDummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk20, interceptors).methodInvoked(methodName, false, ChildOfDummyClass.class).describe())
         .contains("ShadowChildOfDummyClass.methodWithoutRange()");
-    assertThat(new ShadowWrangler(shadowMap, 21, interceptors).methodInvoked(methodName, false, ChildOfDummyClass.class).describe())
+    assertThat(new ShadowWrangler(shadowMap, sdk21, interceptors).methodInvoked(methodName, false, ChildOfDummyClass.class).describe())
         .contains("ShadowChildOfDummyClass.methodWithoutRange()");
   }
 

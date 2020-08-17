@@ -3,8 +3,8 @@ package androidx.core.os;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
-import androidx.core.os.BuildCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -67,6 +67,7 @@ public class BuildCompatTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
+  @Ignore // TODO(b/132130051): reenable when BuildCompat is updated
   public void isAtLeastQ() {
     assertThat(BuildCompat.isAtLeastQ()).isTrue();
   }

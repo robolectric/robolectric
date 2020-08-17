@@ -140,10 +140,12 @@ public abstract class ClassInstrumentor {
 
   private void addNoArgsConstructor(MutableClass mutableClass) {
     if (!mutableClass.foundMethods.contains("<init>()V")) {
-      MethodNode defaultConstructor = new MethodNode(Opcodes.ACC_PUBLIC, "<init>", "()V", "()V", null);
+      MethodNode defaultConstructor =
+          new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, "<init>", "()V", "()V", null);
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(defaultConstructor);
       generator.loadThis();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
+      generator.visitMethodInsn(
+          Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
       generator.loadThis();
       generator.invokeVirtual(mutableClass.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
       generator.returnValue();
@@ -155,16 +157,23 @@ public abstract class ClassInstrumentor {
 
   /**
    * Generates code like this:
-   * ```java
+   *
+   * <pre>
    * protected void $$robo$init() {
    *   if (__robo_data__ == null) {
    *     __robo_data__ = RobolectricInternals.initializing(this);
    *   }
    * }
-   * ```
+   * </pre>
    */
   private void addRoboInitMethod(MutableClass mutableClass) {
-    MethodNode initMethodNode = new MethodNode(Opcodes.ACC_PROTECTED, ROBO_INIT_METHOD_NAME, "()V", null, null);
+    MethodNode initMethodNode =
+        new MethodNode(
+            Opcodes.ACC_PROTECTED | Opcodes.ACC_SYNTHETIC,
+            ROBO_INIT_METHOD_NAME,
+            "()V",
+            null,
+            null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
     Label alreadyInitialized = new Label();
     generator.loadThis();                                         // this
@@ -194,31 +203,35 @@ public abstract class ClassInstrumentor {
     return (method.access & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-
   /**
    * Constructors are instrumented as follows:
-   * # Code other than a call to the superclass constructor is moved to a new method named
-   *   `__constructor__` with the same signature.
-   * # The constructor is modified to call {@link ClassHandler#initializing(Object)} (or
-   *   {@link ClassHandler#getShadowCreator(Class)} for `invokedynamic` JVMs).
-   * # The constructor is modified to then call
-   *   {@link ClassHandler#methodInvoked(String, boolean, Class)} (or
-   *   {@link ClassHandler#findShadowMethodHandle(Class, String, MethodType, boolean)} for
-   *   `invokedynamic` JVMs) with the method name `__constructor__` and the same parameter types.
+   *
+   * <ul>
+   *   <li>Code other than a call to the superclass constructor is moved to a new method named
+   *       {@code __constructor__} with the same signature.
+   *   <li>The constructor is modified to call {@link ClassHandler#initializing(Object)} (or {@link
+   *       ClassHandler#getShadowCreator(Class)} for {@code invokedynamic} JVMs).
+   *   <li>The constructor is modified to then call {@link ClassHandler#methodInvoked(String,
+   *       boolean, Class)} (or {@link ClassHandler#findShadowMethodHandle(Class, String,
+   *       MethodType, boolean)} for {@code invokedynamic} JVMs) with the method name {@code
+   *       __constructor__} and the same parameter types.
+   * </ul>
    *
    * Note that most code in the constructor will not be executed unless the {@link ClassHandler}
    * arranges for it to happen.
    *
-   * Given a constructor like this:
-   * ```java
+   * <p>Given a constructor like this:
+   *
+   * <pre>
    * public ThisClass(String name, int size) {
    *   super(name, someStaticMethod());
    *   this.size = size;
    * }
-   * ```
+   * </pre>
    *
    * ... generates code like this:
-   * ```java
+   *
+   * <pre>
    * private $$robo$$__constructor__(String name, int size) {
    *   this.size = size;
    * }
@@ -241,7 +254,7 @@ public abstract class ClassInstrumentor {
    *   super(name, someStaticMethod());
    *   $$robo$init();
    * }
-   * ```
+   * </pre>
    *
    * @param method the constructor to instrument
    */
@@ -254,7 +267,8 @@ public abstract class ClassInstrumentor {
 
       RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
       generator.loadThis();
-      generator.visitMethodInsn(Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
+      generator.visitMethodInsn(
+          Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
       generator.returnValue();
       generator.endMethod();
     }
@@ -264,7 +278,8 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
 
     String[] exceptions = exceptionArray(method);
-    MethodNode initMethodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
+    MethodNode initMethodNode =
+        new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
     makeMethodPublic(initMethodNode);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
 
@@ -324,24 +339,24 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * # Rename the method from `methodName` to `$$robo$$methodName`.
-   * # Make it private so we can invoke it directly without subclass overrides taking precedence.
-   * # Remove `final` and `native` modifiers, if present.
-   * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
+   * Instruments a normal method
+   *
+   * <ul>
+   *   <li>Rename the method from {@code methodName} to {@code $$robo$$methodName}.
+   *   <li>Make it private so we can invoke it directly without subclass overrides taking
+   *       precedence.
+   *   <li>Remove {@code final} modifiers, if present.
+   *   <li>Create a delegator method named {@code methodName} which delegates to the {@link
+   *       ClassHandler}.
+   * </ul>
    */
   protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
     // if not abstract, set a final modifier
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
     }
-    // if a native method, remove native modifier and force return a default value
     if ((method.access & Opcodes.ACC_NATIVE) != 0) {
-      method.access = method.access & ~Opcodes.ACC_NATIVE;
-
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
-      Type returnType = generator.getReturnType();
-      generator.pushDefaultReturnValueToStack(returnType);
-      generator.returnValue();
+      instrumentNativeMethod(mutableClass, method);
     }
 
     // todo figure out
@@ -360,6 +375,21 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(delegatorMethodNode);
   }
 
+  /**
+   * Creates native stub which returns the default return value.
+   *
+   * @param mutableClass Class to be instrumented
+   * @param method Method to be instrumented, must be native
+   */
+  protected void instrumentNativeMethod(MutableClass mutableClass, MethodNode method) {
+    method.access = method.access & ~Opcodes.ACC_NATIVE;
+
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
+    Type returnType = generator.getReturnType();
+    generator.pushDefaultReturnValueToStack(returnType);
+    generator.returnValue();
+  }
+
   private String directMethodName(MutableClass mutableClass, String originalName) {
     return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
@@ -375,7 +405,7 @@ public abstract class ClassInstrumentor {
     return redirector;
   }
 
-  private String[] exceptionArray(MethodNode method) {
+  protected String[] exceptionArray(MethodNode method) {
     List<String> exceptions = method.exceptions;
     return exceptions.toArray(new String[exceptions.size()]);
   }
@@ -432,8 +462,8 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * Verifies if the @targetMethod is a `<init>(boolean)` constructor for
-   * {@link java.util.GregorianCalendar}.
+   * Verifies if the @targetMethod is a {@code <init>(boolean)} constructor for {@link
+   * java.util.GregorianCalendar}.
    */
   private boolean isGregorianCalendarBooleanConstructor(MethodInsnNode targetMethod) {
     return targetMethod.owner.equals("java/util/GregorianCalendar") &&
@@ -442,10 +472,11 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * Replaces the void `<init>(boolean)` constructor for a call to the
-   * `void <init>(int, int, int)` one.
+   * Replaces the void {@code <init>(boolean)} constructor for a call to the {@code void <init>(int,
+   * int, int)} one.
    */
-  private void replaceGregorianCalendarBooleanConstructor(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  private void replaceGregorianCalendarBooleanConstructor(
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     // Remove the call to GregorianCalendar(boolean)
     instructions.remove();
 
@@ -458,7 +489,13 @@ public abstract class ClassInstrumentor {
     instructions.add(new InsnNode(Opcodes.ICONST_0));
 
     // Call GregorianCalendar(int, int, int)
-    instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, targetMethod.owner, targetMethod.name, "(III)V", targetMethod.itf));
+    instructions.add(
+        new MethodInsnNode(
+            Opcodes.INVOKESPECIAL,
+            targetMethod.owner,
+            targetMethod.name,
+            "(III)V",
+            targetMethod.itf));
   }
 
   /**
@@ -486,7 +523,7 @@ public abstract class ClassInstrumentor {
   /**
    * Replaces protected and public class modifiers with private.
    */
-  private void makeMethodPrivate(MethodNode method) {
+  protected void makeMethodPrivate(MethodNode method) {
     method.access = (method.access | Opcodes.ACC_PRIVATE) & ~(Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED);
   }
 
@@ -494,7 +531,9 @@ public abstract class ClassInstrumentor {
     MethodNode methodNode = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", "()V", null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
     generator.push(mutableClass.classType);
-    generator.invokeStatic(Type.getType(RobolectricInternals.class), new Method("classInitializing", "(Ljava/lang/Class;)V"));
+    generator.invokeStatic(
+        Type.getType(RobolectricInternals.class),
+        new Method("classInitializing", "(Ljava/lang/Class;)V"));
     generator.returnValue();
     generator.endMethod();
     return methodNode;

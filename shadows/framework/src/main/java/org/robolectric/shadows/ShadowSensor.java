@@ -5,6 +5,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.hardware.Sensor;
 import android.os.Build.VERSION_CODES;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
@@ -16,6 +17,8 @@ import org.robolectric.util.reflector.Static;
 public class ShadowSensor {
 
   @RealObject private Sensor realSensor;
+
+  private float maximumRange = 0;
 
   /** Constructs a {@link Sensor} with a given type. */
   public static Sensor newInstance(int type) {
@@ -33,6 +36,16 @@ public class ShadowSensor {
     } else {
       clearMask(wakeUpSensorMask);
     }
+  }
+
+  /** Sets the return value for {@link Sensor#getMaximumRange}. */
+  public void setMaximumRange(float range) {
+    maximumRange = range;
+  }
+
+  @Implementation
+  protected float getMaximumRange() {
+    return maximumRange;
   }
 
   private void setMask(int mask) {
