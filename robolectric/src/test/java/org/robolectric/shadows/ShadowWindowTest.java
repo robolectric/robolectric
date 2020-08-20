@@ -151,7 +151,7 @@ public class ShadowWindowTest {
 
   @Test
   @Config(minSdk = N)
-  public void reportOnFrameMetricsAvailable_listenerRemoved_doesntnotifyListener()
+  public void reportOnFrameMetricsAvailable_listenerRemoved_doesntNotifyListener()
       throws Exception {
     Window window = ShadowWindow.create(ApplicationProvider.getApplicationContext());
     Window.OnFrameMetricsAvailableListener listener =
@@ -167,6 +167,15 @@ public class ShadowWindowTest {
             any(Window.class),
             any(FrameMetrics.class),
             /* dropCountSinceLastInvocation= */ anyInt());
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void reportOnFrameMetricsAvailable_noListener_doesntCrash() throws Exception {
+    Window window = ShadowWindow.create(ApplicationProvider.getApplicationContext());
+
+    // Shouldn't crash.
+    shadowOf(window).reportOnFrameMetricsAvailable(new FrameMetricsBuilder().build());
   }
 
   public static class TestActivity extends Activity {

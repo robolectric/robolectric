@@ -14,8 +14,17 @@ public class ShadowScroller {
   private int finalX;
   private int finalY;
   private long startTime;
+  private long stoppedTime;
   private long duration;
   private boolean started;
+  private boolean aborted;
+
+  @Implementation
+  protected void abortAnimation() {
+    started = false;
+    aborted = true;
+    stoppedTime = SystemClock.uptimeMillis();
+  }
 
   @Implementation
   protected int getStartX() {
@@ -63,6 +72,7 @@ public class ShadowScroller {
     startTime = SystemClock.uptimeMillis();
     this.duration = duration;
     started = true;
+    aborted = false;
     // enqueue a dummy task so that the scheduler will actually run
     new Handler(Looper.getMainLooper())
         .postDelayed(() -> {}, duration);
@@ -79,7 +89,7 @@ public class ShadowScroller {
 
   @Implementation
   protected boolean isFinished() {
-    return deltaTime() > duration;
+    return aborted || deltaTime() > duration;
   }
 
   @Implementation
@@ -88,7 +98,7 @@ public class ShadowScroller {
   }
 
   private long deltaTime() {
-    return SystemClock.uptimeMillis() - startTime;
+    return aborted ? stoppedTime - startTime : SystemClock.uptimeMillis() - startTime;
   }
 
   private int deltaX() {

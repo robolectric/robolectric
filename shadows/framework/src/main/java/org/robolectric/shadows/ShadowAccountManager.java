@@ -359,6 +359,25 @@ public class ShadowAccountManager {
     }
   }
 
+  @Implementation(minSdk = O)
+  protected AccountManagerFuture<Bundle> finishSession(
+      Bundle sessionBundle,
+      Activity activity,
+      AccountManagerCallback<Bundle> callback,
+      Handler handler) {
+
+    return start(
+        new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
+          @Override
+          public Bundle doWork()
+              throws OperationCanceledException, IOException, AuthenticatorException {
+            // Just return sessionBundle as the result since it's not really used, allowing it to
+            // be easily controlled in tests.
+            return sessionBundle;
+          }
+        });
+  }
+
   /**
    * Based off of private method postToHandler(Handler, OnAccountsUpdateListener, Account[]) in
    * {@link AccountManager}

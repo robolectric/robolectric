@@ -995,8 +995,8 @@ public class CppAssetManager2 {
       ResolvedBag new_bag = new ResolvedBag();
       ResolvedBag.Entry[] new_entry = new_bag.entries = new Entry[entry_count];
       int i = 0;
-      for (; curOffset < map_entry_end;
-          map_entry = new ResTable_map(map_entry.myBuf(), curOffset)) {
+      while (curOffset < map_entry_end) {
+        map_entry = new ResTable_map(map_entry.myBuf(), curOffset);
         final Ref<Integer> new_key = new Ref<>(dtohl(map_entry.name.ident));
         if (!is_internal_resid(new_key.get())) {
           // Attributes, arrays, etc don't have a resource id as the name. They specify
