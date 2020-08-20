@@ -1,11 +1,14 @@
 package org.robolectric.integration_tests.mockito_experimental;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.text.Layout;
 import android.widget.TextView;
+import java.io.File;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,5 +44,18 @@ public class MockitoMockFinalsTest {
     final int getId() {
       return -1;
     }
+  }
+
+  /**
+   * Mocking Java classes with mockito-inline is currently broken.
+   *
+   * @see <a href="https://github.com/robolectric/robolectric/issues/5522">Issue 5522</a>
+   */
+  @Test
+  @Ignore
+  public void file_getAbsolutePath_isMockable() throws Exception {
+    File file = mock(File.class);
+    doReturn("absolute/path").when(file).getAbsolutePath();
+    assertThat(file.getAbsolutePath()).isEqualTo("absolute/path");
   }
 }
