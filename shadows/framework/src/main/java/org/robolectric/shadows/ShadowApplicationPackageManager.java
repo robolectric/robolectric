@@ -1814,7 +1814,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       PersistableBundle launcherExtras,
       String dialogMessage,
       Object dialogInfo) {
-    if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()) {
+    if (hasProfileOwnerOrDeviceOwnerOnCurrentUser()
+        && (VERSION.SDK_INT < VERSION_CODES.Q
+            || !isCurrentApplicationProfileOwnerOrDeviceOwner())) {
       throw new UnsupportedOperationException();
     }
     ArrayList<String> unupdatedPackages = new ArrayList<>();
@@ -1831,6 +1833,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       setting.setSuspended(suspended, dialogMessage, dialogInfo, appExtras, launcherExtras);
     }
     return unupdatedPackages.toArray(new String[0]);
+  }
+
+  /** Returns whether the current user profile has a profile owner or a device owner. */
+  private boolean isCurrentApplicationProfileOwnerOrDeviceOwner() {
+    String currentApplication = getContext().getPackageName();
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager) getContext().getSystemService(Context.DEVICE_POLICY_SERVICE);
+    return devicePolicyManager.isProfileOwnerApp(currentApplication)
+        || devicePolicyManager.isDeviceOwnerApp(currentApplication);
   }
 
   /** Returns whether the current user profile has a profile owner or a device owner. */

@@ -11,6 +11,11 @@ import org.junit.runner.RunWith;
 /** Test ShadowProcess */
 @RunWith(AndroidJUnit4.class)
 public class ShadowProcessTest {
+  // The range of thread priority values is specified by
+  // android.os.Process#setThreadPriority(int, int), which is [-20,19].
+  private static final int THREAD_PRIORITY_HIGHEST = -20;
+  private static final int THREAD_PRIORITY_LOWEST = 19;
+
   @Test
   public void shouldBeZeroWhenNotSet() {
     assertThat(android.os.Process.myPid()).isEqualTo(0);
@@ -128,6 +133,22 @@ public class ShadowProcessTest {
 
     assertThat(android.os.Process.getThreadPriority(android.os.Process.myTid()))
         .isEqualTo(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+  }
+
+  @Test
+  public void setThreadPriorityOneArgument_setsCurrentThreadPriority_highestPriority() {
+    android.os.Process.setThreadPriority(THREAD_PRIORITY_HIGHEST);
+
+    assertThat(android.os.Process.getThreadPriority(android.os.Process.myTid()))
+        .isEqualTo(THREAD_PRIORITY_HIGHEST);
+  }
+
+  @Test
+  public void setThreadPriorityOneArgument_setsCurrentThreadPriority_lowestPriority() {
+    android.os.Process.setThreadPriority(THREAD_PRIORITY_LOWEST);
+
+    assertThat(android.os.Process.getThreadPriority(android.os.Process.myTid()))
+        .isEqualTo(THREAD_PRIORITY_LOWEST);
   }
 }
 
