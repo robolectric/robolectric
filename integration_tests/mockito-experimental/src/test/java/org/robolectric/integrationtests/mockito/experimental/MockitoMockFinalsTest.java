@@ -1,4 +1,4 @@
-package org.robolectric.integration_tests.mockito_experimental;
+package org.robolectric.integrationtests.mockito.experimental;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -14,13 +14,12 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.RobolectricTestRunner;
 
+/** Tests the ability to mock final classes and methods with mockito-inline. */
 @RunWith(RobolectricTestRunner.class)
 public class MockitoMockFinalsTest {
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule();
+  @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-  @Mock
-  TextView textView;
+  @Mock TextView textView;
 
   @Test
   public void testInjection() {
@@ -36,8 +35,7 @@ public class MockitoMockFinalsTest {
     assertThat(user.getId()).isEqualTo(1);
   }
 
-
-  final static class User {
+  static final class User {
     final int getId() {
       return -1;
     }
