@@ -117,6 +117,11 @@ public class ShadowWindow {
     ArrayList<FrameMetricsObserver> frameMetricsObservers =
         reflector(ViewReflector.class, decorView).getFrameMetricsObservers();
 
+    // The decorView only initializes the observers list when one is attached.
+    if (frameMetricsObservers == null) {
+      return;
+    }
+
     for (FrameMetricsObserver observer : frameMetricsObservers) {
       reflector(FrameMetricsObserverReflector.class, observer)
           .getListener()
