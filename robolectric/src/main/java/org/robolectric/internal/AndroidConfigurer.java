@@ -134,6 +134,9 @@ public class AndroidConfigurer {
     builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
 
+    builder.doNotAcquireClass(
+        "org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher");
+
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);
     }

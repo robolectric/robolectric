@@ -205,6 +205,9 @@ public class JarInstrumentor {
         .addInstrumentedPackage("org.kxml2.");
 
     builder.doNotInstrumentPackage("androidx.test");
+
+    builder.doNotAcquireClass(
+        "org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher");
     return builder.build();
   }
 }
