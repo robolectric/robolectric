@@ -205,6 +205,10 @@ public class JarInstrumentor {
         .addInstrumentedPackage("org.kxml2.");
 
     builder.doNotInstrumentPackage("androidx.test");
+
+    // Mockito's MockMethodDispatcher must only exist in the Bootstrap class loader.
+    builder.doNotAcquireClass(
+        "org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher");
     return builder.build();
   }
 }

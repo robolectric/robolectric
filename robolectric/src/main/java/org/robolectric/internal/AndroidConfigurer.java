@@ -19,6 +19,7 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Util;
 
+/** Instruments the Android jars */
 public class AndroidConfigurer {
 
   private final ShadowProviders shadowProviders;
@@ -133,6 +134,10 @@ public class AndroidConfigurer {
 
     builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
+
+    // Mockito's MockMethodDispatcher must only exist in the Bootstrap class loader.
+    builder.doNotAcquireClass(
+        "org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher");
 
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);

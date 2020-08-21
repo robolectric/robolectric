@@ -157,18 +157,7 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {
-    // Mockito shipped a workaround to work with the (previously broken) SandboxClassLoader:
-    // https://github.com/mockito/mockito/issues/845
-    // We need to special-case this one file to make sure the integration with the inline-mockmaker
-    // does not break. At some point we have to revert this workaround, which would constitute a
-    // breaking change if Robolectric is used in combination with an old version of Mockito. At the
-    // same time, Mockito needs to remove their workaround and make sure it works with both the old
-    // (broken) and new ClassLoader.
-    String extension =
-        className.equals("org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher")
-            ? "raw"
-            : "class";
-    String classFilename = className.replace('.', '/') + "." + extension;
+    String classFilename = className.replace('.', '/') + ".class";
     try (InputStream classBytesStream = getClassBytesAsStreamPreferringLocalUrls(classFilename)) {
       if (classBytesStream == null) {
         throw new ClassNotFoundException(className);
