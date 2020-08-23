@@ -308,7 +308,10 @@ public class ShadowUsageStatsManager {
   protected UsageEvents queryEvents(long beginTime, long endTime) {
     List<Event> results =
         ImmutableList.copyOf(eventsByTimeStamp.subMap(beginTime, endTime).values());
+    return createUsageEvents(results);
+  }
 
+  private static UsageEvents createUsageEvents(List<Event> results) {
     ArraySet<String> names = new ArraySet<>();
     for (Event result : results) {
       names.add(result.mPackage);
@@ -328,6 +331,18 @@ public class ShadowUsageStatsManager {
     // Then the app unmarshalls the usage events from the Parcel.
     parcel.setDataPosition(0);
     return new UsageEvents(parcel);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.P)
+  protected UsageEvents queryEventsForSelf(long beginTime, long endTime) {
+    String packageName = RuntimeEnvironment.application.getOpPackageName();
+    ImmutableList.Builder<Event> listBuilder = new ImmutableList.Builder<>();
+    for (Event event : eventsByTimeStamp.subMap(beginTime, endTime).values()) {
+      if (packageName.equals(event.getPackageName())) {
+        listBuilder.add(event);
+      }
+    }
+    return createUsageEvents(listBuilder.build());
   }
 
   /**
@@ -773,6 +788,13 @@ public class ShadowUsageStatsManager {
     @TargetApi(Build.VERSION_CODES.Q)
     public EventBuilder setTaskRootClass(String taskRootClass) {
       event.mTaskRootClass = taskRootClass;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.P)
+    public EventBuilder setAppStandbyBucket(int bucket) {
+      event.mBucketAndReason &= 0xFFFF;
+      event.mBucketAndReason |= bucket << 16;
       return this;
     }
   }
