@@ -10,7 +10,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = TileService.class, minSdk = Build.VERSION_CODES.N)
-public final class ShadowTileService {
+public class ShadowTileService {
 
   private Tile tile;
   private boolean isLocked = false;
