@@ -3067,6 +3067,28 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_isProfileOwner_suspendDialogInfo() throws NameNotFoundException {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowOf(devicePolicyManager).setProfileOwner(componentName);
+
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_withDeviceOwner_shouldThrow() {
     DevicePolicyManager devicePolicyManager =
@@ -3112,6 +3134,28 @@ public class ShadowPackageManagerTest {
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_isDeviceOwner_suspendDialogInfo() throws NameNotFoundException {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowOf(devicePolicyManager).setDeviceOwner(componentName);
+
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
   }
 
   @Test
