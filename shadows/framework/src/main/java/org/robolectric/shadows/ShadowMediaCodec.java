@@ -144,7 +144,7 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected void native_configure(
       String[] keys, Object[] values, Surface surface, MediaCrypto crypto, int flags) {
-    configure(keys, values);
+    configure(keys, values, surface, crypto, flags);
   }
 
   @Implementation(minSdk = O)
@@ -155,12 +155,19 @@ public class ShadowMediaCodec {
       Object crypto,
       Object descramblerBinder,
       Object flags) {
-    configure((String[]) keys, (Object[]) values);
+    configure(
+        (String[]) keys, (Object[]) values, (Surface) surface, (MediaCrypto) crypto, (int) flags);
   }
 
-  private void configure(String[] keys, Object[] values) {
+  private void configure(
+      String[] keys,
+      Object[] values,
+      @Nullable Surface surface,
+      @Nullable MediaCrypto mediaCrypto,
+      int flags) {
     isAsync = callback != null;
     pendingOutputFormat = recreateMediaFormatFromKeysValues(keys, values);
+    fakeCodec.onConfigured(pendingOutputFormat, surface, mediaCrypto, flags);
   }
 
   /**
@@ -215,7 +222,7 @@ public class ShadowMediaCodec {
   }
 
   /** Returns the input or output buffer corresponding to the given index, or null if invalid. */
-@Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP)
   protected ByteBuffer getBuffer(boolean input, int index) {
     ByteBuffer[] buffers = input ? inputBuffers : outputBuffers;
     return index >= 0 && index < buffers.length && !(input && codecOwnsInputBuffer(index))
@@ -499,6 +506,9 @@ public class ShadowMediaCodec {
 
       /** Move the bytes on the in buffer to the out buffer */
       void process(ByteBuffer in, ByteBuffer out);
+      /** Called when the codec is configured. @see MediaCodec#configure */
+      default void onConfigured(
+          MediaFormat format, @Nullable Surface surface, @Nullable MediaCrypto crypto, int flags) {}
     }
   }
 
