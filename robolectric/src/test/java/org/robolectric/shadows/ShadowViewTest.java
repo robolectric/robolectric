@@ -1,7 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,6 +21,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
@@ -990,6 +992,27 @@ public class ShadowViewTest {
     assertThat(globalVisibleRect)
         .isEqualTo(new Rect(0, 25,
             DeviceConfig.DEFAULT_SCREEN_SIZE.width, DeviceConfig.DEFAULT_SCREEN_SIZE.height));
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setAnimationMatrix() {
+    assertThat(view.getAnimationMatrix()).isEqualTo(null);
+
+    Matrix matrix = new Matrix();
+    view.setAnimationMatrix(matrix);
+
+    assertThat(view.getAnimationMatrix()).isEqualTo(matrix);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setAnimationMatrix_makesMatrixCopy() {
+    Matrix matrix = new Matrix();
+    view.setAnimationMatrix(matrix);
+    matrix.setScale(.5f, .5f);
+
+    assertThat(view.getAnimationMatrix()).isEqualTo(new Matrix());
   }
 
   public static class MyActivity extends Activity {

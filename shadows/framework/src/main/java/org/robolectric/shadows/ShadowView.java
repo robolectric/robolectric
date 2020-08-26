@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -12,6 +13,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -73,6 +75,7 @@ public class ShadowView {
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
   private Rect globalVisibleRect;
   private int layerType;
+  private Matrix animationMatrix;
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -297,7 +300,8 @@ public class ShadowView {
   @Deprecated
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
-      dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
+      dumpAttribute(
+          out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
     }
 
     switch (realView.getVisibility()) {
@@ -459,7 +463,9 @@ public class ShadowView {
   @Implementation
   protected void scrollTo(int x, int y) {
     try {
-      Method method = View.class.getDeclaredMethod("onScrollChanged", new Class[]{int.class, int.class, int.class, int.class});
+      Method method =
+          View.class.getDeclaredMethod(
+              "onScrollChanged", new Class[] {int.class, int.class, int.class, int.class});
       method.setAccessible(true);
       method.invoke(realView, x, y, scrollToCoordinates.x, scrollToCoordinates.y);
     } catch (Exception e) {
@@ -628,7 +634,8 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+    directlyOn(
+        realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
   }
 
   @Implementation
@@ -647,6 +654,17 @@ public class ShadowView {
     //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
 
     ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setAnimationMatrix(Matrix matrix) {
+    animationMatrix = matrix != null ? new Matrix(matrix) : null;
+    directly().setAnimationMatrix(matrix);
+  }
+
+  @Implementation(minSdk = Q)
+  protected Matrix getAnimationMatrix() {
+    return animationMatrix;
   }
 
   private View directly() {
