@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -14,6 +15,7 @@ import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
 import android.app.Instrumentation;
+import android.app.PictureInPictureParams;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -85,6 +87,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private IntentSenderRequest lastIntentSenderRequest;
   private boolean throwIntentSenderException;
   private boolean hasReportedFullyDrawn = false;
+  private boolean isInPictureInPictureMode = false;
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -711,6 +714,28 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation(minSdk = N)
   protected boolean isInMultiWindowMode() {
     return inMultiWindowMode;
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean isInPictureInPictureMode() {
+    return isInPictureInPictureMode;
+  }
+
+  @Implementation(minSdk = N)
+  protected void enterPictureInPictureMode() {
+    isInPictureInPictureMode = true;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean enterPictureInPictureMode(PictureInPictureParams params) {
+    isInPictureInPictureMode = true;
+    return true;
+  }
+
+  @Implementation
+  protected boolean moveTaskToBack(boolean nonRoot) {
+    isInPictureInPictureMode = false;
+    return true;
   }
 
   /**

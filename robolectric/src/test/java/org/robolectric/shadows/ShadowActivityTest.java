@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -32,6 +33,7 @@ import android.app.Application;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.PendingIntent;
+import android.app.PictureInPictureParams;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
@@ -1103,6 +1105,26 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.reportFullyDrawn();
     assertThat(shadowOf(activity).getReportFullyDrawn()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void enterPip() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+    activity.enterPictureInPictureMode();
+    assertThat(activity.isInPictureInPictureMode()).isTrue();
+    activity.moveTaskToBack(false);
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void enterPipWithParams() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+    activity.enterPictureInPictureMode(new PictureInPictureParams.Builder().build());
+    assertThat(activity.isInPictureInPictureMode()).isTrue();
   }
 
   /////////////////////////////
