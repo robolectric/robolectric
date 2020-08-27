@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebBackForwardList;
@@ -395,6 +396,30 @@ public class ShadowWebViewTest {
     assertThat(shadowOf(webView).wasClearViewCalled()).isFalse();
     webView.clearView();
     assertThat(shadowOf(webView).wasClearViewCalled()).isTrue();
+  }
+
+  @Test
+  public void getFavicon() {
+    assertThat(webView.getFavicon()).isNull();
+  }
+
+  @Test
+  public void getFavicon_withMockFaviconSet_returnsMockFavicon() {
+    Bitmap emptyFavicon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
+    shadowOf(webView).setFavicon(emptyFavicon);
+    assertThat(webView.getFavicon()).isEqualTo(emptyFavicon);
+  }
+
+  @Test
+  public void getFavicon_withMockFaviconSetMultipleTimes_returnsCorrectMockFavicon() {
+    Bitmap emptyFavicon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+    Bitmap emptyFavicon2 = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
+    shadowOf(webView).setFavicon(emptyFavicon);
+    assertThat(webView.getFavicon()).isEqualTo(emptyFavicon);
+    shadowOf(webView).setFavicon(emptyFavicon2);
+    assertThat(webView.getFavicon()).isEqualTo(emptyFavicon2);
   }
 
   @Test
