@@ -182,6 +182,10 @@ public class ShadowTypeface {
     fontMap.put("sans-serif", createUnderlyingTypeface("sans-serif", 0));
   }
 
+  /** Avoid spurious error message about /system/etc/fonts.xml */
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O)
+  protected static void init() {}
+
   @HiddenApi
   @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
   public static void initSystemDefaultTypefaces(
