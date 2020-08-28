@@ -57,6 +57,7 @@ public class ShadowWebView extends ShadowViewGroup {
   private boolean onResumeCalled = false;
   private WebChromeClient webChromeClient;
   private boolean canGoBack;
+  private Bitmap currentFavicon = null;
   private int goBackInvocations = 0;
   private int goForwardInvocations = 0;
   private int reloadInvocations = 0;
@@ -487,6 +488,17 @@ public class ShadowWebView extends ShadowViewGroup {
   /** Sets the value to return from {@code #getCurrentWebviewPackage()}. */
   public static void setCurrentWebViewPackage(PackageInfo webViewPackageInfo) {
     packageInfo = webViewPackageInfo;
+  }
+
+  /** Gets the favicon for the current page set by {@link #setFavicon}. */
+  @Implementation
+  protected Bitmap getFavicon() {
+    return currentFavicon;
+  }
+
+  /** Sets the favicon to return from {@link #getFavicon}. */
+  public void setFavicon(Bitmap favicon) {
+    currentFavicon = favicon;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.KITKAT)

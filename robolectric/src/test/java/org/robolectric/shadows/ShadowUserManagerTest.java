@@ -25,6 +25,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcel;
+import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -46,6 +47,7 @@ public class ShadowUserManagerTest {
   private static final int TEST_USER_HANDLE = 0;
   private static final int PROFILE_USER_HANDLE = 2;
   private static final String PROFILE_USER_NAME = "profile";
+  private static final String SEED_ACCOUNT_NAME = "seed_account_name";
   private static final String SEED_ACCOUNT_TYPE = "seed_account_type";
   private static final int PROFILE_USER_FLAGS = 0;
 
@@ -289,12 +291,49 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.Q)
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void setSeedAccountName() {
+    assertThat(userManager.getSeedAccountName()).isNull();
+
+    shadowOf(userManager).setSeedAccountName(SEED_ACCOUNT_NAME);
+    assertThat(userManager.getSeedAccountName()).isEqualTo(SEED_ACCOUNT_NAME);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
   public void setSeedAccountType() {
     assertThat(userManager.getSeedAccountType()).isNull();
 
     shadowOf(userManager).setSeedAccountType(SEED_ACCOUNT_TYPE);
     assertThat(userManager.getSeedAccountType()).isEqualTo(SEED_ACCOUNT_TYPE);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void setSeedAccountOptions() {
+    assertThat(userManager.getSeedAccountOptions()).isNull();
+
+    PersistableBundle options = new PersistableBundle();
+    shadowOf(userManager).setSeedAccountOptions(options);
+    assertThat(userManager.getSeedAccountOptions()).isEqualTo(options);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void clearSeedAccountData() {
+    shadowOf(userManager).setSeedAccountName(SEED_ACCOUNT_NAME);
+    shadowOf(userManager).setSeedAccountType(SEED_ACCOUNT_TYPE);
+    shadowOf(userManager).setSeedAccountOptions(new PersistableBundle());
+
+    assertThat(userManager.getSeedAccountName()).isNotNull();
+    assertThat(userManager.getSeedAccountType()).isNotNull();
+    assertThat(userManager.getSeedAccountOptions()).isNotNull();
+
+    userManager.clearSeedAccountData();
+
+    assertThat(userManager.getSeedAccountName()).isNull();
+    assertThat(userManager.getSeedAccountType()).isNull();
+    assertThat(userManager.getSeedAccountOptions()).isNull();
   }
 
   @Test
