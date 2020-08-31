@@ -133,8 +133,8 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Override
-  public void onAudioDataWritten(ShadowAudioTrack audioTrack, byte[] audioData,
-      AudioFormat format) {
+  public void onAudioDataWritten(
+      ShadowAudioTrack audioTrack, byte[] audioData, AudioFormat format) {
     shadowAudioTrack = audioTrack;
     dataWrittenToShadowAudioTrack = audioData;
   }

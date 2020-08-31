@@ -9,8 +9,8 @@ import static android.os.Build.VERSION_CODES.M;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
-import androidx.annotation.NonNull;
 import android.util.Log;
+import androidx.annotation.NonNull;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,11 +28,11 @@ import org.robolectric.annotation.Resetter;
 public class ShadowAudioTrack {
 
   /**
-   * Listeners to be notified when data is written to an {@link AudioTrack} via
-   * {@link AudioTrack#write(ByteBuffer, int, int)}
+   * Listeners to be notified when data is written to an {@link AudioTrack} via {@link
+   * AudioTrack#write(ByteBuffer, int, int)}
    *
-   * <p>Currently, only the data written through
-   * AudioTrack.write(ByteBuffer audioData, int sizeInBytes, int writeMode) will be reported.</p>
+   * <p>Currently, only the data written through AudioTrack.write(ByteBuffer audioData, int
+   * sizeInBytes, int writeMode) will be reported.
    */
   public interface OnAudioDataWrittenListener {
 
