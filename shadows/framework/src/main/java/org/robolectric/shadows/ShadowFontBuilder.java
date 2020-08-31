@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.content.res.AssetManager;
+import android.graphics.fonts.Font;
 import com.google.common.base.Preconditions;
 import java.nio.ByteBuffer;
 import org.robolectric.annotation.Implementation;
@@ -13,7 +14,8 @@ import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager2;
 import org.robolectric.res.android.Registries;
 
-@Implements(className = "android.graphics.fonts.Font.Builder", minSdk = Q, isInAndroidSdk = false)
+/** Shadow for {@link android.graphics.fonts.Font.Builder} */
+@Implements(value = Font.Builder.class, minSdk = Q)
 public class ShadowFontBuilder {
 
   // transliterated from frameworks/base/core/jni/android/graphics/fonts/Font.cpp
