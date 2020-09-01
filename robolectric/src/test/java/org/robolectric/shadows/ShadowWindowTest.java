@@ -49,7 +49,7 @@ public class ShadowWindowTest {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     window.setTitle("My Window Title");
-    assertThat(shadowOf(window).getTitle()).isEqualTo("My Window Title");
+    assertThat(shadowOf(window).getTitle().toString()).isEqualTo("My Window Title");
   }
 
   @Test
