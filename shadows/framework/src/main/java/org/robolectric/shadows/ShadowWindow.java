@@ -1,25 +1,25 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.view.FrameMetrics;
-import android.view.FrameMetricsObserver;
-import android.view.View;
 import android.view.Window;
+import android.view.Window.OnFrameMetricsAvailableListener;
 import android.widget.ProgressBar;
-import java.util.ArrayList;
+import androidx.annotation.RequiresApi;
+import java.util.HashSet;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
@@ -30,8 +30,11 @@ public class ShadowWindow {
   protected Drawable backgroundDrawable;
   private int flags;
   private int softInputMode;
+  private final Set<OnFrameMetricsAvailableListener> onFrameMetricsAvailableListeners =
+      new HashSet<>();
 
   public static Window create(Context context) throws Exception {
+    new Throwable().printStackTrace();
     String className = getApiLevel() >= M
         ? "com.android.internal.policy.PhoneWindow"
         : "com.android.internal.policy.impl.PhoneWindow";
@@ -95,10 +98,27 @@ public class ShadowWindow {
             ClassParameter.from(boolean.class, false));
   }
 
+  @Implementation(minSdk = N)
+  protected void addOnFrameMetricsAvailableListener(
+      Window.OnFrameMetricsAvailableListener listener, Handler handler) {
+    onFrameMetricsAvailableListeners.add(listener);
+  }
+
+  @Implementation(minSdk = N)
+  protected void removeOnFrameMetricsAvailableListener(
+      Window.OnFrameMetricsAvailableListener listener) {
+    if (!onFrameMetricsAvailableListeners.remove(listener)) {
+      // Matches current behavior of android.
+      throw new IllegalArgumentException(
+          "attempt to remove OnFrameMetricsAvailableListener that was never added");
+    }
+  }
+
   /**
    * Calls {@link Window.OnFrameMetrisAvailableListener#onFrameMetricsAvailable()} on each current
    * listener with 0 as the dropCountSinceLastInvocation.
    */
+  @RequiresApi(api = N)
   public void reportOnFrameMetricsAvailable(FrameMetrics frameMetrics) {
     reportOnFrameMetricsAvailable(frameMetrics, /* dropCountSinceLastInvocation= */ 0);
   }
@@ -110,34 +130,11 @@ public class ShadowWindow {
    * @param frameMetrics the {@link FrameMetrics} instance passed to the listeners.
    * @param dropCountSinceLastInvocation the dropCountSinceLastInvocation passed to the listeners.
    */
+  @RequiresApi(api = N)
   public void reportOnFrameMetricsAvailable(
       FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
-    View decorView = realWindow.getDecorView();
-
-    ArrayList<FrameMetricsObserver> frameMetricsObservers =
-        reflector(ViewReflector.class, decorView).getFrameMetricsObservers();
-
-    // The decorView only initializes the observers list when one is attached.
-    if (frameMetricsObservers == null) {
-      return;
+    for (OnFrameMetricsAvailableListener listener : onFrameMetricsAvailableListeners) {
+      listener.onFrameMetricsAvailable(realWindow, frameMetrics, dropCountSinceLastInvocation);
     }
-
-    for (FrameMetricsObserver observer : frameMetricsObservers) {
-      reflector(FrameMetricsObserverReflector.class, observer)
-          .getListener()
-          .onFrameMetricsAvailable(realWindow, frameMetrics, dropCountSinceLastInvocation);
-    }
-  }
-
-  @ForType(View.class)
-  private interface ViewReflector {
-    @Accessor("mFrameMetricsObservers")
-    ArrayList<FrameMetricsObserver> getFrameMetricsObservers();
-  }
-
-  @ForType(FrameMetricsObserver.class)
-  private interface FrameMetricsObserverReflector {
-    @Accessor("mListener")
-    Window.OnFrameMetricsAvailableListener getListener();
   }
 }
