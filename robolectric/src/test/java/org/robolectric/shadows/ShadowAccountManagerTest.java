@@ -605,6 +605,103 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void startAddAccountSession_withNonNullActivity() throws Exception {
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> testAccountManagerCallback =
+        new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.startAddAccountSession(
+            "google.com",
+            /* authTokenType= */ null,
+            /* requiredFeatures= */ null,
+            /* options= */ null,
+            activity,
+            testAccountManagerCallback,
+            /* handler= */ null);
+
+    shadowMainLooper().idle();
+    assertThat(testAccountManagerCallback.hasBeenCalled()).isTrue();
+
+    Bundle result = future.getResult();
+    assertThat(result.getBundle(AccountManager.KEY_ACCOUNT_SESSION_BUNDLE)).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void startAddAccountSession_withNullActivity() throws Exception {
+    shadowOf(am).addAuthenticator("google.com");
+
+    TestAccountManagerCallback<Bundle> testAccountManagerCallback =
+        new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.startAddAccountSession(
+            "google.com",
+            /* authTokenType= */ null,
+            /* requiredFeatures= */ null,
+            /* options= */ null,
+            /* activity= */ null,
+            testAccountManagerCallback,
+            /* handler= */ null);
+
+    shadowMainLooper().idle();
+    assertThat(testAccountManagerCallback.hasBeenCalled()).isTrue();
+
+    Bundle result = future.getResult();
+    assertThat((Intent) result.getParcelable(AccountManager.KEY_INTENT)).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void startAddAccountSession_missingAuthenticator() throws Exception {
+    TestAccountManagerCallback<Bundle> testAccountManagerCallback =
+        new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.startAddAccountSession(
+            "google.com",
+            /* authTokenType= */ null,
+            /* requiredFeatures= */ null,
+            /* options= */ null,
+            activity,
+            testAccountManagerCallback,
+            /* handler= */ null);
+
+    shadowMainLooper().idle();
+    assertThat(testAccountManagerCallback.hasBeenCalled()).isTrue();
+
+    try {
+      future.getResult();
+      fail(
+          "startAddAccountSession() should throw an authenticator exception if no authenticator "
+              + " was registered for this account type");
+    } catch (AuthenticatorException e) {
+      // Expected
+    }
+    assertThat(future.isDone()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void finishSession() throws Exception {
+    Bundle sessionBundle = new Bundle();
+    sessionBundle.putString(AccountManager.KEY_ACCOUNT_NAME, "name");
+    sessionBundle.putString(AccountManager.KEY_ACCOUNT_TYPE, "google.com");
+
+    TestAccountManagerCallback<Bundle> testAccountManagerCallback =
+        new TestAccountManagerCallback<>();
+    AccountManagerFuture<Bundle> future =
+        am.finishSession(sessionBundle, activity, testAccountManagerCallback, null);
+
+    shadowMainLooper().idle();
+    assertThat(testAccountManagerCallback.hasBeenCalled()).isTrue();
+
+    Bundle result = future.getResult();
+    assertThat(result.getString(AccountManager.KEY_ACCOUNT_NAME)).isEqualTo("name");
+    assertThat(result.getString(AccountManager.KEY_ACCOUNT_TYPE)).isEqualTo("google.com");
+  }
+
+  @Test
   public void addAccount_noActivitySpecified() throws Exception {
     shadowOf(am).addAuthenticator("google.com");
 
