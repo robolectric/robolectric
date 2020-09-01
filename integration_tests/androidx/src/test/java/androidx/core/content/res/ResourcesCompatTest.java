@@ -5,7 +5,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Typeface;
 import android.os.Build;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,9 +20,11 @@ import org.robolectric.testapp.R;
 public class ResourcesCompatTest {
 
   @Test
-  @Config(maxSdk = Build.VERSION_CODES.P)
+  @Config(maxSdk = Build.VERSION_CODES.Q)
   public void getFont() {
-    Typeface typeface = ResourcesCompat.getFont(getApplicationContext(), R.font.vt323_regular);
+    Typeface typeface =
+        androidx.core.content.res.ResourcesCompat.getFont(
+            getApplicationContext(), R.font.vt323_regular);
     assertThat(typeface).isNotNull();
   }
 }
