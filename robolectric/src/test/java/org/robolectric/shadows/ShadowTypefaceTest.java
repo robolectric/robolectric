@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -9,10 +11,13 @@ import android.graphics.Typeface;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLog.LogItem;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.TestUtil;
 
 @RunWith(AndroidJUnit4.class)
@@ -133,5 +138,15 @@ public class ShadowTypefaceTest {
     Typeface roboto = Typeface.create("roboto", Typeface.BOLD);
     Typeface droid = Typeface.create("droid", Typeface.BOLD);
     assertThat(roboto.hashCode()).isNotEqualTo(droid.hashCode());
+  }
+
+  /** Check that there is no spurious error message about /system/etc/fonts.xml */
+  @Test
+  @Config(minSdk = LOLLIPOP, maxSdk = O)
+  public void init_shouldNotComplainAboutSystemFonts() {
+    ShadowLog.clear();
+    ReflectionHelpers.callStaticMethod(Typeface.class, "init");
+    List<LogItem> logs = ShadowLog.getLogsForTag("Typeface");
+    assertThat(logs).isEmpty();
   }
 }
