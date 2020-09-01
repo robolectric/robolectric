@@ -12,7 +12,6 @@ import android.view.FrameMetrics;
 import android.view.Window;
 import android.view.Window.OnFrameMetricsAvailableListener;
 import android.widget.ProgressBar;
-import androidx.annotation.RequiresApi;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
@@ -118,7 +117,6 @@ public class ShadowWindow {
    * Calls {@link Window.OnFrameMetrisAvailableListener#onFrameMetricsAvailable()} on each current
    * listener with 0 as the dropCountSinceLastInvocation.
    */
-  @RequiresApi(api = N)
   public void reportOnFrameMetricsAvailable(FrameMetrics frameMetrics) {
     reportOnFrameMetricsAvailable(frameMetrics, /* dropCountSinceLastInvocation= */ 0);
   }
@@ -130,7 +128,6 @@ public class ShadowWindow {
    * @param frameMetrics the {@link FrameMetrics} instance passed to the listeners.
    * @param dropCountSinceLastInvocation the dropCountSinceLastInvocation passed to the listeners.
    */
-  @RequiresApi(api = N)
   public void reportOnFrameMetricsAvailable(
       FrameMetrics frameMetrics, int dropCountSinceLastInvocation) {
     for (OnFrameMetricsAvailableListener listener : onFrameMetricsAvailableListeners) {

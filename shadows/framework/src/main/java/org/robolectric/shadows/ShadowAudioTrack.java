@@ -6,11 +6,11 @@ import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 
+import android.annotation.NonNull;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
 import android.util.Log;
-import androidx.annotation.NonNull;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
