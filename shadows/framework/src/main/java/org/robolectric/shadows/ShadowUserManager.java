@@ -22,6 +22,7 @@ import android.content.pm.UserInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
+import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -85,7 +86,9 @@ public class ShadowUserManager {
    */
   protected Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
 
+  private String seedAccountName;
   private String seedAccountType;
+  private PersistableBundle seedAccountOptions;
 
   private Context context;
   private boolean enforcePermissions;
@@ -656,7 +659,17 @@ public class ShadowUserManager {
             : UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected String getSeedAccountName() {
+    return seedAccountName;
+  }
+
+  /** Setter for {@link UserManager#getSeedAccountName()} */
+  public void setSeedAccountName(String seedAccountName) {
+    this.seedAccountName = seedAccountName;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.N)
   protected String getSeedAccountType() {
     return seedAccountType;
   }
@@ -664,6 +677,23 @@ public class ShadowUserManager {
   /** Setter for {@link UserManager#getSeedAccountType()} */
   public void setSeedAccountType(String seedAccountType) {
     this.seedAccountType = seedAccountType;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected PersistableBundle getSeedAccountOptions() {
+    return seedAccountOptions;
+  }
+
+  /** Setter for {@link UserManager#getSeedAccountOptions()} */
+  public void setSeedAccountOptions(PersistableBundle seedAccountOptions) {
+    this.seedAccountOptions = seedAccountOptions;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected void clearSeedAccountData() {
+    seedAccountName = null;
+    seedAccountType = null;
+    seedAccountOptions = null;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
