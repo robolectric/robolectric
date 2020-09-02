@@ -1,4 +1,4 @@
-package androidx.core.content.res;
+package org.robolectric.integrationtests.androidx;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
@@ -13,9 +13,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
 
-/**
- * Compatibility test for {@link ResourcesCompat}
- */
+/** Compatibility test for {@link ResourcesCompat} */
 @DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class ResourcesCompatTest {
