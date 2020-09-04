@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling Robolectric's
  * {@link android.os.Looper} behavior.
  *
- * <p>Currently Robolectric will default to LooperMode.LEGACY behavior, but this can be overridden
- * by applying a @LooperMode(NewMode) annotation to a test package, test class, or test method, or
- * via the 'robolectric.looperMode' system property.
+ * <p>Currently Robolectric will default to {@link LooperMode.Mode#PAUSED} behavior, but this can be
+ * overridden by applying a @LooperMode(NewMode) annotation to a test package, test class, or test
+ * method, or via the 'robolectric.looperMode' system property.
  *
  * @see {@link org.robolectric.plugins.LooperModeConfigurer}, {@link
  *     org.robolectric.util.Scheduler}, {@link org.robolectric.shadows.ShadowLooper}
@@ -64,8 +64,7 @@ public @interface LooperMode {
     LEGACY,
 
     /**
-     * A new mode that more accurately models real Android's {@link android.os.Looper} behavior,
-     * currently in Beta.
+     * A mode that more accurately models real Android's {@link android.os.Looper} behavior.
      *
      * <p>Conceptually LooperMode.PAUSED is similar to the LEGACY {@link
      * org.robolectric.util.Scheduler.IdleState#PAUSED} in the following ways:
@@ -105,7 +104,8 @@ public @interface LooperMode {
      * <p>To use:
      *
      * <ul>
-     *   <li>Apply the LooperMode(PAUSED) annotation to your test package/class/method
+     *   <li>Apply the LooperMode(PAUSED) annotation to your test package/class/method (or remove a
+     *       LooperMode(LEGACY) annotation)
      *   <li>Convert any background {@link org.robolectric.util.Scheduler} for controlling {@link
      *       android.os.Looper}s to shadowOf(looper)
      *   <li>Convert any {@link org.robolectric.android.util.concurrent.RoboExecutorService} usages
