@@ -33,7 +33,6 @@ public class ShadowWindow {
       new HashSet<>();
 
   public static Window create(Context context) throws Exception {
-    new Throwable().printStackTrace();
     String className = getApiLevel() >= M
         ? "com.android.internal.policy.PhoneWindow"
         : "com.android.internal.policy.impl.PhoneWindow";
