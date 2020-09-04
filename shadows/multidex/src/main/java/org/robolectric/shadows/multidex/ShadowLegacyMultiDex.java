@@ -4,13 +4,14 @@ import android.content.Context;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(className = "androidx.multidex.MultiDex")
+/** No-op shadow for {@link android.support.multidex.MultiDex} */
+@Implements(className = "android.support.multidex.MultiDex")
 @SuppressWarnings("robolectric.internal.IgnoreMissingClass")
-public class ShadowAndroidXMultiDex {
+@Deprecated
+public class ShadowLegacyMultiDex {
 
   @Implementation
   protected static void install(Context context) {
     // Do nothing since with Robolectric nothing is dexed.
   }
-
 }
