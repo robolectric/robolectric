@@ -25,10 +25,16 @@ public class SQLiteStatementTest {
     databasePath.getParentFile().mkdirs();
 
     database = SQLiteDatabase.openOrCreateDatabase(databasePath.getPath(), null);
-    SQLiteStatement createStatement = database.compileStatement("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
+    SQLiteStatement createStatement =
+        database.compileStatement(
+            "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR ,"
+                + " `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
 
-    SQLiteStatement createStatement2 = database.compileStatement("CREATE TABLE `countme` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
+    SQLiteStatement createStatement2 =
+        database.compileStatement(
+            "CREATE TABLE `countme` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR ,"
+                + " `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement2.execute();
   }
 
@@ -39,7 +45,8 @@ public class SQLiteStatementTest {
 
   @Test
   public void testExecuteInsert() throws Exception {
-    SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)");
+    SQLiteStatement insertStatement =
+        database.compileStatement("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)");
     insertStatement.bindString(1, "Leg Press");
     insertStatement.bindLong(2, 0);
     long pkeyOne = insertStatement.executeInsert();
@@ -79,8 +86,9 @@ public class SQLiteStatementTest {
     // if actualDBStatement will be mocked
     database.beginTransaction();
     try {
-      SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` " +
-          "(`name` ,`lastUsed`) VALUES ('test',0)");
+      SQLiteStatement insertStatement =
+          database.compileStatement(
+              "INSERT INTO `routine` " + "(`name` ,`lastUsed`) VALUES ('test',0)");
       try {
         insertStatement.executeInsert();
       } finally {
@@ -94,12 +102,14 @@ public class SQLiteStatementTest {
   @Test
   public void testExecuteUpdateDelete() throws Exception {
 
-    SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
+    SQLiteStatement insertStatement =
+        database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
     insertStatement.bindString(1, "Hand Press");
     long pkeyOne = insertStatement.executeInsert();
     assertThat(pkeyOne).isEqualTo(1);
 
-    SQLiteStatement updateStatement = database.compileStatement("UPDATE `routine` SET `name`=? WHERE `id`=?");
+    SQLiteStatement updateStatement =
+        database.compileStatement("UPDATE `routine` SET `name`=? WHERE `id`=?");
     updateStatement.bindString(1, "Head Press");
     updateStatement.bindLong(2, pkeyOne);
     assertThat(updateStatement.executeUpdateDelete()).isEqualTo(1);
@@ -116,7 +126,8 @@ public class SQLiteStatementTest {
     assertThat(stmt.simpleQueryForLong()).isEqualTo(0L);
     assertThat(stmt.simpleQueryForString()).isEqualTo("0");
 
-    SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `countme` (`name` ,`lastUsed` ) VALUES (?,?)");
+    SQLiteStatement insertStatement =
+        database.compileStatement("INSERT INTO `countme` (`name` ,`lastUsed` ) VALUES (?,?)");
     insertStatement.bindString(1, "Leg Press");
     insertStatement.bindLong(2, 0);
     insertStatement.executeInsert();
@@ -129,24 +140,39 @@ public class SQLiteStatementTest {
     assertThat(stmt.simpleQueryForString()).isEqualTo("2");
   }
 
+  @Test
+  public void simpleQueryTestWithCommonTableExpression() {
+    try (SQLiteStatement statement =
+        database.compileStatement(
+            "WITH RECURSIVE\n"
+                + "  cnt(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM cnt WHERE x<100)\n"
+                + "SELECT COUNT(*) FROM cnt;")) {
+      assertThat(statement).isNotNull();
+      assertThat(statement.simpleQueryForLong()).isEqualTo(100);
+    }
+  }
+
   @Test(expected = SQLiteDoneException.class)
   public void simpleQueryForStringThrowsSQLiteDoneExceptionTest() throws Exception {
-    //throw SQLiteDOneException if no rows returned.
-    SQLiteStatement stmt = database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
+    // throw SQLiteDOneException if no rows returned.
+    SQLiteStatement stmt =
+        database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
 
     assertThat(stmt.simpleQueryForString()).isEqualTo("0");
   }
 
   @Test(expected = SQLiteDoneException.class)
   public void simpleQueryForLongThrowsSQLiteDoneExceptionTest() throws Exception {
-    //throw SQLiteDOneException if no rows returned.
-    SQLiteStatement stmt = database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
+    // throw SQLiteDOneException if no rows returned.
+    SQLiteStatement stmt =
+        database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
     stmt.simpleQueryForLong();
   }
 
   @Test
   public void testCloseShouldCloseUnderlyingPreparedStatement() throws Exception {
-    SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
+    SQLiteStatement insertStatement =
+        database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
     insertStatement.bindString(1, "Hand Press");
     insertStatement.close();
     try {
