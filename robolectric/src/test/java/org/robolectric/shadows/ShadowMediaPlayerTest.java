@@ -245,6 +245,19 @@ public class ShadowMediaPlayerTest {
   }
 
   @Test
+  public void testSetDataSourceUsesCustomMediaInfoProvider() throws Exception {
+    MediaInfo mediaInfo = new MediaInfo();
+    ShadowMediaPlayer.setMediaInfoProvider(unused -> mediaInfo);
+    String path = "data_source_path";
+    DataSource ds = toDataSource(path);
+    mediaPlayer.setDataSource(path);
+    assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+    assertWithMessage("mediaInfo")
+        .that(shadowMediaPlayer.getMediaInfo())
+        .isSameInstanceAs(mediaInfo);
+  }
+
+  @Test
   public void testPrepareAsyncAutoCallback() {
     mediaPlayer.setOnPreparedListener(preparedListener);
     int[] testDelays = { 0, 10, 100, 1500 };
@@ -604,7 +617,8 @@ public class ShadowMediaPlayerTest {
     final EnumSet<State> invalidStates = EnumSet.of(INITIALIZED, PREPARED,
         STARTED, PAUSED, PLAYBACK_COMPLETED, STOPPED, ERROR);
 
-    testStates(new MethodSpec("setDataSource", DUMMY_SOURCE), invalidStates, iseTester, INITIALIZED);
+    testStates(
+        new MethodSpec("setDataSource", DUMMY_SOURCE), invalidStates, iseTester, INITIALIZED);
   }
 
   @Test
@@ -1348,7 +1362,8 @@ public class ShadowMediaPlayerTest {
   @Test
   public void testSetDataSourceExceptionWithWrongExceptionTypeAsserts() {
     boolean fail = false;
-    Map<DataSource,Exception> exceptions = ReflectionHelpers.getStaticField(ShadowMediaPlayer.class, "exceptions");
+    Map<DataSource, Exception> exceptions =
+        ReflectionHelpers.getStaticField(ShadowMediaPlayer.class, "exceptions");
     DataSource ds = toDataSource("dummy");
     Exception e = new CloneNotSupportedException(); // just a convenient, non-RuntimeException in java.lang
     exceptions.put(ds, e);
