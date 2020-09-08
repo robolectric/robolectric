@@ -93,6 +93,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -111,10 +112,12 @@ public class ShadowPackageManager {
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   static final List<String> systemSharedLibraryNames = new ArrayList<>();
-  static final Map<String, PackageInfo> packageInfos =
-      Collections.synchronizedMap(new LinkedHashMap<>());
-  static final Map<String, ModuleInfo> moduleInfos =
-      Collections.synchronizedMap(new LinkedHashMap<>());
+
+  @GuardedBy("itself")
+  static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+
+  @GuardedBy("itself")
+  static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
@@ -364,13 +367,13 @@ public class ShadowPackageManager {
     if (newComponent.name == null) {
       throw new IllegalArgumentException("Component needs a name");
     }
-    PackageInfo packageInfo = packageInfos.get(packageName);
+    PackageInfo packageInfo = getInternalMutablePackageInfo(packageName);
     if (packageInfo == null) {
       packageInfo = new PackageInfo();
       packageInfo.packageName = packageName;
       packageInfo.applicationInfo = newComponent.applicationInfo;
       installPackage(packageInfo);
-      packageInfo = packageInfos.get(packageName);
+      packageInfo = getInternalMutablePackageInfo(packageName);
     }
     newComponent.applicationInfo = packageInfo.applicationInfo;
     C[] components = componentArrayInPackage.apply(packageInfo);
@@ -405,7 +408,7 @@ public class ShadowPackageManager {
       BiConsumer<PackageInfo, C[]> componentsSetter) {
     filtersMap.remove(componentName);
     String packageName = componentName.getPackageName();
-    PackageInfo packageInfo = packageInfos.get(packageName);
+    PackageInfo packageInfo = getInternalMutablePackageInfo(packageName);
     if (packageInfo == null) {
       return null;
     }
@@ -709,9 +712,11 @@ public class ShadowPackageManager {
   public void installModule(Object moduleInfoObject) {
     ModuleInfo moduleInfo = (ModuleInfo) moduleInfoObject;
     if (moduleInfo != null) {
-      moduleInfos.put(moduleInfo.getPackageName(), moduleInfo);
+      synchronized (moduleInfos) {
+        moduleInfos.put(moduleInfo.getPackageName(), moduleInfo);
+      }
       // Checking to see if package exists in the system
-      if (packageInfos.get(moduleInfo.getPackageName()) == null) {
+      if (getInternalMutablePackageInfo(moduleInfo.getPackageName()) == null) {
         ApplicationInfo applicationInfo = new ApplicationInfo();
         applicationInfo.packageName = moduleInfo.getPackageName();
         applicationInfo.name = moduleInfo.getName().toString();
@@ -735,7 +740,9 @@ public class ShadowPackageManager {
    */
   public Object deleteModule(String packageName) {
     // Removes the accompanying package installed with the module
-    return moduleInfos.remove(packageName);
+    synchronized (moduleInfos) {
+      return moduleInfos.remove(packageName);
+    }
   }
 
   /**
@@ -814,7 +821,9 @@ public class ShadowPackageManager {
     }
     Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
-    packageInfos.put(packageInfo.packageName, packageInfo);
+    synchronized (packageInfos) {
+      packageInfos.put(packageInfo.packageName, packageInfo);
+    }
     packageStatsMap.put(packageInfo.packageName, packageStats);
 
     packageSettings.put(packageInfo.packageName, new PackageSetting());
@@ -861,7 +870,9 @@ public class ShadowPackageManager {
    * information according to provided flags. Don't use it to modify Robolectric state.
    */
   public PackageInfo getInternalMutablePackageInfo(String packageName) {
-    return packageInfos.get(packageName);
+    synchronized (packageInfos) {
+      return packageInfos.get(packageName);
+    }
   }
 
   /** @deprecated Use {@link #getInternalMutablePackageInfo} instead. It has better name. */
@@ -907,7 +918,9 @@ public class ShadowPackageManager {
   }
 
   public void removePackage(String packageName) {
-    packageInfos.remove(packageName);
+    synchronized (packageInfos) {
+      packageInfos.remove(packageName);
+    }
 
     packageSettings.remove(packageName);
   }
@@ -1033,11 +1046,13 @@ public class ShadowPackageManager {
     }
 
     List<PackageInfo> result = new ArrayList<>();
-    for (PackageInfo packageInfo : packageInfos.values()) {
-      if (applicationEnabledSettingMap.get(packageInfo.packageName)
-              != COMPONENT_ENABLED_STATE_DISABLED
-          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
-        result.add(packageInfo);
+    synchronized (packageInfos) {
+      for (PackageInfo packageInfo : packageInfos.values()) {
+        if (applicationEnabledSettingMap.get(packageInfo.packageName)
+                != COMPONENT_ENABLED_STATE_DISABLED
+            || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
+          result.add(packageInfo);
+        }
       }
     }
 
@@ -1065,12 +1080,16 @@ public class ShadowPackageManager {
    */
   public void deletePackage(String packageName) {
     deletedPackages.add(packageName);
-    packageInfos.remove(packageName);
+    synchronized (packageInfos) {
+      packageInfos.remove(packageName);
+    }
     mapForPackage(activityFilters, packageName).clear();
     mapForPackage(serviceFilters, packageName).clear();
     mapForPackage(providerFilters, packageName).clear();
     mapForPackage(receiverFilters, packageName).clear();
-    moduleInfos.remove(packageName);
+    synchronized (moduleInfos) {
+      moduleInfos.remove(packageName);
+    }
   }
 
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
@@ -1084,7 +1103,8 @@ public class ShadowPackageManager {
   public void doPendingUninstallCallbacks() {
     boolean hasDeletePackagesPermission = false;
     String[] requestedPermissions =
-        packageInfos.get(RuntimeEnvironment.application.getPackageName()).requestedPermissions;
+        getInternalMutablePackageInfo(RuntimeEnvironment.application.getPackageName())
+            .requestedPermissions;
     if (requestedPermissions != null) {
       for (String permission : requestedPermissions) {
         if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
@@ -1097,7 +1117,7 @@ public class ShadowPackageManager {
     for (String packageName : pendingDeleteCallbacks.keySet()) {
       int resultCode = PackageManager.DELETE_FAILED_INTERNAL_ERROR;
 
-      PackageInfo removed = packageInfos.get(packageName);
+      PackageInfo removed = getInternalMutablePackageInfo(packageName);
       if (hasDeletePackagesPermission && removed != null) {
         deletePackage(packageName);
         resultCode = PackageManager.DELETE_SUCCEEDED;
@@ -1597,7 +1617,9 @@ public class ShadowPackageManager {
     permissionRationaleMap.clear();
     systemAvailableFeatures.clear();
     systemSharedLibraryNames.clear();
-    packageInfos.clear();
+    synchronized (packageInfos) {
+      packageInfos.clear();
+    }
     packageArchiveInfo.clear();
     packageStatsMap.clear();
     packageInstallerMap.clear();
