@@ -45,4 +45,15 @@ public class EspressoWithMenuTest {
       scenario.onActivity(activity -> assertThat(activity.menuClicked).isTrue());
     }
   }
+
+  @Test
+  public void appCompatToolbarMenuClick() throws InterruptedException {
+    try (ActivityScenario<AppCompatActivityWithToolbarMenu> scenario =
+             ActivityScenario.launch(AppCompatActivityWithToolbarMenu.class)) {
+      openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext());
+      onView(withText("menu_title")).perform(click());
+
+      scenario.onActivity(activity -> assertThat(activity.menuClicked).isTrue());
+    }
+  }
 }

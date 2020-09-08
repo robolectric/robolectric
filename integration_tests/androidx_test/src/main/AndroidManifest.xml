@@ -18,6 +18,9 @@
         <activity android:name="org.robolectric.integration_tests.axt.ActivityWithAppCompatMenu"
             android:exported="true"
             android:theme="@style/Theme.AppCompat" />
+        <activity android:name="org.robolectric.integration_tests.axt.AppCompatActivityWithToolbarMenu"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$ResultCapturingActivity"/>
         <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$DummyActivity"/>
