@@ -101,12 +101,12 @@ public class ShadowTypeface {
     throw new RuntimeException("Font asset not found " + path);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = P)
   protected static Typeface createFromResources(AssetManager mgr, String path, int cookie) {
     return createUnderlyingTypeface(path, Typeface.NORMAL);
   }
 
-  @Implementation(minSdk = O, maxSdk = O_MR1)
+  @Implementation(minSdk = O)
   protected static Typeface createFromResources(
       Object /* FamilyResourceEntry */ entry,
       Object /* AssetManager */ mgr,
@@ -218,7 +218,9 @@ public class ShadowTypeface {
   @Implementation(minSdk = O)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly
-    return 1;
+    long thisFontId = nextFontId++;
+    FONTS.put(thisFontId, new FontDesc(null, weight));
+    return thisFontId;
   }
 
   /**
@@ -278,6 +280,7 @@ public class ShadowTypeface {
     }
   }
 
+  /** Shadow for {@link Typeface.Builder} */
   @Implements(value = Typeface.Builder.class, minSdk = Build.VERSION_CODES.Q)
   public static class ShadowBuilder {
     @RealObject Typeface.Builder realBuilder;
