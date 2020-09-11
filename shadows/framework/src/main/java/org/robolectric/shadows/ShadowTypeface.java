@@ -101,12 +101,12 @@ public class ShadowTypeface {
     throw new RuntimeException("Font asset not found " + path);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = P)
   protected static Typeface createFromResources(AssetManager mgr, String path, int cookie) {
     return createUnderlyingTypeface(path, Typeface.NORMAL);
   }
 
-  @Implementation(minSdk = O, maxSdk = O_MR1)
+  @Implementation(minSdk = O)
   protected static Typeface createFromResources(
       Object /* FamilyResourceEntry */ entry,
       Object /* AssetManager */ mgr,

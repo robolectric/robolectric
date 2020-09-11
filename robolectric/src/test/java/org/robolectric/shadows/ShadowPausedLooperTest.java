@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
@@ -334,6 +335,18 @@ public class ShadowPausedLooperTest {
     } catch (IllegalStateException e) {
       // expected
     }
+  }
+
+  @Test
+  public void resetter_allowsStaticHandlerThreadsToBeReused() throws Exception {
+    Handler handler = new Handler(handlerThread.getLooper());
+    CountDownLatch countDownLatch1 = new CountDownLatch(1);
+    handler.post(countDownLatch1::countDown);
+    assertThat(countDownLatch1.await(30, SECONDS)).isTrue();
+    ShadowPausedLooper.resetLoopers();
+    CountDownLatch countDownLatch2 = new CountDownLatch(1);
+    handler.post(countDownLatch2::countDown);
+    assertThat(countDownLatch2.await(30, SECONDS)).isTrue();
   }
 
   private static class BlockingRunnable implements Runnable {

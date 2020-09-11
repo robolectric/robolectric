@@ -18,24 +18,27 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 @DoNotInstrument
 public class DateFormatTest {
 
-  private Date date;
+  private Date dateAM;
+  private Date datePM;
 
   @Before
   public void setDate() {
     Calendar c = Calendar.getInstance();
     c.set(2000, 10, 25, 8, 24, 30);
-    date = c.getTime();
+    dateAM = c.getTime();
+    c.set(2000, 10, 25, 16, 24, 30);
+    datePM = c.getTime();
   }
 
   @Test
   public void getLongDateFormat() {
-    assertThat(DateFormat.getLongDateFormat(getApplicationContext()).format(date))
+    assertThat(DateFormat.getLongDateFormat(getApplicationContext()).format(dateAM))
         .isEqualTo("November 25, 2000");
   }
 
   @Test
   public void getMediumDateFormat() {
-    assertThat(DateFormat.getMediumDateFormat(getApplicationContext()).format(date))
+    assertThat(DateFormat.getMediumDateFormat(getApplicationContext()).format(dateAM))
         .isEqualTo("Nov 25, 2000");
   }
 
@@ -43,7 +46,7 @@ public class DateFormatTest {
   @Config(maxSdk = 22)
   @Test
   public void getDateFormat_pre23() {
-    assertThat(DateFormat.getDateFormat(getApplicationContext()).format(date))
+    assertThat(DateFormat.getDateFormat(getApplicationContext()).format(dateAM))
         .isEqualTo("11/25/2000");
   }
 
@@ -51,7 +54,19 @@ public class DateFormatTest {
   @Config(minSdk = 23)
   @Test
   public void getDateFormat() {
-    assertThat(DateFormat.getDateFormat(getApplicationContext()).format(date))
+    assertThat(DateFormat.getDateFormat(getApplicationContext()).format(dateAM))
         .isEqualTo("11/25/00");
+  }
+
+  @Test
+  public void getTimeFormat_am() {
+    assertThat(DateFormat.getTimeFormat(getApplicationContext()).format(dateAM))
+        .isEqualTo("8:24 AM");
+  }
+
+  @Test
+  public void getTimeFormat_pm() {
+    assertThat(DateFormat.getTimeFormat(getApplicationContext()).format(datePM))
+        .isEqualTo("4:24 PM");
   }
 }
