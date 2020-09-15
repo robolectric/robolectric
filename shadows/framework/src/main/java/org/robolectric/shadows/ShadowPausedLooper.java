@@ -218,12 +218,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     Collection<Looper> loopersCopy = new ArrayList(loopingLoopers);
     for (Looper looper : loopersCopy) {
       ShadowPausedMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
-      if (shadowQueue.isQuitAllowed()) {
-        looper.quit();
-        loopingLoopers.remove(looper);
-      } else {
-        shadowQueue.reset();
-      }
+      shadowQueue.reset();
     }
   }
 
