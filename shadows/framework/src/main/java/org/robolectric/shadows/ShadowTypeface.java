@@ -218,7 +218,9 @@ public class ShadowTypeface {
   @Implementation(minSdk = O)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly
-    return 1;
+    long thisFontId = nextFontId++;
+    FONTS.put(thisFontId, new FontDesc(null, weight));
+    return thisFontId;
   }
 
   /**
@@ -278,6 +280,7 @@ public class ShadowTypeface {
     }
   }
 
+  /** Shadow for {@link Typeface.Builder} */
   @Implements(value = Typeface.Builder.class, minSdk = Build.VERSION_CODES.Q)
   public static class ShadowBuilder {
     @RealObject Typeface.Builder realBuilder;
