@@ -22,6 +22,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
@@ -54,7 +55,8 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   @Resetter
   public static synchronized void resetThreadLoopers() {
-    if (looperMode() == LooperMode.Mode.PAUSED) {
+    // do not use looperMode() here, because its cached value might already have been reset
+    if (ConfigurationRegistry.get(LooperMode.Mode.class) == LooperMode.Mode.PAUSED) {
       // ignore if realistic looper
       return;
     }
