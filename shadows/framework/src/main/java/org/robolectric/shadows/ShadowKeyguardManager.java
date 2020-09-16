@@ -14,14 +14,9 @@ import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
-
-  private static KeyguardManager.KeyguardLock keyguardLock =
-      Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
-
   // These have to be static because on Android L and below, a new instance of KeyguardManager is
   // created each time it is requested.
   private static final Set<Integer> deviceLockedForUsers = new HashSet<Integer>();
@@ -88,16 +83,6 @@ public class ShadowKeyguardManager {
       }
       callback = null;
     }
-  }
-
-  /**
-   * For tests, returns a {@link ShadowKeyguardLock}.
-   *
-   * @see ShadowKeyguardLock
-   */
-  @Implementation
-  protected KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
-    return keyguardLock;
   }
 
   /**
@@ -242,7 +227,7 @@ public class ShadowKeyguardManager {
   /** An implementation of {@link KeyguardManager.KeyguardLock}, for use in tests. */
   @Implements(KeyguardManager.KeyguardLock.class)
   public static class ShadowKeyguardLock {
-    private boolean keyguardEnabled = true;
+    private static boolean keyguardEnabled = true;
 
     /**
      * Sets the value to be returned by {@link #isEnabled()} to false.
@@ -273,14 +258,15 @@ public class ShadowKeyguardManager {
     public boolean isEnabled() {
       return keyguardEnabled;
     }
+
+    @Resetter
+    public static void reset() {
+      keyguardEnabled = true;
+    }
   }
 
   @Resetter
   public static void reset() {
-    // Static because the state is Global but Context.getSystemService() returns a new instance
-    // on each call.
-    keyguardLock = Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
-
     deviceLockedForUsers.clear();
     deviceSecureForUsers.clear();
     inRestrictedInputMode = false;

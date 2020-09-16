@@ -186,5 +186,9 @@ public class ShadowKeyguardManagerTest {
         (KeyguardManager)
             ApplicationProvider.getApplicationContext().getSystemService(KEYGUARD_SERVICE);
     assertThat(manager2.isKeyguardLocked()).isTrue();
+    assertThat(shadowOf(manager.newKeyguardLock("tag")).isEnabled()).isTrue();
+    KeyguardManager.KeyguardLock keyguardLock = manager2.newKeyguardLock("tag");
+    keyguardLock.disableKeyguard();
+    assertThat(shadowOf(manager.newKeyguardLock("tag")).isEnabled()).isFalse();
   }
 }
