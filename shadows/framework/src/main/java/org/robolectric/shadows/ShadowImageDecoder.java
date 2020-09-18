@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+
 import android.content.res.AssetManager;
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
@@ -11,7 +15,6 @@ import android.graphics.ImageDecoder.DecodeException;
 import android.graphics.ImageDecoder.Source;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.os.Build;
 import android.util.Size;
 import java.io.ByteArrayInputStream;
 import java.io.FileDescriptor;
@@ -20,17 +23,17 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android/graphics/ImageDecoder.cpp
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android/graphics/ImageDecoder.cpp
 @SuppressWarnings({"NewApi", "UnusedDeclaration"})
 // ImageDecoder is in fact in SDK, but make it false for now so projects which compile against < P
 // still work
-@Implements(value = ImageDecoder.class, isInAndroidSdk = false, minSdk = Build.VERSION_CODES.P)
+@Implements(value = ImageDecoder.class, isInAndroidSdk = false, minSdk = P)
 public class ShadowImageDecoder {
 
   private abstract static class ImgStream {
@@ -84,8 +87,6 @@ public class ShadowImageDecoder {
 
   private static final NativeObjRegistry<CppImageDecoder> NATIVE_IMAGE_DECODER_REGISTRY =
       new NativeObjRegistry<>(CppImageDecoder.class);
-
-  @RealObject private ImageDecoder realObject;
 
   private static ImageDecoder jniCreateDecoder(ImgStream imgStream) {
     CppImageDecoder cppImageDecoder = new CppImageDecoder(imgStream);
@@ -250,52 +251,87 @@ public class ShadowImageDecoder {
   }
 
   static ColorSpace ImageDecoder_nGetColorSpace(long nativePtr) {
-    CppImageDecoder decoder = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObject(nativePtr);
     // auto colorType = codec.computeOutputColorType(codec.getInfo().colorType());
     // sk_sp<SkColorSpace> colorSpace = codec.computeOutputColorSpace(colorType);
     // return GraphicsJNI.getColorSpace(colorSpace, colorType);
     throw new UnsupportedOperationException();
   }
 
-
   // native method implementations...
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static ImageDecoder nCreate(long asset, Source source) throws IOException {
     return ImageDecoder_nCreateAsset(asset, source);
   }
 
-  @Implementation
-  protected static ImageDecoder nCreate(ByteBuffer buffer, int position,
-      int limit, Source src) throws IOException {
+  @Implementation(maxSdk = Q)
+  protected static ImageDecoder nCreate(ByteBuffer buffer, int position, int limit, Source src)
+      throws IOException {
     return ImageDecoder_nCreateByteBuffer(buffer, position, limit, src);
   }
 
-  @Implementation
-  protected static ImageDecoder nCreate(byte[] data, int offset, int length,
-      Source src) throws IOException {
+  @Implementation(maxSdk = Q)
+  protected static ImageDecoder nCreate(byte[] data, int offset, int length, Source src)
+      throws IOException {
     return ImageDecoder_nCreateByteArray(data, offset, length, src);
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static ImageDecoder nCreate(InputStream is, byte[] storage, Source source) {
     return ImageDecoder_nCreateInputStream(is, storage, source);
   }
 
   // The fd must be seekable.
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static ImageDecoder nCreate(FileDescriptor fd, Source src) throws IOException {
     return ImageDecoder_nCreateFd(fd, src);
   }
 
-  @Implementation(maxSdk = Build.VERSION_CODES.P)
-  protected static Bitmap nDecodeBitmap(long nativePtr,
+  @Implementation(minSdk = R)
+  protected static ImageDecoder nCreate(long asset, boolean preferAnimation, Source source)
+      throws IOException {
+    return ImageDecoder_nCreateAsset(asset, source);
+  }
+
+  @Implementation(minSdk = R)
+  protected static ImageDecoder nCreate(
+      ByteBuffer buffer, int position, int limit, boolean preferAnimation, Source src)
+      throws IOException {
+    return ImageDecoder_nCreateByteBuffer(buffer, position, limit, src);
+  }
+
+  @Implementation(minSdk = R)
+  protected static ImageDecoder nCreate(
+      byte[] data, int offset, int length, boolean preferAnimation, Source src) throws IOException {
+    return ImageDecoder_nCreateByteArray(data, offset, length, src);
+  }
+
+  @Implementation(minSdk = R)
+  protected static ImageDecoder nCreate(
+      InputStream is, byte[] storage, boolean preferAnimation, Source source) {
+    return ImageDecoder_nCreateInputStream(is, storage, source);
+  }
+
+  // The fd must be seekable.
+  @Implementation(minSdk = R)
+  protected static ImageDecoder nCreate(FileDescriptor fd, boolean preferAnimation, Source src)
+      throws IOException {
+    return ImageDecoder_nCreateFd(fd, src);
+  }
+
+  @Implementation(maxSdk = P)
+  protected static Bitmap nDecodeBitmap(
+      long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
-      int width, int height,
-      android.graphics.Rect cropRect, boolean mutable,
-      int allocator, boolean unpremulRequired,
-      boolean conserveMemory, boolean decodeAsAlphaMask,
+      int width,
+      int height,
+      android.graphics.Rect cropRect,
+      boolean mutable,
+      int allocator,
+      boolean unpremulRequired,
+      boolean conserveMemory,
+      boolean decodeAsAlphaMask,
       android.graphics.ColorSpace desiredColorSpace)
       throws IOException {
     return ImageDecoder_nDecodeBitmap(nativePtr,
@@ -308,15 +344,21 @@ public class ShadowImageDecoder {
         desiredColorSpace);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.Q)
-  protected static Bitmap nDecodeBitmap(long nativePtr,
+  @Implementation(minSdk = Q)
+  protected static Bitmap nDecodeBitmap(
+      long nativePtr,
       ImageDecoder decoder,
       boolean doPostProcess,
-      int width, int height,
-      Rect cropRect, boolean mutable,
-      int allocator, boolean unpremulRequired,
-      boolean conserveMemory, boolean decodeAsAlphaMask,
-      long desiredColorSpace, boolean extended)
+      int width,
+      int height,
+      Rect cropRect,
+      boolean mutable,
+      int allocator,
+      boolean unpremulRequired,
+      boolean conserveMemory,
+      boolean decodeAsAlphaMask,
+      long desiredColorSpace,
+      boolean extended)
       throws IOException {
     return ImageDecoder_nDecodeBitmap(nativePtr,
         decoder,

@@ -4,6 +4,7 @@ import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothClass;
@@ -114,7 +115,7 @@ public class ShadowBluetoothDevice {
     return alias;
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected String getAliasName() throws ReflectiveOperationException {
     // Mimicking if the officially supported function is changed.
     if (shouldThrowOnGetAliasName) {

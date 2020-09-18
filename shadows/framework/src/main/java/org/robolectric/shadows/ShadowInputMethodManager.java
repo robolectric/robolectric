@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -119,10 +120,10 @@ public class ShadowInputMethodManager {
     return false;
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected void focusIn(View view) {}
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = M, maxSdk = Q)
   protected void onViewDetachedFromWindow(View view) {}
 
   @Implementation

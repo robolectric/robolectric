@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -68,7 +69,29 @@ public class ShadowSmsManager {
       throw new IllegalArgumentException("Invalid message body");
     }
 
-    lastTextSmsParams = new TextSmsParams(destinationAddress, scAddress, text, sentIntent, deliveryIntent);
+    lastTextSmsParams =
+        new TextSmsParams(destinationAddress, scAddress, text, sentIntent, deliveryIntent);
+  }
+
+  @Implementation(minSdk = R)
+  protected void sendTextMessage(
+      String destinationAddress,
+      String scAddress,
+      String text,
+      PendingIntent sentIntent,
+      PendingIntent deliveryIntent,
+      long messageId) {
+    if (TextUtils.isEmpty(destinationAddress)) {
+      throw new IllegalArgumentException("Invalid destinationAddress");
+    }
+
+    if (TextUtils.isEmpty(text)) {
+      throw new IllegalArgumentException("Invalid message body");
+    }
+
+    lastTextSmsParams =
+        new TextSmsParams(
+            destinationAddress, scAddress, text, sentIntent, deliveryIntent, messageId);
   }
 
   @Implementation
@@ -322,6 +345,27 @@ public class ShadowSmsManager {
   /** Clear last recorded parameters for {@link #downloadMultimediaMessage}. */
   public void clearLastDownloadedMultimediaMessageParams() {
     lastDownloadedMultimediaMessageParams = null;
+  }
+
+  @Implementation(minSdk = R)
+  protected void sendMultipartTextMessage(
+      String destinationAddress,
+      String scAddress,
+      List<String> parts,
+      List<PendingIntent> sentIntents,
+      List<PendingIntent> deliveryIntents,
+      long messageId) {
+    if (TextUtils.isEmpty(destinationAddress)) {
+      throw new IllegalArgumentException("Invalid destinationAddress");
+    }
+
+    if (parts == null) {
+      throw new IllegalArgumentException("Invalid message parts");
+    }
+
+    lastTextMultipartParams =
+        new TextMultipartParams(
+            destinationAddress, scAddress, parts, sentIntents, deliveryIntents, messageId);
   }
 
   /**

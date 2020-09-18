@@ -134,6 +134,13 @@ public class ShadowMemoryMappedFile {
     }
 
     @Override
+    public void readLongArray(long[] dst, int dstOffset, int longCount) {
+      for (int i = 0; i < longCount; i++) {
+        dst[dstOffset + i] = buffer.getLong();
+      }
+    }
+
+    @Override
     public short readShort() {
       return buffer.getShort();
     }

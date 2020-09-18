@@ -76,22 +76,24 @@ public class ShadowPackageParser {
   private static class QHelper {
     private static void setCallback(PackageParser packageParser) {
       // TODO(christianw): this should be a CallbackImpl with the ApplicationPackageManager...
-      packageParser.setCallback(new Callback() {
-        @Override
-        public boolean hasFeature(String s) {
-          return false;
-        }
 
-        @Override
-        public String[] getOverlayPaths(String s, String s1) {
-          return null;
-        }
+      packageParser.setCallback(
+          new Callback() {
+            @Override
+            public boolean hasFeature(String s) {
+              return false;
+            }
 
-        @Override
-        public String[] getOverlayApks(String s) {
-          return null;
-        }
-      });
+            // @Override for SDK < 30
+            public String[] getOverlayPaths(String s, String s1) {
+              return null;
+            }
+
+            // @Override for SDK < 30
+            public String[] getOverlayApks(String s) {
+              return null;
+            }
+          });
     }
   }
 

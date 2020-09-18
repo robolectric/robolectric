@@ -9,6 +9,10 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.UserManager.USER_TYPE_FULL_GUEST;
+import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
+import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -34,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -471,8 +476,15 @@ public class ShadowUserManager {
   /**
    * Sets this process running under a restricted profile; controls the return value of {@link
    * UserManager#isRestrictedProfile()}.
+   *
+   * @deprecated use {@link ShadowUserManager#addUser()} instead
    */
+  @Deprecated
   public void setIsRestrictedProfile(boolean isRestrictedProfile) {
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      setUserType(isRestrictedProfile ? USER_TYPE_FULL_RESTRICTED : USER_TYPE_FULL_SECONDARY);
+      return;
+    }
     UserInfo userInfo = getUserInfo(UserHandle.myUserId());
     if (isRestrictedProfile) {
       userInfo.flags |= UserInfo.FLAG_RESTRICTED;
@@ -490,6 +502,10 @@ public class ShadowUserManager {
    */
   @Deprecated
   public void setIsGuestUser(boolean isGuestUser) {
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      setUserType(isGuestUser ? USER_TYPE_FULL_GUEST : USER_TYPE_FULL_SECONDARY);
+      return;
+    }
     UserInfo userInfo = getUserInfo(UserHandle.myUserId());
     if (isGuestUser) {
       userInfo.flags |= UserInfo.FLAG_GUEST;
@@ -792,6 +808,33 @@ public class ShadowUserManager {
   /** Sets the user switchability for all users. */
   public void setUserSwitchability(int switchability) {
     this.userSwitchability = switchability;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean hasUserRestrictionForUser(String restrictionKey, UserHandle userHandle) {
+    return hasUserRestriction(restrictionKey, userHandle);
+  }
+
+  private void setUserType(String userType) {
+    UserInfo userInfo = getUserInfo(UserHandle.myUserId());
+    userInfo.userType = userType;
+  }
+
+  /**
+   * Request the quiet mode.
+   *
+   * <p>If {@link #setProfileIsLocked(UserHandle, boolean)} is called with {@code true} for the
+   * managed profile a request to disable the quiet mode will fail and return {@code false} (i.e. as
+   * if the user refused to authenticate). Otherwise, the call will always succeed and return {@code
+   * true}.
+   *
+   * <p>This method simply re-directs to {@link ShadowUserManager#requestQuietModeEnabled(boolean,
+   * UserHandle)} as it already has the desired behavior irrespective of the flag's value.
+   */
+  @Implementation(minSdk = R)
+  protected boolean requestQuietModeEnabled(
+      boolean enableQuietMode, UserHandle userHandle, int flags) {
+    return requestQuietModeEnabled(enableQuietMode, userHandle);
   }
 
   @Resetter

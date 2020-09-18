@@ -25,6 +25,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Unit tests for {@link ShadowBluetoothAdapter}
@@ -166,7 +168,13 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void scanMode_withDiscoverableTimeout() {
     assertThat(
-            bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 42))
+            (boolean)
+                ReflectionHelpers.callInstanceMethod(
+                    bluetoothAdapter,
+                    "setScanMode",
+                    ClassParameter.from(
+                        int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE),
+                    ClassParameter.from(int.class, 42)))
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);

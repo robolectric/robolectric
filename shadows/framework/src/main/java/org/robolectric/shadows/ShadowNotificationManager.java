@@ -4,9 +4,11 @@ import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.app.AutomaticZenRule;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
 import android.os.Build;
@@ -113,6 +115,19 @@ public class ShadowNotificationManager {
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
     return notificationChannels.get(channelId);
+  }
+
+  /** Returns a NotificationChannel that has the given parent and conversation ID. */
+  @Implementation(minSdk = R)
+  protected NotificationChannel getNotificationChannel(String channelId, String conversationId) {
+    for (Object object : getNotificationChannels()) {
+      NotificationChannel notificationChannel = (NotificationChannel) object;
+      if (conversationId.equals(notificationChannel.getConversationId())
+          && channelId.equals(notificationChannel.getParentChannelId())) {
+        return notificationChannel;
+      }
+    }
+    return null;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
