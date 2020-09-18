@@ -14,6 +14,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
@@ -89,6 +90,13 @@ public class ShadowBluetoothAdapterTest {
   public void canGetBluetoothLeScanner() throws Exception {
     BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     assertThat(bluetoothLeScanner).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void canGetBluetoothLeAdvertiser() throws Exception {
+    BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+    assertThat(bluetoothLeAdvertiser).isNotNull();
   }
 
   @Test
