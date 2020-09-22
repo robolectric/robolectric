@@ -58,7 +58,6 @@ import static org.robolectric.res.android.Util.dtohl;
 import static org.robolectric.res.android.Util.dtohs;
 import static org.robolectric.res.android.Util.isTruthy;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Bytes;
@@ -563,7 +562,7 @@ public class ResTable_config {
 
   private String byteArrayToString(byte[] data) {
     int length = Bytes.indexOf(data, (byte) 0);
-    return new String(data, 0, length >= 0 ? length : data.length, Charsets.US_ASCII);
+    return new String(data, 0, length >= 0 ? length : data.length, US_ASCII);
   }
 
   /** Returns the wide color gamut section of {@link #colorMode}. */
@@ -588,7 +587,7 @@ public class ResTable_config {
 
   public final String scriptString() {
     if (localeScript[0] != '\0') {
-      return new String(localeScript, Charsets.UTF_8);
+      return new String(localeScript, UTF_8);
     } else {
       return null;
     }

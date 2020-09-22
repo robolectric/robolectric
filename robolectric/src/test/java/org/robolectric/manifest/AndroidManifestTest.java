@@ -1,12 +1,12 @@
 package org.robolectric.manifest;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 import android.Manifest;
 import android.content.Intent;
 import android.os.Build.VERSION_CODES;
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +33,14 @@ public class AndroidManifestTest {
 
     assertThat(config.getContentProviders().get(0).getName())
         .isEqualTo("org.robolectric.tester.FullyQualifiedClassName");
-    assertThat(config.getContentProviders().get(0).getAuthorities()).isEqualTo("org.robolectric.authority1");
+    assertThat(config.getContentProviders().get(0).getAuthorities())
+        .isEqualTo("org.robolectric.authority1");
     assertThat(config.getContentProviders().get(0).isEnabled()).isTrue();
 
     assertThat(config.getContentProviders().get(1).getName())
         .isEqualTo("org.robolectric.tester.PartiallyQualifiedClassName");
-    assertThat(config.getContentProviders().get(1).getAuthorities()).isEqualTo("org.robolectric.authority2");
+    assertThat(config.getContentProviders().get(1).getAuthorities())
+        .isEqualTo("org.robolectric.authority2");
     assertThat(config.getContentProviders().get(1).isEnabled()).isFalse();
   }
 
@@ -51,10 +53,12 @@ public class AndroidManifestTest {
             "permission_with_literal_label",
             "permission_with_minimal_fields");
     PermissionItemData permissionItemData = config.getPermissions().get("some_permission");
-    assertThat(permissionItemData.getMetaData().getValueMap()).containsEntry("meta_data_name", "meta_data_value");
+    assertThat(permissionItemData.getMetaData().getValueMap())
+        .containsEntry("meta_data_name", "meta_data_value");
     assertThat(permissionItemData.getName()).isEqualTo("some_permission");
     assertThat(permissionItemData.getPermissionGroup()).isEqualTo("my_permission_group");
-    assertThat(permissionItemData.getDescription()).isEqualTo("@string/test_permission_description");
+    assertThat(permissionItemData.getDescription())
+        .isEqualTo("@string/test_permission_description");
     assertThat(permissionItemData.getProtectionLevel()).isEqualTo("dangerous");
   }
 
@@ -64,9 +68,11 @@ public class AndroidManifestTest {
 
     assertThat(config.getPermissionGroups().keySet())
         .contains("permission_group");
-    PermissionGroupItemData permissionGroupItemData = config.getPermissionGroups().get("permission_group");
+    PermissionGroupItemData permissionGroupItemData =
+        config.getPermissionGroups().get("permission_group");
     assertThat(permissionGroupItemData.getName()).isEqualTo("permission_group");
-    assertThat(permissionGroupItemData.getDescription()).isEqualTo("@string/test_permission_description");
+    assertThat(permissionGroupItemData.getDescription())
+        .isEqualTo("@string/test_permission_description");
   }
 
   @Test
@@ -76,27 +82,33 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(0).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
-    assertThat(config.getBroadcastReceivers().get(0).getActions()).containsExactly("org.robolectric.ACTION1", "org.robolectric.ACTION2");
+    assertThat(config.getBroadcastReceivers().get(0).getActions())
+        .containsExactly("org.robolectric.ACTION1", "org.robolectric.ACTION2");
 
     assertThat(config.getBroadcastReceivers().get(1).getName())
         .isEqualTo("org.robolectric.fakes.ConfigTestReceiver");
-    assertThat(config.getBroadcastReceivers().get(1).getActions()).contains("org.robolectric.ACTION_SUPERSET_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(1).getActions())
+        .contains("org.robolectric.ACTION_SUPERSET_PACKAGE");
 
     assertThat(config.getBroadcastReceivers().get(2).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiver");
-    assertThat(config.getBroadcastReceivers().get(2).getActions()).contains("org.robolectric.ACTION_SUBSET_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(2).getActions())
+        .contains("org.robolectric.ACTION_SUBSET_PACKAGE");
 
     assertThat(config.getBroadcastReceivers().get(3).getName())
         .isEqualTo("org.robolectric.DotConfigTestReceiver");
-    assertThat(config.getBroadcastReceivers().get(3).getActions()).contains("org.robolectric.ACTION_DOT_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(3).getActions())
+        .contains("org.robolectric.ACTION_DOT_PACKAGE");
 
     assertThat(config.getBroadcastReceivers().get(4).getName())
         .isEqualTo("org.robolectric.test.ConfigTestReceiver");
-    assertThat(config.getBroadcastReceivers().get(4).getActions()).contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
+    assertThat(config.getBroadcastReceivers().get(4).getActions())
+        .contains("org.robolectric.ACTION_DOT_SUBPACKAGE");
     assertThat(config.getBroadcastReceivers().get(4).isEnabled()).isFalse();
 
     assertThat(config.getBroadcastReceivers().get(5).getName()).isEqualTo("com.foo.Receiver");
-    assertThat(config.getBroadcastReceivers().get(5).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(5).getActions())
+        .contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
     assertThat(config.getBroadcastReceivers().get(5).getIntentFilters()).hasSize(1);
     IntentFilterData filter = config.getBroadcastReceivers().get(5).getIntentFilters().get(0);
     assertThat(filter.getActions()).containsExactly("org.robolectric.ACTION_DIFFERENT_PACKAGE");
@@ -107,7 +119,8 @@ public class AndroidManifestTest {
 
     assertThat(config.getBroadcastReceivers().get(7).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
-    assertThat(config.getBroadcastReceivers().get(7).getActions()).contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+    assertThat(config.getBroadcastReceivers().get(7).getActions())
+        .contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
   }
 
   @Test
@@ -116,16 +129,21 @@ public class AndroidManifestTest {
     assertThat(config.getServices()).hasSize(2);
 
     assertThat(config.getServices().get(0).getClassName()).isEqualTo("com.foo.Service");
-    assertThat(config.getServices().get(0).getActions()).contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
+    assertThat(config.getServices().get(0).getActions())
+        .contains("org.robolectric.ACTION_DIFFERENT_PACKAGE");
     assertThat(config.getServices().get(0).getIntentFilters()).isNotEmpty();
-    assertThat(config.getServices().get(0).getIntentFilters().get(0).getMimeTypes()).containsExactly("image/jpeg");
+    assertThat(config.getServices().get(0).getIntentFilters().get(0).getMimeTypes())
+        .containsExactly("image/jpeg");
 
-    assertThat(config.getServices().get(1).getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
+    assertThat(config.getServices().get(1).getClassName())
+        .isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServices().get(1).getActions()).isEmpty();
     assertThat(config.getServices().get(1).getIntentFilters()).isEmpty();
 
-    assertThat(config.getServiceData("com.foo.Service").getClassName()).isEqualTo("com.foo.Service");
-    assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName()).isEqualTo("com.bar.ServiceWithoutIntentFilter");
+    assertThat(config.getServiceData("com.foo.Service").getClassName())
+        .isEqualTo("com.foo.Service");
+    assertThat(config.getServiceData("com.bar.ServiceWithoutIntentFilter").getClassName())
+        .isEqualTo("com.bar.ServiceWithoutIntentFilter");
     assertThat(config.getServiceData("com.foo.Service").getPermission())
         .isEqualTo("com.foo.Permission");
 
@@ -297,28 +315,39 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldTolerateMissingRFile() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifestWithNoRFile.xml"), resourceFile("res"), resourceFile("assets"));
+    AndroidManifest appManifest =
+        new AndroidManifest(
+            resourceFile("TestAndroidManifestWithNoRFile.xml"),
+            resourceFile("res"),
+            resourceFile("assets"));
     assertThat(appManifest.getPackageName()).isEqualTo("org.no.resources.for.me");
     assertThat(appManifest.getRClass()).isNull();
   }
 
   @Test
   public void whenNullManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric");
+    AndroidManifest appManifest =
+        new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), "org.robolectric");
     assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.R.class);
     assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test
   public void whenMissingManifestFile_getRClass_shouldComeFromPackageName() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(resourceFile("none.xml"), resourceFile("res"), resourceFile("assets"), "org.robolectric");
+    AndroidManifest appManifest =
+        new AndroidManifest(
+            resourceFile("none.xml"),
+            resourceFile("res"),
+            resourceFile("assets"),
+            "org.robolectric");
     assertThat(appManifest.getRClass()).isEqualTo(org.robolectric.R.class);
     assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric");
   }
 
   @Test
   public void whenMissingManifestFile_getPackageName_shouldBeDefault() throws Exception {
-    AndroidManifest appManifest = new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), null);
+    AndroidManifest appManifest =
+        new AndroidManifest(null, resourceFile("res"), resourceFile("assets"), null);
     assertThat(appManifest.getPackageName()).isEqualTo("org.robolectric.default");
     assertThat(appManifest.getRClass()).isEqualTo(null);
   }
@@ -342,7 +371,8 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldReadMultipleIntentFilters() {
-    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithMultipleIntentFilters.xml");
+    AndroidManifest appManifest =
+        newConfig("TestAndroidManifestForActivitiesWithMultipleIntentFilters.xml");
     appManifest.getMinSdkVersion(); // Force parsing
 
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
@@ -373,9 +403,11 @@ public class AndroidManifestTest {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
     assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
 
-    ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
+    ActivityData activityData =
+        appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");
     assertThat(activityData).isNotNull();
-    assertThat(activityData.getTaskAffinity()).isEqualTo("org.robolectric.shadows.TestTaskAffinity");
+    assertThat(activityData.getTaskAffinity())
+        .isEqualTo("org.robolectric.shadows.TestTaskAffinity");
   }
 
   @Test
@@ -406,7 +438,8 @@ public class AndroidManifestTest {
 
   @Test
   public void shouldReadIntentFilterWithData() {
-    AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithIntentFilterWithData.xml");
+    AndroidManifest appManifest =
+        newConfig("TestAndroidManifestForActivitiesWithIntentFilterWithData.xml");
     appManifest.getMinSdkVersion(); // Force parsing
 
     ActivityData activityData = appManifest.getActivityData("org.robolectric.shadows.TestActivity");
@@ -528,7 +561,8 @@ public class AndroidManifestTest {
 
   @Test
   public void getTransitiveManifests() throws Exception {
-    AndroidManifest lib1 = new AndroidManifest(resourceFile("lib1/AndroidManifest.xml"), null, null);
+    AndroidManifest lib1 =
+        new AndroidManifest(resourceFile("lib1/AndroidManifest.xml"), null, null);
     AndroidManifest lib2 = new AndroidManifest(resourceFile("lib2/AndroidManifest.xml"), null, null,
         Collections.singletonList(lib1), null);
     AndroidManifest app = new AndroidManifest(
@@ -546,7 +580,7 @@ public class AndroidManifestTest {
         "    <uses-sdk " + usesSdkAttrs + "/>\n" +
         "</manifest>\n";
     File f = temporaryFolder.newFile(fileName);
-    Files.asCharSink(f, Charsets.UTF_8).write(contents);
+    Files.asCharSink(f, UTF_8).write(contents);
     return new AndroidManifest(f.toPath(), null, null);
   }
 
