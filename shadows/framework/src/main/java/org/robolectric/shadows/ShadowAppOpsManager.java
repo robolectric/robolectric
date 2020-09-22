@@ -203,6 +203,28 @@ public class ShadowAppOpsManager {
     return ImmutableList.of(new PackageOps(packageName, uid, opEntries));
   }
 
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.GET_APP_OPS_STATS)
+  protected List<PackageOps> getOpsForPackage(int uid, String packageName, String[] ops) {
+    if (ops == null) {
+      int[] intOps = null;
+      return getOpsForPackage(uid, packageName, intOps);
+    }
+    Map<String, Integer> strOpToIntOp =
+        ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpStrToOp");
+    List<Integer> intOpsList = new ArrayList<>();
+    for (String op : ops) {
+      Integer intOp = strOpToIntOp.get(op);
+      if (intOp != null) {
+        intOpsList.add(intOp);
+      }
+    }
+
+    return getOpsForPackage(uid, packageName, intOpsList.stream().mapToInt(i -> i).toArray());
+  }
+
   @Implementation(minSdk = KITKAT)
   protected void checkPackage(int uid, String packageName) {
     try {
