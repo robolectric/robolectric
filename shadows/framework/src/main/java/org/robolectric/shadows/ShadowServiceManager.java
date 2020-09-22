@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -26,9 +27,11 @@ import android.app.usage.IUsageStatsManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
+import android.content.integrity.IAppIntegrityManager;
 import android.content.pm.ICrossProfileApps;
 import android.content.pm.IShortcutService;
 import android.content.rollback.IRollbackManager;
+import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.fingerprint.IFingerprintService;
 import android.hardware.input.IInputManager;
@@ -151,6 +154,10 @@ public class ShadowServiceManager {
       addBinderService(Context.ROLLBACK_SERVICE, IRollbackManager.class);
       addBinderService(Context.THERMAL_SERVICE, IThermalService.class);
       addBinderService(Context.BUGREPORT_SERVICE, IDumpstate.class);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      addBinderService(Context.APP_INTEGRITY_SERVICE, IAppIntegrityManager.class);
+      addBinderService(Context.AUTH_SERVICE, IAuthService.class);
     }
   }
 

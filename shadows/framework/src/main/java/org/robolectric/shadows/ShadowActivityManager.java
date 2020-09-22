@@ -5,16 +5,22 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
+import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
+import android.app.ApplicationExitInfo;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.UserHandle;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
@@ -26,7 +32,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(ActivityManager.class)
+/** Shadow for {@link android.app.ActivityManager} */
+@Implements(value = ActivityManager.class, looseSignatures = true)
 public class ShadowActivityManager {
   private int memoryClass = 16;
   private String backgroundPackage;
@@ -40,6 +47,7 @@ public class ShadowActivityManager {
   private Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
+  private final Deque<Object> appExitInfoList = new ArrayDeque<>();
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -270,5 +278,29 @@ public class ShadowActivityManager {
    */
   public void setBackgroundRestricted(boolean isBackgroundRestricted) {
     this.isBackgroundRestricted = isBackgroundRestricted;
+  }
+
+  /**
+   * Returns the matched {@link ApplicationExitInfo} added by {@link #addApplicationExitInfo}.
+   * {@code packageName} is ignored.
+   */
+  @Implementation(minSdk = R)
+  protected Object getHistoricalProcessExitReasons(Object packageName, Object pid, Object maxNum) {
+    return appExitInfoList.stream()
+        .filter(
+            appExitInfo ->
+                (int) pid == 0 || ((ApplicationExitInfo) appExitInfo).getPid() == (int) pid)
+        .limit((int) maxNum == 0 ? appExitInfoList.size() : (int) maxNum)
+        .collect(toCollection(ArrayList::new));
+  }
+
+  /** Adds an {@link ApplicationExitInfo} with the given information */
+  public void addApplicationExitInfo(String processName, int pid, int reason, int status) {
+    ApplicationExitInfo appExitInfo = new ApplicationExitInfo();
+    appExitInfo.setProcessName(processName);
+    appExitInfo.setPid(pid);
+    appExitInfo.setReason(reason);
+    appExitInfo.setStatus(status);
+    appExitInfoList.addFirst(appExitInfo);
   }
 }

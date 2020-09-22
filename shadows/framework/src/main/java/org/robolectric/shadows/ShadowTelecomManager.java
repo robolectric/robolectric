@@ -4,11 +4,15 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Verify.verifyNotNull;
 
+import android.annotation.SystemApi;
 import android.annotation.TargetApi;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telecom.Connection;
@@ -18,6 +22,7 @@ import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telecom.VideoProfile;
+import android.text.TextUtils;
 import android.util.ArrayMap;
 import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
@@ -583,6 +588,24 @@ public class ShadowTelecomManager {
 
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     this.simCallManager = simCallManager;
+  }
+
+  @Implementation(minSdk = R)
+  @SystemApi
+  protected Intent createLaunchEmergencyDialerIntent(String number) {
+    Context context = ReflectionHelpers.getField(realObject, "mContext");
+    String packageName =
+        context.getString(com.android.internal.R.string.config_emergency_dialer_package);
+    Intent intent = new Intent(Intent.ACTION_DIAL_EMERGENCY).setPackage(packageName);
+    ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(intent, 0);
+    if (resolveInfo == null) {
+      // No matching activity from config, fallback to default platform implementation
+      intent.setPackage(null);
+    }
+    if (!TextUtils.isEmpty(number) && TextUtils.isDigitsOnly(number)) {
+      intent.setData(Uri.parse("tel:" + number));
+    }
+    return intent;
   }
 
   /**

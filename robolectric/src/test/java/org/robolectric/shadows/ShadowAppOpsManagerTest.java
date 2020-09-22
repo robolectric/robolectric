@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Unit tests for {@link ShadowAppOpsManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -70,7 +72,13 @@ public class ShadowAppOpsManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.P)
   public void setMode_withModeDefault_atLeastP_checkOpNoThrow_shouldReturnModeDefault() {
-    appOps.setMode(OPSTR_GPS, UID_1, PACKAGE_NAME1, MODE_DEFAULT);
+    ReflectionHelpers.callInstanceMethod(
+        appOps,
+        "setMode",
+        ClassParameter.from(int.class, OP_GPS),
+        ClassParameter.from(int.class, UID_1),
+        ClassParameter.from(String.class, PACKAGE_NAME1),
+        ClassParameter.from(int.class, MODE_DEFAULT));
     assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
   }
 
@@ -106,22 +114,40 @@ public class ShadowAppOpsManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void noModeSet_atLeastO_noteProxyOpNoThrow_shouldReturnModeAllowed() {
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+    int result =
+        ReflectionHelpers.callInstanceMethod(
+            appOps,
+            "noteProxyOpNoThrow",
+            ClassParameter.from(int.class, OP_GPS),
+            ClassParameter.from(String.class, PACKAGE_NAME1));
+    assertThat(result).isEqualTo(MODE_ALLOWED);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void setMode_withModeDefault_atLeastO_noteProxyOpNoThrow_shouldReturnModeDefault() {
-    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
+    ReflectionHelpers.callInstanceMethod(
+        appOps,
+        "setMode",
+        ClassParameter.from(int.class, OP_GPS),
+        ClassParameter.from(int.class, Binder.getCallingUid()),
+        ClassParameter.from(String.class, PACKAGE_NAME1),
+        ClassParameter.from(int.class, MODE_DEFAULT));
+    int result =
+        ReflectionHelpers.callInstanceMethod(
+            appOps,
+            "noteProxyOpNoThrow",
+            ClassParameter.from(int.class, OP_GPS),
+            ClassParameter.from(String.class, PACKAGE_NAME1));
+    assertThat(result).isEqualTo(MODE_DEFAULT);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.P, maxSdk = VERSION_CODES.Q)
   public void setMode_noteProxyOpNoThrow_atLeastO() {
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
   }
 
   @Test

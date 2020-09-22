@@ -6,13 +6,19 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowApplication.getInstance;
 
+import android.Manifest.permission;
+import android.annotation.RequiresPermission;
+import android.annotation.SystemApi;
+import android.os.Binder;
 import android.os.PowerManager;
 import android.os.WorkSource;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +50,11 @@ public class ShadowPowerManager {
   // Intentionally use Object instead of PowerManager.OnThermalStatusChangedListener to avoid
   // ClassLoader exceptions on earlier SDKs that don't have this class.
   private final Set<Object> thermalListeners = new HashSet<>();
+
+  private final Set<String> ambientDisplaySuppressionTokens =
+      Collections.synchronizedSet(new HashSet<>());
+  private volatile boolean isAmbientDisplayAvailable = true;
+  private volatile boolean isRebootingUserspaceSupported = false;
 
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
@@ -209,6 +220,12 @@ public class ShadowPowerManager {
 
   @Implementation
   protected void reboot(String reason) {
+    if (RuntimeEnvironment.getApiLevel() >= R
+        && "userspace".equals(reason)
+        && !isRebootingUserspaceSupported()) {
+      throw new UnsupportedOperationException(
+          "Attempted userspace reboot on a device that doesn't support it");
+    }
     rebootReasons.add(reason);
   }
 
@@ -220,6 +237,68 @@ public class ShadowPowerManager {
   /** Returns the list of reasons for each reboot, in chronological order. */
   public ImmutableList<String> getRebootReasons() {
     return ImmutableList.copyOf(rebootReasons);
+  }
+
+  /** Sets the value returned by {@link #isAmbientDisplayAvailable()}. */
+  public void setAmbientDisplayAvailable(boolean available) {
+    this.isAmbientDisplayAvailable = available;
+  }
+
+  /** Sets the value returned by {@link #isRebootingUserspaceSupported()}. */
+  public void setIsRebootingUserspaceSupported(boolean supported) {
+    this.isRebootingUserspaceSupported = supported;
+  }
+
+  /**
+   * Returns true by default, or the value specified via {@link
+   * #setAmbientDisplayAvailable(boolean)}.
+   */
+  @Implementation(minSdk = R)
+  @SystemApi
+  @RequiresPermission(permission.READ_DREAM_STATE)
+  protected boolean isAmbientDisplayAvailable() {
+    return isAmbientDisplayAvailable;
+  }
+
+  /**
+   * If true, suppress the device's ambient display. Ambient display is defined as anything visible
+   * on the display when {@link PowerManager#isInteractive} is false.
+   *
+   * @param token An identifier for the ambient display suppression.
+   * @param suppress If {@code true}, suppresses the ambient display. Otherwise, unsuppresses the
+   *     ambient display for the given token.
+   */
+  @Implementation(minSdk = R)
+  @SystemApi
+  @RequiresPermission(permission.WRITE_DREAM_STATE)
+  protected void suppressAmbientDisplay(String token, boolean suppress) {
+    String suppressionToken = Binder.getCallingUid() + "_" + token;
+    if (suppress) {
+      ambientDisplaySuppressionTokens.add(suppressionToken);
+    } else {
+      ambientDisplaySuppressionTokens.remove(suppressionToken);
+    }
+  }
+
+  /**
+   * Returns true if {@link #suppressAmbientDisplay(String, boolean)} has been called with any
+   * token.
+   */
+  @Implementation(minSdk = R)
+  @SystemApi
+  @RequiresPermission(permission.READ_DREAM_STATE)
+  protected boolean isAmbientDisplaySuppressed() {
+    return !ambientDisplaySuppressionTokens.isEmpty();
+  }
+
+  /**
+   * Returns last value specified in {@link #setIsRebootingUserspaceSupported(boolean)} or {@code
+   * false} by default.
+   */
+  @Implementation(minSdk = R)
+  @SystemApi
+  protected boolean isRebootingUserspaceSupported() {
+    return isRebootingUserspaceSupported;
   }
 
   @Implements(PowerManager.WakeLock.class)

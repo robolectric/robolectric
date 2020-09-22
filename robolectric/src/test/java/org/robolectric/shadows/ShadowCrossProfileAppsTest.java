@@ -3,34 +3,53 @@ package org.robolectric.shadows;
 import static android.Manifest.permission.INTERACT_ACROSS_PROFILES;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.Manifest.permission;
+import android.app.AppOpsManager;
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.CrossProfileApps;
+import android.content.pm.PackageInfo;
 import android.graphics.drawable.Drawable;
+import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowCrossProfileApps.StartedActivity;
 import org.robolectric.shadows.ShadowCrossProfileApps.StartedMainActivity;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = P)
 public class ShadowCrossProfileAppsTest {
-
   private final Application application = ApplicationProvider.getApplicationContext();
-  private final CrossProfileApps crossProfileApps =
-      application.getSystemService(CrossProfileApps.class);
-
   private final UserHandle userHandle1 = UserHandle.of(10);
   private final UserHandle userHandle2 = UserHandle.of(11);
+
+  private CrossProfileApps crossProfileApps = application.getSystemService(CrossProfileApps.class);
+  private Context context;
+
+  @Before
+  public void setUp() {
+    context = ApplicationProvider.getApplicationContext();
+    crossProfileApps = context.getSystemService(CrossProfileApps.class);
+  }
 
   @Test
   public void getTargetUserProfiles_noProfilesAdded_shouldReturnEmpty() {
@@ -338,6 +357,266 @@ public class ShadowCrossProfileAppsTest {
     shadowOf(crossProfileApps).clearNextStartedActivities();
 
     assertThat(shadowOf(crossProfileApps).peekNextStartedActivity()).isNull();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void
+      canInteractAcrossProfile_withInteractAcrossProfilesPermissionAndProfile_shouldReturnTrue() {
+    Shadows.shadowOf(crossProfileApps).addTargetUserProfile(UserHandle.of(10));
+    setPermissions(permission.INTERACT_ACROSS_PROFILES);
+
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void
+      canInteractAcrossProfile_withInteractAcrossUsersPermissionAndProfile_shouldReturnTrue() {
+    Shadows.shadowOf(crossProfileApps).addTargetUserProfile(UserHandle.of(10));
+    setPermissions(permission.INTERACT_ACROSS_USERS);
+
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void
+      canInteractAcrossProfile_withInteractAcrossUsersFullPermissionAndProfile_shouldReturnTrue() {
+    Shadows.shadowOf(crossProfileApps).addTargetUserProfile(UserHandle.of(10));
+    setPermissions(permission.INTERACT_ACROSS_USERS_FULL);
+
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canInteractAcrossProfile_withAppOpsOnly_shouldReturnTrue() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ALLOWED);
+
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canInteractAcrossProfile_withoutPermission_shouldReturnFalse() {
+    Shadows.shadowOf(crossProfileApps).addTargetUserProfile(UserHandle.of(10));
+
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canInteractAcrossProfile_withoutProfile_shouldReturnFalse() {
+    setPermissions(permission.INTERACT_ACROSS_PROFILES);
+
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void setInteractAcrossProfilesAppOp_withoutPermissions_shouldThrowException() {
+    try {
+      crossProfileApps.setInteractAcrossProfilesAppOp(
+          context.getPackageName(), AppOpsManager.MODE_ALLOWED);
+      fail("Should throw SecurityException");
+    } catch (SecurityException ex) {
+      // Exactly what we would expect!
+    }
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void setInteractAcrossProfilesAppOp_withPermissions_shouldChangeAppOpsAndSendBroadcast() {
+    AtomicBoolean receivedBroadcast = new AtomicBoolean(false);
+    context.registerReceiver(
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            if (CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED.equals(
+                intent.getAction())) {
+              receivedBroadcast.set(true);
+            }
+          }
+        },
+        new IntentFilter(CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED));
+    Shadows.shadowOf(crossProfileApps).addTargetUserProfile(UserHandle.of(10));
+    setPermissions(permission.INTERACT_ACROSS_USERS, permission.CONFIGURE_INTERACT_ACROSS_PROFILES);
+    crossProfileApps.setInteractAcrossProfilesAppOp(
+        context.getPackageName(), AppOpsManager.MODE_ALLOWED);
+    // Remove permissions, or canInteractAcrossProfiles will return true without the AppOps.
+    setPermissions();
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isTrue();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(receivedBroadcast.get()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void setInteractAcrossProfilesAppOp_onShadow_shouldChangeAppOpsAndSendBroadcast() {
+    AtomicBoolean receivedBroadcast = new AtomicBoolean(false);
+    context.registerReceiver(
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            if (CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED.equals(
+                intent.getAction())) {
+              receivedBroadcast.set(true);
+            }
+          }
+        },
+        new IntentFilter(CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED));
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ALLOWED);
+    assertThat(crossProfileApps.canInteractAcrossProfiles()).isTrue();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(receivedBroadcast.get()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canRequestInteractAcrossProfile_withPermission_withTargetProfile_shouldReturnTrue() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.setHasRequestedInteractAcrossProfiles(true);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+
+    assertThat(crossProfileApps.canRequestInteractAcrossProfiles()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canRequestInteractAcrossProfile_withPermission_withoutTarget_shouldReturnFalse() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.setHasRequestedInteractAcrossProfiles(true);
+
+    assertThat(crossProfileApps.canRequestInteractAcrossProfiles()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canRequestInteractAcrossProfile_withoutPermission_withTarget_shouldReturnFalse() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+
+    assertThat(crossProfileApps.canRequestInteractAcrossProfiles()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canRequestInteractAcrossProfile_withoutPermissionOrTarget_shouldReturnFalse() {
+    assertThat(crossProfileApps.canRequestInteractAcrossProfiles()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void canRequestInteractAcrossProfile_withTarget_requestedAppOp_shouldReturnTrue() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ALLOWED);
+
+    assertThat(crossProfileApps.canRequestInteractAcrossProfiles()).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void
+      createRequestInteractAcrossProfilesIntent_withPermissionAndTarget_shouldReturnRecognisedIntent() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ALLOWED);
+
+    Intent intent = crossProfileApps.createRequestInteractAcrossProfilesIntent();
+
+    assertThat(shadowCrossProfileApps.isRequestInteractAcrossProfilesIntent(intent)).isTrue();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void createRequestInteractAcrossProfilesIntent_withoutPermission_shouldThrowException() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(UserHandle.of(10));
+
+    try {
+      crossProfileApps.createRequestInteractAcrossProfilesIntent();
+      fail("SecurityException was expected.");
+    } catch (SecurityException ex) {
+      // Exactly what we would expect!
+    }
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void createRequestInteractAcrossProfilesIntent_withoutTarget_shouldThrowException() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ALLOWED);
+
+    try {
+      crossProfileApps.createRequestInteractAcrossProfilesIntent();
+      fail("SecurityException was expected.");
+    } catch (SecurityException ex) {
+      // Exactly what we would expect!
+    }
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isRequestInteractAcrossProfilesIntent_fromBadIntents_shouldReturnFalse() {
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+
+    assertThat(shadowCrossProfileApps.isRequestInteractAcrossProfilesIntent(new Intent()))
+        .isFalse();
+    assertThat(
+            shadowCrossProfileApps.isRequestInteractAcrossProfilesIntent(
+                new Intent(Intent.ACTION_SHOW_APP_INFO)))
+        .isFalse();
+  }
+
+  @Ignore("Requires an exported activity in a manifest")
+  @Config(minSdk = R)
+  @Test
+  public void startActivity_withAppOps_shouldStartActivityForUser() {
+    UserHandle handle = UserHandle.of(10);
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(handle);
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ALLOWED);
+
+    ComponentName componentName =
+        ComponentName.createRelative(context, ".ShadowCrossProfileAppRTest$TestActivity");
+    crossProfileApps.startActivity(componentName, handle);
+
+    assertThat(shadowCrossProfileApps.peekNextStartedActivity())
+        .isEqualTo(new StartedActivity(componentName, handle));
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void startActivity_withoutAppOps_shouldThrowException() {
+    UserHandle handle = UserHandle.of(10);
+    ShadowCrossProfileApps shadowCrossProfileApps = Shadow.extract(crossProfileApps);
+    shadowCrossProfileApps.addTargetUserProfile(handle);
+    shadowCrossProfileApps.setInteractAcrossProfilesAppOp(AppOpsManager.MODE_ERRORED);
+
+    ComponentName componentName =
+        ComponentName.createRelative(context, ".ShadowCrossProfileAppRTest$TestActivity");
+
+    try {
+      crossProfileApps.startActivity(componentName, handle);
+      fail("SecurityException was expected.");
+    } catch (SecurityException ex) {
+      // Exactly what we would expect!
+    }
+  }
+
+  private void setPermissions(String... permissions) {
+    PackageInfo packageInfo =
+        shadowOf(context.getPackageManager())
+            .getInternalMutablePackageInfo(context.getPackageName());
+    packageInfo.requestedPermissions = permissions;
   }
 
   private static void assertThrowsSecurityException(Runnable runnable) {

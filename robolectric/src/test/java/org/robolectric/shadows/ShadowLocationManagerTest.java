@@ -779,7 +779,7 @@ public class ShadowLocationManagerTest {
     }
 
     try {
-      locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, null, null);
+      locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, (LocationListener) null, null);
       fail();
     } catch (Exception e) {
       // pass

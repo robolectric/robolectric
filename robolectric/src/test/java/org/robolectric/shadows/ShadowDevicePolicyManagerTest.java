@@ -21,6 +21,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -55,6 +56,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for {@link ShadowDevicePolicyManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -1863,6 +1865,21 @@ public final class ShadowDevicePolicyManagerTest {
       fail("expected SecurityException");
     } catch (SecurityException expected) {
     }
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isOrganizationOwnedDeviceWithManagedProfile_shouldBeFalseByDefault() {
+    assertThat(devicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isOrganizationOwnedDeviceWithManagedProfile_setToTrueIfSet() {
+    Shadow.<ShadowDevicePolicyManager>extract(devicePolicyManager)
+        .setOrganizationOwnedDeviceWithManagedProfile(true);
+
+    assertThat(devicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).isTrue();
   }
 
   private ServiceConnection buildServiceConnection() {

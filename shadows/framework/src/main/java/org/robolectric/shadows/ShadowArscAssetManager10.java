@@ -5,6 +5,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
@@ -104,107 +105,108 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
     @RealObject AssetManager realAssetManager;
 
-//  @RealObject
-//  protected AssetManager realObject;
+  //  @RealObject
+  //  protected AssetManager realObject;
 
-    // #define ATRACE_TAG ATRACE_TAG_RESOURCES
-// #define LOG_TAG "asset"
-//
-// #include <inttypes.h>
-// #include <linux/capability.h>
-// #include <stdio.h>
-// #include <sys/stat.h>
-// #include <sys/system_properties.h>
-// #include <sys/types.h>
-// #include <sys/wait.h>
-//
-// #include <private/android_filesystem_config.h> // for AID_SYSTEM
-//
-// #include "android-base/logging.h"
-// #include "android-base/properties.h"
-// #include "android-base/stringprintf.h"
-// #include "android_runtime/android_util_AssetManager.h"
-// #include "android_runtime/AndroidRuntime.h"
-// #include "android_util_Binder.h"
-// #include "androidfw/Asset.h"
-// #include "androidfw/AssetManager.h"
-// #include "androidfw/AssetManager2.h"
-// #include "androidfw/AttributeResolution.h"
-// #include "androidfw/MutexGuard.h"
-// #include "androidfw/ResourceTypes.h"
-// #include "core_jni_helpers.h"
-// #include "jni.h"
-// #include "nativehelper/JNIHelp.h"
-// #include "nativehelper/ScopedPrimitiveArray.h"
-// #include "nativehelper/ScopedStringChars.h"
-// #include "nativehelper/String.h"
-// #include "utils/Log.h"
-// #include "utils/misc.h"
-// #include "utils/String.h"
-// #include "utils/Trace.h"
-//
-// extern "C" int capget(cap_user_header_t hdrp, cap_user_data_t datap);
-// extern "C" int capset(cap_user_header_t hdrp, const cap_user_data_t datap);
-//
-// using ::android::base::StringPrintf;
-//
-// namespace android {
-//
-// // ----------------------------------------------------------------------------
-//
+  // #define ATRACE_TAG ATRACE_TAG_RESOURCES
+  // #define LOG_TAG "asset"
+  //
+  // #include <inttypes.h>
+  // #include <linux/capability.h>
+  // #include <stdio.h>
+  // #include <sys/stat.h>
+  // #include <sys/system_properties.h>
+  // #include <sys/types.h>
+  // #include <sys/wait.h>
+  //
+  // #include <private/android_filesystem_config.h> // for AID_SYSTEM
+  //
+  // #include "android-base/logging.h"
+  // #include "android-base/properties.h"
+  // #include "android-base/stringprintf.h"
+  // #include "android_runtime/android_util_AssetManager.h"
+  // #include "android_runtime/AndroidRuntime.h"
+  // #include "android_util_Binder.h"
+  // #include "androidfw/Asset.h"
+  // #include "androidfw/AssetManager.h"
+  // #include "androidfw/AssetManager2.h"
+  // #include "androidfw/AttributeResolution.h"
+  // #include "androidfw/MutexGuard.h"
+  // #include "androidfw/ResourceTypes.h"
+  // #include "core_jni_helpers.h"
+  // #include "jni.h"
+  // #include "nativehelper/JNIHelp.h"
+  // #include "nativehelper/ScopedPrimitiveArray.h"
+  // #include "nativehelper/ScopedStringChars.h"
+  // #include "nativehelper/String.h"
+  // #include "utils/Log.h"
+  // #include "utils/misc.h"
+  // #include "utils/String.h"
+  // #include "utils/Trace.h"
+  //
+  // extern "C" int capget(cap_user_header_t hdrp, cap_user_data_t datap);
+  // extern "C" int capset(cap_user_header_t hdrp, const cap_user_data_t datap);
+  //
+  // using ::android::base::StringPrintf;
+  //
+  // namespace android {
+  //
+  // // ----------------------------------------------------------------------------
+  //
 
-// static class typedvalue_offsets_t {
-//   jfieldID mType;
-//   jfieldID mData;
-//   jfieldID mString;
-//   jfieldID mAssetCookie;
-//   jfieldID mResourceId;
-//   jfieldID mChangingConfigurations;
-//   jfieldID mDensity;
-// }
-// static final typedvalue_offsets_t gTypedValueOffsets = new typedvalue_offsets_t();
-//
-// static class assetfiledescriptor_offsets_t {
-//   jfieldID mFd;
-//   jfieldID mStartOffset;
-//   jfieldID mLength;
-// }
-// static final assetfiledescriptor_offsets_t gAssetFileDescriptorOffsets = new assetfiledescriptor_offsets_t();
-//
-// static class assetmanager_offsets_t
-// {
-//   jfieldID mObject;
-// };
-// // This is also used by asset_manager.cpp.
-// static final assetmanager_offsets_t gAssetManagerOffsets = new assetmanager_offsets_t();
-//
-// static class apkassetsfields {
-//   jfieldID native_ptr;
-// }
-// static final apkassetsfields gApkAssetsFields = new apkassetsfields();
-//
-// static class sparsearray_offsets_t {
-//   jclass classObject;
-//   jmethodID constructor;
-//   jmethodID put;
-// }
-// static final sparsearray_offsets_t gSparseArrayOffsets = new sparsearray_offsets_t();
-//
-// static class configuration_offsets_t {
-//   jclass classObject;
-//   jmethodID constructor;
-//   jfieldID mSmallestScreenWidthDpOffset;
-//   jfieldID mScreenWidthDpOffset;
-//   jfieldID mScreenHeightDpOffset;
-// }
-// static final configuration_offsets_t gConfigurationOffsets = new configuration_offsets_t();
-//
-// jclass g_stringClass = nullptr;
-//
-// // ----------------------------------------------------------------------------
+  // static class typedvalue_offsets_t {
+  //   jfieldID mType;
+  //   jfieldID mData;
+  //   jfieldID mString;
+  //   jfieldID mAssetCookie;
+  //   jfieldID mResourceId;
+  //   jfieldID mChangingConfigurations;
+  //   jfieldID mDensity;
+  // }
+  // static final typedvalue_offsets_t gTypedValueOffsets = new typedvalue_offsets_t();
+  //
+  // static class assetfiledescriptor_offsets_t {
+  //   jfieldID mFd;
+  //   jfieldID mStartOffset;
+  //   jfieldID mLength;
+  // }
+  // static final assetfiledescriptor_offsets_t gAssetFileDescriptorOffsets = new
+  // assetfiledescriptor_offsets_t();
+  //
+  // static class assetmanager_offsets_t
+  // {
+  //   jfieldID mObject;
+  // };
+  // // This is also used by asset_manager.cpp.
+  // static final assetmanager_offsets_t gAssetManagerOffsets = new assetmanager_offsets_t();
+  //
+  // static class apkassetsfields {
+  //   jfieldID native_ptr;
+  // }
+  // static final apkassetsfields gApkAssetsFields = new apkassetsfields();
+  //
+  // static class sparsearray_offsets_t {
+  //   jclass classObject;
+  //   jmethodID constructor;
+  //   jmethodID put;
+  // }
+  // static final sparsearray_offsets_t gSparseArrayOffsets = new sparsearray_offsets_t();
+  //
+  // static class configuration_offsets_t {
+  //   jclass classObject;
+  //   jmethodID constructor;
+  //   jfieldID mSmallestScreenWidthDpOffset;
+  //   jfieldID mScreenWidthDpOffset;
+  //   jfieldID mScreenHeightDpOffset;
+  // }
+  // static final configuration_offsets_t gConfigurationOffsets = new configuration_offsets_t();
+  //
+  // jclass g_stringClass = nullptr;
+  //
+  // // ----------------------------------------------------------------------------
 
-    @Implementation
-    protected static void createSystemAssetsInZygoteLocked() {
+  @Implementation(maxSdk = Q)
+  protected static void createSystemAssetsInZygoteLocked() {
         _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
         AssetManager sSystem = _assetManagerStatic_.getSystem();
         if (sSystem != null) {
@@ -249,10 +251,10 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
         return ApkAssetsCookie.forInt(cookie > 0 ? (cookie - 1) : kInvalidCookie);
     }
 
-    // This is called by zygote (running as user root) as part of preloadResources.
-// static void NativeVerifySystemIdmaps(JNIEnv* /*env*/, jclass /*clazz*/) {
-    @Implementation(minSdk = P)
-    protected static void nativeVerifySystemIdmaps() {
+  // This is called by zygote (running as user root) as part of preloadResources.
+  // static void NativeVerifySystemIdmaps(JNIEnv* /*env*/, jclass /*clazz*/) {
+  @Implementation(minSdk = P, maxSdk = Q)
+  protected static void nativeVerifySystemIdmaps() {
         return;
 
         // todo: maybe implement?
@@ -437,17 +439,17 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
         offsets[0] = start_offset.get();
         offsets[1] = length.get();
 
-        // env.ReleasePrimitiveArrayCritical(out_offsets, offsets, 0);
+    // env.ReleasePrimitiveArrayCritical(out_offsets, offsets, 0);
 
-        FileDescriptor file_desc = fd; // jniCreateFileDescriptor(env, fd);
-        // if (file_desc == null) {
-        //   close(fd);
-        //   return null;
-        // }
+    // jniCreateFileDescriptor(env, fd);
+    // if (file_desc == null) {
+    //   close(fd);
+    //   return null;
+    // }
 
-        // TODO: consider doing this
-        // return new ParcelFileDescriptor(file_desc);
-        return ParcelFileDescriptor.open(asset.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);
+    // TODO: consider doing this
+    // return new ParcelFileDescriptor(file_desc);
+    return ParcelFileDescriptor.open(asset.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);
     }
 
     /**
@@ -608,10 +610,9 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
         assetmanager.SetConfiguration(configuration);
     }
 
-    // static jobject NativeGetAssignedPackageIdentifiers(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
-    @Implementation(minSdk = P)
-    protected static @NonNull SparseArray<String> nativeGetAssignedPackageIdentifiers(
-            long ptr) {
+  // static jobject NativeGetAssignedPackageIdentifiers(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
+  @Implementation(minSdk = P, maxSdk = Q)
+  protected static @NonNull SparseArray<String> nativeGetAssignedPackageIdentifiers(long ptr) {
         CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
 
         SparseArray<String> sparse_array =
@@ -635,6 +636,12 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
         });
         return sparse_array;
     }
+
+  @Implementation(minSdk = R)
+  protected static SparseArray<String> nativeGetAssignedPackageIdentifiers(
+      long ptr, boolean includeOverlays, boolean includeLoaders) {
+    return nativeGetAssignedPackageIdentifiers(ptr);
+  }
 
     // static jobjectArray NativeList(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring path) {
     @Implementation(minSdk = P)
@@ -956,8 +963,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
                 ResStringPool pool = apk_assets.GetLoadedArsc().GetStringPool();
 
                 String java_string = null;
-                int str_len;
-                String str_utf8 = pool.stringAt(value.get().data);
+        String str_utf8 = pool.stringAt(value.get().data);
                 if (str_utf8 != null) {
                     java_string = str_utf8;
                 } else {
