@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.spy;
 
 import android.app.Activity;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -16,8 +15,7 @@ import org.robolectric.annotation.Config;
 @Config(sdk = 28)
 public class MockitoSpyTest {
 
-  /** Currently failing test case for https://github.com/mockito/mockito/issues/2040 */
-  @Ignore
+  /** Regression test for https://github.com/mockito/mockito/issues/2040 */
   @Test
   public void spyActivity_hasSameBaseContext() {
     Activity activity = Robolectric.setupActivity(Activity.class);
