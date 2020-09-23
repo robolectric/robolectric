@@ -40,6 +40,8 @@ public class ShadowShortcutManager {
 
   private boolean isRequestPinShortcutSupported = true;
   private int maxShortcutCountPerActivity = 16;
+  private int maxIconHeight = MAX_ICON_DIMENSION;
+  private int maxIconWidth = MAX_ICON_DIMENSION;
 
   @Implementation
   protected boolean addDynamicShortcuts(List<ShortcutInfo> shortcutInfoList) {
@@ -107,12 +109,22 @@ public class ShadowShortcutManager {
 
   @Implementation
   protected int getIconMaxHeight() {
-    return MAX_ICON_DIMENSION;
+    return maxIconHeight;
   }
 
   @Implementation
   protected int getIconMaxWidth() {
-    return MAX_ICON_DIMENSION;
+    return maxIconWidth;
+  }
+
+  /** Sets the value returned by {@link #getIconMaxHeight()}. */
+  public void setIconMaxHeight(int height) {
+    maxIconHeight = height;
+  }
+
+  /** Sets the value returned by {@link #getIconMaxWidth()}. */
+  public void setIconMaxWidth(int width) {
+    maxIconWidth = width;
   }
 
   @Implementation
