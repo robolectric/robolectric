@@ -372,6 +372,14 @@ public class ShadowDisplayManagerTest {
     assertThat(instance.getBrightnessEvents()).containsExactlyElementsIn(events);
   }
 
+  @Test
+  @Config(minSdk = Q)
+  public void getStableDisplaySize_setToValue_returnsValue() {
+    Point point = new Point();
+    shadowOf(instance).setStableDisplaySize(point);
+    assertThat(getGlobal().getStableDisplaySize()).isEqualTo(point);
+  }
+
   // because DisplayInfo and DisplayManagerGlobal don't exist in Jelly Bean,
   // and we don't want them resolved as part of the test class.
   static class HideFromJB {

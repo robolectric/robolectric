@@ -126,30 +126,27 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
-    synchronized (packageInfos) {
-      for (String packageName : packageInfos.keySet()) {
-        try {
-          PackageInfo packageInfo = getPackageInfo(packageName, flags);
-          result.add(packageInfo);
-        } catch (NameNotFoundException e) {
-          Log.i(TAG, String.format("Package %s filtered out: %s", packageName, e.getMessage()));
-        }
+    for (String packageName : packageInfos.keySet()) {
+      try {
+        PackageInfo packageInfo = getPackageInfo(packageName, flags);
+        result.add(packageInfo);
+      } catch (NameNotFoundException e) {
+        Log.i(TAG, String.format("Package %s filtered out: %s", packageName, e.getMessage()));
       }
     }
+
     return result;
   }
 
   @Implementation(minSdk = Q)
   protected List<ModuleInfo> getInstalledModules(int flags) {
     List<ModuleInfo> result = new ArrayList<>();
-    synchronized (moduleInfos) {
-      for (String moduleName : moduleInfos.keySet()) {
-        try {
-          ModuleInfo moduleInfo = (ModuleInfo) getModuleInfo(moduleName, flags);
-          result.add(moduleInfo);
-        } catch (NameNotFoundException e) {
-          Log.i(TAG, String.format("Module %s filtered out: %s", moduleName, e.getMessage()));
-        }
+    for (String moduleName : moduleInfos.keySet()) {
+      try {
+        ModuleInfo moduleInfo = (ModuleInfo) getModuleInfo(moduleName, flags);
+        result.add(moduleInfo);
+      } catch (NameNotFoundException e) {
+        Log.i(TAG, String.format("Module %s filtered out: %s", moduleName, e.getMessage()));
       }
     }
     return result;
@@ -159,14 +156,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected Object getModuleInfo(String packageName, int flags) throws NameNotFoundException {
     // Double checks that the respective package matches and is not disabled
     getPackageInfo(packageName, flags);
-
-    synchronized (moduleInfos) {
-      Object info = moduleInfos.get(packageName);
-      if (info == null) {
-        throw new NameNotFoundException("Module: " + packageName + " is not installed.");
-      }
-      return info;
+    Object info = moduleInfos.get(packageName);
+    if (info == null) {
+      throw new NameNotFoundException("Module: " + packageName + " is not installed.");
     }
+
+    return info;
   }
 
   @Implementation
@@ -189,7 +184,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     String activityName = component.getClassName();
     String packageName = component.getPackageName();
-    PackageInfo packageInfo = getInternalMutablePackageInfo(packageName);
+    PackageInfo packageInfo = packageInfos.get(packageName);
     T result = null;
     ApplicationInfo appInfo = null;
     // search in the manifest
@@ -265,11 +260,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     Set<String> results = new HashSet<>();
-    synchronized (packageInfos) {
-      for (PackageInfo packageInfo : packageInfos.values()) {
-        if (packageInfo.applicationInfo != null && packageInfo.applicationInfo.uid == uid) {
-          results.add(packageInfo.packageName);
-        }
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (packageInfo.applicationInfo != null && packageInfo.applicationInfo.uid == uid) {
+        results.add(packageInfo.packageName);
       }
     }
 
@@ -278,11 +271,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected int getApplicationEnabledSetting(String packageName) {
-    synchronized (packageInfos) {
-      if (!packageInfos.containsKey(packageName)) {
-        throw new IllegalArgumentException("Package doesn't exist: " + packageName);
-      }
+    if (!packageInfos.containsKey(packageName)) {
+      throw new IllegalArgumentException("Package doesn't exist: " + packageName);
     }
+
     return applicationEnabledSettingMap.get(packageName);
   }
 
@@ -381,17 +373,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (name == null) {
       return null;
     }
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (packageInfo.providers == null) {
+        continue;
+      }
 
-    synchronized (packageInfos) {
-      for (PackageInfo packageInfo : packageInfos.values()) {
-        if (packageInfo.providers == null) {
-          continue;
-        }
-
-        for (ProviderInfo providerInfo : packageInfo.providers) {
-          if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
-            return new ProviderInfo(providerInfo);
-          }
+      for (ProviderInfo providerInfo : packageInfo.providers) {
+        if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
+          return new ProviderInfo(providerInfo);
         }
       }
     }
@@ -407,7 +396,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected synchronized PackageInfo getPackageInfo(String packageName, int flags)
       throws NameNotFoundException {
-    PackageInfo info = getInternalMutablePackageInfo(packageName);
+    PackageInfo info = packageInfos.get(packageName);
     if (info == null
         && (flags & MATCH_UNINSTALLED_PACKAGES) != 0
         && deletedPackages.contains(packageName)) {
@@ -566,7 +555,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           packageName = componentInfo.packageName;
         }
         if (packageName != null) {
-          PackageInfo packageInfo = getInternalMutablePackageInfo(packageName);
+          PackageInfo packageInfo = packageInfos.get(packageName);
           if (packageInfo != null && packageInfo.applicationInfo != null) {
             applicationInfo = new ApplicationInfo(packageInfo.applicationInfo);
           } else {
@@ -608,7 +597,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       BiConsumer<ResolveInfo, I> componentSetter) {
     if (isExplicitIntent(intent)) {
       ComponentName component = getComponentForIntent(intent);
-      PackageInfo appPackage = getInternalMutablePackageInfo(component.getPackageName());
+      PackageInfo appPackage = packageInfos.get(component.getPackageName());
       if (appPackage == null) {
         return Collections.emptyList();
       }
@@ -631,7 +620,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         for (IntentFilter filter : componentEntry.getValue()) {
           int match = matchIntentFilter(intent, filter);
           if (match > 0) {
-            PackageInfo packageInfo = getInternalMutablePackageInfo(componentName.getPackageName());
+            PackageInfo packageInfo = packageInfos.get(componentName.getPackageName());
             I[] componentInfoArray = componentsInPackage.apply(packageInfo);
             for (I componentInfo : componentInfoArray) {
               if (!componentInfo.name.equals(componentName.getClassName())) {
@@ -704,7 +693,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected int checkPermission(String permName, String pkgName) {
-    PackageInfo permissionsInfo = getInternalMutablePackageInfo(pkgName);
+    PackageInfo permissionsInfo = packageInfos.get(pkgName);
     if (permissionsInfo == null || permissionsInfo.requestedPermissions == null) {
       return PackageManager.PERMISSION_DENIED;
     }
@@ -859,19 +848,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws PackageManager.NameNotFoundException {
     if (getContext().getPackageName().equals(applicationInfo.packageName)) {
       return getContext().getResources();
-    }
-
-    synchronized (packageInfos) {
-      if (packageInfos.containsKey(applicationInfo.packageName)) {
-        Resources appResources = resources.get(applicationInfo.packageName);
-        if (appResources == null) {
-          appResources = new Resources(new AssetManager(), null, null);
-          resources.put(applicationInfo.packageName, appResources);
-        }
-        return appResources;
+    } else if (packageInfos.containsKey(applicationInfo.packageName)) {
+      Resources appResources = resources.get(applicationInfo.packageName);
+      if (appResources == null) {
+        appResources = new Resources(new AssetManager(), null, null);
+        resources.put(applicationInfo.packageName, appResources);
       }
+      return appResources;
     }
-
     Resources resources = null;
 
     if (RuntimeEnvironment.useLegacyResources()
@@ -933,13 +917,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       return permissionInfo;
     }
 
-    synchronized (packageInfos) {
-      for (PackageInfo packageInfo : packageInfos.values()) {
-        if (packageInfo.permissions != null) {
-          for (PermissionInfo permission : packageInfo.permissions) {
-            if (name.equals(permission.name)) {
-              return createCopyPermissionInfo(permission, flags);
-            }
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (packageInfo.permissions != null) {
+        for (PermissionInfo permission : packageInfo.permissions) {
+          if (name.equals(permission.name)) {
+            return createCopyPermissionInfo(permission, flags);
           }
         }
       }
@@ -1127,13 +1109,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
     }
 
-    synchronized (packageInfos) {
-      for (PackageInfo packageInfo : packageInfos.values()) {
-        if (packageInfo.permissions != null) {
-          for (PermissionInfo permission : packageInfo.permissions) {
-            if (Objects.equals(group, permission.group)) {
-              result.add(createCopyPermissionInfo(permission, flags));
-            }
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      if (packageInfo.permissions != null) {
+        for (PermissionInfo permission : packageInfo.permissions) {
+          if (Objects.equals(group, permission.group)) {
+            result.add(createCopyPermissionInfo(permission, flags));
           }
         }
       }
@@ -1333,14 +1313,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected void grantRuntimePermission(
       String packageName, String permissionName, UserHandle user) {
 
-    PackageInfo packageInfo;
-    synchronized (packageInfos) {
-      if (!packageInfos.containsKey(packageName)) {
-        throw new SecurityException("Package not found: " + packageName);
-      }
-      packageInfo = packageInfos.get(packageName);
+    if (!packageInfos.containsKey(packageName)) {
+      throw new SecurityException("Package not found: " + packageName);
     }
-
+    PackageInfo packageInfo = packageInfos.get(packageName);
     checkPermissionGrantStateInitialized(packageInfo);
 
     int permissionIndex = getPermissionIndex(packageInfo, permissionName);
@@ -1356,14 +1332,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected void revokeRuntimePermission(
       String packageName, String permissionName, UserHandle user) {
 
-    PackageInfo packageInfo;
-    synchronized (packageInfos) {
-      if (!packageInfos.containsKey(packageName)) {
-        throw new SecurityException("Package not found: " + packageName);
-      }
-      packageInfo = packageInfos.get(packageName);
+    if (!packageInfos.containsKey(packageName)) {
+      throw new SecurityException("Package not found: " + packageName);
     }
-
+    PackageInfo packageInfo = packageInfos.get(packageName);
     checkPermissionGrantStateInitialized(packageInfo);
 
     int permissionIndex = getPermissionIndex(packageInfo, permissionName);
@@ -1423,14 +1395,12 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
     List<PackageInfo> packageInfosWithPermissions = new ArrayList<>();
-    synchronized (packageInfos) {
-      for (PackageInfo packageInfo : packageInfos.values()) {
-        for (String permission : permissions) {
-          int permissionIndex = getPermissionIndex(packageInfo, permission);
-          if (permissionIndex >= 0) {
-            packageInfosWithPermissions.add(packageInfo);
-            break;
-          }
+    for (PackageInfo packageInfo : packageInfos.values()) {
+      for (String permission : permissions) {
+        int permissionIndex = getPermissionIndex(packageInfo, permission);
+        if (permissionIndex >= 0) {
+          packageInfosWithPermissions.add(packageInfo);
+          break;
         }
       }
     }
@@ -1508,19 +1478,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       throws NameNotFoundException {
     if (getContext().getPackageName().equals(appPackageName)) {
       return getContext().getResources();
-    }
-
-    synchronized (packageInfos) {
-      if (packageInfos.containsKey(appPackageName)) {
-        Resources appResources = resources.get(appPackageName);
-        if (appResources == null) {
-          appResources = new Resources(new AssetManager(), null, null);
-          resources.put(appPackageName, appResources);
-        }
-        return appResources;
+    } else if (packageInfos.containsKey(appPackageName)) {
+      Resources appResources = resources.get(appPackageName);
+      if (appResources == null) {
+        appResources = new Resources(new AssetManager(), null, null);
+        resources.put(appPackageName, appResources);
       }
+      return appResources;
     }
-
     throw new NameNotFoundException(appPackageName);
   }
 
@@ -1701,13 +1666,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected boolean setApplicationHiddenSettingAsUser(
       String packageName, boolean hidden, UserHandle user) {
     // Note that this ignores the UserHandle parameter
-    synchronized (packageInfos) {
-      if (!packageInfos.containsKey(packageName)) {
-        // Package doesn't exist
-        return false;
-      }
+    if (!packageInfos.containsKey(packageName)) {
+      // Package doesn't exist
+      return false;
     }
-
     if (hidden) {
       hiddenPackages.add(packageName);
     } else {
@@ -1719,11 +1681,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = LOLLIPOP)
   protected boolean getApplicationHiddenSettingAsUser(String packageName, UserHandle user) {
     // Note that this ignores the UserHandle parameter
-    synchronized (packageInfos) {
-      if (!packageInfos.containsKey(packageName)) {
-        // Match Android behaviour of returning true if package isn't found
-        return true;
-      }
+    if (!packageInfos.containsKey(packageName)) {
+      // Match Android behaviour of returning true if package isn't found
+      return true;
     }
     return hiddenPackages.contains(packageName);
   }
@@ -2000,7 +1960,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = O)
   protected boolean isInstantApp(String packageName) {
-    PackageInfo pi = getInternalMutablePackageInfo(packageName);
+    PackageInfo pi = packageInfos.get(packageName);
     if (pi == null) {
       return false;
     }
