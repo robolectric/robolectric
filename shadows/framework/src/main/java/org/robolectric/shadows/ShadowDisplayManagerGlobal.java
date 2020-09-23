@@ -73,6 +73,19 @@ public class ShadowDisplayManagerGlobal {
     return new Point(defaultDisplayInfo.getNaturalWidth(), defaultDisplayInfo.getNaturalHeight());
   }
 
+  /**
+   * Sets the current stable device display size returned by {@link
+   * ShadowDisplayManagerGlobal#getStableDisplaySize} for testing purposes, but has no effect
+   * otherwise.
+   */
+  public void setStableDisplaySize(Point point) {
+    DisplayInfo displayInfo = new DisplayInfo();
+    displayInfo.rotation = 0;
+    displayInfo.logicalWidth = point.x;
+    displayInfo.logicalHeight = point.y;
+    changeDisplay(Display.DEFAULT_DISPLAY, displayInfo);
+  }
+
   int addDisplay(DisplayInfo displayInfo) {
     fixNominalDimens(displayInfo);
 

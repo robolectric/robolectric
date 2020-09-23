@@ -9,6 +9,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -110,16 +111,6 @@ public class ShadowDisplayManager {
     return displayInfo;
   }
 
-  private static void fixNominalDimens(DisplayInfo displayInfo) {
-    int smallest = Math.min(displayInfo.appWidth, displayInfo.appHeight);
-    int largest = Math.max(displayInfo.appWidth, displayInfo.appHeight);
-
-    displayInfo.smallestNominalAppWidth = smallest;
-    displayInfo.smallestNominalAppHeight = smallest;
-    displayInfo.largestNominalAppWidth = largest;
-    displayInfo.largestNominalAppHeight = largest;
-  }
-
   private static DisplayInfo createDisplayInfo(String qualifiersStr, DisplayInfo baseDisplayInfo) {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -144,6 +135,16 @@ public class ShadowDisplayManager {
         displayMetrics);
 
     return createDisplayInfo(configuration, displayMetrics);
+  }
+
+  private static void fixNominalDimens(DisplayInfo displayInfo) {
+    int smallest = Math.min(displayInfo.appWidth, displayInfo.appHeight);
+    int largest = Math.max(displayInfo.appWidth, displayInfo.appHeight);
+
+    displayInfo.smallestNominalAppWidth = smallest;
+    displayInfo.smallestNominalAppHeight = smallest;
+    displayInfo.largestNominalAppWidth = largest;
+    displayInfo.largestNominalAppHeight = largest;
   }
 
   /**
@@ -247,5 +248,12 @@ public class ShadowDisplayManager {
     }
 
     return extract(DisplayManagerGlobal.getInstance());
+  }
+
+  /**
+   * Sets the current stable device display size for testing purposes, but has no effect otherwise.
+   */
+  public void setStableDisplaySize(Point point) {
+    getShadowDisplayManagerGlobal().setStableDisplaySize(point);
   }
 }
