@@ -2,9 +2,9 @@ apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 
 dependencies {
-    api "org.ow2.asm:asm:7.2"
-    api "org.ow2.asm:asm-commons:7.2"
-    api "org.ow2.asm:asm-util:7.2"
+    api "org.ow2.asm:asm:7.3.1"
+    api "org.ow2.asm:asm-commons:7.3.1"
+    api "org.ow2.asm:asm-util:7.3.1"
     api project(":utils")
 
     testImplementation project(":shadowapi")
