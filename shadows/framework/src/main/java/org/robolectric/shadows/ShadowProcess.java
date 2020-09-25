@@ -15,7 +15,8 @@ import org.robolectric.annotation.Resetter;
 @Implements(android.os.Process.class)
 public class ShadowProcess {
   private static int pid;
-  private static int uid = getRandomApplicationUid();
+  private static final int UID = getRandomApplicationUid();
+  private static Integer uidOverride;
   private static int tid = getRandomApplicationUid();
   private static final Object threadPrioritiesLock = new Object();
   private static final Object killedProcessesLock = new Object();
@@ -55,7 +56,10 @@ public class ShadowProcess {
    */
   @Implementation
   protected static final int myUid() {
-    return uid;
+    if (uidOverride != null) {
+      return uidOverride;
+    }
+    return UID;
   }
 
   /**
@@ -131,7 +135,7 @@ public class ShadowProcess {
    * Sets the identifier of this process.
    */
   public static void setUid(int uid) {
-    ShadowProcess.uid = uid;
+    ShadowProcess.uidOverride = uid;
   }
 
   /**
@@ -150,6 +154,7 @@ public class ShadowProcess {
     }
     // We cannot re-randomize uid, because it would break code that statically depends on
     // android.os.Process.myUid(), which persists between tests.
+    ShadowProcess.uidOverride = null;
   }
 
   static int getRandomApplicationUid() {

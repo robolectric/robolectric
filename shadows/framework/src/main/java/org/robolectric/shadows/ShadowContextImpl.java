@@ -59,7 +59,7 @@ public class ShadowContextImpl {
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
-  private int userId = 0;
+  private Integer userId;
 
   /**
    * Returns the handle to a system-level service by name. If the service is not available in
@@ -371,7 +371,11 @@ public class ShadowContextImpl {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected int getUserId() {
-    return userId;
+    if (userId != null) {
+      return userId;
+    } else {
+      return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getUserId");
+    }
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)
