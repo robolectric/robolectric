@@ -64,7 +64,6 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // TODO: just use the ApkAssets constants. For some unknown reason these cannot be found
   private static final int PROPERTY_SYSTEM = 1 << 0;
   private static final int PROPERTY_DYNAMIC = 1 << 1;
-  private static final int PROPERTY_LOADER = 1 << 2;
   private static final int PROPERTY_OVERLAY = 1 << 3;
 
   protected static final String FRAMEWORK_APK_PATH =
@@ -243,61 +242,12 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
             ClassParameter.from(boolean.class, forceSharedLibrary)));
   }
 
-  @Implementation(maxSdk = Q)
-  protected static @NonNull ApkAssets loadOverlayFromPath(@NonNull String idmapPath, boolean system)
-      throws IOException {
-    throw new UnsupportedOperationException();
-    // return getFromCacheOrLoad(
-        // new Key(fd, friendlyName, system, forceSharedLibrary, false),
-        // () -> directlyOn(ApkAssets.class, "loadFromPath",
-        //     ClassParameter.from(FileDescriptor.class, fd),
-        //     ClassParameter.from(String.class, friendlyName),
-        //     ClassParameter.from(boolean.class, system),
-        //     ClassParameter.from(boolean.class, forceSharedLibrary)));
-  }
-
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
   //                         jboolean force_shared_lib, jboolean overlay) {
-  /*
-    @Implementation(minSdk = R)
-  protected static Object nativeLoad(Object format, Object javaPath, Object flags, Object asset)
-      throws IOException {
 
-    boolean system = ((int) flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
-    boolean overlay = ((int) flags & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
-    boolean forceSharedLib = ((int) flags & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
-    return nativeLoad(javaPath, system, forceSharedLib, overlay);
-
-   */
-
-  /**
-   * On Pre-R, the signature is long nativeLoad(String javaPath, boolean system, boolean
-   * forceSharedLib, boolean overlay)
-   *
-   * <p>On Post-R, the signature is: long nativeLoad(int format, String java_path, int flags,
-   * AssetsProvider asset)
-   *
-   * <p>We want to use loose signatures because {@link android.content.res.loader.AssetsProvider} is
-   * an R-only class, which can cause ClassNotFoundExceptions if the compile-time SDK < R.
-   */
   @Implementation
-  protected static Object nativeLoad(Object param1, Object param2, Object param3, Object param4)
-      throws IOException {
-    String path;
-    boolean system, forceSharedLib, overlay;
-    // This is ugly. Both pre-R and post-R ApkAssets have 4-arg nativeLoad methods. We also want to
-    // use loose signatures here because the R variant has a new R-only class (AssetManager).
-    if (RuntimeEnvironment.getApiLevel() <= Q) {
-      path = (String) param1;
-      system = (boolean) param2;
-      forceSharedLib = (boolean) param3;
-      overlay = (boolean) param4;
-    } else {
-      path = (String) param2;
-      system = ((int) param3 & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
-      overlay = ((int) param3 & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
-      forceSharedLib = ((int) param3 & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
-    }
+  protected static long nativeLoad(
+      String path, boolean system, boolean forceSharedLib, boolean overlay) throws IOException {
     if (path == null) {
       return 0;
     }
@@ -324,6 +274,15 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       throw new IOException(error_msg);
     }
     return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
+  }
+
+  @Implementation(minSdk = R)
+  protected static Object nativeLoad(
+      Object format, Object javaPath, Object flags, Object assetsProvider) throws IOException {
+    boolean system = ((int) flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
+    boolean overlay = ((int) flags & PROPERTY_OVERLAY) == PROPERTY_OVERLAY;
+    boolean forceSharedLib = ((int) flags & PROPERTY_DYNAMIC) == PROPERTY_DYNAMIC;
+    return nativeLoad((String) javaPath, system, forceSharedLib, overlay);
   }
 
   // static jlong NativeLoadFromFd(JNIEnv* env, jclass /*clazz*/, jobject file_descriptor,
