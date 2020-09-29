@@ -13,6 +13,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.Build;
@@ -41,6 +42,7 @@ public class ShadowBluetoothAdapter {
 
   private static boolean isBluetoothSupported = true;
   private static BluetoothLeScanner bluetoothLeScanner = null;
+  private static BluetoothLeAdvertiser bluetoothLeAdvertiser = null;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
@@ -62,6 +64,7 @@ public class ShadowBluetoothAdapter {
   public static void reset() {
     setIsBluetoothSupported(true);
     bluetoothLeScanner = null;
+    bluetoothLeAdvertiser = null;
   }
 
   @Implementation
@@ -89,6 +92,15 @@ public class ShadowBluetoothAdapter {
     }
 
     return bluetoothLeScanner;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected BluetoothLeAdvertiser getBluetoothLeAdvertiser() {
+    return bluetoothLeAdvertiser;
+  }
+
+  public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
+    bluetoothLeAdvertiser = advertiser;
   }
 
   @Implementation
