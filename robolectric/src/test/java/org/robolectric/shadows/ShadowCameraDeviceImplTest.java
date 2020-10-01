@@ -39,8 +39,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public final class ShadowCameraDeviceImplTest {
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  @Rule public ExpectedException expectedException = ExpectedException.none();
 
   private static final String CAMERA_ID_0 = "cameraId0";
   private final CameraManager cameraManager =
@@ -71,11 +70,11 @@ public final class ShadowCameraDeviceImplTest {
   }
 
   @Test
-  @Config(sdk = VERSION_CODES.P)
+  @Config(minSdk = VERSION_CODES.LOLLIPOP, maxSdk = VERSION_CODES.Q)
   public void createCaptureRequest() throws CameraAccessException {
     builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
     CaptureRequest request = builder.build();
-    assertThat(request.getLogicalCameraId()).isEqualTo(CAMERA_ID_0);
+    assertThat(request).isNotNull();
   }
 
   @Test
