@@ -625,4 +625,41 @@ public class ShadowWebViewTest {
     assertThat(result.getType()).isEqualTo(HitTestResult.ANCHOR_TYPE);
     assertThat(result.getExtra()).isEqualTo("extra");
   }
+
+  @Test
+  @Config(minSdk = 21)
+  public void canEnableSlowWholeDocumentDraw() {
+    WebView.enableSlowWholeDocumentDraw();
+  }
+
+  @Test
+  @Config(minSdk = 21)
+  public void canClearClientCertPreferences() {
+    WebView.clearClientCertPreferences(null);
+  }
+
+  @Test
+  @Config(minSdk = 27)
+  public void canStartSafeBrowsing() {
+    WebView.startSafeBrowsing(null, null);
+  }
+
+  @Test
+  @Config(minSdk = 27)
+  public void shouldReturnStoredUrlForGetSafeBrowsingPrivacyPolicyUrl() {
+    assertThat(WebView.getSafeBrowsingPrivacyPolicyUrl()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = 19)
+  public void canSetWebContentsDebuggingEnabled() {
+    WebView.setWebContentsDebuggingEnabled(false);
+    WebView.setWebContentsDebuggingEnabled(true);
+  }
+
+  @Test
+  @Config(minSdk = 28)
+  public void shouldReturnClassLoaderForGetWebViewClassLoader() {
+    assertThat(WebView.getWebViewClassLoader()).isNull();
+  }
 }

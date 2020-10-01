@@ -1,21 +1,34 @@
 package org.robolectric.shadows;
 
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.CookieManager;
+import android.webkit.GeolocationPermissions;
+import android.webkit.ServiceWorkerController;
+import android.webkit.TokenBindingService;
+import android.webkit.TracingController;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
+import android.webkit.WebIconDatabase;
 import android.webkit.WebSettings;
+import android.webkit.WebStorage;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
+import android.webkit.WebViewDatabase;
+import android.webkit.WebViewFactoryProvider;
+import android.webkit.WebViewProvider;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -23,6 +36,7 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -72,6 +86,111 @@ public class ShadowWebView extends ShadowViewGroup {
   private boolean canGoBackIsSet;
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
   private HitTestResult hitTestResult = new HitTestResult();
+  private static final WebViewFactoryProvider WEB_VIEW_FACTORY_PROVIDER =
+      new WebViewFactoryProvider() {
+        private Statics statics =
+            new Statics() {
+              @Override
+              public String findAddress(String s) {
+                return null;
+              }
+
+              @Override
+              public String getDefaultUserAgent(Context context) {
+                return null;
+              }
+
+              @Override
+              public void freeMemoryForTests() {}
+
+              @Override
+              public void setWebContentsDebuggingEnabled(boolean b) {}
+
+              @Override
+              public void clearClientCertPreferences(Runnable runnable) {}
+
+              @Override
+              public void enableSlowWholeDocumentDraw() {}
+
+              @Override
+              public Uri[] parseFileChooserResult(int i, Intent intent) {
+                return new Uri[0];
+              }
+
+              @Override
+              public void initSafeBrowsing(Context context, ValueCallback<Boolean> valueCallback) {}
+
+              @Override
+              public void setSafeBrowsingWhitelist(
+                  List<String> list, ValueCallback<Boolean> valueCallback) {}
+
+              @Override
+              public Uri getSafeBrowsingPrivacyPolicyUrl() {
+                return null;
+              }
+            };
+
+        @Override
+        public Statics getStatics() {
+          return statics;
+        }
+
+        @Override
+        public WebViewProvider createWebView(WebView webView, WebView.PrivateAccess privateAccess) {
+          return null;
+        }
+
+        @Override
+        public GeolocationPermissions getGeolocationPermissions() {
+          return null;
+        }
+
+        @Override
+        public CookieManager getCookieManager() {
+          return null;
+        }
+
+        @Override
+        public TokenBindingService getTokenBindingService() {
+          return null;
+        }
+
+        @Override
+        public TracingController getTracingController() {
+          return null;
+        }
+
+        @Override
+        public ServiceWorkerController getServiceWorkerController() {
+          return null;
+        }
+
+        @Override
+        public WebIconDatabase getWebIconDatabase() {
+          return null;
+        }
+
+        @Override
+        public WebStorage getWebStorage() {
+          return null;
+        }
+
+        @Override
+        public WebViewDatabase getWebViewDatabase(Context context) {
+          return null;
+        }
+
+        @Override
+        public ClassLoader getWebViewClassLoader() {
+          return null;
+        }
+      };
+
+  @HiddenApi
+  @Implementation
+  protected static WebViewFactoryProvider getFactory() {
+    return WEB_VIEW_FACTORY_PROVIDER;
+  }
 
   @HiddenApi
   @Implementation
