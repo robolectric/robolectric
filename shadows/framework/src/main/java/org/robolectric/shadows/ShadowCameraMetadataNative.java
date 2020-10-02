@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.hardware.camera2.impl.CameraMetadataNative;
@@ -12,12 +11,12 @@ import org.robolectric.annotation.Implements;
 @Implements(value = CameraMetadataNative.class, minSdk = LOLLIPOP, isInAndroidSdk = false)
 public class ShadowCameraMetadataNative {
 
-  @Implementation(minSdk = P, maxSdk = Q)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
   protected long nativeAllocate() {
     return 1L;
   }
 
-  @Implementation(minSdk = P, maxSdk = Q)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
   protected long nativeAllocateCopy(CameraMetadataNative other) {
     return 1L;
   }
