@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -13,6 +14,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.UserHandle;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -23,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAppWidgetManagerTest {
@@ -111,9 +114,11 @@ public class ShadowAppWidgetManagerTest {
   @Test
   public void bindAppWidgetIdIfAllowed_shouldReturnThePresetBoolean() throws Exception {
     shadowAppWidgetManager.setAllowedToBindAppWidgets(false);
-    assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
+    assertEquals(
+        shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
     shadowAppWidgetManager.setAllowedToBindAppWidgets(true);
-    assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
+    assertEquals(
+        shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
   }
 
   @Test
@@ -155,9 +160,30 @@ public class ShadowAppWidgetManagerTest {
     assertEquals(info2, installedProviders.get(1));
   }
 
+  @Test
+  @Config(minSdk = L)
+  public void getInstalledProvidersForProfile_returnsWidgetList() throws Exception {
+    UserHandle userHandle = UserHandle.CURRENT;
+    assertTrue(appWidgetManager.getInstalledProvidersForProfile(userHandle).isEmpty());
+
+    AppWidgetProviderInfo info1 = new AppWidgetProviderInfo();
+    info1.label = "abc";
+    AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
+    info2.label = "def";
+    shadowAppWidgetManager.addInstalledProvidersForProfile(userHandle, info1);
+    shadowAppWidgetManager.addInstalledProvidersForProfile(userHandle, info2);
+    List<AppWidgetProviderInfo> installedProvidersForProfile =
+        appWidgetManager.getInstalledProvidersForProfile(userHandle);
+    assertEquals(2, installedProvidersForProfile.size());
+    assertTrue(installedProvidersForProfile.contains(info1));
+    assertTrue(installedProvidersForProfile.contains(info2));
+  }
+
   private void assertContains(String expectedText, View view) {
     String actualText = shadowOf(view).innerText();
-    assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));
+    assertTrue(
+        "Expected <" + actualText + "> to contain <" + expectedText + ">",
+        actualText.contains(expectedText));
   }
 
   public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {

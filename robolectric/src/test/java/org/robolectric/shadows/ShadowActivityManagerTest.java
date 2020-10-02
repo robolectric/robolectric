@@ -15,6 +15,7 @@ import android.app.Application;
 import android.app.ApplicationExitInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -121,7 +122,8 @@ public class ShadowActivityManagerTest {
 
     assertThat(activityManager.getRunningServices(Integer.MAX_VALUE)).isEmpty();
     shadowOf(activityManager).setServices(Lists.newArrayList(service1, service2));
-    assertThat(activityManager.getRunningServices(Integer.MAX_VALUE)).containsExactly(service1, service2);
+    assertThat(activityManager.getRunningServices(Integer.MAX_VALUE))
+        .containsExactly(service1, service2);
   }
 
   @Test
@@ -150,13 +152,15 @@ public class ShadowActivityManagerTest {
     assertThat(ActivityManager.isUserAMonkey()).isFalse();
   }
 
-  @Test @Config(minSdk = KITKAT)
+  @Test
+  @Config(minSdk = KITKAT)
   public void setIsLowRamDevice() {
     shadowOf(activityManager).setIsLowRamDevice(true);
     assertThat(activityManager.isLowRamDevice()).isTrue();
   }
 
-  @Test @Config(minSdk = M)
+  @Test
+  @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
     assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
@@ -233,8 +237,9 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = P)
   public void isBackgroundRestricted_returnsValueSet() {
-    ActivityManager activityManager = (ActivityManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
     shadowOf(activityManager).setBackgroundRestricted(true);
 
     assertThat(activityManager.isBackgroundRestricted()).isTrue();
@@ -340,6 +345,17 @@ public class ShadowActivityManagerTest {
 
     assertThat(applicationExitInfoList).hasSize(1);
     assertThat(applicationExitInfoList.get(0).getProcessName()).isEqualTo(PROCESS_NAME);
+  }
+
+  @Test
+  public void getDeviceConfigurationInfo_returnsValueSet() {
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    ConfigurationInfo configurationInfo = new ConfigurationInfo();
+    shadowOf(activityManager).setDeviceConfigurationInfo(configurationInfo);
+
+    assertThat(activityManager.getDeviceConfigurationInfo()).isEqualTo(configurationInfo);
   }
 
   private void addApplicationExitInfo(int pid) {

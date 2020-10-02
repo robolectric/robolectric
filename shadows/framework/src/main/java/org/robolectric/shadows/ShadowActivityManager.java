@@ -48,6 +48,7 @@ public class ShadowActivityManager {
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
   private final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private ConfigurationInfo configurationInfo;
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -162,12 +163,18 @@ public class ShadowActivityManager {
 
   @Implementation
   protected android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
-    return new ConfigurationInfo();
+    return configurationInfo == null ? new ConfigurationInfo() : configurationInfo;
   }
 
   /**
-   * @param tasks List of running tasks.
+   * Sets the {@link android.content.pm.ConfigurationInfo} returned by {@link
+   * ActivityManager#getDeviceConfigurationInfo()}, but has no effect otherwise.
    */
+  public void setDeviceConfigurationInfo(ConfigurationInfo configurationInfo) {
+    this.configurationInfo = configurationInfo;
+  }
+
+  /** @param tasks List of running tasks. */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
     this.tasks.clear();
     this.tasks.addAll(tasks);
@@ -184,39 +191,29 @@ public class ShadowActivityManager {
     this.appTasks.addAll(appTasks);
   }
 
-  /**
-   * @param services List of running services.
-   */
+  /** @param services List of running services. */
   public void setServices(List<ActivityManager.RunningServiceInfo> services) {
     this.services.clear();
     this.services.addAll(services);
   }
 
-  /**
-   * @param processes List of running processes.
-   */
+  /** @param processes List of running processes. */
   public void setProcesses(List<ActivityManager.RunningAppProcessInfo> processes) {
     ShadowActivityManager.processes.clear();
     ShadowActivityManager.processes.addAll(processes);
   }
 
-  /**
-   * @return Get the package name of the last background processes killed.
-   */
+  /** @return Get the package name of the last background processes killed. */
   public String getBackgroundPackage() {
     return backgroundPackage;
   }
 
-  /**
-   * @param memoryClass Set the application's memory class.
-   */
+  /** @param memoryClass Set the application's memory class. */
   public void setMemoryClass(int memoryClass) {
     this.memoryClass = memoryClass;
   }
 
-  /**
-   * @param memoryInfo Set the application's memory info.
-   */
+  /** @param memoryInfo Set the application's memory info. */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
     this.memoryInfo = memoryInfo;
   }
@@ -234,9 +231,7 @@ public class ShadowActivityManager {
     return directlyOn(realObject, ActivityManager.class, "isLowRamDevice");
   }
 
-  /**
-   * Override the return value of isLowRamDevice().
-   */
+  /** Override the return value of isLowRamDevice(). */
   public void setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
   }
@@ -264,17 +259,15 @@ public class ShadowActivityManager {
     processes.clear();
   }
 
-  /**
-   * Returns the background restricion state set by {@link #setBackgroundRestricted}.
-   */
+  /** Returns the background restriction state set by {@link #setBackgroundRestricted}. */
   @Implementation(minSdk = P)
   protected boolean isBackgroundRestricted() {
     return isBackgroundRestricted;
   }
 
   /**
-   * Sets the background restriction state reported by
-   * {@link ActivityManager#isBackgroundRestricted}, but has no effect otherwise.
+   * Sets the background restriction state reported by {@link
+   * ActivityManager#isBackgroundRestricted}, but has no effect otherwise.
    */
   public void setBackgroundRestricted(boolean isBackgroundRestricted) {
     this.isBackgroundRestricted = isBackgroundRestricted;
