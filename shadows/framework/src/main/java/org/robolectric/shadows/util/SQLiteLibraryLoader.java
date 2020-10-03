@@ -57,7 +57,7 @@ public class SQLiteLibraryLoader {
   }
 
   public String getLibClasspathResourceName() {
-    return "sqlite4java/" + getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
+    return "sqlite4java/" + getNativesResourcesPathPart() + "/" + getLibName();
   }
 
   private ByteSource getLibraryByteSource() {
@@ -106,10 +106,6 @@ public class SQLiteLibraryLoader {
     } else {
       return prefix;
     }
-  }
-
-  private String getNativesResourcesFilePart() {
-    return getLibName().replace(".dylib", ".jnilib");
   }
 
   private String getOsPrefix() {
