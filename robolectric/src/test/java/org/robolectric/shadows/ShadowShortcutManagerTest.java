@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
@@ -40,6 +41,22 @@ public final class ShadowShortcutManagerTest {
     shortcutManager =
         (ShortcutManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.SHORTCUT_SERVICE);
+  }
+
+  @Test
+  public void setMaxIconWidth_iconWidthSetToNewMax() {
+    int width = 10;
+    shadowOf(shortcutManager).setIconMaxWidth(width);
+
+    assertThat(shortcutManager.getIconMaxWidth()).isEqualTo(width);
+  }
+
+  @Test
+  public void setMaxIconHeight_iconHeightSetToNewMax() {
+    int height = 20;
+    shadowOf(shortcutManager).setIconMaxHeight(height);
+
+    assertThat(shortcutManager.getIconMaxHeight()).isEqualTo(height);
   }
 
   @Test
