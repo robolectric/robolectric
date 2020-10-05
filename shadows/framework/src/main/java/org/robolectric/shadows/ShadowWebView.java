@@ -16,6 +16,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
+import android.webkit.WebViewFactoryProvider;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -72,6 +73,14 @@ public class ShadowWebView extends ShadowViewGroup {
   private boolean canGoBackIsSet;
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
   private HitTestResult hitTestResult = new HitTestResult();
+  private static final WebViewFactoryProvider WEB_VIEW_FACTORY_PROVIDER =
+      ReflectionHelpers.createDeepProxy(WebViewFactoryProvider.class);
+
+  @HiddenApi
+  @Implementation
+  protected static WebViewFactoryProvider getFactory() {
+    return WEB_VIEW_FACTORY_PROVIDER;
+  }
 
   @HiddenApi
   @Implementation
