@@ -90,15 +90,9 @@ public class SQLiteLibraryLoaderTest {
   }
 
   @Test
-  public void shouldFindLibraryForMacWithAnyArch() throws IOException {
-    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
-        .isEqualTo("sqlite4java/osx/libsqlite4java.jnilib");
-  }
-
-  @Test
   public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() throws IOException {
-    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC_DYLIB), "Mac OS X", "any architecture"))
-        .isEqualTo("sqlite4java/osx/libsqlite4java.jnilib");
+    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
+        .isEqualTo("sqlite4java/osx/libsqlite4java.dylib");
   }
 
   @Test(expected = UnsupportedOperationException.class)
@@ -137,7 +131,5 @@ public class SQLiteLibraryLoaderTest {
   private static final SQLiteLibraryLoader.LibraryNameMapper WINDOWS =
       new LibraryMapperTest("", "dll");
   private static final SQLiteLibraryLoader.LibraryNameMapper MAC =
-      new LibraryMapperTest("lib", "jnilib");
-  private static final SQLiteLibraryLoader.LibraryNameMapper MAC_DYLIB =
       new LibraryMapperTest("lib", "dylib");
 }
