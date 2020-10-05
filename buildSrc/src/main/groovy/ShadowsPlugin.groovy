@@ -28,6 +28,7 @@ class ShadowsPlugin implements Plugin<Project> {
         compileJavaTask.outputs.dir(generatedSrcDir)
 
         compileJavaTask.doFirst {
+            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.jsonDocsEnabled=true")
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.jsonDocsDir=${project.buildDir}/docs/json")
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
             options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdkCheckMode=${project.shadows.sdkCheckMode}")
