@@ -166,6 +166,8 @@ public class ShadowWallpaperManager {
     }
 
     wallpaperInfo = new WallpaperInfo(RuntimeEnvironment.application, resolveInfoList.get(0));
+    lockScreenImage = null;
+    homeScreenImage = null;
     return true;
   }
 
