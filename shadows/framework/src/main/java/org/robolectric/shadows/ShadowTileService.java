@@ -24,6 +24,14 @@ public class ShadowTileService {
     return tile;
   }
 
+  @Implementation
+  protected final void unlockAndRun(Runnable runnable) {
+    setLocked(false);
+    if (runnable != null) {
+      runnable.run();
+    }
+  }
+
   /** Starts an activity without collapsing the quick settings panel. */
   @Implementation
   protected void startActivityAndCollapse(Intent intent) {
