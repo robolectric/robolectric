@@ -14,7 +14,11 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** A shadow for {@link RcsUceAdapter}. */
-@Implements(value = RcsUceAdapter.class)
+@Implements(
+    value = RcsUceAdapter.class,
+    // turn off shadowOf generation
+    isInAndroidSdk = false,
+    minSdk = R)
 public class ShadowRcsUceAdapter {
   private static final Set<Integer> subscriptionIdsWithUceSettingEnabled = new HashSet<>();
 
@@ -43,7 +47,7 @@ public class ShadowRcsUceAdapter {
    * RcsUceAdapter} by {@link ShadowRcsUceAdapter#setUceSettingEnabledForSubscriptionId(int,
    * boolean)}. If no value has been specified, returns false.
    */
-  @Implementation(minSdk = R)
+  @Implementation
   protected boolean isUceSettingEnabled() {
     int subscriptionId = reflector(ReflectorRcsUceAdapter.class, realRcsUceAdapter).getSubId();
     return subscriptionIdsWithUceSettingEnabled.contains(subscriptionId);

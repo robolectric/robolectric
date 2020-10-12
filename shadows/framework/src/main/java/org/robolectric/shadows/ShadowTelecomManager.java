@@ -82,6 +82,7 @@ public class ShadowTelecomManager {
   private String defaultDialerPackageName;
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
+  private boolean ttySupported;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -360,7 +361,12 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected boolean isTtySupported() {
-    return false;
+    return ttySupported;
+  }
+
+  /** Sets the value to be returned by {@link #isTtySupported()}.*/
+  public void setTtySupported(boolean isSupported) {
+    ttySupported = isSupported;
   }
 
   @Implementation

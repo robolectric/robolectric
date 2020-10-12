@@ -124,7 +124,7 @@ public class ShadowTelephonyManager {
   private boolean hearingAidCompatibilitySupported = false;
   private int requestCellInfoUpdateErrorCode = 0;
   private Throwable requestCellInfoUpdateDetail = null;
-  private TelephonyDisplayInfo telephonyDisplayInfo;
+  private Object telephonyDisplayInfo;
   private boolean isDataConnectionAllowed;
 
   {
@@ -575,7 +575,7 @@ public class ShadowTelephonyManager {
 
     if (telephonyDisplayInfo != null
         && ((flags & PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED) != 0)) {
-      listener.onDisplayInfoChanged(telephonyDisplayInfo);
+      listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
     }
   }
 
@@ -1018,7 +1018,7 @@ public class ShadowTelephonyManager {
    * @param networkType The packet-switching cellular network type (see {@link NetworkType})
    * @param overrideNetworkType The override network type (see {@link OverrideNetworkType})
    */
-  public static TelephonyDisplayInfo createTelephonyDisplayInfo(
+  public static Object createTelephonyDisplayInfo(
       @NetworkType int networkType, @OverrideNetworkType int overrideNetworkType) {
     return new TelephonyDisplayInfo(networkType, overrideNetworkType);
   }
@@ -1030,13 +1030,13 @@ public class ShadowTelephonyManager {
    * @param telephonyDisplayInfo The {@link TelephonyDisplayInfo} to set. May not be null.
    * @throws NullPointerException if telephonyDisplayInfo is null.
    */
-  public void setTelephonyDisplayInfo(TelephonyDisplayInfo telephonyDisplayInfo) {
+  public void setTelephonyDisplayInfo(Object telephonyDisplayInfo) {
     Preconditions.checkNotNull(telephonyDisplayInfo);
     this.telephonyDisplayInfo = telephonyDisplayInfo;
 
     for (PhoneStateListener listener :
         getListenersForFlags(PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED)) {
-      listener.onDisplayInfoChanged(telephonyDisplayInfo);
+      listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
     }
   }
 

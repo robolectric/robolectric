@@ -111,6 +111,8 @@ public class ShadowAccessibilityNodeInfo {
 
   private static final int TEXT_ENTRY_KEY_MASK = 0x00200000; // 29
 
+  private static final int IMPORTANT_MASK = 0x00400000; // 24
+
   /**
    * Uniquely identifies the origin of the AccessibilityNodeInfo for equality
    * testing. Two instances that come from the same node info should have the
@@ -571,6 +573,16 @@ public class ShadowAccessibilityNodeInfo {
   protected void setTextEntryKey(boolean isTextEntrykey) {
     propertyFlags =
         (propertyFlags & ~TEXT_ENTRY_KEY_MASK) | (isTextEntrykey ? TEXT_ENTRY_KEY_MASK : 0);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setImportantForAccessibility(boolean important) {
+    propertyFlags = (propertyFlags & ~IMPORTANT_MASK) | (important ? IMPORTANT_MASK : 0);
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean isImportantForAccessibility() {
+    return ((propertyFlags & IMPORTANT_MASK) != 0);
   }
 
   @Implementation

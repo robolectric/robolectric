@@ -13,13 +13,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link QuickAccessWalletService} */
-@Implements(value = QuickAccessWalletService.class)
+@Implements(
+    value = QuickAccessWalletService.class,
+    minSdk = R,
+    // turn off shadowOf generation
+    isInAndroidSdk = false)
 public class ShadowQuickAccessWalletService extends ShadowService {
 
   private static final List<WalletServiceEvent> serviceEvents = new ArrayList<>(0);
 
   /** Capture events sent by the service to SysUI */
-  @Implementation(minSdk = R)
+  @Implementation
   @SystemApi
   public final void sendWalletServiceEvent(@Nonnull WalletServiceEvent serviceEvent) {
     serviceEvents.add(serviceEvent);

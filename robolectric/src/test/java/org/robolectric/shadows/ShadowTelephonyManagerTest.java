@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
@@ -70,6 +71,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
+@Config(minSdk = JELLY_BEAN)
 public class ShadowTelephonyManagerTest {
 
   private TelephonyManager telephonyManager;
@@ -650,7 +652,8 @@ public class ShadowTelephonyManagerTest {
   @Config(minSdk = R)
   public void createTelephonyDisplayInfo_correctlyCreatesDisplayInfo() {
     TelephonyDisplayInfo displayInfo =
-        createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_LTE_CA);
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_LTE_CA);
 
     assertThat(displayInfo.getNetworkType()).isEqualTo(NETWORK_TYPE_LTE);
     assertThat(displayInfo.getOverrideNetworkType()).isEqualTo(OVERRIDE_NETWORK_TYPE_LTE_CA);
@@ -671,7 +674,8 @@ public class ShadowTelephonyManagerTest {
   public void listen_notifiesListenerOfCurrentTelephonyDisplayInfoIfInitialized() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
     TelephonyDisplayInfo displayInfo =
-        createTelephonyDisplayInfo(NETWORK_TYPE_EVDO_0, OVERRIDE_NETWORK_TYPE_NONE);
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_EVDO_0, OVERRIDE_NETWORK_TYPE_NONE);
     shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
 
     telephonyManager.listen(listener, LISTEN_DISPLAY_INFO_CHANGED);
@@ -684,7 +688,8 @@ public class ShadowTelephonyManagerTest {
   public void setTelephonyDisplayInfo_notifiesListeners() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
     TelephonyDisplayInfo displayInfo =
-        createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_NR_NSA);
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_NR_NSA);
     telephonyManager.listen(listener, LISTEN_DISPLAY_INFO_CHANGED);
 
     shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
