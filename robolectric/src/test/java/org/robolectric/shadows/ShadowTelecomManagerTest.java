@@ -388,6 +388,13 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  public void setTtySupported() {
+    assertThat(telecomService.isTtySupported()).isFalse();
+    shadowOf(telecomService).setTtySupported(true);
+    assertThat(telecomService.isTtySupported()).isTrue();
+  }
+
+  @Test
   public void canSetAndGetIsInCall() throws Exception {
     shadowOf(telecomService).setIsInCall(true);
     assertThat(telecomService.isInCall()).isTrue();
