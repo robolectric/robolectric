@@ -745,7 +745,7 @@ static class Connections {
         @Override
         public Long call() throws Exception {
           statement.stepThrough();
-          return connection.getLastInsertId();
+          return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
         }
       });
     }
