@@ -363,11 +363,14 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   @Config(minSdk = M)
-  public void setWallpaperComponent_liveWallpaperSet_shouldReturnLiveWallpaperComponent()
-      throws Exception {
+  public void
+      setWallpaperComponent_liveWallpaperSet_shouldReturnLiveWallpaperComponentAndUnsetStaticWallpapers()
+          throws Exception {
     manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
 
     assertThat(manager.getWallpaperInfo().getComponent()).isEqualTo(TEST_WALLPAPER_SERVICE);
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
   }
 
   @Test
