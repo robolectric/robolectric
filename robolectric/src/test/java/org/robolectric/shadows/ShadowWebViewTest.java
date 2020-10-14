@@ -10,6 +10,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebBackForwardList;
@@ -661,5 +662,26 @@ public class ShadowWebViewTest {
   @Config(minSdk = 28)
   public void shouldReturnClassLoaderForGetWebViewClassLoader() {
     assertThat(WebView.getWebViewClassLoader()).isNull();
+  }
+
+  @Test
+  public void getBackgroundColor_backgroundColorNotSet_returnsZero() {
+    assertThat(shadowOf(webView).getBackgroundColor()).isEqualTo(0);
+  }
+
+  @Test
+  public void getBackgroundColor_backgroundColorHasBeenSet_returnsCorrectBackgroundColor() {
+    webView.setBackgroundColor(Color.RED);
+
+    assertThat(shadowOf(webView).getBackgroundColor()).isEqualTo(Color.RED);
+  }
+
+  @Test
+  public void getBackgroundColor_backgroundColorSetMultipleTimes_returnsLastBackgroundColor() {
+    webView.setBackgroundColor(Color.RED);
+    webView.setBackgroundColor(Color.BLUE);
+    webView.setBackgroundColor(Color.GREEN);
+
+    assertThat(shadowOf(webView).getBackgroundColor()).isEqualTo(Color.GREEN);
   }
 }
