@@ -259,6 +259,23 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
+  public void testInsertDuplicatedKeyGeneration() throws Exception {
+    ContentValues values = new ContentValues();
+    values.put("id", 123);
+    values.put("name", "Chuck");
+
+    long firstKey =
+            database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
+    assertThat(firstKey).isEqualTo(123L);
+
+    long duplicateKey =
+            database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
+    assertThat(duplicateKey).isEqualTo(-1L);
+  }
+
+  @Test
   public void testInsertEmptyBlobArgument() throws Exception {
     ContentValues emptyBlobValues = new ContentValues();
     emptyBlobValues.put("id", 1);
