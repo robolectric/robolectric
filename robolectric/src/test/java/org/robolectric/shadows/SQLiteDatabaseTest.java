@@ -265,12 +265,12 @@ public class SQLiteDatabaseTest {
     values.put("name", "Chuck");
 
     long firstKey =
-            database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
     assertThat(firstKey).isEqualTo(123L);
 
     long duplicateKey =
-            database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
     assertThat(duplicateKey).isEqualTo(-1L);
   }

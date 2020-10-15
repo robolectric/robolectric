@@ -741,13 +741,15 @@ static class Connections {
       final SQLiteConnection connection = getConnection(connectionPtr);
       final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-      return execute("execute for last inserted row ID", new Callable<Long>() {
-        @Override
-        public Long call() throws Exception {
-          statement.stepThrough();
-          return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
-        }
-      });
+        return execute(
+            "execute for last inserted row ID",
+            new Callable<Long>() {
+              @Override
+              public Long call() throws Exception {
+                statement.stepThrough();
+                return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
+              }
+            });
     }
   }
 
