@@ -5,6 +5,7 @@ import android.content.ContentProvider;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
+import com.google.common.base.Splitter;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.util.Logger;
@@ -71,7 +72,9 @@ public class ContentProviderController<T extends ContentProvider>  {
     contentProvider.attachInfo(baseContext, providerInfo);
 
     if (providerInfo != null) {
-      ShadowContentResolver.registerProviderInternal(providerInfo.authority, contentProvider);
+      for (String authority : Splitter.on(';').split(providerInfo.authority)) {
+        ShadowContentResolver.registerProviderInternal(authority, contentProvider);
+      }
     }
 
     return this;
