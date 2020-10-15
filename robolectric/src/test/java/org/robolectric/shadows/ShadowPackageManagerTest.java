@@ -1499,9 +1499,10 @@ public class ShadowPackageManagerTest {
             PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
-    assertThat(providers.length).isEqualTo(2);
+    assertThat(providers.length).isEqualTo(3);
     assertThat(providers[0].packageName).isEqualTo("org.robolectric");
     assertThat(providers[1].packageName).isEqualTo("org.robolectric");
+    assertThat(providers[2].packageName).isEqualTo("org.robolectric");
   }
 
   @Test
@@ -1578,6 +1579,15 @@ public class ShadowPackageManagerTest {
         packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority1");
+  }
+
+  @Test
+  public void resolveContentProvider_multiAuthorities() throws Exception {
+    ProviderInfo providerInfo =
+        packageManager.resolveContentProvider("org.robolectric.authority3", 0);
+    assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
+    assertThat(providerInfo.authority)
+        .isEqualTo("org.robolectric.authority3;org.robolectric.authority4");
   }
 
   @Test

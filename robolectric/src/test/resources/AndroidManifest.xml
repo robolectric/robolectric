@@ -181,6 +181,11 @@
             android:name=".shadows.testing.TestContentProvider2"
             android:authorities="org.robolectric.authority2"/>
 
+    <!-- Multiple authorities -->
+    <provider
+            android:name=".shadows.testing.TestContentProvider3And4"
+            android:authorities="org.robolectric.authority3;org.robolectric.authority4"/>
+
     <receiver android:name="org.robolectric.ConfigTestReceiver.InnerReceiver"
               android:permission="com.ignored.PERM">
       <intent-filter>
