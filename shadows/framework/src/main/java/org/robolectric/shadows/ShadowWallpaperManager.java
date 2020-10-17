@@ -21,6 +21,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
@@ -37,10 +39,13 @@ public class ShadowWallpaperManager {
   private boolean isWallpaperAllowed = true;
   private boolean isWallpaperSupported = true;
   private WallpaperInfo wallpaperInfo = null;
+  private final List<WallpaperCommandRecord> wallpaperCommandRecords = new ArrayList<>();
 
   @Implementation
   protected void sendWallpaperCommand(
-      IBinder windowToken, String action, int x, int y, int z, Bundle extras) {}
+      IBinder windowToken, String action, int x, int y, int z, Bundle extras) {
+    wallpaperCommandRecords.add(new WallpaperCommandRecord(windowToken, action, x, y, z, extras));
+  }
 
   /**
    * Caches {@code fullImage} in the memory based on {@code which}.
@@ -180,6 +185,11 @@ public class ShadowWallpaperManager {
     return wallpaperInfo;
   }
 
+  /** Returns all the invocation records to {@link WallpaperManager#sendWallpaperCommand} */
+  public List<WallpaperCommandRecord> getWallpaperCommandRecords() {
+    return Collections.unmodifiableList(wallpaperCommandRecords);
+  }
+
   /**
    * Throws {@link SecurityException} if the caller doesn't have {@link
    * permission.SET_WALLPAPER_COMPONENT}.
@@ -207,6 +217,36 @@ public class ShadowWallpaperManager {
     } catch (IOException e) {
       Logger.error("Fail to close file output stream when reading wallpaper from file", e);
       return null;
+    }
+  }
+
+  /** Represents an invocation record of {@link WallpaperManager#sendWallpaperCommand} */
+  public static class WallpaperCommandRecord {
+    /** The first parameter of {@link WallpaperManager#sendWallpaperCommand} */
+    public final IBinder windowToken;
+
+    /** The second parameter of {@link WallpaperManager#sendWallpaperCommand} */
+    public final String action;
+
+    /** The third parameter of {@link WallpaperManager#sendWallpaperCommand} */
+    public final int x;
+
+    /** The forth parameter of {@link WallpaperManager#sendWallpaperCommand} */
+    public final int y;
+
+    /** The fifth parameter of {@link WallpaperManager#sendWallpaperCommand} */
+    public final int z;
+
+    /** The sixth parameter of {@link WallpaperManager#sendWallpaperCommand} */
+    public final Bundle extras;
+
+    WallpaperCommandRecord(IBinder windowToken, String action, int x, int y, int z, Bundle extras) {
+      this.windowToken = windowToken;
+      this.action = action;
+      this.x = x;
+      this.y = y;
+      this.z = z;
+      this.extras = extras;
     }
   }
 }
