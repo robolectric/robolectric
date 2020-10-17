@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.CUPCAKE;
 import static android.os.Build.VERSION_CODES.L;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
@@ -20,7 +19,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = CUPCAKE)
-public class ShadowAppWidgetProviderInfoTest {
+public class AppWidgetProviderInfoBuilderTest {
   private Context context;
   private PackageManager packageManager;
   private AppWidgetProviderInfo appWidgetProviderInfo;
@@ -31,15 +30,14 @@ public class ShadowAppWidgetProviderInfoTest {
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();
     packageManager = context.getPackageManager();
-    appWidgetProviderInfo = new AppWidgetProviderInfo();
     providerInfo = new ActivityInfo();
     providerInfo.nonLocalizedLabel = "nonLocalizedLabel";
     providerInfo.icon = -1;
     applicationInfo = new ApplicationInfo();
     applicationInfo.uid = UserHandle.myUserId();
     providerInfo.applicationInfo = applicationInfo;
-    ShadowAppWidgetProviderInfo shadowAppWidgetProviderInfo = shadowOf(appWidgetProviderInfo);
-    shadowAppWidgetProviderInfo.setProviderInfo(providerInfo);
+    appWidgetProviderInfo =
+        AppWidgetProviderInfoBuilder.newBuilder().setProviderInfo(providerInfo).build();
   }
 
   @Test
