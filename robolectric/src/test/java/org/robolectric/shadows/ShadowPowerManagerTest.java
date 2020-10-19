@@ -427,4 +427,14 @@ public class ShadowPowerManagerTest {
     powerManager.reboot("userspace");
     assertThat(shadowPowerManager.getRebootReasons()).contains("userspace");
   }
+
+  @Test
+  public void releaseWithFlags() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    lock.acquire();
+
+    lock.release();
+
+    assertThat(shadowOf(lock).isHeld()).isFalse();
+  }
 }

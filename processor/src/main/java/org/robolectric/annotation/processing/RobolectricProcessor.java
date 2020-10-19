@@ -117,7 +117,7 @@ public class RobolectricProcessor extends AbstractProcessor {
       }
       generated = true;
     }
-    return true;
+    return false;
   }
 
   private void addValidator(Validator v) {

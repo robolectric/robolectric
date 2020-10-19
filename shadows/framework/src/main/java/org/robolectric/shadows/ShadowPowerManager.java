@@ -334,6 +334,12 @@ public class ShadowPowerManager {
       }
     }
 
+    /** Calls {@link #release()}, the {@code flags} are ignored. */
+    @Implementation
+    protected void release(int flags) {
+      release();
+    }
+
     @Implementation
     protected synchronized boolean isHeld() {
       return refCounted ? refCount > 0 : locked;
