@@ -9,5 +9,5 @@ dependencies {
     api project(":utils:reflector")
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    compileOnly "junit:junit:4.12"
+    compileOnly "junit:junit:4.13.1"
 }

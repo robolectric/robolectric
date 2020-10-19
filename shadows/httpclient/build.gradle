@@ -22,7 +22,7 @@ dependencies {
     compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
 
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:4.12"
+    testImplementation "junit:junit:4.13.1"
     testImplementation "com.google.truth:truth:1.0.1"
     testImplementation "org.mockito:mockito-core:2.5.4"
     testImplementation "androidx.test.ext:junit:1.1.2-rc03"
