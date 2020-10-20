@@ -4,7 +4,7 @@ apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
 
 dependencies {
     api project(":robolectric")
-    api "junit:junit:4.12"
+    api "junit:junit:4.13.1"
 
     testImplementation files("${System.getenv("ANDROID_HOME")}/platforms/android-29/android.jar")
 

@@ -8,6 +8,6 @@ dependencies {
     api project(":utils")
 
     testImplementation project(":shadowapi")
-    testImplementation "junit:junit:4.12"
+    testImplementation "junit:junit:4.13.1"
     testImplementation "com.google.truth:truth:1.0.1"
 }
