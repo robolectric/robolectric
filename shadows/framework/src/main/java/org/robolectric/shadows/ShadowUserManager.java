@@ -19,10 +19,12 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.Manifest.permission;
 import android.annotation.UserIdInt;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IUserManager;
@@ -38,12 +40,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 
 /**
  * Robolectric implementation of {@link android.os.UserManager}.
@@ -56,41 +60,31 @@ public class ShadowUserManager {
    */
   public static final int DEFAULT_SECONDARY_USER_ID = 10;
 
+  private static final int DEFAULT_MAX_SUPPORTED_USERS = 1;
+
   public static final int FLAG_PRIMARY = UserInfo.FLAG_PRIMARY;
   public static final int FLAG_ADMIN = UserInfo.FLAG_ADMIN;
   public static final int FLAG_GUEST = UserInfo.FLAG_GUEST;
   public static final int FLAG_RESTRICTED = UserInfo.FLAG_RESTRICTED;
   public static final int FLAG_DEMO = UserInfo.FLAG_DEMO;
   public static final int FLAG_MANAGED_PROFILE = UserInfo.FLAG_MANAGED_PROFILE;
+  public static final int FLAG_PROFILE = UserInfo.FLAG_PROFILE;
+  public static final int FLAG_FULL = UserInfo.FLAG_FULL;
+  public static final int FLAG_SYSTEM = UserInfo.FLAG_SYSTEM;
 
+  private static int maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
   private static boolean isMultiUserSupported = false;
-  protected static Map<Integer, Integer> userPidMap = new HashMap<>();
 
   @RealObject private UserManager realObject;
-
+  private UserManagerState userManagerState;
+  private Boolean managedProfile;
   private boolean userUnlocked = true;
-  private boolean managedProfile = false;
   private boolean isSystemUser = true;
-  private Map<Integer, Bundle> userRestrictions = new HashMap<>();
-  /** Holds the serial numbers for all users and profiles, indexed by UserHandle.id */
-  protected BiMap<Integer, Long> userSerialNumbers = HashBiMap.create();
 
-  private Map<String, Bundle> applicationRestrictions = new HashMap<>();
-  /** Holds all UserStates, indexed by UserHandle.id */
-  protected Map<Integer, UserState> userState = new HashMap<>();
-  /** Holds the UserInfo for all registered users and profiles, indexed by UserHandle.id */
-  protected Map<Integer, UserInfo> userInfoMap = new HashMap<>();
   /**
    * Holds whether or not a managed profile can be unlocked. If a profile is not in this map, it is
    * assume it can be unlocked.
    */
-  private final Map<Integer, Boolean> profileIsLocked = new HashMap<>();
-  /**
-   * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed by
-   * UserHandle.id. See UserManager.getProfiles(userId).
-   */
-  protected Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
-
   private String seedAccountName;
   private String seedAccountType;
   private PersistableBundle seedAccountOptions;
@@ -98,6 +92,49 @@ public class ShadowUserManager {
   private Context context;
   private boolean enforcePermissions;
   private int userSwitchability = UserManager.SWITCHABILITY_STATUS_OK;
+
+  /**
+   * Global UserManager state. Shared across {@link UserManager}s created in different {@link
+   * Context}s.
+   */
+  static class UserManagerState {
+    private final Map<Integer, Integer> userPidMap = new HashMap<>();
+    /** Holds the serial numbers for all users and profiles, indexed by UserHandle.id */
+    private final BiMap<Integer, Long> userSerialNumbers = HashBiMap.create();
+    /** Holds all UserStates, indexed by UserHandle.id */
+    private final Map<Integer, UserState> userState = new HashMap<>();
+    /** Holds the UserInfo for all registered users and profiles, indexed by UserHandle.id */
+    private final Map<Integer, UserInfo> userInfoMap = new HashMap<>();
+    /**
+     * Each user holds a list of UserHandles of assocated profiles and user itself. User is indexed
+     * by UserHandle.id. See UserManager.getProfiles(userId).
+     */
+    private final Map<Integer, List<UserHandle>> userProfilesListMap = new HashMap<>();
+
+    private final Map<Integer, Bundle> userRestrictions = new HashMap<>();
+    private final Map<String, Bundle> applicationRestrictions = new HashMap<>();
+    private final Map<Integer, Boolean> profileIsLocked = new HashMap<>();
+    private final Map<Integer, Bitmap> userIcon = new HashMap<>();
+
+    private int nextUserId = DEFAULT_SECONDARY_USER_ID;
+
+    public UserManagerState() {
+      int id = UserHandle.USER_SYSTEM;
+      String name = "system_user";
+      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN;
+
+      userSerialNumbers.put(id, (long) id);
+      // Start the user as shut down.
+      userState.put(id, UserState.STATE_SHUTDOWN);
+
+      // Update UserInfo regardless if was added or not
+      userInfoMap.put(id, new UserInfo(id, name, flags));
+      userProfilesListMap.put(id, new ArrayList<>());
+      // getUserProfiles() includes user's handle
+      userProfilesListMap.get(id).add(new UserHandle(id));
+      userPidMap.put(id, Process.myUid());
+    }
+  }
 
   @Implementation
   protected void __constructor__(Context context, IUserManager service) {
@@ -107,7 +144,8 @@ public class ShadowUserManager {
         realObject,
         from(Context.class, context),
         from(IUserManager.class, service));
-    addUser(UserHandle.USER_SYSTEM, "system_user", UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN);
+
+    userManagerState = ShadowApplication.getInstance().getUserManagerState();
   }
 
   /**
@@ -118,7 +156,7 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected Bundle getApplicationRestrictions(String packageName) {
-    Bundle bundle = applicationRestrictions.get(packageName);
+    Bundle bundle = userManagerState.applicationRestrictions.get(packageName);
     return bundle != null ? bundle : new Bundle();
   }
 
@@ -126,7 +164,7 @@ public class ShadowUserManager {
    * Sets the value returned by {@link UserManager#getApplicationRestrictions(String)}.
    */
   public void setApplicationRestrictions(String packageName, Bundle restrictions) {
-    applicationRestrictions.put(packageName, restrictions);
+    userManagerState.applicationRestrictions.put(packageName, restrictions);
   }
 
   /**
@@ -140,12 +178,12 @@ public class ShadowUserManager {
   @Deprecated
   public long addUserProfile(UserHandle userHandle) {
     addProfile(UserHandle.myUserId(), userHandle.getIdentifier(), "", 0);
-    return userSerialNumbers.get(userHandle.getIdentifier());
+    return userManagerState.userSerialNumbers.get(userHandle.getIdentifier());
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserHandle> getUserProfiles() {
-    return ImmutableList.copyOf(userProfilesListMap.get(UserHandle.myUserId()));
+    return ImmutableList.copyOf(userManagerState.userProfilesListMap.get(UserHandle.myUserId()));
   }
 
   /**
@@ -155,14 +193,38 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = LOLLIPOP)
   protected List<UserInfo> getProfiles(int userHandle) {
-    if (userProfilesListMap.containsKey(userHandle)) {
+    if (userManagerState.userProfilesListMap.containsKey(userHandle)) {
       ArrayList<UserInfo> infos = new ArrayList<>();
-      for (UserHandle profileHandle : userProfilesListMap.get(userHandle)) {
-        infos.add(userInfoMap.get(profileHandle.getIdentifier()));
+      for (UserHandle profileHandle : userManagerState.userProfilesListMap.get(userHandle)) {
+        infos.add(userManagerState.userInfoMap.get(profileHandle.getIdentifier()));
       }
       return infos;
     }
     return directlyOn(realObject, UserManager.class, "getProfiles", from(int.class, userHandle));
+  }
+
+  @Implementation(minSdk = R)
+  protected List<UserHandle> getEnabledProfiles() {
+    ArrayList<UserHandle> userHandles = new ArrayList<>();
+    for (UserHandle profileHandle : getAllProfiles()) {
+      if (userManagerState.userInfoMap.get(profileHandle.getIdentifier()).isEnabled()) {
+        userHandles.add(profileHandle);
+      }
+    }
+
+    return userHandles;
+  }
+
+  @Implementation(minSdk = R)
+  protected List<UserHandle> getAllProfiles() {
+    ArrayList<UserHandle> userHandles = new ArrayList<>();
+    if (userManagerState.userProfilesListMap.containsKey(context.getUserId())) {
+      userHandles.addAll(userManagerState.userProfilesListMap.get(context.getUserId()));
+      return userHandles;
+    }
+
+    userHandles.add(UserHandle.of(context.getUserId()));
+    return userHandles;
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -182,18 +244,68 @@ public class ShadowUserManager {
     }
   }
 
+  @Implementation(minSdk = R)
+  protected UserHandle createProfile(String name, String userType, Set<String> disallowedPackages) {
+    int flags = getDefaultUserTypeFlags(userType);
+    flags |= FLAG_PROFILE; // assume createProfile used with a profile userType
+    if (enforcePermissions && !hasManageUsersPermission() && !hasCreateUsersPermission()) {
+      throw new SecurityException(
+          "You either need MANAGE_USERS or CREATE_USERS "
+              + "permission to create an user with flags: "
+              + flags);
+    }
+
+    if (userManagerState.userInfoMap.size() >= getMaxSupportedUsers()) {
+      return null;
+    }
+
+    int profileId = userManagerState.nextUserId++;
+    addProfile(context.getUserId(), profileId, name, flags);
+    userManagerState.userInfoMap.get(profileId).userType = userType;
+    return UserHandle.of(profileId);
+  }
+
+  private static int getDefaultUserTypeFlags(String userType) {
+    switch (userType) {
+      case UserManager.USER_TYPE_PROFILE_MANAGED:
+        return FLAG_PROFILE | FLAG_MANAGED_PROFILE;
+      case UserManager.USER_TYPE_FULL_SECONDARY:
+        return FLAG_FULL;
+      case UserManager.USER_TYPE_FULL_GUEST:
+        return FLAG_FULL | FLAG_GUEST;
+      case UserManager.USER_TYPE_FULL_DEMO:
+        return FLAG_FULL | FLAG_DEMO;
+      case UserManager.USER_TYPE_FULL_RESTRICTED:
+        return FLAG_FULL | FLAG_RESTRICTED;
+      case UserManager.USER_TYPE_FULL_SYSTEM:
+        return FLAG_FULL | FLAG_SYSTEM;
+      case UserManager.USER_TYPE_SYSTEM_HEADLESS:
+        return FLAG_SYSTEM;
+      default:
+        return 0;
+    }
+  }
+
   /** Add a profile to be returned by {@link #getProfiles(int)}.**/
   public void addProfile(
       int userHandle, int profileUserHandle, String profileName, int profileFlags) {
     // Don't override serial number set by setSerialNumberForUser()
-    if (!userSerialNumbers.containsKey(profileUserHandle)) {
+    if (!userManagerState.userSerialNumbers.containsKey(profileUserHandle)) {
       // use UserHandle id as serial number unless setSerialNumberForUser() is used
-      userSerialNumbers.put(profileUserHandle, (long) profileUserHandle);
+      userManagerState.userSerialNumbers.put(profileUserHandle, (long) profileUserHandle);
     }
-    userInfoMap.put(profileUserHandle, new UserInfo(profileUserHandle, profileName, profileFlags));
+    UserInfo profileUserInfo = new UserInfo(profileUserHandle, profileName, profileFlags);
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      profileUserInfo.profileGroupId = userHandle;
+      UserInfo parentUserInfo = getUserInfo(userHandle);
+      if (parentUserInfo != null) {
+        parentUserInfo.profileGroupId = userHandle;
+      }
+    }
+    userManagerState.userInfoMap.put(profileUserHandle, profileUserInfo);
     // Insert profile to the belonging user's userProfilesList
-    userProfilesListMap.putIfAbsent(userHandle, new ArrayList<>());
-    List<UserHandle> list = userProfilesListMap.get(userHandle);
+    userManagerState.userProfilesListMap.putIfAbsent(userHandle, new ArrayList<>());
+    List<UserHandle> list = userManagerState.userProfilesListMap.get(userHandle);
     UserHandle handle = new UserHandle(profileUserHandle);
     if (!list.contains(handle)) {
       list.add(handle);
@@ -214,7 +326,7 @@ public class ShadowUserManager {
   @Implementation(minSdk = 24)
   protected boolean isUserUnlocked(UserHandle handle) {
     checkPermissions();
-    UserState state = userState.get(handle.getIdentifier());
+    UserState state = userManagerState.userState.get(handle.getIdentifier());
 
     return state == UserState.STATE_RUNNING_UNLOCKED;
   }
@@ -235,7 +347,16 @@ public class ShadowUserManager {
           "You need MANAGE_USERS permission to: check if specified user a " +
               "managed profile outside your profile group");
     }
-    return managedProfile;
+
+    if (managedProfile != null) {
+      return managedProfile;
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return isManagedProfile(context.getUserId());
+    }
+
+    return false;
   }
 
   /**
@@ -270,9 +391,49 @@ public class ShadowUserManager {
     this.managedProfile = managedProfile;
   }
 
+  @Implementation(minSdk = R)
+  protected boolean isProfile() {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException(
+          "You need INTERACT_ACROSS_USERS or MANAGE_USERS permission to: check isProfile");
+    }
+
+    return getUserInfo(context.getUserId()).isProfile();
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean isUserOfType(String userType) {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException("You need MANAGE_USERS permission to: check user type");
+    }
+
+    UserInfo info = getUserInfo(context.getUserId());
+    return info != null && info.userType != null && info.userType.equals(userType);
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean isSameProfileGroup(UserHandle user, UserHandle otherUser) {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException(
+          "You need MANAGE_USERS permission to: check if in the same profile group");
+    }
+
+    UserInfo userInfo = userManagerState.userInfoMap.get(user.getIdentifier());
+    UserInfo otherUserInfo = userManagerState.userInfoMap.get(otherUser.getIdentifier());
+
+    if (userInfo == null
+        || otherUserInfo == null
+        || userInfo.profileGroupId == UserInfo.NO_PROFILE_GROUP_ID
+        || otherUserInfo.profileGroupId == UserInfo.NO_PROFILE_GROUP_ID) {
+      return false;
+    }
+
+    return userInfo.profileGroupId == otherUserInfo.profileGroupId;
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
-    Bundle bundle = userRestrictions.get(userHandle.getIdentifier());
+    Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
 
@@ -285,7 +446,7 @@ public class ShadowUserManager {
    * Removes all user restrictions set of a user identified by {@code userHandle}.
    */
   public void clearUserRestrictions(UserHandle userHandle) {
-    userRestrictions.remove(userHandle.getIdentifier());
+    userManagerState.userRestrictions.remove(userHandle.getIdentifier());
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -294,10 +455,10 @@ public class ShadowUserManager {
   }
 
   private Bundle getUserRestrictionsForUser(UserHandle userHandle) {
-    Bundle bundle = userRestrictions.get(userHandle.getIdentifier());
+    Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());
     if (bundle == null) {
       bundle = new Bundle();
-      userRestrictions.put(userHandle.getIdentifier(), bundle);
+      userManagerState.userRestrictions.put(userHandle.getIdentifier(), bundle);
     }
     return bundle;
   }
@@ -308,7 +469,7 @@ public class ShadowUserManager {
    */
   @Implementation
   protected long getSerialNumberForUser(UserHandle userHandle) {
-    Long result = userSerialNumbers.get(userHandle.getIdentifier());
+    Long result = userManagerState.userSerialNumbers.get(userHandle.getIdentifier());
     return result == null ? -1L : result;
   }
 
@@ -318,7 +479,7 @@ public class ShadowUserManager {
    * to "fake" the serialNumber to a non-zero value.
    */
   public void setSerialNumberForUser(UserHandle userHandle, long serialNumber) {
-    userSerialNumbers.put(userHandle.getIdentifier(), serialNumber);
+    userManagerState.userSerialNumbers.put(userHandle.getIdentifier(), serialNumber);
   }
 
   /**
@@ -327,7 +488,7 @@ public class ShadowUserManager {
    */
   @Implementation
   protected UserHandle getUserForSerialNumber(long serialNumber) {
-    Integer userHandle = userSerialNumbers.inverse().get(serialNumber);
+    Integer userHandle = userManagerState.userSerialNumbers.inverse().get(serialNumber);
     return userHandle == null ? null : new UserHandle(userHandle);
   }
 
@@ -337,8 +498,13 @@ public class ShadowUserManager {
    */
   @Implementation
   protected int getUserSerialNumber(@UserIdInt int userHandle) {
-    Long result = userSerialNumbers.get(userHandle);
+    Long result = userManagerState.userSerialNumbers.get(userHandle);
     return result != null ? result.intValue() : -1;
+  }
+
+  private String getUserName(@UserIdInt int userHandle) {
+    UserInfo user = getUserInfo(userHandle);
+    return user == null ? "" : user.name;
   }
 
   /**
@@ -349,8 +515,51 @@ public class ShadowUserManager {
    */
   @Implementation(minSdk = Q)
   protected String getUserName() {
-    UserInfo user = getUserInfo(UserHandle.myUserId());
-    return user == null ? "" : user.name;
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return getUserName(context.getUserId());
+    }
+
+    return getUserName(UserHandle.myUserId());
+  }
+
+  @Implementation(minSdk = R)
+  protected void setUserName(String name) {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException("You need MANAGE_USERS permission to: rename users");
+    }
+    UserInfo user = getUserInfo(context.getUserId());
+    user.name = name;
+  }
+
+  @Implementation(minSdk = Q)
+  protected Bitmap getUserIcon() {
+    if (enforcePermissions
+        && !hasManageUsersPermission()
+        && !hasGetAccountsPrivilegedPermission()) {
+      throw new SecurityException(
+          "You need MANAGE_USERS or GET_ACCOUNTS_PRIVILEGED permissions to: get user icon");
+    }
+
+    int userId = UserHandle.myUserId();
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      userId = context.getUserId();
+    }
+
+    return userManagerState.userIcon.get(userId);
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setUserIcon(Bitmap icon) {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException("You need MANAGE_USERS permission to: update users");
+    }
+
+    int userId = UserHandle.myUserId();
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      userId = context.getUserId();
+    }
+
+    userManagerState.userIcon.put(userId, icon);
   }
 
   /** @return user id for given user serial number. */
@@ -358,18 +567,45 @@ public class ShadowUserManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   @UserIdInt
   protected int getUserHandle(int serialNumber) {
-    Integer userHandle = userSerialNumbers.inverse().get((long) serialNumber);
+    Integer userHandle = userManagerState.userSerialNumbers.inverse().get((long) serialNumber);
     return userHandle == null ? -1 : userHandle;
   }
 
+  @HiddenApi
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static int getMaxSupportedUsers() {
+    return maxSupportedUsers;
+  }
+
+  public void setMaxSupportedUsers(int maxSupportedUsers) {
+    ShadowUserManager.maxSupportedUsers = maxSupportedUsers;
+  }
+
   private boolean hasManageUsersPermission() {
-    return context.getPackageManager().checkPermission(permission.MANAGE_USERS, context.getPackageName()) == PackageManager.PERMISSION_GRANTED;
+    return context
+            .getPackageManager()
+            .checkPermission(permission.MANAGE_USERS, context.getPackageName())
+        == PackageManager.PERMISSION_GRANTED;
+  }
+
+  private boolean hasCreateUsersPermission() {
+    return context
+            .getPackageManager()
+            .checkPermission(permission.CREATE_USERS, context.getPackageName())
+        == PackageManager.PERMISSION_GRANTED;
   }
 
   private boolean hasModifyQuietModePermission() {
     return context
             .getPackageManager()
             .checkPermission(permission.MODIFY_QUIET_MODE, context.getPackageName())
+        == PackageManager.PERMISSION_GRANTED;
+  }
+
+  private boolean hasGetAccountsPrivilegedPermission() {
+    return context
+            .getPackageManager()
+            .checkPermission(permission.GET_ACCOUNTS_PRIVILEGED, context.getPackageName())
         == PackageManager.PERMISSION_GRANTED;
   }
 
@@ -514,13 +750,22 @@ public class ShadowUserManager {
     }
   }
 
+  public void setIsUserEnabled(int userId, boolean enabled) {
+    UserInfo userInfo = getUserInfo(userId);
+    if (enabled) {
+      userInfo.flags &= ~UserInfo.FLAG_DISABLED;
+    } else {
+      userInfo.flags |= UserInfo.FLAG_DISABLED;
+    }
+  }
+
   /**
    * @see #setUserState(UserHandle, UserState)
    */
   @Implementation
   protected boolean isUserRunning(UserHandle handle) {
     checkPermissions();
-    UserState state = userState.get(handle.getIdentifier());
+    UserState state = userManagerState.userState.get(handle.getIdentifier());
 
     if (state == UserState.STATE_RUNNING_LOCKED
         || state == UserState.STATE_RUNNING_UNLOCKED
@@ -537,7 +782,7 @@ public class ShadowUserManager {
   @Implementation
   protected boolean isUserRunningOrStopping(UserHandle handle) {
     checkPermissions();
-    UserState state = userState.get(handle.getIdentifier());
+    UserState state = userManagerState.userState.get(handle.getIdentifier());
 
     if (state == UserState.STATE_RUNNING_LOCKED
         || state == UserState.STATE_RUNNING_UNLOCKED
@@ -547,6 +792,15 @@ public class ShadowUserManager {
     } else {
       return false;
     }
+  }
+
+  /** @see #setUserState(UserHandle, UserState) */
+  @Implementation(minSdk = R)
+  protected boolean isUserUnlockingOrUnlocked(UserHandle handle) {
+    checkPermissions();
+    UserState state = userManagerState.userState.get(handle.getIdentifier());
+
+    return state == UserState.STATE_RUNNING_UNLOCKING || state == UserState.STATE_RUNNING_UNLOCKED;
   }
 
   /**
@@ -573,7 +827,7 @@ public class ShadowUserManager {
    * and {@link UserManager#isUserRunningOrStopping(UserHandle)}
    */
   public void setUserState(UserHandle handle, UserState state) {
-    userState.put(handle.getIdentifier(), state);
+    userManagerState.userState.put(handle.getIdentifier(), state);
   }
 
   /**
@@ -608,20 +862,23 @@ public class ShadowUserManager {
     int userProfileHandle = userHandle.getIdentifier();
     UserInfo info = getUserInfo(userHandle.getIdentifier());
     if (enableQuietMode) {
-      userState.put(userProfileHandle, UserState.STATE_SHUTDOWN);
+      userManagerState.userState.put(userProfileHandle, UserState.STATE_SHUTDOWN);
       info.flags |= UserInfo.FLAG_QUIET_MODE;
     } else {
-      if (profileIsLocked.getOrDefault(userProfileHandle, false)) {
+      if (userManagerState.profileIsLocked.getOrDefault(userProfileHandle, false)) {
         return false;
       }
-      userState.put(userProfileHandle, UserState.STATE_RUNNING_UNLOCKED);
+      userManagerState.userState.put(userProfileHandle, UserState.STATE_RUNNING_UNLOCKED);
       info.flags &= ~UserInfo.FLAG_QUIET_MODE;
     }
-    sendQuietModeBroadcast(
-        enableQuietMode
-            ? Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE
-            : Intent.ACTION_MANAGED_PROFILE_AVAILABLE,
-        userHandle);
+
+    if (enableQuietMode) {
+      sendQuietModeBroadcast(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE, userHandle);
+    } else {
+      sendQuietModeBroadcast(Intent.ACTION_MANAGED_PROFILE_AVAILABLE, userHandle);
+      sendQuietModeBroadcast(Intent.ACTION_MANAGED_PROFILE_UNLOCKED, userHandle);
+    }
+
     return true;
   }
 
@@ -647,17 +904,17 @@ public class ShadowUserManager {
   }
 
   public void setProfileIsLocked(UserHandle profileHandle, boolean isLocked) {
-    profileIsLocked.put(profileHandle.getIdentifier(), isLocked);
+    userManagerState.profileIsLocked.put(profileHandle.getIdentifier(), isLocked);
   }
 
   @Implementation
   protected List<UserInfo> getUsers() {
-    return new ArrayList<>(userInfoMap.values());
+    return new ArrayList<>(userManagerState.userInfoMap.values());
   }
 
   @Implementation
   protected UserInfo getUserInfo(int userHandle) {
-    return userInfoMap.get(userHandle);
+    return userManagerState.userInfoMap.get(userHandle);
   }
 
 
@@ -714,12 +971,18 @@ public class ShadowUserManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean removeUser(int userHandle) {
-    userInfoMap.remove(userHandle);
-    userProfilesListMap.remove(userHandle);
-    // if it's a profile, remove from the belong list in userProfilesListMap
-    UserHandle profielHandle = new UserHandle(userHandle);
-    for (List<UserHandle> list : userProfilesListMap.values()) {
-      if (list.remove(profielHandle)) {
+    userManagerState.userInfoMap.remove(userHandle);
+    userManagerState.userPidMap.remove(userHandle);
+    userManagerState.userSerialNumbers.remove(userHandle);
+    userManagerState.userState.remove(userHandle);
+    userManagerState.userRestrictions.remove(userHandle);
+    userManagerState.profileIsLocked.remove(userHandle);
+    userManagerState.userIcon.remove(userHandle);
+    userManagerState.userProfilesListMap.remove(userHandle);
+    // if it's a profile, remove from the belong list in userManagerState.userProfilesListMap
+    UserHandle profileHandle = new UserHandle(userHandle);
+    for (List<UserHandle> list : userManagerState.userProfilesListMap.values()) {
+      if (list.remove(profileHandle)) {
         break;
       }
     }
@@ -750,11 +1013,15 @@ public class ShadowUserManager {
    * @param userId the integer handle of the user, where 0 is the primary user.
    */
   public void switchUser(int userId) {
-    if (!userInfoMap.containsKey(userId)) {
+    if (!userManagerState.userInfoMap.containsKey(userId)) {
       throw new UnsupportedOperationException("Must add user before switching to it");
     }
 
-    ShadowProcess.setUid(userPidMap.get(userId));
+    ShadowProcess.setUid(userManagerState.userPidMap.get(userId));
+
+    Application application = (Application) context.getApplicationContext();
+    ShadowContextImpl shadowContext = Shadow.extract(application.getBaseContext());
+    shadowContext.setUserId(userId);
   }
 
   /**
@@ -770,20 +1037,20 @@ public class ShadowUserManager {
         id == UserHandle.USER_SYSTEM ? Process.myUserHandle() : new UserHandle(id);
 
     // Don't override serial number set by setSerialNumberForUser()
-    if (!userSerialNumbers.containsKey(id)) {
+    if (!userManagerState.userSerialNumbers.containsKey(id)) {
       // use UserHandle id as serial number unless setSerialNumberForUser() is used
-      userSerialNumbers.put(id, (long) id);
+      userManagerState.userSerialNumbers.put(id, (long) id);
     }
     // Start the user as shut down.
-    userState.put(id, UserState.STATE_SHUTDOWN);
+    userManagerState.userState.put(id, UserState.STATE_SHUTDOWN);
 
     // Update UserInfo regardless if was added or not
-    userInfoMap.put(id, new UserInfo(id, name, flags));
-    if (!userProfilesListMap.containsKey(id)) {
-      userProfilesListMap.put(id, new ArrayList<>());
+    userManagerState.userInfoMap.put(id, new UserInfo(id, name, flags));
+    if (!userManagerState.userProfilesListMap.containsKey(id)) {
+      userManagerState.userProfilesListMap.put(id, new ArrayList<>());
       // getUserProfiles() includes user's handle
-      userProfilesListMap.get(id).add(new UserHandle(id));
-      userPidMap.put(
+      userManagerState.userProfilesListMap.get(id).add(new UserHandle(id));
+      userManagerState.userPidMap.put(
           id,
           id == UserHandle.USER_SYSTEM
               ? Process.myUid()
@@ -839,11 +1106,7 @@ public class ShadowUserManager {
 
   @Resetter
   public static void reset() {
-    if (userPidMap != null && userPidMap.isEmpty() == false) {
-      ShadowProcess.setUid(userPidMap.get(UserHandle.USER_SYSTEM));
-
-      userPidMap.clear();
-      userPidMap.put(UserHandle.USER_SYSTEM, Process.myUid());
-    }
+    maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
+    isMultiUserSupported = false;
   }
 }
