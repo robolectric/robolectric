@@ -113,7 +113,10 @@ public class ContentProviderControllerTest {
     assertThat(contentProviderClient.getLocalContentProvider()).isSameInstanceAs(xContentProvider);
   }
 
-  ////////////////////
+  @Test(expected = IllegalArgumentException.class)
+  public void createContentProvider_nullAuthority() throws Exception {
+    Robolectric.buildContentProvider(XContentProvider.class).create(new ProviderInfo()).get();
+  }
 
   static class XContentProvider extends TestContentProvider1 {
     @Override
