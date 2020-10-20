@@ -87,6 +87,7 @@ import android.telecom.TelecomManager;
 import android.util.Log;
 import android.util.Pair;
 import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -389,8 +390,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         }
 
         for (ProviderInfo providerInfo : packageInfo.providers) {
-          if (name.equals(providerInfo.authority)) { // todo: support multiple authorities
-            return new ProviderInfo(providerInfo);
+          for (String authority : Splitter.on(';').split(providerInfo.authority)) {
+            if (name.equals(authority)) {
+              return new ProviderInfo(providerInfo);
+            }
           }
         }
       }
