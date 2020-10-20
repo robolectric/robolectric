@@ -73,6 +73,7 @@ public class ShadowKeyCharacterMap {
     CHAR_TO_KEY_CODE.put('=', KeyEvent.KEYCODE_EQUALS);
     CHAR_TO_KEY_CODE.put('`', KeyEvent.KEYCODE_GRAVE);
     CHAR_TO_KEY_CODE.put('\\', KeyEvent.KEYCODE_BACKSLASH);
+    CHAR_TO_KEY_CODE.put('\n', KeyEvent.KEYCODE_ENTER);
 
     CHAR_TO_KEY_CODE_SHIFT_ON.put('_', KeyEvent.KEYCODE_MINUS);
     CHAR_TO_KEY_CODE_SHIFT_ON.put('{', KeyEvent.KEYCODE_LEFT_BRACKET);
@@ -140,6 +141,7 @@ public class ShadowKeyCharacterMap {
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_EQUALS, '=');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_GRAVE, '`');
     KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_BACKSLASH, '\\');
+    KEY_CODE_TO_CHAR.put(KeyEvent.KEYCODE_ENTER, '\n');
 
     KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_MINUS, '_');
     KEY_CODE_TO_CHAR_SHIFT_ON.put(KeyEvent.KEYCODE_LEFT_BRACKET, '{');
