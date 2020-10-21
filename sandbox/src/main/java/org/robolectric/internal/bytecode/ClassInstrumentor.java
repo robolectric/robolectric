@@ -496,7 +496,7 @@ public class ClassInstrumentor {
           if (mnode.owner.equals(mutableClass.internalClassName)
               || mnode.owner.equals(mutableClass.classNode.superName)) {
             if (!"<init>".equals(mnode.name)) {
-              throw new AssertionError("Invalid MethodInsnNode name");
+              throw new AssertionError("Expected MethodInsnNode to have name <init>");
             }
 
             // remove all instructions in the range 0 (the start) to invokespecial
@@ -655,7 +655,7 @@ public class ClassInstrumentor {
           targetMethod.desc = mutableClass.config.remapParams(targetMethod.desc);
           if (isGregorianCalendarBooleanConstructor(targetMethod)) {
             replaceGregorianCalendarBooleanConstructor(instructions, targetMethod);
-          } else if (mutableClass.config.shouldIntercept(targetMethod)) {
+          } else if (mutableClass.config.shouldIntercept(targetMethod, mutableClass)) {
             interceptInvokeVirtualMethod(mutableClass, instructions, targetMethod);
           }
           break;
