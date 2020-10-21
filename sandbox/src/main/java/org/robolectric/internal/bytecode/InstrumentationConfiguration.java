@@ -57,6 +57,7 @@ public class InstrumentationConfiguration {
   private final Set<String> classesToNotAcquire;
   private final Set<String> packagesToNotAcquire;
   private final Set<String> packagesToNotInstrument;
+  private final Set<String> classesToNotIntercept;
   private int cachedHashCode;
 
   private final TypeMapper typeMapper;
@@ -71,6 +72,7 @@ public class InstrumentationConfiguration {
       Collection<String> packagesToNotAcquire,
       Collection<String> classesToNotInstrument,
       Collection<String> packagesToNotInstrument,
+      Collection<String> classesToNotIntercept,
       String classesToNotInstrumentRegex) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
@@ -80,6 +82,7 @@ public class InstrumentationConfiguration {
     this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAcquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
+    this.classesToNotIntercept = ImmutableSet.copyOf(classesToNotIntercept);
     this.classesToNotInstrumentRegex = classesToNotInstrumentRegex;
     this.cachedHashCode = 0;
 
@@ -241,9 +244,12 @@ public class InstrumentationConfiguration {
     return typeMapper.mappedTypeName(internalName);
   }
 
-  boolean shouldIntercept(MethodInsnNode targetMethod) {
+  boolean shouldIntercept(MethodInsnNode targetMethod, MutableClass callingClass) {
     if (targetMethod.name.equals("<init>")) {
       return false; // sorry, can't strip out calls to super() in constructor
+    }
+    if (classesToNotIntercept.contains(callingClass.getName())) {
+      return false;
     }
     return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
         || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
@@ -270,6 +276,7 @@ public class InstrumentationConfiguration {
     public final Collection<String> instrumentedClasses = new HashSet<>();
     public final Collection<String> classesToNotInstrument = new HashSet<>();
     public final Collection<String> packagesToNotInstrument = new HashSet<>();
+    private final Collection<String> classesToNotIntercept = new HashSet<>();
     public String classesToNotInstrumentRegex;
 
     public Builder() {}
@@ -336,6 +343,11 @@ public class InstrumentationConfiguration {
       return this;
     }
 
+    public Builder doNotInterceptClass(String className) {
+      this.classesToNotIntercept.add(className);
+      return this;
+    }
+
     public InstrumentationConfiguration build() {
       // Remove redundant packages, e.g. remove 'android.os' if 'android.' is present.
       List<String> minimalPackages = new ArrayList<>(instrumentedPackages);
@@ -369,6 +381,7 @@ public class InstrumentationConfiguration {
           packagesToNotAcquire,
           classesToNotInstrument,
           packagesToNotInstrument,
+          classesToNotIntercept,
           classesToNotInstrumentRegex);
     }
   }
