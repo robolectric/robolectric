@@ -143,5 +143,8 @@ public class AndroidConfigurer {
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);
     }
+
+    // Avoid intercepting calls to System.currentTimeMillis in DateUtils.
+    builder.doNotInterceptClass("android.text.format.DateUtils");
   }
 }

@@ -312,7 +312,9 @@ public abstract class ClassInstrumentor {
         case Opcodes.INVOKESPECIAL:
           MethodInsnNode mnode = (MethodInsnNode) node;
           if (mnode.owner.equals(mutableClass.internalClassName) || mnode.owner.equals(mutableClass.classNode.superName)) {
-            assert mnode.name.equals("<init>");
+            if (!mnode.name.equals("<init>")) {
+              throw new AssertionError("Expected MethodInsnNode to have name <init>");
+            }
 
             // remove all instructions in the range startIndex..i, from aload_0 to invokespecial <init>
             while (startIndex <= i) {
@@ -446,7 +448,7 @@ public abstract class ClassInstrumentor {
           targetMethod.desc = mutableClass.config.remapParams(targetMethod.desc);
           if (isGregorianCalendarBooleanConstructor(targetMethod)) {
             replaceGregorianCalendarBooleanConstructor(instructions, targetMethod);
-          } else if (mutableClass.config.shouldIntercept(targetMethod)) {
+          } else if (mutableClass.config.shouldIntercept(targetMethod, mutableClass)) {
             interceptInvokeVirtualMethod(mutableClass, instructions, targetMethod);
           }
           break;

@@ -46,6 +46,7 @@ public class InstrumentationConfiguration {
   private final Set<String> classesToNotAcquire;
   private final Set<String> packagesToNotAcquire;
   private final Set<String> packagesToNotInstrument;
+  private final Set<String> classesToNotIntercept;
   private int cachedHashCode;
 
   private final TypeMapper typeMapper;
@@ -60,6 +61,7 @@ public class InstrumentationConfiguration {
       Collection<String> packagesToNotAquire,
       Collection<String> classesToNotInstrument,
       Collection<String> packagesToNotInstrument,
+      Collection<String> classesToNotIntercept,
       String classesToNotInstrumentRegex) {
     this.classNameTranslations = ImmutableMap.copyOf(classNameTranslations);
     this.interceptedMethods = ImmutableSet.copyOf(interceptedMethods);
@@ -69,6 +71,7 @@ public class InstrumentationConfiguration {
     this.packagesToNotAcquire = ImmutableSet.copyOf(packagesToNotAquire);
     this.classesToNotInstrument = ImmutableSet.copyOf(classesToNotInstrument);
     this.packagesToNotInstrument = ImmutableSet.copyOf(packagesToNotInstrument);
+    this.classesToNotIntercept = ImmutableSet.copyOf(classesToNotIntercept);
     this.classesToNotInstrumentRegex = classesToNotInstrumentRegex;
     this.cachedHashCode = 0;
 
@@ -222,8 +225,15 @@ public class InstrumentationConfiguration {
     return typeMapper.mappedTypeName(internalName);
   }
 
-  boolean shouldIntercept(MethodInsnNode targetMethod) {
-    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
+  boolean shouldIntercept(MethodInsnNode targetMethod, MutableClass callingClass) {
+    if (targetMethod.name.equals("<init>")) {
+      // sorry, can't strip out calls to super()
+      return false;
+    }
+    if (classesToNotIntercept.contains(callingClass.getName())) {
+      return false;
+    }
+    // in constructor
     return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
         || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
   }
@@ -249,8 +259,9 @@ public class InstrumentationConfiguration {
     public final Collection<String> instrumentedClasses = new HashSet<>();
     public final Collection<String> classesToNotInstrument = new HashSet<>();
     public final Collection<String> packagesToNotInstrument = new HashSet<>();
-    public String classesToNotInstrumentRegex;
+    private final Collection<String> classesToNotIntercept = new HashSet<>();
 
+    public String classesToNotInstrumentRegex;
 
     public Builder() {
     }
@@ -317,6 +328,10 @@ public class InstrumentationConfiguration {
       return this;
     }
 
+    public Builder doNotInterceptClass(String className) {
+      this.classesToNotIntercept.add(className);
+      return this;
+    }
 
       public InstrumentationConfiguration build() {
       return new InstrumentationConfiguration(
@@ -328,6 +343,7 @@ public class InstrumentationConfiguration {
           packagesToNotAcquire,
           classesToNotInstrument,
           packagesToNotInstrument,
+          classesToNotIntercept,
           classesToNotInstrumentRegex);
     }
   }
