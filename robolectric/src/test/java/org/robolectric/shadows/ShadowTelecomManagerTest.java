@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,9 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telecom.ConnectionRequest;
@@ -44,6 +48,7 @@ public class ShadowTelecomManagerTest {
   @Mock TestConnectionService.Listener connectionServiceListener;
 
   private TelecomManager telecomService;
+  private Context context;
 
   @Before
   public void setUp() {
@@ -51,6 +56,7 @@ public class ShadowTelecomManagerTest {
         (TelecomManager)
             ApplicationProvider.getApplicationContext().getSystemService(Context.TELECOM_SERVICE);
     TestConnectionService.setListener(connectionServiceListener);
+    context = ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -382,6 +388,13 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  public void setTtySupported() {
+    assertThat(telecomService.isTtySupported()).isFalse();
+    shadowOf(telecomService).setTtySupported(true);
+    assertThat(telecomService.isTtySupported()).isTrue();
+  }
+
+  @Test
   public void canSetAndGetIsInCall() throws Exception {
     shadowOf(telecomService).setIsInCall(true);
     assertThat(telecomService.isInCall()).isTrue();
@@ -405,6 +418,40 @@ public class ShadowTelecomManagerTest {
     // After removing
     shadowOf(telecomService).removeDefaultOutgoingPhoneAccount("abc");
     assertThat(telecomService.getDefaultOutgoingPhoneAccount("abc")).isNull();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void createLaunchEmergencyDialerIntent_shouldReturnValidIntent() {
+    Intent intent = telecomService.createLaunchEmergencyDialerIntent(/* number= */ null);
+    assertThat(intent.getAction()).isEqualTo(Intent.ACTION_DIAL_EMERGENCY);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void createLaunchEmergencyDialerIntent_whenPackageAvailable_shouldContainPackage()
+      throws NameNotFoundException {
+    ComponentName componentName = new ComponentName("com.android.phone", "EmergencyDialer");
+    shadowOf(context.getPackageManager()).addActivityIfNotPresent(componentName);
+
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(Intent.ACTION_DIAL_EMERGENCY);
+
+    shadowOf(context.getPackageManager()).addIntentFilterForActivity(componentName, intentFilter);
+
+    Intent intent = telecomService.createLaunchEmergencyDialerIntent(/* number= */ null);
+    assertThat(intent.getAction()).isEqualTo(Intent.ACTION_DIAL_EMERGENCY);
+    assertThat(intent.getPackage()).isEqualTo("com.android.phone");
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void
+      createLaunchEmergencyDialerIntent_whenSetPhoneNumber_shouldReturnValidIntentWithPhoneNumber() {
+    Intent intent = telecomService.createLaunchEmergencyDialerIntent("1234");
+    assertThat(intent.getAction()).isEqualTo(Intent.ACTION_DIAL_EMERGENCY);
+    Uri uri = intent.getData();
+    assertThat(uri.toString()).isEqualTo("tel:1234");
   }
 
   private static PhoneAccountHandle createHandle(String id) {

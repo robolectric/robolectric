@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.os.MessageQueue;
 import android.view.DisplayEventReceiver;
@@ -35,7 +36,7 @@ public class ShadowDisplayEventReceiver {
 
   private static final Duration VSYNC_DELAY = Duration.ofMillis(1);
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = Q)
   protected static long nativeInit(
       WeakReference<DisplayEventReceiver> receiver, MessageQueue msgQueue, int vsyncSource) {
     return nativeObjRegistry.register(new NativeDisplayEventReceiver(receiver));
@@ -58,6 +59,15 @@ public class ShadowDisplayEventReceiver {
     return (int)
         nativeObjRegistry.register(
             new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)));
+  }
+
+  @Implementation(minSdk = R)
+  protected static long nativeInit(
+      WeakReference<DisplayEventReceiver> receiver,
+      MessageQueue msgQueue,
+      int vsyncSource,
+      int configChanged) {
+    return nativeInit(receiver, msgQueue);
   }
 
   @Implementation(minSdk = KITKAT_WATCH)

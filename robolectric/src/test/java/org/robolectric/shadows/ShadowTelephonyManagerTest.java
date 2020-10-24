@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
@@ -9,13 +10,20 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
+import static android.telephony.PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED;
 import static android.telephony.PhoneStateListener.LISTEN_SIGNAL_STRENGTHS;
+import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_CA;
+import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE;
+import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
+import static android.telephony.TelephonyManager.NETWORK_TYPE_EVDO_0;
+import static android.telephony.TelephonyManager.NETWORK_TYPE_LTE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -23,9 +31,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -39,6 +50,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.UiccSlotInfo;
@@ -55,15 +67,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
+@Config(minSdk = JELLY_BEAN)
 public class ShadowTelephonyManagerTest {
 
   private TelephonyManager telephonyManager;
+  private ShadowTelephonyManager shadowTelephonyManager;
 
   @Before
   public void setUp() throws Exception {
     telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    shadowTelephonyManager = Shadow.extract(telephonyManager);
   }
 
   @Test
@@ -459,7 +476,11 @@ public class ShadowTelephonyManagerTest {
     int subId = 2;
     shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
 
-    assertThat(telephonyManager.getSimCountryIso(subId)).isEqualTo(expectedSimIso);
+    assertThat(
+            (String)
+                ReflectionHelpers.callInstanceMethod(
+                    telephonyManager, "getSimCountryIso", ClassParameter.from(int.class, subId)))
+        .isEqualTo(expectedSimIso);
   }
 
   @Test
@@ -625,5 +646,82 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isFalse();
     shadowOf(telephonyManager).setHearingAidCompatibilitySupported(true);
     assertThat(telephonyManager.isHearingAidCompatibilitySupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void createTelephonyDisplayInfo_correctlyCreatesDisplayInfo() {
+    TelephonyDisplayInfo displayInfo =
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_LTE_CA);
+
+    assertThat(displayInfo.getNetworkType()).isEqualTo(NETWORK_TYPE_LTE);
+    assertThat(displayInfo.getOverrideNetworkType()).isEqualTo(OVERRIDE_NETWORK_TYPE_LTE_CA);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void listen_doesNotNotifyListenerOfCurrentTelephonyDisplayInfoIfUninitialized() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+
+    telephonyManager.listen(listener, LISTEN_DISPLAY_INFO_CHANGED);
+
+    verifyZeroInteractions(listener);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void listen_notifiesListenerOfCurrentTelephonyDisplayInfoIfInitialized() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    TelephonyDisplayInfo displayInfo =
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_EVDO_0, OVERRIDE_NETWORK_TYPE_NONE);
+    shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
+
+    telephonyManager.listen(listener, LISTEN_DISPLAY_INFO_CHANGED);
+
+    verify(listener, times(1)).onDisplayInfoChanged(displayInfo);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setTelephonyDisplayInfo_notifiesListeners() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    TelephonyDisplayInfo displayInfo =
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_NR_NSA);
+    telephonyManager.listen(listener, LISTEN_DISPLAY_INFO_CHANGED);
+
+    shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
+
+    verify(listener, times(1)).onDisplayInfoChanged(displayInfo);
+  }
+
+  @Config(minSdk = R)
+  @Test(expected = NullPointerException.class)
+  public void setTelephonyDisplayInfo_rejectsNull() {
+    shadowTelephonyManager.setTelephonyDisplayInfo(null);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isDataConnectionAllowed_returnsFalseByDefault() {
+    assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isDataConnectionAllowed_returnsFalseWhenSetToFalse() {
+    shadowTelephonyManager.setIsDataConnectionAllowed(false);
+
+    assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isDataConnectionAllowed_returnsTrueWhenSetToTrue() {
+    shadowTelephonyManager.setIsDataConnectionAllowed(true);
+
+    assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isTrue();
   }
 }

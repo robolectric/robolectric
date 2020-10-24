@@ -1499,9 +1499,10 @@ public class ShadowPackageManagerTest {
             PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
-    assertThat(providers.length).isEqualTo(2);
+    assertThat(providers.length).isEqualTo(3);
     assertThat(providers[0].packageName).isEqualTo("org.robolectric");
     assertThat(providers[1].packageName).isEqualTo("org.robolectric");
+    assertThat(providers[2].packageName).isEqualTo("org.robolectric");
   }
 
   @Test
@@ -1578,6 +1579,15 @@ public class ShadowPackageManagerTest {
         packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority1");
+  }
+
+  @Test
+  public void resolveContentProvider_multiAuthorities() throws Exception {
+    ProviderInfo providerInfo =
+        packageManager.resolveContentProvider("org.robolectric.authority3", 0);
+    assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
+    assertThat(providerInfo.authority)
+        .isEqualTo("org.robolectric.authority3;org.robolectric.authority4");
   }
 
   @Test
@@ -3067,6 +3077,28 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_isProfileOwner_suspendDialogInfo() throws NameNotFoundException {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowOf(devicePolicyManager).setProfileOwner(componentName);
+
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_withDeviceOwner_shouldThrow() {
     DevicePolicyManager devicePolicyManager =
@@ -3112,6 +3144,28 @@ public class ShadowPackageManagerTest {
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_isDeviceOwner_suspendDialogInfo() throws NameNotFoundException {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowOf(devicePolicyManager).setDeviceOwner(componentName);
+
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
   }
 
   @Test

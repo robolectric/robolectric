@@ -37,7 +37,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 #### build.gradle:
 
 ```groovy
-testImplementation "org.robolectric:robolectric:4.3.1"
+testImplementation "org.robolectric:robolectric:4.4"
 ```
 
 ## Building And Contributing
@@ -46,7 +46,7 @@ Robolectric is built using Gradle. Both IntelliJ and Android Studio can import t
 
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
-    ./gradlew clean assemble install compileTest
+    ./gradlew clean assemble install compileTestJava
 
 ### Using Snapshots
 
@@ -60,6 +60,6 @@ repositories {
 }
 
 dependencies {
-    testImplementation "org.robolectric:robolectric:4.4-SNAPSHOT"
+    testImplementation "org.robolectric:robolectric:4.5-SNAPSHOT"
 }
 ```

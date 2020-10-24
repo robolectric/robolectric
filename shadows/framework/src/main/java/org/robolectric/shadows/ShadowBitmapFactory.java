@@ -84,8 +84,7 @@ public class ShadowBitmapFactory {
   protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
     // If a real file is used, attempt to get the image size from that file.
     Point imageSizeFromStream = null;
-    File file = new File(pathName);
-    if (file.exists()) {
+    if (pathName != null && new File(pathName).exists()) {
       try (FileInputStream fileInputStream = new FileInputStream(pathName);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
         imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
@@ -105,7 +104,7 @@ public class ShadowBitmapFactory {
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
     Point imageSizeFromStream = null;
     // If a real FileDescriptor is used, attempt to get the image size.
-    if (fd.valid()) {
+    if (fd != null && fd.valid()) {
       try (FileInputStream fileInputStream = new FileInputStream(fd);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
         imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);

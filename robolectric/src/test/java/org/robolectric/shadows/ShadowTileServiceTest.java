@@ -37,6 +37,27 @@ public final class ShadowTileServiceTest {
   }
 
   @Test
+  public void isLocked() {
+    assertThat(tileService.isLocked()).isFalse();
+    shadowOf(tileService).setLocked(true);
+    assertThat(tileService.isLocked()).isTrue();
+  }
+
+  @Test
+  public void unlockAndRun() {
+    shadowOf(tileService).setLocked(true);
+    assertThat(tileService.isLocked()).isTrue();
+    tileService.unlockAndRun(null);
+    assertThat(tileService.isLocked()).isFalse();
+
+    shadowOf(tileService).setLocked(true);
+    boolean[] result = new boolean[1];
+    Runnable runnable = () -> result[0] = true;
+    tileService.unlockAndRun(runnable);
+    assertThat(result[0]).isTrue();
+  }
+
+  @Test
   public void startActivityAndCollapse() {
     tileService.startActivityAndCollapse(
         new Intent().setComponent(new ComponentName("foo.bar", "Activity")));

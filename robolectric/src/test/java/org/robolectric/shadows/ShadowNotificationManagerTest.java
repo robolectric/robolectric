@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_PRIORITY;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -628,6 +629,22 @@ public class ShadowNotificationManagerTest {
     shadowOf(notificationManager).setCanNotifyAsPackage(pkg2, false);
     assertThat(notificationManager.canNotifyAsPackage(pkg1)).isFalse();
     assertThat(notificationManager.canNotifyAsPackage(pkg2)).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void getNotificationChannel() {
+    NotificationChannel notificationChannel = new NotificationChannel("id", "name", 1);
+    String conversationId = "conversation_id";
+    String parentChannelId = "parent_channel_id";
+    notificationChannel.setConversationId(parentChannelId, conversationId);
+    notificationManager.createNotificationChannel(notificationChannel);
+
+    assertThat(notificationManager.getNotificationChannels()).hasSize(1);
+    NotificationChannel channel =
+        notificationManager.getNotificationChannel(parentChannelId, conversationId);
+    assertThat(channel.getName().toString()).isEqualTo("name");
+    assertThat(channel.getImportance()).isEqualTo(1);
   }
 
   private static List<Notification> asNotificationList(

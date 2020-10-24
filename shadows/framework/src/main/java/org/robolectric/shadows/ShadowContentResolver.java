@@ -28,6 +28,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -676,7 +677,10 @@ public class ShadowContentResolver {
       ProviderInfo providerInfo =
           RuntimeEnvironment.application.getPackageManager().resolveContentProvider(authority, 0);
       if (providerInfo != null) {
-        providers.put(providerInfo.authority, createAndInitialize(providerInfo));
+        ContentProvider contentProvider = createAndInitialize(providerInfo);
+        for (String auth : Splitter.on(';').split(providerInfo.authority)) {
+          providers.put(auth, contentProvider);
+        }
       }
     }
     return providers.get(authority);
@@ -920,7 +924,7 @@ public class ShadowContentResolver {
         | IllegalAccessException
         | NoSuchMethodException
         | InvocationTargetException e) {
-      throw new RuntimeException("Error instantiating class " + providerInfo.name);
+      throw new RuntimeException("Error instantiating class " + providerInfo.name, e);
     }
   }
 

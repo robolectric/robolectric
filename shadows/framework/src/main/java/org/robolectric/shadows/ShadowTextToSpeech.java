@@ -10,16 +10,23 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import java.io.File;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
+
+  private static final Set<Locale> languageAvailabilities = new HashSet<>();
 
   @RealObject private TextToSpeech tts;
 
@@ -29,6 +36,8 @@ public class ShadowTextToSpeech {
   private boolean shutdown = false;
   private boolean stopped = true;
   private int queueMode = -1;
+  private Locale language = null;
+  private String lastSynthesizeToFileText;
 
   @Implementation
   protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
@@ -99,6 +108,39 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
+  @Implementation
+  protected int isLanguageAvailable(Locale lang) {
+    for (Locale locale : languageAvailabilities) {
+      if (locale.getISO3Language().equals(lang.getISO3Language())) {
+        if (locale.getISO3Country().equals(lang.getISO3Country())) {
+          if (locale.getVariant().equals(lang.getVariant())) {
+            return TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE;
+          }
+          return TextToSpeech.LANG_COUNTRY_AVAILABLE;
+        }
+        return TextToSpeech.LANG_AVAILABLE;
+      }
+    }
+    return TextToSpeech.LANG_NOT_SUPPORTED;
+  }
+
+  @Implementation
+  protected int setLanguage(Locale locale) {
+    this.language = locale;
+    return isLanguageAvailable(locale);
+  }
+
+  /**
+   * Stores {@code text} and returns {@link TextToSpeech#SUCCESS}.
+   *
+   * @see #getLastSynthesizeToFileText()
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected int synthesizeToFile(CharSequence text, Bundle params, File file, String utteranceId) {
+    this.lastSynthesizeToFileText = text.toString();
+    return TextToSpeech.SUCCESS;
+  }
+
   private UtteranceProgressListener getUtteranceProgressListener() {
     return ReflectionHelpers.getField(tts, "mUtteranceProgressListener");
   }
@@ -130,5 +172,34 @@ public class ShadowTextToSpeech {
 
   public int getQueueMode() {
     return queueMode;
+  }
+
+  /**
+   * Returns {@link Locale} set using {@link TextToSpeech#setLanguage(Locale)} or null if not set.
+   */
+  public Locale getCurrentLanguage() {
+    return language;
+  }
+
+  /**
+   * Returns last text {@link CharSequence} passed to {@link
+   * TextToSpeech#synthesizeToFile(CharSequence, Bundle, File, String)}.
+   */
+  public String getLastSynthesizeToFileText() {
+    return lastSynthesizeToFileText;
+  }
+
+  /**
+   * Make {@link Locale} an available language returned by {@link
+   * TextToSpeech#isLanguageAvailable(Locale)}. The value returned by {@link
+   * #isLanguageAvailable(Locale)} will vary depending on language, country, and variant.
+   */
+  public static void addLanguageAvailability(Locale locale) {
+    languageAvailabilities.add(locale);
+  }
+
+  @Resetter
+  public static void clearLanguageAvailabilities() {
+    languageAvailabilities.clear();
   }
 }

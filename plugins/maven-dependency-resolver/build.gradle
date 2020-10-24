@@ -4,12 +4,9 @@ apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
 dependencies {
     api project(":pluginapi")
     api project(":utils")
+    api "com.google.guava:guava:27.0.1-jre"
 
-    api "org.apache.ant:ant:1.8.0"
-    api("org.apache.maven:maven-ant-tasks:2.1.3") {
-        exclude group: "junit", module: "junit"
-    }
-
-    testImplementation "junit:junit:4.12"
+    testImplementation "junit:junit:4.13.1"
     testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "com.google.truth:truth:1.0.1"
 }

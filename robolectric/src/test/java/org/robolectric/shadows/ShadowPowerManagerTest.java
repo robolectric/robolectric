@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -18,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPowerManagerTest {
@@ -270,5 +272,159 @@ public class ShadowPowerManagerTest {
     lock.release();
     lock.release();
     assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isAmbientDisplayAvailable_shouldReturnTrueByDefault() {
+    assertThat(powerManager.isAmbientDisplayAvailable()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isAmbientDisplayAvailable_setAmbientDisplayAvailableToTrue_shouldReturnTrue() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    shadowPowerManager.setAmbientDisplayAvailable(true);
+
+    assertThat(powerManager.isAmbientDisplayAvailable()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isAmbientDisplayAvailable_setAmbientDisplayAvailableToFalse_shouldReturnFalse() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    shadowPowerManager.setAmbientDisplayAvailable(false);
+
+    assertThat(powerManager.isAmbientDisplayAvailable()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_suppress_shouldSuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test", true);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_suppressTwice_shouldSuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test", true);
+    powerManager.suppressAmbientDisplay("test", true);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_suppressTwiceThenUnsuppress_shouldUnsuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test", true);
+    powerManager.suppressAmbientDisplay("test", true);
+
+    powerManager.suppressAmbientDisplay("test", false);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_suppressMultipleTokens_shouldSuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test1", true);
+    powerManager.suppressAmbientDisplay("test2", true);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void
+      suppressAmbientDisplay_suppressMultipleTokens_unsuppressOnlyOne_shouldKeepAmbientDisplaySuppressed() {
+    powerManager.suppressAmbientDisplay("test1", true);
+    powerManager.suppressAmbientDisplay("test2", true);
+
+    powerManager.suppressAmbientDisplay("test1", false);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_unsuppress_shouldUnsuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test", true);
+
+    powerManager.suppressAmbientDisplay("test", false);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_unsuppressTwice_shouldUnsuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test", true);
+
+    powerManager.suppressAmbientDisplay("test", false);
+    powerManager.suppressAmbientDisplay("test", false);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void suppressAmbientDisplay_unsuppressMultipleTokens_shouldUnsuppressAmbientDisplay() {
+    powerManager.suppressAmbientDisplay("test1", true);
+    powerManager.suppressAmbientDisplay("test2", true);
+
+    powerManager.suppressAmbientDisplay("test1", false);
+    powerManager.suppressAmbientDisplay("test2", false);
+
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isAmbientDisplaySuppressed_default_shouldReturnFalse() {
+    assertThat(powerManager.isAmbientDisplaySuppressed()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isRebootingUserspaceSupported_default_shouldReturnFalse() {
+    assertThat(powerManager.isRebootingUserspaceSupported()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isRebootingUserspaceSupported_setToTrue_shouldReturnTrue() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    shadowPowerManager.setIsRebootingUserspaceSupported(true);
+    assertThat(powerManager.isRebootingUserspaceSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void
+      userspaceReboot_rebootingUserspaceNotSupported_shouldThrowUnsuportedOperationException() {
+    try {
+      powerManager.reboot("userspace");
+      fail("UnsupportedOperationException expected");
+    } catch (UnsupportedOperationException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void userspaceReboot_rebootingUserspaceSupported_shouldReboot() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    shadowPowerManager.setIsRebootingUserspaceSupported(true);
+    powerManager.reboot("userspace");
+    assertThat(shadowPowerManager.getRebootReasons()).contains("userspace");
+  }
+
+  @Test
+  @Config(maxSdk = Q)
+  public void preR_userspaceReboot_shouldReboot() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    powerManager.reboot("userspace");
+    assertThat(shadowPowerManager.getRebootReasons()).contains("userspace");
   }
 }

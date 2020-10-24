@@ -14,6 +14,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
@@ -25,6 +26,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Unit tests for {@link ShadowBluetoothAdapter}
@@ -87,6 +90,22 @@ public class ShadowBluetoothAdapterTest {
   public void canGetBluetoothLeScanner() throws Exception {
     BluetoothLeScanner bluetoothLeScanner = bluetoothAdapter.getBluetoothLeScanner();
     assertThat(bluetoothLeScanner).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void canGetBluetoothLeAdvertiser() throws Exception {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    Class<?> iBluetoothManagerClass =
+        Shadow.class.getClassLoader().loadClass("android.bluetooth.IBluetoothManager");
+    shadowOf(adapter)
+        .setBluetoothLeAdvertiser(
+            Shadow.newInstance(
+                BluetoothLeAdvertiser.class,
+                new Class<?>[] {iBluetoothManagerClass},
+                new Object[] {null}));
+    BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
+    assertThat(bluetoothLeAdvertiser).isNotNull();
   }
 
   @Test
@@ -166,7 +185,13 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void scanMode_withDiscoverableTimeout() {
     assertThat(
-            bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, 42))
+            (boolean)
+                ReflectionHelpers.callInstanceMethod(
+                    bluetoothAdapter,
+                    "setScanMode",
+                    ClassParameter.from(
+                        int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE),
+                    ClassParameter.from(int.class, 42)))
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);

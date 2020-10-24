@@ -93,6 +93,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -108,13 +109,16 @@ public class ShadowPackageManager {
 
   @RealObject PackageManager realPackageManager;
 
+  static final Object lock = new Object();
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
   static final List<String> systemSharedLibraryNames = new ArrayList<>();
-  static final Map<String, PackageInfo> packageInfos =
-      Collections.synchronizedMap(new LinkedHashMap<>());
-  static final Map<String, ModuleInfo> moduleInfos =
-      Collections.synchronizedMap(new LinkedHashMap<>());
+
+  @GuardedBy("lock")
+  static final Map<String, PackageInfo> packageInfos = new LinkedHashMap<>();
+
+  @GuardedBy("lock")
+  static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
@@ -354,47 +358,49 @@ public class ShadowPackageManager {
       BiConsumer<PackageInfo, C[]> componentsSetter,
       C newComponent,
       boolean updateIfExists) {
-    String packageName = newComponent.packageName;
-    if (packageName == null && newComponent.applicationInfo != null) {
-      packageName = newComponent.applicationInfo.packageName;
-    }
-    if (packageName == null) {
-      throw new IllegalArgumentException("Component needs a package name");
-    }
-    if (newComponent.name == null) {
-      throw new IllegalArgumentException("Component needs a name");
-    }
-    PackageInfo packageInfo = packageInfos.get(packageName);
-    if (packageInfo == null) {
-      packageInfo = new PackageInfo();
-      packageInfo.packageName = packageName;
-      packageInfo.applicationInfo = newComponent.applicationInfo;
-      installPackage(packageInfo);
-      packageInfo = packageInfos.get(packageName);
-    }
-    newComponent.applicationInfo = packageInfo.applicationInfo;
-    C[] components = componentArrayInPackage.apply(packageInfo);
-    if (components == null) {
-      @SuppressWarnings("unchecked")
-      C[] newComponentArray = (C[]) Array.newInstance(newComponent.getClass(), 0);
-      components = newComponentArray;
-    } else {
-      for (int i = 0; i < components.length; i++) {
-        if (newComponent.name.equals(components[i].name)) {
-          if (updateIfExists) {
-            components[i] = newComponent;
+    synchronized (lock) {
+      String packageName = newComponent.packageName;
+      if (packageName == null && newComponent.applicationInfo != null) {
+        packageName = newComponent.applicationInfo.packageName;
+      }
+      if (packageName == null) {
+        throw new IllegalArgumentException("Component needs a package name");
+      }
+      if (newComponent.name == null) {
+        throw new IllegalArgumentException("Component needs a name");
+      }
+      PackageInfo packageInfo = packageInfos.get(packageName);
+      if (packageInfo == null) {
+        packageInfo = new PackageInfo();
+        packageInfo.packageName = packageName;
+        packageInfo.applicationInfo = newComponent.applicationInfo;
+        installPackage(packageInfo);
+        packageInfo = packageInfos.get(packageName);
+      }
+      newComponent.applicationInfo = packageInfo.applicationInfo;
+      C[] components = componentArrayInPackage.apply(packageInfo);
+      if (components == null) {
+        @SuppressWarnings("unchecked")
+        C[] newComponentArray = (C[]) Array.newInstance(newComponent.getClass(), 0);
+        components = newComponentArray;
+      } else {
+        for (int i = 0; i < components.length; i++) {
+          if (newComponent.name.equals(components[i].name)) {
+            if (updateIfExists) {
+              components[i] = newComponent;
+            }
+            return components[i];
           }
-          return components[i];
         }
       }
-    }
-    components = Arrays.copyOf(components, components.length + 1);
-    componentsSetter.accept(packageInfo, components);
-    components[components.length - 1] = newComponent;
+      components = Arrays.copyOf(components, components.length + 1);
+      componentsSetter.accept(packageInfo, components);
+      components[components.length - 1] = newComponent;
 
-    filtersMap.put(
-        new ComponentName(newComponent.packageName, newComponent.name), new ArrayList<>());
-    return newComponent;
+      filtersMap.put(
+          new ComponentName(newComponent.packageName, newComponent.name), new ArrayList<>());
+      return newComponent;
+    }
   }
 
   @Nullable
@@ -403,31 +409,33 @@ public class ShadowPackageManager {
       SortedMap<ComponentName, List<IntentFilter>> filtersMap,
       Function<PackageInfo, C[]> componentArrayInPackage,
       BiConsumer<PackageInfo, C[]> componentsSetter) {
-    filtersMap.remove(componentName);
-    String packageName = componentName.getPackageName();
-    PackageInfo packageInfo = packageInfos.get(packageName);
-    if (packageInfo == null) {
-      return null;
-    }
-    C[] components = componentArrayInPackage.apply(packageInfo);
-    if (components == null) {
-      return null;
-    }
-    for (int i = 0; i < components.length; i++) {
-      C component = components[i];
-      if (componentName.getClassName().equals(component.name)) {
-        C[] newComponents;
-        if (components.length == 1) {
-          newComponents = null;
-        } else {
-          newComponents = Arrays.copyOf(components, components.length - 1);
-          System.arraycopy(components, i + 1, newComponents, i, components.length - i - 1);
-        }
-        componentsSetter.accept(packageInfo, newComponents);
-        return component;
+    synchronized (lock) {
+      filtersMap.remove(componentName);
+      String packageName = componentName.getPackageName();
+      PackageInfo packageInfo = packageInfos.get(packageName);
+      if (packageInfo == null) {
+        return null;
       }
+      C[] components = componentArrayInPackage.apply(packageInfo);
+      if (components == null) {
+        return null;
+      }
+      for (int i = 0; i < components.length; i++) {
+        C component = components[i];
+        if (componentName.getClassName().equals(component.name)) {
+          C[] newComponents;
+          if (components.length == 1) {
+            newComponents = null;
+          } else {
+            newComponents = Arrays.copyOf(components, components.length - 1);
+            System.arraycopy(components, i + 1, newComponents, i, components.length - i - 1);
+          }
+          componentsSetter.accept(packageInfo, newComponents);
+          return component;
+        }
+      }
+      return null;
     }
-    return null;
   }
 
   /**
@@ -707,19 +715,21 @@ public class ShadowPackageManager {
    * <p>In order to create ModuleInfo objects in a valid state please use {@link ModuleInfoBuilder}.
    */
   public void installModule(Object moduleInfoObject) {
-    ModuleInfo moduleInfo = (ModuleInfo) moduleInfoObject;
-    if (moduleInfo != null) {
-      moduleInfos.put(moduleInfo.getPackageName(), moduleInfo);
-      // Checking to see if package exists in the system
-      if (packageInfos.get(moduleInfo.getPackageName()) == null) {
-        ApplicationInfo applicationInfo = new ApplicationInfo();
-        applicationInfo.packageName = moduleInfo.getPackageName();
-        applicationInfo.name = moduleInfo.getName().toString();
+    synchronized (lock) {
+      ModuleInfo moduleInfo = (ModuleInfo) moduleInfoObject;
+      if (moduleInfo != null) {
+        moduleInfos.put(moduleInfo.getPackageName(), moduleInfo);
+        // Checking to see if package exists in the system
+        if (packageInfos.get(moduleInfo.getPackageName()) == null) {
+          ApplicationInfo applicationInfo = new ApplicationInfo();
+          applicationInfo.packageName = moduleInfo.getPackageName();
+          applicationInfo.name = moduleInfo.getName().toString();
 
-        PackageInfo packageInfo = new PackageInfo();
-        packageInfo.applicationInfo = applicationInfo;
-        packageInfo.packageName = moduleInfo.getPackageName();
-        installPackage(packageInfo);
+          PackageInfo packageInfo = new PackageInfo();
+          packageInfo.applicationInfo = applicationInfo;
+          packageInfo.packageName = moduleInfo.getPackageName();
+          installPackage(packageInfo);
+        }
       }
     }
   }
@@ -734,8 +744,10 @@ public class ShadowPackageManager {
    * @return deleted module of {@code null} if no module with this name exists.
    */
   public Object deleteModule(String packageName) {
-    // Removes the accompanying package installed with the module
-    return moduleInfos.remove(packageName);
+    synchronized (lock) {
+      // Removes the accompanying package installed with the module
+      return moduleInfos.remove(packageName);
+    }
   }
 
   /**
@@ -804,25 +816,27 @@ public class ShadowPackageManager {
   /**
    * Installs a package with its stats with the {@link PackageManager}.
    *
-   * This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
+   * <p>This method doesn't add any defaults to the {@code packageInfo} parameters. You should make
    * sure it is valid (see {@link #installPackage(PackageInfo)}).
    */
-  public synchronized void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
-    if (packageInfo.applicationInfo != null
-        && (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0) {
-      Log.w(TAG, "Adding not installed package: " + packageInfo.packageName);
-    }
-    Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
+  public void addPackage(PackageInfo packageInfo, PackageStats packageStats) {
+    synchronized (lock) {
+      if (packageInfo.applicationInfo != null
+          && (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0) {
+        Log.w(TAG, "Adding not installed package: " + packageInfo.packageName);
+      }
+      Preconditions.checkArgument(packageInfo.packageName.equals(packageStats.packageName));
 
-    packageInfos.put(packageInfo.packageName, packageInfo);
-    packageStatsMap.put(packageInfo.packageName, packageStats);
+      packageInfos.put(packageInfo.packageName, packageInfo);
+      packageStatsMap.put(packageInfo.packageName, packageStats);
 
-    packageSettings.put(packageInfo.packageName, new PackageSetting());
+      packageSettings.put(packageInfo.packageName, new PackageSetting());
 
-    applicationEnabledSettingMap.put(
-        packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
-    if (packageInfo.applicationInfo != null) {
-      namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      applicationEnabledSettingMap.put(
+          packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
+      if (packageInfo.applicationInfo != null) {
+        namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
+      }
     }
   }
 
@@ -861,7 +875,9 @@ public class ShadowPackageManager {
    * information according to provided flags. Don't use it to modify Robolectric state.
    */
   public PackageInfo getInternalMutablePackageInfo(String packageName) {
-    return packageInfos.get(packageName);
+    synchronized (lock) {
+      return packageInfos.get(packageName);
+    }
   }
 
   /** @deprecated Use {@link #getInternalMutablePackageInfo} instead. It has better name. */
@@ -907,9 +923,11 @@ public class ShadowPackageManager {
   }
 
   public void removePackage(String packageName) {
-    packageInfos.remove(packageName);
+    synchronized (lock) {
+      packageInfos.remove(packageName);
 
-    packageSettings.remove(packageName);
+      packageSettings.remove(packageName);
+    }
   }
 
   public void setSystemFeature(String name, boolean supported) {
@@ -1028,29 +1046,31 @@ public class ShadowPackageManager {
 
   @Implementation
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
-    if (packageArchiveInfo.containsKey(archiveFilePath)) {
-      return packageArchiveInfo.get(archiveFilePath);
-    }
-
-    List<PackageInfo> result = new ArrayList<>();
-    for (PackageInfo packageInfo : packageInfos.values()) {
-      if (applicationEnabledSettingMap.get(packageInfo.packageName)
-              != COMPONENT_ENABLED_STATE_DISABLED
-          || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
-        result.add(packageInfo);
+    synchronized (lock) {
+      if (packageArchiveInfo.containsKey(archiveFilePath)) {
+        return packageArchiveInfo.get(archiveFilePath);
       }
-    }
 
-    List<PackageInfo> packages = result;
-    for (PackageInfo aPackage : packages) {
-      ApplicationInfo appInfo = aPackage.applicationInfo;
-      if (appInfo != null && archiveFilePath.equals(appInfo.sourceDir)) {
-        return aPackage;
+      List<PackageInfo> result = new ArrayList<>();
+      for (PackageInfo packageInfo : packageInfos.values()) {
+        if (applicationEnabledSettingMap.get(packageInfo.packageName)
+                != COMPONENT_ENABLED_STATE_DISABLED
+            || (flags & MATCH_UNINSTALLED_PACKAGES) == MATCH_UNINSTALLED_PACKAGES) {
+          result.add(packageInfo);
+        }
       }
-    }
 
-    return Shadow.directlyOn(realPackageManager, PackageManager.class).getPackageArchiveInfo(
-        archiveFilePath, flags);
+      List<PackageInfo> packages = result;
+      for (PackageInfo aPackage : packages) {
+        ApplicationInfo appInfo = aPackage.applicationInfo;
+        if (appInfo != null && archiveFilePath.equals(appInfo.sourceDir)) {
+          return aPackage;
+        }
+      }
+
+      return Shadow.directlyOn(realPackageManager, PackageManager.class)
+          .getPackageArchiveInfo(archiveFilePath, flags);
+    }
   }
 
   @Implementation
@@ -1064,13 +1084,15 @@ public class ShadowPackageManager {
    * PackageManager#MATCH_UNINSTALLED_PACKAGES}.
    */
   public void deletePackage(String packageName) {
-    deletedPackages.add(packageName);
-    packageInfos.remove(packageName);
-    mapForPackage(activityFilters, packageName).clear();
-    mapForPackage(serviceFilters, packageName).clear();
-    mapForPackage(providerFilters, packageName).clear();
-    mapForPackage(receiverFilters, packageName).clear();
-    moduleInfos.remove(packageName);
+    synchronized (lock) {
+      deletedPackages.add(packageName);
+      packageInfos.remove(packageName);
+      mapForPackage(activityFilters, packageName).clear();
+      mapForPackage(serviceFilters, packageName).clear();
+      mapForPackage(providerFilters, packageName).clear();
+      mapForPackage(receiverFilters, packageName).clear();
+      moduleInfos.remove(packageName);
+    }
   }
 
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
@@ -1082,34 +1104,36 @@ public class ShadowPackageManager {
    * IPackageDeleteObserver, int)}
    */
   public void doPendingUninstallCallbacks() {
-    boolean hasDeletePackagesPermission = false;
-    String[] requestedPermissions =
-        packageInfos.get(RuntimeEnvironment.application.getPackageName()).requestedPermissions;
-    if (requestedPermissions != null) {
-      for (String permission : requestedPermissions) {
-        if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
-          hasDeletePackagesPermission = true;
-          break;
+    synchronized (lock) {
+      boolean hasDeletePackagesPermission = false;
+      String[] requestedPermissions =
+          packageInfos.get(RuntimeEnvironment.application.getPackageName()).requestedPermissions;
+      if (requestedPermissions != null) {
+        for (String permission : requestedPermissions) {
+          if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {
+            hasDeletePackagesPermission = true;
+            break;
+          }
         }
       }
-    }
 
-    for (String packageName : pendingDeleteCallbacks.keySet()) {
-      int resultCode = PackageManager.DELETE_FAILED_INTERNAL_ERROR;
+      for (String packageName : pendingDeleteCallbacks.keySet()) {
+        int resultCode = PackageManager.DELETE_FAILED_INTERNAL_ERROR;
 
-      PackageInfo removed = packageInfos.get(packageName);
-      if (hasDeletePackagesPermission && removed != null) {
-        deletePackage(packageName);
-        resultCode = PackageManager.DELETE_SUCCEEDED;
+        PackageInfo removed = packageInfos.get(packageName);
+        if (hasDeletePackagesPermission && removed != null) {
+          deletePackage(packageName);
+          resultCode = PackageManager.DELETE_SUCCEEDED;
+        }
+
+        try {
+          pendingDeleteCallbacks.get(packageName).packageDeleted(packageName, resultCode);
+        } catch (RemoteException e) {
+          throw new RuntimeException(e);
+        }
       }
-
-      try {
-        pendingDeleteCallbacks.get(packageName).packageDeleted(packageName, resultCode);
-      } catch (RemoteException e) {
-        throw new RuntimeException(e);
-      }
+      pendingDeleteCallbacks.clear();
     }
-    pendingDeleteCallbacks.clear();
   }
 
   /**
@@ -1594,42 +1618,44 @@ public class ShadowPackageManager {
 
   @Resetter
   public static void reset() {
-    permissionRationaleMap.clear();
-    systemAvailableFeatures.clear();
-    systemSharedLibraryNames.clear();
-    packageInfos.clear();
-    packageArchiveInfo.clear();
-    packageStatsMap.clear();
-    packageInstallerMap.clear();
-    packagesForUid.clear();
-    uidForPackage.clear();
-    namesForUid.clear();
-    verificationResults.clear();
-    verificationTimeoutExtension.clear();
-    currentToCanonicalNames.clear();
-    canonicalToCurrentNames.clear();
-    componentList.clear();
-    drawableList.clear();
-    applicationIcons.clear();
-    unbadgedApplicationIcons.clear();
-    systemFeatureList.clear();
-    preferredActivities.clear();
-    persistentPreferredActivities.clear();
-    drawables.clear();
-    applicationEnabledSettingMap.clear();
-    extraPermissions.clear();
-    permissionGroups.clear();
-    resources.clear();
-    resolveInfoForIntent.clear();
-    deletedPackages.clear();
-    pendingDeleteCallbacks.clear();
-    hiddenPackages.clear();
-    sequenceNumberChangedPackagesMap.clear();
-    activityFilters.clear();
-    serviceFilters.clear();
-    providerFilters.clear();
-    receiverFilters.clear();
-    packageSettings.clear();
-    safeMode = false;
+    synchronized (lock) {
+      permissionRationaleMap.clear();
+      systemAvailableFeatures.clear();
+      systemSharedLibraryNames.clear();
+      packageInfos.clear();
+      packageArchiveInfo.clear();
+      packageStatsMap.clear();
+      packageInstallerMap.clear();
+      packagesForUid.clear();
+      uidForPackage.clear();
+      namesForUid.clear();
+      verificationResults.clear();
+      verificationTimeoutExtension.clear();
+      currentToCanonicalNames.clear();
+      canonicalToCurrentNames.clear();
+      componentList.clear();
+      drawableList.clear();
+      applicationIcons.clear();
+      unbadgedApplicationIcons.clear();
+      systemFeatureList.clear();
+      preferredActivities.clear();
+      persistentPreferredActivities.clear();
+      drawables.clear();
+      applicationEnabledSettingMap.clear();
+      extraPermissions.clear();
+      permissionGroups.clear();
+      resources.clear();
+      resolveInfoForIntent.clear();
+      deletedPackages.clear();
+      pendingDeleteCallbacks.clear();
+      hiddenPackages.clear();
+      sequenceNumberChangedPackagesMap.clear();
+      activityFilters.clear();
+      serviceFilters.clear();
+      providerFilters.clear();
+      receiverFilters.clear();
+      packageSettings.clear();
+      safeMode = false;
+    }
   }
 }

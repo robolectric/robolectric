@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.hardware.fingerprint.Fingerprint;
 import android.hardware.fingerprint.FingerprintManager;
@@ -49,8 +50,14 @@ public class ShadowFingerprintManager {
   }
 
   protected AuthenticationResult createAuthenticationResult() {
-    if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
-      return new AuthenticationResult(pendingCryptoObject, null, 0);
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return new AuthenticationResult(pendingCryptoObject, null, 0, false);
+    } else if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
+      return ReflectionHelpers.callConstructor(
+          AuthenticationResult.class,
+          ClassParameter.from(CryptoObject.class, pendingCryptoObject),
+          ClassParameter.from(Fingerprint.class, null),
+          ClassParameter.from(int.class, 0));
     } else {
       return ReflectionHelpers.callConstructor(
           AuthenticationResult.class,

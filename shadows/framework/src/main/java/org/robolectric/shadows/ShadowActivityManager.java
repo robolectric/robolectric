@@ -5,16 +5,22 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
+import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
+import android.app.ApplicationExitInfo;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.UserHandle;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
@@ -26,7 +32,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(ActivityManager.class)
+/** Shadow for {@link android.app.ActivityManager} */
+@Implements(value = ActivityManager.class, looseSignatures = true)
 public class ShadowActivityManager {
   private int memoryClass = 16;
   private String backgroundPackage;
@@ -40,6 +47,8 @@ public class ShadowActivityManager {
   private Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
   private boolean isBackgroundRestricted;
+  private final Deque<Object> appExitInfoList = new ArrayDeque<>();
+  private ConfigurationInfo configurationInfo;
 
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
@@ -154,12 +163,18 @@ public class ShadowActivityManager {
 
   @Implementation
   protected android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
-    return new ConfigurationInfo();
+    return configurationInfo == null ? new ConfigurationInfo() : configurationInfo;
   }
 
   /**
-   * @param tasks List of running tasks.
+   * Sets the {@link android.content.pm.ConfigurationInfo} returned by {@link
+   * ActivityManager#getDeviceConfigurationInfo()}, but has no effect otherwise.
    */
+  public void setDeviceConfigurationInfo(ConfigurationInfo configurationInfo) {
+    this.configurationInfo = configurationInfo;
+  }
+
+  /** @param tasks List of running tasks. */
   public void setTasks(List<ActivityManager.RunningTaskInfo> tasks) {
     this.tasks.clear();
     this.tasks.addAll(tasks);
@@ -176,39 +191,29 @@ public class ShadowActivityManager {
     this.appTasks.addAll(appTasks);
   }
 
-  /**
-   * @param services List of running services.
-   */
+  /** @param services List of running services. */
   public void setServices(List<ActivityManager.RunningServiceInfo> services) {
     this.services.clear();
     this.services.addAll(services);
   }
 
-  /**
-   * @param processes List of running processes.
-   */
+  /** @param processes List of running processes. */
   public void setProcesses(List<ActivityManager.RunningAppProcessInfo> processes) {
     ShadowActivityManager.processes.clear();
     ShadowActivityManager.processes.addAll(processes);
   }
 
-  /**
-   * @return Get the package name of the last background processes killed.
-   */
+  /** @return Get the package name of the last background processes killed. */
   public String getBackgroundPackage() {
     return backgroundPackage;
   }
 
-  /**
-   * @param memoryClass Set the application's memory class.
-   */
+  /** @param memoryClass Set the application's memory class. */
   public void setMemoryClass(int memoryClass) {
     this.memoryClass = memoryClass;
   }
 
-  /**
-   * @param memoryInfo Set the application's memory info.
-   */
+  /** @param memoryInfo Set the application's memory info. */
   public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
     this.memoryInfo = memoryInfo;
   }
@@ -226,9 +231,7 @@ public class ShadowActivityManager {
     return directlyOn(realObject, ActivityManager.class, "isLowRamDevice");
   }
 
-  /**
-   * Override the return value of isLowRamDevice().
-   */
+  /** Override the return value of isLowRamDevice(). */
   public void setIsLowRamDevice(boolean isLowRamDevice) {
     isLowRamDeviceOverride = isLowRamDevice;
   }
@@ -256,19 +259,41 @@ public class ShadowActivityManager {
     processes.clear();
   }
 
-  /**
-   * Returns the background restricion state set by {@link #setBackgroundRestricted}.
-   */
+  /** Returns the background restriction state set by {@link #setBackgroundRestricted}. */
   @Implementation(minSdk = P)
   protected boolean isBackgroundRestricted() {
     return isBackgroundRestricted;
   }
 
   /**
-   * Sets the background restriction state reported by
-   * {@link ActivityManager#isBackgroundRestricted}, but has no effect otherwise.
+   * Sets the background restriction state reported by {@link
+   * ActivityManager#isBackgroundRestricted}, but has no effect otherwise.
    */
   public void setBackgroundRestricted(boolean isBackgroundRestricted) {
     this.isBackgroundRestricted = isBackgroundRestricted;
+  }
+
+  /**
+   * Returns the matched {@link ApplicationExitInfo} added by {@link #addApplicationExitInfo}.
+   * {@code packageName} is ignored.
+   */
+  @Implementation(minSdk = R)
+  protected Object getHistoricalProcessExitReasons(Object packageName, Object pid, Object maxNum) {
+    return appExitInfoList.stream()
+        .filter(
+            appExitInfo ->
+                (int) pid == 0 || ((ApplicationExitInfo) appExitInfo).getPid() == (int) pid)
+        .limit((int) maxNum == 0 ? appExitInfoList.size() : (int) maxNum)
+        .collect(toCollection(ArrayList::new));
+  }
+
+  /** Adds an {@link ApplicationExitInfo} with the given information */
+  public void addApplicationExitInfo(String processName, int pid, int reason, int status) {
+    ApplicationExitInfo appExitInfo = new ApplicationExitInfo();
+    appExitInfo.setProcessName(processName);
+    appExitInfo.setPid(pid);
+    appExitInfo.setReason(reason);
+    appExitInfo.setStatus(status);
+    appExitInfoList.addFirst(appExitInfo);
   }
 }

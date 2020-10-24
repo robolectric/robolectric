@@ -15,10 +15,15 @@ import org.robolectric.annotation.Resetter;
 @Implements(android.os.Process.class)
 public class ShadowProcess {
   private static int pid;
-  private static int uid = getRandomApplicationUid();
+  private static final int UID = getRandomApplicationUid();
+  private static Integer uidOverride;
   private static int tid = getRandomApplicationUid();
   private static final Object threadPrioritiesLock = new Object();
   private static final Object killedProcessesLock = new Object();
+  // The range of thread priority values is specified by
+  // android.os.Process#setThreadPriority(int, int), which is [-20,19].
+  private static final int THREAD_PRIORITY_HIGHEST = -20;
+  private static final int THREAD_PRIORITY_LOWEST = 19;
 
   @GuardedBy("threadPrioritiesLock")
   private static final Map<Integer, Integer> threadPriorities = new HashMap<Integer, Integer>();
@@ -51,7 +56,10 @@ public class ShadowProcess {
    */
   @Implementation
   protected static final int myUid() {
-    return uid;
+    if (uidOverride != null) {
+      return uidOverride;
+    }
+    return UID;
   }
 
   /**
@@ -80,14 +88,18 @@ public class ShadowProcess {
    *
    * @param tid The identifier of the thread. If equals zero, the identifier of the calling thread
    *     will be used.
+   * @param priority The priority to be set for the thread. The range of values accepted is
+   *     specified by {@link android.os.Process#setThreadPriority(int, int)}, which is [-20,19].
    */
   @Implementation
   protected static final void setThreadPriority(int tid, int priority) {
     checkArgument(
-        priority >= android.os.Process.THREAD_PRIORITY_URGENT_AUDIO
-            && priority <= android.os.Process.THREAD_PRIORITY_LOWEST,
-        "priority %s out of range. Use a Process.THREAD_PRIORITY_* constant.",
-        priority);
+        priority >= THREAD_PRIORITY_HIGHEST && priority <= THREAD_PRIORITY_LOWEST,
+        "priority %s out of range [%s, %s]. It is recommended to use a Process.THREAD_PRIORITY_*"
+            + " constant.",
+        priority,
+        Integer.toString(THREAD_PRIORITY_HIGHEST),
+        Integer.toString(THREAD_PRIORITY_LOWEST));
 
     if (tid == 0) {
       tid = ShadowProcess.myTid();
@@ -123,7 +135,7 @@ public class ShadowProcess {
    * Sets the identifier of this process.
    */
   public static void setUid(int uid) {
-    ShadowProcess.uid = uid;
+    ShadowProcess.uidOverride = uid;
   }
 
   /**
@@ -142,6 +154,7 @@ public class ShadowProcess {
     }
     // We cannot re-randomize uid, because it would break code that statically depends on
     // android.os.Process.myUid(), which persists between tests.
+    ShadowProcess.uidOverride = null;
   }
 
   static int getRandomApplicationUid() {

@@ -19,6 +19,7 @@ import org.robolectric.res.builder.XmlBlock;
 import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Util;
 
+/** Instruments the Android jars */
 public class AndroidConfigurer {
 
   private final ShadowProviders shadowProviders;
@@ -86,6 +87,8 @@ public class AndroidConfigurer {
             "scala.") //  run with Maven Surefire (see the RoboSpecs project on github)
         .doNotAcquirePackage("kotlin.")
         .doNotAcquirePackage("io.mockk.")
+        .doNotAcquirePackage("org.bouncycastle.")
+        .doNotAcquirePackage("org.conscrypt.")
         // Fix #958: SQLite native library must be loaded once.
         .doNotAcquirePackage("com.almworks.sqlite4java")
         .doNotAcquirePackage("org.jacoco.");
@@ -123,6 +126,7 @@ public class AndroidConfigurer {
     builder.doNotInstrumentPackage("androidx.lifecycle");
     builder.doNotInstrumentPackage("androidx.paging");
     builder.doNotInstrumentPackage("androidx.work");
+    builder.doNotInstrumentPackage("androidx.datastore");
 
     // exclude Compose libraries from instrumentation. These are written in Kotlin and
     // fail on any usage due to DefaultConstructorMarker being inaccessible.
@@ -131,6 +135,10 @@ public class AndroidConfigurer {
 
     builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
+
+    // Mockito's MockMethodDispatcher must only exist in the Bootstrap class loader.
+    builder.doNotAcquireClass(
+        "org.mockito.internal.creation.bytebuddy.inject.MockMethodDispatcher");
 
     for (String packagePrefix : shadowProviders.getInstrumentedPackages()) {
       builder.addInstrumentedPackage(packagePrefix);

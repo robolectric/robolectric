@@ -38,12 +38,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.pluginapi.AccessibilityChecker;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
-import org.robolectric.util.inject.Injector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -353,8 +351,6 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
-
-    getAccessibilityChecker().checkViewAccessibility(realView);
     boolean res = realView.performClick();
     shadowMainLooper().idleIfPaused();
     return res;
@@ -692,26 +688,5 @@ public class ShadowView {
 
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
-  }
-
-  /**
-   * Remove after 4.4.
-   * @deprecated Transitional use only.
-   */
-  @Deprecated
-  private static AccessibilityChecker accessibilityChecker;
-
-  /**
-   * Remove after 4.4.
-   * @deprecated Transitional use only.
-   */
-  @Deprecated
-  private static synchronized AccessibilityChecker getAccessibilityChecker() {
-    if (accessibilityChecker == null) {
-      // This isn't how Injector is intended to be used, but this will disappear soon.
-      // Please don't cargo-cult.
-      accessibilityChecker = new Injector().getInstance(AccessibilityChecker.class);
-    }
-    return accessibilityChecker;
   }
 }

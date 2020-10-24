@@ -46,4 +46,42 @@ public class ShadowNetworkTest {
     Network network = ShadowNetwork.newInstance(0);
     network.bindSocket(new FileDescriptor());
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void isSocketBoundSocketDatagramSocket() throws Exception {
+    Network network = ShadowNetwork.newInstance(0);
+    DatagramSocket datagramSocket = new DatagramSocket();
+
+    assertThat(Shadows.shadowOf(network).boundSocketCount()).isEqualTo(0);
+
+    network.bindSocket(datagramSocket);
+    assertThat(Shadows.shadowOf(network).isSocketBound(datagramSocket)).isTrue();
+    assertThat(Shadows.shadowOf(network).boundSocketCount()).isEqualTo(1);
+  }
+
+  @Test
+  public void isSocketBoundSocket() throws Exception {
+    Network network = ShadowNetwork.newInstance(0);
+    Socket socket = new Socket();
+
+    assertThat(Shadows.shadowOf(network).boundSocketCount()).isEqualTo(0);
+
+    network.bindSocket(socket);
+    assertThat(Shadows.shadowOf(network).isSocketBound(socket)).isTrue();
+    assertThat(Shadows.shadowOf(network).boundSocketCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void isSocketBoundFileDescriptor() throws Exception {
+    Network network = ShadowNetwork.newInstance(0);
+    FileDescriptor fileDescriptor = new FileDescriptor();
+
+    assertThat(Shadows.shadowOf(network).boundSocketCount()).isEqualTo(0);
+
+    network.bindSocket(fileDescriptor);
+    assertThat(Shadows.shadowOf(network).isSocketBound(fileDescriptor)).isTrue();
+    assertThat(Shadows.shadowOf(network).boundSocketCount()).isEqualTo(1);
+  }
 }

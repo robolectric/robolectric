@@ -26,6 +26,8 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Tests for {@link ShadowMediaController}. */
 @RunWith(AndroidJUnit4.class)
@@ -40,7 +42,9 @@ public final class ShadowMediaControllerTest {
   public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
     ISessionController binder = mock(ISessionController.class);
-    MediaSession.Token token = new MediaSession.Token(binder);
+    MediaSession.Token token =
+        ReflectionHelpers.callConstructor(
+            MediaSession.Token.class, ClassParameter.from(ISessionController.class, binder));
     mediaController = new MediaController(context, token);
     shadowMediaController = Shadow.extract(mediaController);
   }

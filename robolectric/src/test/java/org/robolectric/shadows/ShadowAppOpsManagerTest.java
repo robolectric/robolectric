@@ -16,6 +16,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowAppOpsManager.DURATION;
+import static org.robolectric.shadows.ShadowAppOpsManager.OP_TIME;
 
 import android.app.AppOpsManager;
 import android.app.AppOpsManager.OnOpChangedListener;
@@ -35,6 +37,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Unit tests for {@link ShadowAppOpsManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -47,7 +51,8 @@ public class ShadowAppOpsManagerTest {
   private static final int UID_2 = 10001;
 
   // Can be used as an argument of getOpsForPackage().
-  private static final int[] NO_OP_FILTER = null;
+  private static final int[] NO_OP_FILTER_BY_NUMBER = null;
+  private static final String[] NO_OP_FILTER_BY_NAME = null;
 
   private AppOpsManager appOps;
 
@@ -67,7 +72,13 @@ public class ShadowAppOpsManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.P)
   public void setMode_withModeDefault_atLeastP_checkOpNoThrow_shouldReturnModeDefault() {
-    appOps.setMode(OPSTR_GPS, UID_1, PACKAGE_NAME1, MODE_DEFAULT);
+    ReflectionHelpers.callInstanceMethod(
+        appOps,
+        "setMode",
+        ClassParameter.from(int.class, OP_GPS),
+        ClassParameter.from(int.class, UID_1),
+        ClassParameter.from(String.class, PACKAGE_NAME1),
+        ClassParameter.from(int.class, MODE_DEFAULT));
     assertThat(appOps.checkOpNoThrow(OPSTR_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
   }
 
@@ -103,22 +114,40 @@ public class ShadowAppOpsManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void noModeSet_atLeastO_noteProxyOpNoThrow_shouldReturnModeAllowed() {
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+    int result =
+        ReflectionHelpers.callInstanceMethod(
+            appOps,
+            "noteProxyOpNoThrow",
+            ClassParameter.from(int.class, OP_GPS),
+            ClassParameter.from(String.class, PACKAGE_NAME1));
+    assertThat(result).isEqualTo(MODE_ALLOWED);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void setMode_withModeDefault_atLeastO_noteProxyOpNoThrow_shouldReturnModeDefault() {
-    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
+    ReflectionHelpers.callInstanceMethod(
+        appOps,
+        "setMode",
+        ClassParameter.from(int.class, OP_GPS),
+        ClassParameter.from(int.class, Binder.getCallingUid()),
+        ClassParameter.from(String.class, PACKAGE_NAME1),
+        ClassParameter.from(int.class, MODE_DEFAULT));
+    int result =
+        ReflectionHelpers.callInstanceMethod(
+            appOps,
+            "noteProxyOpNoThrow",
+            ClassParameter.from(int.class, OP_GPS),
+            ClassParameter.from(String.class, PACKAGE_NAME1));
+    assertThat(result).isEqualTo(MODE_DEFAULT);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.P, maxSdk = VERSION_CODES.Q)
   public void setMode_noteProxyOpNoThrow_atLeastO() {
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
-    assertThat(appOps.noteProxyOpNoThrow(OP_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
   }
 
   @Test
@@ -144,8 +173,79 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void getOpsForPackageStr_noOps() {
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NAME);
+    assertOps(results);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void getOpsForPackageStr_hasOps() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
+
+    // PACKAGE_NAME1 has ops.
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NAME);
+    assertOps(results, OP_GPS, OP_SEND_SMS);
+
+    // PACKAGE_NAME2 has no ops.
+    results = appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER_BY_NAME);
+    assertOps(results);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void getOpsForPackageStr_withOpFilter() {
+    List<PackageOps> results =
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS});
+    assertOps(results);
+
+    appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS});
+    assertOps(results);
+
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS});
+    assertOps(results, OP_GPS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void getOpsForPackageStr_withOpFilter_withMeaninglessString() {
+    List<PackageOps> results =
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS, "something"});
+    assertOps(results);
+
+    appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS, "something"});
+    assertOps(results);
+
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS, "something"});
+    assertOps(results, OP_GPS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void getOpsForPackageStr_ensureTime() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NAME);
+    assertThat(results.get(0).getOps().get(0).getTime()).isEqualTo(OP_TIME);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q) // Earlier versions return int rather than long for duration.
+  public void getOpsForPackageStr_ensureDuration() {
+    appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NAME);
+    assertThat(results.get(0).getOps().get(0).getDuration()).isEqualTo(DURATION);
+  }
+
+  @Test
   public void getOpsForPackage_noOps() {
-    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
+    List<PackageOps> results =
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NUMBER);
     assertOps(results);
   }
 
@@ -155,11 +255,12 @@ public class ShadowAppOpsManagerTest {
     appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
 
     // PACKAGE_NAME1 has ops.
-    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
+    List<PackageOps> results =
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NUMBER);
     assertOps(results, OP_GPS, OP_SEND_SMS);
 
     // PACKAGE_NAME2 has no ops.
-    results = appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER);
+    results = appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER_BY_NUMBER);
     assertOps(results);
   }
 
@@ -182,9 +283,10 @@ public class ShadowAppOpsManagerTest {
     appOps.noteOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1);
     appOps.noteOpNoThrow(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
 
-    assertOps(appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER), OP_GPS, OP_SEND_SMS);
+    assertOps(
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NUMBER), OP_GPS, OP_SEND_SMS);
 
-    assertOps(appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER));
+    assertOps(appOps.getOpsForPackage(UID_2, PACKAGE_NAME2, NO_OP_FILTER_BY_NUMBER));
 
     appOps.setMode(OP_GPS, UID_1, PACKAGE_NAME1, MODE_ERRORED);
     assertThat(appOps.noteOpNoThrow(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
@@ -193,16 +295,18 @@ public class ShadowAppOpsManagerTest {
   @Test
   public void getOpsForPackage_ensureTime() {
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
-    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
-    assertThat(results.get(0).getOps().get(0).getTime()).isEqualTo(1400000000L);
+    List<PackageOps> results =
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NUMBER);
+    assertThat(results.get(0).getOps().get(0).getTime()).isEqualTo(OP_TIME);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.Q) // Earlier versions return int rather than long for duration.
   public void getOpsForPackage_ensureDuration() {
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
-    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER);
-    assertThat(results.get(0).getOps().get(0).getDuration()).isEqualTo(10L);
+    List<PackageOps> results =
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NUMBER);
+    assertThat(results.get(0).getOps().get(0).getDuration()).isEqualTo(DURATION);
   }
 
   @Test

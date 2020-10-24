@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -25,17 +26,21 @@ import android.os.Build.VERSION;
 import android.os.PersistableBundle;
 import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
+import android.telephony.Annotation.NetworkType;
+import android.telephony.Annotation.OverrideNetworkType;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -119,6 +124,8 @@ public class ShadowTelephonyManager {
   private boolean hearingAidCompatibilitySupported = false;
   private int requestCellInfoUpdateErrorCode = 0;
   private Throwable requestCellInfoUpdateDetail = null;
+  private Object telephonyDisplayInfo;
+  private boolean isDataConnectionAllowed;
 
   {
     resetSimStates();
@@ -328,7 +335,7 @@ public class ShadowTelephonyManager {
     return simCountryIsoMap.get(/* subId= */ 0);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = Q)
   @HiddenApi
   protected String getSimCountryIso(int subId) {
     return simCountryIsoMap.get(subId);
@@ -482,24 +489,31 @@ public class ShadowTelephonyManager {
   }
 
   /**
-   * Returns the value set by {@link #setCallbackCellInfos}, defaulting to calling the real
-   * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
+   * Returns the value set by {@link #setCallbackCellInfos}, defaulting to calling the real {@link
+   * TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
    */
   @Implementation(minSdk = Q)
-  protected void requestCellInfoUpdate(Executor executor, CellInfoCallback callback) {
+  protected void requestCellInfoUpdate(Object cellInfoExecutor, Object cellInfoCallback) {
+    Executor executor = (Executor) cellInfoExecutor;
     if (callbackCellInfos == null) {
-      Shadow.directlyOn(realTelephonyManager, TelephonyManager.class).requestCellInfoUpdate(
-          executor, callback);
+      Shadow.directlyOn(realTelephonyManager, TelephonyManager.class)
+          .requestCellInfoUpdate(executor, (CellInfoCallback) cellInfoCallback);
     } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
       // perform the "failure" callback operation via the specified executor
       executor.execute(
           () -> {
+            // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
+            // referring to 'CellInfoCallback'.
+            CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
             callback.onError(requestCellInfoUpdateErrorCode, requestCellInfoUpdateDetail);
           });
     } else {
       // perform the "success" callback operation via the specified executor
       executor.execute(
           () -> {
+            // Must cast 'callback' inside the anonymous class to avoid NoClassDefFoundError when
+            // referring to 'CellInfoCallback'.
+            CellInfoCallback callback = (CellInfoCallback) cellInfoCallback;
             callback.onCellInfo(callbackCellInfos);
           });
     }
@@ -557,6 +571,11 @@ public class ShadowTelephonyManager {
     }
     if ((flags & LISTEN_CELL_LOCATION) != 0) {
       listener.onCellLocationChanged(cellLocation);
+    }
+
+    if (telephonyDisplayInfo != null
+        && ((flags & PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED) != 0)) {
+      listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
     }
   }
 
@@ -991,5 +1010,43 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = M)
   protected boolean isHearingAidCompatibilitySupported() {
     return hearingAidCompatibilitySupported;
+  }
+
+  /**
+   * Creates a {@link TelephonyDisplayInfo}.
+   *
+   * @param networkType The packet-switching cellular network type (see {@link NetworkType})
+   * @param overrideNetworkType The override network type (see {@link OverrideNetworkType})
+   */
+  public static Object createTelephonyDisplayInfo(
+      @NetworkType int networkType, @OverrideNetworkType int overrideNetworkType) {
+    return new TelephonyDisplayInfo(networkType, overrideNetworkType);
+  }
+
+  /**
+   * Sets the current {@link TelephonyDisplayInfo}, and notifies all the {@link PhoneStateListener}s
+   * that were registered with the {@link PhoneStateListener#LISTEN_DISPLAY_INFO_CHANGED} flag.
+   *
+   * @param telephonyDisplayInfo The {@link TelephonyDisplayInfo} to set. May not be null.
+   * @throws NullPointerException if telephonyDisplayInfo is null.
+   */
+  public void setTelephonyDisplayInfo(Object telephonyDisplayInfo) {
+    Preconditions.checkNotNull(telephonyDisplayInfo);
+    this.telephonyDisplayInfo = telephonyDisplayInfo;
+
+    for (PhoneStateListener listener :
+        getListenersForFlags(PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED)) {
+      listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
+    }
+  }
+
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected boolean isDataConnectionAllowed() {
+    return isDataConnectionAllowed;
+  }
+
+  public void setIsDataConnectionAllowed(boolean isDataConnectionAllowed) {
+    this.isDataConnectionAllowed = isDataConnectionAllowed;
   }
 }

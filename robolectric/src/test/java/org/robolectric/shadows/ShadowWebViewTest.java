@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.WebBackForwardList;
@@ -398,6 +399,30 @@ public class ShadowWebViewTest {
   }
 
   @Test
+  public void getFavicon() {
+    assertThat(webView.getFavicon()).isNull();
+  }
+
+  @Test
+  public void getFavicon_withMockFaviconSet_returnsMockFavicon() {
+    Bitmap emptyFavicon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
+    shadowOf(webView).setFavicon(emptyFavicon);
+    assertThat(webView.getFavicon()).isEqualTo(emptyFavicon);
+  }
+
+  @Test
+  public void getFavicon_withMockFaviconSetMultipleTimes_returnsCorrectMockFavicon() {
+    Bitmap emptyFavicon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+    Bitmap emptyFavicon2 = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+
+    shadowOf(webView).setFavicon(emptyFavicon);
+    assertThat(webView.getFavicon()).isEqualTo(emptyFavicon);
+    shadowOf(webView).setFavicon(emptyFavicon2);
+    assertThat(webView.getFavicon()).isEqualTo(emptyFavicon2);
+  }
+
+  @Test
   public void getOriginalUrl() {
     webView.clearHistory();
     assertThat(webView.getOriginalUrl()).isNull();
@@ -599,5 +624,42 @@ public class ShadowWebViewTest {
 
     assertThat(result.getType()).isEqualTo(HitTestResult.ANCHOR_TYPE);
     assertThat(result.getExtra()).isEqualTo("extra");
+  }
+
+  @Test
+  @Config(minSdk = 21)
+  public void canEnableSlowWholeDocumentDraw() {
+    WebView.enableSlowWholeDocumentDraw();
+  }
+
+  @Test
+  @Config(minSdk = 21)
+  public void canClearClientCertPreferences() {
+    WebView.clearClientCertPreferences(null);
+  }
+
+  @Test
+  @Config(minSdk = 27)
+  public void canStartSafeBrowsing() {
+    WebView.startSafeBrowsing(null, null);
+  }
+
+  @Test
+  @Config(minSdk = 27)
+  public void shouldReturnStoredUrlForGetSafeBrowsingPrivacyPolicyUrl() {
+    assertThat(WebView.getSafeBrowsingPrivacyPolicyUrl()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = 19)
+  public void canSetWebContentsDebuggingEnabled() {
+    WebView.setWebContentsDebuggingEnabled(false);
+    WebView.setWebContentsDebuggingEnabled(true);
+  }
+
+  @Test
+  @Config(minSdk = 28)
+  public void shouldReturnClassLoaderForGetWebViewClassLoader() {
+    assertThat(WebView.getWebViewClassLoader()).isNull();
   }
 }

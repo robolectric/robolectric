@@ -11,6 +11,9 @@ import android.app.Application;
 import android.app.WallpaperManager;
 import android.content.ComponentName;
 import android.graphics.Bitmap;
+import android.os.Binder;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
@@ -22,10 +25,12 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowWallpaperManager.WallpaperCommandRecord;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWallpaperManagerTest {
@@ -61,8 +66,33 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  public void sendWallpaperCommand_shouldNotThrowException() {
+  public void sendWallpaperCommand_shouldTrackRecord() {
     manager.sendWallpaperCommand(null, null, 0, 0, 0, null);
+
+    IBinder binder = new Binder();
+    Bundle bundle = new Bundle();
+    bundle.putString("key", "value");
+    manager.sendWallpaperCommand(binder, "action", 1, 2, 3, bundle);
+
+    List<WallpaperCommandRecord> records = shadowOf(manager).getWallpaperCommandRecords();
+
+    assertThat(records).hasSize(2);
+
+    WallpaperCommandRecord record0 = records.get(0);
+    assertThat(record0.windowToken).isNull();
+    assertThat(record0.action).isNull();
+    assertThat(record0.x).isEqualTo(0);
+    assertThat(record0.y).isEqualTo(0);
+    assertThat(record0.z).isEqualTo(0);
+    assertThat(record0.extras).isNull();
+
+    WallpaperCommandRecord record1 = records.get(1);
+    assertThat(record1.windowToken).isEqualTo(binder);
+    assertThat(record1.action).isEqualTo("action");
+    assertThat(record1.x).isEqualTo(1);
+    assertThat(record1.y).isEqualTo(2);
+    assertThat(record1.z).isEqualTo(3);
+    assertThat(record1.extras.getString("key")).isEqualTo("value");
   }
 
   @Test
@@ -363,11 +393,14 @@ public class ShadowWallpaperManagerTest {
 
   @Test
   @Config(minSdk = M)
-  public void setWallpaperComponent_liveWallpaperSet_shouldReturnLiveWallpaperComponent()
-      throws Exception {
+  public void
+      setWallpaperComponent_liveWallpaperSet_shouldReturnLiveWallpaperComponentAndUnsetStaticWallpapers()
+          throws Exception {
     manager.setWallpaperComponent(TEST_WALLPAPER_SERVICE);
 
     assertThat(manager.getWallpaperInfo().getComponent()).isEqualTo(TEST_WALLPAPER_SERVICE);
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_LOCK)).isNull();
+    assertThat(shadowOf(manager).getBitmap(WallpaperManager.FLAG_SYSTEM)).isNull();
   }
 
   @Test

@@ -16,12 +16,15 @@
 
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+
 import android.util.FloatMath;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
+/** Shadow for {@link FloatMath}. Prior to SDK 23, this was implemented using native methods. */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(FloatMath.class)
+@Implements(value = FloatMath.class, maxSdk = LOLLIPOP_MR1)
 public class ShadowFloatMath {
   @Implementation
   protected static float floor(float value) {

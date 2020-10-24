@@ -10,9 +10,10 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(value = TileService.class, minSdk = Build.VERSION_CODES.N)
-public final class ShadowTileService {
+public class ShadowTileService {
 
   private Tile tile;
+  private boolean isLocked = false;
   @RealObject private TileService realObject;
 
   @Implementation
@@ -23,10 +24,27 @@ public final class ShadowTileService {
     return tile;
   }
 
+  @Implementation
+  protected final void unlockAndRun(Runnable runnable) {
+    setLocked(false);
+    if (runnable != null) {
+      runnable.run();
+    }
+  }
+
   /** Starts an activity without collapsing the quick settings panel. */
   @Implementation
   protected void startActivityAndCollapse(Intent intent) {
     realObject.startActivity(intent);
+  }
+
+  @Implementation
+  protected boolean isLocked() {
+    return isLocked;
+  }
+
+  public void setLocked(boolean locked) {
+    this.isLocked = locked;
   }
 
   private static Tile createTile() {

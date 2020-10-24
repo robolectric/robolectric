@@ -3,7 +3,9 @@ package org.robolectric.integration_tests.axt;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.pressKey;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.action.ViewActions.typeTextIntoFocusedView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -11,6 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 
+import android.view.KeyEvent;
 import android.widget.Button;
 import android.widget.EditText;
 import androidx.test.annotation.UiThreadTest;
@@ -129,5 +132,14 @@ public final class EspressoTest {
 
     // Check that the text was changed.
     onView(withId(R.id.edit_text)).check(matches(withText("anything")));
+  }
+
+  @Test
+  public void changeText_addNewline() {
+    onView(withId(R.id.edit_text)).perform(typeText("Some text."));
+    onView(withId(R.id.edit_text)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
+    onView(withId(R.id.edit_text)).perform(typeTextIntoFocusedView("Other text."));
+
+    onView(withId(R.id.edit_text)).check(matches(withText("Some text.\nOther text.")));
   }
 }

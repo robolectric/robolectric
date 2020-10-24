@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -122,6 +123,7 @@ public class ShadowDevicePolicyManager {
   private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
   private boolean isDeviceProvisioned;
   private boolean isDeviceProvisioningConfigApplied;
+  private volatile boolean organizationOwnedDeviceWithManagedProfile = false;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -1267,5 +1269,25 @@ public class ShadowDevicePolicyManager {
   protected CharSequence getLongSupportMessage(ComponentName admin) {
     enforceActiveAdmin(admin);
     return longSupportMessageMap.get(admin);
+  }
+
+  /**
+   * Sets the return value of the {@link
+   * DevicePolicyManager#isOrganizationOwnedDeviceWithManagedProfile} method (only for Android R+).
+   */
+  public void setOrganizationOwnedDeviceWithManagedProfile(boolean value) {
+    organizationOwnedDeviceWithManagedProfile = value;
+  }
+
+  /**
+   * Returns the value stored using in the shadow, while the real method returns the value store on
+   * the device.
+   *
+   * <p>The value can be set by {@link #setOrganizationOwnedDeviceWithManagedProfile} and is {@code
+   * false} by default.
+   */
+  @Implementation(minSdk = R)
+  protected boolean isOrganizationOwnedDeviceWithManagedProfile() {
+    return organizationOwnedDeviceWithManagedProfile;
   }
 }

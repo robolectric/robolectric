@@ -167,6 +167,21 @@ jobs:
           path: build/reports
           destination: reports
 
+  test_30:
+    << : *job_config
+    steps:
+      - attach_workspace:
+          at: ~/code
+      - restore_cache:
+          key: cache-{{ checksum ".cache-hash" }}
+      - run_tests_for_sdks:
+          codenames: R
+          versions: "30"
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: build/reports
+          destination: reports
 
   finish:
     << : *job_config
@@ -179,9 +194,7 @@ jobs:
           name: Upload Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              # It'd be really nice to turn this back on again, but https://github.com/robolectric/robolectric/issues/5513
-              SKIP_JAVADOC=true \
-                ./gradlew upload --no-rebuild
+              ./gradlew upload --no-rebuild
             fi
 
 workflows:
@@ -205,6 +218,9 @@ workflows:
       - test_28_29:
           requires:
             - build
+      - test_30:
+          requires:
+            - build
       - finish:
           requires:
             - test_16_17_18
@@ -212,3 +228,5 @@ workflows:
             - test_23_24_25
             - test_26_27
             - test_28_29
+            - test_30
+

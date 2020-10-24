@@ -89,11 +89,18 @@ public class ShadowVoiceInteractionSession {
     return ImmutableList.copyOf(voiceActivityIntents);
   }
 
+  /**
+   * Returns whether the window from {@link VoiceInteractionSession} is currently visible. Although
+   * window is visible this method does not check whether UI content of window is also showed.
+   */
+  public boolean isWindowVisible() {
+    return ReflectionHelpers.getField(realSession, "mWindowVisible");
+  }
+
   /** Returns whether the UI window from {@link VoiceInteractionSession} is currently showing. */
   public boolean isWindowShowing() {
-    boolean windowVisible = ReflectionHelpers.getField(realSession, "mWindowVisible");
     Dialog window = ReflectionHelpers.getField(realSession, "mWindow");
-    return windowVisible && window != null && window.isShowing();
+    return isWindowVisible() && window != null && window.isShowing();
   }
 
   /**

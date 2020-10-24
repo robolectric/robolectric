@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
@@ -16,14 +17,17 @@ import android.media.MediaCodec.CodecException;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
+import com.google.common.annotations.VisibleForTesting;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -48,7 +52,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = MediaCodec.class, minSdk = JELLY_BEAN, looseSignatures = true)
 public class ShadowMediaCodec {
   private static final int DEFAULT_BUFFER_SIZE = 512;
-  private static final int BUFFER_COUNT = 10;
+  @VisibleForTesting static final int BUFFER_COUNT = 10;
 
   // Must keep in sync with MediaCodec.java
   private static final int EVENT_CALLBACK = 1;
@@ -90,8 +94,14 @@ public class ShadowMediaCodec {
   @Nullable private MediaFormat pendingOutputFormat;
   @Nullable private MediaFormat outputFormat;
 
-  private final BlockingQueue<Integer> inputBufferAvailableIndexes = new LinkedBlockingDeque<>();
-  private final BlockingQueue<Integer> outputBufferAvailableIndexes = new LinkedBlockingDeque<>();
+  private final BlockingQueue<Integer> inputBuffersPendingDequeue = new LinkedBlockingDeque<>();
+  private final BlockingQueue<Integer> outputBuffersPendingDequeue = new LinkedBlockingDeque<>();
+  /*
+   * Ensures that a dequeued input buffer cannot be queued again until its corresponding output
+   * buffer is dequeued and released.
+   */
+  private final List<Integer> inputBuffersPendingQueuing =
+      Collections.synchronizedList(new ArrayList<>());
 
   private final ByteBuffer[] inputBuffers = new ByteBuffer[BUFFER_COUNT];
   private final ByteBuffer[] outputBuffers = new ByteBuffer[BUFFER_COUNT];
@@ -134,7 +144,7 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected void native_configure(
       String[] keys, Object[] values, Surface surface, MediaCrypto crypto, int flags) {
-    configure(keys, values);
+    configure(keys, values, surface, crypto, flags);
   }
 
   @Implementation(minSdk = O)
@@ -145,12 +155,19 @@ public class ShadowMediaCodec {
       Object crypto,
       Object descramblerBinder,
       Object flags) {
-    configure((String[]) keys, (Object[]) values);
+    configure(
+        (String[]) keys, (Object[]) values, (Surface) surface, (MediaCrypto) crypto, (int) flags);
   }
 
-  private void configure(String[] keys, Object[] values) {
+  private void configure(
+      String[] keys,
+      Object[] values,
+      @Nullable Surface surface,
+      @Nullable MediaCrypto mediaCrypto,
+      int flags) {
     isAsync = callback != null;
     pendingOutputFormat = recreateMediaFormatFromKeysValues(keys, values);
+    fakeCodec.onConfigured(pendingOutputFormat, surface, mediaCrypto, flags);
   }
 
   /**
@@ -160,10 +177,10 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected void native_start() {
     // Reset state
-    inputBufferAvailableIndexes.clear();
-    outputBufferAvailableIndexes.clear();
+    inputBuffersPendingDequeue.clear();
+    outputBuffersPendingDequeue.clear();
     for (int i = 0; i < BUFFER_COUNT; i++) {
-      inputBufferAvailableIndexes.add(i);
+      inputBuffersPendingDequeue.add(i);
     }
 
     if (isAsync) {
@@ -175,7 +192,7 @@ public class ShadowMediaCodec {
       postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_FORMAT_CHANGE, 0, format);
 
       try {
-        makeInputBufferAvailable(inputBufferAvailableIndexes.take());
+        makeInputBufferAvailable(inputBuffersPendingDequeue.take());
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
@@ -188,10 +205,11 @@ public class ShadowMediaCodec {
     // Reset input buffers only if the MediaCodec is in synchronous mode. If it is in asynchronous
     // mode, the client needs to call start().
     if (!isAsync) {
-      inputBufferAvailableIndexes.clear();
-      outputBufferAvailableIndexes.clear();
+      inputBuffersPendingDequeue.clear();
+      outputBuffersPendingDequeue.clear();
+      inputBuffersPendingQueuing.clear();
       for (int i = 0; i < BUFFER_COUNT; i++) {
-        inputBufferAvailableIndexes.add(i);
+        inputBuffersPendingDequeue.add(i);
         ((Buffer) inputBuffers[i]).clear();
       }
     }
@@ -216,16 +234,18 @@ public class ShadowMediaCodec {
     checkState(!isAsync, "Attempting to deque buffer in Async mode.");
     try {
       Integer index;
+
       if (timeoutUs < 0) {
-        index = inputBufferAvailableIndexes.take();
+        index = inputBuffersPendingDequeue.take();
       } else {
-        index = inputBufferAvailableIndexes.poll(timeoutUs, TimeUnit.MICROSECONDS);
+        index = inputBuffersPendingDequeue.poll(timeoutUs, MICROSECONDS);
       }
 
       if (index == null) {
         return MediaCodec.INFO_TRY_AGAIN_LATER;
       }
 
+      inputBuffersPendingQueuing.add(index);
       return index;
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -240,7 +260,10 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP)
   protected void native_queueInputBuffer(
       int index, int offset, int size, long presentationTimeUs, int flags) {
-    if (index < 0 || index >= inputBuffers.length || codecOwnsInputBuffer(index)) {
+    if (index < 0
+        || index >= inputBuffers.length
+        || codecOwnsInputBuffer(index)
+        || !canQueueInputBuffer(index)) {
       throwCodecException(
           /* errorCode= */ 0, /* actionCode= */ 0, "Input buffer not owned by client: " + index);
     }
@@ -249,6 +272,7 @@ public class ShadowMediaCodec {
     info.set(offset, size, presentationTimeUs, flags);
 
     makeOutputBufferAvailable(index, info);
+    inputBuffersPendingQueuing.remove(Integer.valueOf(index));
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -263,9 +287,9 @@ public class ShadowMediaCodec {
 
       Integer index;
       if (timeoutUs < 0) {
-        index = outputBufferAvailableIndexes.take();
+        index = outputBuffersPendingDequeue.take();
       } else {
-        index = outputBufferAvailableIndexes.poll(timeoutUs, TimeUnit.MICROSECONDS);
+        index = outputBuffersPendingDequeue.poll(timeoutUs, MICROSECONDS);
       }
 
       if (index == null) {
@@ -281,6 +305,23 @@ public class ShadowMediaCodec {
     }
   }
 
+  @Implementation
+  protected void releaseOutputBuffer(int index, boolean renderer) {
+    releaseOutputBuffer(index);
+  }
+
+  @Implementation
+  protected void releaseOutputBuffer(int index, long renderTimestampNs) {
+    releaseOutputBuffer(index);
+  }
+
+  private void releaseOutputBuffer(int index) {
+    if (outputBuffersPendingDequeue.contains(index)) {
+      throw new IllegalStateException("Cannot release a buffer when it's still owned by the codec");
+    }
+    makeInputBufferAvailable(index);
+  }
+
   private void makeInputBufferAvailable(int index) {
     if (index < 0 || index >= inputBuffers.length) {
       throw new IndexOutOfBoundsException("Cannot make non-existent input available.");
@@ -292,8 +333,9 @@ public class ShadowMediaCodec {
     if (isAsync) {
       // Signal input buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_INPUT_AVAILABLE, index, null);
+      inputBuffersPendingQueuing.add(index);
     } else {
-      inputBufferAvailableIndexes.add(index);
+      inputBuffersPendingDequeue.add(index);
     }
   }
 
@@ -301,24 +343,30 @@ public class ShadowMediaCodec {
     if (index < 0 || index >= outputBuffers.length) {
       throw new IndexOutOfBoundsException("Cannot make non-existent output buffer available.");
     }
-    ((Buffer) outputBuffers[index]).clear();
+    Buffer inputBuffer = inputBuffers[index];
+    Buffer outputBuffer = outputBuffers[index];
+    BufferInfo outputBufferInfo = outputBufferInfos[index];
 
-    ((Buffer) inputBuffers[index]).position(info.offset).limit(info.offset + info.size);
+    // Clears the output buffer, as it's already fully consumed.
+    outputBuffer.clear();
+
+    inputBuffer.position(info.offset).limit(info.offset + info.size);
     fakeCodec.process(inputBuffers[index], outputBuffers[index]);
 
-    outputBufferInfos[index].flags = info.flags;
-    outputBufferInfos[index].size = outputBuffers[index].position();
-    outputBufferInfos[index].offset = info.offset;
-    outputBufferInfos[index].presentationTimeUs = info.presentationTimeUs;
-    ((Buffer) outputBuffers[index]).position(0).limit(outputBufferInfos[index].size);
+    outputBufferInfo.flags = info.flags;
+    outputBufferInfo.size = outputBuffer.position();
+    outputBufferInfo.offset = info.offset;
+    outputBufferInfo.presentationTimeUs = info.presentationTimeUs;
+    outputBuffer.flip();
 
-    outputBufferAvailableIndexes.add(index);
+    outputBuffersPendingDequeue.add(index);
 
     if (isAsync) {
+      // Dequeue the buffer to signal its availablility to the client.
+      outputBuffersPendingDequeue.remove(Integer.valueOf(index));
       // Signal output buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_AVAILABLE, index, outputBufferInfos[index]);
     }
-    makeInputBufferAvailable(index);
   }
 
   private void postFakeNativeEvent(int what, int arg1, int arg2, @Nullable Object obj) {
@@ -333,7 +381,11 @@ public class ShadowMediaCodec {
   }
 
   private boolean codecOwnsInputBuffer(int index) {
-    return inputBufferAvailableIndexes.contains(index);
+    return inputBuffersPendingDequeue.contains(index);
+  }
+
+  private boolean canQueueInputBuffer(int index) {
+    return inputBuffersPendingQueuing.contains(index);
   }
 
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
@@ -454,6 +506,9 @@ public class ShadowMediaCodec {
 
       /** Move the bytes on the in buffer to the out buffer */
       void process(ByteBuffer in, ByteBuffer out);
+      /** Called when the codec is configured. @see MediaCodec#configure */
+      default void onConfigured(
+          MediaFormat format, @Nullable Surface surface, @Nullable MediaCrypto crypto, int flags) {}
     }
   }
 

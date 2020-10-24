@@ -691,4 +691,31 @@ public class ShadowWifiManagerTest {
     // THEN
     assertThat(scores).isEmpty();
   }
+
+  @Test
+  public void testSetWifiState() {
+    shadowOf(wifiManager).setWifiState(WifiManager.WIFI_STATE_ENABLED);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_ENABLED);
+    assertThat(wifiManager.isWifiEnabled()).isTrue();
+
+    wifiManager.setWifiEnabled(false);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+    assertThat(wifiManager.isWifiEnabled()).isFalse();
+
+    shadowOf(wifiManager).setWifiState(WifiManager.WIFI_STATE_ENABLING);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_ENABLING);
+    assertThat(wifiManager.isWifiEnabled()).isFalse();
+
+    shadowOf(wifiManager).setWifiState(WifiManager.WIFI_STATE_DISABLING);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLING);
+    assertThat(wifiManager.isWifiEnabled()).isFalse();
+
+    shadowOf(wifiManager).setWifiState(WifiManager.WIFI_STATE_UNKNOWN);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_UNKNOWN);
+    assertThat(wifiManager.isWifiEnabled()).isFalse();
+
+    shadowOf(wifiManager).setWifiState(WifiManager.WIFI_STATE_DISABLED);
+    assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
+    assertThat(wifiManager.isWifiEnabled()).isFalse();
+  }
 }

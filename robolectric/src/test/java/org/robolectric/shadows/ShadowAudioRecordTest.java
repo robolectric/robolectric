@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static java.lang.Math.min;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -13,11 +14,13 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSource;
+import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSourceProvider;
 
 /** Tests for {@link ShadowAudioRecord}. */
 @RunWith(AndroidJUnit4.class)
@@ -30,6 +33,82 @@ public class ShadowAudioRecordTest {
     audioRecord.startRecording();
 
     assertThat(audioRecord.getRecordingState()).isEqualTo(AudioRecord.RECORDSTATE_RECORDING);
+  }
+
+  @Test
+  public void setSourceProvider() {
+    byte[] firstAudioRecordInput = new byte[] {1, 2, 3};
+    AudioRecordSource firstAudioRecordSource = createAudioRecordSource(firstAudioRecordInput);
+    AudioRecord firstAudioRecord = createAudioRecord();
+    byte[] secondAudioRecordInput = new byte[] {4, 5, 6, 7, 8};
+    AudioRecordSource subsequentAudioRecordSource = createAudioRecordSource(secondAudioRecordInput);
+    AudioRecord secondAudioRecord = createAudioRecord();
+    ShadowAudioRecord.setSourceProvider(
+        new AudioRecordSourceProvider() {
+          @Override
+          public AudioRecordSource get(AudioRecord audioRecord) {
+            if (audioRecord == firstAudioRecord) {
+              return firstAudioRecordSource;
+            }
+            return subsequentAudioRecordSource;
+          }
+        });
+
+    firstAudioRecord.startRecording();
+    byte[] firstAudioRecordData = new byte[100];
+    int firstAudioRecordBytesRead = firstAudioRecord.read(firstAudioRecordData, 0, 100);
+    firstAudioRecord.stop();
+    firstAudioRecord.release();
+    // Read from second AudioRecord.
+    secondAudioRecord.startRecording();
+    byte[] secondAudioRecordData = new byte[100];
+    int secondAudioRecordBytesRead = secondAudioRecord.read(secondAudioRecordData, 0, 100);
+    secondAudioRecord.stop();
+    secondAudioRecord.release();
+
+    assertThat(firstAudioRecordBytesRead).isEqualTo(firstAudioRecordInput.length);
+    assertThat(Arrays.copyOf(firstAudioRecordData, firstAudioRecordInput.length))
+        .isEqualTo(firstAudioRecordInput);
+    assertThat(secondAudioRecordBytesRead).isEqualTo(secondAudioRecordInput.length);
+    assertThat(Arrays.copyOf(secondAudioRecordData, secondAudioRecordInput.length))
+        .isEqualTo(secondAudioRecordInput);
+  }
+
+  @Test
+  public void setSourceProvider_readBytesSlowly() {
+    byte[] audioRecordInput = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
+    AudioRecordSource audioRecordSource = createAudioRecordSource(audioRecordInput);
+    ShadowAudioRecord.setSourceProvider(audioRecord -> audioRecordSource);
+
+    AudioRecord audioRecord = createAudioRecord();
+    audioRecord.startRecording();
+    byte[] audioRecordData = new byte[100];
+    int audioRecordBytesFirstRead = audioRecord.read(audioRecordData, 0, 3);
+    int audioRecordBytesSecondRead = audioRecord.read(audioRecordData, 3, 3);
+    int audioRecordBytesThirdRead = audioRecord.read(audioRecordData, 6, 94);
+    audioRecord.stop();
+    audioRecord.release();
+
+    assertThat(audioRecordBytesFirstRead).isEqualTo(3);
+    assertThat(audioRecordBytesSecondRead).isEqualTo(3);
+    assertThat(audioRecordBytesThirdRead).isEqualTo(2);
+    assertThat(Arrays.copyOf(audioRecordData, audioRecordInput.length)).isEqualTo(audioRecordInput);
+  }
+
+  @Test
+  public void setSource_instanceCreatedBeforeSetSourceIsCalled() {
+    AudioRecord audioRecord = createAudioRecord();
+    audioRecord.startRecording();
+    byte[] audioRecordInput = new byte[] {1, 2, 3, 4, 5, 6, 7, 8};
+    ShadowAudioRecord.setSource(createAudioRecordSource(audioRecordInput));
+
+    byte[] audioRecordData = new byte[100];
+    int audioRecordBytesRead = audioRecord.read(audioRecordData, 0, 100);
+    audioRecord.stop();
+    audioRecord.release();
+
+    assertThat(audioRecordBytesRead).isEqualTo(audioRecordInput.length);
+    assertThat(Arrays.copyOf(audioRecordData, audioRecordInput.length)).isEqualTo(audioRecordInput);
   }
 
   @Test
@@ -265,5 +344,23 @@ public class ShadowAudioRecordTest {
   private static AudioRecord createAudioRecord() {
     return new AudioRecord(
         AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, 1024);
+  }
+
+  private static AudioRecordSource createAudioRecordSource(byte[] bytes) {
+    return new AudioRecordSource() {
+      int bytesRead = 0;
+
+      @Override
+      public int readInByteArray(
+          byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
+        int availableBytesToBeRead = min(bytes.length - bytesRead, sizeInBytes);
+        if (availableBytesToBeRead <= 0) {
+          return -1;
+        }
+        System.arraycopy(bytes, bytesRead, audioData, offsetInBytes, availableBytesToBeRead);
+        bytesRead += availableBytesToBeRead;
+        return availableBytesToBeRead;
+      }
+    };
   }
 }

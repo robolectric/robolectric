@@ -4,11 +4,13 @@ import static android.os.Looper.getMainLooper;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.os.Looper;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
@@ -21,10 +23,15 @@ import org.robolectric.util.Scheduler;
 @Implements(value = Looper.class, shadowPicker = ShadowLooper.Picker.class)
 public abstract class ShadowLooper {
 
+  // cache for looperMode(), since this can be an expensive call.
+  @GuardedBy("looperModeLock")
+  private static LooperMode.Mode cachedLooperMode = null;
+
+  private static final Object looperModeLock = new Object();
+
   public static void assertLooperMode(LooperMode.Mode expectedMode) {
-    LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
-    if (looperMode != expectedMode) {
-      throw new IllegalStateException("this action is not supported in " + looperMode + " mode.");
+    if (looperMode() != expectedMode) {
+      throw new IllegalStateException("this action is not supported in " + looperMode() + " mode.");
     }
   }
 
@@ -72,7 +79,19 @@ public abstract class ShadowLooper {
 
   /** Return the current {@link LooperMode}. */
   public static LooperMode.Mode looperMode() {
-    return ConfigurationRegistry.get(LooperMode.Mode.class);
+    synchronized (looperModeLock) {
+      if (cachedLooperMode == null) {
+        cachedLooperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
+      }
+      return cachedLooperMode;
+    }
+  }
+
+  @Resetter
+  public static synchronized void clearLooperMode() {
+    synchronized (looperModeLock) {
+      cachedLooperMode = null;
+    }
   }
 
   /**
@@ -194,9 +213,7 @@ public abstract class ShadowLooper {
     idleFor(duration.toMillis(), TimeUnit.MILLISECONDS);
   }
 
-  /**
-   * Returns true if the looper has any pending tasks scheduled to be executed before current time.
-   */
+  /** Returns true if there are no pending tasks scheduled to be executed before current time. */
   public abstract boolean isIdle();
 
   /** Not supported for the main Looper in {@link LooperMode.Mode.PAUSED}. */

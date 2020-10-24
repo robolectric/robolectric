@@ -1,10 +1,15 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.content.res.AssetManager;
+import android.graphics.fonts.Font;
 import com.google.common.base.Preconditions;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.ApkAssetsCookie;
@@ -13,12 +18,13 @@ import org.robolectric.res.android.Asset.AccessMode;
 import org.robolectric.res.android.CppAssetManager2;
 import org.robolectric.res.android.Registries;
 
-@Implements(className = "android.graphics.fonts.Font.Builder", minSdk = Q, isInAndroidSdk = false)
+/** Shadow for {@link android.graphics.fonts.Font.Builder} */
+@Implements(value = Font.Builder.class, minSdk = Q)
 public class ShadowFontBuilder {
 
   // transliterated from frameworks/base/core/jni/android/graphics/fonts/Font.cpp
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static long nGetNativeAsset(
       AssetManager assetMgr, String path, boolean isAsset, int cookie) {
     // NPE_CHECK_RETURN_ZERO(env, assetMgr);
@@ -59,7 +65,7 @@ public class ShadowFontBuilder {
     return Registries.NATIVE_ASSET_REGISTRY.register(asset);
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static ByteBuffer nGetAssetBuffer(long nativeAsset) {
     // Asset* asset = toAsset(nativeAsset);
     Asset asset = Registries.NATIVE_ASSET_REGISTRY.getNativeObject(nativeAsset);
@@ -67,10 +73,35 @@ public class ShadowFontBuilder {
     return ByteBuffer.wrap(asset.getBuffer(false));
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static long nGetReleaseNativeAssetFunc() {
     // return reinterpret_cast<jlong>(&releaseAsset);
     // TODO: implement
     return 0;
+  }
+
+  /** Re-implement to avoid call to DirectByteBuffer#array, which is not supported on JDK */
+  @Implementation(minSdk = R)
+  protected static ByteBuffer createBuffer(
+      AssetManager am, String path, boolean isAsset, int cookie) throws IOException {
+    Preconditions.checkNotNull(am, "assetManager can not be null");
+    Preconditions.checkNotNull(path, "path can not be null");
+
+    try (InputStream assetStream =
+        isAsset
+            ? am.open(path, AssetManager.ACCESS_BUFFER)
+            : am.openNonAsset(cookie, path, AssetManager.ACCESS_BUFFER)) {
+
+      int capacity = assetStream.available();
+      ByteBuffer buffer = ByteBuffer.allocate(capacity);
+      buffer.order(ByteOrder.nativeOrder());
+      assetStream.read(buffer.array(), buffer.arrayOffset(), assetStream.available());
+
+      if (assetStream.read() != -1) {
+        throw new IOException("Unable to access full contents of " + path);
+      }
+
+      return buffer;
+    }
   }
 }

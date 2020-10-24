@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -21,6 +22,7 @@ import static org.robolectric.shadows.ShadowMediaPlayer.addException;
 import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.app.Application;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
@@ -47,6 +49,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.R;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowMediaPlayer.InvalidStateBehavior;
@@ -228,6 +231,30 @@ public class ShadowMediaPlayerTest {
     ShadowMediaPlayer.addMediaInfo(ds, info);
     mediaPlayer.setDataSource(mediaDataSource);
     assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+  }
+
+  @Config(minSdk = N)
+  @Test
+  public void testSetDataSourceAssetFileDescriptorDataSource() throws IOException {
+    Application context = ApplicationProvider.getApplicationContext();
+    AssetFileDescriptor fd = context.getResources().openRawResourceFd(R.drawable.an_image);
+    DataSource ds = toDataSource(fd);
+    ShadowMediaPlayer.addMediaInfo(ds, info);
+    mediaPlayer.setDataSource(fd);
+    assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+  }
+
+  @Test
+  public void testSetDataSourceUsesCustomMediaInfoProvider() throws Exception {
+    MediaInfo mediaInfo = new MediaInfo();
+    ShadowMediaPlayer.setMediaInfoProvider(unused -> mediaInfo);
+    String path = "data_source_path";
+    DataSource ds = toDataSource(path);
+    mediaPlayer.setDataSource(path);
+    assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+    assertWithMessage("mediaInfo")
+        .that(shadowMediaPlayer.getMediaInfo())
+        .isSameInstanceAs(mediaInfo);
   }
 
   @Test
@@ -590,7 +617,8 @@ public class ShadowMediaPlayerTest {
     final EnumSet<State> invalidStates = EnumSet.of(INITIALIZED, PREPARED,
         STARTED, PAUSED, PLAYBACK_COMPLETED, STOPPED, ERROR);
 
-    testStates(new MethodSpec("setDataSource", DUMMY_SOURCE), invalidStates, iseTester, INITIALIZED);
+    testStates(
+        new MethodSpec("setDataSource", DUMMY_SOURCE), invalidStates, iseTester, INITIALIZED);
   }
 
   @Test
@@ -1334,7 +1362,8 @@ public class ShadowMediaPlayerTest {
   @Test
   public void testSetDataSourceExceptionWithWrongExceptionTypeAsserts() {
     boolean fail = false;
-    Map<DataSource,Exception> exceptions = ReflectionHelpers.getStaticField(ShadowMediaPlayer.class, "exceptions");
+    Map<DataSource, Exception> exceptions =
+        ReflectionHelpers.getStaticField(ShadowMediaPlayer.class, "exceptions");
     DataSource ds = toDataSource("dummy");
     Exception e = new CloneNotSupportedException(); // just a convenient, non-RuntimeException in java.lang
     exceptions.put(ds, e);

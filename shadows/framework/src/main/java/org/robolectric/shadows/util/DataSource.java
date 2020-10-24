@@ -1,6 +1,7 @@
 package org.robolectric.shadows.util;
 
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.media.MediaDataSource;
 import android.net.Uri;
 import java.io.FileDescriptor;
@@ -9,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Opaque class for uniquely identifying a media data source,
- * as used by {@link org.robolectric.shadows.ShadowMediaPlayer}
- * and {@link org.robolectric.shadows.ShadowMediaMetadataRetriever}.
+ * Opaque class for uniquely identifying a media data source, as used by {@link
+ * org.robolectric.shadows.ShadowMediaPlayer} and {@link
+ * org.robolectric.shadows.ShadowMediaMetadataRetriever}.
  *
  * @author Fr Jeremy Krieg
  */
@@ -49,6 +50,13 @@ public class DataSource {
 
   public static DataSource toDataSource(MediaDataSource mediaDataSource) {
     return toDataSource("MediaDataSource");
+  }
+
+  public static DataSource toDataSource(AssetFileDescriptor assetFileDescriptor) {
+    return toDataSource(
+        "AssetFileDescriptor"
+            + assetFileDescriptor.getStartOffset()
+            + assetFileDescriptor.getLength());
   }
 
   @SuppressWarnings("ObjectToString")

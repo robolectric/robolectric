@@ -28,5 +28,6 @@ include ":integration_tests:powermock"
 include ':integration_tests:androidx'
 include ':integration_tests:androidx_test'
 include ':integration_tests:ctesque'
+include ':integration_tests:security-providers'
 include ':testapp'
 include ":integration_tests:mockk"

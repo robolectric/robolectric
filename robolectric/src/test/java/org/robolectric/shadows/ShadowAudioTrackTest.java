@@ -18,11 +18,13 @@ import org.robolectric.annotation.Config;
 /** Tests for {@link ShadowAudioTrack}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
-public class ShadowAudioTrackTest {
+public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWrittenListener {
 
   private static final int SAMPLE_RATE_IN_HZ = 44100;
   private static final int CHANNEL_CONFIG = AudioFormat.CHANNEL_OUT_STEREO;
   private static final int AUDIO_ENCODING_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
+  private ShadowAudioTrack shadowAudioTrack;
+  private byte[] dataWrittenToShadowAudioTrack;
 
   @Test
   public void setMinBufferSize() {
@@ -75,6 +77,22 @@ public class ShadowAudioTrackTest {
   }
 
   @Test
+  public void writeByteBuffer_correctBytesWritten() {
+    ShadowAudioTrack.addAudioDataListener(this);
+    AudioTrack audioTrack = getSampleAudioTrack();
+
+    ByteBuffer byteBuffer = ByteBuffer.allocate(4);
+    byte[] dataToWrite = new byte[] {1, 2, 3, 4};
+    byteBuffer.put(dataToWrite);
+    byteBuffer.flip();
+
+    audioTrack.write(byteBuffer, 4, WRITE_NON_BLOCKING);
+
+    assertThat(dataWrittenToShadowAudioTrack).isEqualTo(dataToWrite);
+    assertThat(shadowAudioTrack.getPlaybackHeadPosition()).isEqualTo(1);
+  }
+
+  @Test
   public void writeDirectByteBuffer_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -112,6 +130,13 @@ public class ShadowAudioTrackTest {
     int written = audioTrack.write(byteBuffer, 10, WRITE_NON_BLOCKING);
 
     assertThat(written).isEqualTo(ERROR_BAD_VALUE);
+  }
+
+  @Override
+  public void onAudioDataWritten(
+      ShadowAudioTrack audioTrack, byte[] audioData, AudioFormat format) {
+    shadowAudioTrack = audioTrack;
+    dataWrittenToShadowAudioTrack = audioData;
   }
 
   private static AudioTrack getSampleAudioTrack() {

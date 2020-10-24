@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothAdapter;
@@ -12,6 +13,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.Build;
@@ -40,6 +42,7 @@ public class ShadowBluetoothAdapter {
 
   private static boolean isBluetoothSupported = true;
   private static BluetoothLeScanner bluetoothLeScanner = null;
+  private static BluetoothLeAdvertiser bluetoothLeAdvertiser = null;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
@@ -61,6 +64,7 @@ public class ShadowBluetoothAdapter {
   public static void reset() {
     setIsBluetoothSupported(true);
     bluetoothLeScanner = null;
+    bluetoothLeAdvertiser = null;
   }
 
   @Implementation
@@ -88,6 +92,15 @@ public class ShadowBluetoothAdapter {
     }
 
     return bluetoothLeScanner;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected BluetoothLeAdvertiser getBluetoothLeAdvertiser() {
+    return bluetoothLeAdvertiser;
+  }
+
+  public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
+    bluetoothLeAdvertiser = advertiser;
   }
 
   @Implementation
@@ -253,7 +266,7 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
     return setScanMode(scanMode);

@@ -1,5 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.ShortcutManager.FLAG_MATCH_CACHED;
+import static android.content.pm.ShortcutManager.FLAG_MATCH_DYNAMIC;
+import static android.content.pm.ShortcutManager.FLAG_MATCH_MANIFEST;
+import static android.content.pm.ShortcutManager.FLAG_MATCH_PINNED;
+import static android.os.Build.VERSION_CODES.R;
+import static java.util.stream.Collectors.toCollection;
+
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
@@ -7,10 +14,14 @@ import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.os.Build;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -29,6 +40,8 @@ public class ShadowShortcutManager {
 
   private boolean isRequestPinShortcutSupported = true;
   private int maxShortcutCountPerActivity = 16;
+  private int maxIconHeight = MAX_ICON_DIMENSION;
+  private int maxIconWidth = MAX_ICON_DIMENSION;
 
   @Implementation
   protected boolean addDynamicShortcuts(List<ShortcutInfo> shortcutInfoList) {
@@ -96,12 +109,22 @@ public class ShadowShortcutManager {
 
   @Implementation
   protected int getIconMaxHeight() {
-    return MAX_ICON_DIMENSION;
+    return maxIconHeight;
   }
 
   @Implementation
   protected int getIconMaxWidth() {
-    return MAX_ICON_DIMENSION;
+    return maxIconWidth;
+  }
+
+  /** Sets the value returned by {@link #getIconMaxHeight()}. */
+  public void setIconMaxHeight(int height) {
+    maxIconHeight = height;
+  }
+
+  /** Sets the value returned by {@link #getIconMaxWidth()}. */
+  public void setIconMaxWidth(int width) {
+    maxIconWidth = width;
   }
 
   @Implementation
@@ -203,5 +226,41 @@ public class ShadowShortcutManager {
       }
     }
     return addDynamicShortcuts(existingShortcutsToUpdate);
+  }
+
+  /**
+   * In Robolectric, ShadowShortcutManager doesn't perform any caching so long lived shortcuts are
+   * returned on place of shortcuts cached when shown in notifications.
+   */
+  @Implementation(minSdk = R)
+  protected List<ShortcutInfo> getShortcuts(int matchFlags) {
+    if (matchFlags == 0) {
+      return Lists.newArrayList();
+    }
+
+    Set<ShortcutInfo> shortcutInfoSet = new HashSet<>();
+    shortcutInfoSet.addAll(getManifestShortcuts());
+    shortcutInfoSet.addAll(getDynamicShortcuts());
+    shortcutInfoSet.addAll(getPinnedShortcuts());
+
+    return shortcutInfoSet.stream()
+        .filter(
+            shortcutInfo ->
+                ((matchFlags & FLAG_MATCH_MANIFEST) != 0 && shortcutInfo.isDeclaredInManifest())
+                    || ((matchFlags & FLAG_MATCH_DYNAMIC) != 0 && shortcutInfo.isDynamic())
+                    || ((matchFlags & FLAG_MATCH_PINNED) != 0 && shortcutInfo.isPinned())
+                    || ((matchFlags & FLAG_MATCH_CACHED) != 0
+                        && (shortcutInfo.isCached() || shortcutInfo.isLongLived())))
+        .collect(toCollection(ArrayList::new));
+  }
+
+  /**
+   * In Robolectric, ShadowShortcutManager doesn't handle rate limiting or shortcut count limits.
+   * So, pushDynamicShortcut is similar to {@link #addDynamicShortcuts(List)} but with only one
+   * {@link ShortcutInfo}.
+   */
+  @Implementation(minSdk = R)
+  protected void pushDynamicShortcut(ShortcutInfo shortcut) {
+    addDynamicShortcuts(Arrays.asList(shortcut));
   }
 }
