@@ -325,8 +325,9 @@ public class ShadowPowerManager {
       }
     }
 
+    /** Releases the wake lock. The {@code flags} are ignored. */
     @Implementation
-    protected synchronized void release() {
+    protected void release(int flags) {
       if (refCounted) {
         if (--refCount < 0) throw new RuntimeException("WakeLock under-locked");
       } else {
