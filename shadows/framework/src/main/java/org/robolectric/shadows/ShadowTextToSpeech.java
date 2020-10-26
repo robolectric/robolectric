@@ -10,9 +10,12 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
@@ -27,6 +30,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowTextToSpeech {
 
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
+  private static TextToSpeech lastTextToSpeechInstance;
 
   @RealObject private TextToSpeech tts;
 
@@ -39,10 +43,13 @@ public class ShadowTextToSpeech {
   private Locale language = null;
   private String lastSynthesizeToFileText;
 
+  private final List<String> spokenTextList = new ArrayList<>();
+
   @Implementation
   protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
     this.context = context;
     this.listener = listener;
+    lastTextToSpeechInstance = tts;
   }
 
   /**
@@ -66,6 +73,7 @@ public class ShadowTextToSpeech {
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     stopped = false;
     lastSpokenText = text.toString();
+    spokenTextList.add(text.toString());
     this.queueMode = queueMode;
 
     if (RuntimeEnvironment.getApiLevel() >= ICE_CREAM_SANDWICH_MR1) {
@@ -189,8 +197,13 @@ public class ShadowTextToSpeech {
     return lastSynthesizeToFileText;
   }
 
+  /** Returns list of all the text spoken by {@link #speak}. */
+  public ImmutableList<String> getSpokenTextList() {
+    return ImmutableList.copyOf(spokenTextList);
+  }
+
   /**
-   * Make {@link Locale} an available language returned by {@link
+   * Makes {@link Locale} an available language returned by {@link
    * TextToSpeech#isLanguageAvailable(Locale)}. The value returned by {@link
    * #isLanguageAvailable(Locale)} will vary depending on language, country, and variant.
    */
@@ -198,8 +211,14 @@ public class ShadowTextToSpeech {
     languageAvailabilities.add(locale);
   }
 
+  /** Returns the most recently instantiated {@link TextToSpeech} or null if none exist. */
+  public static TextToSpeech getLastTextToSpeechInstance() {
+    return lastTextToSpeechInstance;
+  }
+
   @Resetter
-  public static void clearLanguageAvailabilities() {
+  public static void reset() {
     languageAvailabilities.clear();
+    lastTextToSpeechInstance = null;
   }
 }

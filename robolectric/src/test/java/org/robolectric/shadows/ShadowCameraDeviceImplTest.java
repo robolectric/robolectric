@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -19,18 +20,20 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Surface;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
@@ -38,9 +41,6 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public final class ShadowCameraDeviceImplTest {
-
-  @Rule public ExpectedException expectedException = ExpectedException.none();
-
   private static final String CAMERA_ID_0 = "cameraId0";
   private final CameraManager cameraManager =
       (CameraManager)
@@ -83,9 +83,11 @@ public final class ShadowCameraDeviceImplTest {
       throws CameraAccessException {
     cameraDevice.close();
 
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("CameraDevice was already closed");
-    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+    IllegalStateException thrown =
+        assertThrows(
+            IllegalStateException.class,
+            () -> cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD));
+    assertThat(thrown).hasMessageThat().contains("CameraDevice was already closed");
   }
 
   @Test
@@ -93,7 +95,22 @@ public final class ShadowCameraDeviceImplTest {
   public void createCaptureSession() throws CameraAccessException {
     builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
     cameraDevice.createCaptureSession(
-        new ArrayList<Surface>(), new CaptureSessionCallback(), new Handler());
+        new ArrayList<>(), new CaptureSessionCallback(/*useExecutor=*/ false), new Handler());
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void createCaptureSession_configuration() throws CameraAccessException {
+    Surface mockSurface = mock(Surface.class);
+    builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
+    builder.addTarget(mockSurface);
+    SessionConfiguration configuration =
+        new SessionConfiguration(
+            SessionConfiguration.SESSION_REGULAR,
+            Collections.singletonList(new OutputConfiguration(mockSurface)),
+            MoreExecutors.directExecutor(),
+            new CaptureSessionCallback(/*useExecutor=*/ true));
+    cameraDevice.createCaptureSession(configuration);
   }
 
   @Test
@@ -102,10 +119,33 @@ public final class ShadowCameraDeviceImplTest {
       throws CameraAccessException {
     cameraDevice.close();
 
-    expectedException.expect(IllegalStateException.class);
-    expectedException.expectMessage("CameraDevice was already closed");
-    cameraDevice.createCaptureSession(
-        new ArrayList<Surface>(), new CaptureSessionCallback(), new Handler());
+    IllegalStateException thrown =
+        assertThrows(
+            IllegalStateException.class,
+            () ->
+                cameraDevice.createCaptureSession(
+                    new ArrayList<>(),
+                    new CaptureSessionCallback(/*useExecutor=*/ false),
+                    new Handler()));
+    assertThat(thrown).hasMessageThat().contains("CameraDevice was already closed");
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.P)
+  public void createCaptureSession_configuration_throwsIllegalStateExceptionAfterClose()
+      throws CameraAccessException {
+    cameraDevice.close();
+
+    SessionConfiguration configuration =
+        new SessionConfiguration(
+            SessionConfiguration.SESSION_REGULAR,
+            Collections.singletonList(new OutputConfiguration(mock(Surface.class))),
+            MoreExecutors.directExecutor(),
+            new CaptureSessionCallback(/*useExecutor=*/ true));
+    IllegalStateException thrown =
+        assertThrows(
+            IllegalStateException.class, () -> cameraDevice.createCaptureSession(configuration));
+    assertThat(thrown).hasMessageThat().contains("CameraDevice was already closed");
   }
 
   @Test
@@ -143,38 +183,51 @@ public final class ShadowCameraDeviceImplTest {
   }
 
   private class CaptureSessionCallback extends CameraCaptureSession.StateCallback {
+    private final boolean useExecutor;
+
+    /**
+     * Creates a capture session callback that tests capture methods.
+     *
+     * @param useExecutor if true will test the Executor flavor of capture methods, otherwise will
+     *     test the Handler flavor.
+     */
+    public CaptureSessionCallback(boolean useExecutor) {
+      this.useExecutor = useExecutor;
+    }
+
     @Override
     public void onConfigured(CameraCaptureSession cameraCaptureSession) {
-
       captureSession = cameraCaptureSession;
       assertThat(captureSession.getDevice().getId()).isEqualTo(CAMERA_ID_0);
 
-      try {
-        int response =
-            captureSession.setRepeatingRequest(
-                builder.build(),
-                new CaptureCallback() {
-                  @Override
-                  public void onCaptureCompleted(
-                      CameraCaptureSession session,
-                      CaptureRequest request,
-                      TotalCaptureResult result) {}
-                },
-                new Handler());
-        assertThat(response).isEqualTo(1);
+      CaptureCallback captureCallback =
+          new CaptureCallback() {
+            @Override
+            public void onCaptureCompleted(
+                CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {}
+          };
 
-        response =
-            captureSession.capture(
-                builder.build(),
-                new CaptureCallback() {
-                  @Override
-                  public void onCaptureCompleted(
-                      CameraCaptureSession session,
-                      CaptureRequest request,
-                      TotalCaptureResult result) {}
-                },
-                new Handler());
-        assertThat(response).isEqualTo(1);
+      try {
+        final int repeatingResponse;
+        if (useExecutor) {
+          repeatingResponse =
+              captureSession.setSingleRepeatingRequest(
+                  builder.build(), MoreExecutors.directExecutor(), captureCallback);
+        } else {
+          repeatingResponse =
+              captureSession.setRepeatingRequest(builder.build(), captureCallback, new Handler());
+        }
+        assertThat(repeatingResponse).isEqualTo(1);
+
+        final int captureResponse;
+        if (useExecutor) {
+          captureResponse =
+              captureSession.captureSingleRequest(
+                  builder.build(), MoreExecutors.directExecutor(), captureCallback);
+        } else {
+          captureResponse = captureSession.capture(builder.build(), captureCallback, new Handler());
+        }
+        assertThat(captureResponse).isEqualTo(1);
       } catch (CameraAccessException e) {
         fail();
       }

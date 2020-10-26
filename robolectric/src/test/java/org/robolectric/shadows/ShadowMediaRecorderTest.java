@@ -1,15 +1,18 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.os.Build.VERSION_CODES;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -218,6 +221,39 @@ public class ShadowMediaRecorderTest {
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_INITIAL);
     mediaRecorder.release();
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_RELEASED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void testGetSurface() throws Exception {
+    mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+    mediaRecorder.prepare();
+    assertThat(mediaRecorder.getSurface()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void testGetSurface_beforePrepare() throws Exception {
+    mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+    assertThrows(IllegalStateException.class, () -> mediaRecorder.getSurface());
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void testGetSurface_afterStop() throws Exception {
+    mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+    mediaRecorder.prepare();
+    mediaRecorder.start();
+    mediaRecorder.stop();
+    assertThrows(IllegalStateException.class, () -> mediaRecorder.getSurface());
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void testGetSurface_wrongVideoSource() throws Exception {
+    mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+    mediaRecorder.prepare();
+    assertThrows(IllegalStateException.class, () -> mediaRecorder.getSurface());
   }
 
   private static class TestErrorListener implements MediaRecorder.OnErrorListener {
