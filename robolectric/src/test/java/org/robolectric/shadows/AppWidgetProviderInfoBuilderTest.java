@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+/** Test for {@link AppWidgetProviderInfoBuilder} */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = CUPCAKE)
 public class AppWidgetProviderInfoBuilderTest {

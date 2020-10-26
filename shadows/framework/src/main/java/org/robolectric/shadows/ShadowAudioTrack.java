@@ -5,6 +5,8 @@ import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.annotation.NonNull;
 import android.media.AudioFormat;
@@ -63,6 +65,13 @@ public class ShadowAudioTrack {
    */
   public static void setMinBufferSize(int bufferSize) {
     minBufferSize = bufferSize;
+  }
+
+  @Implementation(minSdk = N, maxSdk = P)
+  protected static int native_get_FCC_8() {
+    // Return the value hard-coded in native code:
+    // https://cs.android.com/android/platform/superproject/+/android-7.1.1_r41:system/media/audio/include/system/audio.h;l=42;drc=57a4158dc4c4ce62bc6a2b8a0072ba43305548d4
+    return 8;
   }
 
   /** Returns a predefined or default minimum buffer size. Audio format and config are neglected. */

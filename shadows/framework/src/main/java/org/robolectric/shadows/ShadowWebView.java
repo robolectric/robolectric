@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.annotation.ColorInt;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -73,6 +74,7 @@ public class ShadowWebView extends ShadowViewGroup {
   private boolean canGoBackIsSet;
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
   private HitTestResult hitTestResult = new HitTestResult();
+  private int backgroundColor = 0;
   private static final WebViewFactoryProvider WEB_VIEW_FACTORY_PROVIDER =
       ReflectionHelpers.createDeepProxy(WebViewFactoryProvider.class);
 
@@ -601,6 +603,29 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   public static void setWebContentsDebuggingEnabled(boolean enabled) {}
+
+  /**
+   * Sets the {@link android.graphics.Color} int that should be returned from {@link
+   * #getBackgroundColor}.
+   *
+   * <p>WebView uses the background color set by the {@link
+   * android.webkit.WebView#setBackgroundColor} method to internally tint the background color of
+   * web pages until they are drawn. The way this API works is completely independent of the {@link
+   * android.view.View#setBackgroundColor} method and it interacts directly with WebView renderers.
+   * Tests can access the set background color using the {@link #getBackgroundColor} method.
+   */
+  @Implementation
+  protected void setBackgroundColor(@ColorInt int backgroundColor) {
+    this.backgroundColor = backgroundColor;
+  }
+
+  /**
+   * Returns the {@link android.graphics.Color} int that has been set by {@link
+   * #setBackgroundColor}.
+   */
+  public int getBackgroundColor() {
+    return backgroundColor;
+  }
 
   public static class LoadDataWithBaseURL {
     public final String baseUrl;
