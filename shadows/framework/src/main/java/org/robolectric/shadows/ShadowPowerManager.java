@@ -325,8 +325,17 @@ public class ShadowPowerManager {
       }
     }
 
+    // TODO: remove this shadow method once clients are no longer overriding it since it matches the
+    // real implementation.
+    /** Releases the wake lock. */
     @Implementation
     protected synchronized void release() {
+      release(0);
+    }
+
+    /** Releases the wake lock. The {@code flags} are ignored. */
+    @Implementation
+    protected synchronized void release(int flags) {
       if (refCounted) {
         if (--refCount < 0) throw new RuntimeException("WakeLock under-locked");
       } else {
