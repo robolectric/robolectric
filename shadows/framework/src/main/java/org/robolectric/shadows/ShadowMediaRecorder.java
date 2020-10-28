@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.os.Build.VERSION_CODES;
 import android.view.Surface;
+import com.google.common.base.Preconditions;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -44,6 +47,8 @@ public class ShadowMediaRecorder {
   private int videoSource;
 
   private Surface previewDisplay;
+  private Surface recordingSurface;
+  private SurfaceTexture recordingSurfaceTexture;
   private MediaRecorder.OnErrorListener errorListener;
   private MediaRecorder.OnInfoListener infoListener;
 
@@ -175,6 +180,33 @@ public class ShadowMediaRecorder {
   @Implementation
   protected void release() {
     state = STATE_RELEASED;
+    if (recordingSurface != null) {
+      recordingSurface.release();
+      recordingSurface = null;
+    }
+    if (recordingSurfaceTexture != null) {
+      recordingSurfaceTexture.release();
+      recordingSurfaceTexture = null;
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  protected Surface getSurface() {
+    Preconditions.checkState(
+        getVideoSource() == MediaRecorder.VideoSource.SURFACE,
+        "getSurface can only be called when setVideoSource is set to SURFACE");
+    // There is a diagram of the MediaRecorder state machine here:
+    // https://developer.android.com/reference/android/media/MediaRecorder
+    Preconditions.checkState(
+        state == STATE_PREPARED || state == STATE_RECORDING,
+        "getSurface must be called after prepare() and before stop()");
+
+    if (recordingSurface == null) {
+      recordingSurfaceTexture = new SurfaceTexture(/*texName=*/ 0);
+      recordingSurface = new Surface(recordingSurfaceTexture);
+    }
+
+    return recordingSurface;
   }
 
   public Camera getCamera() {

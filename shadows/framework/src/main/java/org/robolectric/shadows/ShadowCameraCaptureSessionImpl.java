@@ -7,6 +7,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.impl.CameraCaptureSessionImpl;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -28,7 +29,21 @@ public class ShadowCameraCaptureSessionImpl {
   }
 
   @Implementation(minSdk = VERSION_CODES.P)
+  protected int setSingleRepeatingRequest(
+      CaptureRequest request, Executor executor, CaptureCallback callback)
+      throws CameraAccessException {
+    return 1;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
   protected int capture(CaptureRequest request, CaptureCallback callback, Handler handler)
+      throws CameraAccessException {
+    return 1;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected int captureSingleRequest(
+      CaptureRequest request, Executor executor, CaptureCallback callback)
       throws CameraAccessException {
     return 1;
   }
