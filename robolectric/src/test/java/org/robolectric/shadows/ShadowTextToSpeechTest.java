@@ -289,4 +289,21 @@ public class ShadowTextToSpeechTest {
     assertThat(ShadowTextToSpeech.getLastTextToSpeechInstance()).isEqualTo(textToSpeechTwo);
     assertThat(ShadowTextToSpeech.getLastTextToSpeechInstance()).isNotEqualTo(textToSpeechOne);
   }
+
+  @Test
+  public void getSpokenTextList_neverSpoke_returnsEmpty() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    assertThat(shadowOf(textToSpeech).getSpokenTextList()).isEmpty();
+  }
+
+  @Test
+  public void getSpokenTextList_spoke_returnsSpokenTexts() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+
+    textToSpeech.speak("one", TextToSpeech.QUEUE_FLUSH, null);
+    textToSpeech.speak("two", TextToSpeech.QUEUE_FLUSH, null);
+    textToSpeech.speak("three", TextToSpeech.QUEUE_FLUSH, null);
+
+    assertThat(shadowOf(textToSpeech).getSpokenTextList()).containsExactly("one", "two", "three");
+  }
 }
