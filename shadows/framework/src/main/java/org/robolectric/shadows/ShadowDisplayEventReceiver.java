@@ -11,9 +11,12 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
 import android.os.MessageQueue;
+import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import java.lang.ref.WeakReference;
 import java.time.Duration;
+
+import com.google.common.annotations.VisibleForTesting;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -58,7 +61,8 @@ public class ShadowDisplayEventReceiver {
   protected static int nativeInit(Object receiver, Object msgQueue) {
     return (int)
         nativeObjRegistry.register(
-            new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)));
+            new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)
+            ));
   }
 
   @Implementation(minSdk = R)
@@ -123,11 +127,30 @@ public class ShadowDisplayEventReceiver {
     public void scheduleVsync() {
       // simulate an immediate callback
       DisplayEventReceiver receiver = receiverRef.get();
-      ShadowSystemClock.advanceBy(VSYNC_DELAY);
+
+      ShadowSystemClock.advanceBy(Duration.ofNanos(getFrameDelayNanos(Choreographer.getInstance())));
       if (receiver != null) {
         ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
         shadowReceiver.onVsync();
       }
     }
+  }
+
+  private static long getFrameDelayNanos(Choreographer choreographer) {
+    // Vsync callbacks should be synced to hardware display rate, and occur a fixed intervals
+    // of frameTimeInterval
+    return getFrameDelayNanos(
+        ShadowPausedChoreographer.getLastFrameTimeNanos(choreographer),
+        ShadowPausedChoreographer.getFrameIntervalNanos(choreographer), ShadowSystem.nanoTime());
+  }
+
+  @VisibleForTesting
+  static long getFrameDelayNanos(long lastFrameTimeNanos, long frameTimeIntervalNanos, long currentNanoTime) {
+    if (lastFrameTimeNanos < 0) {
+      // this is the first call - just return the frame interval
+      return frameTimeIntervalNanos;
+    }
+    long frameOffset = (currentNanoTime - lastFrameTimeNanos) % frameTimeIntervalNanos;
+    return frameTimeIntervalNanos - frameOffset;
   }
 }

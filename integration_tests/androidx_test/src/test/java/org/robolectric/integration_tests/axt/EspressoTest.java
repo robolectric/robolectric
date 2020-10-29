@@ -11,6 +11,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 
 import android.view.KeyEvent;
@@ -23,12 +24,15 @@ import androidx.test.rule.ActivityTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
 @RunWith(AndroidJUnit4.class)
 @TextLayoutMode(REALISTIC)
+@LooperMode(PAUSED)
 public final class EspressoTest {
 
   @Rule
@@ -70,6 +74,7 @@ public final class EspressoTest {
 
   /** Perform the equivalent of click except using espresso APIs */
   @Test
+  @Config(sdk = 28)
   public void buttonClick_espresso() throws Exception {
     EspressoActivity activity = activityRule.getActivity();
 

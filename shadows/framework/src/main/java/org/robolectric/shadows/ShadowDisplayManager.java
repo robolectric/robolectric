@@ -6,6 +6,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -28,6 +29,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.util.Consumer;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -105,6 +108,9 @@ public class ShadowDisplayManager {
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
       displayInfo.getAppMetrics(displayMetrics);
+    }
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+      reflector(ReflectorDisplayInfo.class, displayInfo).setRefreshRate(60f);
     }
 
     return displayInfo;
@@ -247,5 +253,11 @@ public class ShadowDisplayManager {
     }
 
     return extract(DisplayManagerGlobal.getInstance());
+  }
+
+  @ForType(DisplayInfo.class)
+  private interface ReflectorDisplayInfo {
+    @Accessor("refreshRate")
+    void setRefreshRate(float refreshRate);
   }
 }
