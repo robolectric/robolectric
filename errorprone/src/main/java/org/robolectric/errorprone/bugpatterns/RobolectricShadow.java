@@ -71,8 +71,8 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
         if ("org.robolectric.annotation.Implements".equals(annotationClassName)) {
           for (ExpressionTree expressionTree : annotationTree.getArguments()) {
             JCAssign jcAnnotation = (JCAssign) expressionTree;
-            if ("isInAndroidSdk".equals(jcAnnotation.lhs.toString())
-                && "false".equals(jcAnnotation.rhs.toString())) {
+            if ("isInAndroidSdk".equals(state.getSourceForNode(jcAnnotation.lhs))
+                && "false".equals(state.getSourceForNode(jcAnnotation.rhs))) {
               // shadows of classes not in the public Android SDK can keep their public methods.
               inSdk = false;
             }

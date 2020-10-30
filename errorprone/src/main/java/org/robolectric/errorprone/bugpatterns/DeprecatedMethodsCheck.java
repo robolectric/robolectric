@@ -172,7 +172,7 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
   private static Set<String> getImports(VisitorState state) {
     Set<String> imports = new HashSet<>();
     for (ImportTree importTree : state.getPath().getCompilationUnit().getImports()) {
-      imports.add(importTree.getQualifiedIdentifier().toString());
+      imports.add(state.getSourceForNode(importTree.getQualifiedIdentifier()));
     }
     return imports;
   }
