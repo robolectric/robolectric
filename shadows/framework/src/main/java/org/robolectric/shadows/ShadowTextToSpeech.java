@@ -10,9 +10,12 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
@@ -39,6 +42,8 @@ public class ShadowTextToSpeech {
   private int queueMode = -1;
   private Locale language = null;
   private String lastSynthesizeToFileText;
+
+  private final List<String> spokenTextList = new ArrayList<>();
 
   @Implementation
   protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
@@ -68,6 +73,7 @@ public class ShadowTextToSpeech {
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     stopped = false;
     lastSpokenText = text.toString();
+    spokenTextList.add(text.toString());
     this.queueMode = queueMode;
 
     if (RuntimeEnvironment.getApiLevel() >= ICE_CREAM_SANDWICH_MR1) {
@@ -189,6 +195,11 @@ public class ShadowTextToSpeech {
    */
   public String getLastSynthesizeToFileText() {
     return lastSynthesizeToFileText;
+  }
+
+  /** Returns list of all the text spoken by {@link #speak}. */
+  public ImmutableList<String> getSpokenTextList() {
+    return ImmutableList.copyOf(spokenTextList);
   }
 
   /**
