@@ -2,7 +2,7 @@ package org.robolectric.integration_tests.axt;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import android.support.v7.widget.Toolbar;
 import org.robolectric.integration.axt.R;
 
 /** {@link EspressoWithMenuTest} fixture activity that uses appcompat menu's */
