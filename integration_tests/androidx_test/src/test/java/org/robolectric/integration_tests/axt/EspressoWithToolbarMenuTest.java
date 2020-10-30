@@ -1,6 +1,5 @@
 package org.robolectric.integration_tests.axt;
 
-
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static androidx.test.espresso.action.ViewActions.click;
@@ -16,30 +15,18 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.annotation.TextLayoutMode.Mode;
+import org.robolectric.shadows.ShadowViewConfiguration;
 
-/**
- * Test Espresso on Robolectric interoperability for menus.
- */
+/** Test Espresso on Robolectric interoperability for toolbar menus. */
 @RunWith(AndroidJUnit4.class)
 @TextLayoutMode(Mode.REALISTIC)
 @LooperMode(PAUSED)
-public class EspressoWithMenuTest {
-
+public class EspressoWithToolbarMenuTest {
   @Test
-  public void platformMenuClick() throws InterruptedException {
-    try (ActivityScenario<ActivityWithPlatformMenu> scenario =
-        ActivityScenario.launch(ActivityWithPlatformMenu.class)) {
-      openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext());
-      onView(withText("menu_title")).perform(click());
-
-      scenario.onActivity(activity -> assertThat(activity.menuClicked).isTrue());
-    }
-  }
-
-  @Test
-  public void appCompatMenuClick() throws InterruptedException {
-    try (ActivityScenario<ActivityWithAppCompatMenu> scenario =
-        ActivityScenario.launch(ActivityWithAppCompatMenu.class)) {
+  public void appCompatToolbarMenuClick() {
+    ShadowViewConfiguration.setHasPermanentMenuKey(false);
+    try (ActivityScenario<AppCompatActivityWithToolbarMenu> scenario =
+        ActivityScenario.launch(AppCompatActivityWithToolbarMenu.class)) {
       openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext());
       onView(withText("menu_title")).perform(click());
 
