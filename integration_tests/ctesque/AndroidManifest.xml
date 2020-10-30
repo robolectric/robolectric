@@ -3,7 +3,7 @@
   Manifest for instrumentation tests
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.integration_tests.ctesque">
+    package="org.robolectric.integrationtests.ctesque">
   <uses-sdk
       android:minSdkVersion="16"
       android:targetSdkVersion="27" />

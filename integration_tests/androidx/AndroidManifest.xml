@@ -3,7 +3,7 @@
   Manifest for instrumentation tests
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.integration_tests.androidx">
+    package="org.robolectric.integrationtests.androidx">
   <uses-sdk
       android:targetSdkVersion="29" />
 
