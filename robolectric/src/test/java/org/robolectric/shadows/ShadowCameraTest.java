@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
@@ -16,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraTest {
@@ -290,6 +292,24 @@ public class ShadowCameraTest {
     assertThat(jpegCallback.wasCalled).isTrue();
   }
 
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void testShutterEnabled() throws Exception {
+    Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+    cameraInfo.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
+    cameraInfo.canDisableShutterSound = false;
+    ShadowCamera.addCameraInfo(0, cameraInfo);
+
+    assertThat(Camera.getNumberOfCameras()).isEqualTo(1);
+    assertThat(shadowCamera.enableShutterSound(true)).isTrue();
+    assertThat(shadowCamera.enableShutterSound(false)).isFalse();
+
+    cameraInfo.canDisableShutterSound = true;
+    assertThat(shadowCamera.enableShutterSound(true)).isTrue();
+    assertThat(shadowCamera.enableShutterSound(false)).isTrue();
+    assertThat(shadowCamera.enableShutterSound(true)).isTrue();
+  }
+
   private void addBackCamera() {
     Camera.CameraInfo backCamera = new Camera.CameraInfo();
     backCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -347,8 +367,7 @@ public class ShadowCameraTest {
   private static class TestSurfaceHolder implements SurfaceHolder {
 
     @Override
-    public void addCallback(Callback callback) {
-    }
+    public void addCallback(Callback callback) {}
 
     @Override
     public Surface getSurface() {
@@ -376,31 +395,24 @@ public class ShadowCameraTest {
     }
 
     @Override
-    public void removeCallback(Callback callback) {
-    }
+    public void removeCallback(Callback callback) {}
 
     @Override
-    public void setFixedSize(int width, int height) {
-    }
+    public void setFixedSize(int width, int height) {}
 
     @Override
-    public void setFormat(int format) {
-    }
+    public void setFormat(int format) {}
 
     @Override
-    public void setKeepScreenOn(boolean screenOn) {
-    }
+    public void setKeepScreenOn(boolean screenOn) {}
 
     @Override
-    public void setSizeFromLayout() {
-    }
+    public void setSizeFromLayout() {}
 
     @Override
-    public void setType(int type) {
-    }
+    public void setType(int type) {}
 
     @Override
-    public void unlockCanvasAndPost(Canvas canvas) {
-    }
+    public void unlockCanvasAndPost(Canvas canvas) {}
   }
 }
