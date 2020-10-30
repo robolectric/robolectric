@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+/** Tests for {@link ShadowDeviceConfig} */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
 public class ShadowDeviceConfigTest {
