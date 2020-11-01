@@ -191,10 +191,10 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Upload Snapshot
+          name: Publish Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ./gradlew upload --no-rebuild
+              ./gradlew publish --no-rebuild
             fi
 
 workflows:
