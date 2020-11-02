@@ -50,7 +50,7 @@ Robolectric supports running tests against multiple Android API levels. The work
 
 ### Using Snapshots
 
-If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
+If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs. Snapshots are automatically created when a change is merged into `master`. You can see a list of recent snapshots [here](https://oss.sonatype.org/content/repositories/snapshots/org/robolectric/robolectric).
 
 #### build.gradle:
 
