@@ -325,13 +325,6 @@ public class ShadowPowerManager {
       }
     }
 
-    // TODO: remove this method since the real implementation only calls release(0).
-    /** Releases the wake lock. */
-    @Implementation
-    protected synchronized void release() {
-      release(0);
-    }
-
     /** Releases the wake lock. The {@code flags} are ignored. */
     @Implementation
     protected synchronized void release(int flags) {
