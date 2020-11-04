@@ -724,4 +724,15 @@ public class ShadowTelephonyManagerTest {
 
     assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isTrue();
   }
+
+  @Config(minSdk = N)
+  @Test
+  public void shouldGetIccAuthentication() {
+    shadowOf(telephonyManager).setIccAuthentication("iccAuth");
+
+    assertThat(
+            telephonyManager.getIccAuthentication(
+                /* appType = */ 1, /* authType = */ 1, /* data = */ "data"))
+        .isEqualTo("iccAuth");
+  }
 }

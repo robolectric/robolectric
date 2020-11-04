@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link AudioSystem}. */
-@Implements(value = AudioSystem.class)
+@Implements(value = AudioSystem.class, isInAndroidSdk = false)
 public class ShadowAudioSystem {
 
   @Implementation(minSdk = Q)

@@ -126,6 +126,7 @@ public class ShadowTelephonyManager {
   private Throwable requestCellInfoUpdateDetail = null;
   private Object telephonyDisplayInfo;
   private boolean isDataConnectionAllowed;
+  private String iccAuthentication;
 
   {
     resetSimStates();
@@ -1048,5 +1049,14 @@ public class ShadowTelephonyManager {
 
   public void setIsDataConnectionAllowed(boolean isDataConnectionAllowed) {
     this.isDataConnectionAllowed = isDataConnectionAllowed;
+  }
+
+  @Implementation(minSdk = N)
+  public String getIccAuthentication(int appType, int authType, String data) {
+    return iccAuthentication;
+  }
+
+  public void setIccAuthentication(String iccAuthentication) {
+    this.iccAuthentication = iccAuthentication;
   }
 }
