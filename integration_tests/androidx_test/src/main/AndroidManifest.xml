@@ -9,20 +9,23 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application>
-        <activity android:name="org.robolectric.integration_tests.axt.EspressoActivity"
+        <activity android:name="org.robolectric.integrationtests.axt.EspressoActivity"
                   android:label="Activity Label"
                   android:exported="true" />
-        <activity android:name="org.robolectric.integration_tests.axt.ActivityWithPlatformMenu"
+        <activity android:name="org.robolectric.integrationtests.axt.ActivityWithPlatformMenu"
             android:exported="true">
         </activity>
-        <activity android:name="org.robolectric.integration_tests.axt.ActivityWithAppCompatMenu"
+        <activity android:name="org.robolectric.integrationtests.axt.ActivityWithAppCompatMenu"
             android:exported="true"
             android:theme="@style/Theme.AppCompat" />
-        <activity android:name="org.robolectric.integration_tests.axt.AppCompatActivityWithToolbarMenu"
+        <activity android:name="org.robolectric.integrationtests.axt.AppCompatActivityWithToolbarMenu"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
-        <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity"/>
-        <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$ResultCapturingActivity"/>
-        <activity android:name="org.robolectric.integration_tests.axt.IntentsTest$DummyActivity"/>
+        <activity android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
+            android:exported="true" />
+        <activity android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
+            android:exported="true" />
+        <activity android:name="org.robolectric.integrationtests.axt.IntentsTest$DummyActivity"
+            android:exported="true" />
     </application>
 </manifest>

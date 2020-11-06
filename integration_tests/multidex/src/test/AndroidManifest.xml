@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.integration_tests.multidex">
+    package="org.robolectric.integrationtests.multidex">
 
   <uses-sdk
       android:targetSdkVersion="27"/>
@@ -10,6 +10,6 @@
 
   <instrumentation
       android:name="androidx.test.runner.AndroidJUnitRunner"
-      android:targetPackage="org.robolectric.integration_tests.multidex"/>
+      android:targetPackage="org.robolectric.integrationtests.multidex"/>
 
 </manifest>
