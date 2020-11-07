@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.integration_tests.axt">
+    package="org.robolectric.integrationtests.axt">
 
   <uses-sdk
       android:targetSdkVersion="27"/>
 
   <application>
-    <activity android:name="org.robolectric.integration_tests.axt.ActivityTestRuleTest$TranscriptActivity" />
-    <activity android:name=".EspressoActivity"/>
-    <activity android:name=".ActivityScenarioTest$LifecycleOwnerActivity"/>
+    <activity android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
+              android:exported="true"/>
+    <activity android:name=".EspressoActivity" android:exported="true"/>
+    <activity android:name=".ActivityScenarioTest$LifecycleOwnerActivity" android:exported="true"/>
     <activity android:name=".ActivityScenarioTest$TranscriptActivity" android:exported = "true"/>
     <activity-alias
                     android:name=".ActivityScenarioTestAlias"
                     android:targetActivity=".ActivityScenarioTest$TranscriptActivity" />
-    <activity android:name=".IntentsTest$ResultCapturingActivity"/>
+    <activity android:name=".IntentsTest$ResultCapturingActivity" android:exported = "true"/>
   </application>
 
   <instrumentation
