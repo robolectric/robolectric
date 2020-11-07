@@ -24,6 +24,9 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = SmsManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManager {
 
+  private String smscAddress;
+  private boolean hasSmscAddressPermission = true;
+
   @Resetter
   public static void reset() {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
@@ -438,5 +441,30 @@ public class ShadowSmsManager {
     public PendingIntent getDownloadedIntent() {
       return pendingIntent;
     }
+  }
+
+  /**
+   * Sets a boolean value to simulate whether or not the required permissions to call {@link
+   * #getSmscAddress()} have been granted.
+   */
+  public void setSmscAddressPermission(boolean smscAddressPermission) {
+    this.hasSmscAddressPermission = smscAddressPermission;
+  }
+
+  /**
+   * Returns {@code null} by default or the value specified via {@link #setSmscAddress(String)}.
+   * Required permission is set by {@link #setSmscAddressPermission(boolean)}.
+   */
+  @Implementation(minSdk = R)
+  protected String getSmscAddress() {
+    if (!hasSmscAddressPermission) {
+      throw new SecurityException();
+    }
+    return smscAddress;
+  }
+
+  /** Sets the value returned by {@link SmsManager#getSmscAddress()}. */
+  public void setSmscAddress(String smscAddress) {
+    this.smscAddress = smscAddress;
   }
 }
