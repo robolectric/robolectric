@@ -1066,7 +1066,8 @@ public class CppAssetManager2 {
     final int parentEntryCount = parent_bag.entry_count;
 
     // The keys are expected to be in sorted order. Merge the two bags.
-    while (map_entry != null && map_entry.myOffset() != map_entry_end && parentEntryIndex != parentEntryCount) {
+    while (map_entry != null && curOffset != map_entry_end && parentEntryIndex != parentEntryCount) {
+      map_entry = new ResTable_map(map_entry.myBuf(), curOffset);
       final Ref<Integer> child_keyRef = new Ref<>(dtohl(map_entry.name.ident));
       if (!is_internal_resid(child_keyRef.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(child_keyRef) != NO_ERROR) {
@@ -1103,7 +1104,7 @@ public class CppAssetManager2 {
         }
 
         // ++map_entry;
-        map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + map_entry.value.size + ResTable_map.SIZEOF - Res_value.SIZEOF);
+        curOffset += map_entry.value.size + ResTable_map.SIZEOF - Res_value.SIZEOF;
       } else {
         // Take the parent entry as-is.
         // memcpy(new_entry, parent_entry, sizeof(*new_entry));
@@ -1122,7 +1123,8 @@ public class CppAssetManager2 {
     }
 
     // Finish the child entries if they exist.
-    while (map_entry != null && map_entry.myOffset() != map_entry_end) {
+    while (map_entry != null && curOffset != map_entry_end) {
+      map_entry = new ResTable_map(map_entry.myBuf(), curOffset);
       final Ref<Integer> new_key = new Ref<>(map_entry.name.ident);
       if (!is_internal_resid(new_key.get())) {
         if (entry.dynamic_ref_table.lookupResourceId(new_key) != NO_ERROR) {
@@ -1149,7 +1151,7 @@ public class CppAssetManager2 {
         return null;
       }
       // ++map_entry;
-      map_entry = new ResTable_map(map_entry.myBuf(), map_entry.myOffset() + map_entry.value.size + ResTable_map.SIZEOF - Res_value.SIZEOF);
+      curOffset += map_entry.value.size + ResTable_map.SIZEOF - Res_value.SIZEOF;
       // ++new_entry;
       ++newEntryIndex;
     }
