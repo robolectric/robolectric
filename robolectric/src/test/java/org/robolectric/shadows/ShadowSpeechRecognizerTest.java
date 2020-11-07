@@ -27,7 +27,11 @@ public class ShadowSpeechRecognizerTest {
   public void setUp() {
     speechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(ApplicationProvider.getApplicationContext());
-    shadowOf(speechRecognizer).handleChangeListener(new TestRecognitionListener());
+
+    speechRecognizer.setRecognitionListener(new TestRecognitionListener());
+    speechRecognizer.startListening(new Intent());
+
+    shadowOf(getMainLooper()).idle();
   }
 
   @Test
@@ -35,7 +39,7 @@ public class ShadowSpeechRecognizerTest {
     int expectedError = 1;
 
     shadowOf(speechRecognizer).triggerOnError(expectedError);
-    shadowOf(getMainLooper()).idle();
+
 
     assertThat(errorRecieved).isEqualTo(expectedError);
   }
