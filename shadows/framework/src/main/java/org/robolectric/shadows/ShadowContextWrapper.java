@@ -142,7 +142,7 @@ public class ShadowContextWrapper {
     getShadowInstrumentation().denyPermissions(pid, uid, permissions);
   }
 
-  ShadowInstrumentation getShadowInstrumentation() {
+  static ShadowInstrumentation getShadowInstrumentation() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     return Shadow.extract(activityThread.getInstrumentation());
   }
