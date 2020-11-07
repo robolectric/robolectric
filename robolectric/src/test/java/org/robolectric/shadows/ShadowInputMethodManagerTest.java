@@ -9,9 +9,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ResultReceiver;
+import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,6 +83,21 @@ public class ShadowInputMethodManagerTest {
 
     manager.toggleSoftInput(0, 0);
     verify(mockHandler).handleSoftInputVisibilityChange(true);
+  }
+
+  @Test
+  public void shouldUpdateEnabledInputMethodList() {
+    InputMethodInfo inputMethodInfo =
+        new InputMethodInfo("pkg", "ClassName", "customIME", "customImeSettingsActivity");
+
+    shadow.setEnabledInputMethodInfoList(ImmutableList.of(inputMethodInfo));
+
+    assertThat(shadow.getEnabledInputMethodList()).containsExactly(inputMethodInfo);
+  }
+
+  @Test
+  public void getEnabledInputMethodListReturnsEmptyListByDefault() {
+    assertThat(shadow.getEnabledInputMethodList()).isEmpty();
   }
 
   private static class CapturingResultReceiver extends ResultReceiver {
