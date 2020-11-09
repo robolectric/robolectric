@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 
+import android.annotation.SystemApi;
 import android.app.JobSchedulerImpl;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
@@ -23,6 +24,11 @@ public abstract class ShadowJobScheduler {
 
   @Implementation
   protected abstract int schedule(JobInfo job);
+
+  @Implementation(minSdk = N)
+  @SystemApi
+  @HiddenApi
+  protected abstract int scheduleAsPackage(JobInfo job, String packageName, int userId, String tag);
 
   @Implementation
   protected abstract void cancel(int jobId);
@@ -56,6 +62,18 @@ public abstract class ShadowJobScheduler {
 
       scheduledJobs.put(job.getId(), job);
       return JobScheduler.RESULT_SUCCESS;
+    }
+
+    /**
+     * Simple implementation redirecting all calls to {@link #schedule(JobInfo)}. Ignores all
+     * arguments other than {@code job}.
+     */
+    @Override
+    @Implementation(minSdk = N)
+    @SystemApi
+    @HiddenApi
+    protected int scheduleAsPackage(JobInfo job, String packageName, int userId, String tag) {
+      return schedule(job);
     }
 
     @Override @Implementation
