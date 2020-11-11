@@ -440,6 +440,14 @@ public class ResourcesTest {
   }
 
   @Test
+  public void testGetNinePatchDrawableIntrinsicWidth() {
+    float density = resources.getDisplayMetrics().density;
+    NinePatchDrawable ninePatchDrawable =
+        (NinePatchDrawable) resources.getDrawable(R.drawable.nine_patch_drawable);
+    assertThat((float) ninePatchDrawable.getIntrinsicWidth()).isEqualTo(98.0f * density);
+  }
+
+  @Test
   public void testGetIdentifier() throws Exception {
 
     final String resourceType = "string";
