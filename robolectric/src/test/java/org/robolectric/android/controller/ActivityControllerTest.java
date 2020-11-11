@@ -12,12 +12,14 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ContextThemeWrapper;
 import android.view.ViewRootImpl;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -32,13 +34,15 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowWindowManagerImpl;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
 public class ActivityControllerTest {
   private static final List<String> transcript = new ArrayList<>();
-  private final ComponentName componentName = new ComponentName("org.robolectric", MyActivity.class.getName());
+  private final ComponentName componentName =
+      new ComponentName("org.robolectric", MyActivity.class.getName());
   private final ActivityController<MyActivity> controller = Robolectric.buildActivity(MyActivity.class);
 
   @Before
@@ -171,6 +175,20 @@ public class ActivityControllerTest {
   public void destroy_callsPerformDestroyWhilePaused() {
     controller.create().destroy();
     assertThat(transcript).containsAtLeast("finishedOnDestroy", "onDestroy");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.JELLY_BEAN_MR1)
+  public void destroy_cleansUpWindowManagerState() {
+    WindowManager windowManager = controller.get().getWindowManager();
+    ShadowWindowManagerImpl shadowWindowManager =
+        ((ShadowWindowManagerImpl) shadowOf(windowManager));
+    controller.create().start().resume().visible();
+    assertThat(shadowWindowManager.getViews())
+        .contains(controller.get().getWindow().getDecorView());
+    controller.pause().stop().destroy();
+    assertThat(shadowWindowManager.getViews())
+        .doesNotContain(controller.get().getWindow().getDecorView());
   }
 
   @Test
