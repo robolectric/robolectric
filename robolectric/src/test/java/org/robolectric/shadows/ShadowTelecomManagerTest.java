@@ -427,7 +427,7 @@ public class ShadowTelecomManagerTest {
     assertThat(intent.getAction()).isEqualTo(Intent.ACTION_DIAL_EMERGENCY);
   }
 
-  @Config(minSdk = R)
+  @Config(minSdk = R, maxSdk = R)
   @Test
   public void createLaunchEmergencyDialerIntent_whenPackageAvailable_shouldContainPackage()
       throws NameNotFoundException {

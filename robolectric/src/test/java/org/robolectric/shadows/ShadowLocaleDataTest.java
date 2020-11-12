@@ -4,7 +4,9 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -28,14 +30,38 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.firstDayOfWeek).isEqualTo(1);
     assertThat(localeData.minimalDaysInFirstWeek).isEqualTo(1);
 
-    assertThat(localeData.longMonthNames).isEqualTo(new String[]{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"});
-    assertThat(localeData.shortMonthNames).isEqualTo(new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"});
+    assertThat(localeData.longMonthNames)
+        .isEqualTo(
+            new String[] {
+              "January",
+              "February",
+              "March",
+              "April",
+              "May",
+              "June",
+              "July",
+              "August",
+              "September",
+              "October",
+              "November",
+              "December"
+            });
+    assertThat(localeData.shortMonthNames)
+        .isEqualTo(
+            new String[] {
+              "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+            });
 
     assertThat(localeData.longStandAloneMonthNames).isEqualTo(localeData.longMonthNames);
     assertThat(localeData.shortStandAloneMonthNames).isEqualTo(localeData.shortMonthNames);
 
-    assertThat(localeData.longWeekdayNames).isEqualTo(new String[]{"", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"});
-    assertThat(localeData.shortWeekdayNames).isEqualTo(new String[]{"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"});
+    assertThat(localeData.longWeekdayNames)
+        .isEqualTo(
+            new String[] {
+              "", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+            });
+    assertThat(localeData.shortWeekdayNames)
+        .isEqualTo(new String[] {"", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"});
 
     assertThat(localeData.longStandAloneWeekdayNames).isEqualTo(localeData.longWeekdayNames);
     assertThat(localeData.shortStandAloneWeekdayNames).isEqualTo(localeData.shortWeekdayNames);
@@ -61,8 +87,10 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.infinity).isEqualTo("∞");
     assertThat(localeData.NaN).isEqualTo("NaN");
 
-    assertThat(localeData.currencySymbol).isEqualTo("$");
-    assertThat(localeData.internationalCurrencySymbol).isEqualTo("USD");
+    if (getApiLevel() <= R) {
+      assertThat(localeData.currencySymbol).isEqualTo("$");
+      assertThat(localeData.internationalCurrencySymbol).isEqualTo("USD");
+    }
 
     assertThat(localeData.numberPattern).isEqualTo("#,##0.###");
     assertThat(localeData.integerPattern).isEqualTo("#,##0");
@@ -97,12 +125,16 @@ public class ShadowLocaleDataTest {
   public void shouldSupportLocaleEn_US_since_jelly_bean_mr1() throws Exception {
     LocaleData localeData = LocaleData.get(Locale.US);
 
-    assertThat(localeData.tinyMonthNames).isEqualTo(new String[]{"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"});
+    assertThat(localeData.tinyMonthNames)
+        .isEqualTo(new String[] {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"});
     assertThat(localeData.tinyStandAloneMonthNames).isEqualTo(localeData.tinyMonthNames);
-    assertThat(localeData.tinyWeekdayNames).isEqualTo(new String[]{"", "S", "M", "T", "W", "T", "F", "S"});
+    assertThat(localeData.tinyWeekdayNames)
+        .isEqualTo(new String[] {"", "S", "M", "T", "W", "T", "F", "S"});
     assertThat(localeData.tinyStandAloneWeekdayNames).isEqualTo(localeData.tinyWeekdayNames);
 
-    assertThat(localeData.yesterday).isEqualTo("Yesterday");
+    if (getApiLevel() <= R) {
+      assertThat(localeData.yesterday).isEqualTo("Yesterday");
+    }
     assertThat(localeData.today).isEqualTo("Today");
     assertThat(localeData.tomorrow).isEqualTo("Tomorrow");
   }
