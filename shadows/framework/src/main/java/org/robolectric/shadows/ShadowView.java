@@ -64,13 +64,12 @@ public class ShadowView {
   public Point scrollToCoordinates = new Point();
   private boolean didRequestLayout;
   private MotionEvent lastTouchEvent;
-  private float scaleX = 1.0f;
-  private float scaleY = 1.0f;
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
   private Rect globalVisibleRect;
   private int layerType;
+  private AnimationRunner animationRunner;
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -295,7 +294,8 @@ public class ShadowView {
   @Deprecated
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
-      dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
+      dumpAttribute(
+          out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
     }
 
     switch (realView.getVisibility()) {
@@ -455,7 +455,9 @@ public class ShadowView {
   @Implementation
   protected void scrollTo(int x, int y) {
     try {
-      Method method = View.class.getDeclaredMethod("onScrollChanged", new Class[]{int.class, int.class, int.class, int.class});
+      Method method =
+          View.class.getDeclaredMethod(
+              "onScrollChanged", int.class, int.class, int.class, int.class);
       method.setAccessible(true);
       method.invoke(realView, x, y, scrollToCoordinates.x, scrollToCoordinates.y);
     } catch (Exception e) {
@@ -505,11 +507,20 @@ public class ShadowView {
     }
   }
 
-  private AnimationRunner animationRunner;
+  @Implementation
+  protected void clearAnimation() {
+    directly().clearAnimation();
+
+    if (animationRunner != null) {
+      animationRunner.cancel();
+      animationRunner = null;
+    }
+  }
 
   private class AnimationRunner implements Runnable {
     private final Animation animation;
     private long startTime, startOffset, elapsedTime;
+    private boolean canceled;
 
     AnimationRunner(Animation animation) {
       this.animation = animation;
@@ -537,12 +548,18 @@ public class ShadowView {
     public void run() {
       // Abort if start time has been messed with, as this simulation is only designed to handle
       // standard situations.
-      if ((animation.getStartTime() == startTime && animation.getStartOffset() == startOffset) &&
-          animation.getTransformation(startTime == Animation.START_ON_FIRST_FRAME ?
-              SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation()) &&
-              // We can't handle infinitely repeating animations in the current scheduling model,
-              // so abort after one iteration.
-              !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
+      if (!canceled
+          && (animation.getStartTime() == startTime && animation.getStartOffset() == startOffset)
+          && animation.getTransformation(
+              startTime == Animation.START_ON_FIRST_FRAME
+                  ? SystemClock.uptimeMillis()
+                  : (startTime + startOffset + elapsedTime),
+              new Transformation())
+          &&
+          // We can't handle infinitely repeating animations in the current scheduling model,
+          // so abort after one iteration.
+          !(animation.getRepeatCount() == Animation.INFINITE
+              && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
         // TODO: get the correct value for ShadowPausedLooper mode
@@ -551,6 +568,10 @@ public class ShadowView {
       } else {
         animationRunner = null;
       }
+    }
+
+    public void cancel() {
+      this.canceled = true;
     }
   }
 
@@ -624,7 +645,8 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+    directlyOn(
+        realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
   }
 
   @Implementation
