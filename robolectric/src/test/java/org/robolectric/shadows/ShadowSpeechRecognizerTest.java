@@ -2,50 +2,48 @@ package org.robolectric.shadows;
 
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 import androidx.test.core.app.ApplicationProvider;
 import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.shadows.ShadowLog.LogItem;
 
 /** Unit tests for {@link ShadowSpeechRecognizer}. */
 @RunWith(RobolectricTestRunner.class)
 public class ShadowSpeechRecognizerTest {
   private SpeechRecognizer speechRecognizer;
-  private static Bundle bundleRecieved;
-  private static float rmsdbRecieved;
-  private static int errorRecieved;
+  private TestRecognitionListener listener;
 
   @Before
   public void setUp() {
     speechRecognizer =
         SpeechRecognizer.createSpeechRecognizer(ApplicationProvider.getApplicationContext());
-
-    speechRecognizer.setRecognitionListener(new TestRecognitionListener());
-    speechRecognizer.startListening(new Intent());
-
-    shadowOf(getMainLooper()).idle();
+    listener = new TestRecognitionListener();
   }
 
   @Test
-  public void onErrorCalled() throws Exception {
-    int expectedError = 1;
+  public void onErrorCalled() {
+    startListening();
 
-    shadowOf(speechRecognizer).triggerOnError(expectedError);
+    shadowOf(speechRecognizer).triggerOnError(-1);
 
-
-    assertThat(errorRecieved).isEqualTo(expectedError);
+    assertThat(listener.errorReceived).isEqualTo(-1);
   }
 
   @Test
   public void onPartialResultsCalled() throws Exception {
+    startListening();
     Bundle expectedBundle = new Bundle();
     ArrayList<String> results = new ArrayList<>();
     String result = "onPartialResult";
@@ -53,13 +51,13 @@ public class ShadowSpeechRecognizerTest {
     expectedBundle.putStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION, results);
 
     shadowOf(speechRecognizer).triggerOnPartialResults(expectedBundle);
-    shadowOf(getMainLooper()).idle();
 
-    assertThat(bundleRecieved).isEqualTo(expectedBundle);
+    assertThat(listener.bundleReceived).isEqualTo(expectedBundle);
   }
 
   @Test
   public void onResultCalled() throws Exception {
+    startListening();
     Bundle expectedBundle = new Bundle();
     ArrayList<String> results = new ArrayList<>();
     String result = "onResult";
@@ -69,29 +67,62 @@ public class ShadowSpeechRecognizerTest {
     shadowOf(speechRecognizer).triggerOnResults(expectedBundle);
     shadowOf(getMainLooper()).idle();
 
-    assertThat(bundleRecieved).isEqualTo(expectedBundle);
+    assertThat(listener.bundleReceived).isEqualTo(expectedBundle);
   }
 
   @Test
   public void onRmsChangedCalled() throws Exception {
-    float expectedRmsdB = 1.0f;
+    startListening();
 
-    shadowOf(speechRecognizer).triggerOnRmsChanged(expectedRmsdB);
-    shadowOf(getMainLooper()).idle();
+    shadowOf(speechRecognizer).triggerOnRmsChanged(1.0f);
 
-    assertThat(rmsdbRecieved).isEqualTo(expectedRmsdB);
+    assertThat(listener.rmsDbReceived).isEqualTo(1.0f);
   }
 
   @Test
   public void startAndStopListening() throws Exception {
-    // Check that start and stop listening methods in SpeechRecognizer don't break.
-    speechRecognizer.startListening(new Intent());
+    startListening();
     shadowOf(speechRecognizer).triggerOnResults(new Bundle());
-    shadowOf(getMainLooper()).idle();
     speechRecognizer.stopListening();
+
+    assertNoErrorLogs();
+  }
+
+  /** Verify the startlistening flow works when using custom component name. */
+  @Test
+  public void startListeningWithCustomComponent() {
+    speechRecognizer =
+        SpeechRecognizer.createSpeechRecognizer(
+            ApplicationProvider.getApplicationContext(),
+            new ComponentName("org.robolectrc", "FakeComponent"));
+    speechRecognizer.setRecognitionListener(listener);
+    speechRecognizer.startListening(new Intent());
+    shadowOf(getMainLooper()).idle();
+    shadowOf(speechRecognizer).triggerOnResults(new Bundle());
+    assertThat(listener.bundleReceived).isNotNull();
+
+    assertNoErrorLogs();
+  }
+
+  private void startListening() {
+    speechRecognizer.setRecognitionListener(listener);
+    speechRecognizer.startListening(new Intent());
+    shadowOf(getMainLooper()).idle();
+  }
+
+  private static void assertNoErrorLogs() {
+    for (LogItem item : ShadowLog.getLogsForTag("SpeechRecognizer")) {
+      if (item.type >= Log.ERROR) {
+        fail("Found unexpected error log: " + item.msg);
+      }
+    }
   }
 
   static final class TestRecognitionListener implements RecognitionListener {
+
+    int errorReceived;
+    Bundle bundleReceived;
+    float rmsDbReceived;
 
     @Override
     public void onBeginningOfSpeech() {}
@@ -104,7 +135,7 @@ public class ShadowSpeechRecognizerTest {
 
     @Override
     public void onError(int error) {
-      errorRecieved = error;
+      errorReceived = error;
     }
 
     @Override
@@ -112,7 +143,7 @@ public class ShadowSpeechRecognizerTest {
 
     @Override
     public void onPartialResults(Bundle bundle) {
-      bundleRecieved = bundle;
+      bundleReceived = bundle;
     }
 
     @Override
@@ -120,12 +151,12 @@ public class ShadowSpeechRecognizerTest {
 
     @Override
     public void onResults(Bundle bundle) {
-      bundleRecieved = bundle;
+      bundleReceived = bundle;
     }
 
     @Override
     public void onRmsChanged(float rmsdB) {
-      rmsdbRecieved = rmsdB;
+      rmsDbReceived = rmsdB;
     }
   }
 }
