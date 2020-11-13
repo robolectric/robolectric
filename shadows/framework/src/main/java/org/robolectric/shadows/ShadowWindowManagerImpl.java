@@ -43,7 +43,9 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   private static Display defaultDisplayJB;
-  @RealObject private WindowManagerImpl realWindowManagerImpl;
+
+  @RealObject WindowManagerImpl realObject;
+  private static final Multimap<Integer, View> views = ArrayListMultimap.create();
 
   /** internal only */
   public static void configureDefaultDisplayForJBOnly(
@@ -57,10 +59,6 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     ShadowDisplay shadowDisplay = Shadow.extract(defaultDisplayJB);
     shadowDisplay.configureForJBOnly(configuration, displayMetrics);
   }
-
-  @RealObject
-  WindowManagerImpl realObject;
-  private static final Multimap<Integer, View> views = ArrayListMultimap.create();
 
   @Implementation
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
@@ -116,8 +114,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   /** Re implement to avoid server call */
   @Implementation(minSdk = R)
   protected WindowInsets getWindowInsetsFromServer(WindowManager.LayoutParams attrs, Rect bounds) {
-    Context context =
-        reflector(ReflectorWindowManagerImpl.class, realWindowManagerImpl).getContext();
+    Context context = reflector(ReflectorWindowManagerImpl.class, realObject).getContext();
     final Rect systemWindowInsets = new Rect();
     final Rect stableInsets = new Rect();
     final DisplayCutout.ParcelableWrapper displayCutout = new DisplayCutout.ParcelableWrapper();
