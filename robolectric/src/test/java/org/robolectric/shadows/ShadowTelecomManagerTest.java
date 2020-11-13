@@ -454,6 +454,18 @@ public class ShadowTelecomManagerTest {
     assertThat(uri.toString()).isEqualTo("tel:1234");
   }
 
+  @Test
+  @Config(minSdk = Q)
+  public void getUserSelectedOutgoingPhoneAccount() {
+    // Check initial state
+    assertThat(telecomService.getUserSelectedOutgoingPhoneAccount()).isNull();
+
+    // Set a phone account and verify
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    shadowOf(telecomService).setUserSelectedOutgoingPhoneAccount(phoneAccountHandle);
+    assertThat(telecomService.getUserSelectedOutgoingPhoneAccount()).isEqualTo(phoneAccountHandle);
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return new PhoneAccountHandle(
         new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),
