@@ -20,8 +20,10 @@ public class AppWidgetProviderInfoBuilder {
 
   public AppWidgetProviderInfo build() {
     AppWidgetProviderInfo appWidgetProviderInfo = new AppWidgetProviderInfo();
-    reflector(AppWidgetProviderInfoReflector.class, appWidgetProviderInfo)
-        .setProviderInfo(this.providerInfo);
+    if (this.providerInfo != null) {
+      reflector(AppWidgetProviderInfoReflector.class, appWidgetProviderInfo)
+          .setProviderInfo(this.providerInfo);
+    }
     return appWidgetProviderInfo;
   }
 
