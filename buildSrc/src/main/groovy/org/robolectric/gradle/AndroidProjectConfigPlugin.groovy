@@ -17,8 +17,8 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
                 events = ["failed", "skipped"]
             }
 
-            minHeapSize = "1024m"
-            maxHeapSize = "4096m"
+            minHeapSize = "2048m"
+            maxHeapSize = "8192m"
 
             if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
                 maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
@@ -27,7 +27,7 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }
                     .collect { k,v -> "-D$k=$v" }
-            jvmArgs = ["-XX:MaxPermSize=1024m"] + forwardedSystemProperties
+            jvmArgs = forwardedSystemProperties
 
             doFirst {
                 if (!forwardedSystemProperties.isEmpty()) {
