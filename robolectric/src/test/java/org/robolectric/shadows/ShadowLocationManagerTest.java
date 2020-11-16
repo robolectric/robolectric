@@ -939,8 +939,6 @@ public class ShadowLocationManagerTest {
 
       locationManager.registerGnssStatusCallback(callback, handler);
       shadowLocationManager.sendGnssStatus(status);
-      assertThat(callback.lastGnssStatus).isNull();
-
       shadowOf(ht.getLooper()).idle();
       assertThat(callback.lastGnssStatus).isEqualTo(status);
     } finally {
@@ -989,8 +987,6 @@ public class ShadowLocationManagerTest {
 
       assertThat(locationManager.addNmeaListener(callback, handler)).isTrue();
       shadowLocationManager.sendNmeaMessage("message", 1000);
-      assertThat(callback.lastNmeaMessage).isNull();
-
       shadowOf(ht.getLooper()).idle();
       assertThat(callback.lastNmeaMessage).isEqualTo("message");
     } finally {
