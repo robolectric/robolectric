@@ -42,4 +42,13 @@ public class ShadowAppIntegrityManager {
   protected String getCurrentRuleSetVersion() {
     return recordedRuleSet.isPresent() ? recordedRuleSet.get().getVersion() : "None";
   }
+
+  /**
+   * Overrides the implementation of the {@code getCurrentRuleSetProvider} method to return the
+   * gmscore package name for all the requests when a rule set exists.
+   */
+  @Implementation
+  protected String getCurrentRuleSetProvider() {
+    return recordedRuleSet.isPresent() ? "com.google.android.gms" : "None";
+  }
 }
