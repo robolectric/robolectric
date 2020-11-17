@@ -4,6 +4,7 @@ import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.UserHandle;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
@@ -21,6 +22,11 @@ public class ShadowContextWrapper {
   /** Returns the broadcast intents sent during the tests (for all users). */
   public List<Intent> getBroadcastIntents() {
     return getShadowInstrumentation().getBroadcastIntents();
+  }
+
+  /** Returns the broadcast options when the intent was last sent. */
+  public Bundle getBroadcastOptions(Intent intent) {
+    return getShadowInstrumentation().getBroadcastOptions(intent);
   }
 
   /** Returns the broadcast intents sent to the given user. */

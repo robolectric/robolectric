@@ -79,6 +79,7 @@ public class ShadowInstrumentation {
   private final List<Intent.FilterComparison> stoppedServices =
       Collections.synchronizedList(new ArrayList<>());
   private final List<Intent> broadcastIntents = Collections.synchronizedList(new ArrayList<>());
+  private final Map<Intent, Bundle> broadcastOptions = Collections.synchronizedMap(new HashMap<>());
   private final Map<UserHandle, List<Intent>> broadcastIntentsForUser =
       Collections.synchronizedMap(new HashMap<>());
   private final List<ServiceConnection> boundServiceConnections =
@@ -245,7 +246,8 @@ public class ShadowInstrumentation {
       Bundle initialExtras,
       Context context) {
     List<Wrapper> receivers =
-        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
+        getAppropriateWrappers(
+            context, userHandle, intent, receiverPermission, /* broadcastOptions= */ null);
     sortByPriority(receivers);
     if (resultReceiver != null) {
       receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
@@ -280,8 +282,13 @@ public class ShadowInstrumentation {
 
   /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
   private List<Wrapper> getAppropriateWrappers(
-      Context context, @Nullable UserHandle userHandle, Intent intent, String receiverPermission) {
+      Context context,
+      @Nullable UserHandle userHandle,
+      Intent intent,
+      String receiverPermission,
+      @Nullable Bundle broadcastOptions) {
     broadcastIntents.add(intent);
+    this.broadcastOptions.put(intent, broadcastOptions);
 
     if (userHandle != null) {
       List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
@@ -455,13 +462,29 @@ public class ShadowInstrumentation {
    */
   void sendBroadcastWithPermission(
       Intent intent, UserHandle userHandle, String receiverPermission, Context context) {
-    sendBroadcastWithPermission(intent, userHandle, receiverPermission, context, 0);
+    sendBroadcastWithPermission(
+        intent,
+        userHandle,
+        receiverPermission,
+        context,
+        /* broadcastOptions= */ null,
+        /* resultCode= */ 0);
   }
 
   void sendBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context, int resultCode) {
     sendBroadcastWithPermission(
-        intent, /*userHandle=*/ null, receiverPermission, context, resultCode);
+        intent, /*userHandle=*/ null, receiverPermission, context, null, resultCode);
+  }
+
+  void sendBroadcastWithPermission(
+      Intent intent,
+      String receiverPermission,
+      Context context,
+      @Nullable Bundle broadcastOptions,
+      int resultCode) {
+    sendBroadcastWithPermission(
+        intent, /*userHandle=*/ null, receiverPermission, context, broadcastOptions, resultCode);
   }
 
   void sendBroadcastWithPermission(
@@ -469,16 +492,22 @@ public class ShadowInstrumentation {
       UserHandle userHandle,
       String receiverPermission,
       Context context,
+      @Nullable Bundle broadcastOptions,
       int resultCode) {
     List<Wrapper> wrappers =
-        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
+        getAppropriateWrappers(context, userHandle, intent, receiverPermission, broadcastOptions);
     postToWrappers(wrappers, intent, context, resultCode);
   }
 
   void sendOrderedBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context) {
     List<Wrapper> wrappers =
-        getAppropriateWrappers(context, /*userHandle=*/ null, intent, receiverPermission);
+        getAppropriateWrappers(
+            context,
+            /*userHandle=*/ null,
+            intent,
+            receiverPermission,
+            /* broadcastOptions= */ null);
     // sort by the decrease of priorities
     sortByPriority(wrappers);
 
@@ -501,6 +530,18 @@ public class ShadowInstrumentation {
     return broadcastIntents;
   }
 
+  @Nullable
+  Bundle getBroadcastOptions(Intent intent) {
+    synchronized (broadcastOptions) {
+      for (Intent broadcastIntent : broadcastOptions.keySet()) {
+        if (broadcastIntent.filterEquals(intent)) {
+          return broadcastOptions.get(broadcastIntent);
+        }
+      }
+      return null;
+    }
+  }
+
   List<Intent> getBroadcastIntentsForUser(UserHandle userHandle) {
     List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
     if (intentsForUser == null) {
@@ -512,6 +553,7 @@ public class ShadowInstrumentation {
 
   void clearBroadcastIntents() {
     broadcastIntents.clear();
+    broadcastOptions.clear();
     broadcastIntentsForUser.clear();
   }
 

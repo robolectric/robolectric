@@ -195,7 +195,7 @@ public class ShadowPendingIntent {
     } else if (isBroadcastIntent()) {
       for (Intent intentToSend : intentsToSend) {
         shadowInstrumentation.sendBroadcastWithPermission(
-            intentToSend, requiredPermission, context, code);
+            intentToSend, requiredPermission, context, options, code);
       }
     } else if (isServiceIntent()) {
       for (Intent intentToSend : intentsToSend) {
@@ -253,11 +253,12 @@ public class ShadowPendingIntent {
   /**
    * This returns the last Intent in the Intent[] to be delivered when the PendingIntent is sent.
    * This method is particularly useful for PendingIntents created with a single Intent:
+   *
    * <ul>
-   *   <li>{@link #getActivity(Context, int, Intent, int)}</li>
-   *   <li>{@link #getActivity(Context, int, Intent, int, Bundle)}</li>
-   *   <li>{@link #getBroadcast(Context, int, Intent, int)}</li>
-   *   <li>{@link #getService(Context, int, Intent, int)}</li>
+   *   <li>{@link #getActivity(Context, int, Intent, int)}
+   *   <li>{@link #getActivity(Context, int, Intent, int, Bundle)}
+   *   <li>{@link #getBroadcast(Context, int, Intent, int)}
+   *   <li>{@link #getService(Context, int, Intent, int)}
    * </ul>
    *
    * @return the final Intent to be delivered when the PendingIntent is sent
