@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -68,10 +69,13 @@ public class ShadowLocaleData {
       localeData.tinyWeekdayNames = new String[]{"", "S", "M", "T", "W", "T", "F", "S"};
       localeData.tinyStandAloneWeekdayNames = localeData.tinyWeekdayNames;
 
-      localeData.yesterday = "Yesterday";
+      if (getApiLevel() <= R) {
+        localeData.yesterday = "Yesterday";
+      }
       localeData.today = "Today";
       localeData.tomorrow = "Tomorrow";
     }
+
 
     localeData.longStandAloneMonthNames = localeData.longMonthNames;
     localeData.shortStandAloneMonthNames = localeData.shortMonthNames;
@@ -143,8 +147,10 @@ public class ShadowLocaleData {
     localeData.infinity = "\u221E";
     localeData.NaN = "NaN";
 
-    localeData.currencySymbol = "$";
-    localeData.internationalCurrencySymbol = "USD";
+    if (getApiLevel() <= R) {
+      localeData.currencySymbol = "$";
+      localeData.internationalCurrencySymbol = "USD";
+    }
 
     localeData.numberPattern = "\u0023,\u0023\u00230.\u0023\u0023\u0023";
     localeData.integerPattern = "\u0023,\u0023\u00230";

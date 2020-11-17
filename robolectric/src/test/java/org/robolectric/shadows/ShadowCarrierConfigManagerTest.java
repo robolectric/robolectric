@@ -7,12 +7,14 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
+import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowCarrierConfigManager.CarrierConfigProvider;
 
 /** Junit test for {@link ShadowCarrierConfigManager}. */
 @RunWith(AndroidJUnit4.class)
@@ -52,5 +54,21 @@ public class ShadowCarrierConfigManagerTest {
     assertThat(verifyBundle.get("key1")).isEqualTo("test");
     assertThat(verifyBundle.getInt("key2")).isEqualTo(100);
     assertThat(verifyBundle.getBoolean("key3")).isTrue();
+  }
+
+  @Test
+  public void getConfigForSubId_afterSetNullConfig_shouldReturnNullValue() throws Exception {
+    shadowOf(carrierConfigManager)
+        .setConfigProviderForSubId(
+            TEST_ID,
+            new CarrierConfigProvider() {
+              @Override
+              @Nullable
+              public PersistableBundle get() {
+                return null;
+              }
+            });
+    PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(TEST_ID);
+    assertThat(persistableBundle).isNull();
   }
 }

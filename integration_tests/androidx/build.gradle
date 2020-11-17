@@ -17,6 +17,12 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+
+            // Use less memory for ActivityCompatStressTest to catch OOMs.
+            all {
+                minHeapSize = "128m"
+                maxHeapSize = "1024m"
+            }
         }
     }
 
