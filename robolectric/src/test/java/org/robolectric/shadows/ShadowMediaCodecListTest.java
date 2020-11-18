@@ -104,4 +104,19 @@ public class ShadowMediaCodecListTest {
     MediaCodecList mediaCodecList = new MediaCodecList(MediaCodecList.ALL_CODECS);
     assertThat(mediaCodecList.getCodecInfos()).hasLength(0);
   }
+
+  @Test
+  public void codecCapabilities_createFromProfileLevel() {
+    CodecCapabilities codecCapabilities =
+        CodecCapabilities.createFromProfileLevel(
+            MediaFormat.MIMETYPE_VIDEO_AVC,
+            CodecProfileLevel.AVCProfileBaseline,
+            CodecProfileLevel.AVCLevel2);
+    CodecProfileLevel expected = new CodecProfileLevel();
+    expected.profile = CodecProfileLevel.AVCProfileBaseline;
+    expected.level = CodecProfileLevel.AVCLevel2;
+    assertThat(codecCapabilities.getMimeType()).isEqualTo(MediaFormat.MIMETYPE_VIDEO_AVC);
+    assertThat(codecCapabilities.profileLevels).hasLength(1);
+    assertThat(codecCapabilities.profileLevels[0]).isEqualTo(expected);
+  }
 }
