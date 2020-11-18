@@ -4,21 +4,25 @@ import static android.media.MediaFormat.MIMETYPE_AUDIO_AAC;
 import static android.media.MediaFormat.MIMETYPE_AUDIO_OPUS;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_VP9;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaCodecInfo.CodecProfileLevel;
+import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link MediaCodecInfoBuilder}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Q)
+@Config(minSdk = LOLLIPOP)
 public class MediaCodecInfoBuilderTest {
 
   private static final String AAC_ENCODER_NAME = "test.encoder.aac";
@@ -64,6 +68,7 @@ public class MediaCodecInfoBuilderTest {
       };
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateAudioEncoderCapabilities() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -85,6 +90,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateAudioDecoderCapabilities() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -104,6 +110,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateVideoEncoderCapabilities() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -128,6 +135,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateVideoDecoderCapabilities() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -182,6 +190,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateMediaCodecInfoForEncoder() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -208,6 +217,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void isVendor_properlySet() {
     MediaCodecInfo mediaCodecInfo =
         MediaCodecInfoBuilder.newBuilder()
@@ -222,6 +232,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateMediaCodecInfoForDecoder() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -248,6 +259,7 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
   public void canCreateMediaCodecInfoWithMultipleFormats() {
     CodecCapabilities avcEncoderCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
@@ -292,6 +304,32 @@ public class MediaCodecInfoBuilderTest {
   @Test(expected = NullPointerException.class)
   public void buildWithoutSettingNameThrowsException() {
     MediaCodecInfoBuilder.newBuilder().build();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void mediaCodecInfo_preQ() {
+    if (RuntimeEnvironment.getApiLevel() <= M) {
+      MediaCodecList.getCodecCount();
+    }
+    CodecCapabilities codecCapabilities =
+        MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+            .setMediaFormat(AAC_MEDIA_FORMAT)
+            .setIsEncoder(true)
+            .setProfileLevels(AAC_PROFILE_LEVELS)
+            .build();
+
+    MediaCodecInfo mediaCodecInfo =
+        MediaCodecInfoBuilder.newBuilder()
+            .setName(AAC_ENCODER_NAME)
+            .setIsEncoder(true)
+            .setCapabilities(new CodecCapabilities[] {codecCapabilities})
+            .build();
+
+    assertThat(mediaCodecInfo.getName()).isEqualTo(AAC_ENCODER_NAME);
+    assertThat(mediaCodecInfo.isEncoder()).isTrue();
+    assertThat(mediaCodecInfo.getSupportedTypes()).asList().containsExactly(MIMETYPE_AUDIO_AAC);
+    assertThat(mediaCodecInfo.getCapabilitiesForType(MIMETYPE_AUDIO_AAC)).isNotNull();
   }
 
   /** Create a sample {@link CodecProfileLevel}. */

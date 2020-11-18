@@ -1,5 +1,8 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
+
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.AudioCapabilities;
 import android.media.MediaCodecInfo.CodecCapabilities;
@@ -8,6 +11,7 @@ import android.media.MediaCodecInfo.EncoderCapabilities;
 import android.media.MediaCodecInfo.VideoCapabilities;
 import android.media.MediaFormat;
 import com.google.common.base.Preconditions;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -104,14 +108,23 @@ public class MediaCodecInfoBuilder {
   public MediaCodecInfo build() {
     Preconditions.checkNotNull(name, "Codec name is not set.");
 
-    int flags = getCodecFlags();
-
-    return ReflectionHelpers.callConstructor(
-        MediaCodecInfo.class,
-        ClassParameter.from(String.class, name),
-        ClassParameter.from(String.class, name), // canonicalName
-        ClassParameter.from(int.class, flags),
-        ClassParameter.from(CodecCapabilities[].class, capabilities));
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      int flags = getCodecFlags();
+      return ReflectionHelpers.callConstructor(
+          MediaCodecInfo.class,
+          ClassParameter.from(String.class, name),
+          ClassParameter.from(String.class, name), // canonicalName
+          ClassParameter.from(int.class, flags),
+          ClassParameter.from(CodecCapabilities[].class, capabilities));
+    } else if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      return ReflectionHelpers.callConstructor(
+          MediaCodecInfo.class,
+          ClassParameter.from(String.class, name),
+          ClassParameter.from(boolean.class, isEncoder),
+          ClassParameter.from(CodecCapabilities[].class, capabilities));
+    } else {
+      throw new UnsupportedOperationException("Unable to create MediaCodecInfo");
+    }
   }
 
   /** Accessor interface for {@link MediaCodecInfo}'s internals. */
@@ -276,7 +289,10 @@ public class MediaCodecInfoBuilder {
       }
 
       capsReflector.setMime(mime);
-      capsReflector.setMaxSupportedInstances(32);
+      if (RuntimeEnvironment.getApiLevel() >= Q) {
+        capsReflector.setMaxSupportedInstances(32);
+      }
+
       capsReflector.setDefaultFormat(mediaFormat);
       capsReflector.setCapabilitiesInfo(mediaFormat);
 
@@ -293,8 +309,10 @@ public class MediaCodecInfoBuilder {
         capsReflector.setEncoderCaps(encoderCaps);
       }
 
-      int flagsSupported = getSupportedFeatures(caps, mediaFormat);
-      capsReflector.setFlagsSupported(flagsSupported);
+      if (RuntimeEnvironment.getApiLevel() >= Q) {
+        int flagsSupported = getSupportedFeatures(caps, mediaFormat);
+        capsReflector.setFlagsSupported(flagsSupported);
+      }
 
       return caps;
     }
