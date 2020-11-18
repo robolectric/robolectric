@@ -61,7 +61,7 @@ public class MediaCodecInfoBuilder {
    *     {@code true} or by the Android platform {@code false}. Default value is {@code false}.
    */
   public MediaCodecInfoBuilder setIsVendor(boolean isVendor) {
-    this.isVendor = isEncoder;
+    this.isVendor = isVendor;
     return this;
   }
 
