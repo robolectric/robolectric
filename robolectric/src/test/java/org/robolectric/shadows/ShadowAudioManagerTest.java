@@ -34,6 +34,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAudioManagerTest {
+  private static final float FAULT_TOLERANCE = 0.00001f;
   private final AudioManager.OnAudioFocusChangeListener listener =
       new AudioManager.OnAudioFocusChangeListener() {
         @Override
@@ -127,6 +128,32 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void getStreamMinVolume_shouldReturnMinVolume() throws Exception {
+    for (int stream : ShadowAudioManager.ALL_STREAMS) {
+      switch (stream) {
+        case AudioManager.STREAM_ALARM:
+        case AudioManager.STREAM_VOICE_CALL:
+          assertThat(audioManager.getStreamMinVolume(stream))
+              .isEqualTo(ShadowAudioManager.MIN_VOLUME_CALL_ALARM);
+          break;
+
+        case AudioManager.STREAM_DTMF:
+        case AudioManager.STREAM_MUSIC:
+        case AudioManager.STREAM_NOTIFICATION:
+        case AudioManager.STREAM_RING:
+        case AudioManager.STREAM_SYSTEM:
+          assertThat(audioManager.getStreamMinVolume(stream))
+              .isEqualTo(ShadowAudioManager.DEFAULT_MIN_VOLUME);
+          break;
+
+        default:
+          throw new Exception("Unexpected audio stream requested.");
+      }
+    }
+  }
+
+  @Test
   public void getStreamMaxVolume_shouldReturnMaxVolume() throws Exception {
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
       switch (stream) {
@@ -191,11 +218,15 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  public void setStreamVolume_shouldNotAllowNegativeValues() {
+  @Config(minSdk = P)
+  public void setStreamVolume_shouldNotExceedMinVolume() {
     final int newVol = -3;
+
     shadowOf(audioManager).setStreamVolume(newVol);
+
     for (int stream : ShadowAudioManager.ALL_STREAMS) {
-      assertThat(audioManager.getStreamVolume(stream)).isEqualTo(0);
+      assertThat(audioManager.getStreamVolume(stream))
+          .isEqualTo(audioManager.getStreamMinVolume(stream));
     }
   }
 
@@ -207,7 +238,7 @@ public class ShadowAudioManagerTest {
       switch (stream) {
         case AudioManager.STREAM_MUSIC:
         case AudioManager.STREAM_DTMF:
-          assertThat(audioManager.getStreamMaxVolume(stream))
+          assertThat(audioManager.getStreamVolume(stream))
               .isEqualTo(ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF);
           break;
 
@@ -216,13 +247,52 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
-          assertThat(audioManager.getStreamMaxVolume(stream))
+          assertThat(audioManager.getStreamVolume(stream))
               .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
 
         default:
           throw new Exception("Unexpected audio stream requested.");
       }
+    }
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getStreamVolumeDb_maxVolume_returnsZero() {
+    float volumeDb =
+        audioManager.getStreamVolumeDb(
+            AudioManager.STREAM_MUSIC,
+            ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF,
+            /* deviceType= */ 0);
+
+    assertThat(volumeDb).isWithin(FAULT_TOLERANCE).of(0);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getStreamVolumeDb_minVolume_returnsNegativeInf() {
+    float volumeDb =
+        audioManager.getStreamVolumeDb(
+            AudioManager.STREAM_MUSIC, ShadowAudioManager.DEFAULT_MIN_VOLUME, /* deviceType= */ 0);
+
+    assertThat(volumeDb).isNegativeInfinity();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getStreamVolumeDb_mediumVolumes_returnsDecrementingNegativeValues() {
+    int maxVolume = ShadowAudioManager.MAX_VOLUME_MUSIC_DTMF;
+    int minVolume = ShadowAudioManager.DEFAULT_MIN_VOLUME;
+    float lastVolumeDb =
+        audioManager.getStreamVolumeDb(AudioManager.STREAM_MUSIC, maxVolume, /* deviceType= */ 0);
+
+    for (int volume = maxVolume - 1; volume > minVolume; volume--) {
+      float volumeDb =
+          audioManager.getStreamVolumeDb(AudioManager.STREAM_MUSIC, volume, /* deviceType= */ 0);
+
+      assertThat(volumeDb).isLessThan(0);
+      assertThat(volumeDb).isLessThan(lastVolumeDb);
     }
   }
 
