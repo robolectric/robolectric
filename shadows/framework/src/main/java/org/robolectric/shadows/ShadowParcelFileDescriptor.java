@@ -140,5 +140,6 @@ public class ShadowParcelFileDescriptor {
   @Implementation
   protected void close() throws IOException {
     file.close();
+    Shadow.directlyOn(realObject, ParcelFileDescriptor.class).close();
   }
 }
