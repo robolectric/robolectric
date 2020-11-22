@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
+import static android.os.Build.VERSION_CODES.KITKAT;
 
 import android.media.audiofx.Visualizer;
+import android.media.audiofx.Visualizer.MeasurementPeakRms;
 import android.media.audiofx.Visualizer.OnDataCaptureListener;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
@@ -74,6 +76,11 @@ public class ShadowVisualizer {
     return Visualizer.SUCCESS;
   }
 
+  @Implementation(minSdk = KITKAT)
+  protected int native_getPeakRms(MeasurementPeakRms measurement) {
+    return source.get().getPeakRms(measurement);
+  }
+
   /**
    * Trigger calls to the existing {@link OnDataCaptureListener}.
    *
@@ -112,6 +119,10 @@ public class ShadowVisualizer {
     }
 
     default int getFft(byte[] fft) {
+      return Visualizer.SUCCESS;
+    }
+
+    default int getPeakRms(MeasurementPeakRms measurement) {
       return Visualizer.SUCCESS;
     }
   }
