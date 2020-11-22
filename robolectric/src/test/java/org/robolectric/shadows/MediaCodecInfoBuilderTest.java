@@ -208,6 +208,20 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
+  public void isVendor_properlySet() {
+    MediaCodecInfo mediaCodecInfo =
+        MediaCodecInfoBuilder.newBuilder()
+            .setName(AAC_ENCODER_NAME)
+            .setIsEncoder(false)
+            .setIsVendor(true)
+            .build();
+
+    assertThat(mediaCodecInfo.getName()).isEqualTo(AAC_ENCODER_NAME);
+    assertThat(mediaCodecInfo.isEncoder()).isFalse();
+    assertThat(mediaCodecInfo.isVendor()).isTrue();
+  }
+
+  @Test
   public void canCreateMediaCodecInfoForDecoder() {
     CodecCapabilities codecCapabilities =
         MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
