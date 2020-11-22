@@ -271,7 +271,7 @@ public class ShadowParcel {
     nativeWriteInt((long) nativePtr, val);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = R)
   protected static void nativeWriteInt(long nativePtr, int val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeInt(val);
   }
@@ -282,7 +282,7 @@ public class ShadowParcel {
     nativeWriteLong((long) nativePtr, val);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = R)
   protected static void nativeWriteLong(long nativePtr, long val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeLong(val);
   }
@@ -293,7 +293,7 @@ public class ShadowParcel {
     nativeWriteFloat((long) nativePtr, val);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = R)
   protected static void nativeWriteFloat(long nativePtr, float val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeFloat(val);
   }
@@ -304,7 +304,7 @@ public class ShadowParcel {
     nativeWriteDouble((long) nativePtr, val);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = R)
   protected static void nativeWriteDouble(long nativePtr, double val) {
     NATIVE_BYTE_BUFFER_REGISTRY.getNativeObject(nativePtr).writeDouble(val);
   }
@@ -1201,7 +1201,7 @@ public class ShadowParcel {
     return randomAccessFile.getFD();
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = M, maxSdk = R)
   protected static long nativeWriteFileDescriptor(long nativePtr, FileDescriptor val) {
     // The Java version of FileDescriptor stored the fd in a field called "fd", and the Android
     // version changed the field name to "descriptor". But it looks like Robolectric uses the

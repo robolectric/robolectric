@@ -339,7 +339,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     // }
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @Implementation(minSdk = Build.VERSION_CODES.Q, maxSdk = Build.VERSION_CODES.R)
   protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
     return new String[0];
   }
