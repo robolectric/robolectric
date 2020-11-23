@@ -21,7 +21,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(Call.class)
 public class ShadowCall {
   /** Robolectric test for {@link android.telecom.Call.RttCall}. */
-  @Implements(value = Call.RttCall.class, minSdk = VERSION_CODES.P)
+  @Implements(value = Call.RttCall.class, minSdk = VERSION_CODES.O_MR1)
   public static class ShadowRttCall {
     private static final String TAG = "ShadowRttCall";
     @RealObject RttCall realRttCallObject;
