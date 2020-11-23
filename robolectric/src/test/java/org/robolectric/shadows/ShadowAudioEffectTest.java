@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.media.audiofx.AudioEffect;
@@ -108,43 +109,83 @@ public class ShadowAudioEffectTest {
     assertThat(audioEffect.getEnabled()).isFalse();
   }
 
-  // We need to use @Test(expected = Exception) here since assertThrows is not available in the
-  // public version of junit.
-  @SuppressWarnings("TestExceptionChecker")
-  @Test(expected = IllegalStateException.class)
+  @Test
+  public void setEnabled_errorCodeSet_returnsError() {
+    AudioEffect audioEffect = createAudioEffect();
+    shadowOf(audioEffect).setErrorCode(AudioEffect.ERROR);
+
+    assertThat(audioEffect.setEnabled(true)).isEqualTo(AudioEffect.ERROR);
+  }
+
+  @Test
+  public void getParameter_errorCodeSet_returnsError() {
+    AudioEffect audioEffect = createAudioEffect();
+    shadowOf(audioEffect).setErrorCode(AudioEffect.ERROR);
+
+    assertThat(audioEffect.getParameter(/* param= */ 1, /* value= */ new int[1]))
+        .isEqualTo(AudioEffect.ERROR);
+  }
+
+  @Test
+  public void setParameter_errorCodeSet_returnsError() {
+    AudioEffect audioEffect = createAudioEffect();
+    shadowOf(audioEffect).setErrorCode(AudioEffect.ERROR);
+
+    assertThat(audioEffect.setParameter(/* param= */ 1, /* value= */ 2))
+        .isEqualTo(AudioEffect.ERROR);
+  }
+
+  @Test
+  public void getEnabled_audioEffectUninitialized_throwsException() {
+    AudioEffect audioEffect = createAudioEffect();
+    shadowOf(audioEffect).setInitialized(false);
+
+    assertThrows(IllegalStateException.class, () -> audioEffect.getEnabled());
+  }
+
+  @Test
+  public void setEnabled_audioEffectUninitialized_throwsException() {
+    AudioEffect audioEffect = createAudioEffect();
+    shadowOf(audioEffect).setInitialized(false);
+
+    assertThrows(IllegalStateException.class, () -> audioEffect.setEnabled(true));
+  }
+
+  @Test
   public void release_callSetEnabledAfterwards_throwsException() {
     AudioEffect audioEffect = createAudioEffect();
     audioEffect.release();
 
-    audioEffect.setEnabled(true);
+    assertThrows(IllegalStateException.class, () -> audioEffect.setEnabled(true));
   }
 
-  // We need to use @Test(expected = Exception) here since assertThrows is not available in the
-  // public version of junit.
-  @SuppressWarnings("TestExceptionChecker")
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void release_callGetEnabledAfterwards_throwsException() {
     AudioEffect audioEffect = createAudioEffect();
     audioEffect.release();
 
-    audioEffect.getEnabled();
+    assertThrows(IllegalStateException.class, () -> audioEffect.getEnabled());
   }
 
-  // We need to use @Test(expected = Exception) here since assertThrows is not available in the
-  // public version of junit.
-  @SuppressWarnings("TestExceptionChecker")
-  @Test(expected = NullPointerException.class)
+  @Test
   public void ctor_nullType_throwsException() {
-    new AudioEffect(/* type= */ null, EFFECT_TYPE_NULL, /* priority= */ 0, /* audioSession= */ 0);
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new AudioEffect(
+                /* type= */ null, EFFECT_TYPE_NULL, /* priority= */ 0, /* audioSession= */ 0));
   }
 
-  // We need to use @Test(expected = Exception) here since assertThrows is not available in the
-  // public version of junit.
-  @SuppressWarnings("TestExceptionChecker")
-  @Test(expected = NullPointerException.class)
+  @Test
   public void ctor_nullUuid_throwsException() {
-    new AudioEffect(
-        AudioEffect.EFFECT_TYPE_AEC, /* uuid= */ null, /* priority= */ 0, /* audioSession= */ 0);
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new AudioEffect(
+                AudioEffect.EFFECT_TYPE_AEC,
+                /* uuid= */ null,
+                /* priority= */ 0,
+                /* audioSession= */ 0));
   }
 
   private static AudioEffect createAudioEffect() {
