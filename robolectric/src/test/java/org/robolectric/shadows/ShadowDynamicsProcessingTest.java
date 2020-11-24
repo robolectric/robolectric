@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.media.audiofx.DynamicsProcessing;
 import android.media.audiofx.DynamicsProcessing.Eq;
@@ -93,6 +95,21 @@ public class ShadowDynamicsProcessingTest {
                   /* channelIndex= */ 0, /* band= */ bandIndex);
       assertEqBandEquals(actualBand, expectedBand);
     }
+  }
+
+  @Test
+  public void setPreEqBandAllChannelsTo_errorCodeSet_throwsException() {
+    DynamicsProcessing dynamicsProcessing = createDynamicsProcessing();
+    EqBand eqBand = new EqBand(/* enabled= */ true, /* cutoffFrequency= */ 25f, /* gain= */ 5);
+    shadowOf(dynamicsProcessing).setErrorCode(DynamicsProcessing.ERROR);
+
+    assertThrows(
+        RuntimeException.class, () -> dynamicsProcessing.setPreEqBandAllChannelsTo(0, eqBand));
+  }
+
+  private static DynamicsProcessing createDynamicsProcessing() {
+    DynamicsProcessing.Config config = createConfig(/* numChannels= */ 1);
+    return new DynamicsProcessing(/* priority= */ 0, /* audioSession= */ 0, /* cfg= */ config);
   }
 
   private static DynamicsProcessing.Config createConfig(int numChannels) {
