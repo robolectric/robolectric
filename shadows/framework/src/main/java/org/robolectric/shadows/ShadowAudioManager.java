@@ -37,6 +37,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowAudioManager {
   public static final int MAX_VOLUME_MUSIC_DTMF = 15;
   public static final int DEFAULT_MAX_VOLUME = 7;
+  public static final int MIN_VOLUME = 0;
   public static final int DEFAULT_VOLUME = 7;
   public static final int INVALID_VOLUME = 0;
   public static final int FLAG_NO_ACTION = 0;
@@ -51,6 +52,8 @@ public class ShadowAudioManager {
   };
 
   private static final int INVALID_PATCH_HANDLE = -1;
+  private static final float MAX_VOLUME_DB = 0;
+  private static final float MIN_VOLUME_DB = -100;
 
   private AudioFocusRequest lastAudioFocusRequest;
   private int nextResponseValue = AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
@@ -95,6 +98,22 @@ public class ShadowAudioManager {
   protected int getStreamVolume(int streamType) {
     AudioStream stream = streamStatus.get(streamType);
     return (stream != null) ? stream.getCurrentVolume() : INVALID_VOLUME;
+  }
+
+  @Implementation(minSdk = P)
+  protected float getStreamVolumeDb(int streamType, int index, int deviceType) {
+    AudioStream stream = streamStatus.get(streamType);
+    if (stream == null) {
+      return INVALID_VOLUME;
+    }
+    if (index < MIN_VOLUME || index > stream.getMaxVolume()) {
+      throw new IllegalArgumentException("Invalid stream volume index " + index);
+    }
+    if (index == MIN_VOLUME) {
+      return Float.NEGATIVE_INFINITY;
+    }
+    float interpolation = (index - MIN_VOLUME) / (float) (stream.getMaxVolume() - MIN_VOLUME);
+    return MIN_VOLUME_DB + interpolation * (MAX_VOLUME_DB - MIN_VOLUME_DB);
   }
 
   @Implementation
@@ -174,15 +193,11 @@ public class ShadowAudioManager {
   }
 
   public void setStreamMaxVolume(int streamMaxVolume) {
-    for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
-      entry.getValue().setMaxVolume(streamMaxVolume);
-    }
+    streamStatus.forEach((key, value) -> value.setMaxVolume(streamMaxVolume));
   }
 
   public void setStreamVolume(int streamVolume) {
-    for (Map.Entry<Integer, AudioStream> entry : streamStatus.entrySet()) {
-      entry.getValue().setCurrentVolume(streamVolume);
-    }
+    streamStatus.forEach((key, value) -> value.setCurrentVolume(streamVolume));
   }
 
   @Implementation
@@ -587,6 +602,9 @@ public class ShadowAudioManager {
     private int flag;
 
     public AudioStream(int currVol, int maxVol, int flag) {
+      if (MIN_VOLUME > maxVol) {
+        throw new IllegalArgumentException("Min volume is higher than max volume.");
+      }
       setCurrentVolume(currVol);
       setMaxVolume(maxVol);
       setFlag(flag);
@@ -607,8 +625,8 @@ public class ShadowAudioManager {
     public void setCurrentVolume(int vol) {
       if (vol > maxVolume) {
         vol = maxVolume;
-      } else if (vol < 0) {
-        vol = 0;
+      } else if (vol < MIN_VOLUME) {
+        vol = MIN_VOLUME;
       }
       currentVolume = vol;
     }
