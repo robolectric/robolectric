@@ -16,7 +16,7 @@ import org.robolectric.shadows.ShadowCall.ShadowRttCall;
 
 /** Test of ShadowRttCall. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.P)
+@Config(minSdk = VERSION_CODES.O_MR1)
 public class ShadowRttCallTest {
 
   @Test
