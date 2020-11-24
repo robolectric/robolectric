@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -24,6 +25,7 @@ import android.media.MediaRecorder.AudioSource;
 import android.media.audiopolicy.AudioPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -335,6 +337,55 @@ public class ShadowAudioManagerTest {
     assertThat(audioManager.isBluetoothScoAvailableOffCall()).isFalse();
     shadowOf(audioManager).setIsBluetoothScoAvailableOffCall(true);
     assertThat(audioManager.isBluetoothScoAvailableOffCall()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getDevicesForAttributes_returnsEmptyListByDefault() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+
+    assertThat(shadowOf(audioManager).getDevicesForAttributes(movieAttribute)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setDevicesForAttributes_updatesDevicesForAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    ImmutableList<Object> newDevices = ImmutableList.of(new Object());
+
+    shadowOf(audioManager).setDevicesForAttributes(movieAttribute, newDevices);
+
+    assertThat(shadowOf(audioManager).getDevicesForAttributes(movieAttribute))
+        .isEqualTo(newDevices);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setDefaultDevicesForAttributes_updatesDevicesForAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    ImmutableList<Object> newDevices = ImmutableList.of(new Object());
+
+    shadowOf(audioManager).setDefaultDevicesForAttributes(newDevices);
+
+    assertThat(shadowOf(audioManager).getDevicesForAttributes(movieAttribute))
+        .isEqualTo(newDevices);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setDevicesForAttributes_overridesSetDefaultDevicesForAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    shadowOf(audioManager).setDefaultDevicesForAttributes(ImmutableList.of(new Object()));
+    ImmutableList<Object> newDevices = ImmutableList.of(new Object(), new Object());
+
+    shadowOf(audioManager).setDevicesForAttributes(movieAttribute, newDevices);
+
+    assertThat(shadowOf(audioManager).getDevicesForAttributes(movieAttribute))
+        .isEqualTo(newDevices);
   }
 
   @Test

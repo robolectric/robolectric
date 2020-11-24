@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -79,6 +80,8 @@ public class ShadowAudioManager {
   private final Map<Integer, Boolean> streamsMuteState = new HashMap<>();
   private final Map<String, AudioPolicy> registeredAudioPolicies = new HashMap<>();
   private int audioSessionIdCounter = 1;
+  private final Map<AudioAttributes, ImmutableList<Object>> devicesForAttributes = new HashMap<>();
+  private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -372,6 +375,35 @@ public class ShadowAudioManager {
   @Implementation(minSdk = O)
   protected void unregisterAudioPlaybackCallback(AudioManager.AudioPlaybackCallback cb) {
     audioPlaybackCallbacks.remove(cb);
+  }
+
+  /**
+   * Returns the devices associated with the given audio stream.
+   *
+   * <p>In this shadow-implementation the devices returned are either
+   *
+   * <ol>
+   *   <li>devices set through {@link #setDevicesForAttributes}, or
+   *   <li>devices set through {@link #setDefaultDevicesForAttributes}, or
+   *   <li>an empty list.
+   * </ol>
+   */
+  @Implementation(minSdk = R)
+  @NonNull
+  protected List<Object> getDevicesForAttributes(@NonNull AudioAttributes attributes) {
+    ImmutableList<Object> devices = devicesForAttributes.get(attributes);
+    return devices == null ? defaultDevicesForAttributes : devices;
+  }
+
+  /** Sets the devices associated with the given audio stream. */
+  public void setDevicesForAttributes(
+      @NonNull AudioAttributes attributes, @NonNull ImmutableList<Object> devices) {
+    devicesForAttributes.put(attributes, devices);
+  }
+
+  /** Sets the devices to use as default for all audio streams. */
+  public void setDefaultDevicesForAttributes(@NonNull ImmutableList<Object> devices) {
+    defaultDevicesForAttributes = devices;
   }
 
   /**
