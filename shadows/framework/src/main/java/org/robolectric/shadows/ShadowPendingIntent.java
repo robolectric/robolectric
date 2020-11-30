@@ -7,6 +7,7 @@ import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.annotation.NonNull;
@@ -15,6 +16,7 @@ import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.app.PendingIntent.OnMarshaledListener;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -22,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Parcel;
+import android.os.Parcelable.Creator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -68,6 +71,12 @@ public class ShadowPendingIntent {
   private int flags;
   private String creatorPackage;
   private boolean canceled;
+
+  @Implementation
+  protected static void __staticInitializer__() {
+    Shadow.directInitialize(PendingIntent.class);
+    ReflectionHelpers.setStaticField(PendingIntent.class, "CREATOR", ShadowPendingIntent.CREATOR);
+  }
 
   @Implementation
   protected static PendingIntent getActivity(
@@ -379,10 +388,37 @@ public class ShadowPendingIntent {
     int index = parceledPendingIntents.size();
     parceledPendingIntents.add(sender);
     out.writeInt(index);
+
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      ThreadLocal<OnMarshaledListener> sOnMarshaledListener =
+          ReflectionHelpers.getStaticField(PendingIntent.class, "sOnMarshaledListener");
+      OnMarshaledListener listener = sOnMarshaledListener.get();
+      if (listener != null) {
+        listener.onMarshaled(sender, out, 0);
+      }
+    }
   }
 
-  private static PendingIntent create(Context context, Intent[] intents, Type type, int requestCode,
-      int flags) {
+  static final Creator<PendingIntent> CREATOR =
+      new Creator<PendingIntent>() {
+        @Override
+        public PendingIntent createFromParcel(Parcel in) {
+          return readPendingIntentOrNullFromParcel(in);
+        }
+
+        @Override
+        public PendingIntent[] newArray(int size) {
+          return new PendingIntent[size];
+        }
+      };
+
+  @Implementation
+  protected void writeToParcel(Parcel out, int flags) {
+    writePendingIntentOrNullToParcel(realPendingIntent, out);
+  }
+
+  private static PendingIntent create(
+      Context context, Intent[] intents, Type type, int requestCode, int flags) {
     synchronized (lock) {
       Objects.requireNonNull(intents, "intents may not be null");
 

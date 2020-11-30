@@ -14,6 +14,7 @@ import android.app.Application;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -715,5 +716,16 @@ public class ShadowPendingIntentTest {
     PendingIntent result = PendingIntent.readPendingIntentOrNullFromParcel(parcel);
 
     assertThat(result).isEqualTo(original);
+  }
+
+  @Test
+  public void testWriteToParcel() {
+    Intent embedded = new Intent().setComponent(new ComponentName("pkg", "cls"));
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, embedded, 0);
+    Parcel parcel = Parcel.obtain();
+    parcel.writeParcelable(pendingIntent, 0);
+    parcel.setDataPosition(0);
+    PendingIntent result = parcel.readParcelable(PendingIntent.class.getClassLoader());
+    assertThat(result).isEqualTo(pendingIntent);
   }
 }
