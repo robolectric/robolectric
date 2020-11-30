@@ -14,6 +14,7 @@ import android.os.Handler;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.OutputStream;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,9 +24,6 @@ import org.robolectric.util.ReflectionHelpers;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowPackageInstallerTest {
-
-  private static final String TEST_PACKAGE_NAME = "com.some.other.package";
-  private static final String TEST_PACKAGE_LABEL = "My Little App";
 
   private PackageInstaller packageInstaller;
 
@@ -38,6 +36,31 @@ public class ShadowPackageInstallerTest {
   @Test
   public void shouldBeNoInProcessSessionsOnRobolectricStartup() {
     assertThat(packageInstaller.getAllSessions()).isEmpty();
+  }
+
+  @Test
+  public void packageInstallerCreateSession() throws Exception {
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+
+    assertThat(sessionId).isNotEqualTo(0);
+  }
+
+  @Test
+  public void packageInstallerCreateAndGetSession() throws Exception {
+    // Act.
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+
+    // Assert.
+    List<PackageInstaller.SessionInfo> sessions;
+    sessions = packageInstaller.getMySessions();
+    assertThat(sessions).hasSize(1);
+    assertThat(sessions.get(0).getSessionId()).isEqualTo(sessionId);
+
+    sessions = packageInstaller.getAllSessions();
+    assertThat(sessions).hasSize(1);
+    assertThat(sessions.get(0).getSessionId()).isEqualTo(sessionId);
+
+    assertThat(packageInstaller.getSessionInfo(sessionId)).isNotNull();
   }
 
   @Test
@@ -74,7 +97,7 @@ public class ShadowPackageInstallerTest {
 
   @Test(expected = SecurityException.class)
   public void packageInstallerOpenSession_nonExistantSessionThrowsException() throws Exception {
-    PackageInstaller.Session session = packageInstaller.openSession(-99);
+    packageInstaller.openSession(-99);
   }
 
   @Test // TODO: Initial implementation has a no-op OutputStream - complete this implementation.
