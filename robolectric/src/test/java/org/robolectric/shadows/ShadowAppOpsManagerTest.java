@@ -5,6 +5,8 @@ import static android.app.AppOpsManager.MODE_DEFAULT;
 import static android.app.AppOpsManager.MODE_ERRORED;
 import static android.app.AppOpsManager.OPSTR_FINE_LOCATION;
 import static android.app.AppOpsManager.OPSTR_GPS;
+import static android.app.AppOpsManager.OPSTR_READ_PHONE_STATE;
+import static android.app.AppOpsManager.OPSTR_RECORD_AUDIO;
 import static android.app.AppOpsManager.OP_FINE_LOCATION;
 import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
@@ -307,6 +309,47 @@ public class ShadowAppOpsManagerTest {
     List<PackageOps> results =
         appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, NO_OP_FILTER_BY_NUMBER);
     assertThat(results.get(0).getOps().get(0).getDuration()).isEqualTo(DURATION);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOp_opActive() {
+    appOps.startOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, null, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOp_finishOp_opNotActive() {
+    appOps.startOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, null, null);
+    appOps.finishOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOp_anotherOp_opNotActive() {
+    appOps.startOp(OPSTR_READ_PHONE_STATE, UID_1, PACKAGE_NAME1, null, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOp_anotherUid_opNotActive() {
+    appOps.startOp(OPSTR_RECORD_AUDIO, UID_2, PACKAGE_NAME1, null, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOp_anotherPackage_opNotActive() {
+    appOps.startOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME2, null, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isFalse();
   }
 
   @Test
