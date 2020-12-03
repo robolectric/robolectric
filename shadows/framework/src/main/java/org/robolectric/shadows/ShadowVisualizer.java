@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import android.media.audiofx.Visualizer;
 import android.media.audiofx.Visualizer.MeasurementPeakRms;
 import android.media.audiofx.Visualizer.OnDataCaptureListener;
+import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -25,6 +26,7 @@ public class ShadowVisualizer {
   private boolean captureWaveform;
   private boolean captureFft;
   private int captureSize;
+  private int errorCode;
 
   public void setSource(VisualizerSource source) {
     this.source.set(source);
@@ -33,6 +35,9 @@ public class ShadowVisualizer {
   @Implementation(minSdk = GINGERBREAD)
   protected int setDataCaptureListener(
       OnDataCaptureListener listener, int rate, boolean waveform, boolean fft) {
+    if (errorCode != Visualizer.SUCCESS) {
+      return errorCode;
+    }
     captureListener = listener;
     captureWaveform = waveform;
     captureFft = fft;
@@ -61,6 +66,9 @@ public class ShadowVisualizer {
 
   @Implementation(minSdk = GINGERBREAD)
   protected int native_setCaptureSize(int size) {
+    if (errorCode != Visualizer.SUCCESS) {
+      return errorCode;
+    }
     captureSize = size;
     return Visualizer.SUCCESS;
   }
@@ -72,6 +80,9 @@ public class ShadowVisualizer {
 
   @Implementation(minSdk = GINGERBREAD)
   protected int native_setEnabled(boolean enabled) {
+    if (errorCode != Visualizer.SUCCESS) {
+      return errorCode;
+    }
     this.enabled = enabled;
     return Visualizer.SUCCESS;
   }
@@ -79,6 +90,11 @@ public class ShadowVisualizer {
   @Implementation(minSdk = KITKAT)
   protected int native_getPeakRms(MeasurementPeakRms measurement) {
     return source.get().getPeakRms(measurement);
+  }
+
+  @Implementation(minSdk = GINGERBREAD)
+  protected void native_release() {
+    source.get().release();
   }
 
   /**
@@ -100,6 +116,32 @@ public class ShadowVisualizer {
       realObject.getFft(fft);
       captureListener.onFftDataCapture(realObject, fft, realObject.getSamplingRate());
     }
+  }
+
+  /**
+   * Updates the state of the {@link Visualizer} itself.
+   *
+   * This can be used e.g. to put the Visualizer in an unexpected state and cause an exception the
+   * next time the Visualizer is used.
+   */
+  public void setState(int newState) {
+    try {
+      Field stateField = Visualizer.class.getDeclaredField("mState");
+      stateField.setAccessible(true);
+      stateField.set(realObject, newState);
+    } catch (IllegalAccessException | NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Sets the error code to override setter methods in this class.
+   *
+   * When the error code is set to anything other than {@link Visualizer.SUCCESS} setters in the
+   * Visualizer will early-out and return that error code.
+   */
+  public void setErrorCode(int errorCode) {
+    this.errorCode = errorCode;
   }
 
   /**
@@ -125,5 +167,7 @@ public class ShadowVisualizer {
     default int getPeakRms(MeasurementPeakRms measurement) {
       return Visualizer.SUCCESS;
     }
+
+    default void release() {}
   }
 }
