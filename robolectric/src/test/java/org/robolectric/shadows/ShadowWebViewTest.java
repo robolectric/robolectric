@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.DownloadListener;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -683,5 +684,20 @@ public class ShadowWebViewTest {
     webView.setBackgroundColor(Color.GREEN);
 
     assertThat(shadowOf(webView).getBackgroundColor()).isEqualTo(Color.GREEN);
+  }
+
+  @Test
+  public void getDownloadListener_noListenerSet_returnsNull() {
+    assertThat(shadowOf(webView).getDownloadListener()).isEqualTo(null);
+  }
+
+  @Test
+  public void getDownloadListener_listenerSet_returnsLastSetListener() {
+    webView.setDownloadListener(mock(DownloadListener.class));
+
+    DownloadListener lastListener = mock(DownloadListener.class);
+    webView.setDownloadListener(lastListener);
+
+    assertThat(shadowOf(webView).getDownloadListener()).isEqualTo(lastListener);
   }
 }

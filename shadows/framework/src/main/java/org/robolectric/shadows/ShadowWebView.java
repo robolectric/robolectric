@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
@@ -75,6 +76,7 @@ public class ShadowWebView extends ShadowViewGroup {
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
   private HitTestResult hitTestResult = new HitTestResult();
   private int backgroundColor = 0;
+  private DownloadListener downloadListener;
   private static final WebViewFactoryProvider WEB_VIEW_FACTORY_PROVIDER =
       ReflectionHelpers.createDeepProxy(WebViewFactoryProvider.class);
 
@@ -625,6 +627,16 @@ public class ShadowWebView extends ShadowViewGroup {
    */
   public int getBackgroundColor() {
     return backgroundColor;
+  }
+
+  @Implementation
+  protected void setDownloadListener(DownloadListener downloadListener) {
+    this.downloadListener = downloadListener;
+  }
+
+  /** Returns the {@link DownloadListener} set with {@link #setDownloadListener}, if any. */
+  public DownloadListener getDownloadListener() {
+    return this.downloadListener;
   }
 
   public static class LoadDataWithBaseURL {
