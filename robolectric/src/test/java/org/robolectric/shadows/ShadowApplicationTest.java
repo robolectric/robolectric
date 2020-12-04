@@ -217,6 +217,47 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  public void setIdleMainThreadOnBind_setToTrue_onServiceConnectedCalledDuringCall() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).setIdleMainThreadOnBind(true);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    assertThat(service.service).isNotNull();
+  }
+
+  @Test
+  public void setIdleMainThreadOnBind_setToFalse_onServiceConnectedNotCalledDuringCall() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).setIdleMainThreadOnBind(false);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    assertThat(service.service).isNull();
+  }
+
+  @Test
+  public void setIdleMainThreadOnBind_notSet_onServiceConnectedNotCalledDuringCall() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    assertThat(service.service).isNull();
+  }
+
+  @Test
   public void bindServiceShouldCallOnServiceConnectedWithDefaultValues_ifFlagUnset() {
     Shadows.shadowOf(context).setUnbindServiceCallsOnServiceDisconnected(false);
     TestService service = new TestService();

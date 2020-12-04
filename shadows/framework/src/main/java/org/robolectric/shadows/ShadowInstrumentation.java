@@ -94,6 +94,7 @@ public class ShadowInstrumentation {
       Collections.synchronizedMap(new HashMap<>());
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private SecurityException exceptionForBindService = null;
+  private boolean idleMainThreadOnBind;
   private final Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
       serviceConnectionDataForIntent = Collections.synchronizedMap(new HashMap<>());
   // default values for bindService
@@ -678,6 +679,9 @@ public class ShadowInstrumentation {
               serviceConnectionDataWrapper.componentNameForBindService,
               serviceConnectionDataWrapper.binderForBindService);
         });
+    if (idleMainThreadOnBind) {
+      ShadowLooper.idleMainLooper();
+    }
     return true;
   }
 
@@ -725,6 +729,10 @@ public class ShadowInstrumentation {
 
   void setThrowInBindService(SecurityException e) {
     exceptionForBindService = e;
+  }
+
+  void setIdleMainThreadOnBind(boolean idleMainThreadOnBind) {
+    this.idleMainThreadOnBind = idleMainThreadOnBind;
   }
 
   protected List<ServiceConnection> getUnboundServiceConnections() {
