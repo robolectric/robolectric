@@ -4,11 +4,11 @@ import static android.media.audiofx.AudioEffect.STATE_INITIALIZED;
 import static android.media.audiofx.AudioEffect.STATE_UNINITIALIZED;
 import static android.media.audiofx.AudioEffect.SUCCESS;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.audiofx.AudioEffect;
 import android.os.Build.VERSION_CODES;
 import com.google.common.collect.ImmutableList;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +20,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Implements {@link AudioEffect} by shadowing its native methods. */
 @Implements(value = AudioEffect.class)
@@ -162,13 +164,8 @@ public class ShadowAudioEffect {
    * the next time the Visualizer is used.
    */
   public void setInitialized(boolean initialized) {
-    try {
-      Field stateField = AudioEffect.class.getDeclaredField("mState");
-      stateField.setAccessible(true);
-      stateField.set(audioEffect, initialized ? STATE_INITIALIZED : STATE_UNINITIALIZED);
-    } catch (IllegalAccessException | NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
+    reflector(ReflectorAudioEffect.class, audioEffect)
+        .setState(initialized ? STATE_INITIALIZED : STATE_UNINITIALIZED);
   }
 
   /**
@@ -224,5 +221,12 @@ public class ShadowAudioEffect {
   public static void reset() {
     descriptors.clear();
     audioEffects.clear();
+  }
+
+  /** Accessor interface for {@link AudioEffect}'s internals. */
+  @ForType(AudioEffect.class)
+  private interface ReflectorAudioEffect {
+    @Accessor("mState")
+    void setState(int state);
   }
 }

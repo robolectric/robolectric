@@ -2,15 +2,17 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.audiofx.Visualizer;
 import android.media.audiofx.Visualizer.MeasurementPeakRms;
 import android.media.audiofx.Visualizer.OnDataCaptureListener;
-import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for the {@link Visualizer} class. */
 @Implements(value = Visualizer.class, minSdk = GINGERBREAD)
@@ -125,13 +127,7 @@ public class ShadowVisualizer {
    * the next time the Visualizer is used.
    */
   public void setState(int newState) {
-    try {
-      Field stateField = Visualizer.class.getDeclaredField("mState");
-      stateField.setAccessible(true);
-      stateField.set(realObject, newState);
-    } catch (IllegalAccessException | NoSuchFieldException e) {
-      throw new RuntimeException(e);
-    }
+    reflector(ReflectorVisualizer.class, realObject).setState(newState);
   }
 
   /**
@@ -169,5 +165,12 @@ public class ShadowVisualizer {
     }
 
     default void release() {}
+  }
+
+  /** Accessor interface for {@link Visualizer}'s internals. */
+  @ForType(Visualizer.class)
+  private interface ReflectorVisualizer {
+    @Accessor("mState")
+    void setState(int state);
   }
 }
