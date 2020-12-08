@@ -23,6 +23,7 @@ import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
 import android.app.trust.ITrustManager;
+import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.content.Context;
 import android.content.IClipboard;
@@ -140,6 +141,7 @@ public class ShadowServiceManager {
     if (RuntimeEnvironment.getApiLevel() >= O) {
       addBinderService("mount", IStorageManager.class);
       addBinderService(Context.WIFI_AWARE_SERVICE, IWifiAwareManager.class);
+      addBinderService(Context.STORAGE_STATS_SERVICE, IStorageStatsManager.class);
     } else {
       addBinderService("mount", "android.os.storage.IMountService");
     }
