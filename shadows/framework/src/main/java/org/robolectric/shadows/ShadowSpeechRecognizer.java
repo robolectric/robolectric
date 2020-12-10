@@ -16,7 +16,9 @@ import android.speech.SpeechRecognizer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -24,13 +26,41 @@ import org.robolectric.util.reflector.ForType;
 @Implements(SpeechRecognizer.class)
 public class ShadowSpeechRecognizer {
 
-  @RealObject SpeechRecognizer realObject;
+  @RealObject SpeechRecognizer realSpeechRecognizer;
+  private static SpeechRecognizer latestSpeechRecognizer;
   private RecognitionListener recognitionListener;
+
+  /**
+   * Returns the latest SpeechRecognizer. This method can only be called after {@link
+   * SpeechRecognizer#createSpeechRecognizer()} is called.
+   */
+  public static SpeechRecognizer getLatestSpeechRecognizer() {
+    return latestSpeechRecognizer;
+  }
+
+  @Resetter
+  public static void reset() {
+    latestSpeechRecognizer = null;
+  }
+
+  @Implementation
+  protected static SpeechRecognizer createSpeechRecognizer(
+      final Context context, final ComponentName serviceComponent) {
+    SpeechRecognizer result =
+        directlyOn(
+            SpeechRecognizer.class,
+            "createSpeechRecognizer",
+            ClassParameter.from(Context.class, context),
+            ClassParameter.from(ComponentName.class, serviceComponent));
+    latestSpeechRecognizer = result;
+    return result;
+  }
 
   @Implementation
   protected void startListening(Intent recognizerIntent) {
     // simulate the response to the real startListening's bindService call
-    SpeechRecognizerReflector reflector = reflector(SpeechRecognizerReflector.class, realObject);
+    SpeechRecognizerReflector reflector =
+        reflector(SpeechRecognizerReflector.class, realSpeechRecognizer);
     Binder recognitionServiceBinder = new Binder();
     recognitionServiceBinder.attachInterface(
         ReflectionHelpers.createNullProxy(IRecognitionService.class),
@@ -50,10 +80,13 @@ public class ShadowSpeechRecognizer {
     ShadowContextWrapper.getShadowInstrumentation()
         .setComponentNameAndServiceForBindServiceForIntent(
             serviceIntent, reflector.getServiceComponent(), recognitionServiceBinder);
-    directlyOn(realObject, SpeechRecognizer.class).startListening(recognizerIntent);
+    directlyOn(realSpeechRecognizer, SpeechRecognizer.class).startListening(recognizerIntent);
   }
 
-  /** Handles changing the listener and allows access to the internal listener to trigger events. */
+  /**
+   * Handles changing the listener and allows access to the internal listener to trigger events and
+   * sets the latest SpeechRecognizer.
+   */
   @Implementation
   protected void handleChangeListener(RecognitionListener listener) {
     recognitionListener = listener;
