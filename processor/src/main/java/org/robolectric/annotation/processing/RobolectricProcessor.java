@@ -134,7 +134,7 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.jsonDocsEnabled = "true".equalsIgnoreCase(options.get(JSON_DOCS_ENABLED));
       this.sdkCheckMode =
           SdkCheckMode.valueOf(options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase());
-      this.sdksFile = options.getOrDefault(SDKS_FILE, "/sdks.txt");
+      this.sdksFile = getSdksFile(options, SDKS_FILE);
       this.priority =
           Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
 
@@ -142,6 +142,13 @@ public class RobolectricProcessor extends AbstractProcessor {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
       }
     }
+  }
+
+  /**
+   * Extendable to support Bazel environments, where the sdks file is generated as a build artifact.
+   */
+  protected String getSdksFile(Map<String, String> options, String sdksFileParam) {
+    return options.get(sdksFileParam);
   }
 
   @Override

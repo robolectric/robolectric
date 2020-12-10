@@ -158,6 +158,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     getShadowInstrumentation().setThrowInBindService(e);
   }
 
+  /**
+   * Configures the ShadowApplication so that calls to bindService will call
+   * ServiceConnection#onServiceConnected before returning.
+   */
+  public void setBindServiceCallsOnServiceConnectedDirectly(boolean callDirectly) {
+    getShadowInstrumentation().setBindServiceCallsOnServiceConnectedDirectly(callDirectly);
+  }
+
   public List<ServiceConnection> getUnboundServiceConnections() {
     return getShadowInstrumentation().getUnboundServiceConnections();
   }
