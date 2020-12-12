@@ -8,6 +8,7 @@ import android.os.SimpleClock;
 import android.os.SystemClock;
 import java.time.DateTimeException;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -63,6 +64,14 @@ public abstract class ShadowSystemClock {
   /** Sets whether network time is available. */
   public static void setNetworkTimeAvailable(boolean available) {
     networkTimeAvailable = available;
+  }
+
+  /**
+   * An alternate to {@link #advanceBy(Duration)} for older Android code bases where Duration is not
+   * available.
+   */
+  public static void advanceBy(long time, TimeUnit unit) {
+    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + unit.toMillis(time));
   }
 
   /**
