@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -14,7 +14,7 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 // @Config(minSdk = JELLY_BEAN_MR2)
-@Config(sdk = CUR_DEVELOPMENT)
+@Config(sdk = JELLY_BEAN_MR2)
 public class ShadowTimeTest {
 
   @Test
