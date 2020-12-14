@@ -15,6 +15,8 @@ import android.app.ApplicationExitInfo;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.content.pm.IPackageDataObserver;
+import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.UserHandle;
@@ -295,5 +297,26 @@ public class ShadowActivityManager {
     appExitInfo.setReason(reason);
     appExitInfo.setStatus(status);
     appExitInfoList.addFirst(appExitInfo);
+  }
+
+  @Implementation
+  protected boolean clearApplicationUserData(String packageName, IPackageDataObserver observer) {
+    // The real ActivityManager calls clearApplicationUserData on the ActivityManagerService that
+    // calls PackageManager#clearApplicationUserData.
+    RuntimeEnvironment.application
+        .getPackageManager()
+        .clearApplicationUserData(packageName, observer);
+    return true;
+  }
+
+  /**
+   * Returns true after clearing application user data was requested by calling {@link
+   * ActivityManager#clearApplicationUserData()}.
+   */
+  public boolean isApplicationUserDataCleared() {
+    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    return Shadow.<ShadowApplicationPackageManager>extract(packageManager)
+        .getClearedApplicationUserDataPackages()
+        .contains(RuntimeEnvironment.application.getPackageName());
   }
 }

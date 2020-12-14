@@ -28,6 +28,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -356,6 +357,25 @@ public class ShadowActivityManagerTest {
     shadowOf(activityManager).setDeviceConfigurationInfo(configurationInfo);
 
     assertThat(activityManager.getDeviceConfigurationInfo()).isEqualTo(configurationInfo);
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void isApplicationUserDataCleared_returnsDefaultFalse() {
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    assertThat(Shadows.shadowOf(activityManager).isApplicationUserDataCleared()).isFalse();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void isApplicationUserDataCleared_returnsTrue() {
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    activityManager.clearApplicationUserData();
+    assertThat(Shadows.shadowOf(activityManager).isApplicationUserDataCleared()).isTrue();
   }
 
   private void addApplicationExitInfo(int pid) {
