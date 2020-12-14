@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -49,6 +50,7 @@ import android.widget.PopupWindow;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -214,6 +216,108 @@ public class ShadowApplicationTest {
     } catch (SecurityException thrownException) {
       assertThat(thrownException).isEqualTo(expectedException);
     }
+  }
+
+  @Test
+  public void
+      setBindServiceCallsOnServiceConnectedDirectly_setToTrue_onServiceConnectedCalledDuringCall() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).setBindServiceCallsOnServiceConnectedDirectly(true);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    assertThat(service.service).isNotNull();
+  }
+
+  @Test
+  public void
+      setBindServiceCallsOnServiceConnectedDirectly_setToTrue_locksUntilBound_onServiceConnectedCalledDuringCall()
+          throws InterruptedException {
+    final CountDownLatch latch = new CountDownLatch(1);
+    TestService service =
+        new TestService() {
+          @Override
+          public void onServiceConnected(ComponentName name, IBinder service) {
+            super.onServiceConnected(name, service);
+            latch.countDown();
+          }
+        };
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).setBindServiceCallsOnServiceConnectedDirectly(true);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    // Lock waiting for onService connected to finish
+    assertThat(latch.await(1000, MILLISECONDS)).isTrue();
+    assertThat(service.service).isNotNull();
+  }
+
+  @Test
+  public void
+      setBindServiceCallsOnServiceConnectedDirectly_setToFalse_onServiceConnectedNotCalledDuringCall() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).setBindServiceCallsOnServiceConnectedDirectly(false);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    assertThat(service.service).isNull();
+  }
+
+  @Test
+  public void
+      setBindServiceCallsOnServiceConnectedDirectly_setToFalse_locksUntilBound_onServiceConnectedCalledDuringCall()
+          throws InterruptedException {
+    final CountDownLatch latch = new CountDownLatch(1);
+    TestService service =
+        new TestService() {
+          @Override
+          public void onServiceConnected(ComponentName name, IBinder service) {
+            super.onServiceConnected(name, service);
+            latch.countDown();
+          }
+        };
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+    Shadows.shadowOf(context).setBindServiceCallsOnServiceConnectedDirectly(false);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    // Lock waiting for onService connected to finish
+    assertThat(latch.await(1000, MILLISECONDS)).isFalse();
+    assertThat(service.service).isNull();
+
+    // After idling the callback has been made.
+    ShadowLooper.idleMainLooper();
+
+    assertThat(latch.await(1000, MILLISECONDS)).isTrue();
+    assertThat(service.service).isNotNull();
+  }
+
+  @Test
+  public void
+      setBindServiceCallsOnServiceConnectedDirectly_notSet_onServiceConnectedNotCalledDuringCall() {
+    TestService service = new TestService();
+    ComponentName expectedComponentName = new ComponentName("", "");
+    Binder expectedBinder = new Binder();
+    Shadows.shadowOf(context)
+        .setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+
+    context.bindService(new Intent("").setPackage("package"), service, Context.BIND_AUTO_CREATE);
+
+    assertThat(service.service).isNull();
   }
 
   @Test
