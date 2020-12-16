@@ -280,7 +280,7 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> newIntent(Intent intent) {
-    invokeWhilePaused("onNewIntent", from(Intent.class, intent));
+    invokeWhilePaused("onNewIntent", from(Intent.class, parcelIntent(intent)));
     return this;
   }
 
