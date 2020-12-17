@@ -156,10 +156,6 @@ public class InstrumentationConfiguration {
     return Collections.unmodifiableMap(classNameTranslations);
   }
 
-  public boolean containsStubs(String className) {
-    return className.startsWith("com.google.android.maps.");
-  }
-
   private boolean isInInstrumentedPackage(String className) {
     for (String instrumentedPackage : instrumentedPackages) {
       if (className.startsWith(instrumentedPackage)) {

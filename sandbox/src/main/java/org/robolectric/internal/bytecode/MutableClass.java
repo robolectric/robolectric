@@ -15,7 +15,6 @@ public class MutableClass {
   public final ClassNode classNode;
   final InstrumentationConfiguration config;
   final ClassNodeProvider classNodeProvider;
-  final boolean containsStubs;
 
   final String internalClassName;
   private final String className;
@@ -30,7 +29,6 @@ public class MutableClass {
     this.internalClassName = classNode.name;
     this.className = classNode.name.replace('/', '.');
     this.classType = Type.getObjectType(internalClassName);
-    this.containsStubs = config.containsStubs(className);
 
     List<String> foundMethods = new ArrayList<>(classNode.methods.size());
     for (MethodNode methodNode : getMethods()) {

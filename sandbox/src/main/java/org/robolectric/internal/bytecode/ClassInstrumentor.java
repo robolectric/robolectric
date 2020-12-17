@@ -261,18 +261,6 @@ public abstract class ClassInstrumentor {
   private void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
     makeMethodPrivate(method);
 
-    if (mutableClass.containsStubs) {
-      // method.instructions just throws a `stub!` exception, replace it with something anodyne...
-      method.instructions.clear();
-
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
-      generator.loadThis();
-      generator.visitMethodInsn(
-          Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
-      generator.returnValue();
-      generator.endMethod();
-    }
-
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
     method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     mutableClass.addMethod(redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
@@ -312,7 +300,9 @@ public abstract class ClassInstrumentor {
         case Opcodes.INVOKESPECIAL:
           MethodInsnNode mnode = (MethodInsnNode) node;
           if (mnode.owner.equals(mutableClass.internalClassName) || mnode.owner.equals(mutableClass.classNode.superName)) {
-            assert mnode.name.equals("<init>");
+            if (!"<init>".equals(mnode.name)) {
+              throw new AssertionError("Invalid MethodInsnNode name");
+            }
 
             // remove all instructions in the range startIndex..i, from aload_0 to invokespecial <init>
             while (startIndex <= i) {
