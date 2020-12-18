@@ -13,10 +13,13 @@ import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +40,18 @@ public class ShadowTextToSpeechTest {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(textToSpeech).isNotNull();
     assertThat(shadowOf(textToSpeech)).isNotNull();
+  }
+
+  @Test
+  public void onInitListener_notCalledAutomatically() {
+    AtomicReference<Boolean> onInitCalled = new AtomicReference<>(false);
+    TextToSpeech.OnInitListener listener =
+        result -> {
+          onInitCalled.set(true);
+        };
+    TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
+    assertThat(textToSpeech).isNotNull();
+    assertThat(onInitCalled.get()).isFalse();
   }
 
   @Test
@@ -306,4 +321,21 @@ public class ShadowTextToSpeechTest {
 
     assertThat(shadowOf(textToSpeech).getSpokenTextList()).containsExactly("one", "two", "three");
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getVoices_returnsAvailableVoices() {
+    Voice voice = new Voice(
+        "test voice",
+        Locale.getDefault(),
+        Voice.QUALITY_VERY_HIGH,
+        Voice.LATENCY_LOW,
+        false /* requiresNetworkConnection */,
+        ImmutableSet.of());
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    ShadowTextToSpeech.addVoice(voice);
+
+    assertThat(shadowOf(textToSpeech).getVoices()).containsExactly(voice);
+  }
+
 }
