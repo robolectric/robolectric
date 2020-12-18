@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowTimeZoneFinder.readTzlookup;
 
 import org.robolectric.annotation.Implementation;
@@ -12,6 +13,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(
     className = "libcore.timezone.TimeZoneFinder",
     minSdk = Q,
+    maxSdk = R,
     isInAndroidSdk = false,
     looseSignatures = true)
 public class ShadowTimeZoneFinderQ {

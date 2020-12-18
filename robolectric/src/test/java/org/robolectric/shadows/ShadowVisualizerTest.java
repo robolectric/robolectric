@@ -1,10 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.GINGERBREAD;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.media.audiofx.AudioEffect;
 import android.media.audiofx.Visualizer;
+import android.media.audiofx.Visualizer.MeasurementPeakRms;
 import android.media.audiofx.Visualizer.OnDataCaptureListener;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
@@ -92,6 +96,83 @@ public class ShadowVisualizerTest {
 
     assertThat(status).isEqualTo(Visualizer.SUCCESS);
     assertThat(visualizer.getCaptureSize()).isEqualTo(2000);
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void getMeasurementPeakRms_returnsRmsFromSource() {
+    int peak = -500;
+    int rms = -1000;
+    shadowOf(visualizer)
+        .setSource(
+            new VisualizerSource() {
+              @Override
+              public int getPeakRms(MeasurementPeakRms measurement) {
+                measurement.mPeak = peak;
+                measurement.mRms = rms;
+                return AudioEffect.ERROR;
+              }
+            });
+    MeasurementPeakRms measurement = new MeasurementPeakRms();
+
+    int result = visualizer.getMeasurementPeakRms(measurement);
+
+    assertThat(result).isEqualTo(AudioEffect.ERROR);
+    assertThat(measurement.mPeak).isEqualTo(peak);
+    assertThat(measurement.mRms).isEqualTo(rms);
+  }
+
+  @Test
+  public void release_sourceThrowsException_throwsException() {
+    shadowOf(visualizer)
+        .setSource(
+            new VisualizerSource() {
+              @Override
+              public void release() {
+                throw new RuntimeException();
+              }
+            });
+
+    assertThrows(RuntimeException.class, () -> visualizer.release());
+  }
+
+  @Test
+  public void getEnabled_visualizerUninitialized_throwsException() {
+    shadowOf(visualizer).setState(Visualizer.STATE_UNINITIALIZED);
+
+    assertThrows(IllegalStateException.class, () -> visualizer.getEnabled());
+  }
+
+  @Test
+  public void setEnabled_visualizerUninitialized_throwsException() {
+    shadowOf(visualizer).setState(Visualizer.STATE_UNINITIALIZED);
+
+    assertThrows(IllegalStateException.class, () -> visualizer.setEnabled(false));
+  }
+
+  @Test
+  public void setDataCaptureListener_errorCodeSet_returnsErrorCode() {
+    shadowOf(visualizer).setErrorCode(Visualizer.ERROR);
+
+    assertThat(visualizer.setDataCaptureListener(null, 1024, false, false))
+        .isEqualTo(Visualizer.ERROR);
+  }
+
+  @Test
+  public void setEnabled_errorCodeSet_returnsErrorCode() {
+    visualizer.setEnabled(false);
+    shadowOf(visualizer).setErrorCode(Visualizer.ERROR);
+
+    assertThat(visualizer.setEnabled(true)).isEqualTo(Visualizer.ERROR);
+  }
+
+  @Test
+  public void setCaptureSize_errorCodeSet_returnsErrorCode() {
+    // The capture size can only be set while the Visualizer is disabled.
+    visualizer.setEnabled(false);
+    shadowOf(visualizer).setErrorCode(Visualizer.ERROR);
+
+    assertThat(visualizer.setCaptureSize(1024)).isEqualTo(Visualizer.ERROR);
   }
 
   @Test

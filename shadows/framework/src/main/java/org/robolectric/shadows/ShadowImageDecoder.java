@@ -313,7 +313,7 @@ public class ShadowImageDecoder {
   }
 
   // The fd must be seekable.
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = R)
   protected static ImageDecoder nCreate(FileDescriptor fd, boolean preferAnimation, Source src)
       throws IOException {
     return ImageDecoder_nCreateFd(fd, src);

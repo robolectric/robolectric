@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.media.audiofx.AudioEffect.STATE_INITIALIZED;
+import static android.media.audiofx.AudioEffect.STATE_UNINITIALIZED;
 import static android.media.audiofx.AudioEffect.SUCCESS;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.audiofx.AudioEffect;
 import android.os.Build.VERSION_CODES;
@@ -17,6 +20,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Implements {@link AudioEffect} by shadowing its native methods. */
 @Implements(value = AudioEffect.class)
@@ -31,6 +36,7 @@ public class ShadowAudioEffect {
   private int priority;
   private int audioSession;
   private boolean isEnabled = false;
+  private int errorCode = SUCCESS;
 
   @Implementation(minSdk = VERSION_CODES.JELLY_BEAN, maxSdk = VERSION_CODES.LOLLIPOP_MR1)
   protected int native_setup(
@@ -64,6 +70,9 @@ public class ShadowAudioEffect {
   /** Marks the {@link AudioEffect} as enabled, and always returns {@code SUCCESS}. */
   @Implementation
   protected int native_setEnabled(boolean enabled) {
+    if (errorCode != SUCCESS) {
+      return errorCode;
+    }
     isEnabled = enabled;
     return SUCCESS;
   }
@@ -81,6 +90,9 @@ public class ShadowAudioEffect {
    */
   @Implementation
   protected int native_setParameter(int psize, byte[] param, int vsize, byte[] value) {
+    if (errorCode != SUCCESS) {
+      return errorCode;
+    }
     ByteBuffer parameterKey = createReadOnlyByteBuffer(param, psize);
     ByteBuffer parameterValue = createReadOnlyByteBuffer(value, vsize);
     parameters.put(parameterKey, parameterValue);
@@ -94,10 +106,14 @@ public class ShadowAudioEffect {
    * parameters. Note: If the given parameter has not been set, and there is no default value for
    * that parameter, then we "return" (set {@code value} to) a single integer 0.
    *
-   * @return the size of the returned value, in bytes.
+   * @return the size of the returned value, in bytes, or an error code in case of failure.
    */
   @Implementation
   protected int native_getParameter(int psize, byte[] param, int vsize, byte[] value) {
+    if (errorCode != SUCCESS) {
+      return errorCode;
+    }
+
     ByteBuffer parameterKey = ByteBuffer.wrap(Arrays.copyOf(param, psize));
     if (parameters.containsKey(parameterKey)) {
       ByteBuffer parameterValue = parameters.get(parameterKey);
@@ -139,6 +155,27 @@ public class ShadowAudioEffect {
   /** Returns the audio session set in the {@link AudioEffect} ctor. */
   public int getAudioSession() {
     return audioSession;
+  }
+
+  /**
+   * Updates the state of the {@link AudioEffect} itself.
+   *
+   * <p>This can be used e.g. to put the AudioEffect in an unexpected state and cause an exception
+   * the next time the Visualizer is used.
+   */
+  public void setInitialized(boolean initialized) {
+    reflector(ReflectorAudioEffect.class, audioEffect)
+        .setState(initialized ? STATE_INITIALIZED : STATE_UNINITIALIZED);
+  }
+
+  /**
+   * Sets the error code to override setter methods in this class.
+   *
+   * <p>When the error code is set to anything other than {@link SUCCESS} setters in the AudioEffect
+   * will early-out and return that error code.
+   */
+  public void setErrorCode(int errorCode) {
+    this.errorCode = errorCode;
   }
 
   /**
@@ -184,5 +221,12 @@ public class ShadowAudioEffect {
   public static void reset() {
     descriptors.clear();
     audioEffects.clear();
+  }
+
+  /** Accessor interface for {@link AudioEffect}'s internals. */
+  @ForType(AudioEffect.class)
+  private interface ReflectorAudioEffect {
+    @Accessor("mState")
+    void setState(int state);
   }
 }

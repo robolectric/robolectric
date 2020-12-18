@@ -1,6 +1,7 @@
 package org.robolectric.util.reflector;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -132,6 +133,16 @@ public class ReflectorTest {
     time("saved accessor", 10_000_000, () -> fieldBySavedReflector(accessor));
   }
 
+  @Test
+  public void nonExistentMethod_throwsAssertionError() {
+    SomeClass i = new SomeClass("c");
+    _SomeClass_ accessor = reflector(_SomeClass_.class, i);
+    AssertionError ex =
+        assertThrows(AssertionError.class, () -> accessor.nonExistentMethod("a", "b", "c"));
+    assertThat(ex).hasMessageThat().startsWith("Error invoking reflector method in ClassLoader ");
+    assertThat(ex).hasCauseThat().isInstanceOf(NoSuchMethodException.class);
+  }
+
   //////////////////////
 
   /** Accessor interface for {@link SomeClass}'s internals. */
@@ -160,6 +171,8 @@ public class ReflectorTest {
     int getD();
 
     String someMethod(String a, String b);
+
+    String nonExistentMethod(String a, String b, String c);
 
     String anotherMethod(@WithType("java.lang.String") Object a, String b);
 

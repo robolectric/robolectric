@@ -237,8 +237,21 @@ public class ActivityController<T extends Activity>
     return this;
   }
 
-  @Override public ActivityController<T> destroy() {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnDestroy(component));
+  @Override
+  public ActivityController<T> destroy() {
+    shadowMainLooper.runPaused(
+        () -> {
+          getInstrumentation().callActivityOnDestroy(component);
+          // Clear WindowManager state for this activity. On real Android this is done by
+          // ActivityThread.handleDestroyActivity, which is initiated by the window manager
+          // service.
+          boolean windowAdded = ReflectionHelpers.getField(component, "mWindowAdded");
+          if (windowAdded) {
+            WindowManager windowManager = component.getWindowManager();
+            windowManager.removeViewImmediate(component.getWindow().getDecorView());
+          }
+        });
+
     return this;
   }
 

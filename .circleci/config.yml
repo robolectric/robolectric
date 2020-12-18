@@ -5,7 +5,6 @@ job_config: &job_config
     - image: circleci/openjdk:11.0.6-jdk-stretch
   resource_class: xlarge
   environment:
-    JVM_OPTS: -Xmx4096m
     GRADLE_MAX_PARALLEL_FORKS: 2
     ANDROID_HOME: /home/circleci/Android
 
@@ -135,7 +134,7 @@ jobs:
           path: build/reports
           destination: reports
 
-  test_26_27:
+  test_26_27_28:
     << : *job_config
     steps:
       - attach_workspace:
@@ -143,15 +142,15 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run_tests_for_sdks:
-          codenames: O
-          versions: 26,27
+          codenames: O/P
+          versions: 26,27,28
       - store_test_results:
           path: ~/junit
       - store_artifacts:
           path: build/reports
           destination: reports
 
-  test_28_29:
+  test_29_30:
     << : *job_config
     steps:
       - attach_workspace:
@@ -159,24 +158,8 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run_tests_for_sdks:
-          codenames: P/Q
-          versions: 28,29
-      - store_test_results:
-          path: ~/junit
-      - store_artifacts:
-          path: build/reports
-          destination: reports
-
-  test_30:
-    << : *job_config
-    steps:
-      - attach_workspace:
-          at: ~/code
-      - restore_cache:
-          key: cache-{{ checksum ".cache-hash" }}
-      - run_tests_for_sdks:
-          codenames: R
-          versions: "30"
+          codenames: Q/R
+          versions: 29,30
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -191,17 +174,16 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Upload Snapshot
+          name: Publish Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              ./gradlew upload --no-rebuild
+              ./gradlew publish --no-rebuild
             fi
 
 workflows:
   version: 2
   build-and-test:
     jobs:
-      - check_java_formatting
       - build
       - test_16_17_18:
           requires:
@@ -212,13 +194,10 @@ workflows:
       - test_23_24_25:
           requires:
             - build
-      - test_26_27:
+      - test_26_27_28:
           requires:
             - build
-      - test_28_29:
-          requires:
-            - build
-      - test_30:
+      - test_29_30:
           requires:
             - build
       - finish:
@@ -226,7 +205,9 @@ workflows:
             - test_16_17_18
             - test_19_21_22
             - test_23_24_25
-            - test_26_27
-            - test_28_29
-            - test_30
+            - test_26_27_28
+            - test_29_30
+  check-formatting:
+    jobs:
+      - check_java_formatting
 

@@ -25,95 +25,100 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTextToSpeechTest {
-  private TextToSpeech textToSpeech;
   private Activity activity;
-  private TextToSpeech.OnInitListener listener;
-  private UtteranceProgressListener mockListener;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     activity = Robolectric.buildActivity(Activity.class).create().get();
-    listener = new TextToSpeech.OnInitListener() {
-      @Override public void onInit(int i) {
-      }
-    };
-
-    mockListener = mock(UtteranceProgressListener.class);
-    textToSpeech = new TextToSpeech(activity, listener);
   }
 
   @Test
-  public void shouldNotBeNull() throws Exception {
+  public void shouldNotBeNull() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(textToSpeech).isNotNull();
     assertThat(shadowOf(textToSpeech)).isNotNull();
   }
 
   @Test
-  public void getContext_shouldReturnContext() throws Exception {
+  public void getContext_shouldReturnContext() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).getContext()).isEqualTo(activity);
   }
 
   @Test
-  public void getOnInitListener_shouldReturnListener() throws Exception {
+  public void getOnInitListener_shouldReturnListener() {
+    TextToSpeech.OnInitListener listener = result -> {};
+    TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
     assertThat(shadowOf(textToSpeech).getOnInitListener()).isEqualTo(listener);
   }
 
   @Test
-  public void getLastSpokenText_shouldReturnSpokenText() throws Exception {
+  public void getLastSpokenText_shouldReturnSpokenText() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
     assertThat(shadowOf(textToSpeech).getLastSpokenText()).isEqualTo("Hello");
   }
 
   @Test
-  public void getLastSpokenText_shouldReturnMostRecentText() throws Exception {
+  public void getLastSpokenText_shouldReturnMostRecentText() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
     textToSpeech.speak("Hi", TextToSpeech.QUEUE_FLUSH, null);
     assertThat(shadowOf(textToSpeech).getLastSpokenText()).isEqualTo("Hi");
   }
 
   @Test
-  public void clearLastSpokenText_shouldSetLastSpokenTextToNull() throws Exception {
+  public void clearLastSpokenText_shouldSetLastSpokenTextToNull() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
     shadowOf(textToSpeech).clearLastSpokenText();
     assertThat(shadowOf(textToSpeech).getLastSpokenText()).isNull();
   }
 
   @Test
-  public void isShutdown_shouldReturnFalseBeforeShutdown() throws Exception {
+  public void isShutdown_shouldReturnFalseBeforeShutdown() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).isShutdown()).isFalse();
   }
 
   @Test
-  public void isShutdown_shouldReturnTrueAfterShutdown() throws Exception {
+  public void isShutdown_shouldReturnTrueAfterShutdown() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.shutdown();
     assertThat(shadowOf(textToSpeech).isShutdown()).isTrue();
   }
 
   @Test
-  public void isStopped_shouldReturnTrueBeforeSpeak() throws Exception {
+  public void isStopped_shouldReturnTrueBeforeSpeak() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
   }
 
   @Test
-  public void isStopped_shouldReturnTrueAfterStop() throws Exception {
+  public void isStopped_shouldReturnTrueAfterStop() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.stop();
     assertThat(shadowOf(textToSpeech).isStopped()).isTrue();
   }
 
   @Test
-  public void isStopped_shouldReturnFalseAfterSpeak() throws Exception {
+  public void isStopped_shouldReturnFalseAfterSpeak() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
     assertThat(shadowOf(textToSpeech).isStopped()).isFalse();
   }
 
   @Test
-  public void getQueueMode_shouldReturnMostRecentQueueMode() throws Exception {
+  public void getQueueMode_shouldReturnMostRecentQueueMode() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_ADD, null);
     assertThat(shadowOf(textToSpeech).getQueueMode()).isEqualTo(TextToSpeech.QUEUE_ADD);
   }
 
   @Test
-  public void threeArgumentSpeak_withUtteranceId_shouldGetCallbackUtteranceId() throws Exception {
+  public void threeArgumentSpeak_withUtteranceId_shouldGetCallbackUtteranceId() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     HashMap<String, String> paramsMap = new HashMap<>();
     paramsMap.put(Engine.KEY_PARAM_UTTERANCE_ID, "ThreeArgument");
@@ -126,7 +131,9 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  public void threeArgumentSpeak_withoutUtteranceId_shouldDoesNotGetCallback() throws Exception {
+  public void threeArgumentSpeak_withoutUtteranceId_shouldDoesNotGetCallback() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null);
 
@@ -138,14 +145,17 @@ public class ShadowTextToSpeechTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void speak_withUtteranceId_shouldReturnSpokenText() throws Exception {
+  public void speak_withUtteranceId_shouldReturnSpokenText() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null, "TTSEnable");
     assertThat(shadowOf(textToSpeech).getLastSpokenText()).isEqualTo("Hello");
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void onUtteranceProgressListener_shouldGetCallbackUtteranceId() throws Exception {
+  public void onUtteranceProgressListener_shouldGetCallbackUtteranceId() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
     textToSpeech.setOnUtteranceProgressListener(mockListener);
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null, "TTSEnable");
 
@@ -158,6 +168,7 @@ public class ShadowTextToSpeechTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_lastSynthesizeToFileTextStored() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     Bundle bundle = new Bundle();
     File file = new File("example.txt");
 
@@ -170,11 +181,13 @@ public class ShadowTextToSpeechTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_neverCalled_lastSynthesizeToFileTextNull() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).getLastSynthesizeToFileText()).isNull();
   }
 
   @Test
   public void getCurrentLanguage_languageSet_returnsLanguage() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     Locale language = Locale.forLanguageTag("pl-pl");
     textToSpeech.setLanguage(language);
     assertThat(shadowOf(textToSpeech).getCurrentLanguage()).isEqualTo(language);
@@ -182,11 +195,13 @@ public class ShadowTextToSpeechTest {
 
   @Test
   public void getCurrentLanguage_languageNeverSet_returnsNull() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).getCurrentLanguage()).isNull();
   }
 
   @Test
   public void isLanguageAvailable_neverAdded_returnsUnsupported() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(
             textToSpeech.isLanguageAvailable(
                 new Locale.Builder().setLanguage("pl").setRegion("pl").build()))
@@ -195,6 +210,7 @@ public class ShadowTextToSpeechTest {
 
   @Test
   public void isLanguageAvailable_twoLanguageAvailabilities_returnsRequestedAvailability() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     ShadowTextToSpeech.addLanguageAvailability(
         new Locale.Builder().setLanguage("pl").setRegion("pl").build());
     ShadowTextToSpeech.addLanguageAvailability(
@@ -208,6 +224,7 @@ public class ShadowTextToSpeechTest {
 
   @Test
   public void isLanguageAvailable_matchingVariant_returnsCountryVarAvailable() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     ShadowTextToSpeech.addLanguageAvailability(
         new Locale.Builder().setLanguage("en").setRegion("us").setVariant("WOLTK").build());
 
@@ -219,6 +236,7 @@ public class ShadowTextToSpeechTest {
 
   @Test
   public void isLanguageAvailable_matchingCountry_returnsLangCountryAvailable() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     ShadowTextToSpeech.addLanguageAvailability(
         new Locale.Builder().setLanguage("en").setRegion("us").setVariant("ONETW").build());
 
@@ -230,6 +248,7 @@ public class ShadowTextToSpeechTest {
 
   @Test
   public void isLanguageAvailable_matchingLanguage_returnsLangAvailable() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     ShadowTextToSpeech.addLanguageAvailability(
         new Locale.Builder().setLanguage("en").setRegion("us").build());
 
@@ -241,6 +260,7 @@ public class ShadowTextToSpeechTest {
 
   @Test
   public void isLanguageAvailable_matchingNone_returnsLangNotSupported() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     ShadowTextToSpeech.addLanguageAvailability(
         new Locale.Builder().setLanguage("en").setRegion("us").build());
 
@@ -248,5 +268,42 @@ public class ShadowTextToSpeechTest {
             textToSpeech.isLanguageAvailable(
                 new Locale.Builder().setLanguage("ja").setRegion("jp").build()))
         .isEqualTo(TextToSpeech.LANG_NOT_SUPPORTED);
+  }
+
+  @Test
+  public void getLastTextToSpeechInstance_neverConstructed_returnsNull() {
+    assertThat(ShadowTextToSpeech.getLastTextToSpeechInstance()).isNull();
+  }
+
+  @Test
+  public void getLastTextToSpeechInstance_constructed_returnsInstance() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    assertThat(ShadowTextToSpeech.getLastTextToSpeechInstance()).isEqualTo(textToSpeech);
+  }
+
+  @Test
+  public void getLastTextToSpeechInstance_constructedTwice_returnsMostRecentInstance() {
+    TextToSpeech textToSpeechOne = new TextToSpeech(activity, result -> {});
+    TextToSpeech textToSpeechTwo = new TextToSpeech(activity, result -> {});
+
+    assertThat(ShadowTextToSpeech.getLastTextToSpeechInstance()).isEqualTo(textToSpeechTwo);
+    assertThat(ShadowTextToSpeech.getLastTextToSpeechInstance()).isNotEqualTo(textToSpeechOne);
+  }
+
+  @Test
+  public void getSpokenTextList_neverSpoke_returnsEmpty() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+    assertThat(shadowOf(textToSpeech).getSpokenTextList()).isEmpty();
+  }
+
+  @Test
+  public void getSpokenTextList_spoke_returnsSpokenTexts() {
+    TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
+
+    textToSpeech.speak("one", TextToSpeech.QUEUE_FLUSH, null);
+    textToSpeech.speak("two", TextToSpeech.QUEUE_FLUSH, null);
+    textToSpeech.speak("three", TextToSpeech.QUEUE_FLUSH, null);
+
+    assertThat(shadowOf(textToSpeech).getSpokenTextList()).containsExactly("one", "two", "three");
   }
 }

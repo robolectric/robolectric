@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
 import static android.view.ViewRootImpl.NEW_INSETS_MODE_FULL;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
+import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -28,7 +29,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import java.util.HashMap;
 import java.util.List;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -43,7 +43,9 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   private static Display defaultDisplayJB;
-  @RealObject private WindowManagerImpl realWindowManagerImpl;
+
+  @RealObject WindowManagerImpl realObject;
+  private static final Multimap<Integer, View> views = ArrayListMultimap.create();
 
   /** internal only */
   public static void configureDefaultDisplayForJBOnly(
@@ -57,10 +59,6 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     ShadowDisplay shadowDisplay = Shadow.extract(defaultDisplayJB);
     shadowDisplay.configureForJBOnly(configuration, displayMetrics);
   }
-
-  @RealObject
-  WindowManagerImpl realObject;
-  private static final Multimap<Integer, View> views = ArrayListMultimap.create();
 
   @Implementation
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
@@ -97,7 +95,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   @Implementation(maxSdk = JELLY_BEAN)
   public Display getDefaultDisplay() {
-    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
+    if (getApiLevel() > JELLY_BEAN) {
       return directlyOn(realObject, WindowManagerImpl.class).getDefaultDisplay();
     } else {
       return defaultDisplayJB;
@@ -116,8 +114,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   /** Re implement to avoid server call */
   @Implementation(minSdk = R)
   protected WindowInsets getWindowInsetsFromServer(WindowManager.LayoutParams attrs, Rect bounds) {
-    Context context =
-        reflector(ReflectorWindowManagerImpl.class, realWindowManagerImpl).getContext();
+    Context context = reflector(ReflectorWindowManagerImpl.class, realObject).getContext();
     final Rect systemWindowInsets = new Rect();
     final Rect stableInsets = new Rect();
     final DisplayCutout.ParcelableWrapper displayCutout = new DisplayCutout.ParcelableWrapper();
@@ -125,7 +122,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     final boolean alwaysConsumeSystemBars = true;
 
     final boolean isScreenRound = context.getResources().getConfiguration().isScreenRound();
-    if (ViewRootImpl.sNewInsetsMode == NEW_INSETS_MODE_FULL) {
+    if (getApiLevel() <= R && ViewRootImpl.sNewInsetsMode == NEW_INSETS_MODE_FULL) {
       return insetsState.calculateInsets(
           bounds,
           null /* ignoringVisibilityState*/,
@@ -156,7 +153,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public static void reset() {
     defaultDisplayJB = null;
     views.clear();
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
+    if (getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
       ReflectionHelpers.setStaticField(
           WindowManagerImpl.class,
           "sWindowManager",

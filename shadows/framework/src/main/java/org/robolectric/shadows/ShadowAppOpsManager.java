@@ -67,6 +67,9 @@ public class ShadowAppOpsManager {
   // "uid|packageName|opCode" => opMode
   private Map<String, Integer> appModeMap = new HashMap<>();
 
+  // "uid|packageName|opCode" => opMode
+  private Set<String> longRunningOp = new HashSet<>();
+
   // "packageName|opCode" => listener
   private BiMap<String, OnOpChangedListener> appOpListeners = HashBiMap.create();
 
@@ -136,6 +139,32 @@ public class ShadowAppOpsManager {
       return AppOpsManager.MODE_ALLOWED;
     }
     return mode;
+  }
+
+  /** Stores a fake long-running operation. It does not throw if a wrong uid is passed. */
+  @Implementation(minSdk = R)
+  protected int startOp(
+      String op, int uid, String packageName, String attributionTag, String message) {
+    int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
+    if (mode == AppOpsManager.MODE_ALLOWED) {
+      longRunningOp.add(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+    }
+    return mode;
+  }
+
+  /** Removes a fake long-running operation from the set. */
+  @Implementation(minSdk = R)
+  protected void finishOp(String op, int uid, String packageName, String attributionTag) {
+    longRunningOp.remove(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+  }
+
+  /**
+   * Checks whether the given op is active, i.e. did someone call {@link #startOp(String, int,
+   * String, String, String)} without {@link #finishOp(String, int, String, String)} yet.
+   */
+  @Implementation(minSdk = R)
+  protected boolean isOpActive(String op, int uid, String packageName) {
+    return longRunningOp.contains(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
   }
 
   /**

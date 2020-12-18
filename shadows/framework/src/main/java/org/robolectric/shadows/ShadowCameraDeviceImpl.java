@@ -6,6 +6,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.impl.CameraCaptureSessionImpl;
 import android.hardware.camera2.impl.CameraDeviceImpl;
 import android.hardware.camera2.impl.CameraMetadataNative;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -60,10 +61,15 @@ public class ShadowCameraDeviceImpl {
       List<Surface> outputs, CameraCaptureSession.StateCallback callback, Handler handler)
       throws CameraAccessException {
     checkIfCameraClosedOrInError();
-    CameraCaptureSession sess = Shadow.newInstanceOf(CameraCaptureSessionImpl.class);
-    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mStateCallback", callback);
-    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mDeviceImpl", realObject);
-    handler.post(() -> callback.onConfigured(sess));
+    CameraCaptureSession session = createCameraCaptureSession(callback);
+    handler.post(() -> callback.onConfigured(session));
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void createCaptureSession(SessionConfiguration config) throws CameraAccessException {
+    checkIfCameraClosedOrInError();
+    CameraCaptureSession session = createCameraCaptureSession(config.getStateCallback());
+    config.getExecutor().execute(() -> config.getStateCallback().onConfigured(session));
   }
 
   @Implementation
@@ -87,5 +93,13 @@ public class ShadowCameraDeviceImpl {
     if (closed) {
       throw new IllegalStateException("CameraDevice was already closed");
     }
+  }
+
+  private CameraCaptureSession createCameraCaptureSession(
+      CameraCaptureSession.StateCallback callback) {
+    CameraCaptureSession sess = Shadow.newInstanceOf(CameraCaptureSessionImpl.class);
+    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mStateCallback", callback);
+    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mDeviceImpl", realObject);
+    return sess;
   }
 }

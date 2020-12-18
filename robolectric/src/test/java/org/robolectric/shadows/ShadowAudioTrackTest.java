@@ -3,11 +3,13 @@ package org.robolectric.shadows;
 import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioTrack;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
@@ -17,7 +19,7 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowAudioTrack}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Q)
+@Config(minSdk = LOLLIPOP)
 public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWrittenListener {
 
   private static final int SAMPLE_RATE_IN_HZ = 44100;
@@ -27,6 +29,35 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   private byte[] dataWrittenToShadowAudioTrack;
 
   @Test
+  public void multichannelAudio_isSupported() {
+    AudioFormat format =
+        new AudioFormat.Builder()
+            .setChannelMask(
+                AudioFormat.CHANNEL_OUT_FRONT_CENTER
+                    | AudioFormat.CHANNEL_OUT_FRONT_LEFT
+                    | AudioFormat.CHANNEL_OUT_FRONT_RIGHT
+                    | AudioFormat.CHANNEL_OUT_BACK_LEFT
+                    | AudioFormat.CHANNEL_OUT_BACK_RIGHT
+                    | AudioFormat.CHANNEL_OUT_LOW_FREQUENCY)
+            .setEncoding(AUDIO_ENCODING_FORMAT)
+            .setSampleRate(SAMPLE_RATE_IN_HZ)
+            .build();
+
+    // 2s buffer
+    int bufferSizeBytes =
+        2 * SAMPLE_RATE_IN_HZ * 6 * AudioFormat.getBytesPerSample(AUDIO_ENCODING_FORMAT);
+
+    // Ensure the constructor doesn't throw an exception.
+    new AudioTrack(
+        new AudioAttributes.Builder().build(),
+        format,
+        bufferSizeBytes,
+        AudioTrack.MODE_STREAM,
+        AudioManager.AUDIO_SESSION_ID_GENERATE);
+  }
+
+  @Test
+  @Config(minSdk = Q)
   public void setMinBufferSize() {
     int originalMinBufferSize =
         AudioTrack.getMinBufferSize(SAMPLE_RATE_IN_HZ, CHANNEL_CONFIG, AUDIO_ENCODING_FORMAT);
@@ -39,6 +70,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeByteArray_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
 
@@ -48,6 +80,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeByteArray_nonBlocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
 
@@ -57,6 +90,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeByteBuffer_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocate(4);
@@ -67,6 +101,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeByteBuffer_nonBlocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocate(4);
@@ -77,6 +112,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeByteBuffer_correctBytesWritten() {
     ShadowAudioTrack.addAudioDataListener(this);
     AudioTrack audioTrack = getSampleAudioTrack();
@@ -93,6 +129,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeDirectByteBuffer_blocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -103,6 +140,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeDirectByteBuffer_nonBlocking() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -113,6 +151,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeDirectByteBuffer_invalidWriteMode() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -123,6 +162,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Test
+  @Config(minSdk = Q)
   public void writeDirectByteBuffer_invalidSize() {
     AudioTrack audioTrack = getSampleAudioTrack();
     ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4);
@@ -133,6 +173,7 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   }
 
   @Override
+  @Config(minSdk = Q)
   public void onAudioDataWritten(
       ShadowAudioTrack audioTrack, byte[] audioData, AudioFormat format) {
     shadowAudioTrack = audioTrack;

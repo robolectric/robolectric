@@ -50,7 +50,6 @@ public class ShadowBitmap {
 
   private int width;
   private int height;
-  private int density;
   private int[] colors;
   private Bitmap.Config config;
   private boolean mutable;
@@ -220,7 +219,7 @@ public class ShadowBitmap {
     shadowBitmap.config = config;
     shadowBitmap.setMutable(true);
     if (displayMetrics != null) {
-      shadowBitmap.density = displayMetrics.densityDpi;
+      scaledBitmap.setDensity(displayMetrics.densityDpi);
     }
     shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, shadowBitmap.getWidth(), 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
     return scaledBitmap;
@@ -540,16 +539,6 @@ public class ShadowBitmap {
   @Implementation
   protected int getHeight() {
     return height;
-  }
-
-  @Implementation
-  protected void setDensity(int density) {
-    this.density = density;
-  }
-
-  @Implementation
-  protected int getDensity() {
-    return density;
   }
 
   @Implementation

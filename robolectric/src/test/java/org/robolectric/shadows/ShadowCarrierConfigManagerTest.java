@@ -53,4 +53,17 @@ public class ShadowCarrierConfigManagerTest {
     assertThat(verifyBundle.getInt("key2")).isEqualTo(100);
     assertThat(verifyBundle.getBoolean("key3")).isTrue();
   }
+
+  @Test
+  public void getConfigForSubId_defaultsToEmpty() throws Exception {
+    PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(99999);
+    assertThat(persistableBundle).isNotNull();
+  }
+
+  @Test
+  public void getConfigForSubId_afterSetNullConfig_shouldReturnNullValue() throws Exception {
+    shadowOf(carrierConfigManager).setConfigForSubId(TEST_ID, null);
+    PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(TEST_ID);
+    assertThat(persistableBundle).isNull();
+  }
 }

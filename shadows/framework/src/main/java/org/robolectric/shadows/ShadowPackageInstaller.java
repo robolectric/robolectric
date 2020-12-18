@@ -27,7 +27,9 @@ import org.robolectric.shadow.api.Shadow;
 @SuppressLint("NewApi")
 public class ShadowPackageInstaller {
 
-  private int nextSessionId;
+  // According to the documentation, the session ID is always non-zero:
+  // https://developer.android.com/reference/android/content/pm/PackageInstaller#createSession(android.content.pm.PackageInstaller.SessionParams)
+  private int nextSessionId = 1;
   private Map<Integer, PackageInstaller.SessionInfo> sessionInfos = new HashMap<>();
   private Map<Integer, PackageInstaller.Session> sessions = new HashMap<>();
   private Set<CallbackInfo> callbackInfos = new HashSet<>();
@@ -40,6 +42,11 @@ public class ShadowPackageInstaller {
   @Implementation
   protected List<PackageInstaller.SessionInfo> getAllSessions() {
     return ImmutableList.copyOf(sessionInfos.values());
+  }
+
+  @Implementation
+  protected List<PackageInstaller.SessionInfo> getMySessions() {
+    return getAllSessions();
   }
 
   @Implementation

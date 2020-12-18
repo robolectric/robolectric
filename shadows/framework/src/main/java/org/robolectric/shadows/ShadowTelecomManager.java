@@ -9,12 +9,14 @@ import static com.google.common.base.Verify.verifyNotNull;
 
 import android.annotation.SystemApi;
 import android.annotation.TargetApi;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
@@ -28,6 +30,7 @@ import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -83,6 +86,7 @@ public class ShadowTelecomManager {
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
   private boolean ttySupported;
+  private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -118,12 +122,13 @@ public class ShadowTelecomManager {
   @Implementation
   @HiddenApi
   public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
-    return null;
+    return userSelectedOutgoingPhoneAccount;
   }
 
   @Implementation
   @HiddenApi
   public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
+    userSelectedOutgoingPhoneAccount = accountHandle;
   }
 
   @Implementation
@@ -594,6 +599,19 @@ public class ShadowTelecomManager {
 
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     this.simCallManager = simCallManager;
+  }
+
+  /**
+   * Creates a new {@link CallAudioState}. The real constructor of {@link CallAudioState} is hidden.
+   */
+  public CallAudioState newCallAudioState(
+      boolean muted,
+      int route,
+      int supportedRouteMask,
+      BluetoothDevice activeBluetoothDevice,
+      Collection<BluetoothDevice> supportedBluetoothDevices) {
+    return new CallAudioState(
+        muted, route, supportedRouteMask, activeBluetoothDevice, supportedBluetoothDevices);
   }
 
   @Implementation(minSdk = R)

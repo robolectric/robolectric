@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.util.TypedValue;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -112,7 +113,7 @@ public class ShadowBitmapFactory {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
-    Bitmap bitmap = create("fd:" + fd, opts, imageSizeFromStream);
+    Bitmap bitmap = create("fd:" + fd, outPadding, opts, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
@@ -150,7 +151,7 @@ public class ShadowBitmapFactory {
         ? is.toString().replace("stream for ", "")
         : null;
     Point imageSize = (is instanceof NamedStream) ? null : getImageSizeFromStream(is);
-    Bitmap bitmap = create(name, opts, imageSize);
+    Bitmap bitmap = create(name, outPadding, opts, imageSize);
     ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk",
             ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
@@ -197,6 +198,14 @@ public class ShadowBitmapFactory {
   }
 
   public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
+    return create(name, null, options, widthAndHeight);
+  }
+
+  private static Bitmap create(
+      final String name,
+      final Rect outPadding,
+      final BitmapFactory.Options options,
+      final Point widthAndHeight) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
@@ -230,6 +239,21 @@ public class ShadowBitmapFactory {
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
+      ReflectionHelpers.callStaticMethod(
+          BitmapFactory.class,
+          "setDensityFromOptions",
+          ClassParameter.from(Bitmap.class, bitmap),
+          ClassParameter.from(BitmapFactory.Options.class, options));
+    } else {
+      ReflectionHelpers.callStaticMethod(
+          BitmapFactory.class,
+          "finishDecode",
+          ClassParameter.from(Bitmap.class, bitmap),
+          ClassParameter.from(Rect.class, outPadding),
+          ClassParameter.from(BitmapFactory.Options.class, options));
     }
     return bitmap;
   }

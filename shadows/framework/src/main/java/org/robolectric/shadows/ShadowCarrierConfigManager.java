@@ -4,14 +4,14 @@ import static android.os.Build.VERSION_CODES.M;
 
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
-import android.util.SparseArray;
+import java.util.HashMap;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(value = CarrierConfigManager.class, minSdk = M)
 public class ShadowCarrierConfigManager {
 
-  private SparseArray<PersistableBundle> bundles = new SparseArray<>();
+  private final HashMap<Integer, PersistableBundle> bundles = new HashMap<>();
 
   /**
    * Returns {@link android.os.PersistableBundle} previously set by {@link #setConfigForSubId(int)},
@@ -19,11 +19,10 @@ public class ShadowCarrierConfigManager {
    */
   @Implementation
   protected PersistableBundle getConfigForSubId(int subId) {
-    PersistableBundle persistableBundle = bundles.get(subId);
-    if (persistableBundle == null) {
-      return new PersistableBundle();
+    if (bundles.containsKey(subId)) {
+      return bundles.get(subId);
     }
-    return persistableBundle;
+    return new PersistableBundle();
   }
 
   /**

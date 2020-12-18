@@ -22,10 +22,7 @@ class GenerateSdksFileTask extends DefaultTask {
 }
 
 task('generateSdksFile', type: GenerateSdksFileTask) {
-    dependsOn(tasks['processResources'])
-
-    File outDir = project.sourceSets['main'].output.resourcesDir
-    outFile = new File(outDir, 'sdks.txt')
+    outFile = new File(project.rootProject.buildDir, 'sdks.txt')
 }
 
 tasks['classes'].dependsOn(generateSdksFile)

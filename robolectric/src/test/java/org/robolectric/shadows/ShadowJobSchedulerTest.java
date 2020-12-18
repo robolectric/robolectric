@@ -115,6 +115,37 @@ public class ShadowJobSchedulerTest {
 
   @Test
   @Config(minSdk = N)
+  public void scheduleAsPackage_success() {
+    int result =
+        jobScheduler.scheduleAsPackage(
+            new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
+                .setPeriodic(1000)
+                .build(),
+            "package.name",
+            0,
+            "TAG");
+    assertThat(result).isEqualTo(JobScheduler.RESULT_SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void scheduleAsPackage_fail() {
+    shadowOf(jobScheduler).failOnJob(99);
+
+    int result =
+        jobScheduler.scheduleAsPackage(
+            new JobInfo.Builder(99, new ComponentName(context, "component_class_name"))
+                .setPeriodic(1000)
+                .build(),
+            "package.name",
+            0,
+            "TAG");
+
+    assertThat(result).isEqualTo(JobScheduler.RESULT_FAILURE);
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void getPendingJob_withValidId() {
     int jobId = 99;
     JobInfo originalJobInfo =

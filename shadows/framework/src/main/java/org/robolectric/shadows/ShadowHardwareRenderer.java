@@ -24,7 +24,7 @@ public class ShadowHardwareRenderer {
     return ++nextCreateProxy;
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = R)
   protected static long nCreateProxy(
       boolean translucent, boolean isWideGamut, long rootRenderNode) {
     return nCreateProxy(translucent, rootRenderNode);

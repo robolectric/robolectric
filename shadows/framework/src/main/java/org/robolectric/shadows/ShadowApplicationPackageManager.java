@@ -123,6 +123,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private static final String PACKAGE_SCHEME = "package";
 
   @RealObject private ApplicationPackageManager realObject;
+  private final List<String> clearedApplicationUserDataPackages = new ArrayList<>();
 
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
@@ -1627,7 +1628,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       String packageName, IPackageDeleteObserver observer, int flags, int userId) {}
 
   @Implementation
-  protected void clearApplicationUserData(String packageName, IPackageDataObserver observer) {}
+  protected void clearApplicationUserData(String packageName, IPackageDataObserver observer) {
+    clearedApplicationUserDataPackages.add(packageName);
+  }
 
   @Implementation
   protected void deleteApplicationCacheFiles(String packageName, IPackageDataObserver observer) {}
@@ -2027,5 +2030,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   private interface ReflectorApplicationPackageManager {
     @Accessor("mContext")
     Context getContext();
+  }
+
+  /** Returns the list of package names that were requested to be cleared. */
+  public List<String> getClearedApplicationUserDataPackages() {
+    return Collections.unmodifiableList(clearedApplicationUserDataPackages);
   }
 }

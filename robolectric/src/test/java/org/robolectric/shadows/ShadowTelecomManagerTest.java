@@ -427,7 +427,7 @@ public class ShadowTelecomManagerTest {
     assertThat(intent.getAction()).isEqualTo(Intent.ACTION_DIAL_EMERGENCY);
   }
 
-  @Config(minSdk = R)
+  @Config(minSdk = R, maxSdk = R)
   @Test
   public void createLaunchEmergencyDialerIntent_whenPackageAvailable_shouldContainPackage()
       throws NameNotFoundException {
@@ -452,6 +452,18 @@ public class ShadowTelecomManagerTest {
     assertThat(intent.getAction()).isEqualTo(Intent.ACTION_DIAL_EMERGENCY);
     Uri uri = intent.getData();
     assertThat(uri.toString()).isEqualTo("tel:1234");
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUserSelectedOutgoingPhoneAccount() {
+    // Check initial state
+    assertThat(telecomService.getUserSelectedOutgoingPhoneAccount()).isNull();
+
+    // Set a phone account and verify
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    shadowOf(telecomService).setUserSelectedOutgoingPhoneAccount(phoneAccountHandle);
+    assertThat(telecomService.getUserSelectedOutgoingPhoneAccount()).isEqualTo(phoneAccountHandle);
   }
 
   private static PhoneAccountHandle createHandle(String id) {
