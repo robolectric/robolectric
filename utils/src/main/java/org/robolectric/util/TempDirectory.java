@@ -17,14 +17,13 @@ import java.util.concurrent.Executors;
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class TempDirectory {
   /**
-   * The number of concurrent deletions which should take place, too high and it'll become I/O bound, to low
-   * and it'll take a long time to complete. 5 is an estimate of a decent balance, feel free to experiment.
+   * The number of concurrent deletions which should take place, too high and it'll become I/O
+   * bound, to low and it'll take a long time to complete. 5 is an estimate of a decent balance,
+   * feel free to experiment.
    */
   private static final int DELETE_THREAD_POOL_SIZE = 5;
 
-  /**
-   * Set to track the undeleted TempDirectory instances which we need to erase.
-   */
+  /** Set to track the undeleted TempDirectory instances which we need to erase. */
   private static Set<TempDirectory> tempDiretoriesToDelete;
 
   private final Path basePath;
@@ -40,7 +39,7 @@ public class TempDirectory {
       throw new RuntimeException(e);
     }
 
-    synchronized(TempDirectory.class) {
+    synchronized (TempDirectory.class) {
       // If we haven't initialised the shutdown hook we should set everything up.
       if (tempDiretoriesToDelete == null) {
         tempDiretoriesToDelete = Collections.synchronizedSet(new HashSet<>());
@@ -56,7 +55,7 @@ public class TempDirectory {
 
   private static void clearAllDirectories() {
     ExecutorService deletionExecutorService = Executors.newFixedThreadPool(DELETE_THREAD_POOL_SIZE);
-    for(TempDirectory undeletedDirectory : tempDiretoriesToDelete) {
+    for (TempDirectory undeletedDirectory : tempDiretoriesToDelete) {
       deletionExecutorService.execute(undeletedDirectory::destroy);
     }
     deletionExecutorService.shutdown();
