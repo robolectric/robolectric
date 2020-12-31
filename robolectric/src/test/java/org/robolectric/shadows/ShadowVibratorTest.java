@@ -12,6 +12,8 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +57,7 @@ public class ShadowVibratorTest {
     assertThat(shadowOf(vibrator).isVibrating()).isTrue();
     assertThat(shadowOf(vibrator).getMilliseconds()).isEqualTo(5000L);
 
-    shadowMainLooper().idleFor(5, TimeUnit.SECONDS);
+    shadowMainLooper().idleFor(Duration.ofSeconds(5));
     assertThat(shadowOf(vibrator).isVibrating()).isFalse();
   }
 

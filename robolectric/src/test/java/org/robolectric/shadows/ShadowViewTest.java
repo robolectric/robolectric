@@ -313,7 +313,7 @@ public class ShadowViewTest {
     view.postInvalidateDelayed(1);
     assertFalse(shadowView.wasInvalidated());
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertTrue(shadowView.wasInvalidated());
   }
 
@@ -325,7 +325,7 @@ public class ShadowViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertTrue(runnable.wasRun);
   }
 
@@ -336,7 +336,7 @@ public class ShadowViewTest {
 
     assertThat(view.removeCallbacks(runnable)).isTrue();
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertThat(runnable.wasRun).isFalse();
   }
 

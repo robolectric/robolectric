@@ -6,6 +6,8 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +53,7 @@ public class ShadowObjectAnimatorTest {
     assertThat(listenerEvents).containsExactly("started");
     assertThat(target.getTransparency()).isEqualTo(0);
 
-    shadowMainLooper().idleFor(1, TimeUnit.SECONDS);
+    shadowMainLooper().idleFor(Duration.ofSeconds(1));
 
     assertThat(listenerEvents).containsExactly("started", "ended");
     assertThat(target.getTransparency()).isEqualTo(4);
