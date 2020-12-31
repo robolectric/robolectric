@@ -241,7 +241,7 @@ public class RobolectricTestRunnerTest {
     assertThat(rfm16).isEqualTo(rfm16b);
     assertThat(rfm16).isNotEqualTo(rfm16c);
 
-    assertThat(rfm16.hashCode()).isEqualTo((rfm16b.hashCode()));
+    assertThat(rfm16.hashCode()).isEqualTo(rfm16b.hashCode());
   }
 
   @Test
