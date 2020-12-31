@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import java.io.FileOutputStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.spi.FileSystemProvider;
@@ -400,7 +401,7 @@ public class RobolectricTestRunnerTest {
         Path jarPath = tempDirectory.create("some-jar").resolve("some.jar");
         try (JarOutputStream out = new JarOutputStream(new FileOutputStream(jarPath.toFile()))) {
           out.putNextEntry(new JarEntry("README.txt"));
-          out.write("hi!".getBytes());
+          out.write("hi!".getBytes(StandardCharsets.UTF_8));
         }
 
         FileSystemProvider jarFSP = FileSystemProvider.installedProviders().stream()
