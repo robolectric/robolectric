@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.setField;
@@ -61,7 +60,7 @@ public class ShadowLegacyMessageQueueTest {
   }
   
   private static Looper newLooper(boolean canQuit) {
-    return callConstructor(Looper.class, from(boolean.class, canQuit));
+    return callConstructor(Looper.class, ReflectionHelpers.ClassParameter.from(boolean.class, canQuit));
   }
   
   @Before
@@ -85,16 +84,16 @@ public class ShadowLegacyMessageQueueTest {
 
   private boolean enqueueMessage(Message msg, long when) {
     return callInstanceMethod(queue, "enqueueMessage",
-        from(Message.class, msg),
-        from(long.class, when)
+        ReflectionHelpers.ClassParameter.from(Message.class, msg),
+        ReflectionHelpers.ClassParameter.from(long.class, when)
         );    
   }
 
   private void removeMessages(Handler handler, int what, Object token) {
     callInstanceMethod(queue, "removeMessages",
-        from(Handler.class, handler),
-        from(int.class, what),
-        from(Object.class, token)
+        ReflectionHelpers.ClassParameter.from(Handler.class, handler),
+        ReflectionHelpers.ClassParameter.from(int.class, what),
+        ReflectionHelpers.ClassParameter.from(Object.class, token)
     );
   }
   
@@ -255,7 +254,7 @@ public class ShadowLegacyMessageQueueTest {
 
   private static void removeSyncBarrier(MessageQueue queue, int token) {
     ReflectionHelpers.callInstanceMethod(
-        MessageQueue.class, queue, "removeSyncBarrier", from(int.class, token));
+        MessageQueue.class, queue, "removeSyncBarrier", ReflectionHelpers.ClassParameter.from(int.class, token));
   }
 
   private static int postSyncBarrier(MessageQueue queue) {
@@ -266,7 +265,7 @@ public class ShadowLegacyMessageQueueTest {
           MessageQueue.class,
           queue,
           "enqueueSyncBarrier",
-          from(long.class, SystemClock.uptimeMillis()));
+          ReflectionHelpers.ClassParameter.from(long.class, SystemClock.uptimeMillis()));
     }
   }
 }

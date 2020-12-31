@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
+
+import com.google.common.collect.ImmutableMap;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -315,7 +317,8 @@ public class HierarchicalConfigurationStrategyTest {
             + "libraries: libs/test, libs/test2";
 
     assertConfig(
-        configFor(Test2.class, "withoutAnnotation", of("robolectric.properties", properties)),
+        configFor(Test2.class, "withoutAnnotation",
+        ImmutableMap.of("robolectric.properties", properties)),
         new int[] {432},
         "--none",
         TestFakeApp.class,
@@ -334,7 +337,7 @@ public class HierarchicalConfigurationStrategyTest {
         configFor(
             Test2.class,
             "withoutAnnotation",
-            of("org/robolectric/robolectric.properties", "sdk: 432\n")),
+            ImmutableMap.of("org/robolectric/robolectric.properties", "sdk: 432\n")),
         new int[] {432},
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,
@@ -353,7 +356,7 @@ public class HierarchicalConfigurationStrategyTest {
         configFor(
             Test2.class,
             "withoutAnnotation",
-            of(
+            ImmutableMap.of(
                 "org/robolectric/robolectric.properties",
                     "qualifiers: from-org-robolectric\nlibraries: FromOrgRobolectric\n",
                 "org/robolectric.properties",
@@ -375,7 +378,8 @@ public class HierarchicalConfigurationStrategyTest {
   @Test
   public void withEmptyShadowList_shouldLoadDefaultsFromGlobalPropertiesFile() throws Exception {
     assertConfig(
-        configFor(Test2.class, "withoutAnnotation", of("robolectric.properties", "shadows:")),
+        configFor(Test2.class, "withoutAnnotation",
+                ImmutableMap.of("robolectric.properties", "shadows:")),
         new int[0],
         "AndroidManifest.xml",
         DEFAULT_APPLICATION,

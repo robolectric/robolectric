@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static androidx.test.core.view.MotionEventBuilder.newBuilder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -11,6 +10,7 @@ import android.app.Application;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.core.view.MotionEventBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class ShadowGestureDetectorTest {
   @Before
   public void setUp() throws Exception {
     detector = new GestureDetector(new TestOnGestureListener());
-    motionEvent = newBuilder().setAction(MotionEvent.ACTION_UP).setPointer(100, 30).build();
+    motionEvent = MotionEventBuilder.newBuilder().setAction(MotionEvent.ACTION_UP).setPointer(100, 30).build();
     context = ApplicationProvider.getApplicationContext();
   }
 
