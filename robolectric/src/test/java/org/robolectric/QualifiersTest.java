@@ -81,7 +81,7 @@ public class QualifiersTest {
   public void inflateLayout_defaultsTo_sw320dp() throws Exception {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
     TextView textView = view.findViewById(R.id.text1);
-    assertThat(textView.getText()).isEqualTo("320");
+    assertThat(textView.getText().toString()).isEqualTo("320");
 
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(320);
   }
@@ -90,7 +90,7 @@ public class QualifiersTest {
   public void inflateLayout_overridesTo_sw720dp() throws Exception {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
     TextView textView = view.findViewById(R.id.text1);
-    assertThat(textView.getText()).isEqualTo("720");
+    assertThat(textView.getText().toString()).isEqualTo("720");
 
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(720);
   }

@@ -35,7 +35,8 @@ public class ConverterTest {
   @Test
   public void fromCharSequence_asCharSequence_shouldHandleSpacesInString() {
     final TypedResource<String> resource = new TypedResource<>(" Robolectric ", ResType.CHAR_SEQUENCE, xmlContext);
-    assertThat(Converter.getConverter(ResType.CHAR_SEQUENCE).asCharSequence(resource)).isEqualTo("Robolectric");
+    assertThat(Converter.getConverter(ResType.CHAR_SEQUENCE).asCharSequence(resource).toString())
+            .isEqualTo("Robolectric");
   }
 
   @Test

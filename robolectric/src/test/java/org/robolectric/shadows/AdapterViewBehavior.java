@@ -55,8 +55,8 @@ abstract public class AdapterViewBehavior {
 
     shadowOf(adapterView).populateItems();
     assertThat(adapterView.getChildCount()).isEqualTo(2);
-    assertThat(((TextView) adapterView.getChildAt(0)).getText()).isEqualTo("Item 0");
-    assertThat(((TextView) adapterView.getChildAt(1)).getText()).isEqualTo("Item 1");
+    assertThat(((TextView) adapterView.getChildAt(0)).getText().toString()).isEqualTo("Item 0");
+    assertThat(((TextView) adapterView.getChildAt(1)).getText().toString()).isEqualTo("Item 1");
   }
 
   @Test public void testSetEmptyView_ShouldHideAdapterViewIfAdapterIsNull() throws Exception {

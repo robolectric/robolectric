@@ -39,19 +39,19 @@ public class ShadowDownloadManagerTest {
   @Test
   public void request_shouldGetTitle() throws Exception {
     request.setTitle("Title");
-    assertThat(shadow.getTitle()).isEqualTo("Title");
+    assertThat(shadow.getTitle().toString()).isEqualTo("Title");
   }
 
   @Test
   public void request_shouldGetDescription() throws Exception {
     request.setDescription("Description");
-    assertThat(shadow.getDescription()).isEqualTo("Description");
+    assertThat(shadow.getDescription().toString()).isEqualTo("Description");
   }
 
   @Test
   public void request_shouldGetMimeType() throws Exception {
     request.setMimeType("application/json");
-    assertThat(shadow.getMimeType()).isEqualTo("application/json");
+    assertThat(shadow.getMimeType().toString()).isEqualTo("application/json");
   }
 
   @Test

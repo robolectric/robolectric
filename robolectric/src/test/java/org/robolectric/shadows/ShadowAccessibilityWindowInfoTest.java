@@ -44,6 +44,6 @@ public class ShadowAccessibilityWindowInfoTest {
     assertThat(shadow.getTitle()).isNull();
     CharSequence title = "Title";
     shadow.setTitle(title);
-    assertThat(shadow.getTitle()).isEqualTo(title);
+    assertThat(shadow.getTitle().toString()).isEqualTo(title.toString());
   }
 }

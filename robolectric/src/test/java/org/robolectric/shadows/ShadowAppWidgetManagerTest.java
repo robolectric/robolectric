@@ -43,7 +43,7 @@ public class ShadowAppWidgetManagerTest {
     int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
-    assertEquals("Hola", ((TextView) widgetView.findViewById(R.id.subtitle)).getText());
+    assertEquals("Hola", ((TextView) widgetView.findViewById(R.id.subtitle)).getText().toString());
   }
 
   @Test

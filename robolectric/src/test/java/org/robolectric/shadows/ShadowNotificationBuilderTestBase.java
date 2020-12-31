@@ -70,7 +70,7 @@ public abstract class ShadowNotificationBuilderTestBase {
   public void build_setsTickerOnNotification() throws Exception {
     Notification notification = builder.setTicker("My ticker").build();
 
-    assertThat(notification.tickerText).isEqualTo("My ticker");
+    assertThat(notification.tickerText.toString()).isEqualTo("My ticker");
   }
 
   @Test
@@ -226,9 +226,9 @@ public abstract class ShadowNotificationBuilderTestBase {
         .setSummaryText("Summary"))
         .build();
 
-    assertThat(shadowOf(notification).getBigText()).isEqualTo("BigText");
-    assertThat(shadowOf(notification).getBigContentTitle()).isEqualTo("Title");
-    assertThat(shadowOf(notification).getBigContentText()).isEqualTo("Summary");
+    assertThat(shadowOf(notification).getBigText().toString()).isEqualTo("BigText");
+    assertThat(shadowOf(notification).getBigContentTitle().toString()).isEqualTo("Title");
+    assertThat(shadowOf(notification).getBigContentText().toString()).isEqualTo("Summary");
     assertThat(shadowOf(notification).getBigPicture()).isNull();
   }
 

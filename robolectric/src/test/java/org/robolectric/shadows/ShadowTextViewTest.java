@@ -391,7 +391,7 @@ public class ShadowTextViewTest {
     assertNull(textView.getError());
     CharSequence error = "myError";
     textView.setError(error);
-    assertEquals(error, textView.getError());
+    assertEquals(error.toString(), textView.getError().toString());
   }
 
   @Test
