@@ -49,7 +49,8 @@ public final class ShadowMediaRouterTest {
   public void testAddBluetoothRoute_checkBluetoothRouteProperties() {
     shadowOf(mediaRouter).addBluetoothRoute();
     RouteInfo bluetoothRoute = mediaRouter.getRouteAt(1);
-    assertThat(bluetoothRoute.getName().toString()).isEqualTo(ShadowMediaRouter.BLUETOOTH_DEVICE_NAME);
+    assertThat(bluetoothRoute.getName().toString())
+        .isEqualTo(ShadowMediaRouter.BLUETOOTH_DEVICE_NAME);
   }
 
   @Test

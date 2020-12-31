@@ -41,7 +41,8 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent newEvent = AccessibilityEvent.obtain(event);
     assertThat(event.getEventType()).isEqualTo(newEvent.getEventType());
     assertThat(event.isEnabled()).isEqualTo(newEvent.isEnabled());
-    assertThat(event.getContentDescription().toString()).isEqualTo(newEvent.getContentDescription().toString());
+    assertThat(event.getContentDescription().toString())
+        .isEqualTo(newEvent.getContentDescription().toString());
     assertThat(event.getPackageName().toString()).isEqualTo(newEvent.getPackageName().toString());
     assertThat(event.getClassName().toString()).isEqualTo(newEvent.getClassName().toString());
     assertThat(event.getParcelableData()).isEqualTo(newEvent.getParcelableData());
@@ -58,8 +59,10 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent anotherEvent = AccessibilityEvent.CREATOR.createFromParcel(p);
     assertThat(anotherEvent.getEventType()).isEqualTo(event.getEventType());
     assertThat(anotherEvent.isEnabled()).isEqualTo(event.isEnabled());
-    assertThat(anotherEvent.getContentDescription().toString()).isEqualTo(event.getContentDescription().toString());
-    assertThat(anotherEvent.getPackageName().toString()).isEqualTo(event.getPackageName().toString());
+    assertThat(anotherEvent.getContentDescription().toString())
+        .isEqualTo(event.getContentDescription().toString());
+    assertThat(anotherEvent.getPackageName().toString())
+        .isEqualTo(event.getPackageName().toString());
     assertThat(anotherEvent.getClassName().toString()).isEqualTo(event.getClassName().toString());
     assertThat(anotherEvent.getParcelableData()).isEqualTo(event.getParcelableData());
     anotherEvent.setContentDescription(null);

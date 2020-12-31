@@ -74,7 +74,8 @@ public class DefaultManifestFactoryTest {
     properties.put("android_merged_assets", "gradle/assets");
     properties.put("android_custom_package", "com.example.app");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
-    ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().setManifest(Config.NONE).build());
+    ManifestIdentifier identifier =
+        factory.identify(Config.Builder.defaults().setManifest(Config.NONE).build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())
@@ -92,7 +93,7 @@ public class DefaultManifestFactoryTest {
     properties.put("android_merged_assets", "gradle/assets");
     DefaultManifestFactory factory = new DefaultManifestFactory(properties);
     ManifestIdentifier identifier =
-            factory.identify(Config.Builder.defaults().setPackageName("overridden.package").build());
+        factory.identify(Config.Builder.defaults().setPackageName("overridden.package").build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
     assertThat(manifest.getAndroidManifestFile())

@@ -37,8 +37,9 @@ public final class ShadowRestrictionsManagerTest {
     bundle.putCharSequence("test_key", "test_value");
     shadowOf(restrictionsManager).setApplicationRestrictions(bundle);
 
-    assertThat(restrictionsManager.getApplicationRestrictions().getCharSequence("test_key").toString())
-            .isEqualTo("test_value");
+    assertThat(
+            restrictionsManager.getApplicationRestrictions().getCharSequence("test_key").toString())
+        .isEqualTo("test_value");
   }
 
   @Test

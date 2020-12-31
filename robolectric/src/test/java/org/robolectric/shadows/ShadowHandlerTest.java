@@ -73,8 +73,8 @@ public class ShadowHandlerTest {
   }
 
   private static Looper newLooper(boolean canQuit) {
-    return ReflectionHelpers.callConstructor(Looper.class,
-            ReflectionHelpers.ClassParameter.from(boolean.class, canQuit));
+    return ReflectionHelpers.callConstructor(
+        Looper.class, ReflectionHelpers.ClassParameter.from(boolean.class, canQuit));
   }
   
   @Test

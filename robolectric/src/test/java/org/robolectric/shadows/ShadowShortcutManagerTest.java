@@ -85,7 +85,7 @@ public final class ShadowShortcutManagerTest {
     shortcutManager.addDynamicShortcuts(ImmutableList.of(shortcut2));
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(1);
     assertThat(shortcutManager.getDynamicShortcuts().get(0).getLongLabel().toString())
-            .isEqualTo("original");
+        .isEqualTo("original");
   }
 
   @Test
@@ -99,7 +99,7 @@ public final class ShadowShortcutManagerTest {
     shortcutManager.addDynamicShortcuts(ImmutableList.of(shortcut2));
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(1);
     assertThat(shortcutManager.getDynamicShortcuts().get(0).getLongLabel().toString())
-            .isEqualTo("updated");
+        .isEqualTo("updated");
   }
 
   @Test
@@ -173,7 +173,7 @@ public final class ShadowShortcutManagerTest {
     shortcutManager.updateShortcuts(ImmutableList.of(shortcutUpdated, shortcut2));
     assertThat(shortcutManager.getDynamicShortcuts()).containsExactly(shortcutUpdated);
     assertThat(shortcutManager.getDynamicShortcuts().get(0).getLongLabel().toString())
-            .isEqualTo("updated");
+        .isEqualTo("updated");
   }
 
   @Test

@@ -26,7 +26,11 @@ public class ShadowGestureDetectorTest {
   @Before
   public void setUp() throws Exception {
     detector = new GestureDetector(new TestOnGestureListener());
-    motionEvent = MotionEventBuilder.newBuilder().setAction(MotionEvent.ACTION_UP).setPointer(100, 30).build();
+    motionEvent =
+        MotionEventBuilder.newBuilder()
+            .setAction(MotionEvent.ACTION_UP)
+            .setPointer(100, 30)
+            .build();
     context = ApplicationProvider.getApplicationContext();
   }
 

@@ -105,7 +105,8 @@ public class ShadowLauncherAppsTest {
     LauncherActivityInfo launcherActivityInfo =
         ReflectionHelpers.callConstructor(
             LauncherActivityInfo.class,
-            ReflectionHelpers.ClassParameter.from(Context.class, ApplicationProvider.getApplicationContext()),
+            ReflectionHelpers.ClassParameter.from(
+                Context.class, ApplicationProvider.getApplicationContext()),
             ReflectionHelpers.ClassParameter.from(ResolveInfo.class, info),
             ReflectionHelpers.ClassParameter.from(UserHandle.class, userHandle),
             ReflectionHelpers.ClassParameter.from(long.class, System.currentTimeMillis()));
@@ -129,7 +130,8 @@ public class ShadowLauncherAppsTest {
     LauncherActivityInfo launcherActivityInfo =
         ReflectionHelpers.callConstructor(
             LauncherActivityInfo.class,
-            ReflectionHelpers.ClassParameter.from(Context.class, ApplicationProvider.getApplicationContext()),
+            ReflectionHelpers.ClassParameter.from(
+                Context.class, ApplicationProvider.getApplicationContext()),
             ReflectionHelpers.ClassParameter.from(ActivityInfo.class, info),
             ReflectionHelpers.ClassParameter.from(UserHandle.class, userHandle));
     shadowOf(launcherApps).addActivity(userHandle, launcherActivityInfo);

@@ -27,8 +27,9 @@ public class ShadowPausedMessageQueueTest {
 
   @Before
   public void setUp() throws Exception {
-    queue = ReflectionHelpers.callConstructor(MessageQueue.class,
-            ReflectionHelpers.ClassParameter.from(boolean.class, true));
+    queue =
+        ReflectionHelpers.callConstructor(
+            MessageQueue.class, ReflectionHelpers.ClassParameter.from(boolean.class, true));
     shadowQueue = Shadow.extract(queue);
   }
 

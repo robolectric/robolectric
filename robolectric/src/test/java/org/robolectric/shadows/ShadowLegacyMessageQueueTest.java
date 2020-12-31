@@ -60,7 +60,8 @@ public class ShadowLegacyMessageQueueTest {
   }
   
   private static Looper newLooper(boolean canQuit) {
-    return callConstructor(Looper.class, ReflectionHelpers.ClassParameter.from(boolean.class, canQuit));
+    return callConstructor(
+        Looper.class, ReflectionHelpers.ClassParameter.from(boolean.class, canQuit));
   }
   
   @Before
@@ -83,18 +84,20 @@ public class ShadowLegacyMessageQueueTest {
   }
 
   private boolean enqueueMessage(Message msg, long when) {
-    return callInstanceMethod(queue, "enqueueMessage",
+    return callInstanceMethod(
+        queue,
+        "enqueueMessage",
         ReflectionHelpers.ClassParameter.from(Message.class, msg),
-        ReflectionHelpers.ClassParameter.from(long.class, when)
-        );    
+        ReflectionHelpers.ClassParameter.from(long.class, when));
   }
 
   private void removeMessages(Handler handler, int what, Object token) {
-    callInstanceMethod(queue, "removeMessages",
+    callInstanceMethod(
+        queue,
+        "removeMessages",
         ReflectionHelpers.ClassParameter.from(Handler.class, handler),
         ReflectionHelpers.ClassParameter.from(int.class, what),
-        ReflectionHelpers.ClassParameter.from(Object.class, token)
-    );
+        ReflectionHelpers.ClassParameter.from(Object.class, token));
   }
   
   @Test
@@ -254,7 +257,10 @@ public class ShadowLegacyMessageQueueTest {
 
   private static void removeSyncBarrier(MessageQueue queue, int token) {
     ReflectionHelpers.callInstanceMethod(
-        MessageQueue.class, queue, "removeSyncBarrier", ReflectionHelpers.ClassParameter.from(int.class, token));
+        MessageQueue.class,
+        queue,
+        "removeSyncBarrier",
+        ReflectionHelpers.ClassParameter.from(int.class, token));
   }
 
   private static int postSyncBarrier(MessageQueue queue) {

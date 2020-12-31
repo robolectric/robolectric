@@ -54,7 +54,8 @@ public class ShadowEditTextTest {
 
     editText.setText(excessiveInput);
 
-    assertThat(editText.getText().toString()).isEqualTo(excessiveInput.subSequence(0, maxLength).toString());
+    assertThat(editText.getText().toString())
+        .isEqualTo(excessiveInput.subSequence(0, maxLength).toString());
   }
 
   @Test

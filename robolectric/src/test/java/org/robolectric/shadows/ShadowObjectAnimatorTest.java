@@ -6,11 +6,9 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

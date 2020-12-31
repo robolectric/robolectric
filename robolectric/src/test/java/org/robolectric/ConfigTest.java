@@ -106,11 +106,14 @@ public class ConfigTest {
   public void withOverlay_withShadows_maintainsOrder() throws Exception {
     Config.Implementation base = new Config.Builder().build();
 
-    Config withString = overlay(base, new Config.Builder().setShadows(new Class[]{String.class}).build());
+    Config withString =
+        overlay(base, new Config.Builder().setShadows(new Class[] {String.class}).build());
     assertThat(withString.shadows()).asList().contains(String.class);
 
-    Config withMore = overlay(withString,
-        new Config.Builder().setShadows(new Class[]{Map.class, String.class}).build());
+    Config withMore =
+        overlay(
+            withString,
+            new Config.Builder().setShadows(new Class[] {Map.class, String.class}).build());
     assertThat(withMore.shadows()).asList().containsAtLeast(String.class, Map.class, String.class);
   }
 
@@ -178,7 +181,12 @@ public class ConfigTest {
   //////////////////////////
 
   private String sdksIn(Config config) {
-    return "sdk=" + Arrays.toString(config.sdk()) + ", minSdk=" + config.minSdk() + ", maxSdk=" + config.maxSdk();
+    return "sdk="
+        + Arrays.toString(config.sdk())
+        + ", minSdk="
+        + config.minSdk()
+        + ", maxSdk="
+        + config.maxSdk();
   }
 
   @Nonnull
