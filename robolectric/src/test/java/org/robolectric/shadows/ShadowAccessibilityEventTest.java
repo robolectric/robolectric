@@ -41,10 +41,11 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent newEvent = AccessibilityEvent.obtain(event);
     assertThat(event.getEventType()).isEqualTo(newEvent.getEventType());
     assertThat(event.isEnabled()).isEqualTo(newEvent.isEnabled());
-    assertThat(event.getContentDescription().toString())
-        .isEqualTo(newEvent.getContentDescription().toString());
-    assertThat(event.getPackageName().toString()).isEqualTo(newEvent.getPackageName().toString());
-    assertThat(event.getClassName().toString()).isEqualTo(newEvent.getClassName().toString());
+    assertThat(nullOrString(event.getContentDescription()))
+        .isEqualTo(nullOrString(newEvent.getContentDescription()));
+    assertThat(nullOrString(event.getPackageName()))
+        .isEqualTo(nullOrString(newEvent.getPackageName()));
+    assertThat(nullOrString(event.getClassName())).isEqualTo(nullOrString(newEvent.getClassName()));
     assertThat(event.getParcelableData()).isEqualTo(newEvent.getParcelableData());
 
     newEvent.recycle();
@@ -59,11 +60,12 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent anotherEvent = AccessibilityEvent.CREATOR.createFromParcel(p);
     assertThat(anotherEvent.getEventType()).isEqualTo(event.getEventType());
     assertThat(anotherEvent.isEnabled()).isEqualTo(event.isEnabled());
-    assertThat(anotherEvent.getContentDescription().toString())
-        .isEqualTo(event.getContentDescription().toString());
-    assertThat(anotherEvent.getPackageName().toString())
-        .isEqualTo(event.getPackageName().toString());
-    assertThat(anotherEvent.getClassName().toString()).isEqualTo(event.getClassName().toString());
+    assertThat(nullOrString(anotherEvent.getContentDescription()))
+        .isEqualTo(nullOrString(event.getContentDescription()));
+    assertThat(nullOrString(anotherEvent.getPackageName()))
+        .isEqualTo(nullOrString(event.getPackageName()));
+    assertThat(nullOrString(anotherEvent.getClassName()))
+        .isEqualTo(nullOrString(event.getClassName()));
     assertThat(anotherEvent.getParcelableData()).isEqualTo(event.getParcelableData());
     anotherEvent.setContentDescription(null);
     anotherEvent.recycle();
@@ -99,5 +101,9 @@ public class ShadowAccessibilityEventTest {
   public void tearDown() {
     event.recycle();
   }
-}
 
+  /** Some CharSequence objects are null, so we need a null check wrapper */
+  private String nullOrString(CharSequence charSequence) {
+    return charSequence == null ? null : charSequence.toString();
+  }
+}
