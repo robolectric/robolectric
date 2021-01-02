@@ -132,6 +132,7 @@ public class AndroidConfigurer {
     // fail on any usage due to DefaultConstructorMarker being inaccessible.
     builder.doNotInstrumentPackage("androidx.compose");
     builder.doNotInstrumentPackage("androidx.ui");
+    builder.doNotInstrumentPackage("androidx.fragment");
 
     builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
