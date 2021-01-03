@@ -283,4 +283,11 @@ public class ShadowSmsManagerTest {
     shadowOf(smsManager).setSmscAddressPermission(false);
     assertThrows(SecurityException.class, () -> smsManager.getSmscAddress());
   }
+
+  @Test
+  @Config(minSdk = R)
+  public void shouldGiveDefaultSmsSubscriptionId() {
+    ShadowSmsManager.setDefaultSmsSubscriptionId(3);
+    assertThat(ShadowSmsManager.getDefaultSmsSubscriptionId()).isEqualTo(3);
+  }
 }

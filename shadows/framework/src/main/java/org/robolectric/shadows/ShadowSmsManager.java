@@ -26,6 +26,7 @@ public class ShadowSmsManager {
 
   private String smscAddress;
   private boolean hasSmscAddressPermission = true;
+  private static int defaultSmsSubscriptionId = -1;
 
   @Resetter
   public static void reset() {
@@ -33,6 +34,7 @@ public class ShadowSmsManager {
       Map<String, Object> sSubInstances =
           ReflectionHelpers.getStaticField(SmsManager.class, "sSubInstances");
       sSubInstances.clear();
+      defaultSmsSubscriptionId = -1;
     }
   }
 
@@ -461,6 +463,20 @@ public class ShadowSmsManager {
       throw new SecurityException();
     }
     return smscAddress;
+  }
+
+  /** Sets the value to be returned by {@link #getDefaultSmsSubscriptionId()}. */
+  public static void setDefaultSmsSubscriptionId(int id) {
+    defaultSmsSubscriptionId = id;
+  }
+
+  /**
+   * Returns {@code -1} by default or the value specified in {@link
+   * #setDefaultSmsSubscriptionId(int)}.
+   */
+  @Implementation(minSdk = R)
+  protected static int getDefaultSmsSubscriptionId() {
+    return defaultSmsSubscriptionId;
   }
 
   /** Sets the value returned by {@link SmsManager#getSmscAddress()}. */
