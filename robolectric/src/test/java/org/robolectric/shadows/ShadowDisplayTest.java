@@ -194,13 +194,13 @@ public class ShadowDisplayTest {
   public void setDisplayHdrCapabilities_shouldntThrowUnSupportedOperationExceptionNPlus() {
     Display display = ShadowDisplay.getDefaultDisplay();
     int[] hdrCapabilities =
-            new int[] {HdrCapabilities.HDR_TYPE_HDR10, HdrCapabilities.HDR_TYPE_DOLBY_VISION};
+        new int[] {HdrCapabilities.HDR_TYPE_HDR10, HdrCapabilities.HDR_TYPE_DOLBY_VISION};
 
     shadow.setDisplayHdrCapabilities(
-            display.getDisplayId(),
-            /* maxLuminance= */ 100f,
-            /* maxAverageLuminance= */ 100f,
-            /* minLuminance= */ 100f,
-            hdrCapabilities);
+        display.getDisplayId(),
+        /* maxLuminance= */ 100f,
+        /* maxAverageLuminance= */ 100f,
+        /* minLuminance= */ 100f,
+        hdrCapabilities);
   }
 }
