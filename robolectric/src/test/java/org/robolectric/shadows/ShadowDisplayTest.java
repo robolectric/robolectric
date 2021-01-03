@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -170,8 +171,8 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  @Config(minSdk = M)
-  public void setDisplayHdrCapabilities_shouldThrowUnSupportedOperationException() {
+  @Config(maxSdk = M)
+  public void setDisplayHdrCapabilities_shouldThrowUnSupportedOperationExceptionPreN() {
     Display display = ShadowDisplay.getDefaultDisplay();
     int[] hdrCapabilities =
         new int[] {HdrCapabilities.HDR_TYPE_HDR10, HdrCapabilities.HDR_TYPE_DOLBY_VISION};
@@ -182,8 +183,24 @@ public class ShadowDisplayTest {
           /* maxAverageLuminance= */ 100f,
           /* minLuminance= */ 100f,
           hdrCapabilities);
+      fail();
     } catch (UnsupportedOperationException e) {
       assertThat(e).hasMessageThat().contains("HDR capabilities are not supported below Android N");
     }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setDisplayHdrCapabilities_shouldntThrowUnSupportedOperationExceptionNPlus() {
+    Display display = ShadowDisplay.getDefaultDisplay();
+    int[] hdrCapabilities =
+            new int[] {HdrCapabilities.HDR_TYPE_HDR10, HdrCapabilities.HDR_TYPE_DOLBY_VISION};
+
+    shadow.setDisplayHdrCapabilities(
+            display.getDisplayId(),
+            /* maxLuminance= */ 100f,
+            /* maxAverageLuminance= */ 100f,
+            /* minLuminance= */ 100f,
+            hdrCapabilities);
   }
 }
