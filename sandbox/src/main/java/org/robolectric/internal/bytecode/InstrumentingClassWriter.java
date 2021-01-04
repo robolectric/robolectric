@@ -22,7 +22,7 @@ public class InstrumentingClassWriter extends ClassWriter {
    * present in legacy bytecode.
    */
   public InstrumentingClassWriter(ClassNodeProvider classNodeProvider, ClassNode classNode) {
-    super(classNode.version >= 51 ? ClassWriter.COMPUTE_FRAMES : ClassWriter.COMPUTE_MAXS);
+    super(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
     this.classNodeProvider = classNodeProvider;
   }
 
