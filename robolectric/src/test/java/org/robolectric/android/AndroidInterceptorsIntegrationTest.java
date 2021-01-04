@@ -5,10 +5,12 @@ import static com.google.common.truth.Truth.assertThat;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.PrintStream;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -74,6 +76,80 @@ public class AndroidInterceptorsIntegrationTest {
 
     long currentTimeMillis = invokeDynamic(System.class, "currentTimeMillis", long.class);
     assertThat(currentTimeMillis).isEqualTo(200);
+  }
+
+  /* Creates a FileDescriptor-object using reflection. Note that the "fd"-field is present for
+   * both the Windows and Unix implementations of FileDescriptor in OpenJDK.
+   */
+  private static FileDescriptor createFd(int fd) throws Throwable {
+    FileDescriptor ret = new FileDescriptor();
+    Field accessor = FileDescriptor.class.getDeclaredField("fd");
+    accessor.setAccessible(true);
+    accessor.set(ret, fd);
+    return ret;
+  }
+
+  @Test
+  public void fileDescriptorRelease_isValid_correctResultsAfterRelease() throws Throwable {
+    FileDescriptor original = createFd(42);
+    assertThat(original.valid()).isTrue();
+    FileDescriptor copy =
+        invokeDynamic(
+            FileDescriptor.class,
+            "release$",
+            FileDescriptor.class,
+            ClassParameter.from(FileDescriptor.class, original));
+    assertThat(copy.valid()).isTrue();
+    assertThat(original.valid()).isFalse();
+  }
+
+  @Test
+  public void fileDescriptorRelease_allowsReleaseOnInvalidFd() throws Throwable {
+    FileDescriptor original = new FileDescriptor();
+    assertThat(original.valid()).isFalse();
+    FileDescriptor copy =
+        invokeDynamic(
+            FileDescriptor.class,
+            "release$",
+            FileDescriptor.class,
+            ClassParameter.from(FileDescriptor.class, original));
+    assertThat(copy.valid()).isFalse();
+    assertThat(original.valid()).isFalse();
+  }
+
+  @Test
+  public void fileDescriptorRelease_doubleReleaseReturnsInvalidFd() throws Throwable {
+    FileDescriptor original = createFd(42);
+    assertThat(original.valid()).isTrue();
+    FileDescriptor copy =
+        invokeDynamic(
+            FileDescriptor.class,
+            "release$",
+            FileDescriptor.class,
+            ClassParameter.from(FileDescriptor.class, original));
+    FileDescriptor copy2 =
+        invokeDynamic(
+            FileDescriptor.class,
+            "release$",
+            FileDescriptor.class,
+            ClassParameter.from(FileDescriptor.class, original));
+    assertThat(copy.valid()).isTrue();
+    assertThat(copy2.valid()).isFalse();
+    assertThat(original.valid()).isFalse();
+  }
+
+  @Test
+  public void fileDescriptorRelease_releaseFdCorrect() throws Throwable {
+    FileDescriptor original = createFd(42);
+    FileDescriptor copy =
+        invokeDynamic(
+            FileDescriptor.class,
+            "release$",
+            FileDescriptor.class,
+            ClassParameter.from(FileDescriptor.class, original));
+    Field accessor = FileDescriptor.class.getDeclaredField("fd");
+    accessor.setAccessible(true);
+    assertThat(accessor.get(copy)).isEqualTo(42);
   }
 
   @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})

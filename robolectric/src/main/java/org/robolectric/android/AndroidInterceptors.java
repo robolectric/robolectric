@@ -8,9 +8,11 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callStaticMethod;
 
 import android.content.Context;
+import java.io.FileDescriptor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -39,6 +41,7 @@ public class AndroidInterceptors {
                 new SystemArrayCopyInterceptor(),
                 new LocaleAdjustLanguageCodeInterceptor(),
                 new SystemLogInterceptor(),
+                new FileDescriptorInterceptor(),
                 new NoOpInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
@@ -46,6 +49,73 @@ public class AndroidInterceptors {
     }
 
     return interceptors;
+  }
+
+  /**
+   * Intercepts calls to libcore-extensions to {@link FileDescriptor}.
+   *
+   * <p>libcore implements extensions to {@link FileDescriptor} that support ownership tracking of
+   * unix FDs, which are not part of the Java API. This intercepts calls to these and maps them to
+   * the OpenJDK API.
+   */
+  public static class FileDescriptorInterceptor extends Interceptor {
+    public FileDescriptorInterceptor() {
+      super(new MethodRef(FileDescriptor.class, "release$"));
+    }
+
+    private static void moveField(
+        FileDescriptor out, FileDescriptor in, String fieldName, Object movedOutValue)
+        throws ReflectiveOperationException {
+      Field fieldAccessor = FileDescriptor.class.getDeclaredField(fieldName);
+      fieldAccessor.setAccessible(true);
+      fieldAccessor.set(out, fieldAccessor.get(in));
+      fieldAccessor.set(in, movedOutValue);
+    }
+
+    static FileDescriptor release(FileDescriptor input) {
+      synchronized (input) {
+        try {
+          FileDescriptor ret = new FileDescriptor();
+
+          moveField(ret, input, "fd", /*movedOutValue=*/ -1);
+          // "closed" is irrelevant if the fd is already -1.
+          moveField(ret, input, "closed", /*movedOutValue=*/ false);
+          // N.B.: FileDescriptor.attach() is not implemented in libcore (yet), so these won't be
+          // used.
+          moveField(ret, input, "parent", /*movedOutValue=*/ null);
+          moveField(ret, input, "otherParents", /*movedOutValue=*/ null);
+
+          // These only exist on Windows.
+          try {
+            moveField(ret, input, "handle", /*movedOutValue=*/ -1);
+            moveField(ret, input, "append", /*movedOutValue=*/ false);
+          } catch (ReflectiveOperationException ex) {
+            // Ignore.
+          }
+
+          return ret;
+        } catch (ReflectiveOperationException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          return release((FileDescriptor) value);
+        }
+      };
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(
+          getClass(), "release", methodType(FileDescriptor.class, FileDescriptor.class));
+    }
   }
 
 //  @Intercept(value = LinkedHashMap.class, method = "eldest")
