@@ -8,7 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -24,8 +23,7 @@ public class TempDirectory {
   private static final int DELETE_THREAD_POOL_SIZE = 5;
 
   /** Set to track the undeleted TempDirectory instances which we need to erase. */
-  private static Set<TempDirectory> tempDirectoriesToDelete =
-      Collections.synchronizedSet(new HashSet<>());
+  private static final Set<TempDirectory> tempDirectoriesToDelete = new HashSet<>();
 
   private final Path basePath;
 
@@ -54,8 +52,10 @@ public class TempDirectory {
 
   private static void clearAllDirectories() {
     ExecutorService deletionExecutorService = Executors.newFixedThreadPool(DELETE_THREAD_POOL_SIZE);
-    for (TempDirectory undeletedDirectory : tempDirectoriesToDelete) {
-      deletionExecutorService.execute(undeletedDirectory::destroy);
+    synchronized (tempDirectoriesToDelete) {
+      for (TempDirectory undeletedDirectory : tempDirectoriesToDelete) {
+        deletionExecutorService.execute(undeletedDirectory::destroy);
+      }
     }
     deletionExecutorService.shutdown();
   }
