@@ -41,8 +41,8 @@ public class ShadowCameraParametersTest {
   public void testPreviewFpsRange() throws Exception {
     int[] fpsRange = new int[2];
     parameters.getPreviewFpsRange(fpsRange);
-    assertThat(fpsRange[1]).isNotEqualTo((15));
-    assertThat(fpsRange[0]).isNotEqualTo((25));
+    assertThat(fpsRange[1]).isNotEqualTo(15);
+    assertThat(fpsRange[0]).isNotEqualTo(25);
     parameters.setPreviewFpsRange(15, 25);
     parameters.getPreviewFpsRange(fpsRange);
     assertThat(fpsRange[1]).isEqualTo(25);
@@ -51,7 +51,7 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testPreviewFrameRate() throws Exception {
-    assertThat(parameters.getPreviewFrameRate()).isNotEqualTo((15));
+    assertThat(parameters.getPreviewFrameRate()).isNotEqualTo(15);
     parameters.setPreviewFrameRate(15);
     assertThat(parameters.getPreviewFrameRate()).isEqualTo(15);
   }
@@ -79,7 +79,7 @@ public class ShadowCameraParametersTest {
   public void testGetSupportedPreviewFormats() throws Exception {
     List<Integer> supportedFormats = parameters.getSupportedPreviewFormats();
     assertThat(supportedFormats).isNotNull();
-    assertThat(supportedFormats.size()).isNotEqualTo((0));
+    assertThat(supportedFormats.size()).isNotEqualTo(0);
     assertThat(supportedFormats).contains(ImageFormat.NV21);
   }
 

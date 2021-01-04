@@ -39,19 +39,19 @@ public class ShadowDownloadManagerTest {
   @Test
   public void request_shouldGetTitle() throws Exception {
     request.setTitle("Title");
-    assertThat(shadow.getTitle()).isEqualTo("Title");
+    assertThat(shadow.getTitle().toString()).isEqualTo("Title");
   }
 
   @Test
   public void request_shouldGetDescription() throws Exception {
     request.setDescription("Description");
-    assertThat(shadow.getDescription()).isEqualTo("Description");
+    assertThat(shadow.getDescription().toString()).isEqualTo("Description");
   }
 
   @Test
   public void request_shouldGetMimeType() throws Exception {
     request.setMimeType("application/json");
-    assertThat(shadow.getMimeType()).isEqualTo("application/json");
+    assertThat(shadow.getMimeType().toString()).isEqualTo("application/json");
   }
 
   @Test
@@ -148,11 +148,11 @@ public class ShadowDownloadManagerTest {
   @Test
   public void query_shouldReturnAll() {
     ShadowDownloadManager manager = new ShadowDownloadManager();
-    long firstId = manager.enqueue(request.setDestinationUri(destination));
+    manager.enqueue(request.setDestinationUri(destination));
     Uri secondUri = Uri.parse("http://example.com/foo2.mp4");
     Uri secondDestination = Uri.parse("file:///storage/foo2.mp4");
     Request secondRequest = new Request(secondUri);
-    long secondId = manager.enqueue(secondRequest.setDestinationUri(secondDestination));
+    manager.enqueue(secondRequest.setDestinationUri(secondDestination));
     Cursor cursor = manager.query(new DownloadManager.Query());
 
     cursor.moveToNext();

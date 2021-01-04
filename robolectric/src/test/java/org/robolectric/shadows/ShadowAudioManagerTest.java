@@ -37,11 +37,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowAudioManagerTest {
   private static final float FAULT_TOLERANCE = 0.00001f;
-  private final AudioManager.OnAudioFocusChangeListener listener =
-      new AudioManager.OnAudioFocusChangeListener() {
-        @Override
-        public void onAudioFocusChange(int focusChange) {}
-      };
+  private final AudioManager.OnAudioFocusChangeListener listener = focusChange -> {};
 
   private Context appContext;
   private AudioManager audioManager;

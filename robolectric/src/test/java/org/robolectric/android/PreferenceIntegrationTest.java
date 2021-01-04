@@ -35,7 +35,7 @@ public class PreferenceIntegrationTest {
     assertThat(innerScreen).isInstanceOf(PreferenceScreen.class);
     assertThat(innerScreen.getKey()).isEqualTo("screen");
     assertThat(innerScreen.getTitle().toString()).isEqualTo("Screen Test");
-    assertThat(innerScreen.getSummary()).isEqualTo("Screen summary");
+    assertThat(innerScreen.getSummary().toString()).isEqualTo("Screen summary");
     assertThat(innerScreen.getPreference(0)).isInstanceOf(Preference.class);
 
     assertThat(screen.getPreference(2)).isInstanceOf(CheckBoxPreference.class);

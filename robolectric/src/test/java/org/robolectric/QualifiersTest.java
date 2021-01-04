@@ -32,14 +32,16 @@ public class QualifiersTest {
   @Config(sdk = 26)
   public void testDefaultQualifiers() throws Exception {
     assertThat(RuntimeEnvironment.getQualifiers())
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
+        .isEqualTo(
+            "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
   }
 
   @Test
   @Config(qualifiers = "en", sdk = 26)
   public void testDefaultQualifiers_withoutRegion() throws Exception {
     assertThat(RuntimeEnvironment.getQualifiers())
-        .isEqualTo("en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
+        .isEqualTo(
+            "en-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-nowidecg-lowdr-port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav-v26");
   }
 
   @Test
@@ -81,7 +83,7 @@ public class QualifiersTest {
   public void inflateLayout_defaultsTo_sw320dp() throws Exception {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
     TextView textView = view.findViewById(R.id.text1);
-    assertThat(textView.getText()).isEqualTo("320");
+    assertThat(textView.getText().toString()).isEqualTo("320");
 
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(320);
   }
@@ -90,7 +92,7 @@ public class QualifiersTest {
   public void inflateLayout_overridesTo_sw720dp() throws Exception {
     View view = Robolectric.setupActivity(Activity.class).getLayoutInflater().inflate(R.layout.layout_smallest_width, null);
     TextView textView = view.findViewById(R.id.text1);
-    assertThat(textView.getText()).isEqualTo("720");
+    assertThat(textView.getText().toString()).isEqualTo("720");
 
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(720);
   }
@@ -134,7 +136,8 @@ public class QualifiersTest {
       RuntimeEnvironment.setQualifiers("v13");
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage()).contains("Cannot specify conflicting platform version in qualifiers");
+      assertThat(e.getMessage())
+          .contains("Cannot specify conflicting platform version in qualifiers");
     }
   }
 

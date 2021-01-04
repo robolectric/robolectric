@@ -6,9 +6,9 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.animation.ValueAnimator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Ordering;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
@@ -57,7 +57,7 @@ public class ShadowValueAnimatorTest {
     animator.start();
     assertThat(animator.isRunning()).isTrue();
 
-    shadowMainLooper().idleFor(200, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(200));
     assertThat(animator.isRunning()).isFalse();
   }
 }

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -19,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(PAUSED)
@@ -28,7 +28,9 @@ public class ShadowPausedMessageQueueTest {
 
   @Before
   public void setUp() throws Exception {
-    queue = ReflectionHelpers.callConstructor(MessageQueue.class, from(boolean.class, true));
+    queue =
+        ReflectionHelpers.callConstructor(
+            MessageQueue.class, ClassParameter.from(boolean.class, true));
     shadowQueue = Shadow.extract(queue);
   }
 

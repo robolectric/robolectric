@@ -51,7 +51,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
@@ -313,7 +312,7 @@ public class ShadowViewTest {
     view.postInvalidateDelayed(1);
     assertFalse(shadowView.wasInvalidated());
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertTrue(shadowView.wasInvalidated());
   }
 
@@ -325,7 +324,7 @@ public class ShadowViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertTrue(runnable.wasRun);
   }
 
@@ -336,7 +335,7 @@ public class ShadowViewTest {
 
     assertThat(view.removeCallbacks(runnable)).isTrue();
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertThat(runnable.wasRun).isFalse();
   }
 

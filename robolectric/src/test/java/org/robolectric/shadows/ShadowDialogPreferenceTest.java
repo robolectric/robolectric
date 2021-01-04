@@ -20,11 +20,11 @@ public class ShadowDialogPreferenceTest {
     final PreferenceScreen screen = inflatePreferenceActivity();
     final DialogPreference preference = (DialogPreference) screen.findPreference("dialog");
 
-    assertThat(preference.getTitle()).isEqualTo("Dialog Preference");
-    assertThat(preference.getSummary()).isEqualTo("This is the dialog summary");
-    assertThat(preference.getDialogMessage()).isEqualTo("This is the dialog message");
-    assertThat(preference.getPositiveButtonText()).isEqualTo("YES");
-    assertThat(preference.getNegativeButtonText()).isEqualTo("NO");
+    assertThat(preference.getTitle().toString()).isEqualTo("Dialog Preference");
+    assertThat(preference.getSummary().toString()).isEqualTo("This is the dialog summary");
+    assertThat(preference.getDialogMessage().toString()).isEqualTo("This is the dialog message");
+    assertThat(preference.getPositiveButtonText().toString()).isEqualTo("YES");
+    assertThat(preference.getNegativeButtonText().toString()).isEqualTo("NO");
   }
 
   private PreferenceScreen inflatePreferenceActivity() {

@@ -5,12 +5,12 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -94,7 +94,7 @@ public class PropertiesDependencyResolverTest {
 
   private Path propsFile(Properties contents) throws IOException {
     File file = temporaryFolder.newFile("file.properties");
-    try (Writer out = new BufferedWriter(new FileWriter(file))) {
+    try (Writer out = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
       contents.store(out, "for tests");
     }
     return file.toPath();

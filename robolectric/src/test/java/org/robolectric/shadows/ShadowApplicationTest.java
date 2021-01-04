@@ -191,13 +191,9 @@ public class ShadowApplicationTest {
     AccessibilityManager accessibilityManager =
         (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
-    AccessibilityManager.TouchExplorationStateChangeListener listener = createTouchListener();
+    AccessibilityManager.TouchExplorationStateChangeListener listener = enabled -> {};
     assertThat(accessibilityManager.addTouchExplorationStateChangeListener(listener)).isTrue();
     assertThat(accessibilityManager.removeTouchExplorationStateChangeListener(listener)).isTrue();
-  }
-
-  private static AccessibilityManager.TouchExplorationStateChangeListener createTouchListener() {
-    return enabled -> {};
   }
 
   @Test

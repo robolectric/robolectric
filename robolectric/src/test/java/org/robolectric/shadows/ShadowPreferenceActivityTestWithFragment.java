@@ -39,8 +39,8 @@ public class ShadowPreferenceActivityTestWithFragment {
   public void preferenceAddedWithCorrectDetails() {
     Preference preference = fragment.findPreference("edit_text");
     assertThat(preference).isNotNull();
-    assertThat(preference.getTitle()).isEqualTo("EditText Test");
-    assertThat(preference.getSummary()).isEqualTo("");
+    assertThat(preference.getTitle().toString()).isEqualTo("EditText Test");
+    assertThat(preference.getSummary().toString()).isEqualTo("");
   }
 
   private static class TestPreferenceActivity extends Activity {
