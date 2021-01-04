@@ -47,9 +47,9 @@ public class TempDirectory {
         // This is necessary because File.deleteOnExit won't delete non empty directories
         Runtime.getRuntime().addShutdownHook(new Thread(TempDirectory::clearAllDirectories));
       }
-    }
 
-    tempDirectoriesToDelete.add(this);
+      tempDirectoriesToDelete.add(this);
+    }
   }
 
   private static void clearAllDirectories() {
