@@ -88,6 +88,7 @@ public class InstrumentationConfiguration {
         && !classesToNotInstrument.contains(classDetails.getName())
         && !isInPackagesToNotInstrument(classDetails.getName())
         && !classMatchesExclusionRegex(classDetails.getName())
+        && !classDetails.isInstrumented()
         && !classDetails.hasAnnotation(DoNotInstrument.class)
         && (isInInstrumentedPackage(classDetails.getName())
             || instrumentedClasses.contains(classDetails.getName())

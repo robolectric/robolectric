@@ -1,6 +1,7 @@
 package org.robolectric.internal.bytecode;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
@@ -19,7 +20,9 @@ public class MutableClass {
   final Type classType;
   final ImmutableSet<String> foundMethods;
 
-  MutableClass(ClassNode classNode, InstrumentationConfiguration config,
+  public MutableClass(
+      ClassNode classNode,
+      InstrumentationConfiguration config,
       ClassNodeProvider classNodeProvider) {
     this.classNode = classNode;
     this.config = config;
@@ -53,6 +56,12 @@ public class MutableClass {
 
   public void addMethod(MethodNode methodNode) {
     classNode.methods.add(methodNode);
+  }
+
+  public void removeMethod(String name, String desc) {
+    Iterables.removeIf(
+        classNode.methods,
+        methodNode -> name.equals(methodNode.name) && desc.equals(methodNode.desc));
   }
 
   public List<FieldNode> getFields() {
