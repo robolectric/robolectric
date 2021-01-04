@@ -8,9 +8,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class TempDirectory {
+  /**
+   * The number of concurrent deletions which should take place, too high and it'll become I/O
+   * bound, to low and it'll take a long time to complete. 5 is an estimate of a decent balance,
+   * feel free to experiment.
+   */
+  private static final int DELETE_THREAD_POOL_SIZE = 5;
+
+  /** Set to track the undeleted TempDirectory instances which we need to erase. */
+  private static final Set<TempDirectory> tempDirectoriesToDelete = new HashSet<>();
+
   private final Path basePath;
 
   public TempDirectory() {
@@ -24,13 +38,26 @@ public class TempDirectory {
       throw new RuntimeException(e);
     }
 
-    // Use a manual hook that actually clears the directory
-    // This is necessary because File.deleteOnExit won't delete non empty directories
-    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-      @Override public void run() {
-        destroy();
+    synchronized (tempDirectoriesToDelete) {
+      // If we haven't initialised the shutdown hook we should set everything up.
+      if (tempDirectoriesToDelete.size() == 0) {
+        // Use a manual hook that actually clears the directory
+        // This is necessary because File.deleteOnExit won't delete non empty directories
+        Runtime.getRuntime().addShutdownHook(new Thread(TempDirectory::clearAllDirectories));
       }
-    }));
+
+      tempDirectoriesToDelete.add(this);
+    }
+  }
+
+  private static void clearAllDirectories() {
+    ExecutorService deletionExecutorService = Executors.newFixedThreadPool(DELETE_THREAD_POOL_SIZE);
+    synchronized (tempDirectoriesToDelete) {
+      for (TempDirectory undeletedDirectory : tempDirectoriesToDelete) {
+        deletionExecutorService.execute(undeletedDirectory::destroy);
+      }
+    }
+    deletionExecutorService.shutdown();
   }
 
   public Path createFile(String name, String contents) {
