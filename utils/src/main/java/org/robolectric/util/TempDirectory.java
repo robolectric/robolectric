@@ -24,7 +24,8 @@ public class TempDirectory {
   private static final int DELETE_THREAD_POOL_SIZE = 5;
 
   /** Set to track the undeleted TempDirectory instances which we need to erase. */
-  private static Set<TempDirectory> tempDirectoriesToDelete;
+  private static Set<TempDirectory> tempDirectoriesToDelete =
+      Collections.synchronizedSet(new HashSet<>());
 
   private final Path basePath;
 
@@ -39,11 +40,9 @@ public class TempDirectory {
       throw new RuntimeException(e);
     }
 
-    synchronized (TempDirectory.class) {
+    synchronized (tempDirectoriesToDelete) {
       // If we haven't initialised the shutdown hook we should set everything up.
-      if (tempDirectoriesToDelete == null) {
-        tempDirectoriesToDelete = Collections.synchronizedSet(new HashSet<>());
-
+      if (tempDirectoriesToDelete.size() == 0) {
         // Use a manual hook that actually clears the directory
         // This is necessary because File.deleteOnExit won't delete non empty directories
         Runtime.getRuntime().addShutdownHook(new Thread(TempDirectory::clearAllDirectories));
