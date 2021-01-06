@@ -46,7 +46,12 @@ public class ShadowTextToSpeech {
   private final List<String> spokenTextList = new ArrayList<>();
 
   @Implementation
-  protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
+  protected void __constructor__(
+      Context context,
+      TextToSpeech.OnInitListener listener,
+      String engine,
+      String packageName,
+      boolean useFallback) {
     this.context = context;
     this.listener = listener;
     lastTextToSpeechInstance = tts;
@@ -149,7 +154,7 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
-  private UtteranceProgressListener getUtteranceProgressListener() {
+  public UtteranceProgressListener getUtteranceProgressListener() {
     return ReflectionHelpers.getField(tts, "mUtteranceProgressListener");
   }
 

@@ -17,6 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +38,18 @@ public class ShadowTextToSpeechTest {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(textToSpeech).isNotNull();
     assertThat(shadowOf(textToSpeech)).isNotNull();
+  }
+
+  @Test
+  public void onInitListener_notCalledAutomatically() {
+    AtomicReference<Boolean> onInitCalled = new AtomicReference<>(false);
+    TextToSpeech.OnInitListener listener =
+        result -> {
+          onInitCalled.set(true);
+        };
+    TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
+    assertThat(textToSpeech).isNotNull();
+    assertThat(onInitCalled.get()).isFalse();
   }
 
   @Test
