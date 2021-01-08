@@ -225,6 +225,15 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeByteArray_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColorFromByteArray("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromByteArray("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromByteArray("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromByteArray("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromByteArray("res/drawable/pure_white.png"));
+  }
+
+  @Test
   public void decodeStream_shouldGetWidthAndHeightFromHints() throws Exception {
     ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
@@ -378,6 +387,16 @@ public class ShadowBitmapFactoryTest {
     inputStream.mark(inputStream.available());
     BitmapFactory.Options opts = new BitmapFactory.Options();
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
+    return bitmap.getPixel(0, 0);
+  }
+
+  private int getPngImageColorFromByteArray(String pngImagePath) throws IOException {
+    InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
+    inputStream.mark(inputStream.available());
+    byte[] array = new byte[inputStream.available()];
+    inputStream.read(array);
+    Bitmap bitmap = BitmapFactory.decodeByteArray(array, 0, array.length);
     return bitmap.getPixel(0, 0);
   }
 }

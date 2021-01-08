@@ -188,8 +188,11 @@ public class ShadowBitmapFactory {
       desc += " bytes " + offset + ".." + length;
     }
 
-    Point imageSize = getImageSizeFromStream(new ByteArrayInputStream(data, offset, length));
-    return create(desc, opts, imageSize);
+    ByteArrayInputStream is = new ByteArrayInputStream(data, offset, length);
+    Point imageSize = getImageSizeFromStream(is);
+    Bitmap bitmap = create(desc, opts, imageSize);
+    initColorArray(is, null, Shadow.extract(bitmap));
+    return bitmap;
   }
 
   static Bitmap create(String name) {
