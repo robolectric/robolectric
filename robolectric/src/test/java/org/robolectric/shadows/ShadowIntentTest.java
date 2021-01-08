@@ -399,7 +399,8 @@ public class ShadowIntentTest {
             Uri.parse("http://www.robolectric.org"),
             ApplicationProvider.getApplicationContext(),
             Activity.class);
-    assertThat(intent.getComponent()).isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
+    assertThat(intent.getComponent())
+        .isEqualTo(new ComponentName("org.robolectric", "android.app.Activity"));
     assertThat(intent.getAction()).isEqualTo("roboaction");
     assertThat(intent.getData()).isEqualTo(Uri.parse("http://www.robolectric.org"));
   }
@@ -480,7 +481,7 @@ public class ShadowIntentTest {
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (!(o instanceof TestSerializable)) return false;
 
       TestSerializable that = (TestSerializable) o;
 
