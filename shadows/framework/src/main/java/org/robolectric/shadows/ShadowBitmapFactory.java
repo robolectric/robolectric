@@ -13,6 +13,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.util.TypedValue;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.imageio.ImageIO;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -161,6 +163,20 @@ public class ShadowBitmapFactory {
       if (is != null && opts != null) {
         is.reset();
         opts.outMimeType = URLConnection.guessContentTypeFromStream(is);
+      }
+      if (is != null && ninePatchChunk == null) {
+        is.reset();
+        BufferedImage image = ImageIO.read(is);
+        if (image != null) {
+          boolean mutable = shadowBitmap.isMutable();
+          shadowBitmap.setMutable(true);
+          for (int x = 0; x < shadowBitmap.getWidth(); x++) {
+            for (int y = 0; y < shadowBitmap.getHeight(); y++) {
+              shadowBitmap.setPixel(x, y, image.getRGB(x, y));
+            }
+          }
+          shadowBitmap.setMutable(mutable);
+        }
       }
     } catch (IOException e) {
       // ignore

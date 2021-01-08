@@ -8,6 +8,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -279,6 +280,15 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeStream_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColor("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColor("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColor("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColor("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColor("res/drawable/pure_white.png"));
+  }
+
+  @Test
   public void decodeWithDifferentSampleSize() {
     String name = "test";
     BitmapFactory.Options options = new BitmapFactory.Options();
@@ -360,5 +370,14 @@ public class ShadowBitmapFactoryTest {
       assertEquals(600, loadedBitmap.getHeight());
       loadedBitmap.recycle();
     }
+  }
+
+  private int getPngImageColor(String pngImagePath) throws IOException {
+    InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
+    return bitmap.getPixel(0, 0);
   }
 }
