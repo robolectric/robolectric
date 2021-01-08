@@ -10,6 +10,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
@@ -19,10 +20,12 @@ import com.google.common.collect.ImmutableSet;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -39,6 +42,26 @@ public class ShadowTextToSpeechTest {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(textToSpeech).isNotNull();
     assertThat(shadowOf(textToSpeech)).isNotNull();
+  }
+
+  @Test
+  public void onInitListener_success_getsCalledAsynchronously() {
+    AtomicReference<Integer> onInitCalled = new AtomicReference<>();
+    TextToSpeech.OnInitListener listener = onInitCalled::set;
+    TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
+    assertThat(textToSpeech).isNotNull();
+    Shadows.shadowOf(Looper.getMainLooper()).idle();
+    assertThat(onInitCalled.get()).isEqualTo(TextToSpeech.SUCCESS);
+  }
+
+  @Test
+  public void onInitListener_error_getsCalledSynchronously() {
+    AtomicReference<Integer> onInitCalled = new AtomicReference<>();
+    ShadowTextToSpeech.setOnInitStatus(TextToSpeech.ERROR);
+    TextToSpeech.OnInitListener listener = onInitCalled::set;
+    TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
+    assertThat(textToSpeech).isNotNull();
+    assertThat(onInitCalled.get()).isEqualTo(TextToSpeech.ERROR);
   }
 
   @Test
