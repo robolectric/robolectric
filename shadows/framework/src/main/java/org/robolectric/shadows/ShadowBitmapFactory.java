@@ -164,23 +164,10 @@ public class ShadowBitmapFactory {
         is.reset();
         opts.outMimeType = URLConnection.guessContentTypeFromStream(is);
       }
-      if (is != null && ninePatchChunk == null) {
-        is.reset();
-        BufferedImage image = ImageIO.read(is);
-        if (image != null) {
-          boolean mutable = shadowBitmap.isMutable();
-          shadowBitmap.setMutable(true);
-          for (int x = 0; x < shadowBitmap.getWidth(); x++) {
-            for (int y = 0; y < shadowBitmap.getHeight(); y++) {
-              shadowBitmap.setPixel(x, y, image.getRGB(x, y));
-            }
-          }
-          shadowBitmap.setMutable(mutable);
-        }
-      }
     } catch (IOException e) {
       // ignore
     }
+    initColorArray(is, ninePatchChunk, shadowBitmap);
     return bitmap;
   }
 
@@ -215,6 +202,28 @@ public class ShadowBitmapFactory {
 
   public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
     return create(name, null, options, widthAndHeight);
+  }
+
+  private static void initColorArray(
+      InputStream is, byte[] ninePatchChunk, ShadowBitmap shadowBitmap) {
+    try {
+      if (is != null && ninePatchChunk == null) {
+        is.reset();
+        BufferedImage image = ImageIO.read(is);
+        if (image != null) {
+          boolean mutable = shadowBitmap.isMutable();
+          shadowBitmap.setMutable(true);
+          for (int x = 0; x < shadowBitmap.getWidth(); x++) {
+            for (int y = 0; y < shadowBitmap.getHeight(); y++) {
+              shadowBitmap.setPixel(x, y, image.getRGB(x, y));
+            }
+          }
+          shadowBitmap.setMutable(mutable);
+        }
+      }
+    } catch (IOException e) {
+      // ignore
+    }
   }
 
   private static Bitmap create(
