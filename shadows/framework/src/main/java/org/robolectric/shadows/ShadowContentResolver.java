@@ -6,6 +6,7 @@ import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -911,6 +912,11 @@ public class ShadowContentResolver {
       }
     }
     return observers;
+  }
+
+  @Implementation(minSdk = Q)
+  protected static void onDbCorruption(String tag, String message, Throwable stacktrace) {
+    // No-op.
   }
 
   private static ContentProvider createAndInitialize(ProviderInfo providerInfo) {
