@@ -75,6 +75,7 @@ public class ShadowBitmapFactory {
     Bitmap bitmap = create("resource:" + res.getResourceName(id), options, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
+    initColorArray(is, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -191,7 +192,7 @@ public class ShadowBitmapFactory {
     ByteArrayInputStream is = new ByteArrayInputStream(data, offset, length);
     Point imageSize = getImageSizeFromStream(is);
     Bitmap bitmap = create(desc, opts, imageSize);
-    initColorArray(is, null, Shadow.extract(bitmap));
+    initColorArray(is, bitmap.getNinePatchChunk(), Shadow.extract(bitmap));
     return bitmap;
   }
 
@@ -216,8 +217,9 @@ public class ShadowBitmapFactory {
         if (image != null) {
           boolean mutable = shadowBitmap.isMutable();
           shadowBitmap.setMutable(true);
-          for (int x = 0; x < shadowBitmap.getWidth(); x++) {
-            for (int y = 0; y < shadowBitmap.getHeight(); y++) {
+          // There are provided width and height that less than real size
+          for (int x = 0; x < shadowBitmap.getWidth() && x < image.getWidth(); x++) {
+            for (int y = 0; y < shadowBitmap.getHeight() && y < image.getHeight(); y++) {
               shadowBitmap.setPixel(x, y, image.getRGB(x, y));
             }
           }
