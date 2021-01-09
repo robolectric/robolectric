@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -149,6 +150,15 @@ public class ShadowBitmapFactoryTest {
         BitmapFactory.decodeResourceStream(
             context.getResources(), null, inputStream, null, options);
     assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
+  }
+
+  @Test
+  public void decodeResourceStream_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColorFromResourceStream("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromResourceStream("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromResourceStream("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromResourceStream("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromResourceStream("res/drawable/pure_white.png"));
   }
 
   @Test
@@ -397,6 +407,16 @@ public class ShadowBitmapFactoryTest {
     byte[] array = new byte[inputStream.available()];
     inputStream.read(array);
     Bitmap bitmap = BitmapFactory.decodeByteArray(array, 0, array.length);
+    return bitmap.getPixel(0, 0);
+  }
+
+  private int getPngImageColorFromResourceStream(String pngImagePath) throws IOException {
+    InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Resources resources = context.getResources();
+    Bitmap bitmap = BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
     return bitmap.getPixel(0, 0);
   }
 }
