@@ -363,6 +363,16 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeFile_shouldGetCorrectColorFromPngImage() {
+    int color = Color.RED;
+    String pathName =
+        getClass().getClassLoader().getResource("res/drawable/pure_red.png").getPath();
+    Bitmap bitmap = BitmapFactory.decodeFile(pathName);
+    assertEquals(color, bitmap.getPixel(0, 0));
+    bitmap.recycle();
+  }
+
+  @Test
   public void decodeFile_shouldHaveCorrectWidthAndHeight() throws IOException {
     Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.getWidth()).isEqualTo(500);

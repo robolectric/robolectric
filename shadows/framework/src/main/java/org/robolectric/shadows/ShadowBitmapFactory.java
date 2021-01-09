@@ -90,7 +90,7 @@ public class ShadowBitmapFactory {
     Point imageSizeFromStream = null;
     if (pathName != null && new File(pathName).exists()) {
       try (FileInputStream fileInputStream = new FileInputStream(pathName);
-          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
+          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
         imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
@@ -99,6 +99,14 @@ public class ShadowBitmapFactory {
     Bitmap bitmap = create("file:" + pathName, options, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
+    if (pathName != null && new File(pathName).exists()) {
+      try (FileInputStream fileInputStream = new FileInputStream(pathName);
+          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
+        initColorArray(bufferedInputStream, bitmap.getNinePatchChunk(), shadowBitmap, false);
+      } catch (IOException e) {
+        Logger.warn("Error getting size of bitmap file", e);
+      }
+    }
     return bitmap;
   }
 
@@ -210,23 +218,31 @@ public class ShadowBitmapFactory {
 
   private static void initColorArray(
       InputStream is, byte[] ninePatchChunk, ShadowBitmap shadowBitmap) {
+    initColorArray(is, ninePatchChunk, shadowBitmap, true);
+  }
+
+  private static void initColorArray(
+      InputStream is, byte[] ninePatchChunk, ShadowBitmap shadowBitmap, boolean needReset) {
+    if (is == null || ninePatchChunk != null) {
+      return;
+    }
     try {
-      if (is != null && ninePatchChunk == null) {
+      if (needReset) {
         is.reset();
-        BufferedImage image = ImageIO.read(is);
-        if (image != null) {
-          boolean mutable = shadowBitmap.isMutable();
-          shadowBitmap.setMutable(true);
-          // There are provided width and height that less than real size
-          for (int x = 0; x < shadowBitmap.getWidth() && x < image.getWidth(); x++) {
-            for (int y = 0; y < shadowBitmap.getHeight() && y < image.getHeight(); y++) {
-              shadowBitmap.setPixel(x, y, image.getRGB(x, y));
-            }
-          }
-          shadowBitmap.setMutable(mutable);
-        }
       }
-    } catch (IOException e) {
+      BufferedImage image = ImageIO.read(is);
+      if (image != null) {
+        boolean mutable = shadowBitmap.isMutable();
+        shadowBitmap.setMutable(true);
+        // There are provided width and height that less than real size
+        for (int x = 0; x < shadowBitmap.getWidth() && x < image.getWidth(); x++) {
+          for (int y = 0; y < shadowBitmap.getHeight() && y < image.getHeight(); y++) {
+            shadowBitmap.setPixel(x, y, image.getRGB(x, y));
+          }
+        }
+        shadowBitmap.setMutable(mutable);
+      }
+    } catch (IOException ignore) {
       // ignore
     }
   }
