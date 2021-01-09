@@ -300,11 +300,11 @@ public class ShadowBitmapFactoryTest {
 
   @Test
   public void decodeStream_shouldGetCorrectColorFromPngImage() throws Exception {
-    assertEquals(Color.BLACK, getPngImageColor("res/drawable/pure_black.png"));
-    assertEquals(Color.BLUE, getPngImageColor("res/drawable/pure_blue.png"));
-    assertEquals(Color.GREEN, getPngImageColor("res/drawable/pure_green.png"));
-    assertEquals(Color.RED, getPngImageColor("res/drawable/pure_red.png"));
-    assertEquals(Color.WHITE, getPngImageColor("res/drawable/pure_white.png"));
+    assertEquals(Color.BLACK, getPngImageColorFromStream("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromStream("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromStream("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromStream("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromStream("res/drawable/pure_white.png"));
   }
 
   @Test
@@ -391,12 +391,12 @@ public class ShadowBitmapFactoryTest {
     }
   }
 
-  private int getPngImageColor(String pngImagePath) throws IOException {
+  private int getPngImageColorFromStream(String pngImagePath) throws IOException {
     InputStream inputStream =
         new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
     inputStream.mark(inputStream.available());
     BitmapFactory.Options opts = new BitmapFactory.Options();
-    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, opts);
     return bitmap.getPixel(0, 0);
   }
 
