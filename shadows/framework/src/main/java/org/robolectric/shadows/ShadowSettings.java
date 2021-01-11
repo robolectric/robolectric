@@ -605,6 +605,18 @@ public class ShadowSettings {
         installNonMarketApps ? 1 : 0);
   }
 
+  /**
+   * Sets the value of the {@link Settings.System#ACCELEROMETER_ROTATION} setting.
+   *
+   * @param accelerometerRotationEnabled new value for whether  auota rotate settings is enabled.
+   */
+  public static void setAccelerometerRotationEnabled(boolean accelerometerRotationEnabled) {
+    Settings.System.putInt(
+        RuntimeEnvironment.application.getContentResolver(),
+        Settings.System.ACCELEROMETER_ROTATION,
+        accelerometerRotationEnabled ? 1 : 0);
+  }
+
   @Resetter
   public static void reset() {
     canDrawOverlays = false;
