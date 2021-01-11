@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
+import android.os.Handler;
 import android.os.Message;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -60,6 +61,10 @@ public class ShadowPausedMessage extends ShadowMessage {
     throw new UnsupportedOperationException("Not supported in PAUSED LooperMode");
   }
 
+  Handler getTarget() {
+    return reflector(ReflectorMessage.class, realObject).getTarget();
+  }
+
   /** Accessor interface for {@link Message}'s internals. */
   @ForType(Message.class)
   private interface ReflectorMessage {
@@ -69,5 +74,8 @@ public class ShadowPausedMessage extends ShadowMessage {
 
     @Accessor("next")
     Message getNext();
+
+    @Accessor("target")
+    Handler getTarget();
   }
 }

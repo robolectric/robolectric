@@ -8,6 +8,7 @@ import android.content.ContentResolver;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
+import android.provider.Settings.System;
 import android.text.format.DateFormat;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -159,6 +160,20 @@ public class ShadowSettingsTest {
   public void testSetInstallNonMarketApps_sinceJBMR1_settingsGlobal_false() {
     ShadowSettings.setInstallNonMarketApps(false);
     assertThat(Global.getInt(context.getContentResolver(), Global.INSTALL_NON_MARKET_APPS, 1))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void testSetAccelerometerRotationEnabled_enabled() throws Exception {
+    ShadowSettings.setAccelerometerRotationEnabled(true);
+    assertThat(System.getInt(context.getContentResolver(), System.ACCELEROMETER_ROTATION))
+        .isEqualTo(1);
+  }
+
+  @Test
+  public void testSetAccelerometerRotationEnabled_disabled() throws Exception {
+    ShadowSettings.setAccelerometerRotationEnabled(false);
+    assertThat(System.getInt(context.getContentResolver(), System.ACCELEROMETER_ROTATION))
         .isEqualTo(0);
   }
 }
