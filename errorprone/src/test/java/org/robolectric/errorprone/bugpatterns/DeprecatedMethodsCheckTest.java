@@ -45,15 +45,15 @@ public class DeprecatedMethodsCheckTest {
             "import static xxx.XShadows.shadowOf;",
             "",
             "import android.content.Context;",
+            "import androidx.test.core.app.ApplicationProvider;",
             "import org.junit.Test;",
-            "import org.robolectric.RuntimeEnvironment;",
             "import xxx.XShadowApplication;", // removable
             "",
             "public class SomeTest {",
             "  Context application;",
             "  @Test void theTest() {",
-            "    shadowOf(RuntimeEnvironment.application).runBackgroundTasks();",
-            "    application = RuntimeEnvironment.application;",
+            "    shadowOf(ApplicationProvider.getApplicationContext()).runBackgroundTasks();",
+            "    application = ApplicationProvider.getApplicationContext();",
             "  }",
             "}")
         .doTest();
@@ -121,14 +121,14 @@ public class DeprecatedMethodsCheckTest {
             "import static xxx.XShadows.shadowOf;",
             "",
             "import android.app.Application;",
+            "import androidx.test.core.app.ApplicationProvider;",
             "import org.junit.Test;",
-            "import org.robolectric.RuntimeEnvironment;",
             "import org.robolectric.Shadows;",
             "import xxx.XShadowApplication;", // removable
             "",
             "public class SomeTest {",
             "  @Test void theTest() {",
-            "    Application application = RuntimeEnvironment.application;",
+            "    Application application = ApplicationProvider.getApplicationContext();",
             "    XShadows.shadowOf(application).runBackgroundTasks();",
             "  }",
             "}")
@@ -155,16 +155,17 @@ public class DeprecatedMethodsCheckTest {
         .addOutputLines(
             "in/SomeTest.java",
             "import android.content.Context;",
+            "import androidx.test.core.app.ApplicationProvider;",
             "import org.junit.Test;",
-            "import org.robolectric.RuntimeEnvironment;",
             "import xxx.XShadowApplication;", // removable
             "import xxx.XShadows;",
             "",
             "public class SomeTest {",
             "  Context application;",
             "  @Test void theTest() {",
-            "    XShadows.shadowOf(RuntimeEnvironment.application).runBackgroundTasks();",
-            "    application = RuntimeEnvironment.application;",
+            "    XShadows.shadowOf(ApplicationProvider.getApplicationContext())"
+                + ".runBackgroundTasks();",
+            "    application = ApplicationProvider.getApplicationContext();",
             "  }",
             "}")
         .doTest();
@@ -193,15 +194,15 @@ public class DeprecatedMethodsCheckTest {
             "in/SomeTest.java",
             "import android.app.Application;",
             "import android.content.Context;",
+            "import androidx.test.core.app.ApplicationProvider;",
             "import org.junit.Test;",
-            "import org.robolectric.RuntimeEnvironment;",
             "import xxx.XShadows;",
             "import xxx.XShadowApplication;", // removable
             "",
             "public class SomeTest {",
             "  Application application;",
             "  @Test void theTest() {",
-            "    application = RuntimeEnvironment.application;",
+            "    application = ApplicationProvider.getApplicationContext();",
             "    application.getMainLooper();",
             "    XShadows.shadowOf(application).runBackgroundTasks();",
             "  }",
@@ -221,7 +222,7 @@ public class DeprecatedMethodsCheckTest {
 
     @Override
     String shortShadowName(String className) {
-      return className.replaceAll("Shadow", "XShadow");
+      return className.replace("Shadow", "XShadow");
     }
   }
 }

@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.ArrayList;
@@ -25,12 +26,15 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
 
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
+  private static final Set<Voice> voices = new HashSet<>();
   private static TextToSpeech lastTextToSpeechInstance;
+  private static int onInitStatus = TextToSpeech.SUCCESS;
 
   @RealObject private TextToSpeech tts;
 
@@ -42,14 +46,50 @@ public class ShadowTextToSpeech {
   private int queueMode = -1;
   private Locale language = null;
   private String lastSynthesizeToFileText;
+  private Voice currentVoice = null;
 
   private final List<String> spokenTextList = new ArrayList<>();
 
   @Implementation
-  protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
+  protected void __constructor__(
+      Context context,
+      TextToSpeech.OnInitListener listener,
+      String engine,
+      String packageName,
+      boolean useFallback) {
     this.context = context;
     this.listener = listener;
     lastTextToSpeechInstance = tts;
+    Shadow.invokeConstructor(
+        TextToSpeech.class,
+        tts,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(TextToSpeech.OnInitListener.class, listener),
+        ClassParameter.from(String.class, engine),
+        ClassParameter.from(String.class, packageName),
+        ClassParameter.from(boolean.class, useFallback));
+  }
+
+  @Implementation
+  protected int initTts() {
+    // Attempt to model real Android code, where success callbacks occur asynchronously and error
+    // callbacks occur immediately.
+    if (listener != null) {
+      if (onInitStatus == TextToSpeech.SUCCESS) {
+        new Handler(Looper.getMainLooper()).post(() -> listener.onInit(onInitStatus));
+      } else {
+        listener.onInit(onInitStatus);
+      }
+    }
+    return onInitStatus;
+  }
+
+  /**
+   * Sets the code used by the {@link android.speech.tts.TextToSpeech.OnInitListener} callback
+   * during initialization. This can test cases where {@link TextToSpeech.ERROR} is used.
+   */
+  public static void setOnInitStatus(int status) {
+    onInitStatus = status;
   }
 
   /**
@@ -149,7 +189,18 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
-  private UtteranceProgressListener getUtteranceProgressListener() {
+  @Implementation(minSdk = LOLLIPOP)
+  protected int setVoice(Voice voice) {
+    this.currentVoice = voice;
+    return TextToSpeech.SUCCESS;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Set<Voice> getVoices() {
+    return voices;
+  }
+
+  public UtteranceProgressListener getUtteranceProgressListener() {
     return ReflectionHelpers.getField(tts, "mUtteranceProgressListener");
   }
 
@@ -211,6 +262,16 @@ public class ShadowTextToSpeech {
     languageAvailabilities.add(locale);
   }
 
+  /** Makes {@link Voice} an available voice returned by {@link TextToSpeech#getVoices()}. */
+  public static void addVoice(Voice voice) {
+    voices.add(voice);
+  }
+
+  /** Returns {@link Voice} set using {@link TextToSpeech#setVoice(Voice)}, or null if not set. */
+  public Voice getCurrentVoice() {
+    return currentVoice;
+  }
+
   /** Returns the most recently instantiated {@link TextToSpeech} or null if none exist. */
   public static TextToSpeech getLastTextToSpeechInstance() {
     return lastTextToSpeechInstance;
@@ -219,6 +280,8 @@ public class ShadowTextToSpeech {
   @Resetter
   public static void reset() {
     languageAvailabilities.clear();
+    voices.clear();
     lastTextToSpeechInstance = null;
+    onInitStatus = TextToSpeech.SUCCESS;
   }
 }

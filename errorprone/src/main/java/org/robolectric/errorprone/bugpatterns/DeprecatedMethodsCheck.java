@@ -67,25 +67,28 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
               if (surroundingMethodCall != null
                   && surroundingMethodCall.getName().equals("getApplicationContext")) {
                 // transform `ShadowApplication.getInstance().getApplicationContext()`
-                //  to `RuntimeEnvironment.application`:
+                //  to `ApplicationProvider.getApplicationContext()`:
 
                 fixBuilder
-                    .replace(surroundingMethodCall.node, "RuntimeEnvironment.application")
-                    .addImport("org.robolectric.RuntimeEnvironment");
+                    .replace(surroundingMethodCall.node,
+                        "ApplicationProvider.getApplicationContext()")
+                    .addImport("androidx.test.core.app.ApplicationProvider");
               } else {
                 // transform `ShadowApplication.getInstance()`
-                //  to `shadowOf(RuntimeEnvironment.application)`:
+                //  to `shadowOf(ApplicationProvider.getApplicationContext())`:
                 Tree parent = state.getPath().getParentPath().getLeaf();
 
                 possibleFixes.put(
                     parent,
                     () ->
                         fixBuilder
-                            .addImport("org.robolectric.RuntimeEnvironment")
+                            .addImport("androidx.test.core.app.ApplicationProvider")
                             .replace(
                                 tree,
                                 wrapInShadows(
-                                    state, fixBuilder, "RuntimeEnvironment.application")));
+                                    state,
+                                    fixBuilder,
+                                    "ApplicationProvider.getApplicationContext()")));
               }
             }
           },
