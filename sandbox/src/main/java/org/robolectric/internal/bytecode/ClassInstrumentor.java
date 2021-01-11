@@ -31,6 +31,7 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.util.PerfStatsCollector;
 
 public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
@@ -47,7 +48,7 @@ public abstract class ClassInstrumentor {
     this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
   }
 
-  public MutableClass analyzeClass(
+  private MutableClass analyzeClass(
       byte[] origClassBytes,
       final InstrumentationConfiguration config,
       ClassNodeProvider classNodeProvider) {
@@ -96,10 +97,13 @@ public abstract class ClassInstrumentor {
     return classBytes;
   }
 
-  public byte[] instrument(byte[] origBytes, InstrumentationConfiguration config,
-      ClassNodeProvider classNodeProvider) {
-    MutableClass mutableClass = analyzeClass(origBytes, config, classNodeProvider);
-    return instrumentToBytes(mutableClass);
+  public byte[] instrument(
+      byte[] origBytes, InstrumentationConfiguration config, ClassNodeProvider classNodeProvider) {
+    PerfStatsCollector perfStats = PerfStatsCollector.getInstance();
+    MutableClass mutableClass =
+        perfStats.measure(
+            "analyze class", () -> analyzeClass(origBytes, config, classNodeProvider));
+    return perfStats.measure("instrument class", () -> instrumentToBytes(mutableClass));
   }
 
   public void instrument(MutableClass mutableClass) {

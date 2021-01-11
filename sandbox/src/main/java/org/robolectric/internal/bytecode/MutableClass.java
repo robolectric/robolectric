@@ -1,12 +1,10 @@
 package org.robolectric.internal.bytecode;
 
 import com.google.common.collect.ImmutableSet;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -43,21 +41,6 @@ public class MutableClass {
 
   public boolean isAnnotation() {
     return (classNode.access & Opcodes.ACC_ANNOTATION) != 0;
-  }
-
-  public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
-    String internalName = "L" + annotationClass.getName().replace('.', '/') + ";";
-    if (classNode.visibleAnnotations == null) {
-      return false;
-    }
-
-    for (Object visibleAnnotation : classNode.visibleAnnotations) {
-      AnnotationNode annotationNode = (AnnotationNode) visibleAnnotation;
-      if (annotationNode.desc.equals(internalName)) {
-        return true;
-      }
-    }
-    return false;
   }
 
   public String getName() {

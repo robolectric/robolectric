@@ -43,7 +43,8 @@ public class InstrumentationConfigurationTest {
   @Test
   public void shouldInstrumentAndroidCoreClasses() throws Exception {
     assertThat(config.shouldInstrument(wrap("android.content.Intent"))).isTrue();
-    assertThat(config.shouldInstrument(wrap("android.and.now.for.something.completely.different"))).isTrue();
+    assertThat(config.shouldInstrument(wrap("android.and.now.for.something.completely.different")))
+        .isTrue();
   }
 
   @Test
@@ -79,7 +80,8 @@ public class InstrumentationConfigurationTest {
     assertThat(config.shouldAcquire("scala.Test")).isFalse();
     assertThat(config.shouldAcquire("scala.util.Test")).isFalse();
     assertThat(config.shouldAcquire("org.specs2.whatever.foo")).isFalse();
-    assertThat(config.shouldAcquire("com.almworks.sqlite4java.whatever.Cls$anything$else")).isFalse();
+    assertThat(config.shouldAcquire("com.almworks.sqlite4java.whatever.Cls$anything$else"))
+        .isFalse();
   }
 
   @Test
@@ -178,8 +180,8 @@ public class InstrumentationConfigurationTest {
 
   }
 
-  private MutableClass wrap(final String className) {
-    MutableClass info = mock(MutableClass.class);
+  private static ClassDetails wrap(final String className) {
+    ClassDetails info = mock(ClassDetails.class);
     when(info.getName()).thenReturn(className);
     return info;
   }
