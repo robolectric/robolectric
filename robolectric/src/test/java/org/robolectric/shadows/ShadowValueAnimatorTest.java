@@ -60,4 +60,22 @@ public class ShadowValueAnimatorTest {
     shadowMainLooper().idleFor(Duration.ofMillis(200));
     assertThat(animator.isRunning()).isFalse();
   }
+
+  @Test
+  public void animation_setPostFrameCallbackDelay() {
+    ShadowChoreographer.setPostFrameCallbackDelay(16);
+    ValueAnimator animator = ValueAnimator.ofInt(0, 10);
+    animator.setDuration(1000);
+    animator.setRepeatCount(0);
+    animator.start();
+    // without setPostFrameCallbackDelay this would finish the animation. Verify it doesn't, so
+    // tests can verify in progress animation state
+    shadowMainLooper().idleFor(Duration.ofMillis(16));
+    assertThat(animator.isRunning()).isTrue();
+    // advance 1000 frames - the duration of the animation
+    for (int i = 0; i < 999; i++) {
+      shadowMainLooper().idleFor(Duration.ofMillis(16));
+    }
+    assertThat(animator.isRunning()).isFalse();
+  }
 }
