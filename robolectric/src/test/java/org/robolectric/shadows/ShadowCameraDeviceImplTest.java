@@ -229,7 +229,7 @@ public final class ShadowCameraDeviceImplTest {
         }
         assertThat(captureResponse).isEqualTo(1);
       } catch (CameraAccessException e) {
-        fail();
+        throw new AssertionError("Got CameraAccessException when testing onConfigured", e);
       }
     }
 
