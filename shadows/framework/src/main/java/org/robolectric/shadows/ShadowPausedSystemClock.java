@@ -68,9 +68,11 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
       return false;
     }
 
-    currentTimeMillis = millis;
-    for (Listener listener : listeners) {
-      listener.clockUpdated(currentTimeMillis);
+    if (currentTimeMillis != millis) {
+      currentTimeMillis = millis;
+      for (Listener listener : listeners) {
+        listener.clockUpdated(currentTimeMillis);
+      }
     }
     return true;
   }
@@ -121,5 +123,6 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   public static void reset() {
     currentTimeMillis = INITIAL_TIME;
     ShadowSystemClock.reset();
+    listeners.clear();
   }
 }

@@ -98,6 +98,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
       nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
     }
     SystemClock.setCurrentTimeMillis(endingTimeMs);
+    // the last SystemClock update might have added new tasks to the main looper via Choreographer
+    // so idle once more.
+    idle();
   }
 
   @Override

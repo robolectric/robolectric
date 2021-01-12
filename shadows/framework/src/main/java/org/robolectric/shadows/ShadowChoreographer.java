@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadows.ShadowLooper.looperMode;
+
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 
 /**
  * The shadow API for {@link android.view.Choreographer}.
@@ -36,14 +39,15 @@ public abstract class ShadowChoreographer {
   /**
    * Allows application to specify a fixed amount of delay when {@link
    * #postFrameCallback(FrameCallback)} is invoked. The default delay value is 0. This can be used
-   * to avoid infinite animation tasks to be spawned when the Robolectric {@link
-   * org.robolectric.util.Scheduler} is in {@link org.robolectric.util.Scheduler.IdleState#PAUSED}
-   * mode.
-   *
-   * <p>Only supported in {@link LooperMode.Mode.LEGACY}
+   * to avoid infinite animation tasks to be spawned when in LooperMode PAUSED or {@link
+   * org.robolectric.util.Scheduler.IdleState#PAUSED} and displaying an animation.
    */
   public static void setPostFrameCallbackDelay(int delayMillis) {
-    ShadowLegacyChoreographer.setPostFrameCallbackDelay(delayMillis);
+    if (looperMode() == Mode.PAUSED) {
+      ShadowDisplayEventReceiver.setAsyncVsync(delayMillis);
+    } else {
+      ShadowLegacyChoreographer.setPostFrameCallbackDelay(delayMillis);
+    }
   }
 
   /**

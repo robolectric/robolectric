@@ -6,12 +6,10 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
@@ -140,21 +138,30 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   /** Exposes the API23+_isIdle method to older platforms */
   @Implementation(minSdk = 23)
   public boolean isIdle() {
-    if (Build.VERSION.SDK_INT >= M) {
-      return directlyOn(realQueue, MessageQueue.class).isIdle();
-    } else {
-      ReflectorMessageQueue internalQueue = reflector(ReflectorMessageQueue.class, realQueue);
-      // this is a copy of the implementation from P
-      synchronized (realQueue) {
-        final long now = SystemClock.uptimeMillis();
-        Message headMsg = internalQueue.getMessages();
-        if (headMsg == null) {
+    synchronized (realQueue) {
+      Message msg = peekNextExecutableMessage();
+      if (msg == null) {
           return true;
-        }
-        long when = shadowOfMsg(headMsg).getWhen();
-        return now < when;
       }
+
+      long now = SystemClock.uptimeMillis();
+      long when = shadowOfMsg(msg).getWhen();
+      return now < when;
     }
+  }
+
+  Message peekNextExecutableMessage() {
+    ReflectorMessageQueue internalQueue = reflector(ReflectorMessageQueue.class, realQueue);
+    Message msg = internalQueue.getMessages();
+
+    if (msg != null && shadowOfMsg(msg).getTarget() == null) {
+      // Stalled by a barrier.  Find the next asynchronous message in the queue.
+      do {
+        msg = shadowOfMsg(msg).internalGetNext();
+      } while (msg != null && !msg.isAsynchronous());
+    }
+
+    return msg;
   }
 
   Message getNext() {
@@ -214,23 +221,36 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   }
 
   Duration getNextScheduledTaskTime() {
-    Message head = getMessages();
-    if (head == null) {
+    Message next = peekNextExecutableMessage();
+
+    if (next == null) {
       return Duration.ZERO;
     }
-    return Duration.ofMillis(shadowOfMsg(head).getWhen());
+    return Duration.ofMillis(convertWhenToScheduledTime(shadowOfMsg(next).getWhen()));
   }
 
   Duration getLastScheduledTaskTime() {
     long when = 0;
     synchronized (realQueue) {
       Message next = getMessages();
+      if (next == null) {
+        return Duration.ZERO;
+      }
       while (next != null) {
         when = shadowOfMsg(next).getWhen();
         next = shadowOfMsg(next).internalGetNext();
       }
     }
-    return Duration.ofMillis(when);
+    return Duration.ofMillis(convertWhenToScheduledTime(when));
+  }
+
+  private static long convertWhenToScheduledTime(long when) {
+    // in some situations, when can be 0 or less than uptimeMillis. Always floor it to at least
+    // convertWhenToUptime
+    if (when < SystemClock.uptimeMillis()) {
+      when = SystemClock.uptimeMillis();
+    }
+    return when;
   }
 
   /**
