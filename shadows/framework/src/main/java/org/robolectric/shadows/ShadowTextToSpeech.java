@@ -34,7 +34,6 @@ public class ShadowTextToSpeech {
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
   private static final Set<Voice> voices = new HashSet<>();
   private static TextToSpeech lastTextToSpeechInstance;
-  private static int onInitStatus = TextToSpeech.SUCCESS;
 
   @RealObject private TextToSpeech tts;
 
@@ -72,24 +71,9 @@ public class ShadowTextToSpeech {
 
   @Implementation
   protected int initTts() {
-    // Attempt to model real Android code, where success callbacks occur asynchronously and error
-    // callbacks occur immediately.
-    if (listener != null) {
-      if (onInitStatus == TextToSpeech.SUCCESS) {
-        new Handler(Looper.getMainLooper()).post(() -> listener.onInit(onInitStatus));
-      } else {
-        listener.onInit(onInitStatus);
-      }
-    }
-    return onInitStatus;
-  }
-
-  /**
-   * Sets the code used by the {@link android.speech.tts.TextToSpeech.OnInitListener} callback
-   * during initialization. This can test cases where {@link TextToSpeech.ERROR} is used.
-   */
-  public static void setOnInitStatus(int status) {
-    onInitStatus = status;
+    // Has to be overridden because the real code attempts to connect to a non-existent TTS
+    // system service.
+    return TextToSpeech.SUCCESS;
   }
 
   /**
@@ -282,6 +266,5 @@ public class ShadowTextToSpeech {
     languageAvailabilities.clear();
     voices.clear();
     lastTextToSpeechInstance = null;
-    onInitStatus = TextToSpeech.SUCCESS;
   }
 }
