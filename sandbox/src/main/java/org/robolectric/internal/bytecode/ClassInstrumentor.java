@@ -103,7 +103,17 @@ public abstract class ClassInstrumentor {
     MutableClass mutableClass =
         perfStats.measure(
             "analyze class", () -> analyzeClass(origBytes, config, classNodeProvider));
-    return perfStats.measure("instrument class", () -> instrumentToBytes(mutableClass));
+    byte[] instrumentedBytes =
+        perfStats.measure("instrument class", () -> instrumentToBytes(mutableClass));
+    recordPackageStats(perfStats, mutableClass);
+    return instrumentedBytes;
+  }
+
+  private void recordPackageStats(PerfStatsCollector perfStats, MutableClass mutableClass) {
+    String className = mutableClass.getName();
+    for (int i = className.indexOf('.'); i != -1; i = className.indexOf('.', i + 1)) {
+      perfStats.incrementCount("instrument package " + className.substring(0, i));
+    }
   }
 
   public void instrument(MutableClass mutableClass) {
