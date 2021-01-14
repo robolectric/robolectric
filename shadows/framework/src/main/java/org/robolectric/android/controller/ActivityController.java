@@ -102,7 +102,7 @@ public class ActivityController<T extends Activity>
     }
   }
 
-  public ActivityController<T> create(final Bundle bundle) {
+  public ActivityController<T> create(@Nullable final Bundle bundle) {
     shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnCreate(component, bundle));
     return this;
   }
@@ -140,7 +140,7 @@ public class ActivityController<T extends Activity>
     return this;
   }
 
-  public ActivityController<T> postCreate(Bundle bundle) {
+  public ActivityController<T> postCreate(@Nullable Bundle bundle) {
     invokeWhilePaused("onPostCreate", from(Bundle.class, bundle));
     return this;
   }
@@ -265,12 +265,13 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Calls the same lifecycle methods on the Activity called by Android when an Activity is restored from previously saved state.
+   * Calls the same lifecycle methods on the Activity called by Android when an Activity is restored
+   * from previously saved state.
    *
    * @param savedInstanceState Saved instance state.
    * @return Activity controller instance.
    */
-  public ActivityController<T> setup(Bundle savedInstanceState) {
+  public ActivityController<T> setup(@Nullable Bundle savedInstanceState) {
     return create(savedInstanceState)
         .start()
         .restoreInstanceState(savedInstanceState)
