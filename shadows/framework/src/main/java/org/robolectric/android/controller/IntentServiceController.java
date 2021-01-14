@@ -31,19 +31,22 @@ public class IntentServiceController<T extends IntentService> extends ComponentC
       return this;
     }
     // make sure the component is enabled
-    Context context = RuntimeEnvironment.application.getBaseContext();
+    Context context = RuntimeEnvironment.getApplication().getBaseContext();
     ComponentName name =
         new ComponentName(context.getPackageName(), component.getClass().getName());
     context
         .getPackageManager()
         .setComponentEnabledSetting(name, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
-    ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
-       from(Context.class, RuntimeEnvironment.application.getBaseContext()),
-       from(ActivityThread.class, null),
-       from(String.class, component.getClass().getSimpleName()),
-       from(IBinder.class, null),
-       from(Application.class, RuntimeEnvironment.application),
-       from(Object.class, null));
+    ReflectionHelpers.callInstanceMethod(
+        Service.class,
+        component,
+        "attach",
+        from(Context.class, RuntimeEnvironment.getApplication().getBaseContext()),
+        from(ActivityThread.class, null),
+        from(String.class, component.getClass().getSimpleName()),
+        from(IBinder.class, null),
+        from(Application.class, RuntimeEnvironment.getApplication()),
+        from(Object.class, null));
 
     attached = true;
     return this;

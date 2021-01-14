@@ -62,8 +62,9 @@ public class ShadowGooglePlayServicesUtilTest {
     ShadowGooglePlayServicesUtil.provideImpl(mockGooglePlayServicesUtil);
     when(mockGooglePlayServicesUtil.isGooglePlayServicesAvailable(
         any(Context.class))).thenReturn(ConnectionResult.INTERNAL_ERROR);
-    assertEquals(ConnectionResult.INTERNAL_ERROR,
-        GooglePlayServicesUtil.isGooglePlayServicesAvailable(RuntimeEnvironment.application));
+    assertEquals(
+        ConnectionResult.INTERNAL_ERROR,
+        GooglePlayServicesUtil.isGooglePlayServicesAvailable(RuntimeEnvironment.getApplication()));
   }
 
   @Test
@@ -75,12 +76,12 @@ public class ShadowGooglePlayServicesUtilTest {
 
   @Test
   public void getRemoteContext_defaultNotNull() {
-    assertNotNull(GooglePlayServicesUtil.getRemoteContext(RuntimeEnvironment.application));
+    assertNotNull(GooglePlayServicesUtil.getRemoteContext(RuntimeEnvironment.getApplication()));
   }
 
   @Test
   public void getRemoteResource_defaultNotNull() {
-    assertNotNull(GooglePlayServicesUtil.getRemoteResource(RuntimeEnvironment.application));
+    assertNotNull(GooglePlayServicesUtil.getRemoteResource(RuntimeEnvironment.getApplication()));
   }
 
   @Test
@@ -97,21 +98,25 @@ public class ShadowGooglePlayServicesUtilTest {
 
   @Test
   public void getErrorPendingIntent() {
-    assertNotNull(GooglePlayServicesUtil.getErrorPendingIntent(
-        ConnectionResult.SERVICE_MISSING, RuntimeEnvironment.application, 0));
-    assertNull(GooglePlayServicesUtil.getErrorPendingIntent(
-        ConnectionResult.SUCCESS, RuntimeEnvironment.application, 0));
+    assertNotNull(
+        GooglePlayServicesUtil.getErrorPendingIntent(
+            ConnectionResult.SERVICE_MISSING, RuntimeEnvironment.getApplication(), 0));
+    assertNull(
+        GooglePlayServicesUtil.getErrorPendingIntent(
+            ConnectionResult.SUCCESS, RuntimeEnvironment.getApplication(), 0));
   }
 
   @Test
   public void getOpenSourceSoftwareLicenseInfo_defaultNotNull() {
-    assertNotNull(GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(
-        RuntimeEnvironment.application));
+    assertNotNull(
+        GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(
+            RuntimeEnvironment.getApplication()));
   }
 
   @Test
   public void isGooglePlayServicesAvailable_defaultServiceMissing() {
-    assertEquals(ConnectionResult.SERVICE_MISSING,
-        GooglePlayServicesUtil.isGooglePlayServicesAvailable(RuntimeEnvironment.application));
+    assertEquals(
+        ConnectionResult.SERVICE_MISSING,
+        GooglePlayServicesUtil.isGooglePlayServicesAvailable(RuntimeEnvironment.getApplication()));
   }
 }

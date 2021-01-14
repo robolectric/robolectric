@@ -39,9 +39,12 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   public abstract C destroy();
 
   public Intent getIntent() {
-    Intent intent = this.intent == null ? new Intent(RuntimeEnvironment.application, component.getClass()) : this.intent;
+    Intent intent =
+        this.intent == null
+            ? new Intent(RuntimeEnvironment.getApplication(), component.getClass())
+            : this.intent;
     if (intent.getComponent() == null) {
-      intent.setClass(RuntimeEnvironment.application, component.getClass());
+      intent.setClass(RuntimeEnvironment.getApplication(), component.getClass());
     }
     return intent;
   }

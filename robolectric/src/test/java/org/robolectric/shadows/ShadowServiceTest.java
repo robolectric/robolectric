@@ -62,7 +62,7 @@ public class ShadowServiceTest {
 
   @Test
   public void shouldUnbindServiceWithExceptionWhenRequested() {
-    shadowOf(RuntimeEnvironment.application).setUnbindServiceShouldThrowIllegalArgument(true);
+    shadowOf(RuntimeEnvironment.getApplication()).setUnbindServiceShouldThrowIllegalArgument(true);
     ServiceConnection conn = Shadow.newInstanceOf(MediaScannerConnection.class);
     try {
       service.unbindService(conn);

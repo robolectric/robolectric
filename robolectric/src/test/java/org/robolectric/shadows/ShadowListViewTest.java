@@ -4,7 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -184,7 +184,8 @@ public class ShadowListViewTest {
     adapterFileList.add("Item 1");
     adapterFileList.add("Item 2");
     adapterFileList.add("Item 3");
-    final ArrayAdapter<String> adapter = new ArrayAdapter<>(application, android.R.layout.simple_list_item_1, adapterFileList);
+    final ArrayAdapter<String> adapter =
+        new ArrayAdapter<>(getApplication(), android.R.layout.simple_list_item_1, adapterFileList);
     listView.setAdapter(adapter);
     shadowOf(listView).populateItems();
     ShadowListView shadowListView = shadowOf(listView);

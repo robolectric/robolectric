@@ -506,7 +506,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       }
       return ResName.qualifyFromFilePath("android", fileName.replaceFirst("jar:", ""));
     } else {
-      return ResName.qualifyFromFilePath(RuntimeEnvironment.application.getPackageName(), fileName);
+      return ResName.qualifyFromFilePath(
+          RuntimeEnvironment.getApplication().getPackageName(), fileName);
     }
   }
 
@@ -1229,7 +1230,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
             String defaultPackageName =
                 ResourceIds.isFrameworkResource(resId)
                     ? "android"
-                    : RuntimeEnvironment.application.getPackageName();
+                    : RuntimeEnvironment.getApplication().getPackageName();
             ResName resName =
                 ResName.qualifyResName(
                     attributeSet.getAttributeName(i), defaultPackageName, "attr");

@@ -29,7 +29,7 @@ public class ShadowAlertDialog extends ShadowDialog {
    * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
    */
   public static AlertDialog getLatestAlertDialog() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     ShadowAlertDialog dialog = shadowApplication.getLatestAlertDialog();
     return dialog == null ? null : dialog.realAlertDialog;
   }
@@ -45,7 +45,7 @@ public class ShadowAlertDialog extends ShadowDialog {
    * Resets the tracking of the most recently created {@code AlertDialog}
    */
   public static void reset() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     shadowApplication.setLatestAlertDialog(null);
   }
 
@@ -91,7 +91,7 @@ public class ShadowAlertDialog extends ShadowDialog {
   @Override
   public void show() {
     super.show();
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     shadowApplication.setLatestAlertDialog(this);
   }
 

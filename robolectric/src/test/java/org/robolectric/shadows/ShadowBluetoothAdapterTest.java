@@ -302,7 +302,7 @@ public class ShadowBluetoothAdapterTest {
 
     boolean result =
         bluetoothAdapter.getProfileProxy(
-            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+            RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
 
     assertThat(result).isTrue();
     verify(mockServiceListener).onServiceConnected(MOCK_PROFILE1, mockProxy);
@@ -316,7 +316,7 @@ public class ShadowBluetoothAdapterTest {
 
     boolean result =
         bluetoothAdapter.getProfileProxy(
-            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+            RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
 
     assertThat(result).isFalse();
     verifyZeroInteractions(mockServiceListener);
@@ -333,10 +333,10 @@ public class ShadowBluetoothAdapterTest {
 
     boolean result1 =
         bluetoothAdapter.getProfileProxy(
-            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+            RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
     boolean result2 =
         bluetoothAdapter.getProfileProxy(
-            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE2);
+            RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE2);
 
     assertThat(result1).isTrue();
     assertThat(result2).isTrue();
@@ -370,7 +370,7 @@ public class ShadowBluetoothAdapterTest {
     bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
     boolean result =
         bluetoothAdapter.getProfileProxy(
-            RuntimeEnvironment.application, mockServiceListener, MOCK_PROFILE1);
+            RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
 
     assertThat(result).isFalse();
     verifyZeroInteractions(mockServiceListener);

@@ -17,13 +17,13 @@ public class ShadowListPopupWindow {
 
   @Implementation
   protected void show() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     shadowApplication.setLatestListPopupWindow(realListPopupWindow);
     directlyOn(realListPopupWindow, ListPopupWindow.class).show();
   }
 
   public static ListPopupWindow getLatestListPopupWindow() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     return shadowApplication.getLatestListPopupWindow();
   }
 }

@@ -17,12 +17,13 @@ public class ShadowLoaderTest {
 
   @Before
   public void create() {
-    loader = new Loader<String>(RuntimeEnvironment.application) {
-      @Override
-      protected void onForceLoad() {
-        onForceLoadCalled = true;
-      }
-    };
+    loader =
+        new Loader<String>(RuntimeEnvironment.getApplication()) {
+          @Override
+          protected void onForceLoad() {
+            onForceLoadCalled = true;
+          }
+        };
     onForceLoadCalled = false;
   }
 

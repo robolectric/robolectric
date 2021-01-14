@@ -162,7 +162,7 @@ public class ShadowWallpaperManager {
 
     Intent wallpaperServiceIntent = new Intent().setComponent(wallpaperService);
     List<ResolveInfo> resolveInfoList =
-        RuntimeEnvironment.application
+        RuntimeEnvironment.getApplication()
             .getPackageManager()
             .queryIntentServices(wallpaperServiceIntent, PackageManager.GET_META_DATA);
     if (resolveInfoList.size() != 1) {
@@ -170,7 +170,7 @@ public class ShadowWallpaperManager {
           "Can't locate the given wallpaper service: " + wallpaperService);
     }
 
-    wallpaperInfo = new WallpaperInfo(RuntimeEnvironment.application, resolveInfoList.get(0));
+    wallpaperInfo = new WallpaperInfo(RuntimeEnvironment.getApplication(), resolveInfoList.get(0));
     lockScreenImage = null;
     homeScreenImage = null;
     return true;
@@ -197,7 +197,7 @@ public class ShadowWallpaperManager {
   private static void enforceWallpaperComponentPermission() {
     // Robolectric doesn't stimulate IPC calls. When this code is executed, it will still be running
     // in the caller process.
-    if (RuntimeEnvironment.application.checkSelfPermission(permission.SET_WALLPAPER_COMPONENT)
+    if (RuntimeEnvironment.getApplication().checkSelfPermission(permission.SET_WALLPAPER_COMPONENT)
         != PackageManager.PERMISSION_GRANTED) {
       throw new SecurityException(
           "Permission " + permission.SET_WALLPAPER_COMPONENT + " isn't granted.");
@@ -210,7 +210,7 @@ public class ShadowWallpaperManager {
    */
   private static ParcelFileDescriptor createParcelFileDescriptorFromBitmap(
       Bitmap image, String fileName) {
-    File tmpFile = new File(RuntimeEnvironment.application.getCacheDir(), fileName);
+    File tmpFile = new File(RuntimeEnvironment.getApplication().getCacheDir(), fileName);
     try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
       image.compress(CompressFormat.PNG, /* quality= */ 0, fileOutputStream);
       return ParcelFileDescriptor.open(tmpFile, ParcelFileDescriptor.MODE_READ_ONLY);

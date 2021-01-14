@@ -80,7 +80,8 @@ public class ShadowNotification {
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.N) {
       return realNotification.extras.getParcelable(Notification.EXTRA_PICTURE);
     } else {
-      ImageView imageView = (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
+      ImageView imageView =
+          (ImageView) applyBigContentView().findViewById(getInternalResourceId("big_picture"));
       return imageView != null && imageView.getDrawable() != null
           ? ((BitmapDrawable) imageView.getDrawable()).getBitmap() : null;
     }
@@ -122,11 +123,13 @@ public class ShadowNotification {
   }
 
   private View applyContentView() {
-    return realNotification.contentView.apply(RuntimeEnvironment.application, new FrameLayout(RuntimeEnvironment.application));
+    return realNotification.contentView.apply(
+        RuntimeEnvironment.getApplication(), new FrameLayout(RuntimeEnvironment.getApplication()));
   }
 
   private View applyBigContentView() {
-    return realNotification.bigContentView.apply(RuntimeEnvironment.application, new FrameLayout(RuntimeEnvironment.application));
+    return realNotification.bigContentView.apply(
+        RuntimeEnvironment.getApplication(), new FrameLayout(RuntimeEnvironment.getApplication()));
   }
 
   private CharSequence findText(View view, String resourceName) {
@@ -140,7 +143,8 @@ public class ShadowNotification {
       ByteArrayOutputStream buf = new ByteArrayOutputStream();
       ShadowView shadowView = Shadow.extract(view);
       shadowView.dump(new PrintStream(buf), 4);
-      throw new IllegalArgumentException("no id." + resourceName + " found in view:\n" + buf.toString());
+      throw new IllegalArgumentException(
+          "no id." + resourceName + " found in view:\n" + buf.toString());
     }
     return subView;
   }

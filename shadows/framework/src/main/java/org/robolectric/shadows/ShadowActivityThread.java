@@ -48,7 +48,7 @@ public class ShadowActivityThread {
               }
 
               try {
-                return RuntimeEnvironment.application
+                return RuntimeEnvironment.getApplication()
                     .getPackageManager()
                     .getApplicationInfo(packageName, flags);
               } catch (PackageManager.NameNotFoundException e) {

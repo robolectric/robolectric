@@ -30,19 +30,22 @@ public class ServiceController<T extends Service> extends ComponentController<Se
       return this;
     }
     // make sure the component is enabled
-    Context context = RuntimeEnvironment.application.getBaseContext();
+    Context context = RuntimeEnvironment.getApplication().getBaseContext();
     ComponentName name =
         new ComponentName(context.getPackageName(), component.getClass().getName());
     context
         .getPackageManager()
         .setComponentEnabledSetting(name, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
 
-    ReflectionHelpers.callInstanceMethod(Service.class, component, "attach",
-        from(Context.class, RuntimeEnvironment.application.getBaseContext()),
+    ReflectionHelpers.callInstanceMethod(
+        Service.class,
+        component,
+        "attach",
+        from(Context.class, RuntimeEnvironment.getApplication().getBaseContext()),
         from(ActivityThread.class, null),
         from(String.class, component.getClass().getSimpleName()),
         from(IBinder.class, null),
-        from(Application.class, RuntimeEnvironment.application),
+        from(Application.class, RuntimeEnvironment.getApplication()),
         from(Object.class, null));
 
     attached = true;
@@ -74,7 +77,11 @@ public class ServiceController<T extends Service> extends ComponentController<Se
   }
 
   public ServiceController<T> startCommand(int flags, int startId) {
-    invokeWhilePaused("onStartCommand", from(Intent.class, getIntent()), from(int.class, flags), from(int.class, startId));
+    invokeWhilePaused(
+        "onStartCommand",
+        from(Intent.class, getIntent()),
+        from(int.class, flags),
+        from(int.class, startId));
     shadowMainLooper.idleIfPaused();
     return this;
   }

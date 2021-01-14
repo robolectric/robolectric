@@ -98,7 +98,7 @@ public class ShadowNotificationManager {
     for (Map.Entry<Key, PostedNotification> entry : notifsCopy.entrySet()) {
       statusBarNotifications[i++] =
           new StatusBarNotification(
-              RuntimeEnvironment.application.getPackageName(),
+              RuntimeEnvironment.getApplication().getPackageName(),
               null /* opPkg */,
               entry.getKey().id,
               entry.getKey().tag,
@@ -327,7 +327,7 @@ public class ShadowNotificationManager {
   protected boolean canNotifyAsPackage(@NonNull String pkg) {
     // TODO: This doesn't work correctly with notification delegates because
     // ShadowNotificationManager doesn't respect the associated context, it just uses the global
-    // RuntimeEnvironment.application context.
+    // RuntimeEnvironment.getApplication() context.
 
     // So for the sake of testing, we will compare with values set using
     // setCanNotifyAsPackage()
