@@ -49,6 +49,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.ShadowSettings.ShadowSecure;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -215,9 +216,8 @@ public class ShadowLocationManager {
     try {
       synchronized (ShadowLocationManager.class) {
         if (locationProviderConstructor == null) {
-          locationProviderConstructor =
-              LocationProvider.class.getConstructor(
-                  String.class, com.android.internal.location.ProviderProperties.class);
+          locationProviderConstructor = loadLocationProviderConstructor();
+
           locationProviderConstructor.setAccessible(true);
         }
       }
@@ -225,6 +225,12 @@ public class ShadowLocationManager {
     } catch (ReflectiveOperationException e) {
       throw new AssertionError(e);
     }
+  }
+
+  protected Constructor<LocationProvider> loadLocationProviderConstructor()
+      throws ReflectiveOperationException {
+    return LocationProvider.class.getConstructor(
+        String.class, com.android.internal.location.ProviderProperties.class);
   }
 
   @Implementation
@@ -940,12 +946,12 @@ public class ShadowLocationManager {
       return myProperties.meetsCriteria(criteria);
     }
 
-    public com.android.internal.location.ProviderProperties createRealProperties() {
+    public Object createRealProperties() {
       ProviderProperties myProperties = properties;
       if (myProperties == null) {
         return null;
       } else {
-        return new com.android.internal.location.ProviderProperties(
+        return ShadowLocationManager.this.createRealProperties(
             myProperties.requiresNetwork,
             myProperties.requiresSatellite,
             myProperties.requiresCell,
@@ -1105,6 +1111,28 @@ public class ShadowLocationManager {
     }
   }
 
+  protected Object createRealProperties(
+      boolean requiresNetwork,
+      boolean requiresSatellite,
+      boolean requiresCell,
+      boolean hasMonetaryCost,
+      boolean supportsAltitude,
+      boolean supportsSpeed,
+      boolean supportsBearing,
+      int powerRequirement,
+      int accuracy) {
+    return new com.android.internal.location.ProviderProperties(
+        requiresNetwork,
+        requiresSatellite,
+        requiresCell,
+        hasMonetaryCost,
+        supportsAltitude,
+        supportsSpeed,
+        supportsBearing,
+        powerRequirement,
+        accuracy);
+  }
+
   // LocationRequest doesn't exist on JB, so we can't use the platform version
   private static class LocationRequest {
 
@@ -1141,5 +1169,10 @@ public class ShadowLocationManager {
     int meterConversion = 1609;
 
     return (float) (dist * meterConversion);
+  }
+
+  @Resetter
+  public static void reset() {
+    locationProviderConstructor = null;
   }
 }

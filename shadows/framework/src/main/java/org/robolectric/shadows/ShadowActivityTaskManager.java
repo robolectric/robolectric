@@ -12,6 +12,6 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowActivityTaskManager {
   @Implementation
   protected static IActivityTaskManager getService() {
-    return (IActivityTaskManager) ReflectionHelpers.createNullProxy(IActivityTaskManager.class);
+    return ReflectionHelpers.createDeepProxy(IActivityTaskManager.class);
   }
 }

@@ -30,7 +30,9 @@ public class ShadowSystemFonts {
 
   @Implementation
   protected  static FontFamily[] getSystemFallback(String familyName) {
-    FontFamily[] result = directlyOn(SystemFonts.class, "getSystemFallback", ClassParameter.from(String.class, familyName));
+    FontFamily[] result =
+        directlyOn(
+            SystemFonts.class, "getSystemFallback", ClassParameter.from(String.class, familyName));
     if (result == null) {
       result = new FontFamily[0];
     }

@@ -36,7 +36,7 @@ import org.robolectric.annotation.Resetter;
 @SystemApi
 public class ShadowImsMmTelManager {
 
-  private static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
+  protected static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
 
   private final Map<RegistrationCallback, Executor> registrationCallbackExecutorMap =
       new ArrayMap<>();
@@ -170,7 +170,7 @@ public class ShadowImsMmTelManager {
 
   /** Returns only one instance per subscription id. */
   @RequiresApi(api = VERSION_CODES.Q)
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.R)
   protected static ImsMmTelManager createForSubscriptionId(int subId) {
     if (!SubscriptionManager.isValidSubscriptionId(subId)) {
       throw new IllegalArgumentException("Invalid subscription ID");
