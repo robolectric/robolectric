@@ -26,6 +26,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
@@ -33,6 +34,7 @@ public class ShadowTextToSpeech {
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
   private static final Set<Voice> voices = new HashSet<>();
   private static TextToSpeech lastTextToSpeechInstance;
+  private static int onInitStatus = TextToSpeech.SUCCESS;
 
   @RealObject private TextToSpeech tts;
 
@@ -49,10 +51,45 @@ public class ShadowTextToSpeech {
   private final List<String> spokenTextList = new ArrayList<>();
 
   @Implementation
-  protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
+  protected void __constructor__(
+      Context context,
+      TextToSpeech.OnInitListener listener,
+      String engine,
+      String packageName,
+      boolean useFallback) {
     this.context = context;
     this.listener = listener;
     lastTextToSpeechInstance = tts;
+    Shadow.invokeConstructor(
+        TextToSpeech.class,
+        tts,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(TextToSpeech.OnInitListener.class, listener),
+        ClassParameter.from(String.class, engine),
+        ClassParameter.from(String.class, packageName),
+        ClassParameter.from(boolean.class, useFallback));
+  }
+
+  @Implementation
+  protected int initTts() {
+    // Attempt to be model real Android code, where success callbacks occur asynchronously, but
+    // error callbacks occur immediately.
+    if (listener != null) {
+      if (onInitStatus == TextToSpeech.SUCCESS) {
+        new Handler(Looper.getMainLooper()).post(() -> listener.onInit(onInitStatus));
+      } else {
+        listener.onInit(onInitStatus);
+      }
+    }
+    return onInitStatus;
+  }
+
+  /**
+   * Sets the code used by the {@link android.speech.tts.TextToSpeech.OnInitListener} callback
+   * during initialization. This can test cases where {@link TextToSpeech.ERROR} is used.
+   */
+  public static void setOnInitStatus(int status) {
+    onInitStatus = status;
   }
 
   /**
@@ -163,7 +200,7 @@ public class ShadowTextToSpeech {
     return voices;
   }
 
-  private UtteranceProgressListener getUtteranceProgressListener() {
+  public UtteranceProgressListener getUtteranceProgressListener() {
     return ReflectionHelpers.getField(tts, "mUtteranceProgressListener");
   }
 
@@ -245,5 +282,6 @@ public class ShadowTextToSpeech {
     languageAvailabilities.clear();
     voices.clear();
     lastTextToSpeechInstance = null;
+    onInitStatus = TextToSpeech.SUCCESS;
   }
 }
