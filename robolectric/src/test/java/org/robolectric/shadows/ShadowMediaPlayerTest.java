@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.media.AudioPort.ROLE_SINK;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
@@ -23,6 +25,7 @@ import static org.robolectric.shadows.util.DataSource.toDataSource;
 
 import android.app.Application;
 import android.content.res.AssetFileDescriptor;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaDataSource;
 import android.media.MediaPlayer;
@@ -35,6 +38,7 @@ import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.Duration;
@@ -1451,6 +1455,37 @@ public class ShadowMediaPlayerTest {
 
     mediaPlayer.start();
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testNativeSetOutputDevice_setPreferredDevice_succeeds() {
+    // native_setOutputDevice is a private method used by the public setPreferredDevice() method;
+    // test through the public method.
+    assertThat(mediaPlayer.setPreferredDevice(createAudioDeviceInfo(ROLE_SINK))).isTrue();
+  }
+
+  private static AudioDeviceInfo createAudioDeviceInfo(int role) {
+    AudioDeviceInfo info = Shadow.newInstanceOf(AudioDeviceInfo.class);
+    try {
+      Field portField = AudioDeviceInfo.class.getDeclaredField("mPort");
+      portField.setAccessible(true);
+      Object port = Shadow.newInstanceOf("android.media.AudioDevicePort");
+      portField.set(info, port);
+      Field roleField = port.getClass().getSuperclass().getDeclaredField("mRole");
+      roleField.setAccessible(true);
+      roleField.set(port, role);
+      Field handleField = port.getClass().getSuperclass().getDeclaredField("mHandle");
+      handleField.setAccessible(true);
+      Object handle = Shadow.newInstanceOf("android.media.AudioHandle");
+      handleField.set(port, handle);
+      Field idField = handle.getClass().getDeclaredField("mId");
+      idField.setAccessible(true);
+      idField.setInt(handle, /* id= */ 1);
+    } catch (ReflectiveOperationException e) {
+      throw new AssertionError(e);
+    }
+    return info;
   }
 
   @Test

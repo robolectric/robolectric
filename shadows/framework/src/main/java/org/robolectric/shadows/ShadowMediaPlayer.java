@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.END;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.ERROR;
 import static org.robolectric.shadows.ShadowMediaPlayer.State.IDLE;
@@ -1412,6 +1413,11 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    */
   public float getRightVolume() {
     return rightVolume;
+  }
+
+  @Implementation(minSdk = P)
+  protected boolean native_setOutputDevice(int preferredDeviceId) {
+    return true;
   }
 
   private static EnumSet<State> preparedStates = EnumSet.of(PREPARED, STARTED,
