@@ -104,7 +104,7 @@ public class ShadowBitmapFactory {
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
         initColorArray(bufferedInputStream, bitmap.getNinePatchChunk(), shadowBitmap, false);
       } catch (IOException e) {
-        Logger.warn("Error getting size of bitmap file", e);
+        Logger.warn("Error initialization of color array", e);
       }
     }
     return bitmap;
