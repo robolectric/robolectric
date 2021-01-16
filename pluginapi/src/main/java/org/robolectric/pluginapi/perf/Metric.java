@@ -60,6 +60,10 @@ public class Metric {
     count++;
   }
 
+  public void incrementCount() {
+    this.count++;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
