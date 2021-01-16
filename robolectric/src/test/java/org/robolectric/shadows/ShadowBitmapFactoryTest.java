@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -12,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -22,10 +24,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBitmapFactoryTest {
@@ -390,6 +396,34 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeFile_shouldGetCorrectColorFromCompressedPngFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.PNG);
+  }
+
+  @Test
+  public void decodeFile_shouldGetCorrectColorFromCompressedJpegFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.JPEG);
+  }
+
+  @Test
+  @Config(minSdk = ICE_CREAM_SANDWICH)
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.WEBP);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLossyFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.WEBP_LOSSY);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLosslessFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.WEBP_LOSSLESS);
+  }
+
+  @Test
   public void decodeFileDescriptor_shouldHaveCorrectWidthAndHeight() throws IOException {
     Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
     assertEquals(500, bitmap.getWidth());
@@ -407,6 +441,25 @@ public class ShadowBitmapFactoryTest {
       assertEquals(600, loadedBitmap.getHeight());
       loadedBitmap.recycle();
     }
+  }
+
+  private void decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat format)
+      throws IOException {
+    byte[] bitmapData = new byte[] {23, 100, 23, 52, 23, 18, 76, 43};
+    Bitmap oldBitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
+    Path tempFile = Files.createTempFile("bitmap", null);
+    FileOutputStream fileOutputStream = new FileOutputStream(tempFile.toFile());
+    // lossless compression
+    oldBitmap.compress(format, 100, fileOutputStream);
+    fileOutputStream.close();
+    Bitmap newBitmap = BitmapFactory.decodeFile(tempFile.toAbsolutePath().toString());
+
+    ByteBuffer oldBuffer = ByteBuffer.allocate(oldBitmap.getHeight() * oldBitmap.getRowBytes());
+    oldBitmap.copyPixelsToBuffer(oldBuffer);
+
+    ByteBuffer newBuffer = ByteBuffer.allocate(newBitmap.getHeight() * newBitmap.getRowBytes());
+    newBitmap.copyPixelsToBuffer(newBuffer);
+    assertThat(oldBuffer.array()).isEqualTo(newBuffer.array());
   }
 
   private int getPngImageColorFromStream(String pngImagePath) throws IOException {
