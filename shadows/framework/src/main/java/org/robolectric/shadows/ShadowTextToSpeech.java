@@ -72,8 +72,8 @@ public class ShadowTextToSpeech {
 
   @Implementation
   protected int initTts() {
-    // Attempt to be model real Android code, where success callbacks occur asynchronously, but
-    // error callbacks occur immediately.
+    // Attempt to model real Android code, where success callbacks occur asynchronously and error
+    // callbacks occur immediately.
     if (listener != null) {
       if (onInitStatus == TextToSpeech.SUCCESS) {
         new Handler(Looper.getMainLooper()).post(() -> listener.onInit(onInitStatus));
