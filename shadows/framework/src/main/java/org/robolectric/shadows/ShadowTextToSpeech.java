@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowTextToSpeech {
 
   private static final Set<Locale> languageAvailabilities = new HashSet<>();
+  private static final Set<Voice> voices = new HashSet<>();
   private static TextToSpeech lastTextToSpeechInstance;
 
   @RealObject private TextToSpeech tts;
@@ -42,6 +44,7 @@ public class ShadowTextToSpeech {
   private int queueMode = -1;
   private Locale language = null;
   private String lastSynthesizeToFileText;
+  private Voice currentVoice = null;
 
   private final List<String> spokenTextList = new ArrayList<>();
 
@@ -149,6 +152,17 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  protected int setVoice(Voice voice) {
+    this.currentVoice = voice;
+    return TextToSpeech.SUCCESS;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Set<Voice> getVoices() {
+    return voices;
+  }
+
   private UtteranceProgressListener getUtteranceProgressListener() {
     return ReflectionHelpers.getField(tts, "mUtteranceProgressListener");
   }
@@ -211,6 +225,16 @@ public class ShadowTextToSpeech {
     languageAvailabilities.add(locale);
   }
 
+  /** Makes {@link Voice} an available voice returned by {@link TextToSpeech#getVoices()}. */
+  public static void addVoice(Voice voice) {
+    voices.add(voice);
+  }
+
+  /** Returns {@link Voice} set using {@link TextToSpeech#setVoice(Voice)}, or null if not set. */
+  public Voice getCurrentVoice() {
+    return currentVoice;
+  }
+
   /** Returns the most recently instantiated {@link TextToSpeech} or null if none exist. */
   public static TextToSpeech getLastTextToSpeechInstance() {
     return lastTextToSpeechInstance;
@@ -219,6 +243,7 @@ public class ShadowTextToSpeech {
   @Resetter
   public static void reset() {
     languageAvailabilities.clear();
+    voices.clear();
     lastTextToSpeechInstance = null;
   }
 }
