@@ -12,7 +12,6 @@ import java.util.ListIterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -54,13 +53,6 @@ public abstract class ClassInstrumentor {
       ClassNodeProvider classNodeProvider) {
     ClassNode classNode =
         new ClassNode(Opcodes.ASM4) {
-          @Override
-          public FieldVisitor visitField(
-              int access, String name, String desc, String signature, Object value) {
-            desc = config.remapParamType(desc);
-            return super.visitField(access & ~Opcodes.ACC_FINAL, name, desc, signature, value);
-          }
-
           @Override
           public MethodVisitor visitMethod(
               int access, String name, String desc, String signature, String[] exceptions) {
@@ -140,7 +132,7 @@ public abstract class ClassInstrumentor {
 
       decorator.decorate(mutableClass);
 
-      doSpecialHandling(mutableClass);
+      removeFinalFromFields(mutableClass);
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
@@ -161,7 +153,7 @@ public abstract class ClassInstrumentor {
     }
   }
 
-  private void addNoArgsConstructor(MutableClass mutableClass) {
+  private static void addNoArgsConstructor(MutableClass mutableClass) {
     if (!mutableClass.foundMethods.contains("<init>()V")) {
       MethodNode defaultConstructor =
           new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, "<init>", "()V", "()V", null);
@@ -214,15 +206,13 @@ public abstract class ClassInstrumentor {
 
   protected abstract void writeCallToInitializing(MutableClass mutableClass, RobolectricGeneratorAdapter generator);
 
-  private void doSpecialHandling(MutableClass mutableClass) {
-    if (mutableClass.getName().equals("android.os.Build$VERSION")) {
-      for (FieldNode fieldNode : mutableClass.getFields()) {
-        fieldNode.access &= ~(Modifier.FINAL);
-      }
+  private static void removeFinalFromFields(MutableClass mutableClass) {
+    for (FieldNode fieldNode : mutableClass.getFields()) {
+      fieldNode.access &= ~Modifier.FINAL;
     }
   }
 
-  private boolean isSyntheticAccessorMethod(MethodNode method) {
+  private static boolean isSyntheticAccessorMethod(MethodNode method) {
     return (method.access & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
@@ -304,7 +294,8 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(initMethodNode);
   }
 
-  private InsnList extractCallToSuperConstructor(MutableClass mutableClass, MethodNode ctor) {
+  private static InsnList extractCallToSuperConstructor(
+      MutableClass mutableClass, MethodNode ctor) {
     InsnList removedInstructions = new InsnList();
     int startIndex = 0;
 
@@ -403,7 +394,7 @@ public abstract class ClassInstrumentor {
     generator.returnValue();
   }
 
-  private String directMethodName(MutableClass mutableClass, String originalName) {
+  private static String directMethodName(MutableClass mutableClass, String originalName) {
     return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
 
@@ -478,7 +469,7 @@ public abstract class ClassInstrumentor {
    * Verifies if the @targetMethod is a {@code <init>(boolean)} constructor for {@link
    * java.util.GregorianCalendar}.
    */
-  private boolean isGregorianCalendarBooleanConstructor(MethodInsnNode targetMethod) {
+  private static boolean isGregorianCalendarBooleanConstructor(MethodInsnNode targetMethod) {
     return targetMethod.owner.equals("java/util/GregorianCalendar") &&
         targetMethod.name.equals("<init>") &&
         targetMethod.desc.equals("(Z)V");
@@ -488,7 +479,7 @@ public abstract class ClassInstrumentor {
    * Replaces the void {@code <init>(boolean)} constructor for a call to the {@code void <init>(int,
    * int, int)} one.
    */
-  private void replaceGregorianCalendarBooleanConstructor(
+  private static void replaceGregorianCalendarBooleanConstructor(
       ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     // Remove the call to GregorianCalendar(boolean)
     instructions.remove();
@@ -519,10 +510,8 @@ public abstract class ClassInstrumentor {
       MutableClass mutableClass, ListIterator<AbstractInsnNode> instructions,
       MethodInsnNode targetMethod);
 
-  /**
-   * Replaces protected and private class modifiers with public.
-   */
-  private void makeClassPublic(ClassNode clazz) {
+  /** Replaces protected and private class modifiers with public. */
+  private static void makeClassPublic(ClassNode clazz) {
     clazz.access = (clazz.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE);
   }
 
@@ -540,7 +529,7 @@ public abstract class ClassInstrumentor {
     method.access = (method.access | Opcodes.ACC_PRIVATE) & ~(Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED);
   }
 
-  private MethodNode generateStaticInitializerNotifierMethod(MutableClass mutableClass) {
+  private static MethodNode generateStaticInitializerNotifierMethod(MutableClass mutableClass) {
     MethodNode methodNode = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", "()V", null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
     generator.push(mutableClass.classType);
