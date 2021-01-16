@@ -12,8 +12,10 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Process;
 import android.os.UserHandle;
+import android.os.storage.StorageManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.IOException;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +35,102 @@ public final class ShadowStorageStatsManagerTest {
         (StorageStatsManager)
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.STORAGE_STATS_SERVICE);
+  }
+
+  @Test
+  public void getFreeBytes_defaultUuid_shouldReturnDefaultValue() throws Exception {
+    // Act
+    long defaultFreeBytes = shadowOf(storageStatsManager).getFreeBytes(StorageManager.UUID_DEFAULT);
+
+    // Assert
+    assertThat(defaultFreeBytes).isEqualTo(ShadowStorageStatsManager.DEFAULT_STORAGE_FREE_BYTES);
+  }
+
+  @Test
+  public void getFreeBytes_unregisteredUuid_throwsException() {
+    // Arrange
+    UUID newUuid = UUID.randomUUID();
+
+    // Act & Assert
+    assertThrows(IOException.class, () -> shadowOf(storageStatsManager).getFreeBytes(newUuid));
+  }
+
+  @Test
+  public void getFreeBytes_registeredNewUuid_returnSetupValue() throws Exception {
+    // Arrange
+    UUID newUuid = UUID.randomUUID();
+    long expectedFreeBytes = 16 * 1024L;
+    long expectedTotalBytes = 32 * 1024L;
+    shadowOf(storageStatsManager)
+        .setStorageDeviceFreeAndTotalBytes(newUuid, expectedFreeBytes, expectedTotalBytes);
+
+    // Act
+    long defaultFreeBytes = shadowOf(storageStatsManager).getFreeBytes(StorageManager.UUID_DEFAULT);
+    long newUuidFreeBytes = shadowOf(storageStatsManager).getFreeBytes(newUuid);
+
+    // Assert
+    assertThat(defaultFreeBytes).isEqualTo(ShadowStorageStatsManager.DEFAULT_STORAGE_FREE_BYTES);
+    assertThat(newUuidFreeBytes).isEqualTo(expectedFreeBytes);
+  }
+
+  @Test
+  public void getFreeBytes_afterRemoveStorageDevice_throwsException() {
+    // Arange
+    shadowOf(storageStatsManager).removeStorageDevice(StorageManager.UUID_DEFAULT);
+
+    // Act & Assert
+    assertThrows(
+        IOException.class,
+        () -> shadowOf(storageStatsManager).getFreeBytes(StorageManager.UUID_DEFAULT));
+  }
+
+  @Test
+  public void getTotalBytes_defaultUuid_shouldReturnDefaultValue() throws Exception {
+    // Act
+    long defaultTotalBytes =
+        shadowOf(storageStatsManager).getTotalBytes(StorageManager.UUID_DEFAULT);
+
+    // Assert
+    assertThat(defaultTotalBytes).isEqualTo(ShadowStorageStatsManager.DEFAULT_STORAGE_TOTAL_BYTES);
+  }
+
+  @Test
+  public void getTotalBytes_unregisteredUuid_throwsException() {
+    // Arrange
+    UUID newUuid = UUID.randomUUID();
+
+    // Act & Assert
+    assertThrows(IOException.class, () -> shadowOf(storageStatsManager).getTotalBytes(newUuid));
+  }
+
+  @Test
+  public void getTotalBytes_registeredNewUuid_returnSetupValue() throws Exception {
+    // Arrange
+    UUID newUuid = UUID.randomUUID();
+    long expectedFreeBytes = 16 * 1024L;
+    long expectedTotalBytes = 32 * 1024L;
+    shadowOf(storageStatsManager)
+        .setStorageDeviceFreeAndTotalBytes(newUuid, expectedFreeBytes, expectedTotalBytes);
+
+    // Act
+    long defaultTotalBytes =
+        shadowOf(storageStatsManager).getTotalBytes(StorageManager.UUID_DEFAULT);
+    long newUuidTotalBytes = shadowOf(storageStatsManager).getTotalBytes(newUuid);
+
+    // Assert
+    assertThat(defaultTotalBytes).isEqualTo(ShadowStorageStatsManager.DEFAULT_STORAGE_TOTAL_BYTES);
+    assertThat(newUuidTotalBytes).isEqualTo(expectedTotalBytes);
+  }
+
+  @Test
+  public void getTotalBytes_afterRemoveStorageDevice_throwsException() {
+    // Arange
+    shadowOf(storageStatsManager).removeStorageDevice(StorageManager.UUID_DEFAULT);
+
+    // Act & Assert
+    assertThrows(
+        IOException.class,
+        () -> shadowOf(storageStatsManager).getTotalBytes(StorageManager.UUID_DEFAULT));
   }
 
   @Test
