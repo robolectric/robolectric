@@ -317,6 +317,16 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     throw new UnsupportedOperationException("Not supported in PAUSED LooperMode.");
   }
 
+  /**
+   * Retrieves a copy of the current list of idle handlers. Idle handlers are read with
+   * synchronization on the real queue.
+   */
+  ArrayList<IdleHandler> getIdleHandlersCopy() {
+    synchronized (realQueue) {
+      return new ArrayList<>(reflector(ReflectorMessageQueue.class, realQueue).getIdleHandlers());
+    }
+  }
+
   /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
   private interface ReflectorMessageQueue {
@@ -333,6 +343,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
     @Accessor("mIdleHandlers")
     void setIdleHandlers(ArrayList<IdleHandler> list);
+
+    @Accessor("mIdleHandlers")
+    ArrayList<IdleHandler> getIdleHandlers();
 
     @Accessor("mNextBarrierToken")
     void setNextBarrierToken(int token);
