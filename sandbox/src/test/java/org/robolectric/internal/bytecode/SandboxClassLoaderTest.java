@@ -118,7 +118,7 @@ public class SandboxClassLoaderTest {
   public void shouldDelegateClassLoadForUnacquiredClasses() throws Exception {
     InstrumentationConfiguration config = mock(InstrumentationConfiguration.class);
     when(config.shouldAcquire(anyString())).thenReturn(false);
-    when(config.shouldInstrument(any(MutableClass.class))).thenReturn(false);
+    when(config.shouldInstrument(any(ClassDetails.class))).thenReturn(false);
     ClassLoader classLoader = new SandboxClassLoader(config);
     Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
     assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());

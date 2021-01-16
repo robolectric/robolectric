@@ -128,18 +128,13 @@ public class SandboxClassLoader extends URLClassLoader {
   protected Class<?> maybeInstrumentClass(String className) throws ClassNotFoundException {
     final byte[] origClassBytes = getByteCode(className);
 
-    MutableClass mutableClass = PerfStatsCollector.getInstance().measure("analyze class",
-        () -> classInstrumentor.analyzeClass(origClassBytes, config, classNodeProvider)
-    );
-
     try {
       final byte[] bytes;
-      if (config.shouldInstrument(mutableClass)) {
-        bytes = PerfStatsCollector.getInstance().measure("instrument class",
-            () -> classInstrumentor.instrumentToBytes(mutableClass)
-        );
+      ClassDetails classDetails = new ClassDetails(origClassBytes);
+      if (config.shouldInstrument(classDetails)) {
+        bytes = classInstrumentor.instrument(origClassBytes, config, classNodeProvider);
       } else {
-        bytes = postProcessUninstrumentedClass(mutableClass, origClassBytes);
+        bytes = postProcessUninstrumentedClass(classDetails, origClassBytes);
       }
       ensurePackage(className);
       return defineClass(className, bytes, 0, bytes.length);
@@ -152,7 +147,7 @@ public class SandboxClassLoader extends URLClassLoader {
   }
 
   protected byte[] postProcessUninstrumentedClass(
-      MutableClass mutableClass, byte[] origClassBytes) {
+      ClassDetails classDetails, byte[] origClassBytes) {
     return origClassBytes;
   }
 
