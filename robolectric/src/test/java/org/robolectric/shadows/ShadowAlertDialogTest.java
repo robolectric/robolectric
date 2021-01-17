@@ -52,8 +52,8 @@ public class ShadowAlertDialogTest {
     assertThat(alert.isShowing()).isTrue();
 
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-    assertEquals("title", shadowAlertDialog.getTitle());
-    assertThat(shadowAlertDialog.getMessage()).isEqualTo("message");
+    assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("title");
+    assertThat(shadowAlertDialog.getMessage().toString()).isEqualTo("message");
     assertThat(shadowAlertDialog.isCancelable()).isTrue();
     assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()))
         .isSameInstanceAs(shadowAlertDialog);
@@ -67,7 +67,7 @@ public class ShadowAlertDialogTest {
         .setMessage(null);
     ShadowAlertDialog shadowAlertDialog = shadowOf(builder.create());
     assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("");
-    assertThat(shadowAlertDialog.getMessage()).isEqualTo("");
+    assertThat(shadowAlertDialog.getMessage().toString()).isEqualTo("");
   }
 
   @Test
@@ -105,13 +105,13 @@ public class ShadowAlertDialogTest {
     AlertDialog alert = builder.create();
 
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-    assertThat(shadowAlertDialog.getMessage()).isEqualTo("message");
+    assertThat(shadowAlertDialog.getMessage().toString()).isEqualTo("message");
 
     alert.setMessage("new message");
-    assertThat(shadowAlertDialog.getMessage()).isEqualTo("new message");
+    assertThat(shadowAlertDialog.getMessage().toString()).isEqualTo("new message");
 
     alert.setMessage(null);
-    assertThat(shadowAlertDialog.getMessage()).isEqualTo("");
+    assertThat(shadowAlertDialog.getMessage().toString()).isEqualTo("");
   }
 
   @Test
@@ -121,7 +121,7 @@ public class ShadowAlertDialogTest {
 
     AlertDialog alert = builder.create();
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-    assertThat(shadowAlertDialog.getMessage()).isEqualTo("Hello");
+    assertThat(shadowAlertDialog.getMessage().toString()).isEqualTo("Hello");
   }
 
   @Test
@@ -210,7 +210,7 @@ public class ShadowAlertDialogTest {
     ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
     assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("title");
     assertThat(shadowAlertDialog.getItems().length).isEqualTo(2);
-    assertThat(shadowAlertDialog.getItems()[0]).isEqualTo("Aloha");
+    assertThat(shadowAlertDialog.getItems()[0].toString()).isEqualTo("Aloha");
     assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()))
         .isSameInstanceAs(shadowAlertDialog);
     assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameInstanceAs(alert);

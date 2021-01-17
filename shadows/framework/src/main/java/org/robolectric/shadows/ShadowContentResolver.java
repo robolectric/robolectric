@@ -1,7 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -24,6 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,10 +62,10 @@ public class ShadowContentResolver {
   @RealObject ContentResolver realContentResolver;
 
   private BaseCursor cursor;
-  private final List<Statement> statements = new ArrayList<>();
-  private final List<InsertStatement> insertStatements = new ArrayList<>();
-  private final List<UpdateStatement> updateStatements = new ArrayList<>();
-  private final List<DeleteStatement> deleteStatements = new ArrayList<>();
+  private final List<Statement> statements = new CopyOnWriteArrayList<>();
+  private final List<InsertStatement> insertStatements = new CopyOnWriteArrayList<>();
+  private final List<UpdateStatement> updateStatements = new CopyOnWriteArrayList<>();
+  private final List<DeleteStatement> deleteStatements = new CopyOnWriteArrayList<>();
   private List<NotifiedUri> notifiedUris = new ArrayList<>();
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
@@ -233,6 +239,26 @@ public class ShadowContentResolver {
       return provider.update(uri, values, where, selectionArgs);
     } else {
       return 1;
+    }
+  }
+
+  @Implementation(minSdk = O)
+  protected final Cursor query(
+      Uri uri, String[] projection, Bundle queryArgs, CancellationSignal cancellationSignal) {
+    ContentProvider provider = getProvider(uri);
+    if (provider != null) {
+      return provider.query(uri, projection, queryArgs, cancellationSignal);
+    } else {
+      BaseCursor returnCursor = getCursor(uri);
+      if (returnCursor == null) {
+        return null;
+      }
+      String selection = queryArgs.getString(QUERY_ARG_SQL_SELECTION);
+      String[] selectionArgs = queryArgs.getStringArray(QUERY_ARG_SQL_SELECTION_ARGS);
+      String sortOrder = queryArgs.getString(QUERY_ARG_SQL_SORT_ORDER);
+
+      returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
+      return returnCursor;
     }
   }
 
@@ -652,7 +678,10 @@ public class ShadowContentResolver {
       ProviderInfo providerInfo =
           RuntimeEnvironment.application.getPackageManager().resolveContentProvider(authority, 0);
       if (providerInfo != null) {
-        providers.put(providerInfo.authority, createAndInitialize(providerInfo));
+        ContentProvider contentProvider = createAndInitialize(providerInfo);
+        for (String auth : Splitter.on(';').split(providerInfo.authority)) {
+          providers.put(auth, contentProvider);
+        }
       }
     }
     return providers.get(authority);
@@ -661,8 +690,13 @@ public class ShadowContentResolver {
   /**
    * Internal-only method, do not use!
    *
-   * Instead, use ```java ProviderInfo info = new ProviderInfo(); info.authority = authority;
-   * Robolectric.buildContentProvider(ContentProvider.class).create(info); ```
+   * <p>Instead, use
+   *
+   * <pre>
+   * ProviderInfo info = new ProviderInfo();
+   * info.authority = authority;
+   * Robolectric.buildContentProvider(ContentProvider.class).create(info);
+   * </pre>
    */
   public static synchronized void registerProviderInternal(
       String authority, ContentProvider provider) {
@@ -880,6 +914,11 @@ public class ShadowContentResolver {
     return observers;
   }
 
+  @Implementation(minSdk = Q)
+  protected static void onDbCorruption(String tag, String message, Throwable stacktrace) {
+    // No-op.
+  }
+
   private static ContentProvider createAndInitialize(ProviderInfo providerInfo) {
     try {
       ContentProvider provider =
@@ -891,7 +930,7 @@ public class ShadowContentResolver {
         | IllegalAccessException
         | NoSuchMethodException
         | InvocationTargetException e) {
-      throw new RuntimeException("Error instantiating class " + providerInfo.name);
+      throw new RuntimeException("Error instantiating class " + providerInfo.name, e);
     }
   }
 

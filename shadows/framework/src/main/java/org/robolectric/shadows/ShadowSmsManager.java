@@ -3,14 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
+import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,20 +24,25 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = SmsManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManager {
 
+  private String smscAddress;
+  private boolean hasSmscAddressPermission = true;
+  private static int defaultSmsSubscriptionId = -1;
+
   @Resetter
   public static void reset() {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP_MR1) {
       Map<String, Object> sSubInstances =
           ReflectionHelpers.getStaticField(SmsManager.class, "sSubInstances");
       sSubInstances.clear();
+      defaultSmsSubscriptionId = -1;
     }
   }
 
   // SMS functionality
 
-  private TextSmsParams lastTextSmsParams;
-  private TextMultipartParams lastTextMultipartParams;
-  private DataMessageParams lastDataParams;
+  protected TextSmsParams lastTextSmsParams;
+  protected TextMultipartParams lastTextMultipartParams;
+  protected DataMessageParams lastDataParams;
 
   @Implementation
   protected void sendDataMessage(
@@ -68,7 +74,29 @@ public class ShadowSmsManager {
       throw new IllegalArgumentException("Invalid message body");
     }
 
-    lastTextSmsParams = new TextSmsParams(destinationAddress, scAddress, text, sentIntent, deliveryIntent);
+    lastTextSmsParams =
+        new TextSmsParams(destinationAddress, scAddress, text, sentIntent, deliveryIntent);
+  }
+
+  @Implementation(minSdk = R)
+  protected void sendTextMessage(
+      String destinationAddress,
+      String scAddress,
+      String text,
+      PendingIntent sentIntent,
+      PendingIntent deliveryIntent,
+      long messageId) {
+    if (TextUtils.isEmpty(destinationAddress)) {
+      throw new IllegalArgumentException("Invalid destinationAddress");
+    }
+
+    if (TextUtils.isEmpty(text)) {
+      throw new IllegalArgumentException("Invalid message body");
+    }
+
+    lastTextSmsParams =
+        new TextSmsParams(
+            destinationAddress, scAddress, text, sentIntent, deliveryIntent, messageId);
   }
 
   @Implementation
@@ -167,13 +195,25 @@ public class ShadowSmsManager {
     private final String text;
     private final PendingIntent sentIntent;
     private final PendingIntent deliveryIntent;
+    private final long messageId;
 
     public TextSmsParams(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+      this(destinationAddress, scAddress, text, sentIntent, deliveryIntent, 0L);
+    }
+
+    public TextSmsParams(
+        String destinationAddress,
+        String scAddress,
+        String text,
+        PendingIntent sentIntent,
+        PendingIntent deliveryIntent,
+        long messageId) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.text = text;
       this.sentIntent = sentIntent;
       this.deliveryIntent = deliveryIntent;
+      this.messageId = messageId;
     }
 
     public String getDestinationAddress() {
@@ -195,21 +235,37 @@ public class ShadowSmsManager {
     public PendingIntent getDeliveryIntent() {
       return deliveryIntent;
     }
+
+    public long getMessageId() {
+      return messageId;
+    }
   }
 
   public static class TextMultipartParams {
     private final String destinationAddress;
     private final String scAddress;
-    private final ArrayList<String> parts;
-    private final ArrayList<PendingIntent> sentIntents;
-    private final ArrayList<PendingIntent> deliveryIntents;
+    private final List<String> parts;
+    private final List<PendingIntent> sentIntents;
+    private final List<PendingIntent> deliveryIntents;
+    private final long messageId;
 
     public TextMultipartParams(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+      this(destinationAddress, scAddress, parts, sentIntents, deliveryIntents, 0L);
+    }
+
+    public TextMultipartParams(
+        String destinationAddress,
+        String scAddress,
+        List<String> parts,
+        List<PendingIntent> sentIntents,
+        List<PendingIntent> deliveryIntents,
+        long messageId) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.parts = parts;
       this.sentIntents = sentIntents;
       this.deliveryIntents = deliveryIntents;
+      this.messageId = messageId;
     }
 
     public String getDestinationAddress() {
@@ -230,6 +286,10 @@ public class ShadowSmsManager {
 
     public List<android.app.PendingIntent> getDeliveryIntents() {
       return deliveryIntents;
+    }
+
+    public long getMessageId() {
+      return messageId;
     }
   }
 
@@ -290,6 +350,27 @@ public class ShadowSmsManager {
   /** Clear last recorded parameters for {@link #downloadMultimediaMessage}. */
   public void clearLastDownloadedMultimediaMessageParams() {
     lastDownloadedMultimediaMessageParams = null;
+  }
+
+  @Implementation(minSdk = R)
+  protected void sendMultipartTextMessage(
+      String destinationAddress,
+      String scAddress,
+      List<String> parts,
+      List<PendingIntent> sentIntents,
+      List<PendingIntent> deliveryIntents,
+      long messageId) {
+    if (TextUtils.isEmpty(destinationAddress)) {
+      throw new IllegalArgumentException("Invalid destinationAddress");
+    }
+
+    if (parts == null) {
+      throw new IllegalArgumentException("Invalid message parts");
+    }
+
+    lastTextMultipartParams =
+        new TextMultipartParams(
+            destinationAddress, scAddress, parts, sentIntents, deliveryIntents, messageId);
   }
 
   /**
@@ -362,5 +443,44 @@ public class ShadowSmsManager {
     public PendingIntent getDownloadedIntent() {
       return pendingIntent;
     }
+  }
+
+  /**
+   * Sets a boolean value to simulate whether or not the required permissions to call {@link
+   * #getSmscAddress()} have been granted.
+   */
+  public void setSmscAddressPermission(boolean smscAddressPermission) {
+    this.hasSmscAddressPermission = smscAddressPermission;
+  }
+
+  /**
+   * Returns {@code null} by default or the value specified via {@link #setSmscAddress(String)}.
+   * Required permission is set by {@link #setSmscAddressPermission(boolean)}.
+   */
+  @Implementation(minSdk = R)
+  protected String getSmscAddress() {
+    if (!hasSmscAddressPermission) {
+      throw new SecurityException();
+    }
+    return smscAddress;
+  }
+
+  /** Sets the value to be returned by {@link #getDefaultSmsSubscriptionId()}. */
+  public static void setDefaultSmsSubscriptionId(int id) {
+    defaultSmsSubscriptionId = id;
+  }
+
+  /**
+   * Returns {@code -1} by default or the value specified in {@link
+   * #setDefaultSmsSubscriptionId(int)}.
+   */
+  @Implementation(minSdk = R)
+  protected static int getDefaultSmsSubscriptionId() {
+    return defaultSmsSubscriptionId;
+  }
+
+  /** Sets the value returned by {@link SmsManager#getSmscAddress()}. */
+  public void setSmscAddress(String smscAddress) {
+    this.smscAddress = smscAddress;
   }
 }

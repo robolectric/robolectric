@@ -20,7 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -175,19 +174,21 @@ public class ShadowKeyguardManagerTest {
         .isEqualTo(intent);
   }
 
+  /**
+   * On Android L and below, calling {@link android.content.Context#getSystemService(String)} for
+   * {@link android.content.Context#KEYGUARD_SERVICE} will return a new instance each time.
+   */
   @Test
-  @Config(minSdk = O)
-  public void getCallbacks() {
-    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
-    activityController.setup();
-    Activity activity = activityController.get();
-
-    KeyguardDismissCallback mockCallback = mock(KeyguardDismissCallback.class);
-
+  public void isKeyguardLocked_retainedAcrossMultipleInstances() {
+    assertThat(manager.isKeyguardLocked()).isFalse();
     shadowOf(manager).setKeyguardLocked(true);
-
-    manager.requestDismissKeyguard(activity, mockCallback);
-
-    assertThat(ShadowKeyguardManager.getCallback()).isEqualTo(mockCallback);
+    KeyguardManager manager2 =
+        (KeyguardManager)
+            ApplicationProvider.getApplicationContext().getSystemService(KEYGUARD_SERVICE);
+    assertThat(manager2.isKeyguardLocked()).isTrue();
+    assertThat(shadowOf(manager.newKeyguardLock("tag")).isEnabled()).isTrue();
+    KeyguardManager.KeyguardLock keyguardLock = manager2.newKeyguardLock("tag");
+    keyguardLock.disableKeyguard();
+    assertThat(shadowOf(manager.newKeyguardLock("tag")).isEnabled()).isFalse();
   }
 }

@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.hardware.biometrics.BiometricManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,8 @@ public class ShadowBiometricManagerTest {
   @Before
   public void setUp() {
     biometricManager =
-        ApplicationProvider.getApplicationContext().getSystemService(BiometricManager.class);
+            ApplicationProvider.getApplicationContext().getSystemService(BiometricManager.class);
+    assertThat(biometricManager).isNotNull();
   }
 
   @Test

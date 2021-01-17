@@ -1,18 +1,22 @@
 package org.robolectric.shadows;
 
 import static android.Manifest.permission.USE_BIOMETRIC;
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE;
 import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
 import static android.hardware.biometrics.BiometricPrompt.BIOMETRIC_ERROR_HW_UNAVAILABLE;
-import static org.robolectric.shadows.ShadowBuild.Q;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
-import android.annotation.IntDef;
 import android.annotation.RequiresPermission;
+import android.content.Context;
 import android.hardware.biometrics.BiometricManager;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Provides testing APIs for {@link BiometricManager} */
 @Implements(
@@ -21,26 +25,26 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false)
 public class ShadowBiometricManager {
 
-  /** Possible result for {@link BiometricManager#canAuthenticate()} */
-  @IntDef({
-    BIOMETRIC_SUCCESS,
-    BIOMETRIC_ERROR_HW_UNAVAILABLE,
-    BIOMETRIC_ERROR_NONE_ENROLLED,
-    BIOMETRIC_ERROR_NO_HARDWARE
-  })
-  @interface BiometricError {}
+  protected boolean biometricServiceConnected = true;
 
-  private boolean biometricServiceConnected = true;
+  @RealObject private BiometricManager realBiometricManager;
 
   @SuppressWarnings("deprecation")
   @RequiresPermission(USE_BIOMETRIC)
-  @Implementation
-  @BiometricError
+  @Implementation(maxSdk = Q)
   protected int canAuthenticate() {
-    if (biometricServiceConnected) {
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return directlyOn(realBiometricManager, BiometricManager.class, "canAuthenticate");
+    } else if (biometricServiceConnected) {
       return BIOMETRIC_SUCCESS;
     } else {
-      if (!BiometricManager.hasBiometrics(RuntimeEnvironment.application.getApplicationContext())) {
+      boolean hasBiomatrics =
+          ReflectionHelpers.callStaticMethod(
+              BiometricManager.class,
+              "hasBiometrics",
+              ClassParameter.from(
+                  Context.class, RuntimeEnvironment.application.getApplicationContext()));
+      if (!hasBiomatrics) {
         return BIOMETRIC_ERROR_NO_HARDWARE;
       } else {
         return BIOMETRIC_ERROR_HW_UNAVAILABLE;
@@ -57,5 +61,10 @@ public class ShadowBiometricManager {
    */
   public void setCanAuthenticate(boolean flag) {
     biometricServiceConnected = flag;
+  }
+
+  @Implementation(minSdk = R)
+  protected int canAuthenticate(int userId, int authenticators) {
+    return biometricServiceConnected ? BIOMETRIC_SUCCESS : BIOMETRIC_ERROR_NO_HARDWARE;
   }
 }

@@ -86,6 +86,8 @@ public class ImageUtil {
     switch (compressFormat) {
       case JPEG:
       case WEBP:
+      case WEBP_LOSSY:
+      case WEBP_LOSSLESS:
         return "jpg";
       case PNG:
         return "png";

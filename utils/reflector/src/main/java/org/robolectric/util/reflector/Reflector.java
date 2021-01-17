@@ -13,22 +13,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Provides accessor objects for efficiently calling otherwise inaccessible (non-public) methods.
  *
- * This is orders of magnitude faster than using reflection directly.
+ * <p>This is orders of magnitude faster than using reflection directly.
  *
- * For example, to access a private method on some class `Foo`, declare an accessor interface:
+ * <p>For example, to access a private method on some class {@code Foo}, declare an accessor
+ * interface:
  *
- * ```java
+ * <pre>
  * class Foo {
  *   private String getName() { ... }
  * }
  *
- * `@`ForType(Foo.class)
+ * &#064;ForType(Foo.class)
  * interface _Foo_ {
  *   String getName();
  * }
  *
  * reflector(_Foo_.class, new Foo()).getName();
- * ```
+ * </pre>
  */
 @SuppressWarnings("NewApi")
 public class Reflector {

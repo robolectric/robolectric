@@ -29,9 +29,17 @@ class ReflectorClassWriter extends ClassWriter {
   private static final Type CLASS_TYPE = Type.getType(Class.class);
   private static final Type FIELD_TYPE = Type.getType(Field.class);
   private static final Type METHOD_TYPE = Type.getType(Method.class);
+  private static final Type STRING_TYPE = Type.getType(String.class);
+  private static final Type STRINGBUILDER_TYPE = Type.getType(StringBuilder.class);
+
   private static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
+  private static final Type ASSERTION_ERROR_TYPE = Type.getType(AssertionError.class);
+
   private static final Type INVOCATION_TARGET_EXCEPTION_TYPE =
       Type.getType(InvocationTargetException.class);
+
+  private static final Type REFLECTIVE_OPERATION_EXCEPTION_TYPE =
+      Type.getType(ReflectiveOperationException.class);
 
   private static final org.objectweb.asm.commons.Method CLASS$GET_DECLARED_FIELD =
       findMethod(Class.class, "getDeclaredField", new Class<?>[] {String.class});
@@ -49,7 +57,17 @@ class ReflectorClassWriter extends ClassWriter {
       findMethod(Throwable.class, "getCause", new Class<?>[] {});
   private static final org.objectweb.asm.commons.Method OBJECT_INIT =
       new org.objectweb.asm.commons.Method("<init>", Type.VOID_TYPE, new Type[0]);
-
+  private static final org.objectweb.asm.commons.Method STRINGBUILDER$APPEND =
+      findMethod(StringBuilder.class, "append", new Class<?>[] {String.class});
+  private static final org.objectweb.asm.commons.Method STRINGBUILDER$TO_STRING =
+      findMethod(StringBuilder.class, "toString", new Class<?>[] {});
+  private static final org.objectweb.asm.commons.Method CLASS$GET_CLASS_LOADER =
+      findMethod(Class.class, "getClassLoader", new Class<?>[] {});
+  private static final org.objectweb.asm.commons.Method STRING$VALUE_OF =
+      findMethod(String.class, "valueOf", new Class<?>[] {Object.class});
+  private static final org.objectweb.asm.commons.Method ASSERTION_ERROR_INIT =
+      new org.objectweb.asm.commons.Method(
+          "<init>", Type.VOID_TYPE, new Type[] {STRING_TYPE, THROWABLE_TYPE});
   private static final String TARGET_FIELD = "__target__";
 
   private static org.objectweb.asm.commons.Method findMethod(
@@ -79,8 +97,7 @@ class ReflectorClassWriter extends ClassWriter {
   }
 
   void write() {
-    int accessModifiers =
-        iClass.getModifiers() & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE);
+    int accessModifiers = iClass.getModifiers() & Modifier.PUBLIC;
     visit(
         V1_5,
         accessModifiers | ACC_SUPER | ACC_FINAL,
@@ -253,22 +270,62 @@ class ReflectorClassWriter extends ClassWriter {
       //     return methodN.invoke(this, *args);
       //   } catch (InvocationTargetException e) {
       //     throw e.getCause();
+      //   } catch (ReflectiveOperationException e) {
+      //     throw new AssertionError("Error invoking reflector method in ClassLoader " +
+      // Instrumentation.class.getClassLoader(), e);
       //   }
-      TryCatch tryCatch = tryStart(INVOCATION_TARGET_EXCEPTION_TYPE);
+      Label tryStart = new Label();
+      Label tryEnd = new Label();
+      Label handleInvocationTargetException = new Label();
+      visitTryCatchBlock(
+          tryStart,
+          tryEnd,
+          handleInvocationTargetException,
+          INVOCATION_TARGET_EXCEPTION_TYPE.getInternalName());
+      Label handleReflectiveOperationException = new Label();
+      visitTryCatchBlock(
+          tryStart,
+          tryEnd,
+          handleReflectiveOperationException,
+          REFLECTIVE_OPERATION_EXCEPTION_TYPE.getInternalName());
+
+      mark(tryStart);
       loadOriginalMethodRef();
       loadTarget();
       loadArgArray();
       invokeVirtual(METHOD_TYPE, METHOD$INVOKE);
-      tryCatch.end();
+      mark(tryEnd);
 
       castForReturn(iMethod.getReturnType());
       returnValue();
 
-      tryCatch.handler();
+      mark(handleInvocationTargetException);
+
       int exceptionLocalVar = newLocal(THROWABLE_TYPE);
       storeLocal(exceptionLocalVar);
       loadLocal(exceptionLocalVar);
       invokeVirtual(THROWABLE_TYPE, THROWABLE$GET_CAUSE);
+      throwException();
+      mark(handleReflectiveOperationException);
+      exceptionLocalVar = newLocal(REFLECTIVE_OPERATION_EXCEPTION_TYPE);
+      storeLocal(exceptionLocalVar);
+      newInstance(STRINGBUILDER_TYPE);
+      dup();
+      invokeConstructor(STRINGBUILDER_TYPE, OBJECT_INIT);
+      push("Error invoking reflector method in ClassLoader ");
+      invokeVirtual(STRINGBUILDER_TYPE, STRINGBUILDER$APPEND);
+      push(targetType);
+      invokeVirtual(CLASS_TYPE, CLASS$GET_CLASS_LOADER);
+      invokeStatic(STRING_TYPE, STRING$VALUE_OF);
+      invokeVirtual(STRINGBUILDER_TYPE, STRINGBUILDER$APPEND);
+      invokeVirtual(STRINGBUILDER_TYPE, STRINGBUILDER$TO_STRING);
+      int messageLocalVar = newLocal(STRING_TYPE);
+      storeLocal(messageLocalVar);
+      newInstance(ASSERTION_ERROR_TYPE);
+      dup();
+      loadLocal(messageLocalVar);
+      loadLocal(exceptionLocalVar);
+      invokeConstructor(ASSERTION_ERROR_TYPE, ASSERTION_ERROR_INIT);
       throwException();
 
       endMethod();
@@ -420,36 +477,6 @@ class ReflectorClassWriter extends ClassWriter {
 
     void loadNull() {
       visitInsn(Opcodes.ACONST_NULL);
-    }
-
-    public TryCatch tryStart(Type exceptionType) {
-      return new TryCatch(this, exceptionType);
-    }
-  }
-
-  /**
-   * Provides try/catch code generation with a {@link org.objectweb.asm.commons.GeneratorAdapter}.
-   */
-  static class TryCatch {
-    private final Label start;
-    private final Label end;
-    private final Label handler;
-    private final GeneratorAdapter generatorAdapter;
-
-    TryCatch(GeneratorAdapter generatorAdapter, Type type) {
-      this.generatorAdapter = generatorAdapter;
-      this.start = generatorAdapter.mark();
-      this.end = new Label();
-      this.handler = new Label();
-      generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
-    }
-
-    void end() {
-      generatorAdapter.mark(end);
-    }
-
-    void handler() {
-      generatorAdapter.mark(handler);
     }
   }
 }

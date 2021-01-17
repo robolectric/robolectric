@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
+
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Instrumentation;
@@ -9,6 +11,7 @@ import android.content.res.Configuration;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collections;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -66,6 +69,30 @@ public class ShadowActivityThread {
     return RuntimeEnvironment.getActivityThread();
   }
 
+  @Implementation(minSdk = R)
+  public static Object getPermissionManager() {
+    ClassLoader classLoader = ShadowActivityThread.class.getClassLoader();
+    Class<?> iPermissionManagerClass;
+    try {
+      iPermissionManagerClass = classLoader.loadClass("android.permission.IPermissionManager");
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    return Proxy.newProxyInstance(
+        classLoader,
+        new Class<?>[] {iPermissionManagerClass},
+        new InvocationHandler() {
+          @Override
+          public Object invoke(Object proxy, @Nonnull Method method, Object[] args)
+              throws Exception {
+            if (method.getName().equals("getSplitPermissions")) {
+              return Collections.emptyList();
+            }
+            return method.getDefaultValue();
+          }
+        });
+  }
+
   /**
    * Internal use only.
    *
@@ -82,6 +109,9 @@ public class ShadowActivityThread {
 
     @Accessor("mBoundApplication")
     void setBoundApplication(Object data);
+
+    @Accessor("mBoundApplication")
+    Object getBoundApplication();
 
     @Accessor("mCompatConfiguration")
     void setCompatConfiguration(Configuration configuration);

@@ -1,6 +1,7 @@
 package org.robolectric.android.internal;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.android.internal.AndroidTestEnvironment.registerBroadcastReceivers;
@@ -9,7 +10,6 @@ import android.app.Application;
 import android.content.pm.ApplicationInfo;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
 import java.io.IOException;
@@ -178,7 +178,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
             + "</manifest>\n";
     File f = temporaryFolder.newFile("whatever.xml");
 
-    Files.asCharSink(f, Charsets.UTF_8).write(fileContents);
+    Files.asCharSink(f, UTF_8).write(fileContents);
     return new AndroidManifest(f.toPath(), null, null);
   }
 

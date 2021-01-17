@@ -1,12 +1,17 @@
 package org.robolectric.internal.bytecode;
 
+import com.google.common.base.Strings;
+import java.io.IOException;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -26,30 +31,29 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.robolectric.util.PerfStatsCollector;
 
 public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
+  // The directory where instrumented class files will be dumped
+  private static final String DUMP_CLASSES_PROPERTY = "robolectric.dumpClassesDirectory";
+  private static final AtomicInteger DUMP_CLASSES_COUNTER = new AtomicInteger();
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
   final Decorator decorator;
+  final String dumpClassesDirectory;
 
   protected ClassInstrumentor(Decorator decorator) {
     this.decorator = decorator;
+    this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
   }
 
-  public MutableClass analyzeClass(
+  private MutableClass analyzeClass(
       byte[] origClassBytes,
       final InstrumentationConfiguration config,
       ClassNodeProvider classNodeProvider) {
     ClassNode classNode =
         new ClassNode(Opcodes.ASM4) {
-          @Override
-          public FieldVisitor visitField(
-              int access, String name, String desc, String signature, Object value) {
-            desc = config.remapParamType(desc);
-            return super.visitField(access & ~Opcodes.ACC_FINAL, name, desc, signature, value);
-          }
-
           @Override
           public MethodVisitor visitMethod(
               int access, String name, String desc, String signature, String[] exceptions) {
@@ -78,13 +82,38 @@ public abstract class ClassInstrumentor {
         };
     ClassRemapper visitor = new ClassRemapper(writer, remapper);
     classNode.accept(visitor);
-    return writer.toByteArray();
+
+    byte[] classBytes = writer.toByteArray();
+    if (!Strings.isNullOrEmpty(dumpClassesDirectory)) {
+      String outputClassName =
+          mutableClass.getName() + "-robo-instrumented-" + DUMP_CLASSES_COUNTER.getAndIncrement();
+      Path path = Paths.get(dumpClassesDirectory, outputClassName + ".class");
+      try {
+        Files.write(path, classBytes);
+      } catch (IOException e) {
+        throw new AssertionError(e);
+      }
+    }
+    return classBytes;
   }
 
-  public byte[] instrument(byte[] origBytes, InstrumentationConfiguration config,
-      ClassNodeProvider classNodeProvider) {
-    MutableClass mutableClass = analyzeClass(origBytes, config, classNodeProvider);
-    return instrumentToBytes(mutableClass);
+  public byte[] instrument(
+      byte[] origBytes, InstrumentationConfiguration config, ClassNodeProvider classNodeProvider) {
+    PerfStatsCollector perfStats = PerfStatsCollector.getInstance();
+    MutableClass mutableClass =
+        perfStats.measure(
+            "analyze class", () -> analyzeClass(origBytes, config, classNodeProvider));
+    byte[] instrumentedBytes =
+        perfStats.measure("instrument class", () -> instrumentToBytes(mutableClass));
+    recordPackageStats(perfStats, mutableClass);
+    return instrumentedBytes;
+  }
+
+  private void recordPackageStats(PerfStatsCollector perfStats, MutableClass mutableClass) {
+    String className = mutableClass.getName();
+    for (int i = className.indexOf('.'); i != -1; i = className.indexOf('.', i + 1)) {
+      perfStats.incrementCount("instrument package " + className.substring(0, i));
+    }
   }
 
   public void instrument(MutableClass mutableClass) {
@@ -117,7 +146,7 @@ public abstract class ClassInstrumentor {
 
       decorator.decorate(mutableClass);
 
-      doSpecialHandling(mutableClass);
+      removeFinalFromFields(mutableClass);
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
@@ -138,7 +167,7 @@ public abstract class ClassInstrumentor {
     }
   }
 
-  private void addNoArgsConstructor(MutableClass mutableClass) {
+  private static void addNoArgsConstructor(MutableClass mutableClass) {
     if (!mutableClass.foundMethods.contains("<init>()V")) {
       MethodNode defaultConstructor =
           new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC, "<init>", "()V", "()V", null);
@@ -157,13 +186,14 @@ public abstract class ClassInstrumentor {
 
   /**
    * Generates code like this:
-   * ```java
+   *
+   * <pre>
    * protected void $$robo$init() {
    *   if (__robo_data__ == null) {
    *     __robo_data__ = RobolectricInternals.initializing(this);
    *   }
    * }
-   * ```
+   * </pre>
    */
   private void addRoboInitMethod(MutableClass mutableClass) {
     MethodNode initMethodNode =
@@ -190,43 +220,45 @@ public abstract class ClassInstrumentor {
 
   protected abstract void writeCallToInitializing(MutableClass mutableClass, RobolectricGeneratorAdapter generator);
 
-  private void doSpecialHandling(MutableClass mutableClass) {
-    if (mutableClass.getName().equals("android.os.Build$VERSION")) {
-      for (FieldNode fieldNode : mutableClass.getFields()) {
-        fieldNode.access &= ~(Modifier.FINAL);
-      }
+  private static void removeFinalFromFields(MutableClass mutableClass) {
+    for (FieldNode fieldNode : mutableClass.getFields()) {
+      fieldNode.access &= ~Modifier.FINAL;
     }
   }
 
-  private boolean isSyntheticAccessorMethod(MethodNode method) {
+  private static boolean isSyntheticAccessorMethod(MethodNode method) {
     return (method.access & Opcodes.ACC_SYNTHETIC) != 0;
   }
 
-
   /**
    * Constructors are instrumented as follows:
-   * # Code other than a call to the superclass constructor is moved to a new method named
-   *   `__constructor__` with the same signature.
-   * # The constructor is modified to call {@link ClassHandler#initializing(Object)} (or
-   *   {@link ClassHandler#getShadowCreator(Class)} for `invokedynamic` JVMs).
-   * # The constructor is modified to then call
-   *   {@link ClassHandler#methodInvoked(String, boolean, Class)} (or
-   *   {@link ClassHandler#findShadowMethodHandle(Class, String, MethodType, boolean)} for
-   *   `invokedynamic` JVMs) with the method name `__constructor__` and the same parameter types.
+   *
+   * <ul>
+   *   <li>Code other than a call to the superclass constructor is moved to a new method named
+   *       {@code __constructor__} with the same signature.
+   *   <li>The constructor is modified to call {@link ClassHandler#initializing(Object)} (or {@link
+   *       ClassHandler#getShadowCreator(Class)} for {@code invokedynamic} JVMs).
+   *   <li>The constructor is modified to then call {@link ClassHandler#methodInvoked(String,
+   *       boolean, Class)} (or {@link ClassHandler#findShadowMethodHandle(Class, String,
+   *       MethodType, boolean)} for {@code invokedynamic} JVMs) with the method name {@code
+   *       __constructor__} and the same parameter types.
+   * </ul>
    *
    * Note that most code in the constructor will not be executed unless the {@link ClassHandler}
    * arranges for it to happen.
    *
-   * Given a constructor like this:
-   * ```java
+   * <p>Given a constructor like this:
+   *
+   * <pre>
    * public ThisClass(String name, int size) {
    *   super(name, someStaticMethod());
    *   this.size = size;
    * }
-   * ```
+   * </pre>
    *
    * ... generates code like this:
-   * ```java
+   *
+   * <pre>
    * private $$robo$$__constructor__(String name, int size) {
    *   this.size = size;
    * }
@@ -249,24 +281,12 @@ public abstract class ClassInstrumentor {
    *   super(name, someStaticMethod());
    *   $$robo$init();
    * }
-   * ```
+   * </pre>
    *
    * @param method the constructor to instrument
    */
   private void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
     makeMethodPrivate(method);
-
-    if (mutableClass.containsStubs) {
-      // method.instructions just throws a `stub!` exception, replace it with something anodyne...
-      method.instructions.clear();
-
-      RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
-      generator.loadThis();
-      generator.visitMethodInsn(
-          Opcodes.INVOKESPECIAL, mutableClass.classNode.superName, "<init>", "()V", false);
-      generator.returnValue();
-      generator.endMethod();
-    }
 
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
     method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
@@ -288,7 +308,8 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(initMethodNode);
   }
 
-  private InsnList extractCallToSuperConstructor(MutableClass mutableClass, MethodNode ctor) {
+  private static InsnList extractCallToSuperConstructor(
+      MutableClass mutableClass, MethodNode ctor) {
     InsnList removedInstructions = new InsnList();
     int startIndex = 0;
 
@@ -307,7 +328,9 @@ public abstract class ClassInstrumentor {
         case Opcodes.INVOKESPECIAL:
           MethodInsnNode mnode = (MethodInsnNode) node;
           if (mnode.owner.equals(mutableClass.internalClassName) || mnode.owner.equals(mutableClass.classNode.superName)) {
-            assert mnode.name.equals("<init>");
+            if (!"<init>".equals(mnode.name)) {
+              throw new AssertionError("Invalid MethodInsnNode name");
+            }
 
             // remove all instructions in the range startIndex..i, from aload_0 to invokespecial <init>
             while (startIndex <= i) {
@@ -334,10 +357,16 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * # Rename the method from `methodName` to `$$robo$$methodName`.
-   * # Make it private so we can invoke it directly without subclass overrides taking precedence.
-   * # Remove `final` modifiers, if present.
-   * # Create a delegator method named `methodName` which delegates to the {@link ClassHandler}.
+   * Instruments a normal method
+   *
+   * <ul>
+   *   <li>Rename the method from {@code methodName} to {@code $$robo$$methodName}.
+   *   <li>Make it private so we can invoke it directly without subclass overrides taking
+   *       precedence.
+   *   <li>Remove {@code final} modifiers, if present.
+   *   <li>Create a delegator method named {@code methodName} which delegates to the {@link
+   *       ClassHandler}.
+   * </ul>
    */
   protected void instrumentNormalMethod(MutableClass mutableClass, MethodNode method) {
     // if not abstract, set a final modifier
@@ -379,7 +408,7 @@ public abstract class ClassInstrumentor {
     generator.returnValue();
   }
 
-  private String directMethodName(MutableClass mutableClass, String originalName) {
+  private static String directMethodName(MutableClass mutableClass, String originalName) {
     return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
 
@@ -451,20 +480,21 @@ public abstract class ClassInstrumentor {
   }
 
   /**
-   * Verifies if the @targetMethod is a `<init>(boolean)` constructor for
-   * {@link java.util.GregorianCalendar}.
+   * Verifies if the @targetMethod is a {@code <init>(boolean)} constructor for {@link
+   * java.util.GregorianCalendar}.
    */
-  private boolean isGregorianCalendarBooleanConstructor(MethodInsnNode targetMethod) {
+  private static boolean isGregorianCalendarBooleanConstructor(MethodInsnNode targetMethod) {
     return targetMethod.owner.equals("java/util/GregorianCalendar") &&
         targetMethod.name.equals("<init>") &&
         targetMethod.desc.equals("(Z)V");
   }
 
   /**
-   * Replaces the void `<init>(boolean)` constructor for a call to the
-   * `void <init>(int, int, int)` one.
+   * Replaces the void {@code <init>(boolean)} constructor for a call to the {@code void <init>(int,
+   * int, int)} one.
    */
-  private void replaceGregorianCalendarBooleanConstructor(ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
+  private static void replaceGregorianCalendarBooleanConstructor(
+      ListIterator<AbstractInsnNode> instructions, MethodInsnNode targetMethod) {
     // Remove the call to GregorianCalendar(boolean)
     instructions.remove();
 
@@ -494,10 +524,8 @@ public abstract class ClassInstrumentor {
       MutableClass mutableClass, ListIterator<AbstractInsnNode> instructions,
       MethodInsnNode targetMethod);
 
-  /**
-   * Replaces protected and private class modifiers with public.
-   */
-  private void makeClassPublic(ClassNode clazz) {
+  /** Replaces protected and private class modifiers with public. */
+  private static void makeClassPublic(ClassNode clazz) {
     clazz.access = (clazz.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE);
   }
 
@@ -515,7 +543,7 @@ public abstract class ClassInstrumentor {
     method.access = (method.access | Opcodes.ACC_PRIVATE) & ~(Opcodes.ACC_PUBLIC | Opcodes.ACC_PROTECTED);
   }
 
-  private MethodNode generateStaticInitializerNotifierMethod(MutableClass mutableClass) {
+  private static MethodNode generateStaticInitializerNotifierMethod(MutableClass mutableClass) {
     MethodNode methodNode = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", "()V", null);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(methodNode);
     generator.push(mutableClass.classType);

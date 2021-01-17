@@ -14,7 +14,7 @@ import org.robolectric.res.android.ResTable_config;
 /**
  * Supports device configuration for Robolectric tests.
  *
- * @see [Device Configuration](http://robolectric.org/device-configuration/)
+ * @see <a href="http://robolectric.org/device-configuration/">Device Configuration</a>
  */
 @SuppressWarnings("NewApi")
 public class DeviceConfig {
@@ -22,8 +22,11 @@ public class DeviceConfig {
   public static final ScreenSize DEFAULT_SCREEN_SIZE = ScreenSize.normal;
 
   /**
-   * Standard sizes for the
-   * [screen size qualifier](https://developer.android.com/guide/topics/resources/providing-resources.html#ScreenSizeQualifier).
+   * Standard sizes for the screen size qualifier.
+   *
+   * @see <a
+   *     href="https://developer.android.com/guide/topics/resources/providing-resources.html#ScreenSizeQualifier">Screen
+   *     Size Qualifier</a>.
    */
   public enum ScreenSize {
     small(320, 426, Configuration.SCREENLAYOUT_SIZE_SMALL),
@@ -195,6 +198,7 @@ public class DeviceConfig {
     if (resTab.density != ResTable_config.DENSITY_DEFAULT) {
       setDensity(resTab.density, apiLevel, configuration, displayMetrics);
     }
+    setDimensions(configuration, displayMetrics);
 
     if (resTab.touchscreen != ResTable_config.TOUCHSCREEN_ANY) {
       configuration.touchscreen = resTab.touchscreen;
@@ -234,11 +238,21 @@ public class DeviceConfig {
     }
     displayMetrics.densityDpi = densityDpi;
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
+
+    displayMetrics.xdpi = displayMetrics.noncompatXdpi = displayMetrics.densityDpi;
+    displayMetrics.ydpi = displayMetrics.noncompatYdpi = displayMetrics.densityDpi;
+  }
+
+  private static void setDimensions(Configuration configuration, DisplayMetrics displayMetrics) {
+    int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
+    int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
+    displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
+    displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
   }
 
   /**
-   * Makes a given configuration, which may have undefined values, conform to the rules declared
-   * [here](http://robolectric.org/device-configuration/).
+   * Makes a given configuration, which may have undefined values, conform to the rules declared <a
+   * href="http://robolectric.org/device-configuration/">here</a>.
    */
   static void applyRules(Configuration configuration, DisplayMetrics displayMetrics, int apiLevel) {
     Locale locale = getLocale(configuration, apiLevel);
@@ -339,6 +353,7 @@ public class DeviceConfig {
         // DisplayMetrics.DENSITY_DEFAULT is mdpi
         setDensity(DEFAULT_DENSITY, apiLevel, configuration, displayMetrics);
     }
+    setDimensions(configuration, displayMetrics);
 
     if (configuration.touchscreen == Configuration.TOUCHSCREEN_UNDEFINED) {
       configuration.touchscreen = Configuration.TOUCHSCREEN_FINGER;

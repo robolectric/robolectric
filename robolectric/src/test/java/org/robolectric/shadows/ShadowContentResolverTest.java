@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
+import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -275,6 +279,29 @@ public class ShadowContentResolverTest {
 
     shadowContentResolver.setCursor(testCursor);
     Cursor cursor = shadowContentResolver.query(uri21, projection, selection, selectionArgs, sortOrder);
+    assertThat((QueryParamTrackingCursor) cursor).isEqualTo(testCursor);
+    assertThat(testCursor.uri).isEqualTo(uri21);
+    assertThat(testCursor.projection).isEqualTo(projection);
+    assertThat(testCursor.selection).isEqualTo(selection);
+    assertThat(testCursor.selectionArgs).isEqualTo(selectionArgs);
+    assertThat(testCursor.sortOrder).isEqualTo(sortOrder);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void query_shouldKnowWhatIsInBundle() {
+    String[] projection = {};
+    String selection = "select";
+    String[] selectionArgs = {};
+    String sortOrder = "order";
+    Bundle queryArgs = new Bundle();
+    queryArgs.putString(QUERY_ARG_SQL_SELECTION, selection);
+    queryArgs.putStringArray(QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs);
+    queryArgs.putString(QUERY_ARG_SQL_SORT_ORDER, sortOrder);
+
+    QueryParamTrackingCursor testCursor = new QueryParamTrackingCursor();
+    shadowContentResolver.setCursor(testCursor);
+    Cursor cursor = shadowContentResolver.query(uri21, projection, queryArgs, null);
     assertThat((QueryParamTrackingCursor) cursor).isEqualTo(testCursor);
     assertThat(testCursor.uri).isEqualTo(uri21);
     assertThat(testCursor.projection).isEqualTo(projection);

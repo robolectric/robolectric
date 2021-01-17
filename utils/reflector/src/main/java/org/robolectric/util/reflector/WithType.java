@@ -13,8 +13,8 @@ public @interface WithType {
   /**
    * The class name intended for this parameter.
    *
-   * Use the value as returned from {@link Class#getName()}, not {@link Class#getCanonicalName()};
-   * e.g. `Foo$Bar` instead of `Foo.Bar`.
+   * <p>Use the value as returned from {@link Class#getName()}, not {@link
+   * Class#getCanonicalName()}; e.g. {@code Foo$Bar} instead of {@code Foo.Bar}.
    */
   String value();
 }

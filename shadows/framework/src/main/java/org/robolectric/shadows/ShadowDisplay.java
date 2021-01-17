@@ -7,8 +7,11 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Point;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Display;
+import android.view.Display.HdrCapabilities;
 import android.view.Surface;
 import android.view.WindowManager;
 import org.robolectric.RuntimeEnvironment;
@@ -19,11 +22,9 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /**
- * It is possible to override some display properties using setters on {@link ShadowDisplay};
- * however, this behavior is deprecated as of Robolectric 3.6 and will be removed in 3.7.
+ * It is possible to override some display properties using setters on {@link ShadowDisplay}.
  *
- * Use [device configuration](http://robolectric.org/device-configuration/) to set up your
- * display properties instead.
+ * @see <a href="http://robolectric.org/device-configuration/">device configuration</a> for details.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Display.class)
@@ -398,6 +399,31 @@ public class ShadowDisplay {
       ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
           di -> di.state = state);
     }
+  }
+
+  /**
+   * Set HDR capabilities to the display sourced with displayId. see {@link HdrCapabilities} for
+   * supportedHdrTypes.
+   *
+   * @throws UnsupportedOperationException if the method is called below Android vesrsion N.
+   */
+  public void setDisplayHdrCapabilities(
+      int displayId,
+      float maxLuminance,
+      float maxAverageLuminance,
+      float minLuminance,
+      int... supportedHdrTypes) {
+    if (Build.VERSION.SDK_INT < VERSION_CODES.N) {
+      throw new UnsupportedOperationException("HDR capabilities are not supported below Android N");
+    }
+
+    ShadowDisplayManager.changeDisplay(
+        displayId,
+        displayConfig -> {
+          displayConfig.hdrCapabilities =
+              new HdrCapabilities(
+                  supportedHdrTypes, maxLuminance, maxAverageLuminance, minLuminance);
+        });
   }
 
   private boolean isJB() {

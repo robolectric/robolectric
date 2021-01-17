@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
@@ -16,6 +18,8 @@ import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowSmsManager.TextMultipartParams;
+import org.robolectric.shadows.ShadowSmsManager.TextSmsParams;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -60,7 +64,8 @@ public class ShadowSmsManagerTest {
 
   @Test
   public void sendMultipartMessage_shouldStoreLastSendMultimediaParameters() {
-    smsManager.sendMultipartTextMessage(destAddress, scAddress, Lists.newArrayList("Foo", "Bar", "Baz"), null, null);
+    smsManager.sendMultipartTextMessage(
+        destAddress, scAddress, Lists.newArrayList("Foo", "Bar", "Baz"), null, null);
     ShadowSmsManager.TextMultipartParams params = shadowOf(smsManager).getLastSentMultipartTextMessageParams();
 
     assertThat(params.getDestinationAddress()).isEqualTo(destAddress);
@@ -125,7 +130,8 @@ public class ShadowSmsManagerTest {
 
   @Test
   public void clearLastSentMultipartTextMessageParams_shouldClearParameters() {
-    smsManager.sendMultipartTextMessage(destAddress, scAddress, Lists.newArrayList("Foo", "Bar", "Baz"), null, null);
+    smsManager.sendMultipartTextMessage(
+        destAddress, scAddress, Lists.newArrayList("Foo", "Bar", "Baz"), null, null);
     assertThat(shadowOf(smsManager).getLastSentMultipartTextMessageParams()).isNotNull();
 
     shadowOf(smsManager).clearLastSentMultipartTextMessageParams();
@@ -233,5 +239,55 @@ public class ShadowSmsManagerTest {
 
     shadowOf(smsManager).clearLastDownloadedMultimediaMessageParams();
     assertThat(shadowOf(smsManager).getLastDownloadedMultimediaMessageParams()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void sendTextMessage_withMessageId_shouldStoreLastSentTextParameters() {
+    smsManager.sendTextMessage(destAddress, scAddress, "Body Text", null, null, 1231L);
+    TextSmsParams params = shadowOf(smsManager).getLastSentTextMessageParams();
+
+    assertThat(params.getDestinationAddress()).isEqualTo(destAddress);
+    assertThat(params.getScAddress()).isEqualTo(scAddress);
+    assertThat(params.getText()).isEqualTo("Body Text");
+    assertThat(params.getSentIntent()).isNull();
+    assertThat(params.getMessageId()).isEqualTo(1231L);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void sendMultipartMessage_withMessageId_shouldStoreLastSendMultimediaParameters() {
+    smsManager.sendMultipartTextMessage(
+        destAddress, scAddress, Lists.newArrayList("Foo", "Bar", "Baz"), null, null, 12312L);
+    TextMultipartParams params = shadowOf(smsManager).getLastSentMultipartTextMessageParams();
+
+    assertThat(params.getDestinationAddress()).isEqualTo(destAddress);
+    assertThat(params.getScAddress()).isEqualTo(scAddress);
+    assertThat(params.getParts()).containsExactly("Foo", "Bar", "Baz");
+    assertThat(params.getSentIntents()).isNull();
+    assertThat(params.getDeliveryIntents()).isNull();
+    assertThat(params.getMessageId()).isEqualTo(12312L);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void shouldGiveSmscAddress() {
+    shadowOf(smsManager).setSmscAddress("123-244-2222");
+    assertThat(smsManager.getSmscAddress()).isEqualTo("123-244-2222");
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSmscAddress_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+      throws Exception {
+    shadowOf(smsManager).setSmscAddressPermission(false);
+    assertThrows(SecurityException.class, () -> smsManager.getSmscAddress());
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void shouldGiveDefaultSmsSubscriptionId() {
+    ShadowSmsManager.setDefaultSmsSubscriptionId(3);
+    assertThat(ShadowSmsManager.getDefaultSmsSubscriptionId()).isEqualTo(3);
   }
 }

@@ -16,7 +16,7 @@ public final class ShadowGeocoder {
   private static boolean isPresent = true;
   private List<Address> fromLocation = new ArrayList<>();
 
-  /** @return `true` by default, or the value specified via {@link #setIsPresent(boolean)} */
+  /** @return true by default, or the value specified via {@link #setIsPresent(boolean)} */
   @Implementation
   protected static boolean isPresent() {
     return isPresent;
@@ -25,9 +25,9 @@ public final class ShadowGeocoder {
   /**
    * Returns an empty list by default, or the last value set by {@link #setFromLocation(List)}
    *
-   * `latitude` and `longitude` are ignored by this implementation, except to check that they are in
-   * appropriate bounds. `maxResults` determines the
-   * maximum number of addresses to return.
+   * <p>{@param latitude} and {@param longitude} are ignored by this implementation, except to check
+   * that they are in appropriate bounds. {@param maxResults} determines the maximum number of
+   * addresses to return.
    */
   @Implementation
   protected List<Address> getFromLocation(double latitude, double longitude, int maxResults)
@@ -44,7 +44,7 @@ public final class ShadowGeocoder {
   /**
    * Sets the value to be returned by {@link Geocoder#isPresent()}.
    *
-   * This value is reset to `true` for each test.
+   * <p>This value is reset to true for each test.
    */
   public static void setIsPresent(boolean value) {
     isPresent = value;

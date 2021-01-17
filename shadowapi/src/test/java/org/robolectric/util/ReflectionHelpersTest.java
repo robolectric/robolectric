@@ -84,6 +84,19 @@ public class ReflectionHelpersTest {
   }
 
   @Test
+  public void getFinalStaticFieldReflectively_withField_getsStaticField() throws Exception {
+    Field field = ExampleBase.class.getDeclaredField("BASE");
+
+    int result = ReflectionHelpers.getStaticField(field);
+    assertThat(result).isEqualTo(8);
+  }
+
+  @Test
+  public void getFinalStaticFieldReflectively_withFieldName_getsStaticField() throws Exception {
+    assertThat((int) ReflectionHelpers.getStaticField(ExampleBase.class, "BASE")).isEqualTo(8);
+  }
+
+  @Test
   public void setStaticFieldReflectively_withField_setsStaticFields() throws Exception {
     Field field = ExampleDescendant.class.getDeclaredField("DESCENDANT");
     int startingValue = ReflectionHelpers.getStaticField(field);
@@ -106,6 +119,20 @@ public class ReflectionHelpersTest {
 
     // Reset the value to avoid test pollution
     ReflectionHelpers.setStaticField(ExampleDescendant.class, "DESCENDANT", startingValue);
+  }
+
+  @Test
+  public void setFinalStaticFieldReflectively_withFieldName_setsStaticFields() {
+    int startingValue = ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD");
+
+    ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", 101);
+    assertWithMessage("startingValue").that(startingValue).isEqualTo(100);
+    assertWithMessage("BASE")
+        .that((int) ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD"))
+        .isEqualTo(101);
+
+    // Reset the value to avoid test pollution
+    ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", startingValue);
   }
 
   @Test
@@ -337,6 +364,11 @@ public class ReflectionHelpersTest {
     private static void staticThrowError() {
       throw new TestError();
     }
+  }
+
+  @SuppressWarnings("unused")
+  private static class ExampleWithFinalStatic {
+    private static final int FIELD = 100;
   }
 
   private static class ThrowsError {

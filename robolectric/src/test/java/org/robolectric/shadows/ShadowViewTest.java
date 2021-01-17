@@ -26,6 +26,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
@@ -41,15 +42,17 @@ import android.view.WindowId;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
+import android.view.animation.Transformation;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -309,7 +312,7 @@ public class ShadowViewTest {
     view.postInvalidateDelayed(1);
     assertFalse(shadowView.wasInvalidated());
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertTrue(shadowView.wasInvalidated());
   }
 
@@ -321,7 +324,7 @@ public class ShadowViewTest {
     view.postDelayed(runnable, 1);
     assertFalse(runnable.wasRun);
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertTrue(runnable.wasRun);
   }
 
@@ -332,7 +335,7 @@ public class ShadowViewTest {
 
     assertThat(view.removeCallbacks(runnable)).isTrue();
 
-    shadowMainLooper().idleFor(1, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertThat(runnable.wasRun).isFalse();
   }
 
@@ -392,6 +395,24 @@ public class ShadowViewTest {
     Animation anim = new TestAnimation();
     view.setAnimation(anim);
     assertThat(view.getAnimation()).isSameInstanceAs(anim);
+  }
+
+  @Test
+  public void clearAnimation_cancelsAnimation() throws Exception {
+    AtomicInteger numTicks = new AtomicInteger();
+    final Animation anim =
+        new Animation() {
+          @Override
+          protected void applyTransformation(float interpolatedTime, Transformation t) {
+            super.applyTransformation(interpolatedTime, t);
+            numTicks.incrementAndGet();
+          }
+        };
+    anim.setDuration(Duration.ofSeconds(1).toMillis());
+    view.setAnimation(anim);
+    view.clearAnimation();
+    shadowOf(Looper.getMainLooper()).runToEndOfTasks();
+    assertThat(numTicks.get()).isEqualTo(0);
   }
 
   @Test

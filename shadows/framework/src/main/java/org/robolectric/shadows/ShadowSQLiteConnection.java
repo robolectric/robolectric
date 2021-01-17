@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.database.sqlite.SQLiteAbortException;
@@ -324,8 +325,9 @@ public class ShadowSQLiteConnection {
     nativeRegisterCustomFunction((long) connectionPtr, function);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
-  public static void nativeRegisterCustomFunction(long connectionPtr, SQLiteCustomFunction function) {
+  @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
+  public static void nativeRegisterCustomFunction(
+      long connectionPtr, SQLiteCustomFunction function) {
     // not supported
   }
 
@@ -365,8 +367,13 @@ static class Connections {
     synchronized (lock) {
       final SQLiteConnection connection = connectionsMap.get(connectionPtr);
       if (connection == null) {
-        throw new IllegalStateException("Illegal connection pointer " + connectionPtr
-                + ". Current pointers for thread " + Thread.currentThread() + " " + connectionsMap.keySet());
+          throw new IllegalStateException(
+              "Illegal connection pointer "
+                  + connectionPtr
+                  + ". Current pointers for thread "
+                  + Thread.currentThread()
+                  + " "
+                  + connectionsMap.keySet());
       }
       return connection;
     }
@@ -379,10 +386,15 @@ static class Connections {
 
       final SQLiteStatement statement = statementsMap.get(statementPtr);
       if (statement == null) {
-        throw new IllegalArgumentException("Invalid prepared statement pointer: " + statementPtr + ". Current pointers: " + statementsMap.keySet());
+          throw new IllegalArgumentException(
+              "Invalid prepared statement pointer: "
+                  + statementPtr
+                  + ". Current pointers: "
+                  + statementsMap.keySet());
       }
       if (statement.isDisposed()) {
-        throw new IllegalStateException("Statement " + statementPtr + " " + statement + " is disposed");
+          throw new IllegalStateException(
+              "Statement " + statementPtr + " " + statement + " is disposed");
       }
       return statement;
     }
@@ -390,17 +402,21 @@ static class Connections {
 
   long open(final String path) {
     synchronized (lock) {
-      final SQLiteConnection dbConnection = execute("open SQLite connection", new Callable<SQLiteConnection>() {
-        @Override
-        public SQLiteConnection call() throws Exception {
-          SQLiteConnection connection = useInMemoryDatabase.get() || IN_MEMORY_PATH.equals(path)
-                  ? new SQLiteConnection()
-                  : new SQLiteConnection(new File(path));
+        final SQLiteConnection dbConnection =
+            execute(
+                "open SQLite connection",
+                new Callable<SQLiteConnection>() {
+                  @Override
+                  public SQLiteConnection call() throws Exception {
+                    SQLiteConnection connection =
+                        useInMemoryDatabase.get() || IN_MEMORY_PATH.equals(path)
+                            ? new SQLiteConnection()
+                            : new SQLiteConnection(new File(path));
 
-          connection.open();
-          return connection;
-        }
-      });
+                    connection.open();
+                    return connection;
+                  }
+                });
 
       final long connectionPtr = pointerCounter.incrementAndGet();
       connectionsMap.put(connectionPtr, dbConnection);
@@ -417,12 +433,15 @@ static class Connections {
 
     synchronized (lock) {
       final SQLiteConnection connection = getConnection(connectionPtr);
-      final SQLiteStatement statement = execute("prepare statement", new Callable<SQLiteStatement>() {
-        @Override
-        public SQLiteStatement call() throws Exception {
-          return connection.prepare(sql);
-        }
-      });
+        final SQLiteStatement statement =
+            execute(
+                "prepare statement",
+                new Callable<SQLiteStatement>() {
+                  @Override
+                  public SQLiteStatement call() throws Exception {
+                    return connection.prepare(sql);
+                  }
+                });
 
       final long statementPtr = pointerCounter.incrementAndGet();
       statementsMap.put(statementPtr, statement);
@@ -525,12 +544,16 @@ static class Connections {
       return 0;
     }
 
-    return executeStatementOperation(connectionPtr, statementPtr, "get parameters count in prepared statement", new StatementOperation<Integer>() {
-      @Override
-      public Integer call(final SQLiteStatement statement) throws Exception {
-        return statement.getBindParameterCount();
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "get parameters count in prepared statement",
+          new StatementOperation<Integer>() {
+            @Override
+            public Integer call(final SQLiteStatement statement) throws Exception {
+              return statement.getBindParameterCount();
+            }
+          });
   }
 
   boolean isReadOnly(final long connectionPtr, final long statementPtr) {
@@ -538,24 +561,33 @@ static class Connections {
       return true;
     }
 
-    return executeStatementOperation(connectionPtr, statementPtr, "call isReadOnly", new StatementOperation<Boolean>() {
-      @Override
-      public Boolean call(final SQLiteStatement statement) throws Exception {
-        return statement.isReadOnly();
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "call isReadOnly",
+          new StatementOperation<Boolean>() {
+            @Override
+            public Boolean call(final SQLiteStatement statement) throws Exception {
+              return statement.isReadOnly();
+            }
+          });
   }
 
   long executeForLong(final long connectionPtr, final long statementPtr) {
-    return executeStatementOperation(connectionPtr, statementPtr, "execute for long", new StatementOperation<Long>() {
-      @Override
-      public Long call(final SQLiteStatement statement) throws Exception {
-        if (!statement.step()) {
-          throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
-        }
-        return statement.columnLong(0);
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "execute for long",
+          new StatementOperation<Long>() {
+            @Override
+            public Long call(final SQLiteStatement statement) throws Exception {
+              if (!statement.step()) {
+                throw new SQLiteException(
+                    SQLiteConstants.SQLITE_DONE, "No rows returned from query");
+              }
+              return statement.columnLong(0);
+            }
+          });
   }
 
   void executeStatement(final long connectionPtr, final long statementPtr) {
@@ -563,93 +595,130 @@ static class Connections {
       return;
     }
 
-    executeStatementOperation(connectionPtr, statementPtr, "execute", new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.stepThrough();
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "execute",
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.stepThrough();
+              return null;
+            }
+          });
   }
 
   String executeForString(final long connectionPtr, final long statementPtr) {
-    return executeStatementOperation(connectionPtr, statementPtr, "execute for string", new StatementOperation<String>() {
-      @Override
-      public String call(final SQLiteStatement statement) throws Exception {
-        if (!statement.step()) {
-          throw new SQLiteException(SQLiteConstants.SQLITE_DONE, "No rows returned from query");
-        }
-        return statement.columnString(0);
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "execute for string",
+          new StatementOperation<String>() {
+            @Override
+            public String call(final SQLiteStatement statement) throws Exception {
+              if (!statement.step()) {
+                throw new SQLiteException(
+                    SQLiteConstants.SQLITE_DONE, "No rows returned from query");
+              }
+              return statement.columnString(0);
+            }
+          });
   }
 
   int getColumnCount(final long connectionPtr, final long statementPtr) {
-    return executeStatementOperation(connectionPtr, statementPtr, "get columns count", new StatementOperation<Integer>() {
-      @Override
-      public Integer call(final SQLiteStatement statement) throws Exception {
-        return statement.columnCount();
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "get columns count",
+          new StatementOperation<Integer>() {
+            @Override
+            public Integer call(final SQLiteStatement statement) throws Exception {
+              return statement.columnCount();
+            }
+          });
   }
 
   String getColumnName(final long connectionPtr, final long statementPtr, final int index) {
-    return executeStatementOperation(connectionPtr, statementPtr, "get column name at index " + index, new StatementOperation<String>() {
-      @Override
-      public String call(final SQLiteStatement statement) throws Exception {
-        return statement.getColumnName(index);
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "get column name at index " + index,
+          new StatementOperation<String>() {
+            @Override
+            public String call(final SQLiteStatement statement) throws Exception {
+              return statement.getColumnName(index);
+            }
+          });
   }
 
   void bindNull(final long connectionPtr, final long statementPtr, final int index) {
-    executeStatementOperation(connectionPtr, statementPtr, "bind null at index " + index, new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.bindNull(index);
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "bind null at index " + index,
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.bindNull(index);
+              return null;
+            }
+          });
   }
 
   void bindLong(final long connectionPtr, final long statementPtr, final int index, final long value) {
-    executeStatementOperation(connectionPtr, statementPtr, "bind long at index " + index + " with value " + value, new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.bind(index, value);
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "bind long at index " + index + " with value " + value,
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.bind(index, value);
+              return null;
+            }
+          });
   }
 
   void bindDouble(final long connectionPtr, final long statementPtr, final int index, final double value) {
-    executeStatementOperation(connectionPtr, statementPtr, "bind double at index " + index + " with value " + value, new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.bind(index, value);
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "bind double at index " + index + " with value " + value,
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.bind(index, value);
+              return null;
+            }
+          });
   }
 
   void bindString(final long connectionPtr, final long statementPtr, final int index, final String value) {
-    executeStatementOperation(connectionPtr, statementPtr, "bind string at index " + index, new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.bind(index, value);
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "bind string at index " + index,
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.bind(index, value);
+              return null;
+            }
+          });
   }
 
   void bindBlob(final long connectionPtr, final long statementPtr, final int index, final byte[] value) {
-    executeStatementOperation(connectionPtr, statementPtr, "bind blob at index " + index, new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.bind(index, value);
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "bind blob at index " + index,
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.bind(index, value);
+              return null;
+            }
+          });
   }
 
   int executeForChangedRowCount(final long connectionPtr, final long statementPtr) {
@@ -672,33 +741,43 @@ static class Connections {
       final SQLiteConnection connection = getConnection(connectionPtr);
       final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-      return execute("execute for last inserted row ID", new Callable<Long>() {
-        @Override
-        public Long call() throws Exception {
-          statement.stepThrough();
-          return connection.getLastInsertId();
-        }
-      });
+        return execute(
+            "execute for last inserted row ID",
+            new Callable<Long>() {
+              @Override
+              public Long call() throws Exception {
+                statement.stepThrough();
+                return connection.getChanges() > 0 ? connection.getLastInsertId() : -1L;
+              }
+            });
     }
   }
 
   long executeForCursorWindow(final long connectionPtr, final long statementPtr, final long windowPtr) {
-    return executeStatementOperation(connectionPtr, statementPtr, "execute for cursor window", new StatementOperation<Integer>() {
-      @Override
-      public Integer call(final SQLiteStatement statement) throws Exception {
-        return ShadowCursorWindow.setData(windowPtr, statement);
-      }
-    });
+      return executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "execute for cursor window",
+          new StatementOperation<Integer>() {
+            @Override
+            public Integer call(final SQLiteStatement statement) throws Exception {
+              return ShadowCursorWindow.setData(windowPtr, statement);
+            }
+          });
   }
 
   void resetStatementAndClearBindings(final long connectionPtr, final long statementPtr) {
-    executeStatementOperation(connectionPtr, statementPtr, "reset statement", new StatementOperation<Void>() {
-      @Override
-      public Void call(final SQLiteStatement statement) throws Exception {
-        statement.reset(true);
-        return null;
-      }
-    });
+      executeStatementOperation(
+          connectionPtr,
+          statementPtr,
+          "reset statement",
+          new StatementOperation<Void>() {
+            @Override
+            public Void call(final SQLiteStatement statement) throws Exception {
+              statement.reset(true);
+              return null;
+            }
+          });
   }
 
   interface StatementOperation<T> {
@@ -736,7 +815,8 @@ static class Connections {
     } catch (ExecutionException e) {
       Throwable t = e.getCause();
       if (t instanceof SQLiteException) {
-        final RuntimeException sqlException = getSqliteException("Cannot " + comment, ((SQLiteException) t).getBaseErrorCode());
+          final RuntimeException sqlException =
+              getSqliteException("Cannot " + comment, ((SQLiteException) t).getBaseErrorCode());
         sqlException.initCause(e);
         throw sqlException;
       } else {

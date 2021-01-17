@@ -579,7 +579,10 @@ public class NativeInput {
       mYPrecision = yPrecision;
       mDownTime = downTime;
       mPointerProperties.clear();
-      mPointerProperties.addAll(Arrays.asList(pointerProperties).subList(0, pointerCount));
+      for (int i = 0; i < pointerCount; i++) {
+        PointerProperties copy = new PointerProperties(pointerProperties[i]);
+        mPointerProperties.add(copy);
+      }
       mSampleEventTimes.clear();
       mSamplePointerCoords.clear();
       addSample(eventTime, Arrays.asList(pointerCoords).subList(0, pointerCount));

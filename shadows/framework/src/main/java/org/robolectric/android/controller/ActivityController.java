@@ -102,7 +102,7 @@ public class ActivityController<T extends Activity>
     }
   }
 
-  public ActivityController<T> create(final Bundle bundle) {
+  public ActivityController<T> create(@Nullable final Bundle bundle) {
     shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnCreate(component, bundle));
     return this;
   }
@@ -140,7 +140,7 @@ public class ActivityController<T extends Activity>
     return this;
   }
 
-  public ActivityController<T> postCreate(Bundle bundle) {
+  public ActivityController<T> postCreate(@Nullable Bundle bundle) {
     invokeWhilePaused("onPostCreate", from(Bundle.class, bundle));
     return this;
   }
@@ -237,8 +237,21 @@ public class ActivityController<T extends Activity>
     return this;
   }
 
-  @Override public ActivityController<T> destroy() {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnDestroy(component));
+  @Override
+  public ActivityController<T> destroy() {
+    shadowMainLooper.runPaused(
+        () -> {
+          getInstrumentation().callActivityOnDestroy(component);
+          // Clear WindowManager state for this activity. On real Android this is done by
+          // ActivityThread.handleDestroyActivity, which is initiated by the window manager
+          // service.
+          boolean windowAdded = ReflectionHelpers.getField(component, "mWindowAdded");
+          if (windowAdded) {
+            WindowManager windowManager = component.getWindowManager();
+            windowManager.removeViewImmediate(component.getWindow().getDecorView());
+          }
+        });
+
     return this;
   }
 
@@ -252,12 +265,13 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Calls the same lifecycle methods on the Activity called by Android when an Activity is restored from previously saved state.
+   * Calls the same lifecycle methods on the Activity called by Android when an Activity is restored
+   * from previously saved state.
    *
    * @param savedInstanceState Saved instance state.
    * @return Activity controller instance.
    */
-  public ActivityController<T> setup(Bundle savedInstanceState) {
+  public ActivityController<T> setup(@Nullable Bundle savedInstanceState) {
     return create(savedInstanceState)
         .start()
         .restoreInstanceState(savedInstanceState)
@@ -274,12 +288,13 @@ public class ActivityController<T extends Activity>
   /**
    * Applies the current system configuration to the Activity.
    *
-   * This can be used in conjunction with {@link RuntimeEnvironment#setQualifiers(String)} to
+   * <p>This can be used in conjunction with {@link RuntimeEnvironment#setQualifiers(String)} to
    * simulate configuration changes.
    *
-   * If the activity is configured to handle changes without being recreated,
-   * {@link Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity
-   * is recreated as described [here](https://developer.android.com/guide/topics/resources/runtime-changes.html).
+   * <p>If the activity is configured to handle changes without being recreated, {@link
+   * Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity is
+   * recreated as described <a
+   * href="https://developer.android.com/guide/topics/resources/runtime-changes.html">here</a>.
    *
    * @return ActivityController instance
    */
@@ -290,9 +305,10 @@ public class ActivityController<T extends Activity>
   /**
    * Performs a configuration change on the Activity.
    *
-   * If the activity is configured to handle changes without being recreated,
-   * {@link Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity
-   * is recreated as described [here](https://developer.android.com/guide/topics/resources/runtime-changes.html).
+   * <p>If the activity is configured to handle changes without being recreated, {@link
+   * Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity is
+   * recreated as described <a
+   * href="https://developer.android.com/guide/topics/resources/runtime-changes.html">here</a>.
    *
    * @param newConfiguration The new configuration to be set.
    * @return ActivityController instance

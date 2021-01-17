@@ -10,11 +10,11 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**
- * Provides cached access to `robolectric-properties` files, for all your configuration needs!
+ * Provides cached access to {@code robolectric-properties} files, for all your configuration needs!
  *
- * Used by {@link ConfigConfigurer} to support package configuration (see [Configuring
- * Robolectric](http://robolectric.org/configuring/) but it may be useful for other
- * {@link Configurer}s as well.
+ * <p>Used by {@link ConfigConfigurer} to support package configuration (see [Configuring
+ * Robolectric](http://robolectric.org/configuring/) but it may be useful for other {@link
+ * Configurer}s as well.
  */
 @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
 public class PackagePropertiesLoader {

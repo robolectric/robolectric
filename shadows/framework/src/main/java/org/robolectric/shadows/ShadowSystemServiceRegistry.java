@@ -100,8 +100,8 @@ public class ShadowSystemServiceRegistry {
   }
 
   /**
-   * Accessor interface for
-   * `android.app.SystemServiceRegistry.StaticOuterContextServiceFetcher`'s internals (for M).
+   * Accessor interface for {@code
+   * android.app.SystemServiceRegistry.StaticOuterContextServiceFetcher}'s internals (for M).
    */
   @ForType(className = STATIC_CONTEXT_SERVICE_FETCHER_CLASS_NAME_M)
   public interface _ServiceFetcherM_ extends _ServiceFetcher_ {

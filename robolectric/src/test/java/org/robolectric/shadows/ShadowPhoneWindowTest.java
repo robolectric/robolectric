@@ -27,7 +27,7 @@ public class ShadowPhoneWindowTest {
   @Test
   public void getTitle() throws Exception {
     window.setTitle("Some title");
-    assertThat(shadowOf(window).getTitle()).isEqualTo("Some title");
+    assertThat(shadowOf(window).getTitle().toString()).isEqualTo("Some title");
   }
 
   @Test

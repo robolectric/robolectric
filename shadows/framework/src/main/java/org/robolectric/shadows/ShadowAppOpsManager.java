@@ -5,14 +5,18 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.AppOpsManager;
+import android.app.AppOpsManager.AttributedOpEntry;
+import android.app.AppOpsManager.NoteOpEvent;
 import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
+import android.app.AppOpsManager.OpEventProxyInfo;
 import android.app.AppOpsManager.PackageOps;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -41,6 +45,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -49,11 +54,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
-  private static final long OP_TIME = 1400000000L;
-  private static final long REJECT_TIME = 0L;
-  private static final int DURATION = 10;
-  private static final int PROXY_UID = 0;
-  private static final String PROXY_PACKAGE = "";
+  protected static final long OP_TIME = 1400000000L;
+  protected static final long REJECT_TIME = 0L;
+  protected static final int DURATION = 10;
+  protected static final int PROXY_UID = 0;
+  protected static final String PROXY_PACKAGE = "";
 
   @RealObject private AppOpsManager realObject;
 
@@ -61,6 +66,9 @@ public class ShadowAppOpsManager {
   private Multimap<String, Integer> mStoredOps = HashMultimap.create();
   // "uid|packageName|opCode" => opMode
   private Map<String, Integer> appModeMap = new HashMap<>();
+
+  // "uid|packageName|opCode" => opMode
+  private Set<String> longRunningOp = new HashSet<>();
 
   // "packageName|opCode" => listener
   private BiMap<String, OnOpChangedListener> appOpListeners = HashBiMap.create();
@@ -133,6 +141,32 @@ public class ShadowAppOpsManager {
     return mode;
   }
 
+  /** Stores a fake long-running operation. It does not throw if a wrong uid is passed. */
+  @Implementation(minSdk = R)
+  protected int startOp(
+      String op, int uid, String packageName, String attributionTag, String message) {
+    int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
+    if (mode == AppOpsManager.MODE_ALLOWED) {
+      longRunningOp.add(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+    }
+    return mode;
+  }
+
+  /** Removes a fake long-running operation from the set. */
+  @Implementation(minSdk = R)
+  protected void finishOp(String op, int uid, String packageName, String attributionTag) {
+    longRunningOp.remove(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+  }
+
+  /**
+   * Checks whether the given op is active, i.e. did someone call {@link #startOp(String, int,
+   * String, String, String)} without {@link #finishOp(String, int, String, String)} yet.
+   */
+  @Implementation(minSdk = R)
+  protected boolean isOpActive(String op, int uid, String packageName) {
+    return longRunningOp.contains(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+  }
+
   /**
    * Like {@link #unsafeCheckOpNoThrow(String, int, String)} but returns the <em>raw</em> mode
    * associated with the op. Does not throw a security exception, does not translate {@link
@@ -170,13 +204,28 @@ public class ShadowAppOpsManager {
     return AppOpsManager.MODE_ALLOWED;
   }
 
+  @Implementation(minSdk = R)
+  protected int noteOp(int op, int uid, String packageName, String attributionTag, String message) {
+    return noteOp(op, uid, packageName);
+  }
+
   @Implementation(minSdk = KITKAT)
   protected int noteOpNoThrow(int op, int uid, String packageName) {
     mStoredOps.put(getInternalKey(uid, packageName), op);
     return checkOpNoThrow(op, uid, packageName);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = R)
+  protected int noteOpNoThrow(
+      int op,
+      int uid,
+      @Nullable String packageName,
+      @Nullable String attributionTag,
+      @Nullable String message) {
+    return noteOpNoThrow(op, uid, packageName);
+  }
+
+  @Implementation(minSdk = M, maxSdk = Q)
   @HiddenApi
   protected int noteProxyOpNoThrow(int op, String proxiedPackageName) {
     mStoredOps.put(getInternalKey(Binder.getCallingUid(), proxiedPackageName), op);
@@ -201,6 +250,28 @@ public class ShadowAppOpsManager {
     }
 
     return ImmutableList.of(new PackageOps(packageName, uid, opEntries));
+  }
+
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.GET_APP_OPS_STATS)
+  protected List<PackageOps> getOpsForPackage(int uid, String packageName, String[] ops) {
+    if (ops == null) {
+      int[] intOps = null;
+      return getOpsForPackage(uid, packageName, intOps);
+    }
+    Map<String, Integer> strOpToIntOp =
+        ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpStrToOp");
+    List<Integer> intOpsList = new ArrayList<>();
+    for (String op : ops) {
+      Integer intOp = strOpToIntOp.get(op);
+      if (intOp != null) {
+        intOpsList.add(intOp);
+      }
+    }
+
+    return getOpsForPackage(uid, packageName, intOpsList.stream().mapToInt(i -> i).toArray());
   }
 
   @Implementation(minSdk = KITKAT)
@@ -270,7 +341,7 @@ public class ShadowAppOpsManager {
           ClassParameter.from(int.class, DURATION),
           ClassParameter.from(int.class, PROXY_UID),
           ClassParameter.from(String.class, PROXY_PACKAGE));
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() < Build.VERSION_CODES.R) {
       final long key =
           AppOpsManager.makeKey(AppOpsManager.UID_STATE_TOP, AppOpsManager.OP_FLAG_SELF);
 
@@ -289,15 +360,33 @@ public class ShadowAppOpsManager {
       final LongSparseArray<String> proxyPackages = new LongSparseArray<>();
       proxyPackages.put(key, PROXY_PACKAGE);
 
+      return ReflectionHelpers.callConstructor(
+          OpEntry.class,
+          ClassParameter.from(int.class, op),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(int.class, AppOpsManager.MODE_ALLOWED),
+          ClassParameter.from(LongSparseLongArray.class, accessTimes),
+          ClassParameter.from(LongSparseLongArray.class, rejectTimes),
+          ClassParameter.from(LongSparseLongArray.class, durations),
+          ClassParameter.from(LongSparseLongArray.class, proxyUids),
+          ClassParameter.from(LongSparseArray.class, proxyPackages));
+    } else {
+      final long key =
+          AppOpsManager.makeKey(AppOpsManager.UID_STATE_TOP, AppOpsManager.OP_FLAG_SELF);
+
+      LongSparseArray<NoteOpEvent> accessEvents = new LongSparseArray<>();
+      LongSparseArray<NoteOpEvent> rejectEvents = new LongSparseArray<>();
+
+      accessEvents.put(
+          key,
+          new NoteOpEvent(OP_TIME, DURATION, new OpEventProxyInfo(PROXY_UID, PROXY_PACKAGE, null)));
+      rejectEvents.put(key, new NoteOpEvent(REJECT_TIME, -1, null));
+
       return new OpEntry(
           op,
-          false,
           AppOpsManager.MODE_ALLOWED,
-          accessTimes,
-          rejectTimes,
-          durations,
-          proxyUids,
-          proxyPackages);
+          Collections.singletonMap(
+              null, new AttributedOpEntry(op, false, accessEvents, rejectEvents)));
     }
   }
 
@@ -328,6 +417,14 @@ public class ShadowAppOpsManager {
           exceptionPackages == null
               ? Collections.emptyList()
               : Collections.unmodifiableList(Arrays.asList(exceptionPackages));
+    }
+  }
+
+  @Resetter
+  public static void reset() {
+    // The callback passed in AppOpsManager#setOnOpNotedCallback is stored statically.
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      ReflectionHelpers.setStaticField(AppOpsManager.class, "sOnOpNotedCallback", null);
     }
   }
 }

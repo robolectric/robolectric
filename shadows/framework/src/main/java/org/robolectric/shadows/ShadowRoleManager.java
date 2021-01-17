@@ -2,8 +2,8 @@ package org.robolectric.shadows;
 
 import android.app.role.RoleManager;
 import android.os.Build;
-import androidx.annotation.NonNull;
 import android.util.ArraySet;
+import androidx.annotation.NonNull;
 import com.android.internal.util.Preconditions;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;

@@ -7,8 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -21,6 +22,7 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
+import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
@@ -33,7 +35,6 @@ import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.internal.bytecode.ShadowMap;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.internal.bytecode.ClassHandlerBuilder;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.perf.Metadata;
 import org.robolectric.pluginapi.perf.Metric;
@@ -63,7 +64,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected final ClassHandlerBuilder classHandlerBuilder;
 
   private final List<PerfStatsReporter> perfStatsReporters;
-  private final HashSet<Class<?>> loadedTestClasses = new HashSet<>();
+  private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     this(klass, DEFAULT_INJECTOR);
@@ -97,8 +98,21 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       public void evaluate() throws Throwable {
         try {
           statement.evaluate();
-          for (Class<?> testClass : loadedTestClasses) {
-            invokeAfterClass(testClass);
+          for (Map.Entry<Class<?>, Sandbox> entry : loadedTestClasses.entrySet()) {
+            Sandbox sandbox = entry.getValue();
+            sandbox.runOnMainThread(
+                () -> {
+                  ClassLoader priorContextClassLoader =
+                      Thread.currentThread().getContextClassLoader();
+                  Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+                  try {
+                    invokeAfterClass(entry.getKey());
+                  } catch (Throwable throwable) {
+                    throw Util.sneakyThrow(throwable);
+                  } finally {
+                    Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+                  }
+                });
           }
         } finally {
           afterClass();
@@ -108,9 +122,9 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private void invokeBeforeClass(final Class clazz) throws Throwable {
-    if (!loadedTestClasses.contains(clazz)) {
-      loadedTestClasses.add(clazz);
+  private void invokeBeforeClass(final Class clazz, final Sandbox sandbox) throws Throwable {
+    if (!loadedTestClasses.containsKey(clazz)) {
+      loadedTestClasses.put(clazz, sandbox);
 
       final TestClass testClass = new TestClass(clazz);
       final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
@@ -223,58 +237,59 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
         Event initialization = perfStatsCollector.startEvent("initialization");
 
-        Sandbox sandbox = getSandbox(method);
+        final Sandbox sandbox = getSandbox(method);
 
         // Configure sandbox *BEFORE* setting the ClassLoader. This is necessary because
         // creating the ShadowMap loads all ShadowProviders via ServiceLoader and this is
         // not available once we install the Robolectric class loader.
         configureSandbox(sandbox, method);
 
-        sandbox.runOnMainThread(() -> {
-          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
-          Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+        sandbox.runOnMainThread(
+            () -> {
+              ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+              Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-          Class bootstrappedTestClass =
-              sandbox.bootstrappedClass(getTestClass().getJavaClass());
-          HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
-          helperTestRunner.frameworkMethod = method;
+              Class bootstrappedTestClass =
+                  sandbox.bootstrappedClass(getTestClass().getJavaClass());
+              HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+              helperTestRunner.frameworkMethod = method;
 
-          final Method bootstrappedMethod;
-          try {
-            //noinspection unchecked
-            bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
-          } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-          }
+              final Method bootstrappedMethod;
+              try {
+                //noinspection unchecked
+                bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
+              } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+              }
 
-          try {
-            // Only invoke @BeforeClass once per class
-            invokeBeforeClass(bootstrappedTestClass);
+              try {
+                // Only invoke @BeforeClass once per class
+                invokeBeforeClass(bootstrappedTestClass, sandbox);
 
-            beforeTest(sandbox, method, bootstrappedMethod);
+                beforeTest(sandbox, method, bootstrappedMethod);
 
-            initialization.finished();
+                initialization.finished();
 
-            Statement statement =
-                helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+                Statement statement =
+                    helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
 
-            // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
-            try {
-              statement.evaluate();
-            } finally {
-              afterTest(method, bootstrappedMethod);
-            }
-          } catch (Throwable throwable) {
-            throw Util.sneakyThrow(throwable);
-          } finally {
-            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-            try {
-              finallyAfterTest(method);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          }
-        });
+                // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+                try {
+                  statement.evaluate();
+                } finally {
+                  afterTest(method, bootstrappedMethod);
+                }
+              } catch (Throwable throwable) {
+                throw Util.sneakyThrow(throwable);
+              } finally {
+                Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+                try {
+                  finallyAfterTest(method);
+                } catch (Exception e) {
+                  e.printStackTrace();
+                }
+              }
+            });
 
         reportPerfStats(perfStatsCollector);
         perfStatsCollector.reset();
@@ -330,11 +345,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
-     * For tests with a timeout, we need to wrap the test method execution (but not `@Before`s or
-     * `@After`s) in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
-     * statement causes the test method (but not `@Before`s or `@After`s) to be run on a short-lived
-     * thread. This is inadequate for our purposes; we want to guarantee that every entry point to
-     * test code is run from the same thread.
+     * For tests with a timeout, we need to wrap the test method execution (but not {@code @Before}s
+     * or {@code @After}s in a {@link TimeLimitedStatement}. JUnit's built-in {@link FailOnTimeout}
+     * statement causes the test method (but not {@code @Before}s or {@code @After}s) to be run on a
+     * short-lived thread. This is inadequate for our purposes; we want to guarantee that every
+     * entry point to test code is run from the same thread.
      */
     @Override
     protected Statement methodInvoker(FrameworkMethod method, Object test) {

@@ -96,6 +96,8 @@ public class ShadowRenderNodeAnimatorTest {
 
     animator.end();
 
+    shadowMainLooper().idle();
+
     // This behavior changed between L and L MR1. In older versions, onAnimationEnd would always be
     // called without any guarantee that onAnimationStart had been called first.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {

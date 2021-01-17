@@ -14,6 +14,7 @@ import android.app.Application;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -568,6 +569,35 @@ public class ShadowPendingIntentTest {
     assertThat(resultCode.get()).isEqualTo(99);
   }
 
+  /** Verify options are sent along with the PendingIntent. */
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void send_broadcastWithOptions() throws CanceledException {
+    Intent intent = new Intent().setPackage("dummy.package");
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);
+
+    // Add an option for the PendingIntent broadcast.
+    final String keyDontSendToRestrictedApps = "android:broadcast.dontSendToRestrictedApps";
+    Bundle options = new Bundle();
+    options.putBoolean(keyDontSendToRestrictedApps, true);
+
+    // Send the pendingIntent with options.
+    pendingIntent.send(
+        context,
+        /* code= */ 0,
+        intent,
+        /* onFinished= */ null,
+        /* handler= */ null,
+        /* requiredPermission= */ null,
+        options);
+
+    // Verify the options are used when sending the PendingIntent.
+    ShadowApplication shadowApplication = shadowOf((Application) context);
+    Bundle sendOptions = shadowApplication.getBroadcastOptions(intent);
+    assertThat(sendOptions.getBoolean(keyDontSendToRestrictedApps)).isTrue();
+  }
+
   @Test
   public void oneShotFlag_differentiatesPendingIntents() {
     Intent intent = new Intent().setPackage("dummy.package");
@@ -686,5 +716,16 @@ public class ShadowPendingIntentTest {
     PendingIntent result = PendingIntent.readPendingIntentOrNullFromParcel(parcel);
 
     assertThat(result).isEqualTo(original);
+  }
+
+  @Test
+  public void testWriteToParcel() {
+    Intent embedded = new Intent().setComponent(new ComponentName("pkg", "cls"));
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, embedded, 0);
+    Parcel parcel = Parcel.obtain();
+    parcel.writeParcelable(pendingIntent, 0);
+    parcel.setDataPosition(0);
+    PendingIntent result = parcel.readParcelable(PendingIntent.class.getClassLoader());
+    assertThat(result).isEqualTo(pendingIntent);
   }
 }

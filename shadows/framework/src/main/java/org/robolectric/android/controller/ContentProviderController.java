@@ -5,6 +5,9 @@ import android.content.ContentProvider;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.util.Logger;
@@ -60,6 +63,11 @@ public class ContentProviderController<T extends ContentProvider>  {
    * @return this {@link ContentProviderController}
    */
   public ContentProviderController<T> create(ProviderInfo providerInfo) {
+    if (providerInfo != null) {
+      Preconditions.checkArgument(
+          !Strings.isNullOrEmpty(providerInfo.authority),
+          "ProviderInfo.authority must not be null or empty");
+    }
     Context baseContext = RuntimeEnvironment.application.getBaseContext();
     // make sure the component is enabled
     ComponentName componentName =
@@ -70,8 +78,10 @@ public class ContentProviderController<T extends ContentProvider>  {
             componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
     contentProvider.attachInfo(baseContext, providerInfo);
 
-    if (providerInfo != null) {
-      ShadowContentResolver.registerProviderInternal(providerInfo.authority, contentProvider);
+    if (providerInfo != null && providerInfo.authority != null) {
+      for (String authority : Splitter.on(';').split(providerInfo.authority)) {
+        ShadowContentResolver.registerProviderInternal(authority, contentProvider);
+      }
     }
 
     return this;

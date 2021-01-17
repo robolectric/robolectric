@@ -24,8 +24,8 @@ public final class ShadowLinuxTest {
   @Before
   public void setUp() throws Exception {
     shadowLinux = new ShadowLinux();
-    path = "/tmp/test.txt";
-    file = new File(path);
+    file = File.createTempFile("ShadowLinuxTest", null);
+    path = file.getAbsolutePath();
     try (FileOutputStream outputStream = new FileOutputStream(file)) {
       outputStream.write(1234);
     }

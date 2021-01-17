@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
 import android.os.UserHandle;
+import com.google.common.base.Strings;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -57,7 +59,7 @@ public class ShadowContextImpl {
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
-  private int userId = 0;
+  private Integer userId;
 
   /**
    * Returns the handle to a system-level service by name. If the service is not available in
@@ -369,7 +371,11 @@ public class ShadowContextImpl {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected int getUserId() {
-    return userId;
+    if (userId != null) {
+      return userId;
+    } else {
+      return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getUserId");
+    }
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)
@@ -436,6 +442,21 @@ public class ShadowContextImpl {
       return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getDatabasePath",
           ClassParameter.from(String.class, name));
     }
+  }
+
+  @Implementation
+  protected SharedPreferences getSharedPreferences(String name, int mode) {
+    // Windows does not allow colons in file names, which may be used in shared preference
+    // names. URL-encode any colons in Windows.
+    if (!Strings.isNullOrEmpty(name) && File.separatorChar == '\\') {
+      name = name.replace(":", "%3A");
+    }
+    return directlyOn(
+        realContextImpl,
+        ShadowContextImpl.CLASS_NAME,
+        "getSharedPreferences",
+        ClassParameter.from(String.class, name),
+        ClassParameter.from(int.class, mode));
   }
 
   /** Accessor interface for {@link android.app.ContextImpl}'s internals. */

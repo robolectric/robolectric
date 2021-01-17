@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.location.GnssStatus;
@@ -15,7 +16,7 @@ import org.robolectric.shadows.GnssStatusBuilder.GnssSatelliteInfo;
 
 /** Tests for {@link GnssStatusBuilder}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = N)
+@Config(minSdk = N, maxSdk = Q)
 public class GnssStatusBuilderTest {
 
   private static final int SVID = 42;

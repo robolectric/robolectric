@@ -1149,7 +1149,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
-        strictError("no such attr %s in %s while resolving value for %s", attribute.value, themeStyleSet, resName.getFullyQualifiedName());
+        strictError(
+            "no such attr %s in %s while resolving value for %s",
+            attribute.value, themeStyleSet, resName.getFullyQualifiedName());
         attribute = null;
       } else {
         attribute = new AttributeResource(resName, otherAttr.value, otherAttr.contextPackageName);
@@ -1224,8 +1226,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
             continue;
           }
           if (attributeValue != null) {
-            String defaultPackageName = ResourceIds.isFrameworkResource(resId) ? "android" : RuntimeEnvironment.application.getPackageName();
-            ResName resName = ResName.qualifyResName(attributeSet.getAttributeName(i), defaultPackageName, "attr");
+            String defaultPackageName =
+                ResourceIds.isFrameworkResource(resId)
+                    ? "android"
+                    : RuntimeEnvironment.application.getPackageName();
+            ResName resName =
+                ResName.qualifyResName(
+                    attributeSet.getAttributeName(i), defaultPackageName, "attr");
             Integer referenceResId = null;
             if (AttributeResource.isResourceReference(attributeValue)) {
               referenceResId = attributeSet.getAttributeResourceValue(i, -1);
@@ -1374,7 +1381,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return ShadowArscAssetManager9.nativeAssetGetRemainingLength(asset_ptr);
   }
 
-  @Implementation(minSdk = VERSION_CODES.Q)
+  @Implementation(minSdk = VERSION_CODES.Q, maxSdk = VERSION_CODES.R)
   protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
     return new String[0];
   }

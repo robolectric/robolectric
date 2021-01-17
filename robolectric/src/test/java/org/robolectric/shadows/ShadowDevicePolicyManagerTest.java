@@ -16,15 +16,18 @@ import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
@@ -53,16 +56,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for {@link ShadowDevicePolicyManager}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowDevicePolicyManagerTest {
+
+  private static final byte[] PASSWORD_TOKEN = new byte[32];
 
   private Application context;
   private DevicePolicyManager devicePolicyManager;
   private UserManager userManager;
   private ComponentName testComponent;
   private PackageManager packageManager;
+  private KeyguardManager keyguardManager;
 
   @Before
   public void setUp() {
@@ -71,6 +78,7 @@ public final class ShadowDevicePolicyManagerTest {
         (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
 
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
+    keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 
     testComponent = new ComponentName("com.example.app", "DeviceAdminReceiver");
 
@@ -496,6 +504,42 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN DevicePolicyManager#UninstallBlocked is called with the app
     // THEN it should return false
     assertThat(devicePolicyManager.isUninstallBlocked(testComponent, app)).isFalse();
+  }
+
+  @Test
+  @Config(sdk = LOLLIPOP)
+  public void isUninstallBlockedWithNullAdminShouldThrowNullPointerExceptionOnLollipop() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app which is blocked from being uninstalled
+    String app = "com.example.app";
+    devicePolicyManager.setUninstallBlocked(testComponent, app, true);
+
+    // WHEN DevicePolicyManager#UninstallBlocked is called with null admin
+    // THEN it should throw NullPointerException
+    try {
+      devicePolicyManager.isUninstallBlocked(/* admin= */ null, app);
+      fail("expected NullPointerException");
+    } catch (NullPointerException expected) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void
+      isUninstallBlockedWithNullAdminShouldNotThrowNullPointerExceptionOnLollipopMr1AndAbove() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app which is blocked from being uninstalled
+    String app = "com.example.app";
+    devicePolicyManager.setUninstallBlocked(testComponent, app, true);
+
+    // WHEN DevicePolicyManager#UninstallBlocked is called with null admin
+    // THEN it should not throw NullPointerException
+    assertThat(devicePolicyManager.isUninstallBlocked(/* admin= */ null, app)).isTrue();
   }
 
   @Test
@@ -1645,6 +1689,197 @@ public final class ShadowDevicePolicyManagerTest {
         .isTrue();
 
     assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void addResetPasswordToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    boolean result =
+        shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void addResetPasswordToken_badToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    try {
+      shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, new byte[13]);
+      fail("Should fail on too short token");
+    } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isResetPasswordTokenActive() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    assertThat(shadowOf(devicePolicyManager).isResetPasswordTokenActive(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isResetPasswordTokenActive_passwordSet() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    shadowOf(keyguardManager).setIsDeviceSecure(true);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    assertThat(shadowOf(devicePolicyManager).isResetPasswordTokenActive(testComponent)).isFalse();
+
+    shadowOf(devicePolicyManager).activateResetToken(testComponent);
+
+    assertThat(shadowOf(devicePolicyManager).isResetPasswordTokenActive(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    boolean result =
+        shadowOf(devicePolicyManager)
+            .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+
+    assertThat(result).isTrue();
+    assertThat(shadowOf(devicePolicyManager).getLastSetPassword()).isEqualTo("password");
+    assertThat(keyguardManager.isDeviceSecure()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken_noToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    try {
+      shadowOf(devicePolicyManager)
+          .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+      fail("Reset token not set");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken_noActiveToken() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(keyguardManager).setIsDeviceSecure(true);
+    shadowOf(devicePolicyManager).setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+
+    try {
+      shadowOf(devicePolicyManager)
+          .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+      fail("Should fail as token not activated");
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void resetPasswordWithToken_tokenActivated() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    shadowOf(keyguardManager).setIsDeviceSecure(true);
+    devicePolicyManager.setResetPasswordToken(testComponent, PASSWORD_TOKEN);
+    shadowOf(devicePolicyManager).activateResetToken(testComponent);
+
+    boolean result =
+        shadowOf(devicePolicyManager)
+            .resetPasswordWithToken(testComponent, "password", PASSWORD_TOKEN, 0);
+
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setShortSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.setShortSupportMessage(testComponent, "TEST SHORT SUPPORT MESSAGE");
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setShortSupportMessage_messageSet() {
+    final CharSequence testMessage = "TEST SHORT SUPPORT MESSAGE";
+    shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
+
+    devicePolicyManager.setShortSupportMessage(testComponent, testMessage);
+
+    assertThat(
+            devicePolicyManager
+                .getShortSupportMessage(testComponent)
+                .toString()
+                .contentEquals(testMessage))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getShortSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.getShortSupportMessage(testComponent);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setLongSupportMessage_notActivieAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.setLongSupportMessage(testComponent, "TEST LONG SUPPORT MESSAGE");
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setLongSupportMessage_messageSet() {
+    final CharSequence testMessage = "TEST LONG SUPPORT MESSAGE";
+    shadowOf(devicePolicyManager).setActiveAdmin(testComponent);
+
+    devicePolicyManager.setLongSupportMessage(testComponent, testMessage);
+
+    assertThat(
+            devicePolicyManager
+                .getLongSupportMessage(testComponent)
+                .toString()
+                .contentEquals(testMessage))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getLongSupportMessage_notActiveAdmin_throwsSecurityException() {
+    try {
+      devicePolicyManager.getLongSupportMessage(testComponent);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isOrganizationOwnedDeviceWithManagedProfile_shouldBeFalseByDefault() {
+    assertThat(devicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).isFalse();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void isOrganizationOwnedDeviceWithManagedProfile_setToTrueIfSet() {
+    Shadow.<ShadowDevicePolicyManager>extract(devicePolicyManager)
+        .setOrganizationOwnedDeviceWithManagedProfile(true);
+
+    assertThat(devicePolicyManager.isOrganizationOwnedDeviceWithManagedProfile()).isTrue();
   }
 
   private ServiceConnection buildServiceConnection() {

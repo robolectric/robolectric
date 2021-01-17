@@ -2,6 +2,7 @@ package org.robolectric.shadows.httpclient;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -10,7 +11,10 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
+/** Tests for {@link FakeHttpLayer} */
+@RunWith(AndroidJUnit4.class)
 public class FakeHttpLayerTest {
   private FakeHttpLayer.RequestMatcherBuilder requestMatcherBuilder;
 

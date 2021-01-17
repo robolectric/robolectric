@@ -385,25 +385,16 @@ final class ServiceFinder<S>
   }
 
   /**
-   * Creates a new service loader for the given service type and class
-   * loader.
+   * Creates a new service loader for the given service type and class loader.
    *
    * @param  <S> the class of the service type
-   *
-   * @param  service
-   *         The interface or abstract class representing the service
-   *
-   * @param  loader
-   *         The class loader to be used to load provider-configuration files
-   *         and provider classes, or <tt>null</tt> if the system class
-   *         loader (or, failing that, the bootstrap class loader) is to be
-   *         used
-   *
+   * @param service The interface or abstract class representing the service
+   * @param loader The class loader to be used to load provider-configuration files and provider
+   *     classes, or null if the system class loader (or, failing that, the bootstrap class loader)
+   *     is to be used
    * @return A new service loader
    */
-  public static <S> ServiceFinder<S> load(Class<S> service,
-      ClassLoader loader)
-  {
+  public static <S> ServiceFinder<S> load(Class<S> service, ClassLoader loader) {
     return new ServiceFinder<>(service, loader);
   }
 
@@ -436,29 +427,20 @@ final class ServiceFinder<S>
   }
 
   /**
-   * Creates a new service loader for the given service type, using the
-   * extension class loader.
+   * Creates a new service loader for the given service type, using the extension class loader.
    *
-   * <p> This convenience method simply locates the extension class loader,
-   * call it <tt><i>extClassLoader</i></tt>, and then returns
+   * <p>This convenience method simply locates the extension class loader, call it {@code
+   * extClassLoader}, and then returns {@code ServiceFinder.load(service, extClassLoader)}.
    *
-   * <blockquote><pre>
-   * ServiceFinder.load(<i>service</i>, <i>extClassLoader</i>)</pre></blockquote>
+   * <p>If the extension class loader cannot be found then the system class loader is used; if there
+   * is no system class loader then the bootstrap class loader is used.
    *
-   * <p> If the extension class loader cannot be found then the system class
-   * loader is used; if there is no system class loader then the bootstrap
-   * class loader is used.
-   *
-   * <p> This method is intended for use when only installed providers are
-   * desired.  The resulting service will only find and load providers that
-   * have been installed into the current Java virtual machine; providers on
-   * the application's class path will be ignored.
+   * <p>This method is intended for use when only installed providers are desired. The resulting
+   * service will only find and load providers that have been installed into the current Java
+   * virtual machine; providers on the application's class path will be ignored.
    *
    * @param  <S> the class of the service type
-   *
-   * @param  service
-   *         The interface or abstract class representing the service
-   *
+   * @param service The interface or abstract class representing the service
    * @return A new service loader
    */
   public static <S> ServiceFinder<S> loadInstalled(Class<S> service) {

@@ -3,14 +3,14 @@ package org.robolectric.internal.dependency;
 import java.net.URL;
 
 /**
- * Provides mapping between a Maven coordinate (e.g.
- * `org.robolectric:android-all:7.1.0_r7-robolectric-r1`) and a file on disk
- * (e.g. `android-all-7.1.0_r7-robolectric-r1.jar`).
+ * Provides mapping between a Maven coordinate (e.g. {@code
+ * org.robolectric:android-all:7.1.0_r7-robolectric-r1}) and a file on disk (e.g. {@code
+ * android-all-7.1.0_r7-robolectric-r1.jar}).
  *
- * An instance of `DependencyResolver` is employed when
- * {@link org.robolectric.plugins.DefaultSdkProvider} is used.
+ * <p>An instance of {@link DependencyResolver} is employed when {@link
+ * org.robolectric.plugins.DefaultSdkProvider} is used.
  *
- * See {@link org.robolectric.pluginapi} for instructions for providing your own implementation.
+ * <p>See {@link org.robolectric.pluginapi} for instructions for providing your own implementation.
  */
 public interface DependencyResolver {
   URL getLocalArtifactUrl(DependencyJar dependency);

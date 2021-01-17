@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import android.annotation.NonNull;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
@@ -223,11 +225,93 @@ public class ShadowUsageStatsManager {
   protected static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
       new LinkedHashMap<>();
 
+  /**
+   * App usage limit observer registered via {@link
+   * UsageStatsManager#registerAppUsageLimitObserver(int, String[], Duration, Duration,
+   * PendingIntent)}.
+   */
+  public static final class AppUsageLimitObserver {
+    private final int observerId;
+    private final ImmutableList<String> packageNames;
+    private final Duration timeLimit;
+    private final Duration timeUsed;
+    private final PendingIntent callbackIntent;
+
+    public AppUsageLimitObserver(
+        int observerId,
+        @NonNull List<String> packageNames,
+        @NonNull Duration timeLimit,
+        @NonNull Duration timeUsed,
+        @NonNull PendingIntent callbackIntent) {
+      this.observerId = observerId;
+      this.packageNames = ImmutableList.copyOf(packageNames);
+      this.timeLimit = checkNotNull(timeLimit);
+      this.timeUsed = checkNotNull(timeUsed);
+      this.callbackIntent = checkNotNull(callbackIntent);
+    }
+
+    public int getObserverId() {
+      return observerId;
+    }
+
+    @NonNull
+    public ImmutableList<String> getPackageNames() {
+      return packageNames;
+    }
+
+    @NonNull
+    public Duration getTimeLimit() {
+      return timeLimit;
+    }
+
+    @NonNull
+    public Duration getTimeUsed() {
+      return timeUsed;
+    }
+
+    @NonNull
+    public PendingIntent getCallbackIntent() {
+      return callbackIntent;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      AppUsageLimitObserver that = (AppUsageLimitObserver) o;
+      return observerId == that.observerId
+          && packageNames.equals(that.packageNames)
+          && timeLimit.equals(that.timeLimit)
+          && timeUsed.equals(that.timeUsed)
+          && callbackIntent.equals(that.callbackIntent);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = observerId;
+      result = 31 * result + packageNames.hashCode();
+      result = 31 * result + timeLimit.hashCode();
+      result = 31 * result + timeUsed.hashCode();
+      result = 31 * result + callbackIntent.hashCode();
+      return result;
+    }
+  }
+
+  private static final Map<Integer, AppUsageLimitObserver> appUsageLimitObserversById =
+      Maps.newConcurrentMap();
+
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
     List<Event> results =
         ImmutableList.copyOf(eventsByTimeStamp.subMap(beginTime, endTime).values());
+    return createUsageEvents(results);
+  }
 
+  private static UsageEvents createUsageEvents(List<Event> results) {
     ArraySet<String> names = new ArraySet<>();
     for (Event result : results) {
       names.add(result.mPackage);
@@ -247,6 +331,18 @@ public class ShadowUsageStatsManager {
     // Then the app unmarshalls the usage events from the Parcel.
     parcel.setDataPosition(0);
     return new UsageEvents(parcel);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.P)
+  protected UsageEvents queryEventsForSelf(long beginTime, long endTime) {
+    String packageName = RuntimeEnvironment.application.getOpPackageName();
+    ImmutableList.Builder<Event> listBuilder = new ImmutableList.Builder<>();
+    for (Event event : eventsByTimeStamp.subMap(beginTime, endTime).values()) {
+      if (packageName.equals(event.getPackageName())) {
+        listBuilder.add(event);
+      }
+    }
+    return createUsageEvents(listBuilder.build());
   }
 
   /**
@@ -476,6 +572,62 @@ public class ShadowUsageStatsManager {
   }
 
   /**
+   * Registers an app usage limit observer that receives a callback on {@code callbackIntent} when
+   * the sum of usages of apps and tokens in {@code observedEntities} exceeds {@code timeLimit -
+   * timeUsed}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @HiddenApi
+  protected void registerAppUsageLimitObserver(
+      int observerId,
+      String[] observedEntities,
+      Duration timeLimit,
+      Duration timeUsed,
+      PendingIntent callbackIntent) {
+    appUsageLimitObserversById.put(
+        observerId,
+        new AppUsageLimitObserver(
+            observerId,
+            ImmutableList.copyOf(observedEntities),
+            timeLimit,
+            timeUsed,
+            callbackIntent));
+  }
+
+  /** Unregisters the app usage limit observer specified by {@code observerId}. */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  @HiddenApi
+  protected void unregisterAppUsageLimitObserver(int observerId) {
+    appUsageLimitObserversById.remove(observerId);
+  }
+
+  /**
+   * Returns the {@link AppUsageLimitObserver}s currently registered in {@link UsageStatsManager}.
+   */
+  public ImmutableList<AppUsageLimitObserver> getRegisteredAppUsageLimitObservers() {
+    return ImmutableList.copyOf(appUsageLimitObserversById.values());
+  }
+
+  /**
+   * Triggers a currently registered {@link AppUsageLimitObserver} with {@code observerId}.
+   *
+   * <p>The observer will still be registered afterwards.
+   */
+  public void triggerRegisteredAppUsageLimitObserver(int observerId, Duration timeUsed) {
+    AppUsageLimitObserver observer = appUsageLimitObserversById.get(observerId);
+    Intent intent =
+        new Intent()
+            .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
+            .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, observer.timeLimit.toMillis())
+            .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsed.toMillis());
+    try {
+      observer.callbackIntent.send(RuntimeEnvironment.application, 0, intent);
+    } catch (CanceledException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
    * Returns the current app's standby bucket that is set by {@code setCurrentAppStandbyBucket}. If
    * the standby bucket value has never been set, return {@link
    * UsageStatsManager.STANDBY_BUCKET_ACTIVE}.
@@ -513,6 +665,7 @@ public class ShadowUsageStatsManager {
     appStandbyBuckets.clear();
     appUsageObserversById.clear();
     usageSessionObserversById.clear();
+    appUsageLimitObserversById.clear();
   }
 
   /**
@@ -635,6 +788,13 @@ public class ShadowUsageStatsManager {
     @TargetApi(Build.VERSION_CODES.Q)
     public EventBuilder setTaskRootClass(String taskRootClass) {
       event.mTaskRootClass = taskRootClass;
+      return this;
+    }
+
+    @TargetApi(Build.VERSION_CODES.P)
+    public EventBuilder setAppStandbyBucket(int bucket) {
+      event.mBucketAndReason &= 0xFFFF;
+      event.mBucketAndReason |= bucket << 16;
       return this;
     }
   }

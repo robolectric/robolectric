@@ -72,10 +72,10 @@ public class RoboMenuTest {
     menu.add(0, 0, 0, "hello");
 
     MenuItem item = menu.getItem(0);
-    assertEquals("hell0", item.getTitle());
+    assertEquals("hell0", item.getTitle().toString());
     item = menu.getItem(1);
-    assertEquals("hello", item.getTitle());
+    assertEquals("hello", item.getTitle().toString());
     item = menu.getItem(2);
-    assertEquals("greeting", item.getTitle());
+    assertEquals("greeting", item.getTitle().toString());
   }
 }

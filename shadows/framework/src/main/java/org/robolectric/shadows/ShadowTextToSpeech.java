@@ -10,16 +10,31 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
+import com.google.common.collect.ImmutableList;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
+
+  private static final Set<Locale> languageAvailabilities = new HashSet<>();
+  private static final Set<Voice> voices = new HashSet<>();
+  private static TextToSpeech lastTextToSpeechInstance;
+  private static int onInitStatus = TextToSpeech.SUCCESS;
 
   @RealObject private TextToSpeech tts;
 
@@ -29,11 +44,52 @@ public class ShadowTextToSpeech {
   private boolean shutdown = false;
   private boolean stopped = true;
   private int queueMode = -1;
+  private Locale language = null;
+  private String lastSynthesizeToFileText;
+  private Voice currentVoice = null;
+
+  private final List<String> spokenTextList = new ArrayList<>();
 
   @Implementation
-  protected void __constructor__(Context context, TextToSpeech.OnInitListener listener) {
+  protected void __constructor__(
+      Context context,
+      TextToSpeech.OnInitListener listener,
+      String engine,
+      String packageName,
+      boolean useFallback) {
     this.context = context;
     this.listener = listener;
+    lastTextToSpeechInstance = tts;
+    Shadow.invokeConstructor(
+        TextToSpeech.class,
+        tts,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(TextToSpeech.OnInitListener.class, listener),
+        ClassParameter.from(String.class, engine),
+        ClassParameter.from(String.class, packageName),
+        ClassParameter.from(boolean.class, useFallback));
+  }
+
+  @Implementation
+  protected int initTts() {
+    // Attempt to model real Android code, where success callbacks occur asynchronously and error
+    // callbacks occur immediately.
+    if (listener != null) {
+      if (onInitStatus == TextToSpeech.SUCCESS) {
+        new Handler(Looper.getMainLooper()).post(() -> listener.onInit(onInitStatus));
+      } else {
+        listener.onInit(onInitStatus);
+      }
+    }
+    return onInitStatus;
+  }
+
+  /**
+   * Sets the code used by the {@link android.speech.tts.TextToSpeech.OnInitListener} callback
+   * during initialization. This can test cases where {@link TextToSpeech.ERROR} is used.
+   */
+  public static void setOnInitStatus(int status) {
+    onInitStatus = status;
   }
 
   /**
@@ -57,6 +113,7 @@ public class ShadowTextToSpeech {
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     stopped = false;
     lastSpokenText = text.toString();
+    spokenTextList.add(text.toString());
     this.queueMode = queueMode;
 
     if (RuntimeEnvironment.getApiLevel() >= ICE_CREAM_SANDWICH_MR1) {
@@ -99,7 +156,51 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
-  private UtteranceProgressListener getUtteranceProgressListener() {
+  @Implementation
+  protected int isLanguageAvailable(Locale lang) {
+    for (Locale locale : languageAvailabilities) {
+      if (locale.getISO3Language().equals(lang.getISO3Language())) {
+        if (locale.getISO3Country().equals(lang.getISO3Country())) {
+          if (locale.getVariant().equals(lang.getVariant())) {
+            return TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE;
+          }
+          return TextToSpeech.LANG_COUNTRY_AVAILABLE;
+        }
+        return TextToSpeech.LANG_AVAILABLE;
+      }
+    }
+    return TextToSpeech.LANG_NOT_SUPPORTED;
+  }
+
+  @Implementation
+  protected int setLanguage(Locale locale) {
+    this.language = locale;
+    return isLanguageAvailable(locale);
+  }
+
+  /**
+   * Stores {@code text} and returns {@link TextToSpeech#SUCCESS}.
+   *
+   * @see #getLastSynthesizeToFileText()
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected int synthesizeToFile(CharSequence text, Bundle params, File file, String utteranceId) {
+    this.lastSynthesizeToFileText = text.toString();
+    return TextToSpeech.SUCCESS;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected int setVoice(Voice voice) {
+    this.currentVoice = voice;
+    return TextToSpeech.SUCCESS;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected Set<Voice> getVoices() {
+    return voices;
+  }
+
+  public UtteranceProgressListener getUtteranceProgressListener() {
     return ReflectionHelpers.getField(tts, "mUtteranceProgressListener");
   }
 
@@ -130,5 +231,57 @@ public class ShadowTextToSpeech {
 
   public int getQueueMode() {
     return queueMode;
+  }
+
+  /**
+   * Returns {@link Locale} set using {@link TextToSpeech#setLanguage(Locale)} or null if not set.
+   */
+  public Locale getCurrentLanguage() {
+    return language;
+  }
+
+  /**
+   * Returns last text {@link CharSequence} passed to {@link
+   * TextToSpeech#synthesizeToFile(CharSequence, Bundle, File, String)}.
+   */
+  public String getLastSynthesizeToFileText() {
+    return lastSynthesizeToFileText;
+  }
+
+  /** Returns list of all the text spoken by {@link #speak}. */
+  public ImmutableList<String> getSpokenTextList() {
+    return ImmutableList.copyOf(spokenTextList);
+  }
+
+  /**
+   * Makes {@link Locale} an available language returned by {@link
+   * TextToSpeech#isLanguageAvailable(Locale)}. The value returned by {@link
+   * #isLanguageAvailable(Locale)} will vary depending on language, country, and variant.
+   */
+  public static void addLanguageAvailability(Locale locale) {
+    languageAvailabilities.add(locale);
+  }
+
+  /** Makes {@link Voice} an available voice returned by {@link TextToSpeech#getVoices()}. */
+  public static void addVoice(Voice voice) {
+    voices.add(voice);
+  }
+
+  /** Returns {@link Voice} set using {@link TextToSpeech#setVoice(Voice)}, or null if not set. */
+  public Voice getCurrentVoice() {
+    return currentVoice;
+  }
+
+  /** Returns the most recently instantiated {@link TextToSpeech} or null if none exist. */
+  public static TextToSpeech getLastTextToSpeechInstance() {
+    return lastTextToSpeechInstance;
+  }
+
+  @Resetter
+  public static void reset() {
+    languageAvailabilities.clear();
+    voices.clear();
+    lastTextToSpeechInstance = null;
+    onInitStatus = TextToSpeech.SUCCESS;
   }
 }

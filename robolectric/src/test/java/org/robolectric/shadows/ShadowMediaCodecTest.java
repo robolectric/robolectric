@@ -3,8 +3,11 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.copyOfRange;
+import static java.util.Collections.max;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
@@ -14,13 +17,18 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCodec.Callback;
+import android.media.MediaCodec.CodecException;
 import android.media.MediaCodecInfo.CodecProfileLevel;
+import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Build;
+import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig;
+import org.robolectric.shadows.ShadowMediaCodec.CodecConfig.Codec;
 
 /** Tests for {@link ShadowMediaCodec}. */
 @RunWith(AndroidJUnit4.class)
@@ -41,6 +50,114 @@ public final class ShadowMediaCodecTest {
   @After
   public void tearDown() throws Exception {
     ShadowMediaCodec.clearCodecs();
+  }
+
+  @Test
+  public void dequeueInputBuffer_inAsyncMode_throws() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    try {
+      codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  public void dequeueOutputBuffer_inASyncMode_throws() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    try {
+      codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+      fail();
+    } catch (IllegalStateException expected) {
+    }
+  }
+
+  @Test
+  public void dequeueAllInputBuffersThenReleaseOutputBuffer_allowsDequeueInputBuffer()
+      throws IOException {
+    MediaCodec codec = createSyncEncoder();
+    int bufferIndex;
+    ByteBuffer buffer;
+
+    for (int i = 0; i < ShadowMediaCodec.BUFFER_COUNT; i++) {
+      bufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+      assertThat(bufferIndex).isNotEqualTo(MediaCodec.INFO_TRY_AGAIN_LATER);
+      buffer = codec.getInputBuffer(bufferIndex);
+
+      int start = buffer.position();
+      // "Write" to the buffer.
+      buffer.position(buffer.limit());
+      codec.queueInputBuffer(
+          bufferIndex,
+          /* offset= */ start,
+          /* size= */ buffer.position() - start,
+          /* presentationTimeUs= */ 0,
+          /* flags= */ 0);
+    }
+
+    // Cannot dequeue buffer after all available buffers are dequeued.
+    bufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    assertThat(bufferIndex).isEqualTo(MediaCodec.INFO_TRY_AGAIN_LATER);
+
+    // The first dequeueOutputBuffer should return MediaCodec.INFO_OUTPUT_FORMAT_CHANGED
+    codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+    bufferIndex = codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+
+    codec.releaseOutputBuffer(bufferIndex, /* render= */ false);
+    // We should be able to dequeue the corresponding input buffer.
+    int dequeuedInputbufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    assertThat(dequeuedInputbufferIndex).isEqualTo(bufferIndex);
+  }
+
+  @Test
+  public void getInputBuffer_withInvalidIndex_returnsNull() throws IOException {
+    List<Integer> inputBuffers = new ArrayList<>();
+    MediaCodecCallback callback =
+        new MediaCodecCallback() {
+          @Override
+          public void onInputBufferAvailable(MediaCodec codec, int inputBufferId) {
+            inputBuffers.add(inputBufferId);
+          }
+        };
+    MediaCodec codec = createAsyncEncoder(callback);
+    int invalidInputIndex = inputBuffers.isEmpty() ? 0 : max(inputBuffers) + 1;
+
+    assertThat(codec.getInputBuffer(invalidInputIndex)).isNull();
+  }
+
+  @Test
+  public void queueInputBuffer_withInvalidIndex_throws() throws IOException {
+    List<Integer> inputBuffers = new ArrayList<>();
+    MediaCodecCallback callback =
+        new MediaCodecCallback() {
+          @Override
+          public void onInputBufferAvailable(MediaCodec codec, int inputBufferId) {
+            inputBuffers.add(inputBufferId);
+          }
+        };
+
+    MediaCodec codec = createAsyncEncoder(callback);
+    int invalidInputIndex = inputBuffers.isEmpty() ? 0 : max(inputBuffers) + 1;
+
+    try {
+      codec.queueInputBuffer(
+          invalidInputIndex,
+          /* offset= */ 0,
+          /* size= */ 128,
+          /* presentationTimeUs= */ 0,
+          /* flags= */ 0);
+      fail();
+    } catch (CodecException expected) {
+    }
+  }
+
+  @Test
+  public void getOutputBuffer_withInvalidIndex_returnsNull() throws IOException {
+    MediaCodec codec = createAsyncEncoder();
+
+    assertThat(codec.getOutputBuffer(/* index= */ -1)).isNull();
   }
 
   @Test
@@ -225,6 +342,41 @@ public final class ShadowMediaCodecTest {
   }
 
   @Test
+  public void customDecoder_setsCorrectOutputFormat() throws IOException {
+    Codec mockDecoder = mock(Codec.class);
+    ShadowMediaCodec.addDecoder(
+        AUDIO_MIME,
+        new ShadowMediaCodec.CodecConfig(
+            /* inputBufferSize= */ 10, /* outputBufferSize= */ 10, mockDecoder));
+
+    // Creates decoder and configures with AAC format.
+    MediaFormat outputFormat = getBasicAacFormat();
+    MediaCodec codec = MediaCodec.createDecoderByType(AUDIO_MIME);
+    codec.configure(outputFormat, /* surface= */ null, /* crypto= */ null, /* flags= */ 0);
+    codec.start();
+
+    ArgumentCaptor<MediaFormat> mediaFormatCaptor = ArgumentCaptor.forClass(MediaFormat.class);
+    verify(mockDecoder)
+        .onConfigured(
+            mediaFormatCaptor.capture(),
+            nullable(Surface.class),
+            nullable(MediaCrypto.class),
+            anyInt());
+    MediaFormat capturedFormat = mediaFormatCaptor.getValue();
+
+    assertThat(capturedFormat.getString(MediaFormat.KEY_MIME))
+        .isEqualTo(outputFormat.getString(MediaFormat.KEY_MIME));
+    assertThat(capturedFormat.getInteger(MediaFormat.KEY_BIT_RATE))
+        .isEqualTo(outputFormat.getInteger(MediaFormat.KEY_BIT_RATE));
+    assertThat(capturedFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT))
+        .isEqualTo(outputFormat.getInteger(MediaFormat.KEY_CHANNEL_COUNT));
+    assertThat(capturedFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE))
+        .isEqualTo(outputFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE));
+    assertThat(capturedFormat.getInteger(MediaFormat.KEY_AAC_PROFILE))
+        .isEqualTo(outputFormat.getInteger(MediaFormat.KEY_AAC_PROFILE));
+  }
+
+  @Test
   public void inSyncMode_outputBufferInfoPopulated() throws Exception {
     MediaCodec codec = createSyncEncoder();
     int inputBuffer = codec.dequeueInputBuffer(/*timeoutUs=*/ 0);
@@ -306,6 +458,113 @@ public final class ShadowMediaCodecTest {
         .isEqualTo(basicAacFormat.getInteger(MediaFormat.KEY_AAC_PROFILE));
   }
 
+  @Test
+  public void inSyncMode_getInputBufferWithoutDequeue_returnsNull() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    assertThat(codec.getInputBuffer(/* index= */ 0)).isNull();
+  }
+
+  @Test
+  public void inSyncMode_queueingInputBufferWithoutDequeue_throws() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    try {
+      codec.queueInputBuffer(
+          /* index= */ 0,
+          /* offset= */ 0,
+          /* size= */ 0,
+          /* presentationTimeUs= */ 0,
+          /* flags= */ 0);
+      fail();
+    } catch (CodecException expected) {
+    }
+  }
+
+  @Test
+  public void inSyncMode_queueInputBufferTwice_throws() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    int inputIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    codec.getInputBuffer(inputIndex).put(generateByteArray(/* size= */ 128));
+    codec.queueInputBuffer(
+        inputIndex, /* offset= */ 0, /* size= */ 128, /* presentationTimeUs= */ 0, /* flags= */ 0);
+
+    try {
+      codec.queueInputBuffer(
+          inputIndex,
+          /* offset= */ 0,
+          /* size= */ 128,
+          /* presentationTimeUs= */ 0,
+          /* flags= */ 0);
+      fail();
+    } catch (CodecException expected) {
+    }
+  }
+
+  @Test
+  public void inSyncMode_flushDiscardsQueuedInputBuffer() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+    // Dequeue the output format
+    codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0);
+
+    int inputBufferIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    codec.getInputBuffer(inputBufferIndex).put(generateByteArray(/* size= */ 128));
+    codec.queueInputBuffer(
+        inputBufferIndex,
+        /* offset= */ 0,
+        /* size= */ 128,
+        /* presentationTimeUs= */ 123456,
+        /* flags= */ 0);
+    codec.flush();
+
+    assertThat(codec.dequeueOutputBuffer(new BufferInfo(), /* timeoutUs= */ 0))
+        .isEqualTo(MediaCodec.INFO_TRY_AGAIN_LATER);
+    assertThat(codec.dequeueInputBuffer(/* timeoutUs= */ 0)).isEqualTo(inputBufferIndex);
+    assertThat(codec.getInputBuffer(inputBufferIndex).position()).isEqualTo(0);
+  }
+
+  @Test
+  public void inSyncMode_flushProvidesInputBuffersAgain() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    // Dequeue all input buffers
+    while (codec.dequeueInputBuffer(/* timeoutUs= */ 0) != MediaCodec.INFO_TRY_AGAIN_LATER) {}
+    codec.flush();
+
+    assertThat(codec.dequeueInputBuffer(/* timeoutUs= */ 0)).isAtLeast(0);
+  }
+
+  @Test
+  public void inSyncMode_afterFlushGetInputBuffer_returnsNull() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    int inputIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    codec.flush();
+
+    assertThat(codec.getInputBuffer(inputIndex)).isNull();
+  }
+
+  @Test
+  public void inSyncMode_afterFlushCannotQueueInputBufferThatIsNotDequeued() throws IOException {
+    MediaCodec codec = createSyncEncoder();
+
+    int inputIndex = codec.dequeueInputBuffer(/* timeoutUs= */ 0);
+    codec.getInputBuffer(inputIndex).put(generateByteArray(/* size= */ 128));
+    codec.flush();
+
+    try {
+      codec.queueInputBuffer(
+          inputIndex,
+          /* offset= */ 0,
+          /* size= */ 128,
+          /* presentationTimeUs= */ 0,
+          /* flags= */ 0);
+      fail();
+    } catch (CodecException expected) {
+    }
+  }
+
   public static <T> T asyncVerify(T mock) {
     shadowMainLooper().idle();
     return verify(mock);
@@ -317,8 +576,12 @@ public final class ShadowMediaCodecTest {
   }
 
   private MediaCodec createAsyncEncoder() throws IOException {
-    MediaCodec codec = MediaCodec.createEncoderByType(AUDIO_MIME);
     callback = mock(MediaCodecCallback.class);
+    return createAsyncEncoder(callback);
+  }
+
+  private static MediaCodec createAsyncEncoder(MediaCodec.Callback callback) throws IOException {
+    MediaCodec codec = MediaCodec.createEncoderByType(AUDIO_MIME);
     codec.setCallback(callback);
 
     codec.configure(

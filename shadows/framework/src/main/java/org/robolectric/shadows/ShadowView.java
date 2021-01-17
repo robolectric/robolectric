@@ -38,12 +38,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.pluginapi.AccessibilityChecker;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
-import org.robolectric.util.inject.Injector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -66,13 +64,12 @@ public class ShadowView {
   public Point scrollToCoordinates = new Point();
   private boolean didRequestLayout;
   private MotionEvent lastTouchEvent;
-  private float scaleX = 1.0f;
-  private float scaleY = 1.0f;
   private int hapticFeedbackPerformed = -1;
   private boolean onLayoutWasCalled;
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
   private Rect globalVisibleRect;
   private int layerType;
+  private AnimationRunner animationRunner;
 
   /**
    * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
@@ -297,7 +294,8 @@ public class ShadowView {
   @Deprecated
   protected void dumpAttributes(PrintStream out) {
     if (realView.getId() > 0) {
-      dumpAttribute(out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
+      dumpAttribute(
+          out, "id", realView.getContext().getResources().getResourceName(realView.getId()));
     }
 
     switch (realView.getVisibility()) {
@@ -353,8 +351,6 @@ public class ShadowView {
     if (!realView.isEnabled()) {
       throw new RuntimeException("View is not enabled and cannot be clicked");
     }
-
-    getAccessibilityChecker().checkViewAccessibility(realView);
     boolean res = realView.performClick();
     shadowMainLooper().idleIfPaused();
     return res;
@@ -459,7 +455,9 @@ public class ShadowView {
   @Implementation
   protected void scrollTo(int x, int y) {
     try {
-      Method method = View.class.getDeclaredMethod("onScrollChanged", new Class[]{int.class, int.class, int.class, int.class});
+      Method method =
+          View.class.getDeclaredMethod(
+              "onScrollChanged", int.class, int.class, int.class, int.class);
       method.setAccessible(true);
       method.invoke(realView, x, y, scrollToCoordinates.x, scrollToCoordinates.y);
     } catch (Exception e) {
@@ -509,11 +507,20 @@ public class ShadowView {
     }
   }
 
-  private AnimationRunner animationRunner;
+  @Implementation
+  protected void clearAnimation() {
+    directly().clearAnimation();
+
+    if (animationRunner != null) {
+      animationRunner.cancel();
+      animationRunner = null;
+    }
+  }
 
   private class AnimationRunner implements Runnable {
     private final Animation animation;
     private long startTime, startOffset, elapsedTime;
+    private boolean canceled;
 
     AnimationRunner(Animation animation) {
       this.animation = animation;
@@ -541,12 +548,18 @@ public class ShadowView {
     public void run() {
       // Abort if start time has been messed with, as this simulation is only designed to handle
       // standard situations.
-      if ((animation.getStartTime() == startTime && animation.getStartOffset() == startOffset) &&
-          animation.getTransformation(startTime == Animation.START_ON_FIRST_FRAME ?
-              SystemClock.uptimeMillis() : (startTime + startOffset + elapsedTime), new Transformation()) &&
-              // We can't handle infinitely repeating animations in the current scheduling model,
-              // so abort after one iteration.
-              !(animation.getRepeatCount() == Animation.INFINITE && elapsedTime >= animation.getDuration())) {
+      if (!canceled
+          && (animation.getStartTime() == startTime && animation.getStartOffset() == startOffset)
+          && animation.getTransformation(
+              startTime == Animation.START_ON_FIRST_FRAME
+                  ? SystemClock.uptimeMillis()
+                  : (startTime + startOffset + elapsedTime),
+              new Transformation())
+          &&
+          // We can't handle infinitely repeating animations in the current scheduling model,
+          // so abort after one iteration.
+          !(animation.getRepeatCount() == Animation.INFINITE
+              && elapsedTime >= animation.getDuration())) {
         // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
         startTime = animation.getStartTime();
         // TODO: get the correct value for ShadowPausedLooper mode
@@ -555,6 +568,10 @@ public class ShadowView {
       } else {
         animationRunner = null;
       }
+    }
+
+    public void cancel() {
+      this.canceled = true;
     }
   }
 
@@ -628,7 +645,8 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+    directlyOn(
+        realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
   }
 
   @Implementation
@@ -692,26 +710,5 @@ public class ShadowView {
 
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
-  }
-
-  /**
-   * Remove after 4.4.
-   * @deprecated Transitional use only.
-   */
-  @Deprecated
-  private static AccessibilityChecker accessibilityChecker;
-
-  /**
-   * Remove after 4.4.
-   * @deprecated Transitional use only.
-   */
-  @Deprecated
-  private static synchronized AccessibilityChecker getAccessibilityChecker() {
-    if (accessibilityChecker == null) {
-      // This isn't how Injector is intended to be used, but this will disappear soon.
-      // Please don't cargo-cult.
-      accessibilityChecker = new Injector().getInstance(AccessibilityChecker.class);
-    }
-    return accessibilityChecker;
   }
 }

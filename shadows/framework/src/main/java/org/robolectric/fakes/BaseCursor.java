@@ -10,7 +10,10 @@ import android.os.Bundle;
 
 /**
  * Robolectric implementation of {@link android.database.Cursor}.
+ *
+ * @deprecated Use {@link android.database.MatrixCursor} instead.
  */
+@Deprecated
 public class BaseCursor implements Cursor {
   @Override
   public int getCount() {

@@ -25,7 +25,9 @@ public final class ShadowWebSettingsTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void webSettingsDoesNotCrash() throws Exception {
-    assertThat(WebSettings.getDefaultUserAgent(context)).isEqualTo("user");
+  public void setDefaultUserAgent() throws Exception {
+    ShadowWebSettings.setDefaultUserAgent("Chrome/71.0.143.1");
+
+    assertThat(WebSettings.getDefaultUserAgent(context)).isEqualTo("Chrome/71.0.143.1");
   }
 }

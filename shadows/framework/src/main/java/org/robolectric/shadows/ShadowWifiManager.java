@@ -44,7 +44,7 @@ public class ShadowWifiManager {
 
   private static float sSignalLevelInPercent = 1f;
   private boolean accessWifiStatePermission = true;
-  private boolean wifiEnabled = true;
+  private int wifiState = WifiManager.WIFI_STATE_ENABLED;
   private boolean wasSaved = false;
   private WifiInfo wifiInfo;
   private List<ScanResult> scanResults;
@@ -64,23 +64,25 @@ public class ShadowWifiManager {
   @Implementation
   protected boolean setWifiEnabled(boolean wifiEnabled) {
     checkAccessWifiStatePermission();
-    this.wifiEnabled = wifiEnabled;
+    this.wifiState = wifiEnabled ? WifiManager.WIFI_STATE_ENABLED : WifiManager.WIFI_STATE_DISABLED;
     return true;
+  }
+
+  public void setWifiState(int wifiState) {
+    checkAccessWifiStatePermission();
+    this.wifiState = wifiState;
   }
 
   @Implementation
   protected boolean isWifiEnabled() {
     checkAccessWifiStatePermission();
-    return wifiEnabled;
+    return wifiState == WifiManager.WIFI_STATE_ENABLED;
   }
 
   @Implementation
   protected int getWifiState() {
-    if (isWifiEnabled()) {
-      return WifiManager.WIFI_STATE_ENABLED;
-    } else {
-      return WifiManager.WIFI_STATE_DISABLED;
-    }
+    checkAccessWifiStatePermission();
+    return wifiState;
   }
 
   @Implementation

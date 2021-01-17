@@ -1,8 +1,6 @@
 package org.robolectric.pluginapi;
 
-/**
- * Represents the contents of a `uses-sdk` element in an Android manifest file.
- */
+/** Represents the contents of a {@code uses-sdk} element in an Android manifest file. */
 public interface UsesSdk {
   /**
    * Returns the minimum Android SDK version that this package expects to be runnable on, as
@@ -27,9 +25,9 @@ public interface UsesSdk {
    * Returns the maximum Android SDK version that this package expects to be runnable on, as
    * specified in the manifest.
    *
-   * If no maximum version is specified, `null` may be returned.
+   * <p>If no maximum version is specified, null may be returned.
    *
-   * @return the maximum SDK version, or `null`
+   * @return the maximum SDK version, or null
    */
   Integer getMaxSdkVersion();
 }

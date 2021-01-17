@@ -2,12 +2,20 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.R;
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.FrameMetrics;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -17,6 +25,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
@@ -40,7 +49,7 @@ public class ShadowWindowTest {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     window.setTitle("My Window Title");
-    assertThat(shadowOf(window).getTitle()).isEqualTo("My Window Title");
+    assertThat(shadowOf(window).getTitle().toString()).isEqualTo("My Window Title");
   }
 
   @Test
@@ -107,6 +116,80 @@ public class ShadowWindowTest {
     assertThat(
             ShadowWindow.create(ApplicationProvider.getApplicationContext()).getClass().getName())
         .isEqualTo("com.android.internal.policy.PhoneWindow");
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void reportOnFrameMetricsAvailable_notifiesListeners() throws Exception {
+    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+
+    // Attaches the ViewRootImpl to the window.
+    // When the ViewRootImpl is attached, android will check to see if hardware acceleration is
+    // enabled, and only attach listeners if it is. Attaching, rather than just using a created
+    // window, allows for verification that triggering works even then.
+    activityController.setup();
+
+    Window window = activityController.get().getWindow();
+    Window.OnFrameMetricsAvailableListener listener =
+        Mockito.mock(Window.OnFrameMetricsAvailableListener.class);
+    FrameMetrics frameMetrics = new FrameMetricsBuilder().build();
+
+    window.addOnFrameMetricsAvailableListener(listener, new Handler(Looper.getMainLooper()));
+    shadowOf(window).reportOnFrameMetricsAvailable(frameMetrics);
+
+    verify(listener)
+        .onFrameMetricsAvailable(window, frameMetrics, /* dropCountSinceLastInvocation= */ 0);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void reportOnFrameMetricsAvailable_nonZeroDropCount_notifiesListeners() throws Exception {
+    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+    activityController.setup();
+
+    Window window = activityController.get().getWindow();
+    Window.OnFrameMetricsAvailableListener listener =
+        Mockito.mock(Window.OnFrameMetricsAvailableListener.class);
+    FrameMetrics frameMetrics = new FrameMetricsBuilder().build();
+
+    window.addOnFrameMetricsAvailableListener(listener, new Handler(Looper.getMainLooper()));
+    shadowOf(window)
+        .reportOnFrameMetricsAvailable(frameMetrics, /* dropCountSinceLastInvocation= */ 3);
+
+    verify(listener)
+        .onFrameMetricsAvailable(window, frameMetrics, /* dropCountSinceLastInvocation= */ 3);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void reportOnFrameMetricsAvailable_listenerRemoved_doesntNotifyListener()
+      throws Exception {
+    ActivityController<Activity> activityController = Robolectric.buildActivity(Activity.class);
+    activityController.setup();
+
+    Window window = activityController.get().getWindow();
+    Window.OnFrameMetricsAvailableListener listener =
+        Mockito.mock(Window.OnFrameMetricsAvailableListener.class);
+    FrameMetrics frameMetrics = new FrameMetricsBuilder().build();
+
+    window.addOnFrameMetricsAvailableListener(listener, new Handler(Looper.getMainLooper()));
+    window.removeOnFrameMetricsAvailableListener(listener);
+    shadowOf(window).reportOnFrameMetricsAvailable(frameMetrics);
+
+    verify(listener, never())
+        .onFrameMetricsAvailable(
+            any(Window.class),
+            any(FrameMetrics.class),
+            /* dropCountSinceLastInvocation= */ anyInt());
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void reportOnFrameMetricsAvailable_noListener_doesntCrash() throws Exception {
+    Window window = ShadowWindow.create(ApplicationProvider.getApplicationContext());
+
+    // Shouldn't crash.
+    shadowOf(window).reportOnFrameMetricsAvailable(new FrameMetricsBuilder().build());
   }
 
   public static class TestActivity extends Activity {

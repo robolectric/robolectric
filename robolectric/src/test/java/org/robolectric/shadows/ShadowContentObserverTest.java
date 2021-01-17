@@ -39,7 +39,6 @@ public class ShadowContentObserverTest {
     assertThat(observer.changed).isFalse();
     assertThat(observer.selfChange).isFalse();
 
-    Uri uri = Uri.parse("http://www.somewhere.com");
     observer.dispatchChange(true);
 
     assertThat(observer.changed).isTrue();

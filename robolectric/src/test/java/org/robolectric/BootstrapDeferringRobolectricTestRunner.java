@@ -10,7 +10,6 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.util.inject.Injector;
@@ -42,7 +41,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
   @Nonnull
   @Override
   protected InstrumentationConfiguration createClassLoaderConfig(FrameworkMethod method) {
-    return new Builder(super.createClassLoaderConfig(method))
+    return new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method))
         .doNotAcquireClass(BootstrapDeferringRobolectricTestRunner.class)
         .doNotAcquireClass(RoboInject.class)
         .doNotAcquireClass(MyTestLifecycle.class)

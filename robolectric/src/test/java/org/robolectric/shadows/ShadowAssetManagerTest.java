@@ -58,7 +58,6 @@ public class ShadowAssetManagerTest {
     InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/an_image.png", 0);
 
     // expect different sizes in binary vs file resources
-    int expectedFileSize = useLegacy() ? 6559 : 5138;
     int bytes = countBytes(inputStream);
     if (bytes != 6559 && bytes != 5138) {
       fail("Expected 5138 or 6559 bytes for image but got " + bytes);

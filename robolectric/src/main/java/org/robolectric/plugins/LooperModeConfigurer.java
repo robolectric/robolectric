@@ -8,7 +8,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.pluginapi.config.Configurer;
 
-/** Provides configuration to Robolectric for its `@`{@link LooperMode} annotation. */
+/** Provides configuration to Robolectric for its &#064;{@link LooperMode} annotation. */
 @AutoService(Configurer.class)
 public class LooperModeConfigurer implements Configurer<LooperMode.Mode> {
 

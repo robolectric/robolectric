@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -26,6 +27,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -54,11 +56,35 @@ public class ShadowViewRootImpl {
   }
 
   public void callDispatchResized() {
-    Display display = getDisplay();
-    Rect frame = new Rect();
-    display.getRectSize(frame);
+    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.Q) {
+      Display display = getDisplay();
+      Rect frame = new Rect();
+      display.getRectSize(frame);
 
-    reflector(ViewRootImplReflector.class, realObject).dispatchResized(frame);
+      Rect emptyRect = new Rect(0, 0, 0, 0);
+      ReflectionHelpers.callInstanceMethod(
+          ViewRootImpl.class,
+          realObject,
+          "dispatchResized",
+          ClassParameter.from(Rect.class, frame),
+          ClassParameter.from(Rect.class, emptyRect),
+          ClassParameter.from(Rect.class, emptyRect),
+          ClassParameter.from(Rect.class, emptyRect),
+          ClassParameter.from(boolean.class, true),
+          ClassParameter.from(MergedConfiguration.class, new MergedConfiguration()),
+          ClassParameter.from(Rect.class, frame),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(boolean.class, false),
+          ClassParameter.from(int.class, 0),
+          ClassParameter.from(
+              android.view.DisplayCutout.ParcelableWrapper.class,
+              new android.view.DisplayCutout.ParcelableWrapper()));
+    } else {
+      Display display = getDisplay();
+      Rect frame = new Rect();
+      display.getRectSize(frame);
+      reflector(ViewRootImplReflector.class, realObject).dispatchResized(frame);
+    }
   }
 
   protected Display getDisplay() {
@@ -87,6 +113,24 @@ public class ShadowViewRootImpl {
     }
   }
 
+  @Implementation(minSdk = R)
+  protected void setView(
+      View view, WindowManager.LayoutParams attrs, View panelParentView, int userId) {
+    directlyOn(
+        realObject,
+        ViewRootImpl.class,
+        "setView",
+        ClassParameter.from(View.class, view),
+        ClassParameter.from(WindowManager.LayoutParams.class, attrs),
+        ClassParameter.from(View.class, panelParentView),
+        ClassParameter.from(int.class, userId));
+    if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
+      Rect winFrame = new Rect();
+      getDisplay().getRectSize(winFrame);
+      reflector(ViewRootImplReflector.class, realObject).setWinFrame(winFrame);
+    }
+  }
+
   @Resetter
   public static void reset() {
     ViewRootImplReflector viewRootImplStatic = reflector(ViewRootImplReflector.class);
@@ -98,7 +142,7 @@ public class ShadowViewRootImpl {
 
   /** Accessor interface for {@link ViewRootImpl}'s internals. */
   @ForType(ViewRootImpl.class)
-  interface ViewRootImplReflector {
+  protected interface ViewRootImplReflector {
     @Static @Accessor("sRunQueues")
     void setRunQueues(ThreadLocal<HandlerActionQueue> threadLocal);
 

@@ -17,6 +17,10 @@ import org.robolectric.annotation.processing.DocumentedType;
 import org.robolectric.annotation.processing.RobolectricModel;
 import org.robolectric.annotation.processing.RobolectricModel.ShadowInfo;
 
+/**
+ * Primarily used by the Robolectric Chrome extension for Robolectric docs alongside of Android SDK
+ * docs.
+ */
 public class JavadocJsonGenerator extends Generator {
   private final RobolectricModel model;
   private final Messager messager;

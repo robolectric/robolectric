@@ -154,6 +154,18 @@ public class ShadowCameraManager {
     cameraIdToCharacteristics.put(cameraId, characteristics);
   }
 
+  /**
+   * Removes the given cameraId and associated characteristics from this shadow.
+   *
+   * @throws IllegalArgumentException if there is not an existing camera with the given id.
+   */
+  public void removeCamera(@NonNull String cameraId) {
+    Preconditions.checkNotNull(cameraId);
+    Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
+
+    cameraIdToCharacteristics.remove(cameraId);
+  }
+
   /** Returns what the supplied camera's torch is set to. */
   public boolean getTorchMode(@NonNull String cameraId) {
     Preconditions.checkNotNull(cameraId);

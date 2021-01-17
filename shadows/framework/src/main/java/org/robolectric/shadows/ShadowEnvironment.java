@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Environment;
@@ -32,6 +33,7 @@ public class ShadowEnvironment {
   private static final Map<File, Boolean> STORAGE_EMULATED = new HashMap<>();
   private static final Map<File, Boolean> STORAGE_REMOVABLE = new HashMap<>();
   private static boolean sIsExternalStorageEmulated;
+  private static boolean isExternalStorageLegacy;
   private static Path tmpExternalFilesDirBase;
   private static final List<File> externalDirs = new ArrayList<>();
   private static Map<Path, String> storageState = new HashMap<>();
@@ -60,6 +62,15 @@ public class ShadowEnvironment {
    */
   public static void setIsExternalStorageEmulated(boolean emulated) {
     ShadowEnvironment.sIsExternalStorageEmulated = emulated;
+  }
+
+  /**
+   * Sets the return value of {@link #isExternalStorageLegacy()} ()}.
+   *
+   * @param legacy Value to return from {@link #isExternalStorageLegacy()}.
+   */
+  public static void setIsExternalStorageLegacy(boolean legacy) {
+    ShadowEnvironment.isExternalStorageLegacy = legacy;
   }
 
   /**
@@ -136,6 +147,7 @@ public class ShadowEnvironment {
     externalDirs.clear();
 
     sIsExternalStorageEmulated = false;
+    isExternalStorageLegacy = false;
   }
 
   @Implementation
@@ -183,6 +195,16 @@ public class ShadowEnvironment {
     return sIsExternalStorageEmulated;
   }
 
+  @Implementation(minSdk = Q)
+  protected static boolean isExternalStorageLegacy(File path) {
+    return isExternalStorageLegacy;
+  }
+
+  @Implementation(minSdk = Q)
+  protected static boolean isExternalStorageLegacy() {
+    return isExternalStorageLegacy;
+  }
+
   /**
    * Sets the "isRemovable" flag of a particular file.
    *
@@ -215,7 +237,8 @@ public class ShadowEnvironment {
     } else {
       try {
         if (tmpExternalFilesDirBase == null) {
-          tmpExternalFilesDirBase = RuntimeEnvironment.getTempDirectory().create("external-files-base");
+          tmpExternalFilesDirBase =
+              RuntimeEnvironment.getTempDirectory().create("external-files-base");
         }
         externalFileDir = tmpExternalFilesDirBase.resolve(path);
         Files.createDirectories(externalFileDir);

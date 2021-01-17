@@ -14,6 +14,7 @@ import org.robolectric.shadows.util.SQLiteLibraryLoader;
 public class SQLiteLibraryLoaderTest {
   /** Saved system properties. */
   private String savedOs, savedArch;
+
   private SQLiteLibraryLoader loader;
 
   @Before
@@ -43,55 +44,55 @@ public class SQLiteLibraryLoaderTest {
   @Test
   public void shouldFindLibraryForWindowsXPX86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "x86"))
-        .isEqualTo("windows-x86/sqlite4java.dll");
+        .isEqualTo("sqlite4java/win32-x86/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindows7X86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "x86"))
-        .isEqualTo("windows-x86/sqlite4java.dll");
+        .isEqualTo("sqlite4java/win32-x86/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindowsXPAmd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "amd64"))
-        .isEqualTo("windows-x86_64/sqlite4java.dll");
+        .isEqualTo("sqlite4java/win32-x64/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForWindows7Amd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "amd64"))
-        .isEqualTo("windows-x86_64/sqlite4java.dll");
+        .isEqualTo("sqlite4java/win32-x64/sqlite4java.dll");
+  }
+
+  @Test
+  public void shouldFindLibraryForWindows10Amd64() throws IOException {
+    assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 10", "amd64"))
+        .isEqualTo("sqlite4java/win32-x64/sqlite4java.dll");
   }
 
   @Test
   public void shouldFindLibraryForLinuxi386() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "i386"))
-        .isEqualTo("linux-x86/libsqlite4java.so");
+        .isEqualTo("sqlite4java/linux-i386/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxx86() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "x86"))
-        .isEqualTo("linux-x86/libsqlite4java.so");
+        .isEqualTo("sqlite4java/linux-i386/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForLinuxAmd64() throws IOException {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "amd64"))
-        .isEqualTo("linux-x86_64/libsqlite4java.so");
-  }
-
-  @Test
-  public void shouldFindLibraryForMacWithAnyArch() throws IOException {
-    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
-        .isEqualTo("mac-x86_64/libsqlite4java.jnilib");
+        .isEqualTo("sqlite4java/linux-amd64/libsqlite4java.so");
   }
 
   @Test
   public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() throws IOException {
-    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC_DYLIB), "Mac OS X", "any architecture"))
-        .isEqualTo("mac-x86_64/libsqlite4java.jnilib");
+    assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
+        .isEqualTo("sqlite4java/osx/libsqlite4java.dylib");
   }
 
   @Test(expected = UnsupportedOperationException.class)
@@ -99,7 +100,8 @@ public class SQLiteLibraryLoaderTest {
     loadLibrary(new SQLiteLibraryLoader(LINUX), "ACME Electronic", "FooBar2000");
   }
 
-  private String loadLibrary(SQLiteLibraryLoader loader, String name, String arch) throws IOException {
+  private String loadLibrary(SQLiteLibraryLoader loader, String name, String arch)
+      throws IOException {
     setNameAndArch(name, arch);
     return loader.getLibClasspathResourceName();
   }
@@ -124,8 +126,10 @@ public class SQLiteLibraryLoaderTest {
     System.setProperty("os.arch", arch);
   }
 
-  private static final SQLiteLibraryLoader.LibraryNameMapper LINUX = new LibraryMapperTest("lib", "so");
-  private static final SQLiteLibraryLoader.LibraryNameMapper WINDOWS = new LibraryMapperTest("", "dll");
-  private static final SQLiteLibraryLoader.LibraryNameMapper MAC = new LibraryMapperTest("lib", "jnilib");
-  private static final SQLiteLibraryLoader.LibraryNameMapper MAC_DYLIB = new LibraryMapperTest("lib", "dylib");
+  private static final SQLiteLibraryLoader.LibraryNameMapper LINUX =
+      new LibraryMapperTest("lib", "so");
+  private static final SQLiteLibraryLoader.LibraryNameMapper WINDOWS =
+      new LibraryMapperTest("", "dll");
+  private static final SQLiteLibraryLoader.LibraryNameMapper MAC =
+      new LibraryMapperTest("lib", "dylib");
 }

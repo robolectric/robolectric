@@ -4,14 +4,19 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Verify.verifyNotNull;
 
+import android.annotation.SystemApi;
 import android.annotation.TargetApi;
+import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
+import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.ConnectionRequest;
 import android.telecom.ConnectionService;
@@ -19,10 +24,13 @@ import android.telecom.PhoneAccount;
 import android.telecom.PhoneAccountHandle;
 import android.telecom.TelecomManager;
 import android.telecom.VideoProfile;
+import android.text.TextUtils;
 import android.util.ArrayMap;
+import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,6 +85,8 @@ public class ShadowTelecomManager {
   private String defaultDialerPackageName;
   private String systemDefaultDialerPackageName;
   private boolean isInCall;
+  private boolean ttySupported;
+  private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -112,12 +122,13 @@ public class ShadowTelecomManager {
   @Implementation
   @HiddenApi
   public PhoneAccountHandle getUserSelectedOutgoingPhoneAccount() {
-    return null;
+    return userSelectedOutgoingPhoneAccount;
   }
 
   @Implementation
   @HiddenApi
   public void setUserSelectedOutgoingPhoneAccount(PhoneAccountHandle accountHandle) {
+    userSelectedOutgoingPhoneAccount = accountHandle;
   }
 
   @Implementation
@@ -355,7 +366,12 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected boolean isTtySupported() {
-    return false;
+    return ttySupported;
+  }
+
+  /** Sets the value to be returned by {@link #isTtySupported()}. */
+  public void setTtySupported(boolean isSupported) {
+    ttySupported = isSupported;
   }
 
   @Implementation
@@ -583,6 +599,37 @@ public class ShadowTelecomManager {
 
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     this.simCallManager = simCallManager;
+  }
+
+  /**
+   * Creates a new {@link CallAudioState}. The real constructor of {@link CallAudioState} is hidden.
+   */
+  public CallAudioState newCallAudioState(
+      boolean muted,
+      int route,
+      int supportedRouteMask,
+      BluetoothDevice activeBluetoothDevice,
+      Collection<BluetoothDevice> supportedBluetoothDevices) {
+    return new CallAudioState(
+        muted, route, supportedRouteMask, activeBluetoothDevice, supportedBluetoothDevices);
+  }
+
+  @Implementation(minSdk = R)
+  @SystemApi
+  protected Intent createLaunchEmergencyDialerIntent(String number) {
+    Context context = ReflectionHelpers.getField(realObject, "mContext");
+    String packageName =
+        context.getString(com.android.internal.R.string.config_emergency_dialer_package);
+    Intent intent = new Intent(Intent.ACTION_DIAL_EMERGENCY).setPackage(packageName);
+    ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(intent, 0);
+    if (resolveInfo == null) {
+      // No matching activity from config, fallback to default platform implementation
+      intent.setPackage(null);
+    }
+    if (!TextUtils.isEmpty(number) && TextUtils.isDigitsOnly(number)) {
+      intent.setData(Uri.parse("tel:" + number));
+    }
+    return intent;
   }
 
   /**

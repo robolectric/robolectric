@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.hardware.fingerprint.Fingerprint;
 import android.hardware.fingerprint.FingerprintManager;
@@ -32,7 +33,7 @@ public class ShadowFingerprintManager {
   private static final String TAG = "ShadowFingerprintManager";
 
   private boolean isHardwareDetected;
-  private CryptoObject pendingCryptoObject;
+  protected CryptoObject pendingCryptoObject;
   private AuthenticationCallback pendingCallback;
   private List<Fingerprint> fingerprints = Collections.emptyList();
 
@@ -45,16 +46,24 @@ public class ShadowFingerprintManager {
       throw new IllegalStateException("No active fingerprint authentication request.");
     }
 
-    AuthenticationResult result;
-    if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
-      result = new AuthenticationResult(pendingCryptoObject, null, 0);
+    pendingCallback.onAuthenticationSucceeded(createAuthenticationResult());
+  }
+
+  protected AuthenticationResult createAuthenticationResult() {
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return new AuthenticationResult(pendingCryptoObject, null, 0, false);
+    } else if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
+      return ReflectionHelpers.callConstructor(
+          AuthenticationResult.class,
+          ClassParameter.from(CryptoObject.class, pendingCryptoObject),
+          ClassParameter.from(Fingerprint.class, null),
+          ClassParameter.from(int.class, 0));
     } else {
-      result = ReflectionHelpers.callConstructor(AuthenticationResult.class,
+      return ReflectionHelpers.callConstructor(
+          AuthenticationResult.class,
           ClassParameter.from(CryptoObject.class, pendingCryptoObject),
           ClassParameter.from(Fingerprint.class, null));
     }
-
-    pendingCallback.onAuthenticationSucceeded(result);
   }
 
   /**
@@ -168,7 +177,7 @@ public class ShadowFingerprintManager {
   }
 
   /**
-   * @return `false` by default, or the value specified via {@link #setIsHardwareDetected(boolean)}
+   * @return false by default, or the value specified via {@link #setIsHardwareDetected(boolean)}
    */
   @Implementation(minSdk = M)
   protected boolean isHardwareDetected() {

@@ -4,11 +4,14 @@ import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_AWARE;
 import static android.content.pm.PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.Manifest.permission;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
+import android.app.AppOpsManager;
+import android.app.AppOpsManager.Mode;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +23,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Process;
 import android.os.UserHandle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -30,6 +34,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -44,6 +49,11 @@ public class ShadowCrossProfileApps {
 
   private Context context;
   private PackageManager packageManager;
+  // Whether the current application has the interact across profile AppOps.
+  private volatile int canInteractAcrossProfileAppOps = AppOpsManager.MODE_ERRORED;
+
+  // Whether the current application has requested the interact across profile permission.
+  private volatile boolean hasRequestedInteractAcrossProfiles = false;
 
   @Implementation
   protected void __constructor__(Context context, ICrossProfileApps service) {
@@ -201,6 +211,12 @@ public class ShadowCrossProfileApps {
    * Ensure the current package has the permission to interact across profiles.
    */
   protected void verifyHasInteractAcrossProfilesPermission() {
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      if (!canInteractAcrossProfiles()) {
+        throw new SecurityException("Attempt to launch activity without required the permissions.");
+      }
+      return;
+    }
     if (context.checkSelfPermission(permission.INTERACT_ACROSS_PROFILES)
         != PackageManager.PERMISSION_GRANTED) {
       throw new SecurityException(
@@ -246,6 +262,130 @@ public class ShadowCrossProfileApps {
               + " category Intent.CATEGORY_LAUNCHER or activity is not exported"
               + component);
     }
+  }
+
+  /**
+   * Checks if the current application can interact across profile.
+   *
+   * <p>This checks for the existence of a target user profile, and if the app has
+   * INTERACT_ACROSS_USERS, INTERACT_ACROSS_USERS_FULL or INTERACT_ACROSS_PROFILES permission.
+   * Importantly, the {@code interact_across_profiles} AppOps is only checked through the value set
+   * by {@link #setInteractAcrossProfilesAppOp(int)} or by {@link
+   * #setInteractAcrossProfilesAppOp(String, int)}, if the application has the needed permissions.
+   */
+  @Implementation(minSdk = R)
+  protected boolean canInteractAcrossProfiles() {
+    if (getTargetUserProfiles().isEmpty()) {
+      return false;
+    }
+    return hasPermission(permission.INTERACT_ACROSS_USERS_FULL)
+        || hasPermission(permission.INTERACT_ACROSS_PROFILES)
+        || hasPermission(permission.INTERACT_ACROSS_USERS)
+        || canInteractAcrossProfileAppOps == AppOpsManager.MODE_ALLOWED;
+  }
+
+  /**
+   * Returns whether the calling package can request to navigate the user to the relevant settings
+   * page to request user consent to interact across profiles.
+   *
+   * <p>This checks for the existence of a target user profile, and if the app has requested the
+   * INTERACT_ACROSS_PROFILES permission in its manifest. As Robolectric doesn't interpret the
+   * permissions in the manifest, whether or not the app has requested this is defined by {@link
+   * #setHasRequestedInteractAcrossProfiles(boolean)}.
+   *
+   * <p>If the test uses {@link #setInteractAcrossProfilesAppOp(int)}, it implies the app has
+   * requested the AppOps.
+   *
+   * <p>In short, compared to {@link #canInteractAcrossProfiles()}, it doesn't check if the user has
+   * the AppOps or not.
+   */
+  @Implementation(minSdk = R)
+  protected boolean canRequestInteractAcrossProfiles() {
+    if (getTargetUserProfiles().isEmpty()) {
+      return false;
+    }
+    return hasRequestedInteractAcrossProfiles;
+  }
+
+  /**
+   * Sets whether or not the current application has requested the interact across profile
+   * permission in its manifest.
+   */
+  public void setHasRequestedInteractAcrossProfiles(boolean value) {
+    hasRequestedInteractAcrossProfiles = value;
+  }
+
+  /**
+   * Returns an intent with the same action as the one returned by system when requesting the same.
+   *
+   * <p>Note: Currently, the system will also set the package name as a URI, but as this is not
+   * specified in the main doc, we shouldn't rely on it. The purpose is only to make an intent can
+   * that be recognised in a test.
+   *
+   * @throws SecurityException if this is called while {@link
+   *     CrossProfileApps#canRequestInteractAcrossProfiles()} returns false.
+   */
+  @Implementation(minSdk = R)
+  protected Intent createRequestInteractAcrossProfilesIntent() {
+    if (!canRequestInteractAcrossProfiles()) {
+      throw new SecurityException(
+          "The calling package can not request to interact across profiles.");
+    }
+    return new Intent(Settings.ACTION_MANAGE_CROSS_PROFILE_ACCESS);
+  }
+
+  /**
+   * Checks whether the given intent will redirect toward the screen allowing the user to change the
+   * interact across profiles AppOps.
+   */
+  public boolean isRequestInteractAcrossProfilesIntent(Intent intent) {
+    return Settings.ACTION_MANAGE_CROSS_PROFILE_ACCESS.equals(intent.getAction());
+  }
+
+  private boolean hasPermission(String permission) {
+    return context.getPackageManager().checkPermission(permission, context.getPackageName())
+        == PackageManager.PERMISSION_GRANTED;
+  }
+
+  /**
+   * Forces the {code interact_across_profile} AppOps for the current package.
+   *
+   * <p>If the value changes, this also sends the {@link
+   * CrossProfileApps#ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED} broadcast.
+   */
+  public void setInteractAcrossProfilesAppOp(@Mode int newMode) {
+    hasRequestedInteractAcrossProfiles = true;
+    if (canInteractAcrossProfileAppOps != newMode) {
+      canInteractAcrossProfileAppOps = newMode;
+      context.sendBroadcast(
+          new Intent(CrossProfileApps.ACTION_CAN_INTERACT_ACROSS_PROFILES_CHANGED));
+    }
+  }
+
+  /**
+   * Checks permission and changes the AppOps value stored in {@link ShadowCrossProfileApps}.
+   *
+   * <p>In the real implementation, if there is no target profile, the AppOps is not changed, as it
+   * will be set during the profile's initialization. The real implementation also really changes
+   * the AppOps for all profiles the package is installed in.
+   */
+  @Implementation(minSdk = R)
+  protected void setInteractAcrossProfilesAppOp(String packageName, @Mode int newMode) {
+    if (!hasPermission(permission.INTERACT_ACROSS_USERS)
+        || !hasPermission(permission.CONFIGURE_INTERACT_ACROSS_PROFILES)) {
+      throw new SecurityException(
+          "Requires INTERACT_ACROSS_USERS and CONFIGURE_INTERACT_ACROSS_PROFILES permission");
+    }
+    setInteractAcrossProfilesAppOp(newMode);
+  }
+
+  /**
+   * Unlike the real system, we will assume a package can always configure its own cross profile
+   * interaction.
+   */
+  @Implementation(minSdk = R)
+  protected boolean canConfigureInteractAcrossProfiles(String packageName) {
+    return context.getPackageName().equals(packageName);
   }
 
   /**

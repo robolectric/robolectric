@@ -94,41 +94,41 @@ import org.apache.http.protocol.HttpRequestExecutor;
 /**
  * Default implementation of {@link RequestDirector}.
  *
- * The following parameters can be used to customize the behavior of this
- * class:
+ * <p>The following parameters can be used to customize the behavior of this class:
  *
- *  * {@link org.apache.http.params.CoreProtocolPNames#PROTOCOL_VERSION}
- *  * {@link org.apache.http.params.CoreProtocolPNames#STRICT_TRANSFER_ENCODING}
- *  * {@link org.apache.http.params.CoreProtocolPNames#HTTP_ELEMENT_CHARSET}
- *  * {@link org.apache.http.params.CoreProtocolPNames#USE_EXPECT_CONTINUE}
- *  * {@link org.apache.http.params.CoreProtocolPNames#WAIT_FOR_CONTINUE}
- *  * {@link org.apache.http.params.CoreProtocolPNames#USER_AGENT}
- *  * {@link org.apache.http.params.CoreConnectionPNames#SOCKET_BUFFER_SIZE}
- *  * {@link org.apache.http.params.CoreConnectionPNames#MAX_LINE_LENGTH}
- *  * {@link org.apache.http.params.CoreConnectionPNames#MAX_HEADER_COUNT}
- *  * {@link org.apache.http.params.CoreConnectionPNames#SO_TIMEOUT}
- *  * {@link org.apache.http.params.CoreConnectionPNames#SO_LINGER}
- *  * {@link org.apache.http.params.CoreConnectionPNames#TCP_NODELAY}
- *  * {@link org.apache.http.params.CoreConnectionPNames#CONNECTION_TIMEOUT}
- *  * {@link org.apache.http.params.CoreConnectionPNames#STALE_CONNECTION_CHECK}
- *  * {@link org.apache.http.conn.params.ConnRoutePNames#FORCED_ROUTE}
- *  * {@link org.apache.http.conn.params.ConnRoutePNames#LOCAL_ADDRESS}
- *  * {@link org.apache.http.conn.params.ConnRoutePNames#DEFAULT_PROXY}
- *  * {@link org.apache.http.conn.params.ConnManagerPNames#TIMEOUT}
- *  * {@link org.apache.http.conn.params.ConnManagerPNames#MAX_CONNECTIONS_PER_ROUTE}
- *  * {@link org.apache.http.conn.params.ConnManagerPNames#MAX_TOTAL_CONNECTIONS}
- *  * {@link org.apache.http.cookie.params.CookieSpecPNames#DATE_PATTERNS}
- *  * {@link org.apache.http.cookie.params.CookieSpecPNames#SINGLE_COOKIE_HEADER}
- *  * {@link org.apache.http.auth.params.AuthPNames#CREDENTIAL_CHARSET}
- *  * {@link org.apache.http.client.params.ClientPNames#COOKIE_POLICY}
- *  * {@link org.apache.http.client.params.ClientPNames#HANDLE_AUTHENTICATION}
- *  * {@link org.apache.http.client.params.ClientPNames#HANDLE_REDIRECTS}
- *  * {@link org.apache.http.client.params.ClientPNames#MAX_REDIRECTS}
- *  * {@link org.apache.http.client.params.ClientPNames#ALLOW_CIRCULAR_REDIRECTS}
- *  * {@link org.apache.http.client.params.ClientPNames#VIRTUAL_HOST}
- *  * {@link org.apache.http.client.params.ClientPNames#DEFAULT_HOST}
- *  * {@link org.apache.http.client.params.ClientPNames#DEFAULT_HEADERS}
- *
+ * <ul>
+ *   <li>{@link org.apache.http.params.CoreProtocolPNames#PROTOCOL_VERSION}
+ *   <li>{@link org.apache.http.params.CoreProtocolPNames#STRICT_TRANSFER_ENCODING}
+ *   <li>{@link org.apache.http.params.CoreProtocolPNames#HTTP_ELEMENT_CHARSET}
+ *   <li>{@link org.apache.http.params.CoreProtocolPNames#USE_EXPECT_CONTINUE}
+ *   <li>{@link org.apache.http.params.CoreProtocolPNames#WAIT_FOR_CONTINUE}
+ *   <li>{@link org.apache.http.params.CoreProtocolPNames#USER_AGENT}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#SOCKET_BUFFER_SIZE}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#MAX_LINE_LENGTH}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#MAX_HEADER_COUNT}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#SO_TIMEOUT}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#SO_LINGER}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#TCP_NODELAY}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#CONNECTION_TIMEOUT}
+ *   <li>{@link org.apache.http.params.CoreConnectionPNames#STALE_CONNECTION_CHECK}
+ *   <li>{@link org.apache.http.conn.params.ConnRoutePNames#FORCED_ROUTE}
+ *   <li>{@link org.apache.http.conn.params.ConnRoutePNames#LOCAL_ADDRESS}
+ *   <li>{@link org.apache.http.conn.params.ConnRoutePNames#DEFAULT_PROXY}
+ *   <li>{@link org.apache.http.conn.params.ConnManagerPNames#TIMEOUT}
+ *   <li>{@link org.apache.http.conn.params.ConnManagerPNames#MAX_CONNECTIONS_PER_ROUTE}
+ *   <li>{@link org.apache.http.conn.params.ConnManagerPNames#MAX_TOTAL_CONNECTIONS}
+ *   <li>{@link org.apache.http.cookie.params.CookieSpecPNames#DATE_PATTERNS}
+ *   <li>{@link org.apache.http.cookie.params.CookieSpecPNames#SINGLE_COOKIE_HEADER}
+ *   <li>{@link org.apache.http.auth.params.AuthPNames#CREDENTIAL_CHARSET}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#COOKIE_POLICY}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#HANDLE_AUTHENTICATION}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#HANDLE_REDIRECTS}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#MAX_REDIRECTS}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#ALLOW_CIRCULAR_REDIRECTS}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#VIRTUAL_HOST}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#DEFAULT_HOST}
+ *   <li>{@link org.apache.http.client.params.ClientPNames#DEFAULT_HEADERS}
+ * </ul>
  *
  * @since 4.0
  */

@@ -49,7 +49,7 @@ public class ShadowDropBoxManagerTest {
     assertThat(entry.getTag()).isEqualTo(TAG);
     assertThat(entry.getTimeMillis()).isEqualTo(1);
     assertThat(new BufferedReader(new InputStreamReader(entry.getInputStream(), UTF_8)).readLine())
-        .isEqualTo(new String(DATA));
+        .isEqualTo(new String(DATA, UTF_8));
     assertThat(entry.getText(100)).isEqualTo(new String(DATA, UTF_8));
   }
 

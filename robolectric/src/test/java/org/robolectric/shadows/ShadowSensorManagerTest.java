@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.hardware.Sensor.TYPE_ACCELEROMETER;
+import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -70,7 +72,8 @@ public class ShadowSensorManagerTest {
   @Test
   public void shouldReturnHasNoListenerAfterUnregisterListener() {
     SensorEventListener listener = registerListener();
-    sensorManager.unregisterListener(listener, sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER));
+    sensorManager.unregisterListener(
+        listener, sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER));
 
     assertThat(shadow.hasListener(listener)).isFalse();
   }
@@ -88,6 +91,30 @@ public class ShadowSensorManagerTest {
     SensorEventListener listener = new TestSensorEventListener();
 
     assertThat(shadow.hasListener(listener)).isFalse();
+  }
+
+  @Test
+  public void shouldTrackSingleListenerRegistrationForDifferentSensors() {
+    SensorEventListener listener = new TestSensorEventListener();
+    Sensor accelSensor = ShadowSensor.newInstance(TYPE_ACCELEROMETER);
+    Sensor gyroSensor = ShadowSensor.newInstance(TYPE_GYROSCOPE);
+
+    sensorManager.registerListener(listener, accelSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    sensorManager.registerListener(listener, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+    assertThat(shadow.hasListener(listener)).isTrue();
+    assertThat(shadow.hasListener(listener, accelSensor)).isTrue();
+    assertThat(shadow.hasListener(listener, gyroSensor)).isTrue();
+
+    sensorManager.unregisterListener(listener, accelSensor);
+    assertThat(shadow.hasListener(listener)).isTrue();
+    assertThat(shadow.hasListener(listener, accelSensor)).isFalse();
+    assertThat(shadow.hasListener(listener, gyroSensor)).isTrue();
+
+    sensorManager.unregisterListener(listener, gyroSensor);
+    assertThat(shadow.hasListener(listener)).isFalse();
+    assertThat(shadow.hasListener(listener, accelSensor)).isFalse();
+    assertThat(shadow.hasListener(listener, gyroSensor)).isFalse();
   }
 
   @Test
@@ -142,7 +169,6 @@ public class ShadowSensorManagerTest {
   public void shouldNotSendSensorEventIfNoRegisteredListeners() {
     // Create a listener but don't register it.
     TestSensorEventListener listener = new TestSensorEventListener();
-    Sensor sensor = sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER);
     SensorEvent event = shadow.createSensorEvent();
 
     shadow.sendSensorEventToListeners(event);
@@ -152,18 +178,18 @@ public class ShadowSensorManagerTest {
 
   @Test
   public void shouldCreateSensorEvent() {
-    assertThat(shadow.createSensorEvent() instanceof SensorEvent).isTrue();
+    assertThat(shadow.createSensorEvent()).isNotNull();
   }
 
   @Test
   public void shouldCreateSensorEventWithValueArray() {
-    SensorEvent event = shadow.createSensorEvent(3);
+    SensorEvent event = ShadowSensorManager.createSensorEvent(3);
     assertThat(event.values.length).isEqualTo(3);
   }
 
   @Test
   public void shouldCreateSensorEventWithValueArrayAndSensorType() {
-    SensorEvent event = shadow.createSensorEvent(3, Sensor.TYPE_GRAVITY);
+    SensorEvent event = ShadowSensorManager.createSensorEvent(3, Sensor.TYPE_GRAVITY);
     assertThat(event.values.length).isEqualTo(3);
     assertThat(event.sensor).isNotNull();
     assertThat(event.sensor.getType()).isEqualTo(Sensor.TYPE_GRAVITY);
@@ -172,7 +198,7 @@ public class ShadowSensorManagerTest {
   @Test
   public void createSensorEvent_shouldThrowExceptionWhenValueLessThan1() {
     try {
-      shadow.createSensorEvent(/* valueArraySize= */ 0);
+      ShadowSensorManager.createSensorEvent(/* valueArraySize= */ 0);
       fail("Expected IllegalArgumentException not thrown");
     } catch (Exception e) {
       assertThat(e).isInstanceOf(IllegalArgumentException.class);
@@ -195,8 +221,7 @@ public class ShadowSensorManagerTest {
     private Optional<SensorEvent> latestSensorEvent = Optional.absent();
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     @Override
     public void onSensorChanged(SensorEvent event) {

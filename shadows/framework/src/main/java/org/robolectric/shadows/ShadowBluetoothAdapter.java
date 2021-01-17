@@ -2,7 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.bluetooth.BluetoothAdapter;
@@ -11,8 +13,12 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.le.BluetoothLeAdvertiser;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
+import android.os.Build;
 import android.os.ParcelUuid;
+import android.provider.Settings;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -34,6 +41,8 @@ public class ShadowBluetoothAdapter {
   private static final int ADDRESS_LENGTH = 17;
 
   private static boolean isBluetoothSupported = true;
+  private static BluetoothLeScanner bluetoothLeScanner = null;
+  private static BluetoothLeAdvertiser bluetoothLeAdvertiser = null;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
@@ -44,6 +53,7 @@ public class ShadowBluetoothAdapter {
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
   private int discoverableTimeout = 0;
+  private boolean isBleScanAlwaysAvailable = true;
   private boolean isMultipleAdvertisementSupported = true;
   private boolean isLeExtendedAdvertisingSupported = true;
   private boolean isOverridingProxyBehavior;
@@ -53,6 +63,8 @@ public class ShadowBluetoothAdapter {
   @Resetter
   public static void reset() {
     setIsBluetoothSupported(true);
+    bluetoothLeScanner = null;
+    bluetoothLeAdvertiser = null;
   }
 
   @Implementation
@@ -64,6 +76,31 @@ public class ShadowBluetoothAdapter {
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
   public static void setIsBluetoothSupported(boolean supported) {
     isBluetoothSupported = supported;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected BluetoothLeScanner getBluetoothLeScanner() {
+    // TODO: See if we can remove this implementation. By implementing {@link #getLeState}, it
+    // appears like the the AOSP {@link #getBluetoothLeScanner} method should "just work". However,
+    // it's still returning null without this implementation overriding it.
+    if (Build.VERSION.SDK_INT >= M && !realAdapter.isLeEnabled()) {
+      return null;
+    }
+
+    if (bluetoothLeScanner == null) {
+      bluetoothLeScanner = ShadowBluetoothLeScanner.getInstance();
+    }
+
+    return bluetoothLeScanner;
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected BluetoothLeAdvertiser getBluetoothLeAdvertiser() {
+    return bluetoothLeAdvertiser;
+  }
+
+  public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
+    bluetoothLeAdvertiser = advertiser;
   }
 
   @Implementation
@@ -101,6 +138,47 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
+  /** When true, overrides the value of {@link #getLeState}. By default, this is false. */
+  @Implementation(minSdk = M)
+  protected boolean isBleScanAlwaysAvailable() {
+    return isBleScanAlwaysAvailable;
+  }
+
+  /**
+   * Decides the correct LE state. When off, BLE calls will fail or return null.
+   *
+   * <p>LE is enabled if either Bluetooth or BLE scans are enabled. LE is always off if Airplane
+   * Mode is enabled.
+   */
+  @Implementation(minSdk = M)
+  public int getLeState() {
+    if (isAirplaneMode()) {
+      return BluetoothAdapter.STATE_OFF;
+    }
+
+    if (isEnabled()) {
+      return BluetoothAdapter.STATE_ON;
+    }
+
+    if (isBleScanAlwaysAvailable()) {
+      return BluetoothAdapter.STATE_BLE_ON;
+    }
+
+    return BluetoothAdapter.STATE_OFF;
+  }
+
+  /**
+   * True if either Bluetooth is enabled or BLE scanning is available. Always false if Airplane Mode
+   * is enabled. When false, BLE scans will fail. @Implementation(minSdk = M) protected boolean
+   * isLeEnabled() { if (isAirplaneMode()) { return false; } return isEnabled() ||
+   * isBleScanAlwaysAvailable(); }
+   */
+  private static boolean isAirplaneMode() {
+    Context context = RuntimeEnvironment.application;
+    return Settings.Global.getInt(context.getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0)
+        != 0;
+  }
+
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean startLeScan(LeScanCallback callback) {
     return startLeScan(null, callback);
@@ -108,6 +186,10 @@ public class ShadowBluetoothAdapter {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected boolean startLeScan(UUID[] serviceUuids, LeScanCallback callback) {
+    if (Build.VERSION.SDK_INT >= M && !realAdapter.isLeEnabled()) {
+      return false;
+    }
+
     // Ignoring the serviceUuids param for now.
     leScanCallbacks.add(callback);
     return true;
@@ -184,7 +266,7 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
     return setScanMode(scanMode);
@@ -269,6 +351,15 @@ public class ShadowBluetoothAdapter {
     this.enabled = enabled;
   }
 
+  /**
+   * Sets the value for {@link isBleScanAlwaysAvailable}. If true, {@link getLeState} will always
+   * return true.
+   */
+  public void setBleScanAlwaysAvailable(boolean alwaysAvailable) {
+    isBleScanAlwaysAvailable = alwaysAvailable;
+  }
+
+  /** Sets the value for {@link isMultipleAdvertisementSupported}. */
   public void setIsMultipleAdvertisementSupported(boolean supported) {
     isMultipleAdvertisementSupported = supported;
   }

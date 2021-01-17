@@ -5,25 +5,20 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
 import android.content.Intent;
-import android.os.Build.VERSION_CODES;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
-
-  private static KeyguardManager.KeyguardLock keyguardLock =
-      Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
-
+  // These have to be static because on Android L and below, a new instance of KeyguardManager is
+  // created each time it is requested.
   private static final Set<Integer> deviceLockedForUsers = new HashSet<Integer>();
   private static final Set<Integer> deviceSecureForUsers = new HashSet<Integer>();
   private static boolean inRestrictedInputMode;
@@ -35,7 +30,7 @@ public class ShadowKeyguardManager {
   private static KeyguardManager.KeyguardDismissCallback callback;
 
   /**
-   * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or `false` by
+   * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or false by
    * default.
    *
    * @see #setInRestrictedInputMode(boolean)
@@ -59,8 +54,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests, returns the value set via {@link #setKeyguardLocked(boolean)}, or `false` by
-   * default.
+   * For tests, returns the value set via {@link #setKeyguardLocked(boolean)}, or false by default.
    *
    * @see #setKeyguardLocked(boolean)
    */
@@ -71,14 +65,14 @@ public class ShadowKeyguardManager {
 
   /**
    * Sets whether the device keyguard is locked or not. This affects the value to be returned by
-   * {@link #isKeyguardLocked()} and also invokes callbacks set in
-   *  {@link KeyguardManager#requestDismissKeyguard()}.
+   * {@link #isKeyguardLocked()} and also invokes callbacks set in {@link
+   * KeyguardManager#requestDismissKeyguard(Activity, KeyguardDismissCallback)} ()}.
    *
-   *  @param isKeyguardLocked true to lock the keyguard. If a KeyguardDismissCallback is set will
-   *  fire {@link KeyguardDismissCallback#onDismissCancelled()} or false to unlock and dismiss the
-   *  keyguard firing {@link KeyguardDismissCallback#onDismissSucceeded()} if a
-   *  KeyguardDismissCallback is set.
-   *  */
+   * @param isKeyguardLocked true to lock the keyguard. If a KeyguardDismissCallback is set will
+   *     fire {@link KeyguardDismissCallback#onDismissCancelled()} or false to unlock and dismiss
+   *     the keyguard firing {@link KeyguardDismissCallback#onDismissSucceeded()} if a
+   *     KeyguardDismissCallback is set.
+   */
   public void setKeyguardLocked(boolean isKeyguardLocked) {
     ShadowKeyguardManager.isKeyguardLocked = isKeyguardLocked;
     if (callback != null) {
@@ -89,16 +83,6 @@ public class ShadowKeyguardManager {
       }
       callback = null;
     }
-  }
-
-  /**
-   * For tests, returns a {@link ShadowKeyguardLock}.
-   *
-   * @see ShadowKeyguardLock
-   */
-  @Implementation
-  protected KeyguardManager.KeyguardLock newKeyguardLock(String tag) {
-    return keyguardLock;
   }
 
   /**
@@ -122,8 +106,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or `false` by
-   * default.
+   * For tests, returns the value set by {@link #setIsKeyguardSecure(boolean)}, or false by default.
    *
    * @see #setIsKeyguardSecure(boolean)
    */
@@ -143,7 +126,7 @@ public class ShadowKeyguardManager {
 
   /**
    * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(boolean)}, or
-   * `false` by default.
+   * false by default.
    *
    * @see #setIsDeviceSecure(boolean)
    */
@@ -163,7 +146,7 @@ public class ShadowKeyguardManager {
 
   /**
    * For tests on Android >=M, returns the value set by {@link #setIsDeviceSecure(int, boolean)}, or
-   * `false` by default.
+   * false by default.
    *
    * @see #setIsDeviceSecure(int, boolean)
    */
@@ -195,7 +178,7 @@ public class ShadowKeyguardManager {
   }
 
   /**
-   * @return `false` by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
+   * @return false by default, or the value passed to {@link #setIsDeviceLocked(boolean)}.
    * @see #isDeviceLocked()
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -241,20 +224,10 @@ public class ShadowKeyguardManager {
     return confirmFactoryResetCredentialIntent;
   }
 
-  /**
-   * Retrieves callback set by using requestDismissKeyguard.
-   *
-   * @return The callback passed in.
-   */
-  @TargetApi(VERSION_CODES.O)
-  public static KeyguardDismissCallback getCallback() {
-    return callback;
-  }
-
-  /** An implementation of {@link KeyguardManager#KeyguardLock}, for use in tests. */
+  /** An implementation of {@link KeyguardManager.KeyguardLock}, for use in tests. */
   @Implements(KeyguardManager.KeyguardLock.class)
   public static class ShadowKeyguardLock {
-    private boolean keyguardEnabled = true;
+    private static boolean keyguardEnabled = true;
 
     /**
      * Sets the value to be returned by {@link #isEnabled()} to false.
@@ -277,22 +250,23 @@ public class ShadowKeyguardManager {
     }
 
     /**
-     * For tests, returns the value set via {@link #disableKeyguard()} or {@link reenableKeyguard},
-     * or `true` by default.
+     * For tests, returns the value set via {@link #disableKeyguard()} or {@link
+     * #reenableKeyguard()}, or true by default.
      *
      * @see #setKeyguardLocked(boolean)
      */
     public boolean isEnabled() {
       return keyguardEnabled;
     }
+
+    @Resetter
+    public static void reset() {
+      keyguardEnabled = true;
+    }
   }
 
   @Resetter
   public static void reset() {
-    // Static because the state is Global but Context.getSystemService() returns a new instance
-    // on each call.
-    keyguardLock = Shadow.newInstanceOf(KeyguardManager.KeyguardLock.class);
-
     deviceLockedForUsers.clear();
     deviceSecureForUsers.clear();
     inRestrictedInputMode = false;

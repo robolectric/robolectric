@@ -5,36 +5,47 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
 import android.app.Application;
+import android.app.ApplicationExitInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.system.OsConstants;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.android.collect.Lists;
 import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowActivityManagerTest {
 
+  private static final String PROCESS_NAME = "com.google.android.apps.app";
+
   private ActivityManager activityManager;
+  private Context context;
+  private ShadowActivityManager shadowActivityManager;
 
   @Before
   public void setUp() {
-    activityManager =
-        (ActivityManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    context = ApplicationProvider.getApplicationContext();
+    activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+    shadowActivityManager = Shadow.extract(activityManager);
   }
 
   @Test
@@ -62,8 +73,10 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningTasks_shouldReturnTaskList() {
-    final ActivityManager.RunningTaskInfo task1 = buildTaskInfo(new ComponentName("org.robolectric", "Task 1"));
-    final ActivityManager.RunningTaskInfo task2 = buildTaskInfo(new ComponentName("org.robolectric", "Task 2"));
+    final ActivityManager.RunningTaskInfo task1 =
+        buildTaskInfo(new ComponentName("org.robolectric", "Task 1"));
+    final ActivityManager.RunningTaskInfo task2 =
+        buildTaskInfo(new ComponentName("org.robolectric", "Task 2"));
 
     assertThat(activityManager.getRunningTasks(Integer.MAX_VALUE)).isEmpty();
     shadowOf(activityManager).setTasks(Lists.newArrayList(task1, task2));
@@ -83,8 +96,10 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningAppProcesses_shouldReturnProcessList() {
-    final ActivityManager.RunningAppProcessInfo process1 = buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
-    final ActivityManager.RunningAppProcessInfo process2 = buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
+    final ActivityManager.RunningAppProcessInfo process1 =
+        buildProcessInfo(new ComponentName("org.robolectric", "Process 1"));
+    final ActivityManager.RunningAppProcessInfo process2 =
+        buildProcessInfo(new ComponentName("org.robolectric", "Process 2"));
 
     assertThat(activityManager.getRunningAppProcesses().size()).isEqualTo(1);
     ActivityManager.RunningAppProcessInfo myInfo = activityManager.getRunningAppProcesses().get(0);
@@ -101,12 +116,15 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getRunningServices_shouldReturnServiceList() {
-    final ActivityManager.RunningServiceInfo service1 = buildServiceInfo(new ComponentName("org.robolectric", "Service 1"));
-    final ActivityManager.RunningServiceInfo service2 = buildServiceInfo(new ComponentName("org.robolectric", "Service 2"));
+    final ActivityManager.RunningServiceInfo service1 =
+        buildServiceInfo(new ComponentName("org.robolectric", "Service 1"));
+    final ActivityManager.RunningServiceInfo service2 =
+        buildServiceInfo(new ComponentName("org.robolectric", "Service 2"));
 
     assertThat(activityManager.getRunningServices(Integer.MAX_VALUE)).isEmpty();
     shadowOf(activityManager).setServices(Lists.newArrayList(service1, service2));
-    assertThat(activityManager.getRunningServices(Integer.MAX_VALUE)).containsExactly(service1, service2);
+    assertThat(activityManager.getRunningServices(Integer.MAX_VALUE))
+        .containsExactly(service1, service2);
   }
 
   @Test
@@ -135,13 +153,15 @@ public class ShadowActivityManagerTest {
     assertThat(ActivityManager.isUserAMonkey()).isFalse();
   }
 
-  @Test @Config(minSdk = KITKAT)
+  @Test
+  @Config(minSdk = KITKAT)
   public void setIsLowRamDevice() {
     shadowOf(activityManager).setIsLowRamDevice(true);
     assertThat(activityManager.isLowRamDevice()).isTrue();
   }
 
-  @Test @Config(minSdk = M)
+  @Test
+  @Config(minSdk = M)
   public void getLockTaskModeState() throws Exception {
     assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
@@ -218,14 +238,155 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = P)
   public void isBackgroundRestricted_returnsValueSet() {
-    ActivityManager activityManager = (ActivityManager) ApplicationProvider.getApplicationContext()
-        .getSystemService(Context.ACTIVITY_SERVICE);
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
     shadowOf(activityManager).setBackgroundRestricted(true);
 
     assertThat(activityManager.isBackgroundRestricted()).isTrue();
   }
 
-  ///////////////////////
+  @Config(minSdk = R)
+  @Test
+  public void getHistoricalProcessExitReasons_noRecord_emptyListReturned() {
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(context.getPackageName(), 0, 0);
+
+    assertThat(applicationExitInfoList).isEmpty();
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void getHistoricalProcessExitReasons_recordsRetunredInCorrectOrder() {
+    addApplicationExitInfo(/* pid= */ 1);
+    addApplicationExitInfo(/* pid= */ 2);
+    addApplicationExitInfo(/* pid= */ 3);
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(3);
+    assertThat(applicationExitInfoList.get(0).getPid()).isEqualTo(3);
+    assertThat(applicationExitInfoList.get(1).getPid()).isEqualTo(2);
+    assertThat(applicationExitInfoList.get(2).getPid()).isEqualTo(1);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void getHistoricalProcessExitReasons_pidSpecified_correctRecordReturned() {
+    addApplicationExitInfo(/* pid= */ 1);
+    addApplicationExitInfo(/* pid= */ 2);
+    addApplicationExitInfo(/* pid= */ 3);
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 2, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(1);
+    assertThat(applicationExitInfoList.get(0).getPid()).isEqualTo(2);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void getHistoricalProcessExitReasons_maxNumSpecified_correctNumberOfRecordsReturned() {
+    addApplicationExitInfo(/* pid= */ 1);
+    addApplicationExitInfo(/* pid= */ 2);
+    addApplicationExitInfo(/* pid= */ 3);
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 2);
+
+    assertThat(applicationExitInfoList).hasSize(2);
+    assertThat(applicationExitInfoList.get(0).getPid()).isEqualTo(3);
+    assertThat(applicationExitInfoList.get(1).getPid()).isEqualTo(2);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void addApplicationExitInfo_reasonSet() {
+    addApplicationExitInfo(/* pid= */ 1, ApplicationExitInfo.REASON_ANR, /* status= */ 0);
+    addApplicationExitInfo(/* pid= */ 2, ApplicationExitInfo.REASON_CRASH, /* status= */ 0);
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(2);
+    assertThat(applicationExitInfoList.get(0).getReason())
+        .isEqualTo(ApplicationExitInfo.REASON_CRASH);
+    assertThat(applicationExitInfoList.get(1).getReason())
+        .isEqualTo(ApplicationExitInfo.REASON_ANR);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void addApplicationExitInfo_statusSet() {
+    addApplicationExitInfo(/* pid= */ 1, ApplicationExitInfo.REASON_SIGNALED, OsConstants.SIGABRT);
+    addApplicationExitInfo(/* pid= */ 2, ApplicationExitInfo.REASON_CRASH, /* status= */ 0);
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(2);
+    assertThat(applicationExitInfoList.get(0).getStatus()).isEqualTo(0);
+    assertThat(applicationExitInfoList.get(1).getStatus()).isEqualTo(OsConstants.SIGABRT);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void addApplicationExitInfo_processNameSet() {
+    addApplicationExitInfo(/* pid= */ 1);
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(1);
+    assertThat(applicationExitInfoList.get(0).getProcessName()).isEqualTo(PROCESS_NAME);
+  }
+
+  @Test
+  public void getDeviceConfigurationInfo_returnsValueSet() {
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    ConfigurationInfo configurationInfo = new ConfigurationInfo();
+    shadowOf(activityManager).setDeviceConfigurationInfo(configurationInfo);
+
+    assertThat(activityManager.getDeviceConfigurationInfo()).isEqualTo(configurationInfo);
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void isApplicationUserDataCleared_returnsDefaultFalse() {
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    assertThat(Shadows.shadowOf(activityManager).isApplicationUserDataCleared()).isFalse();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void isApplicationUserDataCleared_returnsTrue() {
+    ActivityManager activityManager =
+        (ActivityManager)
+            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+    activityManager.clearApplicationUserData();
+    assertThat(Shadows.shadowOf(activityManager).isApplicationUserDataCleared()).isTrue();
+  }
+
+  private void addApplicationExitInfo(int pid) {
+    addApplicationExitInfo(
+        /* pid= */ pid, ApplicationExitInfo.REASON_SIGNALED, /* status= */ OsConstants.SIGKILL);
+  }
+
+  private void addApplicationExitInfo(int pid, int reason, int status) {
+    shadowActivityManager.addApplicationExitInfo(
+        PROCESS_NAME, /* pid= */ pid, /* reason= */ reason, /* status= */ status);
+  }
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {
     final ActivityManager.RunningTaskInfo info = new ActivityManager.RunningTaskInfo();

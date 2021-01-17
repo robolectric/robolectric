@@ -7,10 +7,12 @@ import static android.os.Build.VERSION_CODES.M;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.AudioSystem;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 
 /**
@@ -18,23 +20,41 @@ import org.robolectric.annotation.Resetter;
  * filling any requested buffers.
  *
  * <p>It is also possible to provide the underlying data by implementing {@link AudioRecordSource}
- * and setting this via {@link #setSource(AudioRecordSource)}.
+ * and setting this via {@link #setSourceProvider(AudioRecordSourceProvider)}.
  */
 @Implements(value = AudioRecord.class, minSdk = LOLLIPOP)
 public final class ShadowAudioRecord {
 
+  @RealObject AudioRecord audioRecord;
+
   private static final AudioRecordSource DEFAULT_SOURCE = new AudioRecordSource() {};
+  private static final AtomicReference<AudioRecordSourceProvider> audioRecordSourceProvider =
+      new AtomicReference<>(audioRecord -> DEFAULT_SOURCE);
 
-  private static final AtomicReference<AudioRecordSource> source =
-      new AtomicReference<>(DEFAULT_SOURCE);
-
+  /**
+   * Sets {@link AudioRecordSource} to be used for providing data to {@link AudioRecord}.
+   *
+   * @deprecated use {@link #setSourceProvider(AudioRecordSourceProvider)}.
+   */
+  @Deprecated
   public static void setSource(AudioRecordSource source) {
-    ShadowAudioRecord.source.set(source);
+    audioRecordSourceProvider.set(audioRecord -> source);
   }
 
+  /**
+   * Sets {@link AudioRecordSourceProvider} to be used for providing data of {@link AudioRecord}.
+   */
+  public static void setSourceProvider(AudioRecordSourceProvider audioRecordSourceProvider) {
+    ShadowAudioRecord.audioRecordSourceProvider.set(audioRecordSourceProvider);
+  }
+
+  /**
+   * Resets {@link AudioRecordSource} to be used for providing data to {@link AudioRecord}, so that
+   * all requests are fulfilled for audio data by completely filling any requested buffers.
+   */
   @Resetter
   public static void clearSource() {
-    source.set(DEFAULT_SOURCE);
+    setSource(DEFAULT_SOURCE);
   }
 
   @Implementation
@@ -66,7 +86,8 @@ public final class ShadowAudioRecord {
   @Implementation(minSdk = M)
   protected int native_read_in_byte_array(
       byte[] audioData, int offsetInBytes, int sizeInBytes, boolean isBlocking) {
-    return source.get().readInByteArray(audioData, offsetInBytes, sizeInBytes, isBlocking);
+    return getAudioRecordSource()
+        .readInByteArray(audioData, offsetInBytes, sizeInBytes, isBlocking);
   }
 
   protected int native_read_in_short_array(
@@ -77,13 +98,15 @@ public final class ShadowAudioRecord {
   @Implementation(minSdk = M)
   protected int native_read_in_short_array(
       short[] audioData, int offsetInShorts, int sizeInShorts, boolean isBlocking) {
-    return source.get().readInShortArray(audioData, offsetInShorts, sizeInShorts, isBlocking);
+    return getAudioRecordSource()
+        .readInShortArray(audioData, offsetInShorts, sizeInShorts, isBlocking);
   }
 
   @Implementation(minSdk = M)
   protected int native_read_in_float_array(
       float[] audioData, int offsetInFloats, int sizeInFloats, boolean isBlocking) {
-    return source.get().readInFloatArray(audioData, offsetInFloats, sizeInFloats, isBlocking);
+    return getAudioRecordSource()
+        .readInFloatArray(audioData, offsetInFloats, sizeInFloats, isBlocking);
   }
 
   protected int native_read_in_direct_buffer(Object jBuffer, int sizeInBytes) {
@@ -94,9 +117,17 @@ public final class ShadowAudioRecord {
   protected int native_read_in_direct_buffer(Object jBuffer, int sizeInBytes, boolean isBlocking) {
     // Note, in the real implementation the buffers position is not adjusted during the
     // read, so use duplicate to ensure the real implementation is matched.
-    return source
-        .get()
+    return getAudioRecordSource()
         .readInDirectBuffer(((ByteBuffer) jBuffer).duplicate(), sizeInBytes, isBlocking);
+  }
+
+  private AudioRecordSource getAudioRecordSource() {
+    return audioRecordSourceProvider.get().get(audioRecord);
+  }
+
+  /** Provides {@link AudioRecordSource} for the given {@link AudioRecord}. */
+  public interface AudioRecordSourceProvider {
+    AudioRecordSource get(AudioRecord audioRecord);
   }
 
   /** Provides underlying data for the {@link ShadowAudioRecord}. */
@@ -147,7 +178,7 @@ public final class ShadowAudioRecord {
      */
     default int readInDirectBuffer(ByteBuffer buffer, int sizeInBytes, boolean isBlocking) {
       int maxBytes = Math.min(buffer.remaining(), sizeInBytes);
-      buffer.position(buffer.position() + maxBytes);
+      ((Buffer) buffer).position(buffer.position() + maxBytes);
       return maxBytes;
     }
   }

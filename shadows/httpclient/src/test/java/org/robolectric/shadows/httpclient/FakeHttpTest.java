@@ -3,6 +3,7 @@ package org.robolectric.shadows.httpclient;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
@@ -12,9 +13,9 @@ import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.TestRunnerWithManifest;
 
-@RunWith(TestRunnerWithManifest.class)
+/** Tests for {@link FakeHttp} */
+@RunWith(AndroidJUnit4.class)
 public class FakeHttpTest {
 
   @Test

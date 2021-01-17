@@ -3,11 +3,14 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
@@ -109,6 +112,8 @@ public class ShadowDevicePolicyManager {
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
+  private final Map<ComponentName, CharSequence> longSupportMessageMap = new HashMap<>();
   private final Set<ComponentName> componentsWithActivatedTokens = new HashSet<>();
   private Collection<String> packagesToFailForSetApplicationHidden = Collections.emptySet();
   private final List<String> lockTaskPackages = new ArrayList<>();
@@ -118,6 +123,7 @@ public class ShadowDevicePolicyManager {
   private List<UserHandle> bindDeviceAdminTargetUsers = ImmutableList.of();
   private boolean isDeviceProvisioned;
   private boolean isDeviceProvisioningConfigApplied;
+  private volatile boolean organizationOwnedDeviceWithManagedProfile = false;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -268,8 +274,17 @@ public class ShadowDevicePolicyManager {
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected boolean isUninstallBlocked(ComponentName admin, String packageName) {
-    enforceActiveAdmin(admin);
+  protected boolean isUninstallBlocked(@Nullable ComponentName admin, String packageName) {
+    if (admin == null) {
+      // Starting from LOLLIPOP_MR1, the behavior of this API is changed such that passing null as
+      // the admin parameter will return if any admin has blocked the uninstallation. Before L MR1,
+      // passing null will cause a NullPointerException to be raised.
+      if (Build.VERSION.SDK_INT < LOLLIPOP_MR1) {
+        throw new NullPointerException("ComponentName is null");
+      }
+    } else {
+      enforceActiveAdmin(admin);
+    }
     return uninstallBlockedPackages.contains(packageName);
   }
 
@@ -292,8 +307,8 @@ public class ShadowDevicePolicyManager {
   }
 
   /**
-   * Returns the human-readable name of the profile owner for a user if set using
-   * {@link #setProfileOwnerName}, otherwise `null`.
+   * Returns the human-readable name of the profile owner for a user if set using {@link
+   * #setProfileOwnerName}, otherwise null.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected String getProfileOwnerNameAsUser(int userId) {
@@ -702,6 +717,11 @@ public class ShadowDevicePolicyManager {
       return false;
     }
     lastSetPassword = password;
+    boolean secure = !password.isEmpty();
+    KeyguardManager keyguardManager =
+        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    shadowOf(keyguardManager).setIsDeviceSecure(secure);
+    shadowOf(keyguardManager).setIsKeyguardSecure(secure);
     return true;
   }
 
@@ -731,6 +751,11 @@ public class ShadowDevicePolicyManager {
     enforceDeviceOwnerOrProfileOwner(admin);
     passwordResetTokens.put(admin, token);
     componentsWithActivatedTokens.remove(admin);
+    KeyguardManager keyguardManager =
+        (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+    if (!keyguardManager.isDeviceSecure()) {
+      activateResetToken(admin);
+    }
     return true;
   }
 
@@ -1218,5 +1243,51 @@ public class ShadowDevicePolicyManager {
     }
 
     return context.bindServiceAsUser(serviceIntent, conn, flags, targetUser);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setShortSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    shortSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getShortSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return shortSupportMessageMap.get(admin);
+  }
+
+  @Implementation(minSdk = N)
+  protected void setLongSupportMessage(ComponentName admin, @Nullable CharSequence message) {
+    enforceActiveAdmin(admin);
+    longSupportMessageMap.put(admin, message);
+  }
+
+  @Implementation(minSdk = N)
+  @Nullable
+  protected CharSequence getLongSupportMessage(ComponentName admin) {
+    enforceActiveAdmin(admin);
+    return longSupportMessageMap.get(admin);
+  }
+
+  /**
+   * Sets the return value of the {@link
+   * DevicePolicyManager#isOrganizationOwnedDeviceWithManagedProfile} method (only for Android R+).
+   */
+  public void setOrganizationOwnedDeviceWithManagedProfile(boolean value) {
+    organizationOwnedDeviceWithManagedProfile = value;
+  }
+
+  /**
+   * Returns the value stored using in the shadow, while the real method returns the value store on
+   * the device.
+   *
+   * <p>The value can be set by {@link #setOrganizationOwnedDeviceWithManagedProfile} and is {@code
+   * false} by default.
+   */
+  @Implementation(minSdk = R)
+  protected boolean isOrganizationOwnedDeviceWithManagedProfile() {
+    return organizationOwnedDeviceWithManagedProfile;
   }
 }

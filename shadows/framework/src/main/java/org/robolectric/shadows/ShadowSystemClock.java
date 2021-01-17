@@ -8,6 +8,7 @@ import android.os.SimpleClock;
 import android.os.SystemClock;
 import java.time.DateTimeException;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -51,8 +52,8 @@ public abstract class ShadowSystemClock {
   /**
    * Sets the value for {@link System#nanoTime()}.
    *
-   * May only be used for {@link LooperMode.Mode.LEGACY}. For {@link LooperMode.Mode.PAUSED},
-   * `nanoTime` is calculated based on {@link SystemClock#uptimeMillis()} and can't be set
+   * <p>May only be used for {@link LooperMode.Mode#LEGACY}. For {@link LooperMode.Mode#PAUSED},
+   * {@param nanoTime} is calculated based on {@link SystemClock#uptimeMillis()} and can't be set
    * explicitly.
    */
   public static void setNanoTime(long nanoTime) {
@@ -63,6 +64,14 @@ public abstract class ShadowSystemClock {
   /** Sets whether network time is available. */
   public static void setNetworkTimeAvailable(boolean available) {
     networkTimeAvailable = available;
+  }
+
+  /**
+   * An alternate to {@link #advanceBy(Duration)} for older Android code bases where Duration is not
+   * available.
+   */
+  public static void advanceBy(long time, TimeUnit unit) {
+    SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + unit.toMillis(time));
   }
 
   /**

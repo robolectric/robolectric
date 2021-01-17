@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -22,16 +23,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
+import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.util.Pair;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
@@ -39,6 +44,8 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = LauncherApps.class, minSdk = LOLLIPOP)
 public class ShadowLauncherApps {
   private List<ShortcutInfo> shortcuts = new ArrayList<>();
+  private Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
+  private Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
 
@@ -72,6 +79,26 @@ public class ShadowLauncherApps {
       callbackPair.second.post(
           () -> callbackPair.first.onPackageAdded(packageName, Process.myUserHandle()));
     }
+  }
+
+  /**
+   * Adds an enabled package to be checked by {@link #isPackageEnabled(String, UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param packageName the package name to be added.
+   */
+  public void addEnabledPackage(UserHandle userHandle, String packageName) {
+    enabledPackages.put(userHandle, packageName);
+  }
+
+  /**
+   * Add an {@link LauncherActivityInfo} to be got by {@link #getActivityList(String, UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param activityInfo the {@link LauncherActivityInfo} to be added.
+   */
+  public void addActivity(UserHandle userHandle, LauncherActivityInfo activityInfo) {
+    activityList.put(userHandle, activityInfo);
   }
 
   /**
@@ -117,8 +144,17 @@ public class ShadowLauncherApps {
 
   @Implementation
   protected boolean isPackageEnabled(String packageName, UserHandle user) {
-    throw new UnsupportedOperationException(
-        "This method is not currently supported in Robolectric.");
+    return enabledPackages.get(user).contains(packageName);
+  }
+
+  @Implementation(minSdk = L)
+  protected List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
+    final Predicate<LauncherActivityInfo> predicatePackage =
+        info ->
+            info.getComponentName() != null
+                && packageName != null
+                && packageName.equals(info.getComponentName().getPackageName());
+    return activityList.get(user).stream().filter(predicatePackage).collect(Collectors.toList());
   }
 
   @Implementation(minSdk = P)

@@ -79,19 +79,19 @@ public class InstrumentationConfiguration {
   /**
    * Determine if {@link SandboxClassLoader} should instrument a given class.
    *
-   * @param   mutableClass The class to check.
-   * @return  True if the class should be instrumented.
+   * @param classDetails The class to check.
+   * @return True if the class should be instrumented.
    */
-  public boolean shouldInstrument(MutableClass mutableClass) {
-    return !(mutableClass.isInterface()
-            || mutableClass.isAnnotation()
-            || mutableClass.hasAnnotation(DoNotInstrument.class))
-        && (isInInstrumentedPackage(mutableClass.getName())
-            || instrumentedClasses.contains(mutableClass.getName())
-            || mutableClass.hasAnnotation(Instrument.class))
-        && !(classesToNotInstrument.contains(mutableClass.getName()))
-        && !(isInPackagesToNotInstrument(mutableClass.getName()))
-        && !classMatchesExclusionRegex(mutableClass.getName());
+  public boolean shouldInstrument(ClassDetails classDetails) {
+    return !classDetails.isInterface()
+        && !classDetails.isAnnotation()
+        && !classesToNotInstrument.contains(classDetails.getName())
+        && !isInPackagesToNotInstrument(classDetails.getName())
+        && !classMatchesExclusionRegex(classDetails.getName())
+        && !classDetails.hasAnnotation(DoNotInstrument.class)
+        && (isInInstrumentedPackage(classDetails.getName())
+            || instrumentedClasses.contains(classDetails.getName())
+            || classDetails.hasAnnotation(Instrument.class));
   }
 
   private boolean classMatchesExclusionRegex(String className) {
@@ -154,10 +154,6 @@ public class InstrumentationConfiguration {
    */
   public Map<String, String> classNameTranslations() {
     return Collections.unmodifiableMap(classNameTranslations);
-  }
-
-  public boolean containsStubs(String className) {
-    return className.startsWith("com.google.android.maps.");
   }
 
   private boolean isInInstrumentedPackage(String className) {
@@ -223,7 +219,9 @@ public class InstrumentationConfiguration {
   }
 
   boolean shouldIntercept(MethodInsnNode targetMethod) {
-    if (targetMethod.name.equals("<init>")) return false; // sorry, can't strip out calls to super() in constructor
+    if (targetMethod.name.equals("<init>")) {
+      return false; // sorry, can't strip out calls to super() in constructor
+    }
     return methodsToIntercept.contains(new MethodRef(targetMethod.owner, targetMethod.name))
         || methodsToIntercept.contains(new MethodRef(targetMethod.owner, "*"));
   }

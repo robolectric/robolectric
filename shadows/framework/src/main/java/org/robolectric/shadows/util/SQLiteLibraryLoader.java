@@ -13,13 +13,11 @@ import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Initializes sqlite native libraries.
- */
+/** Initializes sqlite native libraries. */
 public class SQLiteLibraryLoader {
   private static SQLiteLibraryLoader instance;
   private static final String SQLITE4JAVA = "sqlite4java";
-  private static final String OS_WIN = "windows", OS_LINUX = "linux", OS_MAC = "mac";
+  private static final String OS_WIN = "win32", OS_LINUX = "linux", OS_MAC = "osx";
 
   private final LibraryNameMapper libraryNameMapper;
   private boolean loaded;
@@ -59,7 +57,7 @@ public class SQLiteLibraryLoader {
   }
 
   public String getLibClasspathResourceName() {
-    return getNativesResourcesPathPart() + "/" + getNativesResourcesFilePart();
+    return "sqlite4java/" + getNativesResourcesPathPart() + "/" + getLibName();
   }
 
   private ByteSource getLibraryByteSource() {
@@ -85,7 +83,11 @@ public class SQLiteLibraryLoader {
 
     SQLite.setLibraryPath(libPath.getAbsolutePath());
     try {
-      log("SQLite version: library " + SQLite.getLibraryVersion() + " / core " + SQLite.getSQLiteVersion());
+      log(
+          "SQLite version: library "
+              + SQLite.getLibraryVersion()
+              + " / core "
+              + SQLite.getSQLiteVersion());
     } catch (SQLiteException e) {
       throw new RuntimeException(e);
     }
@@ -97,11 +99,13 @@ public class SQLiteLibraryLoader {
   }
 
   private String getNativesResourcesPathPart() {
-    return getOsPrefix() + "-" + getArchitectureSuffix();
-  }
-
-  private String getNativesResourcesFilePart() {
-    return getLibName().replace(".dylib", ".jnilib");
+    String prefix = getOsPrefix();
+    String suffix = getArchitectureSuffix(prefix);
+    if (suffix != null) {
+      return prefix + "-" + suffix;
+    } else {
+      return prefix;
+    }
   }
 
   private String getOsPrefix() {
@@ -113,17 +117,38 @@ public class SQLiteLibraryLoader {
     } else if (name.contains("mac")) {
       return OS_MAC;
     } else {
-      throw new UnsupportedOperationException("Architecture '" + name + "' is not supported by SQLite library");
+      throw new UnsupportedOperationException(
+          "Platform \'" + name + "\' is not supported by SQLite library");
     }
   }
 
-  private String getArchitectureSuffix() {
+  private String getArchitectureSuffix(String prefix) {
     String arch = System.getProperty("os.arch").toLowerCase(Locale.US).replaceAll("\\W", "");
-    if ("i386".equals(arch) || "x86".equals(arch)) {
-      return "x86";
-    } else {
-      return "x86_64";
+    switch (prefix) {
+      case OS_MAC:
+        return null;
+      case OS_LINUX:
+        switch (arch) {
+          case "i386":
+          case "x86":
+            return "i386";
+          case "x86_64":
+          case "amd64":
+            return "amd64";
+        }
+        break;
+      case OS_WIN:
+        switch (arch) {
+          case "x86":
+            return "x86";
+          case "x86_64":
+          case "amd64":
+            return "x64";
+        }
+        break;
     }
+    throw new UnsupportedOperationException(
+        "Architecture \'" + arch + "\' is not supported by SQLite library");
   }
 
   public interface LibraryNameMapper {

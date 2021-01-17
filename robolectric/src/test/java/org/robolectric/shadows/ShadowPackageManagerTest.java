@@ -594,8 +594,7 @@ public class ShadowPackageManagerTest {
   public void getPackageArchiveInfo_ApkNotInstalled() throws IOException {
     File testApk = TestUtil.resourcesBaseDir().resolve(REAL_TEST_APP_ASSET_PATH).toFile();
 
-    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(
-        testApk.getAbsolutePath(), 0);
+    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(testApk.getAbsolutePath(), 0);
 
     String resourcesMode = System.getProperty("robolectric.resourcesMode");
     if (resourcesMode != null && resourcesMode.equals("legacy")) {
@@ -1500,9 +1499,10 @@ public class ShadowPackageManagerTest {
             PackageManager.GET_PROVIDERS);
     ProviderInfo[] providers = packageInfo.providers;
     assertThat(providers).isNotEmpty();
-    assertThat(providers.length).isEqualTo(2);
+    assertThat(providers.length).isEqualTo(3);
     assertThat(providers[0].packageName).isEqualTo("org.robolectric");
     assertThat(providers[1].packageName).isEqualTo("org.robolectric");
+    assertThat(providers[2].packageName).isEqualTo("org.robolectric");
   }
 
   @Test
@@ -1579,6 +1579,15 @@ public class ShadowPackageManagerTest {
         packageManager.resolveContentProvider("org.robolectric.authority1", 0);
     assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
     assertThat(providerInfo.authority).isEqualTo("org.robolectric.authority1");
+  }
+
+  @Test
+  public void resolveContentProvider_multiAuthorities() throws Exception {
+    ProviderInfo providerInfo =
+        packageManager.resolveContentProvider("org.robolectric.authority3", 0);
+    assertThat(providerInfo.packageName).isEqualTo("org.robolectric");
+    assertThat(providerInfo.authority)
+        .isEqualTo("org.robolectric.authority3;org.robolectric.authority4");
   }
 
   @Test
@@ -2061,8 +2070,7 @@ public class ShadowPackageManagerTest {
 
     File testApk = TestUtil.resourcesBaseDir().resolve(REAL_TEST_APP_ASSET_PATH).toFile();
 
-    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(
-        testApk.getAbsolutePath(), 0);
+    PackageInfo packageInfo = packageManager.getPackageArchiveInfo(testApk.getAbsolutePath(), 0);
 
     assertThat(packageInfo).isNotNull();
     ApplicationInfo applicationInfo = packageInfo.applicationInfo;
@@ -3069,6 +3077,28 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_isProfileOwner_suspendDialogInfo() throws NameNotFoundException {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowOf(devicePolicyManager).setProfileOwner(componentName);
+
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.P)
   public void setPackagesSuspended_withDeviceOwner_shouldThrow() {
     DevicePolicyManager devicePolicyManager =
@@ -3114,6 +3144,28 @@ public class ShadowPackageManagerTest {
       fail("Should have thrown UnsupportedOperationException");
     } catch (UnsupportedOperationException expected) {
     }
+  }
+
+  @Test
+  @Config(minSdk = android.os.Build.VERSION_CODES.Q)
+  public void setPackagesSuspended_isDeviceOwner_suspendDialogInfo() throws NameNotFoundException {
+    DevicePolicyManager devicePolicyManager =
+        (DevicePolicyManager)
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(Context.DEVICE_POLICY_SERVICE);
+    String packageName = ApplicationProvider.getApplicationContext().getPackageName();
+    ComponentName componentName =
+        new ComponentName(packageName, ActivityWithFilters.class.getName());
+    shadowOf(devicePolicyManager).setDeviceOwner(componentName);
+
+    shadowOf(packageManager).installPackage(createPackageInfoWithPackageName(TEST_PACKAGE_NAME));
+    packageManager.setPackagesSuspended(
+        new String[] {TEST_PACKAGE_NAME},
+        /* suspended= */ true,
+        /* appExtras= */ null,
+        /* launcherExtras= */ null,
+        /* suspendDialogInfo= */ (SuspendDialogInfo) null);
+    assertThat(packageManager.isPackageSuspended(TEST_PACKAGE_NAME)).isTrue();
   }
 
   @Test
@@ -3622,9 +3674,11 @@ public class ShadowPackageManagerTest {
   @Test
   @Config(minSdk = Q)
   public void setDistractingPackageRestrictions() {
-    assertThat(packageManager.setDistractingPackageRestrictions(
-        new String[]{ TEST_PACKAGE_NAME, TEST_PACKAGE2_NAME },
-        PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS)).isEmpty();
+    assertThat(
+            packageManager.setDistractingPackageRestrictions(
+                new String[] {TEST_PACKAGE_NAME, TEST_PACKAGE2_NAME},
+                PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS))
+        .isEmpty();
 
     assertThat(shadowOf(packageManager).getDistractingPackageRestrictions(TEST_PACKAGE_NAME))
         .isEqualTo(PackageManager.RESTRICTION_HIDE_FROM_SUGGESTIONS);
@@ -3681,9 +3735,43 @@ public class ShadowPackageManagerTest {
     assertThat(result).isEmpty();
   }
 
-  ///////////////////////
+  @Test
+  @Config(minSdk = O)
+  public void isInstantApp() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo
+        .applicationInfo
+        .getClass()
+        .getDeclaredField("privateFlags")
+        .setInt(packageInfo.applicationInfo, /*ApplicationInfo.PRIVATE_FLAG_INSTANT*/ 1 << 7);
 
-  public String[] setPackagesSuspended(String[] packageNames, boolean suspended, PersistableBundle appExtras, PersistableBundle launcherExtras, String dialogMessage) {
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    assertThat(packageManager.isInstantApp(TEST_PACKAGE_NAME)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isInstantApp_falseDefault() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    assertThat(packageManager.isInstantApp(TEST_PACKAGE_NAME)).isFalse();
+  }
+
+  public String[] setPackagesSuspended(
+      String[] packageNames,
+      boolean suspended,
+      PersistableBundle appExtras,
+      PersistableBundle launcherExtras,
+      String dialogMessage) {
     return packageManager.setPackagesSuspended(
         packageNames, suspended, appExtras, launcherExtras, dialogMessage);
   }

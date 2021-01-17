@@ -15,10 +15,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.shadows.testing.TestContentProvider1;
+import org.robolectric.shadows.testing.TestContentProvider3And4;
 
 @RunWith(AndroidJUnit4.class)
 public class ContentProviderControllerTest {
-  private final ContentProviderController<TestContentProvider1> controller = Robolectric.buildContentProvider(TestContentProvider1.class);
+  private final ContentProviderController<TestContentProvider1> controller =
+      Robolectric.buildContentProvider(TestContentProvider1.class);
+
   private ContentResolver contentResolver;
 
   @Before
@@ -59,6 +62,17 @@ public class ContentProviderControllerTest {
   }
 
   @Test
+  public void shouldResolveProvidersWithMultipleAuthorities() throws Exception {
+    TestContentProvider3And4 contentProvider =
+        Robolectric.buildContentProvider(TestContentProvider3And4.class).create().get();
+
+    ContentProviderClient client =
+        contentResolver.acquireContentProviderClient("org.robolectric.authority3");
+    client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
+    assertThat(contentProvider.transcript).containsExactly("onCreate", "query for something");
+  }
+
+  @Test
   public void whenNoProviderManifestEntryFound_shouldStillInitialize() throws Exception {
     TestContentProvider1 myContentProvider = Robolectric.buildContentProvider(NotInManifestContentProvider.class).create().get();
     assertThat(myContentProvider.getReadPermission()).isNull();
@@ -91,13 +105,18 @@ public class ContentProviderControllerTest {
 
   @Test
   public void contentProviderShouldBeCreatedBeforeBeingRegistered() throws Exception {
-    XContentProvider xContentProvider = Robolectric.setupContentProvider(XContentProvider.class, "x-authority");
+    XContentProvider xContentProvider =
+        Robolectric.setupContentProvider(XContentProvider.class, "x-authority");
     assertThat(xContentProvider.transcript).containsExactly("x-authority not registered yet");
-    ContentProviderClient contentProviderClient = contentResolver.acquireContentProviderClient("x-authority");
+    ContentProviderClient contentProviderClient =
+        contentResolver.acquireContentProviderClient("x-authority");
     assertThat(contentProviderClient.getLocalContentProvider()).isSameInstanceAs(xContentProvider);
   }
 
-  ////////////////////
+  @Test(expected = IllegalArgumentException.class)
+  public void createContentProvider_nullAuthority() throws Exception {
+    Robolectric.buildContentProvider(XContentProvider.class).create(new ProviderInfo()).get();
+  }
 
   static class XContentProvider extends TestContentProvider1 {
     @Override
@@ -106,10 +125,10 @@ public class ContentProviderControllerTest {
           ApplicationProvider.getApplicationContext()
               .getContentResolver()
               .acquireContentProviderClient("x-authority");
-      transcript.add(contentProviderClient == null ? "x-authority"
-                                                         + " not registered"
-                                                         + " yet" : "x-authority"
-                                                                                            + " is registered");
+      transcript.add(
+          contentProviderClient == null
+              ? "x-authority" + " not registered" + " yet"
+              : "x-authority" + " is registered");
       return false;
     }
   }

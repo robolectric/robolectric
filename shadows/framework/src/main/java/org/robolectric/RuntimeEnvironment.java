@@ -42,7 +42,7 @@ public class RuntimeEnvironment {
    * Tests if the given thread is currently set as the main thread.
    *
    * @param thread the thread to test.
-   * @return <tt>true</tt> if the specified thread is the main thread, <tt>false</tt> otherwise.
+   * @return true if the specified thread is the main thread, false otherwise.
    * @see #isMainThread()
    */
   public static boolean isMainThread(Thread thread) {
@@ -53,9 +53,9 @@ public class RuntimeEnvironment {
   /**
    * Tests if the current thread is currently set as the main thread.
    *
-   * Not supported in realistic looper mode.
+   * <p>Not supported in realistic looper mode.
    *
-   * @return <tt>true</tt> if the current thread is the main thread, <tt>false</tt> otherwise.
+   * @return true if the current thread is the main thread, false otherwise.
    */
   public static boolean isMainThread() {
     assertLooperMode(LEGACY);
@@ -64,9 +64,9 @@ public class RuntimeEnvironment {
 
   /**
    * Retrieves the main thread. The main thread is the thread to which the main looper is attached.
-   * Defaults to the thread that initialises the <tt>RuntimeEnvironment</tt> class.
+   * Defaults to the thread that initialises the {@link RuntimeEnvironment} class.
    *
-   * Not supported in realistic looper mode.
+   * <p>Not supported in realistic looper mode.
    *
    * @return The main thread.
    * @see #setMainThread(Thread)
@@ -79,9 +79,9 @@ public class RuntimeEnvironment {
 
   /**
    * Sets the main thread. The main thread is the thread to which the main looper is attached.
-   * Defaults to the thread that initialises the <tt>RuntimeEnvironment</tt> class.
+   * Defaults to the thread that initialises the {@link RuntimeEnvironment} class.
    *
-   * Not supported in realistic looper mode.
+   * <p>Not supported in realistic looper mode.
    *
    * @param newMainThread the new main thread.
    * @see #setMainThread(Thread)
@@ -124,9 +124,10 @@ public class RuntimeEnvironment {
   /**
    * Overrides the current device configuration.
    *
-   * If `newQualifiers` starts with a plus (`+`), the prior configuration is used as the base
-   * configuration, with the given changes applied additively. Otherwise, default values are used
-   * for unspecified properties, as described [here](http://robolectric.org/device-configuration/).
+   * <p>If {@param newQualifiers} starts with a plus ('+'), the prior configuration is used as the
+   * base configuration, with the given changes applied additively. Otherwise, default values are
+   * used for unspecified properties, as described <a
+   * href="http://robolectric.org/device-configuration/">here</a>.
    *
    * @param newQualifiers the qualifiers to apply
    */

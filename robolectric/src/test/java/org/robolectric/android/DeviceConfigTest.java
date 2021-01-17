@@ -144,6 +144,26 @@ public class DeviceConfigTest {
         .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h590dp-normal-long-notround-" + optsForO + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
+  @Test
+  public void applyQualifiers_populatesDisplayMetrics_defaultDensity() {
+    applyQualifiers("w800dp-h640dp-mdpi");
+    assertThat(displayMetrics.widthPixels).isEqualTo(800);
+    assertThat(displayMetrics.heightPixels).isEqualTo(640);
+    assertThat(displayMetrics.density).isEqualTo((float) 1.0);
+    assertThat(displayMetrics.xdpi).isEqualTo((float) 160.0);
+    assertThat(displayMetrics.ydpi).isEqualTo((float) 160.0);
+  }
+
+  @Test
+  public void applyQualifiers_populatesDisplayMetrics_withDensity() {
+    applyQualifiers("w800dp-h640dp-hdpi");
+    assertThat(displayMetrics.widthPixels).isEqualTo(1200);
+    assertThat(displayMetrics.heightPixels).isEqualTo(960);
+    assertThat(displayMetrics.density).isEqualTo((float) 1.5);
+    assertThat(displayMetrics.xdpi).isEqualTo((float) 240.0);
+    assertThat(displayMetrics.ydpi).isEqualTo((float) 240.0);
+  }
+
   //////////////////////////
 
   private void applyQualifiers(String qualifiers) {

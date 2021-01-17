@@ -82,6 +82,12 @@ public class ShadowBuildTest {
   }
 
   @Test
+  public void setHardware() {
+    ShadowBuild.setHardware("robo_hardware");
+    assertThat(Build.HARDWARE).isEqualTo("robo_hardware");
+  }
+
+  @Test
   public void setTags() {
     ShadowBuild.setTags("robo_tags");
     assertThat(Build.TAGS).isEqualTo("robo_tags");

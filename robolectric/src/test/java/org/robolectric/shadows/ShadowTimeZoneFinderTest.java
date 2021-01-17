@@ -27,7 +27,7 @@ public class ShadowTimeZoneFinderTest {
   }
 
   @Test
-  @Config(minSdk = Q)
+  @Config(minSdk = Q, maxSdk = Q)
   public void lookupTimeZonesByCountry_shouldReturnExpectedTimeZones_Q() throws Exception {
     Class<?> cls = Class.forName("libcore.timezone.TimeZoneFinder");
     lookupTimeZonesByCountryAndAssert(cls);

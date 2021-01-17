@@ -6,9 +6,9 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.animation.ValueAnimator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Ordering;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
@@ -57,7 +57,25 @@ public class ShadowValueAnimatorTest {
     animator.start();
     assertThat(animator.isRunning()).isTrue();
 
-    shadowMainLooper().idleFor(200, TimeUnit.MILLISECONDS);
+    shadowMainLooper().idleFor(Duration.ofMillis(200));
+    assertThat(animator.isRunning()).isFalse();
+  }
+
+  @Test
+  public void animation_setPostFrameCallbackDelay() {
+    ShadowChoreographer.setPostFrameCallbackDelay(16);
+    ValueAnimator animator = ValueAnimator.ofInt(0, 10);
+    animator.setDuration(1000);
+    animator.setRepeatCount(0);
+    animator.start();
+    // without setPostFrameCallbackDelay this would finish the animation. Verify it doesn't, so
+    // tests can verify in progress animation state
+    shadowMainLooper().idleFor(Duration.ofMillis(16));
+    assertThat(animator.isRunning()).isTrue();
+    // advance 1000 frames - the duration of the animation
+    for (int i = 0; i < 999; i++) {
+      shadowMainLooper().idleFor(Duration.ofMillis(16));
+    }
     assertThat(animator.isRunning()).isFalse();
   }
 }

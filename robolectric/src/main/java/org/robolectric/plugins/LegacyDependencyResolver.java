@@ -19,23 +19,26 @@ import org.robolectric.util.ReflectionHelpers;
  * Robolectric's historical dependency resolver (which is currently still the default), which is
  * used by {@link org.robolectric.plugins.DefaultSdkProvider} to locate SDK jars.
  *
- * Robolectric will attempt to find SDK jars in the following order:
+ * <p>Robolectric will attempt to find SDK jars in the following order:
  *
- * 1. If the system property `robolectric-deps.properties` is set, then Robolectric will look for
- *    a file with the specified path containing SDK references as described
- *    {@link PropertiesDependencyResolver here}.
- * 1. If the system property `robolectric.dependency.dir` is set, then Robolectric will look for
- *    SDK jars in the given directory with Maven artifact-style names (e.g.
- *    `android-all-7.1.0_r7-robolectric-r1.jar`).
- * 1. If the system property `robolectric.offline` is `true`, then Robolectric will look for SDK
- *    jars in the current working directory with Maven artifact-style names.
- * 1. If a resource file named `robolectric-deps.properties` is found on the classpath, then
- *    Robolectric will resolve SDKs with that file as described
- *    {@link PropertiesDependencyResolver here}.
- * 1. Otherwise the jars will be downloaded from Maven Central and cached locally.
+ * <ol>
+ *   <li>If the system property {@code robolectric-deps.properties} is set, then Robolectric will
+ *       look for a file with the specified path containing SDK references as described {@link
+ *       PropertiesDependencyResolver here}.
+ *   <li>If the system property {@code robolectric.dependency.dir} is set, then Robolectric will
+ *       look for SDK jars in the given directory with Maven artifact-style names (e.g. {@code
+ *       android-all-7.1.0_r7-robolectric-r1.jar}).
+ *   <li>If the system property {@code robolectric.offline} is true, then Robolectric will look for
+ *       SDK jars in the current working directory with Maven artifact-style names.
+ *   <li>If a resource file named {@code robolectric-deps.properties} is found on the classpath,
+ *       then Robolectric will resolve SDKs with that file as described {@link
+ *       PropertiesDependencyResolver here}.
+ *   <li>Otherwise the jars will be downloaded from Maven Central and cached locally.
+ * </ol>
  *
- * If you require a hermetic build, we recommend either specifying the `robolectric.dependency.dir`
- * system property, or providing your own {@link org.robolectric.pluginapi.SdkProvider}.
+ * If you require a hermetic build, we recommend either specifying the {@code
+ * robolectric.dependency.dir} system property, or providing your own {@link
+ * org.robolectric.pluginapi.SdkProvider}.
  */
 @AutoService(DependencyResolver.class)
 @Priority(Integer.MIN_VALUE)

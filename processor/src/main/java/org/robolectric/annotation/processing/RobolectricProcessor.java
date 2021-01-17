@@ -40,6 +40,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   static final String SHOULD_INSTRUMENT_PKG_OPT = 
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
+  static final String JSON_DOCS_ENABLED = "org.robolectric.annotation.processing.jsonDocsEnabled";
   static final String SDK_CHECK_MODE = "org.robolectric.annotation.processing.sdkCheckMode";
   private static final String SDKS_FILE = "org.robolectric.annotation.processing.sdks";
   private static final String PRIORITY = "org.robolectric.annotation.processing.priority";
@@ -55,6 +56,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private final List<Generator> generators = new ArrayList<>();
   private final Map<TypeElement, Validator> elementValidators = new HashMap<>(13);
   private File jsonDocsDir;
+  private boolean jsonDocsEnabled;
 
   /**
    * Default constructor.
@@ -107,14 +109,15 @@ public class RobolectricProcessor extends AbstractProcessor {
           new ShadowProviderGenerator(
               model, processingEnv, shadowPackage, shouldInstrumentPackages, priority));
       generators.add(new ServiceLoaderGenerator(processingEnv, shadowPackage));
-      generators.add(new JavadocJsonGenerator(model, processingEnv, jsonDocsDir));
-
+      if (jsonDocsEnabled) {
+        generators.add(new JavadocJsonGenerator(model, processingEnv, jsonDocsDir));
+      }
       for (Generator generator : generators) {
         generator.generate();
       }
       generated = true;
     }
-    return true;
+    return false;
   }
 
   private void addValidator(Validator v) {
@@ -127,10 +130,11 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.shadowPackage = options.get(PACKAGE_OPT);
       this.shouldInstrumentPackages =
           !"false".equalsIgnoreCase(options.get(SHOULD_INSTRUMENT_PKG_OPT));
-      jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
+      this.jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
+      this.jsonDocsEnabled = "true".equalsIgnoreCase(options.get(JSON_DOCS_ENABLED));
       this.sdkCheckMode =
           SdkCheckMode.valueOf(options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase());
-      this.sdksFile = options.getOrDefault(SDKS_FILE, "/sdks.txt");
+      this.sdksFile = getSdksFile(options, SDKS_FILE);
       this.priority =
           Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
 
@@ -138,6 +142,13 @@ public class RobolectricProcessor extends AbstractProcessor {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);
       }
     }
+  }
+
+  /**
+   * Extendable to support Bazel environments, where the sdks file is generated as a build artifact.
+   */
+  protected String getSdksFile(Map<String, String> options, String sdksFileParam) {
+    return options.get(sdksFileParam);
   }
 
   @Override

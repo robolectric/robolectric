@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_IN;
 import static android.util.TypedValue.COMPLEX_UNIT_MM;
@@ -35,6 +36,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
+import android.graphics.fonts.Font;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -163,7 +165,8 @@ public class ResourcesTest {
   @Test
   public void getStringArray() throws Exception {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[]{"foo", "bar"});
-    assertThat(resources.getStringArray(R.array.greetings)).isEqualTo(new String[]{"hola", "Hello"});
+    assertThat(resources.getStringArray(R.array.greetings))
+        .isEqualTo(new String[] {"hola", "Hello"});
   }
 
   @Test
@@ -437,6 +440,14 @@ public class ResourcesTest {
   }
 
   @Test
+  public void testGetNinePatchDrawableIntrinsicWidth() {
+    float density = resources.getDisplayMetrics().density;
+    NinePatchDrawable ninePatchDrawable =
+        (NinePatchDrawable) resources.getDrawable(R.drawable.nine_patch_drawable);
+    assertThat((float) ninePatchDrawable.getIntrinsicWidth()).isEqualTo(98.0f * density);
+  }
+
+  @Test
   public void testGetIdentifier() throws Exception {
 
     final String resourceType = "string";
@@ -486,13 +497,16 @@ public class ResourcesTest {
   @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Config(minSdk = LOLLIPOP)
   public void shouldGenerateIdsForResourcesThatAreMissingRValues() throws Exception {
-    int identifier_missing_from_r_file = resources.getIdentifier("secondary_text_material_dark", "color", "android");
+    int identifierMissingFromRFile =
+        resources.getIdentifier("secondary_text_material_dark", "color", "android");
 
-    // We expect Robolectric to generate a placeholder identifier where one was not generated in the android R files.
-    assertThat(identifier_missing_from_r_file).isNotEqualTo(0);
+    // We expect Robolectric to generate a placeholder identifier where one was not generated in the
+    // android R files.
+    assertThat(identifierMissingFromRFile).isNotEqualTo(0);
 
-    // We expect to be able to successfully android:color/secondary_text_material_dark to a ColorStateList.
-    assertThat(resources.getColorStateList(identifier_missing_from_r_file)).isNotNull();
+    // We expect to be able to successfully android:color/secondary_text_material_dark to a
+    // ColorStateList.
+    assertThat(resources.getColorStateList(identifierMissingFromRFile)).isNotNull();
   }
 
   @Test
@@ -513,12 +527,14 @@ public class ResourcesTest {
 
   @Test
   public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
-    assertThat(Resources.getSystem().getIdentifier("copy", "string", "android")).isEqualTo(android.R.string.copy);
+    assertThat(Resources.getSystem().getIdentifier("copy", "string", "android"))
+        .isEqualTo(android.R.string.copy);
   }
 
   @Test
   public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
-    assertThat(Resources.getSystem().getIdentifier("copy", "string", context.getPackageName())).isEqualTo(0);
+    assertThat(Resources.getSystem().getIdentifier("copy", "string", context.getPackageName()))
+        .isEqualTo(0);
   }
 
   @Test
@@ -764,7 +780,8 @@ public class ResourcesTest {
     assertThat(context.getResources().getResourceName(android.R.attr.viewportHeight))
         .isNotEqualTo("android:attr/viewportHeight");
 
-    assertThat(context.getResources().getIdentifier("viewportHeight", "attr", "android")).isEqualTo(0);
+    assertThat(context.getResources().getIdentifier("viewportHeight", "attr", "android"))
+        .isEqualTo(0);
   }
 
   @Test
@@ -896,8 +913,8 @@ public class ResourcesTest {
 
   @Test
   public void internalWhiteSpaceShouldBeCollapsed() throws Exception {
-    assertThat(resources.getString(R.string.internal_whitespace_blocks)).isEqualTo("Whitespace in"
-                                                                                       + " the middle");
+    assertThat(resources.getString(R.string.internal_whitespace_blocks))
+        .isEqualTo("Whitespace in" + " the middle");
     assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 
@@ -958,7 +975,8 @@ public class ResourcesTest {
         resources.getIdentifier(context.getPackageName() + ":id_declared_in_item_tag", "id", null))
         .isEqualTo(R.id.id_declared_in_item_tag);
     assertThat(
-        resources.getIdentifier(context.getPackageName() + ":id/id_declared_in_item_tag", "other", "other"))
+            resources.getIdentifier(
+                context.getPackageName() + ":id/id_declared_in_item_tag", "other", "other"))
         .isEqualTo(R.id.id_declared_in_item_tag);
   }
 
@@ -1095,7 +1113,13 @@ public class ResourcesTest {
     assertThat(typeface).isNotNull();
   }
 
-  ///////////////////
+  @Test
+  @SdkSuppress(minSdkVersion = Q)
+  @Config(minSdk = Q)
+  public void testFontBuilder() throws Exception {
+    // Used to throw `java.io.IOException: Failed to read font contents`
+    new Font.Builder(context.getResources(), R.font.vt323_regular).build();
+  }
 
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;

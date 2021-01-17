@@ -14,7 +14,7 @@ import org.robolectric.pluginapi.config.Configurer;
 /**
  * Robolectric's default {@link ConfigurationStrategy}.
  *
- * See [Configuring Robolectric](http://robolectric.org/configuring/).
+ * @see <a href="http://robolectric.org/configuring/">Configuring Robolectric</a>.
  */
 @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
 @AutoService(ConfigurationStrategy.class)

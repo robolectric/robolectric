@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
-import android.content.ContentProviderOperation.Builder;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,7 +13,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentProviderOperationBuilderTest {
-  private Builder builder;
+  private ContentProviderOperation.Builder builder;
 
   @Test
   public void build() throws Exception {

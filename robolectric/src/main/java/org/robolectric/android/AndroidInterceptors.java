@@ -8,9 +8,11 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callStaticMethod;
 
 import android.content.Context;
+import java.io.FileDescriptor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -30,21 +32,90 @@ public class AndroidInterceptors {
   private static final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
   public static Collection<Interceptor> all() {
-    List<Interceptor> interceptors = new ArrayList<>(asList(
-        new LinkedHashMapEldestInterceptor(),
-        new PolicyManagerMakeNewWindowInterceptor(),
-        new SystemTimeInterceptor(),
-        new SystemArrayCopyInterceptor(),
-        new LocaleAdjustLanguageCodeInterceptor(),
-        new SystemLogEInterceptor(),
-        new NoOpInterceptor()
-    ));
+    List<Interceptor> interceptors =
+        new ArrayList<>(
+            asList(
+                new LinkedHashMapEldestInterceptor(),
+                new PolicyManagerMakeNewWindowInterceptor(),
+                new SystemTimeInterceptor(),
+                new SystemArrayCopyInterceptor(),
+                new LocaleAdjustLanguageCodeInterceptor(),
+                new SystemLogInterceptor(),
+                new FileDescriptorInterceptor(),
+                new NoOpInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
       interceptors.add(new CleanerInterceptor());
     }
 
     return interceptors;
+  }
+
+  /**
+   * Intercepts calls to libcore-extensions to {@link FileDescriptor}.
+   *
+   * <p>libcore implements extensions to {@link FileDescriptor} that support ownership tracking of
+   * unix FDs, which are not part of the Java API. This intercepts calls to these and maps them to
+   * the OpenJDK API.
+   */
+  public static class FileDescriptorInterceptor extends Interceptor {
+    public FileDescriptorInterceptor() {
+      super(new MethodRef(FileDescriptor.class, "release$"));
+    }
+
+    private static void moveField(
+        FileDescriptor out, FileDescriptor in, String fieldName, Object movedOutValue)
+        throws ReflectiveOperationException {
+      Field fieldAccessor = FileDescriptor.class.getDeclaredField(fieldName);
+      fieldAccessor.setAccessible(true);
+      fieldAccessor.set(out, fieldAccessor.get(in));
+      fieldAccessor.set(in, movedOutValue);
+    }
+
+    static FileDescriptor release(FileDescriptor input) {
+      synchronized (input) {
+        try {
+          FileDescriptor ret = new FileDescriptor();
+
+          moveField(ret, input, "fd", /*movedOutValue=*/ -1);
+          // "closed" is irrelevant if the fd is already -1.
+          moveField(ret, input, "closed", /*movedOutValue=*/ false);
+          // N.B.: FileDescriptor.attach() is not implemented in libcore (yet), so these won't be
+          // used.
+          moveField(ret, input, "parent", /*movedOutValue=*/ null);
+          moveField(ret, input, "otherParents", /*movedOutValue=*/ null);
+
+          // These only exist on Windows.
+          try {
+            moveField(ret, input, "handle", /*movedOutValue=*/ -1);
+            moveField(ret, input, "append", /*movedOutValue=*/ false);
+          } catch (ReflectiveOperationException ex) {
+            // Ignore.
+          }
+
+          return ret;
+        } catch (ReflectiveOperationException ex) {
+          throw new RuntimeException(ex);
+        }
+      }
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          return release((FileDescriptor) value);
+        }
+      };
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(
+          getClass(), "release", methodType(FileDescriptor.class, FileDescriptor.class));
+    }
   }
 
 //  @Intercept(value = LinkedHashMap.class, method = "eldest")
@@ -113,7 +184,9 @@ public class AndroidInterceptors {
 
   public static class SystemTimeInterceptor extends Interceptor {
     public SystemTimeInterceptor() {
-      super(new MethodRef(System.class, "nanoTime"), new MethodRef(System.class, "currentTimeMillis"));
+      super(
+          new MethodRef(System.class, "nanoTime"),
+          new MethodRef(System.class, "currentTimeMillis"));
     }
 
     @Override
@@ -207,42 +280,55 @@ public class AndroidInterceptors {
     }
   }
 
-  public static class SystemLogEInterceptor extends Interceptor {
-    public SystemLogEInterceptor() {
-      super(new MethodRef(System.class.getName(), "logE"));
+  /** AndroidInterceptor for System.logE and System.logW. */
+  public static class SystemLogInterceptor extends Interceptor {
+    public SystemLogInterceptor() {
+      super(
+          new MethodRef(System.class.getName(), "logE"),
+          new MethodRef(System.class.getName(), "logW"));
     }
 
     static void logE(Object... params) {
-      String message = "System.logE: ";
+      log("System.logE: ", params);
+    }
+
+    static void logW(Object... params) {
+      log("System.logW: ", params);
+    }
+
+    static void log(String prefix, Object... params) {
+      StringBuilder message = new StringBuilder(prefix);
       for (Object param : params) {
-        message += param.toString();
+        message.append(param.toString());
       }
       System.err.println(message);
     }
 
     @Override
     public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
+      return (theClass, value, params) -> {
+        if ("logE".equals(methodSignature.methodName)) {
           logE(params);
-          return null;
+        } else if ("logW".equals(methodSignature.methodName)) {
+          logW(params);
         }
+        return null;
       };
     }
 
     @Override
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
-      return lookup.findStatic(getClass(), "logE",
-          methodType(void.class, Object[].class));
+      return lookup.findStatic(getClass(), methodName, methodType(void.class, Object[].class));
     }
   }
 
   /**
    * Maps calls to Cleaner, which moved between Java 8 and 9:
    *
-   * * `sun.misc.Cleaner.create()` -> `new java.lang.ref.Cleaner().register()`
-   * * `sun.misc.Cleaner.clean()` -> `java.lang.ref.Cleaner.Cleanable().clean()`
+   * <ul>
+   *   <li>{@code sun.misc.Cleaner.create()} -> {@code new java.lang.ref.Cleaner().register()}
+   *   <li>{@code sun.misc.Cleaner.clean()} -> {@code java.lang.ref.Cleaner.Cleanable().clean()}
+   * </ul>
    */
   public static class CleanerInterceptor extends Interceptor {
 

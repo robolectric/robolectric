@@ -32,8 +32,12 @@ public class Qualifiers {
     final ResTable_config config = new ResTable_config();
     if (!qualifiers.isEmpty()
         && !ConfigDescription.parse(qualifiers, config, applyVersionForCompat)) {
-      throw new IllegalArgumentException("failed to parse qualifiers '" + qualifiers + "'."
-          + " See https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules for expected format.");
+      throw new IllegalArgumentException(
+          "failed to parse qualifiers '"
+              + qualifiers
+              + "'. See"
+              + " https://developer.android.com/guide/topics/resources/providing-resources.html#QualifierRules"
+              + " for expected format.");
     }
 
     return new Qualifiers(qualifiers, config);
@@ -113,7 +117,7 @@ public class Qualifiers {
   }
 
   /**
-   * If the Config already has a `sw` qualifier, do nothing. Otherwise, add a `sw`
+   * If the Config already has a {@code sw} qualifier, do nothing. Otherwise, add a {@code sw}
    * qualifier for the given width.
    *
    * @deprecated Use {@link android.content.res.Configuration#smallestScreenWidthDp} instead.

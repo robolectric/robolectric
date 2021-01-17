@@ -30,55 +30,66 @@ import org.robolectric.util.Util;
 /**
  * A tiny dependency injection and plugin helper for Robolectric.
  *
- * Dependencies may be retrieved explicitly by calling {@link #getInstance}; transitive dependencies
- * will be automatically injected as needed. For a given injector, all calls to
- * {@link #getInstance} are idempotent.
+ * <p>Dependencies may be retrieved explicitly by calling {@link #getInstance}; transitive
+ * dependencies will be automatically injected as needed. For a given injector, all calls to {@link
+ * #getInstance} are idempotent.
  *
- * Dependencies are identified by an interface or class, and optionally by a name specified with
- * `@`{@link Named}.
+ * <p>Dependencies are identified by an interface or class, and optionally by a name specified with
+ * &#064;{@link Named}.
  *
- * ### Dependency Resolution
+ * <h3>Dependency Resolution</h3>
+ *
  * When a dependency is requested, an implementation is sought.
  *
- * The injector looks for any instance that has been previously found for the given interface, or
- * that has been explicitly registered with {@link Builder#bind(Class, Object)} or
- * {@link Builder#bind(Key, Object)}. If none is found, the injector searches for an implementing
- * class from the following sources, in order:
+ * <p>The injector looks for any instance that has been previously found for the given interface, or
+ * that has been explicitly registered with {@link Builder#bind(Class, Object)} or {@link
+ * Builder#bind(Key, Object)}. If none is found, the injector searches for an implementing class
+ * from the following sources, in order:
  *
- * 1. Explicitly-registered implementations registered with {@link Builder#bind(Class, Class)}.
- * 1. If the dependency type is an array or {@link Collection}, then its component type
- *    is recursively sought using {@link PluginFinder#findPlugins(Class)} and an array or collection
- *    of those instances is returned.
- * 1. Plugin implementations published as {@link java.util.ServiceLoader} services under the
- *    dependency type (see also {@link PluginFinder#findPlugin(Class)}).
- * 1. Fallback default implementation classes registered with
- *    {@link Builder#bindDefault(Class, Class)}.
- * 1. If the dependency type is a concrete class, then the dependency type itself.
+ * <ol>
+ *   <li>Explicitly-registered implementations registered with {@link Builder#bind(Class, Class)}.
+ *   <li>If the dependency type is an array or {@link Collection}, then its component type is
+ *       recursively sought using {@link PluginFinder#findPlugins(Class)} and an array or collection
+ *       of those instances is returned.
+ *   <li>Plugin implementations published as {@link java.util.ServiceLoader} services under the
+ *       dependency type (see also {@link PluginFinder#findPlugin(Class)}).
+ *   <li>Fallback default implementation classes registered with {@link Builder#bindDefault(Class,
+ *       Class)}.
+ *   <li>If the dependency type is a concrete class, then the dependency type itself.
+ * </ol>
  *
  * If the injector has a superinjector, it is always consulted first (with the exception of
- * interfaces annotated `@`{@link AutoFactory}; see <a href="#Scopes">Scopes</a> below).
+ * interfaces annotated &#064;{@link AutoFactory}; see <a href="#Scopes">Scopes</a> below).
  *
- * If no implementing class is found in the injector or any superinjector, an exception is thrown.
+ * <p>If no implementing class is found in the injector or any superinjector, an exception is
+ * thrown.
  *
- * ### Injection
+ * <p>
+ *
+ * <h3>Injection</h3>
+ *
  * When the injector has determined an implementing class, it attempts to instantiate it. It
  * searches for a constructor in the following order:
  *
- * 1. A singular public constructor annotated `@`{@link Inject}. (If multiple constructors are
- *    `@Inject` annotated, the injector will throw an exception.)
- * 1. A singular public constructor of any arity.
- * 1. If no constructor has yet been found, the injector will throw an exception.
+ * <ol>
+ *   <li>A singular public constructor annotated &#064;{@link Inject}. (If multiple constructors are
+ *       &#064;{@link Inject} annotated, the injector will throw an exception.)
+ *   <li>A singular public constructor of any arity.
+ *   <li>If no constructor has yet been found, the injector will throw an exception.
+ * </ol>
  *
  * Any constructor parameters are treated as further dependencies, and the injector will recursively
  * attempt to resolve an implementation for each before invoking the constructor and thereby
  * instantiating the original dependency implementation.
  *
- * ### Scopes
- *  If the dependency type is an interface annotated `@`{@link AutoFactory}, then a factory object
- *  implementing that interface is created; a new scoped injector is created for every method
- *  call to the factory, with parameter arguments registered on the scoped injector.
+ * <h3 id="Scopes">Scopes</h3>
  *
- * ### Thread Safety
+ * If the dependency type is an interface annotated &#064;{@link AutoFactory}, then a factory object
+ * implementing that interface is created; a new scoped injector is created for every method call to
+ * the factory, with parameter arguments registered on the scoped injector.
+ *
+ * <h3>Thread Safety</h3>
+ *
  * All methods are MT-safe.
  */
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})

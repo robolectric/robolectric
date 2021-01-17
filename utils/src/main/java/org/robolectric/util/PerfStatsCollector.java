@@ -59,6 +59,17 @@ public class PerfStatsCollector {
     }
   }
 
+  public void incrementCount(String eventName) {
+    synchronized (PerfStatsCollector.this) {
+      MetricKey key = new MetricKey(eventName, true);
+      Metric metric = metricMap.get(key);
+      if (metric == null) {
+        metricMap.put(key, metric = new Metric(key.name, key.success));
+      }
+      metric.incrementCount();
+    }
+  }
+
   /**
    * Supplier that throws an exception.
    */

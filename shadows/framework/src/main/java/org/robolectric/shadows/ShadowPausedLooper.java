@@ -8,6 +8,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import android.util.Log;
 import java.time.Duration;
@@ -26,6 +27,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 
@@ -97,6 +99,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
       nextScheduledTimeMs = getNextScheduledTaskTime().toMillis();
     }
     SystemClock.setCurrentTimeMillis(endingTimeMs);
+    // the last SystemClock update might have added new tasks to the main looper via Choreographer
+    // so idle once more.
+    idle();
   }
 
   @Override
@@ -210,7 +215,8 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Resetter
   public static synchronized void resetLoopers() {
-    if (looperMode() != LooperMode.Mode.PAUSED) {
+    // do not use looperMode() here, because its cached value might already have been reset
+    if (ConfigurationRegistry.get(LooperMode.Mode.class) != LooperMode.Mode.PAUSED) {
       // ignore if not realistic looper
       return;
     }
@@ -218,12 +224,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     Collection<Looper> loopersCopy = new ArrayList(loopingLoopers);
     for (Looper looper : loopersCopy) {
       ShadowPausedMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
-      if (shadowQueue.isQuitAllowed()) {
-        looper.quit();
-        loopingLoopers.remove(looper);
-      } else {
-        shadowQueue.reset();
-      }
+      shadowQueue.reset();
     }
   }
 
@@ -282,6 +283,39 @@ public final class ShadowPausedLooper extends ShadowLooper {
     looperExecutor = executor;
   }
 
+  /** Retrieves the next message or null if the queue is idle. */
+  private Message getNextExecutableMessage() {
+    synchronized (realLooper.getQueue()) {
+      // Use null if the queue is idle, otherwise getNext() will block.
+      return shadowQueue().isIdle() ? null : shadowQueue().getNext();
+    }
+  }
+
+  /**
+   * If the given {@code lastMessageRead} is not null and the queue is now idle, get the idle
+   * handlers and run them. This synchronization mirrors what happens in the real message queue
+   * next() method, but does not block after running the idle handlers.
+   */
+  private void triggerIdleHandlersIfNeeded(Message lastMessageRead) {
+    List<IdleHandler> idleHandlers;
+    // Mirror the synchronization of MessageQueue.next(). If a message was read on the last call
+    // to next() and the queue is now idle, make a copy of the idle handlers and release the lock.
+    // Run the idle handlers without holding the lock, removing those that return false from their
+    // queueIdle() method.
+    synchronized (realLooper.getQueue()) {
+      if (lastMessageRead == null || !shadowQueue().isIdle()) {
+        return;
+      }
+      idleHandlers = shadowQueue().getIdleHandlersCopy();
+    }
+    for (IdleHandler idleHandler : idleHandlers) {
+      if (!idleHandler.queueIdle()) {
+        // This method already has synchronization internally.
+        realLooper.getQueue().removeIdleHandler(idleHandler);
+      }
+    }
+  }
+
   /** A runnable that changes looper state, and that must be run from looper's thread */
   private abstract static class ControlRunnable implements Runnable {
 
@@ -300,10 +334,14 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void run() {
-      while (!shadowQueue().isIdle()) {
-        Message msg = shadowQueue().getNext();
+      while (true) {
+        Message msg = getNextExecutableMessage();
+        if (msg == null) {
+          break;
+        }
         msg.getTarget().dispatchMessage(msg);
         shadowMsg(msg).recycleUnchecked();
+        triggerIdleHandlersIfNeeded(msg);
       }
       runLatch.countDown();
     }
@@ -317,6 +355,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
       if (msg != null) {
         SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
         msg.getTarget().dispatchMessage(msg);
+        triggerIdleHandlersIfNeeded(msg);
       }
       runLatch.countDown();
     }

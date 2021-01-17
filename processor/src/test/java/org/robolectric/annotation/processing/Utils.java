@@ -18,8 +18,10 @@ public class Utils {
           .put(SDK_CHECK_MODE, "OFF")
           .build();
 
-  public static final JavaFileObject SHADOW_PROVIDER_SOURCE = forResource("mock-source/org/robolectric/internal/ShadowProvider.java");
-  public static final JavaFileObject SHADOW_EXTRACTOR_SOURCE = forResource("mock-source/org/robolectric/shadow/api/Shadow.java");
+  public static final JavaFileObject SHADOW_PROVIDER_SOURCE =
+      forResource("mock-source/org/robolectric/internal/ShadowProvider.java");
+  public static final JavaFileObject SHADOW_EXTRACTOR_SOURCE =
+      forResource("mock-source/org/robolectric/shadow/api/Shadow.java");
 
   public static String toResourcePath(String clazzName) {
     return clazzName.replace('.', '/') + ".java";

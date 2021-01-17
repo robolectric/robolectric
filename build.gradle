@@ -9,10 +9,10 @@ buildscript {
 
     dependencies {
         gradle
-        classpath 'com.android.tools.build:gradle:3.5.3'
-        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.6'
-        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:2.2.1'
-        classpath 'ch.raffael.pegdown-doclet:pegdown-doclet:1.3'
+        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:1.3.0'
+        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.72"
     }
 }
 
@@ -69,7 +69,6 @@ project.afterEvaluate {
 }
 
 apply plugin: 'nebula-aggregate-javadocs'
-apply plugin: 'ch.raffael.pegdown-doclet'
 
 rootProject.gradle.projectsEvaluated {
     rootProject.tasks['aggregateJavadocs'].failOnError = false

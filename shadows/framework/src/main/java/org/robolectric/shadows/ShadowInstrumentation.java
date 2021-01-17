@@ -69,35 +69,45 @@ public class ShadowInstrumentation {
 
   @RealObject private Instrumentation realObject;
 
-  private List<Intent> startedActivities = new ArrayList<>();
-  private List<IntentForResult> startedActivitiesForResults = new ArrayList<>();
-  private Map<FilterComparison, Integer> intentRequestCodeMap = new HashMap<>();
-  private List<Intent.FilterComparison> startedServices = new ArrayList<>();
-  private List<Intent.FilterComparison> stoppedServices = new ArrayList<>();
-  private List<Intent> broadcastIntents = new ArrayList<>();
-  private Map<UserHandle, List<Intent>> broadcastIntentsForUser = new HashMap<>();
-  private List<ServiceConnection> boundServiceConnections =
+  private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
+  private final List<IntentForResult> startedActivitiesForResults =
       Collections.synchronizedList(new ArrayList<>());
-  private List<ServiceConnection> unboundServiceConnections =
+  private final Map<FilterComparison, TargetAndRequestCode> intentRequestCodeMap =
+      Collections.synchronizedMap(new HashMap<>());
+  private final List<Intent.FilterComparison> startedServices =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<Intent.FilterComparison> stoppedServices =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<Intent> broadcastIntents = Collections.synchronizedList(new ArrayList<>());
+  private final Map<Intent, Bundle> broadcastOptions = Collections.synchronizedMap(new HashMap<>());
+  private final Map<UserHandle, List<Intent>> broadcastIntentsForUser =
+      Collections.synchronizedMap(new HashMap<>());
+  private final List<ServiceConnection> boundServiceConnections =
+      Collections.synchronizedList(new ArrayList<>());
+  private final List<ServiceConnection> unboundServiceConnections =
       Collections.synchronizedList(new ArrayList<>());
 
   @GuardedBy("itself")
   private final List<Wrapper> registeredReceivers = new ArrayList<>();
   // map of pid+uid to granted permissions
-  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap = new HashMap<>();
+  private final Map<Pair<Integer, Integer>, Set<String>> grantedPermissionsMap =
+      Collections.synchronizedMap(new HashMap<>());
   private boolean unbindServiceShouldThrowIllegalArgument = false;
   private SecurityException exceptionForBindService = null;
-  private Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
-      serviceConnectionDataForIntent = new HashMap<>();
+  private boolean bindServiceCallsOnServiceConnectedInline;
+  private final Map<Intent.FilterComparison, ServiceConnectionDataWrapper>
+      serviceConnectionDataForIntent = Collections.synchronizedMap(new HashMap<>());
   // default values for bindService
   private ServiceConnectionDataWrapper defaultServiceConnectionData =
       new ServiceConnectionDataWrapper(null, null);
-  private List<String> unbindableActions = new ArrayList<>();
-  private List<ComponentName> unbindableComponents = new ArrayList<>();
-  private Map<String, Intent> stickyIntents = new LinkedHashMap<>();
+  private final List<String> unbindableActions = Collections.synchronizedList(new ArrayList<>());
+  private final List<ComponentName> unbindableComponents =
+      Collections.synchronizedList(new ArrayList<>());
+  private final Map<String, Intent> stickyIntents =
+      Collections.synchronizedMap(new LinkedHashMap<>());
   private Handler mainHandler;
-  private Map<ServiceConnection, ServiceConnectionDataWrapper>
-      serviceConnectionDataForServiceConnection = new HashMap<>();
+  private final Map<ServiceConnection, ServiceConnectionDataWrapper>
+      serviceConnectionDataForServiceConnection = Collections.synchronizedMap(new HashMap<>());
 
   private boolean checkActivities;
   // This will default to False in the future to correctly mirror real Android behavior.
@@ -119,7 +129,7 @@ public class ShadowInstrumentation {
       Bundle options) {
 
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, null, requestCode, options);
 
     if (who == null) {
       return null;
@@ -138,13 +148,14 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, null, requestCode, options);
     return null;
   }
 
-  private void logStartedActivity(Intent intent, int requestCode, Bundle options) {
+  private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
     startedActivities.add(intent);
-    intentRequestCodeMap.put(new FilterComparison(intent), requestCode);
+    intentRequestCodeMap.put(
+        new FilterComparison(intent), new TargetAndRequestCode(target, requestCode));
     startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
   }
 
@@ -187,7 +198,7 @@ public class ShadowInstrumentation {
       int requestCode,
       Bundle options) {
     verifyActivityInManifest(intent);
-    logStartedActivity(intent, requestCode, options);
+    logStartedActivity(intent, target, requestCode, options);
 
     return directlyOn(realObject, Instrumentation.class)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
@@ -236,7 +247,8 @@ public class ShadowInstrumentation {
       Bundle initialExtras,
       Context context) {
     List<Wrapper> receivers =
-        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
+        getAppropriateWrappers(
+            context, userHandle, intent, receiverPermission, /* broadcastOptions= */ null);
     sortByPriority(receivers);
     if (resultReceiver != null) {
       receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
@@ -271,8 +283,13 @@ public class ShadowInstrumentation {
 
   /** Returns the BroadcaseReceivers wrappers, matching intent's action and permissions. */
   private List<Wrapper> getAppropriateWrappers(
-      Context context, @Nullable UserHandle userHandle, Intent intent, String receiverPermission) {
+      Context context,
+      @Nullable UserHandle userHandle,
+      Intent intent,
+      String receiverPermission,
+      @Nullable Bundle broadcastOptions) {
     broadcastIntents.add(intent);
+    this.broadcastOptions.put(intent, broadcastOptions);
 
     if (userHandle != null) {
       List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
@@ -446,13 +463,29 @@ public class ShadowInstrumentation {
    */
   void sendBroadcastWithPermission(
       Intent intent, UserHandle userHandle, String receiverPermission, Context context) {
-    sendBroadcastWithPermission(intent, userHandle, receiverPermission, context, 0);
+    sendBroadcastWithPermission(
+        intent,
+        userHandle,
+        receiverPermission,
+        context,
+        /* broadcastOptions= */ null,
+        /* resultCode= */ 0);
   }
 
   void sendBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context, int resultCode) {
     sendBroadcastWithPermission(
-        intent, /*userHandle=*/ null, receiverPermission, context, resultCode);
+        intent, /*userHandle=*/ null, receiverPermission, context, null, resultCode);
+  }
+
+  void sendBroadcastWithPermission(
+      Intent intent,
+      String receiverPermission,
+      Context context,
+      @Nullable Bundle broadcastOptions,
+      int resultCode) {
+    sendBroadcastWithPermission(
+        intent, /*userHandle=*/ null, receiverPermission, context, broadcastOptions, resultCode);
   }
 
   void sendBroadcastWithPermission(
@@ -460,16 +493,22 @@ public class ShadowInstrumentation {
       UserHandle userHandle,
       String receiverPermission,
       Context context,
+      @Nullable Bundle broadcastOptions,
       int resultCode) {
     List<Wrapper> wrappers =
-        getAppropriateWrappers(context, userHandle, intent, receiverPermission);
+        getAppropriateWrappers(context, userHandle, intent, receiverPermission, broadcastOptions);
     postToWrappers(wrappers, intent, context, resultCode);
   }
 
   void sendOrderedBroadcastWithPermission(
       Intent intent, String receiverPermission, Context context) {
     List<Wrapper> wrappers =
-        getAppropriateWrappers(context, /*userHandle=*/ null, intent, receiverPermission);
+        getAppropriateWrappers(
+            context,
+            /*userHandle=*/ null,
+            intent,
+            receiverPermission,
+            /* broadcastOptions= */ null);
     // sort by the decrease of priorities
     sortByPriority(wrappers);
 
@@ -492,6 +531,18 @@ public class ShadowInstrumentation {
     return broadcastIntents;
   }
 
+  @Nullable
+  Bundle getBroadcastOptions(Intent intent) {
+    synchronized (broadcastOptions) {
+      for (Intent broadcastIntent : broadcastOptions.keySet()) {
+        if (broadcastIntent.filterEquals(intent)) {
+          return broadcastOptions.get(broadcastIntent);
+        }
+      }
+      return null;
+    }
+  }
+
   List<Intent> getBroadcastIntentsForUser(UserHandle userHandle) {
     List<Intent> intentsForUser = broadcastIntentsForUser.get(userHandle);
     if (intentsForUser == null) {
@@ -503,6 +554,7 @@ public class ShadowInstrumentation {
 
   void clearBroadcastIntents() {
     broadcastIntents.clear();
+    broadcastOptions.clear();
     broadcastIntentsForUser.clear();
   }
 
@@ -530,6 +582,7 @@ public class ShadowInstrumentation {
    */
   void clearNextStartedActivities() {
     startedActivities.clear();
+    startedActivitiesForResults.clear();
   }
 
   IntentForResult getNextStartedActivityForResult() {
@@ -552,13 +605,12 @@ public class ShadowInstrumentation {
     this.checkActivities = checkActivities;
   }
 
-  int getRequestCodeForIntent(Intent requestIntent) {
-    Integer requestCode = intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent));
-    if (requestCode == null) {
-      throw new RuntimeException(
-          "No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
-    }
-    return requestCode;
+  TargetAndRequestCode getTargetAndRequestCodeForIntent(Intent requestIntent) {
+    return checkNotNull(
+        intentRequestCodeMap.get(new Intent.FilterComparison(requestIntent)),
+        "No intent matches %s among %s",
+        requestIntent,
+        intentRequestCodeMap.keySet());
   }
 
   protected ComponentName startService(Intent intent) {
@@ -574,10 +626,27 @@ public class ShadowInstrumentation {
     return startedServices.contains(new Intent.FilterComparison(name));
   }
 
+  /**
+   * Set the default IBinder implementation that will be returned when the service is bound using
+   * the specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful
+   * for testing the ServiceConnection implementation.
+   *
+   * @param name The ComponentName of the Service
+   * @param service The IBinder implementation to return when the service is bound.
+   */
   void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
     defaultServiceConnectionData = new ServiceConnectionDataWrapper(name, service);
   }
 
+  /**
+   * Set the IBinder implementation that will be returned when the service is bound using the
+   * specified Intent. The IBinder can implement the methods to simulate a bound Service. Useful for
+   * testing the ServiceConnection implementation.
+   *
+   * @param intent The exact Intent used in Context#bindService(...)
+   * @param name The ComponentName of the Service
+   * @param service The IBinder implementation to return when the service is bound.
+   */
   void setComponentNameAndServiceForBindServiceForIntent(
       Intent intent, ComponentName name, IBinder service) {
     serviceConnectionDataForIntent.put(
@@ -602,14 +671,20 @@ public class ShadowInstrumentation {
     }
     startedServices.add(filterComparison);
     Handler handler = new Handler(Looper.getMainLooper());
-    handler.post(
+    Runnable onServiceConnectedRunnable =
         () -> {
           serviceConnectionDataForServiceConnection.put(
               serviceConnection, serviceConnectionDataWrapper);
           serviceConnection.onServiceConnected(
               serviceConnectionDataWrapper.componentNameForBindService,
               serviceConnectionDataWrapper.binderForBindService);
-        });
+        };
+
+    if (bindServiceCallsOnServiceConnectedInline) {
+      onServiceConnectedRunnable.run();
+    } else {
+      handler.post(onServiceConnectedRunnable);
+    }
     return true;
   }
 
@@ -657,6 +732,11 @@ public class ShadowInstrumentation {
 
   void setThrowInBindService(SecurityException e) {
     exceptionForBindService = e;
+  }
+
+  void setBindServiceCallsOnServiceConnectedDirectly(
+      boolean bindServiceCallsOnServiceConnectedInline) {
+    this.bindServiceCallsOnServiceConnectedInline = bindServiceCallsOnServiceConnectedInline;
   }
 
   protected List<ServiceConnection> getUnboundServiceConnections() {
@@ -940,6 +1020,16 @@ public class ShadowInstrumentation {
         ComponentName componentNameForBindService, IBinder binderForBindService) {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
+    }
+  }
+
+  static final class TargetAndRequestCode {
+    final String target;
+    final int requestCode;
+
+    private TargetAndRequestCode(String target, int requestCode) {
+      this.target = target;
+      this.requestCode = requestCode;
     }
   }
 

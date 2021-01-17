@@ -2,8 +2,8 @@ package org.robolectric.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import java.io.File;
 import java.nio.file.Paths;
@@ -75,13 +75,13 @@ public class BuckManifestFactoryTest {
   @Test public void pass_multiple_res_dirs_in_file() throws Exception {
     String resDirectoriesFileName = "res-directories";
     File resDirectoriesFile = tempFolder.newFile(resDirectoriesFileName);
-    Files.asCharSink(resDirectoriesFile, Charsets.UTF_8).write("buck/res1\nbuck/res2");
+    Files.asCharSink(resDirectoriesFile, UTF_8).write("buck/res1\nbuck/res2");
     System.setProperty(
         "buck.robolectric_res_directories", "@" + resDirectoriesFile.getAbsolutePath());
 
     String assetDirectoriesFileName = "asset-directories";
     File assetDirectoriesFile = tempFolder.newFile(assetDirectoriesFileName);
-    Files.asCharSink(assetDirectoriesFile, Charsets.UTF_8).write("buck/assets1\nbuck/assets2");
+    Files.asCharSink(assetDirectoriesFile, UTF_8).write("buck/assets1\nbuck/assets2");
     System.setProperty(
         "buck.robolectric_assets_directories", "@" + assetDirectoriesFile.getAbsolutePath());
 

@@ -41,9 +41,11 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent newEvent = AccessibilityEvent.obtain(event);
     assertThat(event.getEventType()).isEqualTo(newEvent.getEventType());
     assertThat(event.isEnabled()).isEqualTo(newEvent.isEnabled());
-    assertThat(event.getContentDescription()).isEqualTo(newEvent.getContentDescription());
-    assertThat(event.getPackageName()).isEqualTo(newEvent.getPackageName());
-    assertThat(event.getClassName()).isEqualTo(newEvent.getClassName());
+    assertThat(nullOrString(event.getContentDescription()))
+        .isEqualTo(nullOrString(newEvent.getContentDescription()));
+    assertThat(nullOrString(event.getPackageName()))
+        .isEqualTo(nullOrString(newEvent.getPackageName()));
+    assertThat(nullOrString(event.getClassName())).isEqualTo(nullOrString(newEvent.getClassName()));
     assertThat(event.getParcelableData()).isEqualTo(newEvent.getParcelableData());
 
     newEvent.recycle();
@@ -58,9 +60,12 @@ public class ShadowAccessibilityEventTest {
     AccessibilityEvent anotherEvent = AccessibilityEvent.CREATOR.createFromParcel(p);
     assertThat(anotherEvent.getEventType()).isEqualTo(event.getEventType());
     assertThat(anotherEvent.isEnabled()).isEqualTo(event.isEnabled());
-    assertThat(anotherEvent.getContentDescription()).isEqualTo(event.getContentDescription());
-    assertThat(anotherEvent.getPackageName()).isEqualTo(event.getPackageName());
-    assertThat(anotherEvent.getClassName()).isEqualTo(event.getClassName());
+    assertThat(nullOrString(anotherEvent.getContentDescription()))
+        .isEqualTo(nullOrString(event.getContentDescription()));
+    assertThat(nullOrString(anotherEvent.getPackageName()))
+        .isEqualTo(nullOrString(event.getPackageName()));
+    assertThat(nullOrString(anotherEvent.getClassName()))
+        .isEqualTo(nullOrString(event.getClassName()));
     assertThat(anotherEvent.getParcelableData()).isEqualTo(event.getParcelableData());
     anotherEvent.setContentDescription(null);
     anotherEvent.recycle();
@@ -96,5 +101,9 @@ public class ShadowAccessibilityEventTest {
   public void tearDown() {
     event.recycle();
   }
-}
 
+  /** Some CharSequence objects are null, so we need a null check wrapper */
+  private String nullOrString(CharSequence charSequence) {
+    return charSequence == null ? null : charSequence.toString();
+  }
+}

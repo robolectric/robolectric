@@ -6,6 +6,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.impl.CameraCaptureSessionImpl;
 import android.hardware.camera2.impl.CameraDeviceImpl;
 import android.hardware.camera2.impl.CameraMetadataNative;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -24,19 +25,34 @@ public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
 
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.Q)
   protected CaptureRequest.Builder createCaptureRequest(int templateType) {
     checkIfCameraClosedOrInError();
     CameraMetadataNative templatedRequest = new CameraMetadataNative();
     String cameraId = ReflectionHelpers.getField(realObject, "mCameraId");
-
-    CaptureRequest.Builder builder =
-        new CaptureRequest.Builder(
-            templatedRequest,
-            /*reprocess*/ false,
-            CameraCaptureSession.SESSION_ID_NONE,
-            cameraId,
-            /*physicalCameraIdSet*/ null);
+    final CaptureRequest.Builder builder;
+    if (VERSION.SDK_INT >= VERSION_CODES.P) {
+      builder =
+          new CaptureRequest.Builder(
+              templatedRequest, /*reprocess*/
+              false,
+              CameraCaptureSession.SESSION_ID_NONE,
+              cameraId, /*physicalCameraIdSet*/
+              null);
+    } else if (VERSION.SDK_INT >= VERSION_CODES.M) {
+      builder =
+          ReflectionHelpers.callConstructor(
+              CaptureRequest.Builder.class,
+              ReflectionHelpers.ClassParameter.from(CameraMetadataNative.class, templatedRequest),
+              ReflectionHelpers.ClassParameter.from(Boolean.TYPE, false),
+              ReflectionHelpers.ClassParameter.from(
+                  Integer.TYPE, CameraCaptureSession.SESSION_ID_NONE));
+    } else {
+      builder =
+          ReflectionHelpers.callConstructor(
+              CaptureRequest.Builder.class,
+              ReflectionHelpers.ClassParameter.from(CameraMetadataNative.class, templatedRequest));
+    }
     return builder;
   }
 
@@ -45,10 +61,15 @@ public class ShadowCameraDeviceImpl {
       List<Surface> outputs, CameraCaptureSession.StateCallback callback, Handler handler)
       throws CameraAccessException {
     checkIfCameraClosedOrInError();
-    CameraCaptureSession sess = Shadow.newInstanceOf(CameraCaptureSessionImpl.class);
-    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mStateCallback", callback);
-    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mDeviceImpl", realObject);
-    handler.post(() -> callback.onConfigured(sess));
+    CameraCaptureSession session = createCameraCaptureSession(callback);
+    handler.post(() -> callback.onConfigured(session));
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void createCaptureSession(SessionConfiguration config) throws CameraAccessException {
+    checkIfCameraClosedOrInError();
+    CameraCaptureSession session = createCameraCaptureSession(config.getStateCallback());
+    config.getExecutor().execute(() -> config.getStateCallback().onConfigured(session));
   }
 
   @Implementation
@@ -72,5 +93,13 @@ public class ShadowCameraDeviceImpl {
     if (closed) {
       throw new IllegalStateException("CameraDevice was already closed");
     }
+  }
+
+  private CameraCaptureSession createCameraCaptureSession(
+      CameraCaptureSession.StateCallback callback) {
+    CameraCaptureSession sess = Shadow.newInstanceOf(CameraCaptureSessionImpl.class);
+    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mStateCallback", callback);
+    ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mDeviceImpl", realObject);
+    return sess;
   }
 }

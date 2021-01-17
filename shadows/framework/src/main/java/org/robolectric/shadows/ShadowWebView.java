@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.annotation.ColorInt;
 import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -8,13 +9,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
+import android.webkit.WebViewFactoryProvider;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -37,6 +41,7 @@ public class ShadowWebView extends ShadowViewGroup {
   @RealObject private WebView realWebView;
 
   private static final String HISTORY_KEY = "ShadowWebView.History";
+  private static final String HISTORY_INDEX_KEY = "ShadowWebView.HistoryIndex";
 
   private static PackageInfo packageInfo = null;
 
@@ -55,17 +60,31 @@ public class ShadowWebView extends ShadowViewGroup {
   private boolean onResumeCalled = false;
   private WebChromeClient webChromeClient;
   private boolean canGoBack;
+  private Bitmap currentFavicon = null;
   private int goBackInvocations = 0;
+  private int goForwardInvocations = 0;
   private int reloadInvocations = 0;
   private LoadData lastLoadData;
   private LoadDataWithBaseURL lastLoadDataWithBaseURL;
   private String originalUrl;
+  private int historyIndex = -1;
   private ArrayList<String> history = new ArrayList<>();
   private String lastEvaluatedJavascript;
   // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
   private PageLoadType pageLoadType = PageLoadType.UNDEFINED;
+  private HitTestResult hitTestResult = new HitTestResult();
+  private int backgroundColor = 0;
+  private DownloadListener downloadListener;
+  private static final WebViewFactoryProvider WEB_VIEW_FACTORY_PROVIDER =
+      ReflectionHelpers.createDeepProxy(WebViewFactoryProvider.class);
+
+  @HiddenApi
+  @Implementation
+  protected static WebViewFactoryProvider getFactory() {
+    return WEB_VIEW_FACTORY_PROVIDER;
+  }
 
   @HiddenApi
   @Implementation
@@ -143,9 +162,15 @@ public class ShadowWebView extends ShadowViewGroup {
     loadUrl(url, null);
   }
 
+  /**
+   * Fires a request to load the given {@code url} in WebView.
+   *
+   * <p>The {@code url} is is not added to the history until {@link #pushEntryToHistory(String)} is
+   * called. If you want to simulate a redirect you can pass the redirect URL to {@link
+   * #pushEntryToHistory(String)}.
+   */
   @Implementation
   protected void loadUrl(String url, Map<String, String> additionalHttpHeaders) {
-    history.add(0, url);
     originalUrl = url;
     lastUrl = url;
 
@@ -163,7 +188,6 @@ public class ShadowWebView extends ShadowViewGroup {
       String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
     if (historyUrl != null) {
       originalUrl = historyUrl;
-      history.add(0, historyUrl);
     }
     lastLoadDataWithBaseURL =
         new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
@@ -176,6 +200,31 @@ public class ShadowWebView extends ShadowViewGroup {
     lastLoadData = new LoadData(data, mimeType, encoding);
 
     performPageLoadType(data);
+  }
+
+  /**
+   * Pushes an entry to the history with the given {@code url}.
+   *
+   * <p>This method can be used after a {@link #loadUrl(String)} call to push that navigation into
+   * the history. This matches the prod behaviour of WebView, a navigation is never committed to
+   * history inline and can take an arbitrary amount of time depending on the network connection.
+   * Notice that the given {@code url} does not need to match that of the {@link #loadUrl(String)}
+   * as URL can be changed e.g. through server-side redirects without WebView being notified by the
+   * time it is committed.
+   *
+   * <p>This method can also be used to simulate navigations started by user interaction, as these
+   * would still add an entry to the history themselves.
+   *
+   * <p>If there are any entries ahead of the current index (for forward navigation) these are
+   * removed.
+   */
+  public void pushEntryToHistory(String url) {
+    history.subList(historyIndex + 1, history.size()).clear();
+
+    history.add(url);
+    historyIndex++;
+
+    originalUrl = url;
   }
 
   /**
@@ -317,6 +366,7 @@ public class ShadowWebView extends ShadowViewGroup {
   protected void clearHistory() {
     clearHistoryCalled = true;
     history.clear();
+    historyIndex = -1;
   }
 
   public boolean wasClearHistoryCalled() {
@@ -380,7 +430,12 @@ public class ShadowWebView extends ShadowViewGroup {
     if (canGoBackIsSet) {
       return canGoBack;
     }
-    return history.size() > 1;
+    return historyIndex > 0;
+  }
+
+  @Implementation
+  protected boolean canGoForward() {
+    return historyIndex < history.size() - 1;
   }
 
   @Implementation
@@ -392,21 +447,29 @@ public class ShadowWebView extends ShadowViewGroup {
       if (canGoBackIsSet) {
         return;
       }
-      history.remove(0);
-      if (!history.isEmpty()) {
-        originalUrl = history.get(0);
-      }
+      historyIndex--;
+      originalUrl = history.get(historyIndex);
     }
   }
 
-  /**
-   * This is only a partial implementation of the method, and <b>only performs backward
-   * navigation</b>. Any request to go one or more steps forward will be ignored.
-   */
+  @Implementation
+  protected void goForward() {
+    if (canGoForward()) {
+      goForwardInvocations++;
+      historyIndex++;
+      originalUrl = history.get(historyIndex);
+    }
+  }
+
   @Implementation
   protected void goBackOrForward(int steps) {
-    if (steps >= 0) {
-      // TODO: Handle forward navigation.
+    if (steps == 0) {
+      return;
+    }
+    if (steps > 0) {
+      while (steps-- > 0) {
+        goForward();
+      }
       return;
     }
 
@@ -417,7 +480,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   @Implementation
   protected WebBackForwardList copyBackForwardList() {
-    return new BackForwardList(history);
+    return new BackForwardList(history, historyIndex);
   }
 
   @Implementation
@@ -438,6 +501,17 @@ public class ShadowWebView extends ShadowViewGroup {
   /** Sets the value to return from {@code #getCurrentWebviewPackage()}. */
   public static void setCurrentWebViewPackage(PackageInfo webViewPackageInfo) {
     packageInfo = webViewPackageInfo;
+  }
+
+  /** Gets the favicon for the current page set by {@link #setFavicon}. */
+  @Implementation
+  protected Bitmap getFavicon() {
+    return currentFavicon;
+  }
+
+  /** Sets the favicon to return from {@link #getFavicon}. */
+  public void setFavicon(Bitmap favicon) {
+    currentFavicon = favicon;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
@@ -462,12 +536,14 @@ public class ShadowWebView extends ShadowViewGroup {
     this.canGoBack = canGoBack;
   }
 
-  /**
-   * @return goBackInvocations the number of times {@code android.webkit.WebView#goBack()} was
-   *     invoked
-   */
+  /** Returns the number of times {@code android.webkit.WebView#goBack()} was invoked. */
   public int getGoBackInvocations() {
     return goBackInvocations;
+  }
+
+  /** Returns the number of times {@code android.webkit.WebView#goForward()} was invoked. */
+  public int getGoForwardInvocations() {
+    return goForwardInvocations;
   }
 
   public LoadData getLastLoadData() {
@@ -482,19 +558,45 @@ public class ShadowWebView extends ShadowViewGroup {
   protected WebBackForwardList saveState(Bundle outState) {
     if (history.size() > 0) {
       outState.putStringArrayList(HISTORY_KEY, history);
+      outState.putInt(HISTORY_INDEX_KEY, historyIndex);
     }
-    return new BackForwardList(history);
+    return new BackForwardList(history, historyIndex);
   }
 
   @Implementation
   protected WebBackForwardList restoreState(Bundle inState) {
     history = inState.getStringArrayList(HISTORY_KEY);
-    if (history != null && history.size() > 0) {
-      originalUrl = history.get(0);
-      lastUrl = history.get(0);
-      return new BackForwardList(history);
+    if (history == null) {
+      history = new ArrayList<>();
+      historyIndex = -1;
+    } else {
+      historyIndex = inState.getInt(HISTORY_INDEX_KEY);
+    }
+
+    if (history.size() > 0) {
+      originalUrl = history.get(historyIndex);
+      lastUrl = history.get(historyIndex);
+      return new BackForwardList(history, historyIndex);
     }
     return null;
+  }
+
+  @Implementation
+  protected HitTestResult getHitTestResult() {
+    return hitTestResult;
+  }
+
+  /** Creates an instance of {@link HitTestResult}. */
+  public static HitTestResult createHitTestResult(int type, String extra) {
+    HitTestResult hitTestResult = new HitTestResult();
+    hitTestResult.setType(type);
+    hitTestResult.setExtra(extra);
+    return hitTestResult;
+  }
+
+  /** Sets the {@link HitTestResult} that should be returned from {@link #getHitTestResult()}. */
+  public void setHitTestResult(HitTestResult hitTestResult) {
+    this.hitTestResult = hitTestResult;
   }
 
   @Resetter
@@ -503,6 +605,39 @@ public class ShadowWebView extends ShadowViewGroup {
   }
 
   public static void setWebContentsDebuggingEnabled(boolean enabled) {}
+
+  /**
+   * Sets the {@link android.graphics.Color} int that should be returned from {@link
+   * #getBackgroundColor}.
+   *
+   * <p>WebView uses the background color set by the {@link
+   * android.webkit.WebView#setBackgroundColor} method to internally tint the background color of
+   * web pages until they are drawn. The way this API works is completely independent of the {@link
+   * android.view.View#setBackgroundColor} method and it interacts directly with WebView renderers.
+   * Tests can access the set background color using the {@link #getBackgroundColor} method.
+   */
+  @Implementation
+  protected void setBackgroundColor(@ColorInt int backgroundColor) {
+    this.backgroundColor = backgroundColor;
+  }
+
+  /**
+   * Returns the {@link android.graphics.Color} int that has been set by {@link
+   * #setBackgroundColor}.
+   */
+  public int getBackgroundColor() {
+    return backgroundColor;
+  }
+
+  @Implementation
+  protected void setDownloadListener(DownloadListener downloadListener) {
+    this.downloadListener = downloadListener;
+  }
+
+  /** Returns the {@link DownloadListener} set with {@link #setDownloadListener}, if any. */
+  public DownloadListener getDownloadListener() {
+    return this.downloadListener;
+  }
 
   public static class LoadDataWithBaseURL {
     public final String baseUrl;
@@ -553,16 +688,16 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private static class BackForwardList extends WebBackForwardList {
     private final ArrayList<String> history;
+    private final int index;
 
-    public BackForwardList(ArrayList<String> history) {
+    public BackForwardList(ArrayList<String> history, int index) {
       this.history = (ArrayList<String>) history.clone();
-      // WebView expects the most recently visited item to be at the end of the list.
-      Collections.reverse(this.history);
+      this.index = index;
     }
 
     @Override
     public int getCurrentIndex() {
-      return history.size() - 1;
+      return index;
     }
 
     @Override
@@ -586,7 +721,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
     @Override
     protected WebBackForwardList clone() {
-      return new BackForwardList(history);
+      return new BackForwardList(history, index);
     }
   }
 

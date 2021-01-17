@@ -26,10 +26,9 @@ class PluginFinder {
   }
 
   /**
-   * @param classLoader
-   *         the classloader to be used to load provider-configuration files
-   *         and provider classes, or `null` if the system classloader (or,
-   *         failing that, the bootstrap classloader) is to be used
+   * @param classLoader the classloader to be used to load provider-configuration files and provider
+   *     classes, or null if the system classloader (or, failing that, the bootstrap classloader) is
+   *     to be used
    */
   public PluginFinder(ClassLoader classLoader) {
     this(new ServiceFinderAdapter(classLoader));
@@ -42,10 +41,10 @@ class PluginFinder {
   /**
    * Returns an implementation class for the specified plugin.
    *
-   * If there is more than such one candidate, the classes will be sorted by {@link Priority}
-   * and the one with the highest priority will be returned. If multiple classes claim the same
-   * priority, a {@link ServiceConfigurationError} will be thrown. Classes without a Priority
-   * are treated as `@Priority(0)`.
+   * <p>If there is more than such one candidate, the classes will be sorted by {@link Priority} and
+   * the one with the highest priority will be returned. If multiple classes claim the same
+   * priority, a {@link ServiceConfigurationError} will be thrown. Classes without a Priority are
+   * treated as {@code @Priority(0)}.
    *
    * @param pluginType the class of the plugin type
    * @param <T> the class of the plugin type

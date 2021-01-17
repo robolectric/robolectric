@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -31,6 +33,7 @@ import android.app.Application;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.PendingIntent;
+import android.app.PictureInPictureParams;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
@@ -577,7 +580,8 @@ public class ShadowActivityTest {
     SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
     assertNotNull(preferences);
     preferences.edit().putString("foo", "bar").commit();
-    assertThat(activity.getPreferences(Context.MODE_PRIVATE).getString("foo", null)).isEqualTo("bar");
+    assertThat(activity.getPreferences(Context.MODE_PRIVATE).getString("foo", null))
+        .isEqualTo("bar");
   }
 
   @Test
@@ -723,8 +727,8 @@ public class ShadowActivityTest {
   @Test
   @Config(minSdk = M)
   public void requestsPermissions() {
-    TestActivity activity = new TestActivity();
-    activity.requestPermissions(new String[0], -1);
+    TestActivity activity = Robolectric.setupActivity(TestActivity.class);
+    activity.requestPermissions(new String[] {Manifest.permission.CAMERA}, 1007);
   }
 
   private static class TestActivity extends Activity {
@@ -1093,6 +1097,34 @@ public class ShadowActivityTest {
     } catch (IntentSender.SendIntentException e) {
       // NOP
     }
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void reportFullyDrawn_reported() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    activity.reportFullyDrawn();
+    assertThat(shadowOf(activity).getReportFullyDrawn()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void enterPip() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+    activity.enterPictureInPictureMode();
+    assertThat(activity.isInPictureInPictureMode()).isTrue();
+    activity.moveTaskToBack(false);
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void enterPipWithParams() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    assertThat(activity.isInPictureInPictureMode()).isFalse();
+    activity.enterPictureInPictureMode(new PictureInPictureParams.Builder().build());
+    assertThat(activity.isInPictureInPictureMode()).isTrue();
   }
 
   /////////////////////////////

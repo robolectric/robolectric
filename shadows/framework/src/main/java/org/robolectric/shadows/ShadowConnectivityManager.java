@@ -198,7 +198,7 @@ public class ShadowConnectivityManager {
    * Counts {@link ConnectivityManager#TYPE_MOBILE} networks as metered. Other types will be
    * considered unmetered.
    *
-   * @return `true` if the active network is metered, otherwise `false`.
+   * @return true if the active network is metered, otherwise false.
    * @see #setActiveNetworkInfo(NetworkInfo)
    * @see #setDefaultNetworkActive(boolean)
    */
@@ -327,7 +327,7 @@ public class ShadowConnectivityManager {
   }
 
   /**
-   * @return `true` by default, or the value specifed via {@link #setDefaultNetworkActive(boolean)}
+   * @return true by default, or the value specifed via {@link #setDefaultNetworkActive(boolean)}
    * @see #setDefaultNetworkActive(boolean)
    */
   @Implementation(minSdk = LOLLIPOP)
@@ -397,8 +397,8 @@ public class ShadowConnectivityManager {
   /**
    * Sets the LinkProperties for the given Network.
    *
-   * <p>A LinkProperties can be constructed by
-   * `org.robolectric.util.ReflectionHelpers.callConstructor` in tests.
+   * <p>A LinkProperties can be constructed by {@code
+   * org.robolectric.util.ReflectionHelpers.callConstructor} in tests.
    */
   public void setLinkProperties(Network network, LinkProperties linkProperties) {
     linkPropertiesMap.put(network, linkProperties);

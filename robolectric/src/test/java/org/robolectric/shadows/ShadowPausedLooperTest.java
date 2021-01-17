@@ -3,17 +3,20 @@ package org.robolectric.shadows;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
@@ -196,6 +199,145 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
+  public void idle_executesTask_andIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.idle();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+  }
+
+  @Test
+  public void idle_executesTask_andIdleHandler_removesIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.idle();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+
+    mainHandler.post(mockRunnable);
+    shadowLooper.idle();
+    verify(mockRunnable, times(2)).run();
+    verify(mockIdleHandler, times(1)).queueIdle(); // It was not kept, does not run again.
+  }
+
+  @Test
+  public void idle_executesTask_andIdleHandler_keepsIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    when(mockIdleHandler.queueIdle()).thenReturn(true);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.idle();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+
+    mainHandler.post(mockRunnable);
+    shadowLooper.idle();
+    verify(mockRunnable, times(2)).run();
+    verify(mockIdleHandler, times(2)).queueIdle(); // It was kept and runs again
+  }
+
+  @Test
+  public void runOneTask_executesTask_andIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.runOneTask();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+  }
+
+  @Test
+  public void runOneTask_executesTwoTasks_thenIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.runOneTask();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.runOneTask();
+    verify(mockRunnable, times(2)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+  }
+
+  @Test
+  public void runOneTask_executesTask_andIdleHandler_removesIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.runOneTask();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+
+    mainHandler.post(mockRunnable);
+    shadowLooper.idle();
+    verify(mockRunnable, times(2)).run();
+    verify(mockIdleHandler, times(1)).queueIdle(); // It was not kept, does not run again.
+  }
+
+  @Test
+  public void runOneTask_executesTask_andIdleHandler_keepsIdleHandler() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
+    Runnable mockRunnable = mock(Runnable.class);
+    IdleHandler mockIdleHandler = mock(IdleHandler.class);
+    when(mockIdleHandler.queueIdle()).thenReturn(true);
+    getMainLooper().getQueue().addIdleHandler(mockIdleHandler);
+    Handler mainHandler = new Handler();
+    mainHandler.post(mockRunnable);
+    verify(mockRunnable, times(0)).run();
+    verify(mockIdleHandler, times(0)).queueIdle();
+
+    shadowLooper.runOneTask();
+    verify(mockRunnable, times(1)).run();
+    verify(mockIdleHandler, times(1)).queueIdle();
+
+    mainHandler.post(mockRunnable);
+    shadowLooper.runOneTask();
+    verify(mockRunnable, times(2)).run();
+    verify(mockIdleHandler, times(2)).queueIdle(); // It was kept and runs again
+  }
+
+  @Test
   public void idleFor_executesTask_mainLooper() {
     ShadowPausedLooper shadowLooper = Shadow.extract(getMainLooper());
     Runnable mockRunnable = mock(Runnable.class);
@@ -334,6 +476,18 @@ public class ShadowPausedLooperTest {
     } catch (IllegalStateException e) {
       // expected
     }
+  }
+
+  @Test
+  public void resetter_allowsStaticHandlerThreadsToBeReused() throws Exception {
+    Handler handler = new Handler(handlerThread.getLooper());
+    CountDownLatch countDownLatch1 = new CountDownLatch(1);
+    handler.post(countDownLatch1::countDown);
+    assertThat(countDownLatch1.await(30, SECONDS)).isTrue();
+    ShadowPausedLooper.resetLoopers();
+    CountDownLatch countDownLatch2 = new CountDownLatch(1);
+    handler.post(countDownLatch2::countDown);
+    assertThat(countDownLatch2.await(30, SECONDS)).isTrue();
   }
 
   private static class BlockingRunnable implements Runnable {

@@ -6,7 +6,6 @@ import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -20,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TestRunnable;
 
@@ -74,7 +74,8 @@ public class ShadowHandlerTest {
   }
 
   private static Looper newLooper(boolean canQuit) {
-    return ReflectionHelpers.callConstructor(Looper.class, from(boolean.class, canQuit));
+    return ReflectionHelpers.callConstructor(
+        Looper.class, ClassParameter.from(boolean.class, canQuit));
   }
   
   @Test

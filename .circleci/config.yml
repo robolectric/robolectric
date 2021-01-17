@@ -1,16 +1,57 @@
+version: 2.1
 job_config: &job_config
   working_directory: ~/code
   docker:
-    - image: circleci/openjdk:10.0.2-jdk-sid
+    - image: circleci/openjdk:11.0.6-jdk-stretch
   resource_class: xlarge
   environment:
-    JVM_OPTS: -Xmx4096m
     GRADLE_MAX_PARALLEL_FORKS: 2
     ANDROID_HOME: /home/circleci/Android
 
-
-version: 2
+commands:
+  run_tests_for_sdks:
+    description: "Run tests for specific SDK versions"
+    parameters:
+      codenames:
+        type: string
+      versions:
+        type: string
+    steps:
+      - run:
+          name: Test << parameters.versions >> (<< parameters.codenames >>)
+          command: |
+            GRADLE_MAX_PARALLEL_FORKS=2 \
+                SKIP_JAVADOC=true \
+                ./gradlew test --info --stacktrace --continue \
+                --parallel \
+                -Drobolectric.enabledSdks=<< parameters.versions >> \
+                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+                -Dorg.gradle.workers.max=2
+      - run:
+          name: Collect Test Results
+          command: |
+            mkdir -p ~/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
+          when: always
 jobs:
+  check_java_formatting:
+    << : *job_config
+    steps:
+      - checkout
+      - run:
+          name: Download google-java-format 1.8
+          command: |
+            curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/google-java-format-1.8/google-java-format-1.8-all-deps.jar
+            curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/google-java-format-1.8/scripts/google-java-format-diff.py
+      - run:
+          name: Check Java formatting
+          command: |
+            diff=$(git diff -U0 $(git merge-base HEAD origin/master) | python $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
+            if [[ $diff ]]; then
+              echo "Please run google-java-format on the changes in this pull request"
+              git diff -U0 $(git merge-base HEAD origin/master) | python $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
+              exit 1
+            fi
   build:
     << : *job_config
     steps:
@@ -25,10 +66,10 @@ jobs:
       - run:
           name: Download Dependencies
           command: |
-            curl --output ~/android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-            mkdir ~/Android && (cd ~/Android && unzip ~/android-sdk.zip)
-            yes | sudo SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
-            SDKMANAGER_OPTS='-XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee' $ANDROID_HOME/tools/bin/sdkmanager --install 'platforms;android-29' > /dev/null
+            curl --output ~/commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
+            mkdir -p ~/Android/cmdline-tools && (cd ~/Android/cmdline-tools && unzip -o ~/commandlinetools.zip)
+            yes | $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --licenses || true
+            $ANDROID_HOME/cmdline-tools/tools/bin/sdkmanager --install 'platforms;android-29' > /dev/null
             ./gradlew --parallel prefetchDependencies
       - save_cache:
           paths:
@@ -52,22 +93,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 16 17 18 (JELLY_BEAN)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=16,17,18 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: JELLY_BEAN
+          versions: 16,17,18
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -81,22 +109,9 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 19 21 22 (KITKAT/LOLLIPOP)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=19,21,22 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: KITKAT/LOLLIPOP
+          versions: 19,21,22
       - store_test_results:
           path: ~/junit
       - store_artifacts:
@@ -110,86 +125,46 @@ jobs:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 23 24 25 (M/N)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=23,24,25 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: M/N
+          versions: 23,24,25
       - store_test_results:
           path: ~/junit
       - store_artifacts:
           path: build/reports
           destination: reports
 
-  test_26_27:
+  test_26_27_28:
     << : *job_config
     steps:
       - attach_workspace:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 26 27 (O)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=26,27 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: O/P
+          versions: 26,27,28
       - store_test_results:
           path: ~/junit
       - store_artifacts:
           path: build/reports
           destination: reports
 
-  test_28_29:
+  test_29_30:
     << : *job_config
     steps:
       - attach_workspace:
           at: ~/code
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
-      - run:
-          name: Test 28 29 (P/Q)
-          command: |
-            GRADLE_MAX_PARALLEL_FORKS=2 \
-                SKIP_JAVADOC=true \
-                ./gradlew test --info --stacktrace --continue \
-                --parallel \
-                -Drobolectric.enabledSdks=28,29 \
-                -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-                -Dorg.gradle.workers.max=2
-      - run:
-          name: Collect Test Results
-          command: |
-            mkdir -p ~/junit/
-            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/junit/ \;
-          when: always
+      - run_tests_for_sdks:
+          codenames: Q/R
+          versions: 29,30
       - store_test_results:
           path: ~/junit
       - store_artifacts:
           path: build/reports
           destination: reports
-
 
   finish:
     << : *job_config
@@ -199,12 +174,10 @@ jobs:
       - restore_cache:
           key: cache-{{ checksum ".cache-hash" }}
       - run:
-          name: Upload Snapshot
+          name: Publish Snapshot
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              # It'd be really nice to turn this back on again, but https://github.com/robolectric/robolectric/issues/5513
-              SKIP_JAVADOC=true \
-                ./gradlew upload --no-rebuild
+              ./gradlew publish --no-rebuild
             fi
 
 workflows:
@@ -221,10 +194,10 @@ workflows:
       - test_23_24_25:
           requires:
             - build
-      - test_26_27:
+      - test_26_27_28:
           requires:
             - build
-      - test_28_29:
+      - test_29_30:
           requires:
             - build
       - finish:
@@ -232,5 +205,9 @@ workflows:
             - test_16_17_18
             - test_19_21_22
             - test_23_24_25
-            - test_26_27
-            - test_28_29
+            - test_26_27_28
+            - test_29_30
+  check-formatting:
+    jobs:
+      - check_java_formatting
+

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -310,6 +311,117 @@ public class ShadowPaint {
   @Implementation
   protected float measureText(char[] text, int index, int count) {
     return count;
+  }
+
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
+  protected int native_breakText(
+      char[] text, int index, int count, float maxWidth, float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
+  protected int native_breakText(
+      char[] text, int index, int count, float maxWidth, int bidiFlags, float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = LOLLIPOP, maxSdk = M)
+  protected static int native_breakText(
+      long native_object,
+      long native_typeface,
+      char[] text,
+      int index,
+      int count,
+      float maxWidth,
+      int bidiFlags,
+      float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = N, maxSdk = O_MR1)
+  protected static int nBreakText(
+      long nObject,
+      long nTypeface,
+      char[] text,
+      int index,
+      int count,
+      float maxWidth,
+      int bidiFlags,
+      float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = P)
+  protected static int nBreakText(
+      long nObject,
+      char[] text,
+      int index,
+      int count,
+      float maxWidth,
+      int bidiFlags,
+      float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  private static int breakText(char[] text, float maxWidth, float[] measuredWidth) {
+    if (measuredWidth != null) {
+      measuredWidth[0] = maxWidth;
+    }
+    return text.length;
+  }
+
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
+  protected int native_breakText(
+      String text, boolean measureForwards, float maxWidth, float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
+  protected int native_breakText(
+      String text, boolean measureForwards, float maxWidth, int bidiFlags, float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = LOLLIPOP, maxSdk = M)
+  protected static int native_breakText(
+      long native_object,
+      long native_typeface,
+      String text,
+      boolean measureForwards,
+      float maxWidth,
+      int bidiFlags,
+      float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = N, maxSdk = O_MR1)
+  protected static int nBreakText(
+      long nObject,
+      long nTypeface,
+      String text,
+      boolean measureForwards,
+      float maxWidth,
+      int bidiFlags,
+      float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  @Implementation(minSdk = P)
+  protected static int nBreakText(
+      long nObject,
+      String text,
+      boolean measureForwards,
+      float maxWidth,
+      int bidiFlags,
+      float[] measuredWidth) {
+    return breakText(text, maxWidth, measuredWidth);
+  }
+
+  private static int breakText(String text, float maxWidth, float[] measuredWidth) {
+    if (measuredWidth != null) {
+      measuredWidth[0] = maxWidth;
+    }
+    return text.length();
   }
 
   @Implementation(minSdk = P)

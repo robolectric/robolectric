@@ -3,14 +3,10 @@ package org.robolectric.internal;
 import org.robolectric.annotation.Config;
 
 /**
- * A factory that detects what build system is in use and provides a ManifestFactory that can
- * create an AndroidManifest for that environment.
+ * A factory that detects what build system is in use and provides a ManifestFactory that can create
+ * an AndroidManifest for that environment.
  *
- * The following build systems are currently supported:
- *
- * * Maven
- * * Gradle
- * * Buck
+ * <p>Maven, Gradle, and Buck build systems are currently supported.
  */
 public interface ManifestFactory {
 

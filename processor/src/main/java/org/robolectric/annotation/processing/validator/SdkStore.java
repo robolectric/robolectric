@@ -5,14 +5,18 @@ import static org.robolectric.annotation.processing.validator.ImplementsValidato
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.STATIC_INITIALIZER_METHOD_NAME;
 import static org.robolectric.annotation.processing.validator.ImplementsValidator.getClassFQName;
 
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +41,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
 
+/** Encapsulates a collection of Android framework jars. */
 public class SdkStore {
 
   private final Set<Sdk> sdks = new TreeSet<>();
@@ -83,10 +88,14 @@ public class SdkStore {
     }
   }
 
-  private static List<Sdk> loadFromSdksFile(String resourceFileName) {
-    try (InputStream resIn = SdkStore.class.getResourceAsStream(resourceFileName)) {
+  private static ImmutableList<Sdk> loadFromSdksFile(String fileName) {
+    if (fileName == null || Files.notExists(Paths.get(fileName))) {
+      return ImmutableList.of();
+    }
+
+    try (InputStream resIn = new FileInputStream(fileName)) {
       if (resIn == null) {
-        throw new RuntimeException("no such resource " + resourceFileName);
+        throw new RuntimeException("no such file " + fileName);
       }
 
       BufferedReader in =
@@ -98,9 +107,9 @@ public class SdkStore {
           sdks.add(new Sdk(line));
         }
       }
-      return sdks;
+      return ImmutableList.copyOf(sdks);
     } catch (IOException e) {
-      throw new RuntimeException("failed reading " + resourceFileName, e);
+      throw new RuntimeException("failed reading " + fileName, e);
     }
   }
 
@@ -134,16 +143,16 @@ public class SdkStore {
     }
 
     /**
-     * Matches an `@Implementation` method against the framework method for this SDK.
+     * Matches an {@code @Implementation} method against the framework method for this SDK.
      *
      * @param sdkClassElem the framework class being shadowed
-     * @param methodElement the `@Implementation` method declaration to check
-     * @param looseSignatures if `true`, also match any framework method with the same class,
-     *     name, return type, and arity of parameters.
-     * @return a string describing any problems with this method, or `null` if it checks out.
+     * @param methodElement the {@code @Implementation} method declaration to check
+     * @param looseSignatures if true, also match any framework method with the same class, name,
+     *     return type, and arity of parameters.
+     * @return a string describing any problems with this method, or null if it checks out.
      */
-    public String verifyMethod(TypeElement sdkClassElem, ExecutableElement methodElement,
-        boolean looseSignatures) {
+    public String verifyMethod(
+        TypeElement sdkClassElem, ExecutableElement methodElement, boolean looseSignatures) {
       String className = getClassFQName(sdkClassElem);
       ClassInfo classInfo = getClassInfo(className);
 
@@ -182,8 +191,9 @@ public class SdkStore {
       return null;
     }
 
-    private boolean suppressWarnings(ExecutableElement methodElement, String warningName) {
-      SuppressWarnings[] suppressWarnings = methodElement.getAnnotationsByType(SuppressWarnings.class);
+    private static boolean suppressWarnings(ExecutableElement methodElement, String warningName) {
+      SuppressWarnings[] suppressWarnings =
+          methodElement.getAnnotationsByType(SuppressWarnings.class);
       for (SuppressWarnings suppression : suppressWarnings) {
         for (String name : suppression.value()) {
           if (warningName.equals(name)) {
@@ -194,12 +204,13 @@ public class SdkStore {
       return false;
     }
 
-    private boolean typeIsNumeric(MethodExtraInfo sdkMethod, MethodExtraInfo implMethod) {
+    private static boolean typeIsNumeric(MethodExtraInfo sdkMethod, MethodExtraInfo implMethod) {
       return implMethod.returnType.equals("java.lang.Number")
       && isNumericType(sdkMethod.returnType);
     }
 
-    private boolean typeIsOkForLooseSignatures(MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
+    private static boolean typeIsOkForLooseSignatures(
+        MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
       return
           // loose signatures allow a return type of Object...
           implMethod.returnType.equals("java.lang.Object")
@@ -208,7 +219,7 @@ public class SdkStore {
                   && sdkMethod.returnType.endsWith("[]"));
     }
 
-    private boolean isNumericType(String type) {
+    private static boolean isNumericType(String type) {
       return type.equals("int") || type.equals("long");
     }
 
@@ -235,12 +246,13 @@ public class SdkStore {
     }
 
     /**
-     * Determine the API level for this SDK jar by inspecting its `build.prop` file.
+     * Determine the API level for this SDK jar by inspecting its {@code build.prop} file.
      *
-     * If the `ro.build.version.codename` value isn't `REL`, this is an unreleased SDK, which
-     * is represented as `10000` (see {@link android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
+     * <p>If the {@code ro.build.version.codename} value isn't {@code REL}, this is an unreleased
+     * SDK, which is represented as 10000 (see {@link
+     * android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
      *
-     * @return the API level, or `10000`
+     * @return the API level, or 10000
      */
     private int readSdkInt() {
       Properties properties = new Properties();
@@ -377,7 +389,7 @@ public class SdkStore {
       }
     }
 
-    private String cleanMethodName(ExecutableElement methodElement) {
+    private static String cleanMethodName(ExecutableElement methodElement) {
       String name = methodElement.getSimpleName().toString();
       if (CONSTRUCTOR_METHOD_NAME.equals(name)) {
         return "<init>";
@@ -445,8 +457,7 @@ public class SdkStore {
         return false;
       }
       MethodExtraInfo that = (MethodExtraInfo) o;
-      return isStatic == that.isStatic &&
-          Objects.equals(returnType, that.returnType);
+      return isStatic == that.isStatic && Objects.equals(returnType, that.returnType);
     }
 
     @Override
