@@ -142,7 +142,7 @@ public class SandboxClassLoader extends URLClassLoader {
     try {
       final byte[] bytes;
       ClassDetails classDetails = new ClassDetails(origClassBytes);
-      if (shouldInstrument(classDetails)) {
+      if (config.shouldInstrument(classDetails)) {
         bytes = classInstrumentor.instrument(classDetails, config, classNodeProvider);
         maybeDumpClassBytes(classDetails, bytes);
       } else {
@@ -169,10 +169,6 @@ public class SandboxClassLoader extends URLClassLoader {
         throw new AssertionError(e);
       }
     }
-  }
-
-  protected boolean shouldInstrument(ClassDetails classDetails) {
-    return config.shouldInstrument(classDetails);
   }
 
   protected byte[] postProcessUninstrumentedClass(ClassDetails classDetails) {
