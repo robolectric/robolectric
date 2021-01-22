@@ -4,6 +4,7 @@ import static com.google.common.base.StandardSystemProperty.JAVA_CLASS_PATH;
 import static com.google.common.base.StandardSystemProperty.PATH_SEPARATOR;
 
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +12,10 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
@@ -21,10 +26,15 @@ import org.robolectric.util.Util;
  * shadow classes.
  */
 public class SandboxClassLoader extends URLClassLoader {
+  // The directory where instrumented class files will be dumped
+  private static final String DUMP_CLASSES_PROPERTY = "robolectric.dumpClassesDirectory";
+  private static final AtomicInteger DUMP_CLASSES_COUNTER = new AtomicInteger();
+
   private final InstrumentationConfiguration config;
   private final ResourceProvider resourceProvider;
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
+  private final String dumpClassesDirectory;
 
   /** Constructor for use by tests. */
   SandboxClassLoader(InstrumentationConfiguration config) {
@@ -55,6 +65,7 @@ public class SandboxClassLoader extends URLClassLoader {
         return getByteCode(internalClassName);
       }
     };
+    this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
   }
 
   private static URL[] getClassPathUrls(ClassLoader classloader) {
@@ -133,6 +144,7 @@ public class SandboxClassLoader extends URLClassLoader {
       ClassDetails classDetails = new ClassDetails(origClassBytes);
       if (config.shouldInstrument(classDetails)) {
         bytes = classInstrumentor.instrument(origClassBytes, config, classNodeProvider);
+        maybeDumpClassBytes(classDetails, bytes);
       } else {
         bytes = postProcessUninstrumentedClass(classDetails, origClassBytes);
       }
@@ -143,6 +155,19 @@ public class SandboxClassLoader extends URLClassLoader {
     } catch (OutOfMemoryError e) {
       System.err.println("[ERROR] couldn't load " + className + " in " + this);
       throw e;
+    }
+  }
+
+  private void maybeDumpClassBytes(ClassDetails classDetails, byte[] classBytes) {
+    if (!Strings.isNullOrEmpty(dumpClassesDirectory)) {
+      String outputClassName =
+          classDetails.getName() + "-robo-instrumented-" + DUMP_CLASSES_COUNTER.getAndIncrement();
+      Path path = Paths.get(dumpClassesDirectory, outputClassName + ".class");
+      try {
+        Files.write(path, classBytes);
+      } catch (IOException e) {
+        throw new AssertionError(e);
+      }
     }
   }
 

@@ -1,15 +1,9 @@
 package org.robolectric.internal.bytecode;
 
-import com.google.common.base.Strings;
-import java.io.IOException;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -35,17 +29,12 @@ import org.robolectric.util.PerfStatsCollector;
 
 public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
-  // The directory where instrumented class files will be dumped
-  private static final String DUMP_CLASSES_PROPERTY = "robolectric.dumpClassesDirectory";
-  private static final AtomicInteger DUMP_CLASSES_COUNTER = new AtomicInteger();
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
   final Decorator decorator;
-  final String dumpClassesDirectory;
 
   protected ClassInstrumentor(Decorator decorator) {
     this.decorator = decorator;
-    this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
   }
 
   private MutableClass analyzeClass(
@@ -83,18 +72,7 @@ public abstract class ClassInstrumentor {
     ClassRemapper visitor = new ClassRemapper(writer, remapper);
     classNode.accept(visitor);
 
-    byte[] classBytes = writer.toByteArray();
-    if (!Strings.isNullOrEmpty(dumpClassesDirectory)) {
-      String outputClassName =
-          mutableClass.getName() + "-robo-instrumented-" + DUMP_CLASSES_COUNTER.getAndIncrement();
-      Path path = Paths.get(dumpClassesDirectory, outputClassName + ".class");
-      try {
-        Files.write(path, classBytes);
-      } catch (IOException e) {
-        throw new AssertionError(e);
-      }
-    }
-    return classBytes;
+    return writer.toByteArray();
   }
 
   public byte[] instrument(
