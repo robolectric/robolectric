@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -16,6 +17,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
+import android.media.IPlayer;
+import android.media.PlayerBase;
 import android.media.audiopolicy.AudioPolicy;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -28,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -425,24 +429,14 @@ public class ShadowAudioManager {
   @TargetApi(VERSION_CODES.O)
   public void setActivePlaybackConfigurationsFor(
       List<AudioAttributes> audioAttributes, boolean notifyCallbackListeners) {
+    if (RuntimeEnvironment.getApiLevel() < O) {
+      throw new UnsupportedOperationException(
+          "setActivePlaybackConfigurationsFor is not supported on API "
+              + RuntimeEnvironment.getApiLevel());
+    }
     activePlaybackConfigurations = new ArrayList<>(audioAttributes.size());
     for (AudioAttributes audioAttribute : audioAttributes) {
-      Parcel p = Parcel.obtain();
-      p.writeInt(0); // mPlayerIId
-      p.writeInt(0); // mPlayerType
-      p.writeInt(0); // mClientUid
-      p.writeInt(0); // mClientPid
-      p.writeInt(AudioPlaybackConfiguration.PLAYER_STATE_STARTED); // mPlayerState
-      audioAttribute.writeToParcel(p, 0);
-      p.writeStrongInterface(null);
-      byte[] bytes = p.marshall();
-      p.recycle();
-      p = Parcel.obtain();
-      p.unmarshall(bytes, 0, bytes.length);
-      p.setDataPosition(0);
-      AudioPlaybackConfiguration configuration =
-          AudioPlaybackConfiguration.CREATOR.createFromParcel(p);
-      p.recycle();
+      AudioPlaybackConfiguration configuration = createAudioPlaybackConfiguration(audioAttribute);
       activePlaybackConfigurations.add(configuration);
     }
     if (notifyCallbackListeners) {
@@ -450,6 +444,27 @@ public class ShadowAudioManager {
         callback.onPlaybackConfigChanged(activePlaybackConfigurations);
       }
     }
+  }
+
+  private static AudioPlaybackConfiguration createAudioPlaybackConfiguration(
+      AudioAttributes audioAttributes) {
+    // use reflection to call package private APIs
+    PlayerBase.PlayerIdCard playerIdCard =
+        ReflectionHelpers.callConstructor(
+            PlayerBase.PlayerIdCard.class,
+            from(int.class, 0), /* type */
+            from(AudioAttributes.class, audioAttributes),
+            from(IPlayer.class, null));
+    AudioPlaybackConfiguration config =
+        ReflectionHelpers.callConstructor(
+            AudioPlaybackConfiguration.class,
+            from(PlayerBase.PlayerIdCard.class, playerIdCard),
+            from(int.class, 0), /* piid */
+            from(int.class, 0), /* uid */
+            from(int.class, 0) /* pid */);
+    ReflectionHelpers.setField(
+        config, "mPlayerState", AudioPlaybackConfiguration.PLAYER_STATE_STARTED);
+    return config;
   }
 
   public void setIsMusicActive(boolean isMusicActive) {

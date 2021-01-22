@@ -12,6 +12,10 @@ configurations {
     earlyTestRuntime
 }
 
+test {
+    systemProperty "robolectric.resourcesMode", "binary"
+}
+
 dependencies {
     compileOnly project(":robolectric")
     compileOnly project(":shadows:framework")

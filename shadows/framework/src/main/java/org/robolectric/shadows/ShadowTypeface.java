@@ -13,6 +13,7 @@ import android.content.res.AssetManager;
 import android.graphics.FontFamily;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.util.ArrayMap;
 import java.io.File;
 import java.io.IOException;
@@ -187,7 +188,7 @@ public class ShadowTypeface {
   protected static void init() {}
 
   @HiddenApi
-  @Implementation(minSdk = android.os.Build.VERSION_CODES.Q)
+  @Implementation(minSdk = VERSION_CODES.Q, maxSdk = VERSION_CODES.R)
   public static void initSystemDefaultTypefaces(
       Object systemFontMap, Object fallbacks, Object aliases) {}
 
@@ -196,7 +197,7 @@ public class ShadowTypeface {
     FONTS.clear();
   }
 
-  private static Typeface createUnderlyingTypeface(String familyName, int style) {
+  protected static Typeface createUnderlyingTypeface(String familyName, int style) {
     long thisFontId = nextFontId++;
     FONTS.put(thisFontId, new FontDesc(familyName, style));
     if (getApiLevel() >= LOLLIPOP) {
@@ -215,7 +216,7 @@ public class ShadowTypeface {
     throw new RuntimeException("Unknown font id: " + fontId);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = VERSION_CODES.R)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly
     long thisFontId = nextFontId++;

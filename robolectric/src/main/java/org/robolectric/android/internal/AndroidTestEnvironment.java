@@ -188,9 +188,20 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   private void installAndCreateApplication(AndroidManifest appManifest, Config config,
       android.content.res.Configuration androidConfiguration, DisplayMetrics displayMetrics) {
+
     final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
+
+    RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
+
+    Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
+    RuntimeEnvironment.systemContext = systemContextImpl;
+
+    Application dummyInitialApplication = new Application();
+    _activityThread_.setInitialApplication(dummyInitialApplication);
+    ShadowApplication shadowInitialApplication = Shadow.extract(dummyInitialApplication);
+    shadowInitialApplication.callAttach(systemContextImpl);
 
     Package parsedPackage = loadAppPackage(config, appManifest);
 
@@ -221,9 +232,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(androidConfiguration, displayMetrics);
-
-    Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
-    RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application application = createApplication(appManifest, config, applicationInfo);
     RuntimeEnvironment.application = application;
