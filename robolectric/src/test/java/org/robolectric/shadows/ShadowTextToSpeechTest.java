@@ -10,7 +10,6 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
@@ -50,17 +49,17 @@ public class ShadowTextToSpeechTest {
     TextToSpeech.OnInitListener listener = onInitCalled::set;
     TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
     assertThat(textToSpeech).isNotNull();
-    Shadows.shadowOf(Looper.getMainLooper()).idle();
+    Shadows.shadowOf(textToSpeech).getOnInitListener().onInit(TextToSpeech.SUCCESS);
     assertThat(onInitCalled.get()).isEqualTo(TextToSpeech.SUCCESS);
   }
 
   @Test
-  public void onInitListener_error_getsCalledSynchronously() {
+  public void onInitListener_error() {
     AtomicReference<Integer> onInitCalled = new AtomicReference<>();
-    ShadowTextToSpeech.setOnInitStatus(TextToSpeech.ERROR);
     TextToSpeech.OnInitListener listener = onInitCalled::set;
     TextToSpeech textToSpeech = new TextToSpeech(activity, listener);
     assertThat(textToSpeech).isNotNull();
+    Shadows.shadowOf(textToSpeech).getOnInitListener().onInit(TextToSpeech.ERROR);
     assertThat(onInitCalled.get()).isEqualTo(TextToSpeech.ERROR);
   }
 
