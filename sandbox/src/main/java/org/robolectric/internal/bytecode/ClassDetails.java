@@ -1,8 +1,10 @@
 package org.robolectric.internal.bytecode;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
@@ -13,11 +15,17 @@ import org.objectweb.asm.Opcodes;
  * significantly faster than a {@link org.objectweb.asm.tree.ClassNode} object.
  */
 public class ClassDetails {
+  private static final String SHADOWED_OBJECT_INTERNAL_NAME =
+      ShadowedObject.class.getName().replace('.', '/');
+
   private final ClassReader classReader;
   private final String className;
+  private final byte[] classBytes;
   private Set<String> annotations;
+  private Set<String> interfaces;
 
   public ClassDetails(byte[] classBytes) {
+    this.classBytes = classBytes;
     this.classReader = new ClassReader(classBytes);
     this.className = classReader.getClassName().replace('/', '.');
   }
@@ -38,23 +46,34 @@ public class ClassDetails {
     if (annotations == null) {
       this.annotations = new HashSet<>();
       classReader.accept(
-          new AnnotationVisitor(annotations),
+          new AnnotationCollector(annotations),
           ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
     }
     String internalName = "L" + annotationClass.getName().replace('.', '/') + ";";
     return this.annotations.contains(internalName);
   }
 
-  private static class AnnotationVisitor extends ClassVisitor {
+  public boolean isInstrumented() {
+    if (this.interfaces == null) {
+      this.interfaces = new HashSet<>(Arrays.asList(classReader.getInterfaces()));
+    }
+    return this.interfaces.contains(SHADOWED_OBJECT_INTERNAL_NAME);
+  }
+
+  public byte[] getClassBytes() {
+    return classBytes;
+  }
+
+  private static class AnnotationCollector extends ClassVisitor {
     private final Set<String> annotations;
 
-    public AnnotationVisitor(Set<String> annotations) {
+    public AnnotationCollector(Set<String> annotations) {
       super(Opcodes.ASM9);
       this.annotations = annotations;
     }
 
     @Override
-    public org.objectweb.asm.AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
       if (visible) {
         annotations.add(descriptor);
       }

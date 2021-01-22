@@ -142,11 +142,11 @@ public class SandboxClassLoader extends URLClassLoader {
     try {
       final byte[] bytes;
       ClassDetails classDetails = new ClassDetails(origClassBytes);
-      if (config.shouldInstrument(classDetails)) {
-        bytes = classInstrumentor.instrument(origClassBytes, config, classNodeProvider);
+      if (shouldInstrument(classDetails)) {
+        bytes = classInstrumentor.instrument(classDetails, config, classNodeProvider);
         maybeDumpClassBytes(classDetails, bytes);
       } else {
-        bytes = postProcessUninstrumentedClass(classDetails, origClassBytes);
+        bytes = postProcessUninstrumentedClass(classDetails);
       }
       ensurePackage(className);
       return defineClass(className, bytes, 0, bytes.length);
@@ -171,9 +171,12 @@ public class SandboxClassLoader extends URLClassLoader {
     }
   }
 
-  protected byte[] postProcessUninstrumentedClass(
-      ClassDetails classDetails, byte[] origClassBytes) {
-    return origClassBytes;
+  protected boolean shouldInstrument(ClassDetails classDetails) {
+    return config.shouldInstrument(classDetails);
+  }
+
+  protected byte[] postProcessUninstrumentedClass(ClassDetails classDetails) {
+    return classDetails.getClassBytes();
   }
 
   protected byte[] getByteCode(String className) throws ClassNotFoundException {

@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
@@ -16,6 +17,7 @@ import org.objectweb.asm.commons.JSRInlinerAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -30,6 +32,7 @@ import org.robolectric.util.PerfStatsCollector;
 public abstract class ClassInstrumentor {
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
+  static final String NATIVE_METHOD_DESCRIPTOR = Type.getDescriptor(NativeMethod.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
   final Decorator decorator;
 
@@ -76,11 +79,14 @@ public abstract class ClassInstrumentor {
   }
 
   public byte[] instrument(
-      byte[] origBytes, InstrumentationConfiguration config, ClassNodeProvider classNodeProvider) {
+      ClassDetails classDetails,
+      InstrumentationConfiguration config,
+      ClassNodeProvider classNodeProvider) {
     PerfStatsCollector perfStats = PerfStatsCollector.getInstance();
     MutableClass mutableClass =
         perfStats.measure(
-            "analyze class", () -> analyzeClass(origBytes, config, classNodeProvider));
+            "analyze class",
+            () -> analyzeClass(classDetails.getClassBytes(), config, classNodeProvider));
     byte[] instrumentedBytes =
         perfStats.measure("instrument class", () -> instrumentToBytes(mutableClass));
     recordPackageStats(perfStats, mutableClass);
@@ -351,7 +357,8 @@ public abstract class ClassInstrumentor {
     if ((method.access & Opcodes.ACC_ABSTRACT) == 0) {
       method.access = method.access | Opcodes.ACC_FINAL;
     }
-    if ((method.access & Opcodes.ACC_NATIVE) != 0) {
+    boolean isNativeMethod = (method.access & Opcodes.ACC_NATIVE) != 0;
+    if (isNativeMethod) {
       instrumentNativeMethod(mutableClass, method);
     }
 
@@ -359,8 +366,19 @@ public abstract class ClassInstrumentor {
     String originalName = method.name;
     method.name = directMethodName(mutableClass, originalName);
 
-    MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
+    MethodNode delegatorMethodNode =
+        new MethodNode(
+            method.access, originalName, method.desc, method.signature, exceptionArray(method));
     delegatorMethodNode.visibleAnnotations = method.visibleAnnotations;
+    // Add a @NativeMethod annotation to the original method to indicate that this method was
+    // previously native. This is useful for some ClassInstrumentor plugins that do some additional
+    // instrumentation on native methods.
+    if (isNativeMethod) {
+      if (delegatorMethodNode.visibleAnnotations == null) {
+        delegatorMethodNode.visibleAnnotations = new ArrayList<>();
+      }
+      delegatorMethodNode.visibleAnnotations.add(new AnnotationNode(NATIVE_METHOD_DESCRIPTOR));
+    }
     delegatorMethodNode.access &= ~(Opcodes.ACC_NATIVE | Opcodes.ACC_ABSTRACT | Opcodes.ACC_FINAL);
 
     makeMethodPrivate(method);
@@ -386,7 +404,7 @@ public abstract class ClassInstrumentor {
     generator.returnValue();
   }
 
-  private static String directMethodName(MutableClass mutableClass, String originalName) {
+  protected static String directMethodName(MutableClass mutableClass, String originalName) {
     return SHADOW_IMPL.directMethodName(mutableClass.getName(), originalName);
   }
 
