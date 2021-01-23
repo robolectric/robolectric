@@ -39,10 +39,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Download google-java-format 1.8
+          name: Download google-java-format 1.9
           command: |
-            curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/google-java-format-1.8/google-java-format-1.8-all-deps.jar
-            curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/google-java-format-1.8/scripts/google-java-format-diff.py
+            curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/google-java-format-1.9/google-java-format-1.9-all-deps.jar
+            curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/google-java-format-1.9/scripts/google-java-format-diff.py
       - run:
           name: Check Java formatting
           command: |
