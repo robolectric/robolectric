@@ -43,5 +43,5 @@ dependencies {
     // TODO: this should be a transitive dependency of core...
     testImplementation("androidx.lifecycle:lifecycle-common:2.0.0")
     testImplementation("androidx.test.ext:junit:1.1.2-rc03")
-    testImplementation("com.google.truth:truth:1.0.1")
+    testImplementation("com.google.truth:truth:${truthVersion}")
 }
