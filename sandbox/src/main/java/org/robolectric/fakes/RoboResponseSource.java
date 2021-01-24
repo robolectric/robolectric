@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robolectric.android.fakes;
+package org.robolectric.fakes;
 
 /**
  * Where the HTTP client should look for a response.
