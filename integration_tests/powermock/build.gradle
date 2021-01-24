@@ -6,7 +6,7 @@ dependencies {
 
     testRuntime AndroidSdk.MAX_SDK.coordinates
     testImplementation "junit:junit:4.13.1"
-    testImplementation "com.google.truth:truth:1.0.1"
+    testImplementation "com.google.truth:truth:${truthVersion}"
 
     testImplementation "org.powermock:powermock-module-junit4:2.0.0"
     testImplementation "org.powermock:powermock-module-junit4-rule:2.0.0"
