@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
@@ -13,12 +14,16 @@ import java.util.concurrent.Future;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowTrace.AsyncTraceSection;
 
 /** Test for {@link ShadowTrace}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowTraceTest {
   private static final String VERY_LONG_TAG_NAME = String.format(String.format("%%%ds", 128), "A");
+
+  // Arbitrary value
+  private static final Integer COOKIE = 353882576;
 
   @Test
   public void beginSection_calledOnce_addsSection() throws Exception {
@@ -131,6 +136,107 @@ public class ShadowTraceTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_calledOnce_addsSection() throws Exception {
+    Trace.beginAsyncSection("section1", COOKIE);
+
+    assertThat(ShadowTrace.getCurrentAsyncSections())
+        .containsExactly(
+            AsyncTraceSection.newBuilder().setSectionName("section1").setCookie(COOKIE).build());
+    assertThat(ShadowTrace.getPreviousAsyncSections()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_calledTwice_addsBothSections() throws Exception {
+    Trace.beginAsyncSection("section1", COOKIE);
+    Trace.beginAsyncSection("section2", COOKIE);
+
+    assertThat(ShadowTrace.getCurrentAsyncSections())
+        .containsExactly(
+            AsyncTraceSection.newBuilder().setSectionName("section1").setCookie(COOKIE).build(),
+            AsyncTraceSection.newBuilder().setSectionName("section2").setCookie(COOKIE).build());
+    assertThat(ShadowTrace.getPreviousAsyncSections()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_tagIsNull_throwsNullPointerException() throws Exception {
+    try {
+      Trace.beginAsyncSection(null, COOKIE);
+      fail("Must throw");
+    } catch (NullPointerException e) {
+      // Must throw.
+    }
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_tagIsNullAndCrashDisabled_doesNotThrow() throws Exception {
+    ShadowTrace.doNotUseSetCrashOnIncorrectUsage(false);
+    Trace.beginAsyncSection(null, COOKIE);
+    // Should not crash.
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_tagIsTooLong_throwsIllegalArgumentException() throws Exception {
+    try {
+      Trace.beginAsyncSection(VERY_LONG_TAG_NAME, COOKIE);
+      fail("Must throw");
+    } catch (IllegalArgumentException e) {
+      // Must throw.
+    }
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_tagIsTooLongAndCrashDisabled_doesNotThrow() throws Exception {
+    ShadowTrace.doNotUseSetCrashOnIncorrectUsage(false);
+    Trace.beginAsyncSection(VERY_LONG_TAG_NAME, COOKIE);
+    // Should not crash.
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void endAsyncSection_oneSection_closesSection() throws Exception {
+    Trace.beginAsyncSection("section1", COOKIE);
+
+    Trace.endAsyncSection("section1", COOKIE);
+
+    assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
+    assertThat(ShadowTrace.getPreviousAsyncSections())
+        .containsExactly(
+            AsyncTraceSection.newBuilder().setSectionName("section1").setCookie(COOKIE).build());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void async_sameSectionTwoCookies_separateTraces() throws Exception {
+    Trace.beginAsyncSection("section1", COOKIE);
+    Trace.beginAsyncSection("section1", COOKIE + 1);
+
+    AsyncTraceSection sectionWithCookie =
+        AsyncTraceSection.newBuilder().setSectionName("section1").setCookie(COOKIE).build();
+    AsyncTraceSection sectionWithCookiePlusOne =
+        AsyncTraceSection.newBuilder().setSectionName("section1").setCookie(COOKIE + 1).build();
+
+    assertThat(ShadowTrace.getCurrentAsyncSections())
+        .containsExactly(sectionWithCookie, sectionWithCookiePlusOne);
+    assertThat(ShadowTrace.getPreviousAsyncSections()).isEmpty();
+
+    Trace.endAsyncSection("section1", COOKIE);
+
+    assertThat(ShadowTrace.getCurrentAsyncSections()).containsExactly(sectionWithCookiePlusOne);
+    assertThat(ShadowTrace.getPreviousAsyncSections()).containsExactly(sectionWithCookie);
+
+    Trace.endAsyncSection("section1", COOKIE + 1);
+    assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
+    assertThat(ShadowTrace.getPreviousAsyncSections())
+        .containsExactly(sectionWithCookie, sectionWithCookiePlusOne);
+  }
+
+  @Test
   public void reset_resetsInternalState() throws Exception {
     Trace.beginSection("section1");
     Trace.endSection();
@@ -170,19 +276,58 @@ public class ShadowTraceTest {
 
       f =
           backgroundExecutor.submit(
-              new Runnable() {
-                @Override
-                public void run() {
-                  assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
-                  assertThat(ShadowTrace.getPreviousSections()).isEmpty();
+              () -> {
+                assertThat(ShadowTrace.getCurrentSections()).containsExactly("bg_trace");
+                assertThat(ShadowTrace.getPreviousSections()).isEmpty();
 
-                  Trace.endSection();
+                Trace.endSection();
 
-                  assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
-                  assertThat(ShadowTrace.getCurrentSections()).isEmpty();
-                }
+                assertThat(ShadowTrace.getPreviousSections()).containsExactly("bg_trace");
+                assertThat(ShadowTrace.getCurrentSections()).isEmpty();
               });
       f.get();
+    } finally {
+      backgroundExecutor.shutdown();
+    }
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void beginAsyncSection_multipleThreads_stateIsShared()
+      throws ExecutionException, InterruptedException {
+    ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor();
+
+    AsyncTraceSection mainLooperSection =
+        AsyncTraceSection.newBuilder()
+            .setSectionName("main_looper_trace")
+            .setCookie(COOKIE)
+            .build();
+    AsyncTraceSection bgLooperSection =
+        AsyncTraceSection.newBuilder().setSectionName("bg_trace").setCookie(COOKIE).build();
+
+    try {
+      Trace.beginAsyncSection("main_looper_trace", COOKIE);
+      Future<?> f = backgroundExecutor.submit(() -> Trace.beginAsyncSection("bg_trace", COOKIE));
+      f.get();
+
+      assertThat(ShadowTrace.getCurrentAsyncSections())
+          .containsExactly(mainLooperSection, bgLooperSection);
+      assertThat(ShadowTrace.getPreviousAsyncSections()).isEmpty();
+
+      Trace.endAsyncSection("main_looper_trace", COOKIE);
+      assertThat(ShadowTrace.getPreviousAsyncSections()).containsExactly(mainLooperSection);
+      assertThat(ShadowTrace.getCurrentAsyncSections()).containsExactly(bgLooperSection);
+
+      f =
+          backgroundExecutor.submit(
+              () -> {
+                Trace.endAsyncSection("bg_trace", COOKIE);
+                assertThat(ShadowTrace.getPreviousAsyncSections())
+                    .containsExactly(mainLooperSection, bgLooperSection);
+                assertThat(ShadowTrace.getCurrentAsyncSections()).isEmpty();
+              });
+      f.get();
+
     } finally {
       backgroundExecutor.shutdown();
     }
