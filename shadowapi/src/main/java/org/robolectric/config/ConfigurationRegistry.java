@@ -1,5 +1,6 @@
 package org.robolectric.config;
 
+import com.google.security.annotations.SuppressBanSerializableForLegacyCode;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,6 +45,7 @@ public class ConfigurationRegistry {
     return someConfigClass.cast(configInSandboxLoader);
   }
 
+  @SuppressBanSerializableForLegacyCode
   private static Object reloadInSandboxClassLoader(Object configInParentLoader) {
     ByteArrayOutputStream buf = new ByteArrayOutputStream();
     try (ObjectOutputStream out = new ObjectOutputStream(buf)) {

@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -253,6 +254,10 @@ public class ShadowBitmap {
     shadowBitmap.createdFromFilter = filter;
     shadowBitmap.width = dstWidth;
     shadowBitmap.height = dstHeight;
+    shadowBitmap.config = src.getConfig();
+    if (shadowBitmap.config == null) {
+      shadowBitmap.config = Config.ARGB_8888;
+    }
     shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, 0, 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
     return scaledBitmap;
   }
@@ -316,6 +321,10 @@ public class ShadowBitmap {
     shadowNewBitmap.createdFromHeight = height;
     shadowNewBitmap.createdFromMatrix = matrix;
     shadowNewBitmap.createdFromFilter = filter;
+    shadowNewBitmap.config = src.getConfig();
+    if (shadowNewBitmap.config == null) {
+      shadowNewBitmap.config = Config.ARGB_8888;
+    }
 
     if (matrix != null) {
       ShadowMatrix shadowMatrix = Shadow.extract(matrix);
