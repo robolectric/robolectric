@@ -101,32 +101,16 @@ public class AndroidConfigurer {
     builder.doNotInstrumentClass("android.R")
         .doNotInstrumentClass("android.R$styleable");
 
-    builder.addInstrumentedPackage("dalvik.")
+    builder
+        .addInstrumentedPackage("dalvik.")
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
-        .addInstrumentedPackage("androidx.")
         .addInstrumentedPackage("com.android.internal.")
         .addInstrumentedPackage("org.apache.http.")
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
-    // exclude arch libraries from instrumentation. These are just android libs and no one
-    // should need to shadow them
-    builder.doNotInstrumentPackage("androidx.room");
-    builder.doNotInstrumentPackage("androidx.arch");
     builder.doNotInstrumentPackage("android.arch");
-    builder.doNotInstrumentPackage("androidx.lifecycle");
-    builder.doNotInstrumentPackage("androidx.paging");
-    builder.doNotInstrumentPackage("androidx.work");
-    builder.doNotInstrumentPackage("androidx.datastore");
-
-    // exclude Compose libraries from instrumentation. These are written in Kotlin and
-    // fail on any usage due to DefaultConstructorMarker being inaccessible.
-    builder.doNotInstrumentPackage("androidx.compose");
-    builder.doNotInstrumentPackage("androidx.ui");
-    builder.doNotInstrumentPackage("androidx.fragment");
-
-    builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
 
     // Mockito's MockMethodDispatcher must only exist in the Bootstrap class loader.

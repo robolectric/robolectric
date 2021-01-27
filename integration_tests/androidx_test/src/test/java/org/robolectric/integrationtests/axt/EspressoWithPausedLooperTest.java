@@ -12,11 +12,16 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.integration.axt.R;
 
 /** Verify Espresso usage with paused looper */
+@Config(
+    instrumentedPackages = {
+      // required to access final members on androidx.loader.content.ModernAsyncTask
+      "androidx.loader.content"
+    })
 @RunWith(AndroidJUnit4.class)
-
 public final class EspressoWithPausedLooperTest {
 
   @Before
