@@ -18,6 +18,8 @@ import android.provider.MediaStore;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -319,6 +321,17 @@ public class ShadowBitmapFactoryTest {
     assertEquals(Color.GREEN, getPngImageColorFromStream("res/drawable/pure_green.png"));
     assertEquals(Color.RED, getPngImageColorFromStream("res/drawable/pure_red.png"));
     assertEquals(Color.WHITE, getPngImageColorFromStream("res/drawable/pure_white.png"));
+  }
+
+  @Test
+  public void decodeStream_shouldSameAsCompressedBefore() throws Exception {
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 10, /* height= */ 10, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.PNG, /* quality= */ 100, outStream);
+    byte[] outBytes = outStream.toByteArray();
+    ByteArrayInputStream inStream = new ByteArrayInputStream(outBytes);
+    Bitmap newBitmap = BitmapFactory.decodeStream(inStream);
+    assertThat(bitmap.sameAs(newBitmap)).isTrue();
   }
 
   @Test
