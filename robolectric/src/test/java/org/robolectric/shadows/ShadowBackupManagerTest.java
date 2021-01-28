@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
@@ -173,6 +174,33 @@ public class ShadowBackupManagerTest {
     RestoreSession restoreSession = backupManager.beginRestoreSession();
     int result = restoreSession.restorePackage("bar.baz", restoreObserver);
     assertThat(result).isEqualTo(-1);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getAvailableRestoreToken_noRestoreToken_returnsDefaultValue() {
+    long defaultValue = 0L;
+    assertThat(shadowOf(backupManager).getPackageRestoreToken("foo.bar")).isEqualTo(defaultValue);
+    assertThat(backupManager.getAvailableRestoreToken("foo.bar")).isEqualTo(defaultValue);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getAvailableRestoreToken_restoreTokenAvailableForSomePackages_returnsCorrectValues() {
+    long defaultVal = 0L;
+    long restoreToken = 123L;
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+    int result =
+        restoreSession.restoreSome(restoreToken, restoreObserver, new String[] {"bar.baz"});
+
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+
+    shadowMainLooper().idle();
+    verify(restoreObserver).restoreStarting(eq(1));
+    verify(restoreObserver).restoreFinished(eq(BackupManager.SUCCESS));
+
+    assertThat(backupManager.getAvailableRestoreToken("foo.bar")).isEqualTo(defaultVal);
+    assertThat(backupManager.getAvailableRestoreToken("bar.baz")).isEqualTo(restoreToken);
   }
 
   private static <T, F> Correspondence<T, F> fieldCorrespondence(String fieldName) {
