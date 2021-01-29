@@ -1,4 +1,4 @@
-package org.robolectric.android.fakes;
+package org.robolectric.android.internal;
 
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;

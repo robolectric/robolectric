@@ -9,8 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.android.AndroidInterceptors;
-import org.robolectric.internal.AndroidConfigurer;
+import org.robolectric.config.AndroidConfigurer;
+import org.robolectric.interceptors.AndroidInterceptors;
 
 @RunWith(JUnit4.class)
 public class InstrumentationConfigurationTest {

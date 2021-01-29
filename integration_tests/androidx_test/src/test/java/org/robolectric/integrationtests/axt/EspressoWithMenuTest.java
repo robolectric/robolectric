@@ -12,16 +12,20 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.annotation.TextLayoutMode.Mode;
 
-/**
- * Test Espresso on Robolectric interoperability for menus.
- */
+/** Test Espresso on Robolectric interoperability for menus. */
 @RunWith(AndroidJUnit4.class)
 @TextLayoutMode(Mode.REALISTIC)
 @LooperMode(PAUSED)
+@Config(
+    instrumentedPackages = {
+      // required to access final members on androidx.loader.content.ModernAsyncTask
+      "androidx.loader.content"
+    })
 public class EspressoWithMenuTest {
 
   @Test

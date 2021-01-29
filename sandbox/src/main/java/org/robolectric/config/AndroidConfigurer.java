@@ -1,22 +1,12 @@
-package org.robolectric.internal;
+package org.robolectric.config;
 
 import java.nio.charset.StandardCharsets;
-import org.robolectric.ApkLoader;
-import org.robolectric.RobolectricTestRunner;
-import org.robolectric.TestLifecycle;
-import org.robolectric.android.fakes.RoboExtendedResponseCache;
-import org.robolectric.android.fakes.RoboResponseSource;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.ShadowProviders;
-import org.robolectric.manifest.AndroidManifest;
-import org.robolectric.res.ResourcePath;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.builder.XmlBlock;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.util.Util;
 
 /** Instruments the Android jars */
@@ -55,15 +45,15 @@ public class AndroidConfigurer {
     }
 
     builder
-        .doNotAcquireClass(TestLifecycle.class)
-        .doNotAcquireClass(AndroidManifest.class)
-        .doNotAcquireClass(RobolectricTestRunner.class)
-        .doNotAcquireClass(RobolectricTestRunner.HelperTestRunner.class)
-        .doNotAcquireClass(ShadowPicker.class)
-        .doNotAcquireClass(ResourcePath.class)
-        .doNotAcquireClass(ResourceTable.class)
-        .doNotAcquireClass(ApkLoader.class)
-        .doNotAcquireClass(XmlBlock.class);
+        .doNotAcquireClass("org.robolectric.TestLifecycle")
+        .doNotAcquireClass("org.robolectric.manifest.AndroidManifest")
+        .doNotAcquireClass("org.robolectric.RobolectricTestRunner")
+        .doNotAcquireClass("org.robolectric.RobolectricTestRunner.HelperTestRunner")
+        .doNotAcquireClass("org.robolectric.shadow.api.ShadowPicker")
+        .doNotAcquireClass("org.robolectric.res.ResourcePath")
+        .doNotAcquireClass("org.robolectric.res.ResourceTable")
+        .doNotAcquireClass("org.robolectric.ApkLoader")
+        .doNotAcquireClass("org.robolectric.res.builder.XmlBlock");
 
     builder
         .doNotAcquirePackage("javax.")
@@ -95,8 +85,9 @@ public class AndroidConfigurer {
 
     builder
         .addClassNameTranslation(
-            "java.net.ExtendedResponseCache", RoboExtendedResponseCache.class.getName())
-        .addClassNameTranslation("java.net.ResponseSource", RoboResponseSource.class.getName())
+            "java.net.ExtendedResponseCache", "org.robolectric.fakes.RoboExtendedResponseCache")
+        .addClassNameTranslation(
+            "java.net.ResponseSource", "org.robolectric.fakes.RoboResponseSource")
         // Needed for android.net.Uri in older SDK versions
         .addClassNameTranslation("java.nio.charset.Charsets", StandardCharsets.class.getName())
         .addClassNameTranslation("java.lang.UnsafeByteSequence", Object.class.getName())
@@ -110,32 +101,16 @@ public class AndroidConfigurer {
     builder.doNotInstrumentClass("android.R")
         .doNotInstrumentClass("android.R$styleable");
 
-    builder.addInstrumentedPackage("dalvik.")
+    builder
+        .addInstrumentedPackage("dalvik.")
         .addInstrumentedPackage("libcore.")
         .addInstrumentedPackage("android.")
-        .addInstrumentedPackage("androidx.")
         .addInstrumentedPackage("com.android.internal.")
         .addInstrumentedPackage("org.apache.http.")
         .addInstrumentedPackage("org.ccil.cowan.tagsoup")
         .addInstrumentedPackage("org.kxml2.");
 
-    // exclude arch libraries from instrumentation. These are just android libs and no one
-    // should need to shadow them
-    builder.doNotInstrumentPackage("androidx.room");
-    builder.doNotInstrumentPackage("androidx.arch");
     builder.doNotInstrumentPackage("android.arch");
-    builder.doNotInstrumentPackage("androidx.lifecycle");
-    builder.doNotInstrumentPackage("androidx.paging");
-    builder.doNotInstrumentPackage("androidx.work");
-    builder.doNotInstrumentPackage("androidx.datastore");
-
-    // exclude Compose libraries from instrumentation. These are written in Kotlin and
-    // fail on any usage due to DefaultConstructorMarker being inaccessible.
-    builder.doNotInstrumentPackage("androidx.compose");
-    builder.doNotInstrumentPackage("androidx.ui");
-    builder.doNotInstrumentPackage("androidx.fragment");
-
-    builder.doNotInstrumentPackage("androidx.test");
     builder.doNotInstrumentPackage("android.support.test");
 
     // Mockito's MockMethodDispatcher must only exist in the Bootstrap class loader.

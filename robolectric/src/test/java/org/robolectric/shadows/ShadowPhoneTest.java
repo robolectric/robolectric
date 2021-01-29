@@ -38,6 +38,24 @@ public class ShadowPhoneTest {
     testAddCallGetCall(calls);
   }
 
+  @Test
+  public void addAndRemoveCalls() {
+    Call call1 = Shadow.newInstanceOf(Call.class);
+    Call call2 = Shadow.newInstanceOf(Call.class);
+    Phone phone = Shadow.newInstanceOf(Phone.class);
+    ShadowPhone shadowPhone = Shadow.extract(phone);
+
+    shadowPhone.addCall(call1);
+    shadowPhone.addCall(call2);
+    shadowPhone.removeCall(call1);
+
+    assertThat(phone.getCalls()).containsExactly(call2);
+
+    shadowPhone.removeCall(call2);
+
+    assertThat(phone.getCalls()).isEmpty();
+  }
+
   public static void testAddCallGetCall(Call[] calls) {
     Phone phone = Shadow.newInstanceOf(Phone.class);
     ShadowPhone shadowPhone = Shadow.extract(phone);

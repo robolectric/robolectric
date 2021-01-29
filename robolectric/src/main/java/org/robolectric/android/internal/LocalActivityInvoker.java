@@ -17,7 +17,6 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 import javax.annotation.Nullable;
 import org.robolectric.android.controller.ActivityController;
-import org.robolectric.android.fakes.RoboMonitoringInstrumentation;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 

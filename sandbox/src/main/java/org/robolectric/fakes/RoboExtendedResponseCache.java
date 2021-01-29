@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.robolectric.android.fakes;
+package org.robolectric.fakes;
 
 import java.net.CacheResponse;
 import java.net.HttpURLConnection;

@@ -16,7 +16,13 @@ import org.robolectric.util.Scheduler;
 
 /**
  * Executor service that runs all operations on the background scheduler.
+ *
+ * @deprecated only works when used in conjunction with the deprecated {@link LooperMode.LEGACY}
+ *     mode. Consider using guava's {@link MoreExecutors#directExecutor()} or {@link
+ *     org.robolectric.android.util.concurrent.PausedExecutorService} or {@link
+ *     org.robolectric.android.util.concurrent.InlineExecutorService}.
  */
+@Deprecated
 public class RoboExecutorService implements ExecutorService {
   private final Scheduler scheduler;
   private boolean isShutdown;
