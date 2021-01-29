@@ -85,15 +85,21 @@ public final class FrameMetricsBuilder {
     // Finally we calculate the remainder of the durations after enqueing the sync.
     // Note that we don't directly compute the value for TOTAL_DURATION, as it's generated from the
     // start of UNKNOWN_DELAY_DURATION to the end of SWAP_BUFFERS_DURATION.
-    for (@Metric int metric = FrameMetrics.SYNC_DURATION;
-        metric < FrameMetrics.TOTAL_DURATION;
-        metric++) {
+    for (@Metric int metric = FrameMetrics.SYNC_DURATION; metric < getMetricsCount(); metric++) {
+      if (metric == FrameMetrics.TOTAL_DURATION) {
+        continue;
+      }
+
       timingData[getEndIndexForMetric(metric)] =
           timingData[getStartIndexForMetric(metric)] + getMetric(metric);
     }
 
     reflector(FrameMetricsReflector.class, metrics).setTimingData(timingData);
     return metrics;
+  }
+
+  private static int getMetricsCount() {
+    return reflector(FrameMetricsReflector.class).getDurations().length / 2;
   }
 
   private int getStartIndexForMetric(@Metric int metric) {

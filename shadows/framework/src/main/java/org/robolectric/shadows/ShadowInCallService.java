@@ -54,6 +54,10 @@ public class ShadowInCallService extends ShadowService {
     shadowPhone.addCall(call);
   }
 
+  public void removeCall(Call call) {
+    shadowPhone.removeCall(call);
+  }
+
   @Implementation
   protected boolean canAddCall() {
     return canAddCall;

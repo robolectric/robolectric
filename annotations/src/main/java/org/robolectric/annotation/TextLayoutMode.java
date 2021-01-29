@@ -25,17 +25,22 @@ import java.lang.annotation.Target;
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 public @interface TextLayoutMode {
 
-  /**
-   * Specifies the different supported Looper modes.
-   */
+  /** Specifies the different supported Text layout modes. */
   enum Mode {
     /**
      * Robolectric's layout mode prior to 4.3.
+     *
+     * @deprecated LEGACY mode is inaccurate, has known bugs and will be removed in a future
+     *     release.
      */
+    @Deprecated
     LEGACY,
     /**
      * The new, more accurate layout mechanism.
+     *
+     * @deprecated REALTISTIC is the default mode and does not need to be stated explicity.
      */
+    @Deprecated
     REALISTIC,
   }
 

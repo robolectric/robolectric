@@ -1,4 +1,4 @@
-package org.robolectric.android;
+package org.robolectric.interceptors;
 
 import static com.google.common.truth.Truth.assertThat;
 

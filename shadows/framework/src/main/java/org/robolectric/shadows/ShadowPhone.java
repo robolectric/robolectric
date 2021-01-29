@@ -42,4 +42,9 @@ public class ShadowPhone {
   public void addCall(Call call) {
     calls.add(call);
   }
+
+  /** Remove call that has previously been added via addCall(). */
+  public void removeCall(Call call) {
+    calls.remove(call);
+  }
 }

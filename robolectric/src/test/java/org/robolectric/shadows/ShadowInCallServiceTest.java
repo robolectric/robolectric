@@ -52,6 +52,19 @@ public class ShadowInCallServiceTest {
   }
 
   @Test
+  public void addTwoCalls_removeOne_getCallListOne() {
+    Call call1 = Shadow.newInstanceOf(Call.class);
+    Call call2 = Shadow.newInstanceOf(Call.class);
+    ShadowInCallService shadowInCallService = shadowOf(inCallService);
+
+    shadowInCallService.addCall(call1);
+    shadowInCallService.addCall(call2);
+    shadowInCallService.removeCall(call2);
+
+    assertThat(inCallService.getCalls()).containsExactly(call1);
+  }
+
+  @Test
   public void setCanAddCall_canAddCall() {
     testSetCanAddCallGetCanAddCall(true);
     testSetCanAddCallGetCanAddCall(false);
