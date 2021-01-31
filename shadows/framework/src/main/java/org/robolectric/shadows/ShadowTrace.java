@@ -195,22 +195,22 @@ public class ShadowTrace {
   @AutoValue
   public abstract static class AsyncTraceSection {
 
-    abstract String getSectionName();
+    public abstract String getSectionName();
 
-    abstract Integer getCookie();
+    public abstract Integer getCookie();
 
-    static Builder newBuilder() {
+    public static Builder newBuilder() {
       return new AutoValue_ShadowTrace_AsyncTraceSection.Builder();
     }
 
     /** Builder for traces triggered by one of the async apis */
     @AutoValue.Builder()
     public abstract static class Builder {
-      abstract Builder setSectionName(String sectionName);
+      public abstract Builder setSectionName(String sectionName);
 
-      abstract Builder setCookie(Integer cookie);
+      public abstract Builder setCookie(Integer cookie);
 
-      abstract AsyncTraceSection build();
+      public abstract AsyncTraceSection build();
     }
   }
 }
