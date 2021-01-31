@@ -8,10 +8,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.robolectric.android.AndroidInterceptors;
 import org.robolectric.android.AndroidSdkShadowMatcher;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
 
@@ -43,7 +43,8 @@ public class ShadowWranglerUnitTest {
 
   @Test
   public void getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() throws Exception {
-    MethodSignature methodSignature = MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
+    MethodSignature methodSignature =
+        MethodSignature.parse("java/util/LinkedHashMap/eldest()Ljava/lang/Object;");
     Function<Object,Object> handler = interceptors.getInterceptionHandler(methodSignature);
 
     assertThat(handler).isNotSameInstanceAs(ShadowWrangler.DO_NOTHING_HANDLER);
@@ -55,8 +56,10 @@ public class ShadowWranglerUnitTest {
     map.put(1, "one");
     map.put(2, "two");
 
-    Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
-        shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
+    Map.Entry<Integer, String> result =
+        (Map.Entry<Integer, String>)
+            shadowWrangler.intercept(
+                "java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
     Map.Entry<Integer, String> eldestMember = map.entrySet().iterator().next();
     assertThat(result).isEqualTo(eldestMember);
@@ -68,8 +71,10 @@ public class ShadowWranglerUnitTest {
   public void intercept_elderOnLinkedHashMapHandler_shouldReturnNullForEmptyMap() throws Throwable {
     LinkedHashMap<Integer, String> map = new LinkedHashMap<>();
 
-    Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
-        shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
+    Map.Entry<Integer, String> result =
+        (Map.Entry<Integer, String>)
+            shadowWrangler.intercept(
+                "java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
     assertThat(result).isNull();
   }

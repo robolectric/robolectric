@@ -1,4 +1,4 @@
-package org.robolectric.android;
+package org.robolectric.interceptors;
 
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
@@ -7,7 +7,6 @@ import static java.util.Arrays.asList;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callStaticMethod;
 
-import android.content.Context;
 import java.io.FileDescriptor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -19,12 +18,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
-import org.robolectric.android.fakes.CleanerCompat;
+import org.robolectric.fakes.CleanerCompat;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
 import org.robolectric.internal.bytecode.MethodSignature;
-import org.robolectric.shadows.ShadowSystem;
-import org.robolectric.shadows.ShadowWindow;
 import org.robolectric.util.Function;
 import org.robolectric.util.Util;
 
@@ -160,7 +157,7 @@ public class AndroidInterceptors {
 
           try {
             Class<?> shadowWindowClass = cl.loadClass("org.robolectric.shadows.ShadowWindow");
-            Class<?> activityClass = cl.loadClass(Context.class.getName());
+            Class<?> activityClass = cl.loadClass("android.content.Context");
             Object context = params[0];
             return callStaticMethod(shadowWindowClass, "create", from(activityClass, context));
           } catch (ClassNotFoundException e) {
@@ -174,7 +171,8 @@ public class AndroidInterceptors {
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       Class<?> shadowWindowClass;
       try {
-        shadowWindowClass = type.returnType().getClassLoader().loadClass(ShadowWindow.class.getName());
+        shadowWindowClass =
+            type.returnType().getClassLoader().loadClass("org.robolectric.shadows.ShadowWindow");
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
@@ -196,8 +194,8 @@ public class AndroidInterceptors {
         public Object call(Class<?> theClass, Object value, Object[] params) {
           ClassLoader cl = theClass.getClassLoader();
           try {
-            Class<?> shadowSystemClockClass = cl.loadClass("org.robolectric.shadows.ShadowSystem");
-            return callStaticMethod(shadowSystemClockClass, methodSignature.methodName);
+            Class<?> shadowSystemClass = cl.loadClass("org.robolectric.shadows.ShadowSystem");
+            return callStaticMethod(shadowSystemClass, methodSignature.methodName);
           } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
           }
@@ -207,13 +205,18 @@ public class AndroidInterceptors {
 
     @Override
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+      Class<?> shadowSystemClass;
+      try {
+        shadowSystemClass =
+            getClass().getClassLoader().loadClass("org.robolectric.shadows.ShadowSystem");
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
       switch (methodName) {
         case "nanoTime":
-          return lookup.findStatic(ShadowSystem.class,
-              "nanoTime", methodType(long.class));
+          return lookup.findStatic(shadowSystemClass, "nanoTime", methodType(long.class));
         case "currentTimeMillis":
-          return lookup.findStatic(ShadowSystem.class,
-              "currentTimeMillis", methodType(long.class));
+          return lookup.findStatic(shadowSystemClass, "currentTimeMillis", methodType(long.class));
       }
       throw new UnsupportedOperationException();
     }

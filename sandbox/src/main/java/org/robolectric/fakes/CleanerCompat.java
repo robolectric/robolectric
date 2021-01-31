@@ -1,14 +1,14 @@
-package org.robolectric.android.fakes;
+package org.robolectric.fakes;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import org.robolectric.android.AndroidInterceptors.CleanerInterceptor;
+import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /**
- * Wrapper for {@link java.lang.ref.Cleaner}, used by
- * {@link CleanerInterceptor} when running on Java 9+.
+ * Wrapper for {@link java.lang.ref.Cleaner}, used by {@link AndroidInterceptors.CleanerInterceptor}
+ * when running on Java 9+.
  */
 public class CleanerCompat {
 
