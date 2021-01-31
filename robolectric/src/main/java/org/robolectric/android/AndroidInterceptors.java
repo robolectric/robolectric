@@ -340,12 +340,10 @@ public class AndroidInterceptors {
     }
 
     static Object create(Object obj, Runnable action) {
-      System.out.printf("Cleaner.create(%s,%s)%n", obj, action);
       return CleanerCompat.register(obj, action);
     }
 
     static void clean(Object cleanable) {
-      System.out.printf("Cleaner.clean(%s)%n", cleanable);
       CleanerCompat.clean(cleanable);
     }
 
