@@ -1,5 +1,7 @@
 package org.robolectric.util;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.FileAlreadyExistsException;
@@ -50,7 +52,7 @@ public class TempDirectory {
     }
   }
 
-  private static void clearAllDirectories() {
+  static void clearAllDirectories() {
     ExecutorService deletionExecutorService = Executors.newFixedThreadPool(DELETE_THREAD_POOL_SIZE);
     synchronized (tempDirectoriesToDelete) {
       for (TempDirectory undeletedDirectory : tempDirectoriesToDelete) {
@@ -58,6 +60,13 @@ public class TempDirectory {
       }
     }
     deletionExecutorService.shutdown();
+    try {
+      deletionExecutorService.awaitTermination(5, SECONDS);
+    } catch (InterruptedException e) {
+      deletionExecutorService.shutdownNow();
+      // Preserve interrupt status
+      Thread.currentThread().interrupt();
+    }
   }
 
   public Path createFile(String name, String contents) {

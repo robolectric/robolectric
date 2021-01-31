@@ -18,4 +18,15 @@ public class TempDirectoryTest {
     Path path2 = tempDir.create("dir2");
     assertThat(path.getParent().toString()).isEqualTo(path2.getParent().toString());
   }
+
+  @Test
+  public void clearAllDirectories_removesDirectories() {
+    TempDirectory tempDir = new TempDirectory("temp_dir");
+    Path dir = tempDir.create("dir1");
+    Path file = tempDir.create("file1");
+    TempDirectory.clearAllDirectories();
+    assertThat(dir.toFile().exists()).isFalse();
+    assertThat(file.toFile().exists()).isFalse();
+    assertThat(dir.getParent().toFile().exists()).isFalse();
+  }
 }
