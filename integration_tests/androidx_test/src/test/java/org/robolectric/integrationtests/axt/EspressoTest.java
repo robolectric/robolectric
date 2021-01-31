@@ -11,7 +11,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 
 import android.view.KeyEvent;
 import android.widget.Button;
@@ -23,12 +22,11 @@ import androidx.test.rule.ActivityTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
 @RunWith(AndroidJUnit4.class)
-@TextLayoutMode(REALISTIC)
+
 public final class EspressoTest {
 
   @Rule
