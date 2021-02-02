@@ -70,25 +70,3 @@ jobs:
         with:
           name: test_results_${{ matrix.api-versions }}
           path: '**/build/test-results/**/TEST-*.xml'
-
-  publish_test_results:
-    needs: tests
-    if: always()
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download All Test Results
-        uses: actions/download-artifact@v2
-        with:
-          path: artifacts
-
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: artifacts
-
-      - name: Publish All Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1.7
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          files: 'artifacts/**/TEST-*.xml'
