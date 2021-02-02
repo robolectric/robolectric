@@ -1,4 +1,4 @@
-name: Tests for sdks
+name: Tests
 
 on:
   push:
