@@ -18,6 +18,10 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -31,6 +35,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LazyLoadApplication;
+import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
@@ -256,5 +262,30 @@ public class AndroidTestEnvironmentTest {
     bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+w124dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
+  }
+
+  @LazyLoadApplication(LazyLoad.ON)
+  @Test
+  public void whenInstallAndCreateApplication_isCalledOnSeparateThread_throwsIllegalStateException()
+      throws ExecutionException, InterruptedException {
+    bootstrapWrapper.callSetUpApplicationState();
+    Runnable r =
+        new Runnable() {
+          @Override
+          public void run() {
+            // getApplication() underneath the hood will call installAndCreateApplication as part of
+            // loading the application
+            RuntimeEnvironment.getApplication();
+          }
+        };
+
+    ExecutorService service = Executors.newCachedThreadPool();
+    Future<?> future = service.submit(r);
+    try {
+      future.get();
+      fail();
+    } catch (ExecutionException e) {
+      assertThat(e.getCause()).isInstanceOf(IllegalStateException.class);
+    }
   }
 }
