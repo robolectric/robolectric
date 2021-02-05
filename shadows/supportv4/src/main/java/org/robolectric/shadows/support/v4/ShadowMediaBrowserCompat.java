@@ -14,11 +14,11 @@ import android.support.v4.media.MediaBrowserCompat.ItemCallback;
 import android.support.v4.media.MediaBrowserCompat.MediaItem;
 import android.support.v4.media.MediaBrowserCompat.SearchCallback;
 import android.support.v4.media.MediaBrowserCompat.SubscriptionCallback;
+import android.support.v4.media.MediaBrowserServiceCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.support.v4.media.MediaBrowserServiceCompat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -35,6 +35,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * its own account of {@link MediaItem}s.
  */
 @Implements(MediaBrowserCompat.class)
+@Deprecated
 public class ShadowMediaBrowserCompat {
 
   private final Handler handler = new Handler();
