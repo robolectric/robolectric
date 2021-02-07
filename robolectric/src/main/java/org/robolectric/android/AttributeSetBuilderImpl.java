@@ -272,84 +272,94 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
     final SparseArray<Integer> resIds = new SparseArray<>();
     final int[] maxAttrNameIndex = new int[] { 0 };
 
-    ResXMLTree_attrExt.Writer dummyStart = new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter,
-        null, "dummy") {
-      {
-        String packageName = resourceResolver.getPackageName();
+    ResXMLTree_attrExt.Writer dummyStart =
+        new ResXMLTree_attrExt.Writer(buf, resStringPoolWriter, null, "dummy") {
+          {
+            String packageName = resourceResolver.getPackageName();
 
-        for (Entry<Integer, String> entry : attrToValue.entrySet()) {
-          Integer attrId = entry.getKey();
-          String attrNs = "";
-          String attrName;
-          ResName attrResName = null;
+            for (Entry<Integer, String> entry : attrToValue.entrySet()) {
+              Integer attrId = entry.getKey();
+              String attrNs = "";
+              String attrName;
+              ResName attrResName = null;
 
-          String magicAttr = MAGIC_ATTRS.get(attrId);
-          if (magicAttr != null) {
-            attrId = null;
-            attrName = magicAttr;
-          } else {
-            String attrNameStr = resourceResolver.getResourceName(attrId);
-            attrResName = ResName.qualifyResName(attrNameStr, packageName, "attr");
-            attrNs = (attrResName.packageName.equals("android")) ? ANDROID_NS : AUTO_NS;
-            attrName = attrResName.name;
+              String magicAttr = MAGIC_ATTRS.get(attrId);
+              if (magicAttr != null) {
+                attrId = null;
+                attrName = magicAttr;
+              } else {
+                String attrNameStr = resourceResolver.getResourceName(attrId);
+                attrResName = ResName.qualifyResName(attrNameStr, packageName, "attr");
+                attrNs = attrResName.packageName.equals("android") ? ANDROID_NS : AUTO_NS;
+                attrName = attrResName.name;
+              }
+
+              String value = entry.getValue();
+              DataType type;
+              int valueInt;
+
+              if (value == null || AttributeResource.isNull(value)) {
+                type = DataType.NULL;
+                valueInt = TypedValue.DATA_NULL_EMPTY;
+              } else if (AttributeResource.isResourceReference(value)) {
+                ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
+                Integer valueResId =
+                    resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+                if (valueResId == 0) {
+                  throw new IllegalArgumentException(
+                      "no such resource "
+                          + value
+                          + " while resolving value for "
+                          + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
+                }
+                type = DataType.REFERENCE;
+                if (attrResName != null) {
+                  value = "@" + valueResId;
+                }
+                valueInt = valueResId;
+              } else if (AttributeResource.isStyleReference(value)) {
+                ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
+                Integer valueResId =
+                    resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
+                if (valueResId == 0) {
+                  throw new IllegalArgumentException(
+                      "no such attr "
+                          + value
+                          + " while resolving value for "
+                          + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
+                }
+                type = DataType.ATTRIBUTE;
+                valueInt = valueResId;
+              } else if (attrResName == null) { // class, id, or style
+                type = DataType.STRING;
+                valueInt = resStringPoolWriter.string(value);
+              } else {
+                TypedValue outValue = parse(attrId, attrResName, value, packageName);
+                type = DataType.fromCode(outValue.type);
+                value = (String) outValue.string;
+                if (type == DataType.STRING && outValue.data == 0) {
+                  valueInt = resStringPoolWriter.string(value);
+                } else {
+                  valueInt = outValue.data;
+                }
+              }
+
+              Res_value resValue = new Res_value(type.code(), valueInt);
+
+              int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
+              attr(
+                  resStringPoolWriter.string(attrNs),
+                  attrNameIndex,
+                  resStringPoolWriter.string(value),
+                  resValue,
+                  attrNs + ":" + attrName);
+              if (attrId != null) {
+                resIds.put(attrNameIndex, attrId);
+              }
+              maxAttrNameIndex[0] = Math.max(maxAttrNameIndex[0], attrNameIndex);
+            }
           }
-
-          String value = entry.getValue();
-          DataType type;
-          int valueInt;
-
-          if (value == null || AttributeResource.isNull(value)) {
-            type = DataType.NULL;
-            valueInt = TypedValue.DATA_NULL_EMPTY;
-          } else if (AttributeResource.isResourceReference(value)) {
-            ResName resRef = AttributeResource.getResourceReference(value, packageName, null);
-            Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
-            if (valueResId == 0) {
-              throw new IllegalArgumentException("no such resource " + value
-                  + " while resolving value for "
-                  + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
-            }
-            type = DataType.REFERENCE;
-            if (attrResName != null) {
-              value = "@" +  valueResId;
-            }
-            valueInt = valueResId;
-          } else if (AttributeResource.isStyleReference(value)) {
-            ResName resRef = AttributeResource.getStyleReference(value, packageName, "attr");
-            Integer valueResId = resourceResolver.getIdentifier(resRef.name, resRef.type, resRef.packageName);
-            if (valueResId == 0) {
-              throw new IllegalArgumentException("no such attr " + value
-                  + " while resolving value for "
-                  + (attrResName == null ? attrName : attrResName.getFullyQualifiedName()));
-            }
-            type = DataType.ATTRIBUTE;
-            valueInt = valueResId;
-          } else if (attrResName == null) { // class, id, or style
-            type = DataType.STRING;
-            valueInt = resStringPoolWriter.string(value);
-          } else {
-            TypedValue outValue = parse(attrId, attrResName, value, packageName);
-            type = DataType.fromCode(outValue.type);
-            value = (String) outValue.string;
-            if (type == DataType.STRING && outValue.data == 0) {
-              valueInt = resStringPoolWriter.string(value);
-            } else {
-              valueInt = outValue.data;
-            }
-          }
-
-          Res_value resValue = new Res_value(type.code(), valueInt);
-
-          int attrNameIndex = resStringPoolWriter.uniqueString(attrName);
-          attr(resStringPoolWriter.string(attrNs), attrNameIndex,
-              resStringPoolWriter.string(value), resValue, attrNs + ":" + attrName);
-          if (attrId != null) {
-            resIds.put(attrNameIndex, attrId);
-          }
-          maxAttrNameIndex[0] = Math.max(maxAttrNameIndex[0], attrNameIndex);
-        }
-      }
-    };
+        };
 
     ResXMLTree_endElementExt.Writer dummyEnd =
         new ResXMLTree_endElementExt.Writer(buf, resStringPoolWriter, null, "dummy");
