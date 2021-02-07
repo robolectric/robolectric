@@ -1,12 +1,11 @@
 package org.robolectric.android;
 
+import java.lang.reflect.Method;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.internal.bytecode.ShadowInfo;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
-
-import java.lang.reflect.Method;
 
 /**
  * Android-specific rules for matching shadow classes and methods by SDK level.
@@ -21,6 +20,7 @@ public class AndroidSdkShadowMatcher implements ShadowMatcher {
     this.sdkLevel = sdkLevel;
   }
 
+  @Override
   public boolean matches(ShadowInfo shadowInfo) {
     return shadowInfo.supportsSdk(sdkLevel);
   }
