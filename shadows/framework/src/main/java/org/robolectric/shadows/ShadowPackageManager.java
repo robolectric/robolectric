@@ -1046,6 +1046,16 @@ public class ShadowPackageManager {
 
   @Implementation
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    PackageInfo shadowPackageInfo = getShadowPackageArchiveInfo(archiveFilePath, flags);
+    if (shadowPackageInfo != null) {
+      return shadowPackageInfo;
+    } else {
+      return Shadow.directlyOn(realPackageManager, PackageManager.class)
+          .getPackageArchiveInfo(archiveFilePath, flags);
+    }
+  }
+
+  protected PackageInfo getShadowPackageArchiveInfo(String archiveFilePath, int flags) {
     synchronized (lock) {
       if (packageArchiveInfo.containsKey(archiveFilePath)) {
         return packageArchiveInfo.get(archiveFilePath);
@@ -1067,9 +1077,7 @@ public class ShadowPackageManager {
           return aPackage;
         }
       }
-
-      return Shadow.directlyOn(realPackageManager, PackageManager.class)
-          .getPackageArchiveInfo(archiveFilePath, flags);
+      return null;
     }
   }
 
