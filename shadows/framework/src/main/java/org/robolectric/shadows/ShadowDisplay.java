@@ -37,7 +37,8 @@ public class ShadowDisplay {
    */
   public static Display getDefaultDisplay() {
     WindowManager windowManager =
-        (WindowManager) RuntimeEnvironment.application.getSystemService(Context.WINDOW_SERVICE);
+        (WindowManager)
+            RuntimeEnvironment.getApplication().getSystemService(Context.WINDOW_SERVICE);
     return windowManager.getDefaultDisplay();
   }
 

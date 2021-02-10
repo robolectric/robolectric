@@ -178,8 +178,9 @@ public class ShadowEnvironmentTest {
     assertThat(externalFilesDirs[1].getCanonicalPath()).contains("external_dir_2");
 
     // TODO(jongerrish): This fails because ShadowContext overwrites getExternalFilesDir.
-//     assertThat(RuntimeEnvironment.application.getExternalFilesDir(Environment.DIRECTORY_MOVIES)
-//         .getCanonicalPath()).contains("external_dir_1");
+    //
+    // assertThat(RuntimeEnvironment.getApplication().getExternalFilesDir(Environment.DIRECTORY_MOVIES)
+    //         .getCanonicalPath()).contains("external_dir_1");
   }
 
   @Test

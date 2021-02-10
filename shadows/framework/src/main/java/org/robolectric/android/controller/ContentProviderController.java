@@ -27,7 +27,7 @@ public class ContentProviderController<T extends ContentProvider>  {
    * Create and register {@link ContentProvider} using {@link ProviderInfo} found from manifest.
    */
   public ContentProviderController<T> create() {
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    Context baseContext = RuntimeEnvironment.getApplication().getBaseContext();
 
     ComponentName componentName = createRelative(baseContext.getPackageName(), contentProvider.getClass().getName());
 
@@ -68,7 +68,7 @@ public class ContentProviderController<T extends ContentProvider>  {
           !Strings.isNullOrEmpty(providerInfo.authority),
           "ProviderInfo.authority must not be null or empty");
     }
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    Context baseContext = RuntimeEnvironment.getApplication().getBaseContext();
     // make sure the component is enabled
     ComponentName componentName =
         createRelative(baseContext.getPackageName(), contentProvider.getClass().getName());

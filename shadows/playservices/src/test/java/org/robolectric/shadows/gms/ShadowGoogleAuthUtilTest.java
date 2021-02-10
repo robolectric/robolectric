@@ -62,59 +62,77 @@ public class ShadowGoogleAuthUtilTest {
   @Test
   public void canRedirectStaticMethodToImplementation() throws Exception {
     ShadowGoogleAuthUtil.provideImpl(mockGoogleAuthUtil);
-    GoogleAuthUtil.clearToken(RuntimeEnvironment.application, "token");
-    verify(mockGoogleAuthUtil, times(1)).clearToken(RuntimeEnvironment.application, "token");
+    GoogleAuthUtil.clearToken(RuntimeEnvironment.getApplication(), "token");
+    verify(mockGoogleAuthUtil, times(1)).clearToken(RuntimeEnvironment.getApplication(), "token");
   }
 
   @Test
   public void getAccountChangeEvents_defaultReturnEmptyList() throws Exception {
-    List<AccountChangeEvent> list = GoogleAuthUtil.getAccountChangeEvents(
-        RuntimeEnvironment.application, 0, "name");
+    List<AccountChangeEvent> list =
+        GoogleAuthUtil.getAccountChangeEvents(RuntimeEnvironment.getApplication(), 0, "name");
     assertNotNull(list);
     assertEquals(0, list.size());
   }
 
   @Test
   public void getAccountId_defaultNotNull() throws Exception {
-    assertNotNull(GoogleAuthUtil.getAccountId(RuntimeEnvironment.application, "name"));
+    assertNotNull(GoogleAuthUtil.getAccountId(RuntimeEnvironment.getApplication(), "name"));
   }
 
   @Test
   public void getToken_defaultNotNull() throws Exception {
-    assertNotNull(GoogleAuthUtil.getToken(RuntimeEnvironment.application, "name", "scope"));
-    assertNotNull(GoogleAuthUtil.getToken(RuntimeEnvironment.application, "name", "scope",
-        null));
-    assertNotNull(GoogleAuthUtil.getToken(RuntimeEnvironment.application, new Account("name",
-        "robo"), "scope"));
-    assertNotNull(GoogleAuthUtil.getToken(RuntimeEnvironment.application, new Account("name",
-        "robo"), "scope", null));
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        "name", "scope", null));
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        "name", "scope", null, new Intent()));
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        "name", "scope", null, "authority", null));
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        new Account("name", "robo"), "scope", null));
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        new Account("name", "robo"), "scope", null, new Intent()));
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        new Account("name", "robo"), "scope", null, "authority", null));
+    assertNotNull(GoogleAuthUtil.getToken(RuntimeEnvironment.getApplication(), "name", "scope"));
+    assertNotNull(
+        GoogleAuthUtil.getToken(RuntimeEnvironment.getApplication(), "name", "scope", null));
+    assertNotNull(
+        GoogleAuthUtil.getToken(
+            RuntimeEnvironment.getApplication(), new Account("name", "robo"), "scope"));
+    assertNotNull(
+        GoogleAuthUtil.getToken(
+            RuntimeEnvironment.getApplication(), new Account("name", "robo"), "scope", null));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(), "name", "scope", null));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(), "name", "scope", null, new Intent()));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(), "name", "scope", null, "authority", null));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(), new Account("name", "robo"), "scope", null));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(),
+            new Account("name", "robo"),
+            "scope",
+            null,
+            new Intent()));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(),
+            new Account("name", "robo"),
+            "scope",
+            null,
+            "authority",
+            null));
   }
 
   @Test
   public void getTokenWithNotification_nullCallBackThrowIllegalArgumentException()
       throws Exception {
     thrown.expect(IllegalArgumentException.class);
-    GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application, "name", "scope",
-        null, null);
+    GoogleAuthUtil.getTokenWithNotification(
+        RuntimeEnvironment.getApplication(), "name", "scope", null, null);
   }
 
   @Test
   public void getTokenWithNotification_nullAuthorityThrowIllegalArgumentException()
       throws Exception {
     thrown.expect(IllegalArgumentException.class);
-    assertNotNull(GoogleAuthUtil.getTokenWithNotification(RuntimeEnvironment.application,
-        "name", "scope", null, null, null));
+    assertNotNull(
+        GoogleAuthUtil.getTokenWithNotification(
+            RuntimeEnvironment.getApplication(), "name", "scope", null, null, null));
   }
 }

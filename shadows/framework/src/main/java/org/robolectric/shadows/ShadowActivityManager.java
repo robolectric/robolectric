@@ -55,8 +55,8 @@ public class ShadowActivityManager {
   public ShadowActivityManager() {
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
     fillInProcessInfo(processInfo);
-    processInfo.processName = RuntimeEnvironment.application.getPackageName();
-    processInfo.pkgList = new String[] {RuntimeEnvironment.application.getPackageName()};
+    processInfo.processName = RuntimeEnvironment.getApplication().getPackageName();
+    processInfo.pkgList = new String[] {RuntimeEnvironment.getApplication().getPackageName()};
     processes.add(processInfo);
   }
 
@@ -138,7 +138,7 @@ public class ShadowActivityManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean switchUser(int userid) {
     ShadowUserManager shadowUserManager =
-        Shadow.extract(RuntimeEnvironment.application.getSystemService(Context.USER_SERVICE));
+        Shadow.extract(RuntimeEnvironment.getApplication().getSystemService(Context.USER_SERVICE));
     shadowUserManager.switchUser(userid);
     return true;
   }
@@ -303,7 +303,7 @@ public class ShadowActivityManager {
   protected boolean clearApplicationUserData(String packageName, IPackageDataObserver observer) {
     // The real ActivityManager calls clearApplicationUserData on the ActivityManagerService that
     // calls PackageManager#clearApplicationUserData.
-    RuntimeEnvironment.application
+    RuntimeEnvironment.getApplication()
         .getPackageManager()
         .clearApplicationUserData(packageName, observer);
     return true;
@@ -314,9 +314,9 @@ public class ShadowActivityManager {
    * ActivityManager#clearApplicationUserData()}.
    */
   public boolean isApplicationUserDataCleared() {
-    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    PackageManager packageManager = RuntimeEnvironment.getApplication().getPackageManager();
     return Shadow.<ShadowApplicationPackageManager>extract(packageManager)
         .getClearedApplicationUserDataPackages()
-        .contains(RuntimeEnvironment.application.getPackageName());
+        .contains(RuntimeEnvironment.getApplication().getPackageName());
   }
 }

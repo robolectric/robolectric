@@ -243,7 +243,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected static AccessibilityNodeInfo obtain() {
-    return obtain(new View(RuntimeEnvironment.application.getApplicationContext()));
+    return obtain(new View(RuntimeEnvironment.getApplication().getApplicationContext()));
   }
 
   @Implementation
