@@ -1,4 +1,6 @@
 class AndroidSdk implements Comparable<AndroidSdk> {
+    static final PREINSTRUMENTED_VERSION = 1
+
     static final JELLY_BEAN = new AndroidSdk(16, "4.1.2_r1", "r1")
     static final JELLY_BEAN_MR1 = new AndroidSdk(17, "4.2.2_r1.2", "r1")
     static final JELLY_BEAN_MR2 = new AndroidSdk(18, "4.3_r2", "r1")
@@ -43,12 +45,20 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         return "${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
     }
 
+    String getPreinstrumentedVersion() {
+        return "${androidVersion}-robolectric-${frameworkSdkBuildVersion}-i${PREINSTRUMENTED_VERSION}"
+    }
+
     String getCoordinates() {
         return "${groupId}:${artifactId}:${version}"
     }
 
     String getJarFileName() {
         return "android-all-${androidVersion}-robolectric-${frameworkSdkBuildVersion}.jar"
+    }
+
+    String getPreinstrumentedJarFileName() {
+        return "android-all-instrumented-${preinstrumentedVersion}.jar"
     }
 
     @Override
