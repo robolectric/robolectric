@@ -170,6 +170,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     preloadClasses(apiLevel);
 
+    RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
+
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
       RuntimeEnvironment.setConfiguredApplicationClass(
           getApplicationClass(appManifest, config, new ApplicationInfo()));
@@ -212,8 +214,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
-
-    RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
 
     Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
@@ -351,8 +351,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
     } else {
       RuntimeEnvironment.compileTimeSystemResourcesFile = compileSdk.getJarPath();
-
-      RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
 
       Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
