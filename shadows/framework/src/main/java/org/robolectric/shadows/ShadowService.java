@@ -58,7 +58,9 @@ public class ShadowService extends ShadowContextWrapper {
     lastForegroundNotification = notification;
     lastForegroundNotificationAttached = true;
     notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
-    NotificationManager nm = (NotificationManager)RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
+    NotificationManager nm =
+        (NotificationManager)
+            RuntimeEnvironment.getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
     nm.notify(id, notification);
   }
 
@@ -79,7 +81,9 @@ public class ShadowService extends ShadowContextWrapper {
   }
 
   private void removeForegroundNotification() {
-    NotificationManager nm = (NotificationManager)RuntimeEnvironment.application.getSystemService(Context.NOTIFICATION_SERVICE);
+    NotificationManager nm =
+        (NotificationManager)
+            RuntimeEnvironment.getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
     nm.cancel(lastForegroundNotificationId);
     lastForegroundNotification = null;
     lastForegroundNotificationAttached = false;

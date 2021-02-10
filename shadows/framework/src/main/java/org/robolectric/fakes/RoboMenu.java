@@ -21,7 +21,7 @@ public class RoboMenu implements Menu {
   private Context context;
 
   public RoboMenu() {
-    this(RuntimeEnvironment.application);
+    this(RuntimeEnvironment.getApplication());
   }
 
   public RoboMenu(Context context) {

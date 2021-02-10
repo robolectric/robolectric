@@ -42,13 +42,13 @@ public class ShadowPopupMenu {
   }
 
   public static PopupMenu getLatestPopupMenu() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     ShadowPopupMenu popupMenu = shadowApplication.getLatestPopupMenu();
     return popupMenu == null ? null : popupMenu.realPopupMenu;
   }
 
   public static void setLatestPopupMenu(ShadowPopupMenu latestPopupMenu) {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     if (shadowApplication != null) shadowApplication.setLatestPopupMenu(latestPopupMenu);
   }
 

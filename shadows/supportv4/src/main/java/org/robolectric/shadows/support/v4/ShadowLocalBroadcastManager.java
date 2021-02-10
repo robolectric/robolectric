@@ -73,7 +73,7 @@ public class ShadowLocalBroadcastManager {
                   new Runnable() {
                     @Override
                     public void run() {
-                      receiver.onReceive(RuntimeEnvironment.application, broadcastIntent);
+                      receiver.onReceive(RuntimeEnvironment.getApplication(), broadcastIntent);
                     }
                   });
         }

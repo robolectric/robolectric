@@ -34,7 +34,7 @@ public final class ShadowSliceManagerTest {
 
   @Before
   public void setUp() {
-    PackageManager packageManager = RuntimeEnvironment.application.getPackageManager();
+    PackageManager packageManager = RuntimeEnvironment.getApplication().getPackageManager();
     ShadowApplicationPackageManager shadowPackageManager =
         (ShadowApplicationPackageManager) shadowOf(packageManager);
     shadowPackageManager.setPackagesForUid(PACKAGE_1_UID, new String[] {PACKAGE_NAME_1});

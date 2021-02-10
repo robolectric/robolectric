@@ -650,10 +650,10 @@ public class ShadowBitmapTest {
 
     Bitmap alpha = bitmap.extractAlpha();
 
-    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
-    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
-    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
-    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+    assertThat(Color.alpha(alpha.getPixel(0, 0))).isEqualTo(0xFF);
+    assertThat(Color.alpha(alpha.getPixel(1, 0))).isEqualTo(0x00);
+    assertThat(Color.alpha(alpha.getPixel(0, 1))).isEqualTo(0x88);
+    assertThat(Color.alpha(alpha.getPixel(1, 1))).isEqualTo(0x12);
   }
 
   @Test
@@ -671,10 +671,10 @@ public class ShadowBitmapTest {
 
     Bitmap alpha = bitmap.extractAlpha(/* paint= */ null, /* offsetXY= */ new int[2]);
 
-    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
-    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
-    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
-    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+    assertThat(Color.alpha(alpha.getPixel(0, 0))).isEqualTo(0xFF);
+    assertThat(Color.alpha(alpha.getPixel(1, 0))).isEqualTo(0x00);
+    assertThat(Color.alpha(alpha.getPixel(0, 1))).isEqualTo(0x88);
+    assertThat(Color.alpha(alpha.getPixel(1, 1))).isEqualTo(0x12);
   }
 
   private static Bitmap create(String name) {

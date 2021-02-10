@@ -25,7 +25,7 @@ import org.robolectric.RuntimeEnvironment;
 @RunWith(AndroidJUnit4.class)
 public class ShadowMediaBrowserCompatTest {
 
-  private Context context = RuntimeEnvironment.application;
+  private Context context = RuntimeEnvironment.getApplication();
   private MediaBrowserCompat mediaBrowser;
   private ShadowMediaBrowserCompat shadow;
 

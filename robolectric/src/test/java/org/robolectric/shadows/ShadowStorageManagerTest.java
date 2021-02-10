@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -31,7 +31,7 @@ public class ShadowStorageManagerTest {
 
   @Before
   public void setUp() {
-    storageManager = (StorageManager) application.getSystemService(Context.STORAGE_SERVICE);
+    storageManager = (StorageManager) getApplication().getSystemService(Context.STORAGE_SERVICE);
   }
 
   @Test
@@ -87,7 +87,7 @@ public class ShadowStorageManagerTest {
   @Test
   @Config(minSdk = N)
   public void isUserKeyUnlocked() {
-    shadowOf(application.getSystemService(UserManager.class)).setUserUnlocked(true);
+    shadowOf(getApplication().getSystemService(UserManager.class)).setUserUnlocked(true);
     assertThat(StorageManager.isUserKeyUnlocked(0)).isTrue();
   }
 

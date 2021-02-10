@@ -55,13 +55,13 @@ public class ShadowBluetoothGatt {
                 new Class<?>[] {
                   Context.class, iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE
                 },
-                new Object[] {RuntimeEnvironment.application, null, device, 0});
+                new Object[] {RuntimeEnvironment.getApplication(), null, device, 0});
       } else {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,
                 new Class<?>[] {Context.class, iBluetoothGattClass, BluetoothDevice.class},
-                new Object[] {RuntimeEnvironment.application, null, device});
+                new Object[] {RuntimeEnvironment.getApplication(), null, device});
       }
       return bluetoothGatt;
     } catch (ClassNotFoundException e) {

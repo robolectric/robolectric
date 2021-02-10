@@ -277,11 +277,12 @@ public class Robolectric {
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
     if (useLegacy()) {
       return new AttributeSetBuilderImpl(
-          new LegacyResourceResolver(RuntimeEnvironment.application,
+          new LegacyResourceResolver(
+              RuntimeEnvironment.getApplication(),
               RuntimeEnvironment.getCompileTimeResourceTable())) {};
     } else {
       return new AttributeSetBuilderImpl(
-          new ArscResourceResolver(RuntimeEnvironment.application)) {};
+          new ArscResourceResolver(RuntimeEnvironment.getApplication())) {};
     }
   }
 

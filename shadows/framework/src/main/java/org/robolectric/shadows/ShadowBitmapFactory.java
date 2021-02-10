@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.shadows.ImageUtil.getImageSizeFromStream;
+import static org.robolectric.shadows.ImageUtil.readBitmapFromStream;
 
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -44,12 +45,15 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeResourceStream(
       Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
-    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
-        ClassParameter.from(Resources.class, res),
-        ClassParameter.from(TypedValue.class, value),
-        ClassParameter.from(InputStream.class, is),
-        ClassParameter.from(Rect.class, pad),
-        ClassParameter.from(BitmapFactory.Options.class, opts));
+    Bitmap bitmap =
+        directlyOn(
+            BitmapFactory.class,
+            "decodeResourceStream",
+            ClassParameter.from(Resources.class, res),
+            ClassParameter.from(TypedValue.class, value),
+            ClassParameter.from(InputStream.class, is),
+            ClassParameter.from(Rect.class, pad),
+            ClassParameter.from(BitmapFactory.Options.class, opts));
 
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
@@ -68,9 +72,21 @@ public class ShadowBitmapFactory {
     final TypedValue value = new TypedValue();
     InputStream is = res.openRawResource(id, value);
 
-    Point imageSizeFromStream = getImageSizeFromStream(is);
+    AtomicReference<Point> imageSizeFromStream = new AtomicReference<>();
+    AtomicReference<int[]> pixelsFromStream = new AtomicReference<>();
+    readBitmapFromStream(
+        is,
+        (size, pixels) -> {
+          imageSizeFromStream.set(size);
+          pixelsFromStream.set(pixels);
+        });
 
-    Bitmap bitmap = create("resource:" + res.getResourceName(id), options, imageSizeFromStream);
+    Bitmap bitmap =
+        create(
+            "resource:" + res.getResourceName(id),
+            options,
+            imageSizeFromStream.get(),
+            pixelsFromStream.get());
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
     return bitmap;
@@ -83,17 +99,24 @@ public class ShadowBitmapFactory {
 
   @Implementation
   protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-    // If a real file is used, attempt to get the image size from that file.
-    Point imageSizeFromStream = null;
+    // If a real file is used, attempt to get the actual image from that file.
+    AtomicReference<Point> imageSizeFromStream = new AtomicReference<>();
+    AtomicReference<int[]> pixelsFromStream = new AtomicReference<>();
     if (pathName != null && new File(pathName).exists()) {
       try (FileInputStream fileInputStream = new FileInputStream(pathName);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
-        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+        readBitmapFromStream(
+            bufferedInputStream,
+            (size, pixels) -> {
+              imageSizeFromStream.set(size);
+              pixelsFromStream.set(pixels);
+            });
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
-    Bitmap bitmap = create("file:" + pathName, options, imageSizeFromStream);
+    Bitmap bitmap =
+        create("file:" + pathName, options, imageSizeFromStream.get(), pixelsFromStream.get());
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
     return bitmap;
@@ -103,17 +126,24 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
-    Point imageSizeFromStream = null;
-    // If a real FileDescriptor is used, attempt to get the image size.
+    AtomicReference<Point> imageSizeFromStream = new AtomicReference<>();
+    AtomicReference<int[]> pixelsFromStream = new AtomicReference<>();
+    // If a real FileDescriptor is used, attempt to get the actual image.
     if (fd != null && fd.valid()) {
       try (FileInputStream fileInputStream = new FileInputStream(fd);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
-        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+        readBitmapFromStream(
+            bufferedInputStream,
+            (size, pixels) -> {
+              imageSizeFromStream.set(size);
+              pixelsFromStream.set(pixels);
+            });
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
-    Bitmap bitmap = create("fd:" + fd, outPadding, opts, imageSizeFromStream);
+    Bitmap bitmap =
+        create("fd:" + fd, outPadding, opts, imageSizeFromStream.get(), pixelsFromStream.get());
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
@@ -147,13 +177,21 @@ public class ShadowBitmapFactory {
       // ignore
     }
 
-    String name = (is instanceof NamedStream)
-        ? is.toString().replace("stream for ", "")
-        : null;
-    Point imageSize = (is instanceof NamedStream) ? null : getImageSizeFromStream(is);
-    Bitmap bitmap = create(name, outPadding, opts, imageSize);
-    ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk",
-            ClassParameter.from(byte[].class, ninePatchChunk));
+    String name = (is instanceof NamedStream) ? is.toString().replace("stream for ", "") : null;
+    AtomicReference<Point> imageSizeFromStream = new AtomicReference<>();
+    AtomicReference<int[]> pixelsFromStream = new AtomicReference<>();
+    if (!(is instanceof NamedStream)) {
+      readBitmapFromStream(
+          is,
+          (size, pixels) -> {
+            imageSizeFromStream.set(size);
+            pixelsFromStream.set(pixels);
+          });
+    }
+    Bitmap bitmap =
+        create(name, outPadding, opts, imageSizeFromStream.get(), pixelsFromStream.get());
+    ReflectionHelpers.callInstanceMethod(
+        bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
 
@@ -185,8 +223,15 @@ public class ShadowBitmapFactory {
       desc += " bytes " + offset + ".." + length;
     }
 
-    Point imageSize = getImageSizeFromStream(new ByteArrayInputStream(data, offset, length));
-    return create(desc, opts, imageSize);
+    AtomicReference<Point> imageSizeFromStream = new AtomicReference<>();
+    AtomicReference<int[]> pixelsFromStream = new AtomicReference<>();
+    readBitmapFromStream(
+        new ByteArrayInputStream(data, offset, length),
+        (size, pixels) -> {
+          imageSizeFromStream.set(size);
+          pixelsFromStream.set(pixels);
+        });
+    return create(desc, opts, imageSizeFromStream.get(), pixelsFromStream.get());
   }
 
   static Bitmap create(String name) {
@@ -197,15 +242,22 @@ public class ShadowBitmapFactory {
     return create(name, options, null);
   }
 
-  public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
-    return create(name, null, options, widthAndHeight);
+  public static Bitmap create(
+      final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
+    return create(name, options, widthAndHeight, null);
+  }
+
+  public static Bitmap create(
+      String name, BitmapFactory.Options options, Point widthAndHeight, int[] pixels) {
+    return create(name, null, options, widthAndHeight, pixels);
   }
 
   private static Bitmap create(
       final String name,
       final Rect outPadding,
       final BitmapFactory.Options options,
-      final Point widthAndHeight) {
+      final Point widthAndHeight,
+      final int[] pixels) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
@@ -235,7 +287,7 @@ public class ShadowBitmapFactory {
 
     shadowBitmap.setWidth(p.x);
     shadowBitmap.setHeight(p.y);
-    shadowBitmap.setPixels(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
+    shadowBitmap.setPixels(pixels == null ? new int[p.x * p.y] : pixels, 0, 0, 0, 0, p.x, p.y);
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;
@@ -264,7 +316,8 @@ public class ShadowBitmapFactory {
 
   public static void provideWidthAndHeightHints(int resourceId, int width, int height) {
     widthAndHeightMap.put(
-        "resource:" + RuntimeEnvironment.application.getResources().getResourceName(resourceId),
+        "resource:"
+            + RuntimeEnvironment.getApplication().getResources().getResourceName(resourceId),
         new Point(width, height));
   }
 

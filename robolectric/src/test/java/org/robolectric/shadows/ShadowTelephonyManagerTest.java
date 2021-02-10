@@ -34,7 +34,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
 
@@ -79,7 +79,7 @@ public class ShadowTelephonyManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+    telephonyManager = (TelephonyManager) getApplication().getSystemService(TELEPHONY_SERVICE);
     shadowTelephonyManager = Shadow.extract(telephonyManager);
   }
 

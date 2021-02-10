@@ -250,7 +250,7 @@ public class ShadowBitmapFactoryTest {
     InputStream inputStream =
         new BufferedInputStream(
             getClass().getClassLoader().getResourceAsStream("res/drawable/fourth_image.jpg"));
-    inputStream.mark(inputStream.available());
+    inputStream.mark(Integer.MAX_VALUE);
     BitmapFactory.Options opts = new BitmapFactory.Options();
     BitmapFactory.decodeStream(inputStream, /* outPadding= */ null, opts);
     assertEquals("image/jpeg", opts.outMimeType);

@@ -19,7 +19,7 @@ public class BackupAgentController<T extends BackupAgent> extends
     if (attached) {
       return this;
     }
-    Context baseContext = RuntimeEnvironment.application.getBaseContext();
+    Context baseContext = RuntimeEnvironment.getApplication().getBaseContext();
     ReflectionHelpers.callInstanceMethod(BackupAgent.class, component, "attach",
         ReflectionHelpers.ClassParameter.from(Context.class, baseContext));
     return this;

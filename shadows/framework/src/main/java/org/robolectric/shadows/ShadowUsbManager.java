@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 import static org.robolectric.util.ReflectionHelpers.getStaticField;
@@ -60,7 +59,7 @@ public class ShadowUsbManager {
   /** Returns true if the caller has permission to access the device. */
   @Implementation
   protected boolean hasPermission(UsbDevice device) {
-    return hasPermissionForPackage(device, RuntimeEnvironment.application.getPackageName());
+    return hasPermissionForPackage(device, RuntimeEnvironment.getApplication().getPackageName());
   }
 
   /** Returns true if the given package has permission to access the device. */
@@ -72,7 +71,7 @@ public class ShadowUsbManager {
   @Implementation(minSdk = N)
   @HiddenApi
   protected void grantPermission(UsbDevice device) {
-    grantPermission(device, RuntimeEnvironment.application.getPackageName());
+    grantPermission(device, RuntimeEnvironment.getApplication().getPackageName());
   }
 
   @Implementation(minSdk = N_MR1)
@@ -134,7 +133,7 @@ public class ShadowUsbManager {
     if (hasPermission) {
       grantPermission(usbDevice);
     } else {
-      revokePermission(usbDevice, RuntimeEnvironment.application.getPackageName());
+      revokePermission(usbDevice, RuntimeEnvironment.getApplication().getPackageName());
     }
   }
 
@@ -142,7 +141,7 @@ public class ShadowUsbManager {
   public void removeUsbDevice(UsbDevice usbDevice) {
     Preconditions.checkNotNull(usbDevice);
     usbDevices.remove(usbDevice.getDeviceName());
-    revokePermission(usbDevice, RuntimeEnvironment.application.getPackageName());
+    revokePermission(usbDevice, RuntimeEnvironment.getApplication().getPackageName());
   }
 
   @Implementation(minSdk = M)
@@ -238,7 +237,8 @@ public class ShadowUsbManager {
                 (int) powerRole,
                 (int) dataRole,
                 status.getSupportedRoleCombinations()));
-    application.sendBroadcast(new Intent(UsbManager.ACTION_USB_PORT_CHANGED));
+    RuntimeEnvironment.getApplication()
+        .sendBroadcast(new Intent(UsbManager.ACTION_USB_PORT_CHANGED));
   }
 
   /** Opens a file descriptor from a temporary file. */

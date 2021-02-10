@@ -2,17 +2,17 @@ apply plugin: 'com.android.library'
 apply plugin: org.robolectric.gradle.AndroidProjectConfigPlugin
 
 android {
-    compileSdkVersion 29
-    
+    compileSdkVersion 30
+
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 29
+        targetSdkVersion 30
     }
 
     lintOptions {
         abortOnError false
     }
-    
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -35,20 +35,20 @@ dependencies {
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.13.1"
-    testImplementation("androidx.test:monitor:1.3.0-rc03")
-    testImplementation("androidx.test:runner:1.3.0-rc03")
-    testImplementation("androidx.test:rules:1.3.0-rc03")
-    testImplementation("androidx.test.ext:junit:1.1.2-rc03")
-    testImplementation("androidx.test.ext:truth:1.3.0-rc03")
-    testImplementation("androidx.test:core:1.3.0-rc03")
+    testImplementation("androidx.test:monitor:1.4.0-alpha04")
+    testImplementation("androidx.test:runner:1.4.0-alpha04")
+    testImplementation("androidx.test:rules:1.4.0-alpha04")
+    testImplementation("androidx.test.ext:junit:1.1.3-alpha04")
+    testImplementation("androidx.test.ext:truth:1.4.0-alpha04")
+    testImplementation("androidx.test:core:1.4.0-alpha04")
     testImplementation("com.google.truth:truth:${truthVersion}")
     testImplementation("com.google.guava:guava:27.0.1-jre")
 
     // Testing dependencies
-    androidTestImplementation("androidx.test:monitor:1.3.0-rc03")
-    androidTestImplementation("androidx.test:runner:1.3.0-rc03")
-    androidTestImplementation("androidx.test:rules:1.3.0-rc03")
-    androidTestImplementation("androidx.test.ext:junit:1.1.2-rc03")
+    androidTestImplementation("androidx.test:monitor:1.4.0-alpha04")
+    androidTestImplementation("androidx.test:runner:1.4.0-alpha04")
+    androidTestImplementation("androidx.test:rules:1.4.0-alpha04")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3-alpha04")
     androidTestImplementation("com.google.truth:truth:${truthVersion}")
     androidTestImplementation("com.google.guava:guava:27.0.1-jre")
 }
