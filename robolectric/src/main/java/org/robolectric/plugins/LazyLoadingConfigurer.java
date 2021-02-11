@@ -37,7 +37,7 @@ public class LazyLoadingConfigurer implements Configurer<LazyLoad> {
     } catch (ClassNotFoundException e) {
       // ignore
     }
-    return defaultConfig();
+    return null;
   }
 
   @Override
@@ -45,7 +45,7 @@ public class LazyLoadingConfigurer implements Configurer<LazyLoad> {
     if (testClass.isAnnotationPresent(LazyLoadApplication.class)) {
       return testClass.getAnnotation(LazyLoadApplication.class).value();
     } else {
-      return defaultConfig();
+      return null;
     }
   }
 
@@ -54,7 +54,7 @@ public class LazyLoadingConfigurer implements Configurer<LazyLoad> {
     if (method.isAnnotationPresent(LazyLoadApplication.class)) {
       return method.getAnnotation(LazyLoadApplication.class).value();
     } else {
-      return defaultConfig();
+      return null;
     }
   }
 
