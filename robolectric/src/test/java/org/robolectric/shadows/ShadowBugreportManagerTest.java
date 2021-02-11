@@ -3,10 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
@@ -50,6 +55,29 @@ public final class ShadowBugreportManagerTest {
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
+  }
+
+  @Test
+  public void startBugreport_noPermission() throws Exception {
+    BugreportCallback callback = mock(BugreportCallback.class);
+    shadowBugreportManager.setHasPermission(false);
+
+    // TODO(b/179958637) switch to assertThrows once ThrowingRunnable no longer causes a test
+    // instantiation failure.
+    try {
+      shadowBugreportManager.startBugreport(
+          createWriteFile("bugreport"),
+          createWriteFile("screenshot"),
+          new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+          directExecutor(),
+          callback);
+      fail("Expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
+    verifyZeroInteractions(callback);
   }
 
   @Test
@@ -112,6 +140,29 @@ public final class ShadowBugreportManagerTest {
   }
 
   @Test
+  public void cancelBugreport_noPermission() throws Exception {
+    BugreportCallback callback = mock(BugreportCallback.class);
+    shadowBugreportManager.startBugreport(
+        createWriteFile("bugreport"),
+        createWriteFile("screenshot"),
+        new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+        directExecutor(),
+        callback);
+    shadowMainLooper().idle();
+    // Loss of permission between start and cancel is theoretically possible, particularly if using
+    // carrier privileges instead of DUMP.
+    shadowBugreportManager.setHasPermission(false);
+
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
+
+    assertThrows(SecurityException.class, shadowBugreportManager::cancelBugreport);
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
+    verifyZeroInteractions(callback);
+  }
+
+  @Test
   public void executeOnError() throws Exception {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.startBugreport(
@@ -154,6 +205,45 @@ public final class ShadowBugreportManagerTest {
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
     verify(callback).onFinished();
     verify(callback, never()).onError(anyInt());
+  }
+
+  @Test
+  public void executeOnProgress() throws Exception {
+    // Not reported without a callback attached.
+    shadowBugreportManager.executeOnProgress(0.0f);
+
+    BugreportCallback callback = mock(BugreportCallback.class);
+    shadowBugreportManager.startBugreport(
+        createWriteFile("bugreport"),
+        createWriteFile("screenshot"),
+        new BugreportParams(BugreportParams.BUGREPORT_MODE_FULL),
+        directExecutor(),
+        callback);
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
+    verify(callback, never()).onProgress(anyFloat());
+    verify(callback, never()).onFinished();
+    verify(callback, never()).onError(anyInt());
+
+    shadowBugreportManager.executeOnProgress(50.0f);
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
+    verify(callback).onProgress(50.0f);
+    verify(callback, never()).onFinished();
+    verify(callback, never()).onError(anyInt());
+
+    shadowBugreportManager.executeOnFinished();
+    shadowMainLooper().idle();
+    // Won't be reported after the callback is notified with #onFinished.
+    shadowBugreportManager.executeOnProgress(101.0f);
+    shadowMainLooper().idle();
+
+    assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
+    verify(callback).onFinished();
+    verify(callback, never()).onError(anyInt());
+    verifyNoMoreInteractions(callback);
   }
 
   @Test
