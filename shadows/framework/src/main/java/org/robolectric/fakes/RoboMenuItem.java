@@ -33,7 +33,7 @@ public class RoboMenuItem implements MenuItem {
   private Context context;
 
   public RoboMenuItem() {
-    this(RuntimeEnvironment.application);
+    this(RuntimeEnvironment.getApplication());
   }
 
   public RoboMenuItem(Context context) {

@@ -28,14 +28,16 @@ public class ShadowLocalBroadcastManagerTest {
 
   @Test
   public void shouldGetInstance() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager instance =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     assertNotNull(instance);
-    assertSame(instance, LocalBroadcastManager.getInstance(RuntimeEnvironment.application));
+    assertSame(instance, LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication()));
   }
 
   @Test
   public void shouldSendBroadcasts() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager instance =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     final boolean[] called = new boolean[1];
     final BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override
@@ -55,7 +57,8 @@ public class ShadowLocalBroadcastManagerTest {
   
   @Test
   public void shouldSendBroadcastsWithDataScheme() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager instance =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     final boolean[] called = new boolean[1];
     final BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override
@@ -77,7 +80,8 @@ public class ShadowLocalBroadcastManagerTest {
 
   @Test
   public void shouldUnregisterReceiver() throws Exception {
-    LocalBroadcastManager instance = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager instance =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     final boolean[] called = new boolean[1];
     final BroadcastReceiver receiver = new BroadcastReceiver() {
       @Override
@@ -94,7 +98,8 @@ public class ShadowLocalBroadcastManagerTest {
 
   @Test
   public void testGetBroadcastIntents() throws Exception {
-    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager broadcastManager =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     broadcastManager.registerReceiver(new BroadcastReceiver() {
       @Override public void onReceive(Context context, Intent intent) {
         transcript.add("got intent " + intent.getAction());
@@ -113,7 +118,8 @@ public class ShadowLocalBroadcastManagerTest {
 
   @Test
   public void testGetRegisteredBroadcastReceivers() throws Exception {
-    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager broadcastManager =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     ShadowLocalBroadcastManager shadowLocalBroadcastManager = shadowBroadcast(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getRegisteredBroadcastReceivers().size());
 
@@ -136,7 +142,8 @@ public class ShadowLocalBroadcastManagerTest {
 
   @Test
   public void testGetSentBroadcastIntents() throws Exception {
-    LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(RuntimeEnvironment.application);
+    LocalBroadcastManager broadcastManager =
+        LocalBroadcastManager.getInstance(RuntimeEnvironment.getApplication());
     ShadowLocalBroadcastManager shadowLocalBroadcastManager = shadowBroadcast(broadcastManager);
     assertEquals(0, shadowLocalBroadcastManager.getSentBroadcastIntents().size());
 

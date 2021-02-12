@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.role.RoleManager;
@@ -21,7 +21,7 @@ public final class ShadowRoleManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    roleManager = (RoleManager) application.getSystemService(Context.ROLE_SERVICE);
+    roleManager = (RoleManager) getApplication().getSystemService(Context.ROLE_SERVICE);
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Context.WIFI_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.net.wifi.SupplicantState;
@@ -23,7 +23,7 @@ public class ShadowWifiInfoTest {
 
   @Before
   public void setUp() {
-    wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+    wifiManager = (WifiManager) getApplication().getSystemService(WIFI_SERVICE);
   }
 
   @Test

@@ -335,7 +335,7 @@ public class ShadowUsageStatsManager {
 
   @Implementation(minSdk = Build.VERSION_CODES.P)
   protected UsageEvents queryEventsForSelf(long beginTime, long endTime) {
-    String packageName = RuntimeEnvironment.application.getOpPackageName();
+    String packageName = RuntimeEnvironment.getApplication().getOpPackageName();
     ImmutableList.Builder<Event> listBuilder = new ImmutableList.Builder<>();
     for (Event event : eventsByTimeStamp.subMap(beginTime, endTime).values()) {
       if (packageName.equals(event.getPackageName())) {
@@ -499,7 +499,7 @@ public class ShadowUsageStatsManager {
             .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, timeLimitInMillis)
             .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
     try {
-      observer.callbackIntent.send(RuntimeEnvironment.application, 0, intent);
+      observer.callbackIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
@@ -550,7 +550,7 @@ public class ShadowUsageStatsManager {
             .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, sessionStepTimeInMillis)
             .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
     try {
-      observer.sessionStepTriggeredIntent.send(RuntimeEnvironment.application, 0, intent);
+      observer.sessionStepTriggeredIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
@@ -565,7 +565,7 @@ public class ShadowUsageStatsManager {
     UsageSessionObserver observer = usageSessionObserversById.get(observerId);
     Intent intent = new Intent().putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId);
     try {
-      observer.sessionEndedIntent.send(RuntimeEnvironment.application, 0, intent);
+      observer.sessionEndedIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
@@ -621,7 +621,7 @@ public class ShadowUsageStatsManager {
             .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, observer.timeLimit.toMillis())
             .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsed.toMillis());
     try {
-      observer.callbackIntent.send(RuntimeEnvironment.application, 0, intent);
+      observer.callbackIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }

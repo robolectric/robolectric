@@ -18,7 +18,7 @@ public class ShadowSwipeRefreshLayoutTest {
   public void getOnRefreshListener_shouldReturnTheListener() {
     final OnRefreshListener listener = mock(OnRefreshListener.class);
 
-    final SwipeRefreshLayout layout = new SwipeRefreshLayout(RuntimeEnvironment.application);
+    final SwipeRefreshLayout layout = new SwipeRefreshLayout(RuntimeEnvironment.getApplication());
     layout.setOnRefreshListener(listener);
 
     assertThat(shadowOf(layout).getOnRefreshListener()).isSameInstanceAs(listener);

@@ -264,7 +264,8 @@ public class ShadowBitmapFactory {
 
   public static void provideWidthAndHeightHints(int resourceId, int width, int height) {
     widthAndHeightMap.put(
-        "resource:" + RuntimeEnvironment.application.getResources().getResourceName(resourceId),
+        "resource:"
+            + RuntimeEnvironment.getApplication().getResources().getResourceName(resourceId),
         new Point(width, height));
   }
 

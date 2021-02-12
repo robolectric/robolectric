@@ -121,7 +121,7 @@ public class ShadowGooglePlayServicesUtil {
       if (errorCode == ConnectionResult.SUCCESS) {
         return null;
       }
-      return new Dialog(RuntimeEnvironment.application);
+      return new Dialog(RuntimeEnvironment.getApplication());
     }
 
     public PendingIntent getErrorPendingIntent(int errorCode, Context context,
@@ -138,11 +138,11 @@ public class ShadowGooglePlayServicesUtil {
     }
 
     public Context getRemoteContext(Context context) {
-      return RuntimeEnvironment.application;
+      return RuntimeEnvironment.getApplication();
     }
 
     public Resources getRemoteResource(Context context) {
-      return RuntimeEnvironment.application.getResources();
+      return RuntimeEnvironment.getApplication().getResources();
     }
 
     public int isGooglePlayServicesAvailable(Context context) {

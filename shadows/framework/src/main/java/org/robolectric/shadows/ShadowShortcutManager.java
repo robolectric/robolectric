@@ -201,7 +201,7 @@ public class ShadowShortcutManager {
     }
     if (resultIntent != null) {
       try {
-        resultIntent.sendIntent(RuntimeEnvironment.application, 0, null, null, null);
+        resultIntent.sendIntent(RuntimeEnvironment.getApplication(), 0, null, null, null);
       } catch (SendIntentException e) {
         throw new IllegalStateException();
       }

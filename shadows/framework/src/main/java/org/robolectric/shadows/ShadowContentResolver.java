@@ -1,3 +1,4 @@
+
 package org.robolectric.shadows;
 
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;

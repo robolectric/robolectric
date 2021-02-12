@@ -6,7 +6,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeTrue;
-import static org.robolectric.RuntimeEnvironment.application;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.animation.Animator;
@@ -23,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -94,7 +94,8 @@ public class DrawableResourceLoaderTest {
 
   @Test
   public void shouldCreateAnimators() throws Exception {
-    Animator animator = AnimatorInflater.loadAnimator(application, R.animator.spinning);
+    Animator animator =
+        AnimatorInflater.loadAnimator(RuntimeEnvironment.getApplication(), R.animator.spinning);
     assertThat(animator).isInstanceOf((Class<? extends Animator>) Animator.class);
   }
 

@@ -43,7 +43,7 @@ public class ShadowBiometricManager {
               BiometricManager.class,
               "hasBiometrics",
               ClassParameter.from(
-                  Context.class, RuntimeEnvironment.application.getApplicationContext()));
+                  Context.class, RuntimeEnvironment.getApplication().getApplicationContext()));
       if (!hasBiomatrics) {
         return BIOMETRIC_ERROR_NO_HARDWARE;
       } else {

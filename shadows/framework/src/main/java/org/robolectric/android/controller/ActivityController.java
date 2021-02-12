@@ -74,7 +74,7 @@ public class ActivityController<T extends Activity>
       return this;
     }
     // make sure the component is enabled
-    Context context = RuntimeEnvironment.application.getBaseContext();
+    Context context = RuntimeEnvironment.getApplication().getBaseContext();
     PackageManager packageManager = context.getPackageManager();
     ComponentName componentName =
         new ComponentName(context.getPackageName(), this.component.getClass().getName());

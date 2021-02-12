@@ -174,7 +174,7 @@ public class ShadowBluetoothAdapter {
    * isBleScanAlwaysAvailable(); }
    */
   private static boolean isAirplaneMode() {
-    Context context = RuntimeEnvironment.application;
+    Context context = RuntimeEnvironment.getApplication();
     return Settings.Global.getInt(context.getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0)
         != 0;
   }

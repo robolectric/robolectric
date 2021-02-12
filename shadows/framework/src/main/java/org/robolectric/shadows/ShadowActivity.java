@@ -101,7 +101,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       Intent intent,
       @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
-    Application application = RuntimeEnvironment.application;
+    Application application = RuntimeEnvironment.getApplication();
     Context baseContext = application.getBaseContext();
 
     ComponentName componentName =

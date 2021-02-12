@@ -161,7 +161,7 @@ public class ShadowInstrumentation {
 
   private void verifyActivityInManifest(Intent intent) {
     if (checkActivities
-        && RuntimeEnvironment.application
+        && RuntimeEnvironment.getApplication()
                 .getPackageManager()
                 .resolveActivity(intent, MATCH_DEFAULT_ONLY)
             == null) {
@@ -347,7 +347,7 @@ public class ShadowInstrumentation {
   private static boolean hasRequiredPermissionForBroadcast(
       Context context, @Nullable String requiredPermission) {
     return requiredPermission == null
-        || RuntimeEnvironment.application
+        || RuntimeEnvironment.getApplication()
                 .getPackageManager()
                 .checkPermission(requiredPermission, context.getPackageName())
             == PERMISSION_GRANTED;

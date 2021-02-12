@@ -43,13 +43,13 @@ public class ShadowToast {
 
   @Implementation
   protected void show() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     shadowApplication.getShownToasts().add(toast);
   }
 
   @Implementation
   protected void setText(int resId) {
-    this.text = RuntimeEnvironment.application.getString(resId);
+    this.text = RuntimeEnvironment.getApplication().getString(resId);
   }
 
   @Implementation
@@ -129,7 +129,7 @@ public class ShadowToast {
    * </pre>
    */
   public static void reset() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     shadowApplication.getShownToasts().clear();
   }
 
@@ -141,7 +141,7 @@ public class ShadowToast {
    *         or since {@link #reset()} has been called.
    */
   public static int shownToastCount() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     return shadowApplication.getShownToasts().size();
   }
 
@@ -154,7 +154,7 @@ public class ShadowToast {
    * @return whether the {@code Toast} was requested
    */
   public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     for (Toast toast : shadowApplication.getShownToasts()) {
       String text = ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage)).getText().toString();
       if (text.equals(message.toString())) {
@@ -171,7 +171,7 @@ public class ShadowToast {
    * @return whether the {@code Toast} was requested
    */
   public static boolean showedToast(CharSequence message) {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     for (Toast toast : shadowApplication.getShownToasts()) {
       ShadowToast shadowToast = Shadow.extract(toast);
       String text = shadowToast.text;
@@ -188,7 +188,7 @@ public class ShadowToast {
    * @return the text of the most recently shown {@code Toast}
    */
   public static String getTextOfLatestToast() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     List<Toast> shownToasts = shadowApplication.getShownToasts();
     if (shownToasts.isEmpty()) {
       return null;
@@ -205,7 +205,7 @@ public class ShadowToast {
    * @return the most recently shown {@code Toast}
    */
   public static Toast getLatestToast() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     List<Toast> shownToasts = shadowApplication.getShownToasts();
     return (shownToasts.size() == 0) ? null : shownToasts.get(shownToasts.size() - 1);
   }

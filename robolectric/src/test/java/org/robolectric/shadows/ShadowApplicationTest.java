@@ -865,7 +865,7 @@ public class ShadowApplicationTest {
     pw.showAtLocation(new LinearLayout(context), Gravity.CENTER, 0, 0);
 
     PopupWindow latestPopupWindow =
-        Shadows.shadowOf(RuntimeEnvironment.application).getLatestPopupWindow();
+        Shadows.shadowOf(RuntimeEnvironment.getApplication()).getLatestPopupWindow();
     assertThat(latestPopupWindow).isSameInstanceAs(pw);
   }
 

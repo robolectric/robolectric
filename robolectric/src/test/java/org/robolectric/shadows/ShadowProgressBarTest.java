@@ -4,7 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 
 import android.util.AttributeSet;
 import android.widget.ProgressBar;
@@ -28,7 +28,7 @@ public class ShadowProgressBarTest {
         .addAttribute(android.R.attr.indeterminateOnly, "false")
         .build();
 
-    progressBar = new ProgressBar(application, attrs);
+    progressBar = new ProgressBar(getApplication(), attrs);
   }
 
   @Test

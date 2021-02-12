@@ -133,6 +133,6 @@ public class ShadowBluetoothHeadset {
             .putExtra(BluetoothProfile.EXTRA_STATE, bluetoothProfileExtraState)
             .putExtra(BluetoothDevice.EXTRA_DEVICE, bluetoothDevice);
 
-    RuntimeEnvironment.application.sendBroadcast(connectedIntent);
+    RuntimeEnvironment.getApplication().sendBroadcast(connectedIntent);
   }
 }

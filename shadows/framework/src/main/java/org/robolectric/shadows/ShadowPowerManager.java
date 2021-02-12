@@ -204,7 +204,7 @@ public class ShadowPowerManager {
    * @return Most recent wake lock.
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.application);
+    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
     return shadowApplication.getLatestWakeLock();
   }
 
