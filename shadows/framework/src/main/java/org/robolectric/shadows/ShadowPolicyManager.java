@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.Window;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
@@ -25,5 +26,14 @@ public class ShadowPolicyManager {
                 "com.android.internal.policy.impl.PhoneLayoutInflater");
     return ReflectionHelpers.callConstructor(
         phoneLayoutInflaterClass, ClassParameter.from(Context.class, context));
+  }
+
+  @Implementation
+  protected static Window makeNewWindow(Context context) {
+    try {
+      return ShadowWindow.create(context);
+    } catch (ClassNotFoundException e) {
+      throw new AssertionError("Exception in makeNewWindow", e);
+    }
   }
 }

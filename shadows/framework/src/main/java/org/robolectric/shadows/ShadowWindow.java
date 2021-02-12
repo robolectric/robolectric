@@ -32,7 +32,7 @@ public class ShadowWindow {
   private final Set<OnFrameMetricsAvailableListener> onFrameMetricsAvailableListeners =
       new HashSet<>();
 
-  public static Window create(Context context) throws Exception {
+  public static Window create(Context context) throws ClassNotFoundException {
     String className = getApiLevel() >= M
         ? "com.android.internal.policy.PhoneWindow"
         : "com.android.internal.policy.impl.PhoneWindow";
