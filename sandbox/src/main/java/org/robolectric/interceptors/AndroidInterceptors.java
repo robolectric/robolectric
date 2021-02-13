@@ -4,7 +4,6 @@ import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
 import static java.util.Arrays.asList;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callStaticMethod;
 
 import java.io.FileDescriptor;
@@ -33,7 +32,6 @@ public class AndroidInterceptors {
         new ArrayList<>(
             asList(
                 new LinkedHashMapEldestInterceptor(),
-                new PolicyManagerMakeNewWindowInterceptor(),
                 new SystemTimeInterceptor(),
                 new SystemArrayCopyInterceptor(),
                 new LocaleAdjustLanguageCodeInterceptor(),
@@ -140,43 +138,6 @@ public class AndroidInterceptors {
     public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(getClass(), "eldest",
           methodType(Object.class, LinkedHashMap.class));
-    }
-  }
-
-  public static class PolicyManagerMakeNewWindowInterceptor extends Interceptor {
-    public PolicyManagerMakeNewWindowInterceptor() {
-      super(new MethodRef("com.android.internal.policy.PolicyManager", "makeNewWindow"));
-    }
-
-    @Override
-    public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          ClassLoader cl = theClass.getClassLoader();
-
-          try {
-            Class<?> shadowWindowClass = cl.loadClass("org.robolectric.shadows.ShadowWindow");
-            Class<?> activityClass = cl.loadClass("android.content.Context");
-            Object context = params[0];
-            return callStaticMethod(shadowWindowClass, "create", from(activityClass, context));
-          } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-          }
-        }
-      };
-    }
-
-    @Override
-    public MethodHandle getMethodHandle(String methodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
-      Class<?> shadowWindowClass;
-      try {
-        shadowWindowClass =
-            type.returnType().getClassLoader().loadClass("org.robolectric.shadows.ShadowWindow");
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-      return lookup.in(type.returnType()).findStatic(shadowWindowClass, "create", type);
     }
   }
 
