@@ -712,7 +712,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Override
     public boolean equals(Object o) {
       if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (!(o instanceof RobolectricFrameworkMethod)) return false;
       if (!super.equals(o)) return false;
 
       RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;
