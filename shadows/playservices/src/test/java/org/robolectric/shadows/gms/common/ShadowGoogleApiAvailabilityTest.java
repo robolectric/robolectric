@@ -29,7 +29,7 @@ public class ShadowGoogleApiAvailabilityTest {
 
     @Before
     public void setUp() {
-        roboContext = RuntimeEnvironment.application;
+    roboContext = RuntimeEnvironment.getApplication();
     }
 
     @After

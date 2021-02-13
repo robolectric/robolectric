@@ -96,7 +96,7 @@ public class ShadowDebug {
     String defaultTraceExtension = ".trace";
 
     if (tracePath == null || tracePath.charAt(0) != '/') {
-      final File dir = RuntimeEnvironment.application.getExternalFilesDir(null);
+      final File dir = RuntimeEnvironment.getApplication().getExternalFilesDir(null);
       if (tracePath == null) {
         tracePath = new File(dir, defaultTraceBody).getAbsolutePath();
       } else {

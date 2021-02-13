@@ -26,7 +26,8 @@ public class AndroidHttpClientTest {
 
   @Test
   public void testNewInstanceWithContext() throws Exception {
-    AndroidHttpClient client = AndroidHttpClient.newInstance("foo", RuntimeEnvironment.application);
+    AndroidHttpClient client =
+        AndroidHttpClient.newInstance("foo", RuntimeEnvironment.getApplication());
     assertThat(client).isNotNull();
   }
 

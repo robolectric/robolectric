@@ -13,7 +13,7 @@ import org.robolectric.RuntimeEnvironment;
 public class RoboSubMenu extends RoboMenu implements SubMenu {
 
   public RoboSubMenu() {
-    this(RuntimeEnvironment.application);
+    this(RuntimeEnvironment.getApplication());
   }
 
   public RoboSubMenu(Context context) {

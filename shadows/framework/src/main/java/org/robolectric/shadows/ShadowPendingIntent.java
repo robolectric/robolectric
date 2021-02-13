@@ -318,7 +318,7 @@ public class ShadowPendingIntent {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected String getCreatorPackage() {
     return (creatorPackage == null)
-        ? RuntimeEnvironment.application.getPackageName()
+        ? RuntimeEnvironment.getApplication().getPackageName()
         : creatorPackage;
   }
 

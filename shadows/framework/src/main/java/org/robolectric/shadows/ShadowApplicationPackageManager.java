@@ -762,7 +762,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         // the manifest XML. The parser populates the requestedPermissionsFlags, but doesn't grant
         // the permissions. Several tests rely on the test package being granted all permissions, so
         // we treat this as a special case.
-        || pkgName.equals(RuntimeEnvironment.application.getPackageName());
+        || pkgName.equals(RuntimeEnvironment.getApplication().getPackageName());
   }
 
   @Implementation

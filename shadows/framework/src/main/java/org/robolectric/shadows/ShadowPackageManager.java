@@ -1115,7 +1115,8 @@ public class ShadowPackageManager {
     synchronized (lock) {
       boolean hasDeletePackagesPermission = false;
       String[] requestedPermissions =
-          packageInfos.get(RuntimeEnvironment.application.getPackageName()).requestedPermissions;
+          packageInfos.get(RuntimeEnvironment.getApplication().getPackageName())
+              .requestedPermissions;
       if (requestedPermissions != null) {
         for (String permission : requestedPermissions) {
           if (Manifest.permission.DELETE_PACKAGES.equals(permission)) {

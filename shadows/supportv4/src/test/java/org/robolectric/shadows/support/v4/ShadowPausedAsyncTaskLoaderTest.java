@@ -73,7 +73,7 @@ public class ShadowPausedAsyncTaskLoaderTest {
     private Integer data;
 
     public TestLoader(Integer data) {
-      super(RuntimeEnvironment.application);
+      super(RuntimeEnvironment.getApplication());
       this.data = data;
     }
 

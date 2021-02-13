@@ -203,7 +203,7 @@ public class ShadowAppWidgetManager {
   }
 
   private View createWidgetView(int widgetLayoutId) {
-    return LayoutInflater.from(RuntimeEnvironment.application).inflate(widgetLayoutId, null);
+    return LayoutInflater.from(RuntimeEnvironment.getApplication()).inflate(widgetLayoutId, null);
   }
 
   /**

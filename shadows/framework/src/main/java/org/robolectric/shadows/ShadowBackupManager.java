@@ -117,8 +117,8 @@ public class ShadowBackupManager {
   }
 
   private void enforceBackupPermission(String message) {
-    RuntimeEnvironment.application.enforceCallingOrSelfPermission(
-        android.Manifest.permission.BACKUP, message);
+    RuntimeEnvironment.getApplication()
+        .enforceCallingOrSelfPermission(android.Manifest.permission.BACKUP, message);
   }
 
   private static class FakeRestoreSession implements IRestoreSession {

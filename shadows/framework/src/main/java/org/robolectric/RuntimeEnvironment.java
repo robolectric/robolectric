@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import androidx.test.platform.app.InstrumentationRegistry;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
@@ -37,6 +38,38 @@ public class RuntimeEnvironment {
   public static Path compileTimeSystemResourcesFile;
 
   private static boolean useLegacyResources;
+
+  /**
+   * Get a reference to the {@link Application} under test.
+   *
+   * The Application may be created a test setup time or created lazily at call time, based on the
+   * test's {@Link LazyLoadApplication) setting. If lazy loading is enabled, this method must be
+   * called on the main/test thread.
+   *
+   * An alternate API is
+   * {@link androidx.test.core.app.ApplicationProvider#getApplicationContext()}, which is
+   * preferable if you desire cross platform tests that work on the JVM and real Android devices.
+   */
+  public static Application getApplication() {
+    if (application == null) {
+      application =
+          (Application)
+              InstrumentationRegistry.getInstrumentation()
+                  .getTargetContext()
+                  .getApplicationContext();
+    }
+    return application;
+  }
+
+  private static Class<? extends Application> applicationClass;
+
+  public static Class<? extends Application> getConfiguredApplicationClass() {
+    return applicationClass;
+  }
+
+  public static void setConfiguredApplicationClass(Class<? extends Application> clazz) {
+    applicationClass = clazz;
+  }
 
   /**
    * Tests if the given thread is currently set as the main thread.
@@ -145,8 +178,8 @@ public class RuntimeEnvironment {
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
 
-    if (application != null) {
-      application.getResources().updateConfiguration(configuration, displayMetrics);
+    if (getApplication() != null) {
+      getApplication().getResources().updateConfiguration(configuration, displayMetrics);
     }
   }
 

@@ -64,7 +64,7 @@ public class ShadowAlertController {
 
   @Implementation(minSdk = LOLLIPOP)
   public void setView(int resourceId) {
-    setView(LayoutInflater.from(RuntimeEnvironment.application).inflate(resourceId, null));
+    setView(LayoutInflater.from(RuntimeEnvironment.getApplication()).inflate(resourceId, null));
   }
 
   @Implementation
@@ -82,6 +82,7 @@ public class ShadowAlertController {
   }
 
   public Adapter getAdapter() {
-    return ReflectionHelpers.<ListView>callInstanceMethod(realAlertController, "getListView").getAdapter();
+    return ReflectionHelpers.<ListView>callInstanceMethod(realAlertController, "getListView")
+        .getAdapter();
   }
 }

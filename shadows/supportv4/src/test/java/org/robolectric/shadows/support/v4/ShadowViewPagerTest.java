@@ -23,7 +23,7 @@ public class ShadowViewPagerTest {
 
   @Before
   public void setUp() throws Exception {
-    pager = new ViewPager(RuntimeEnvironment.application);
+    pager = new ViewPager(RuntimeEnvironment.getApplication());
     adapter = new TestPagerAdapter();
   }
 

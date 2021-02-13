@@ -27,6 +27,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
 import android.util.DisplayMetrics;
+import androidx.test.platform.app.InstrumentationProvider;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
@@ -41,6 +43,7 @@ import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ResourcesMode;
@@ -167,7 +170,23 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     preloadClasses(apiLevel);
 
-    installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+    if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
+      RuntimeEnvironment.setConfiguredApplicationClass(
+          getApplicationClass(appManifest, config, new ApplicationInfo()));
+
+      InstrumentationProvider provider =
+          new InstrumentationProvider() {
+            @Override
+            public Instrumentation provide() {
+              return installAndCreateApplication(
+                  appManifest, config, androidConfiguration, displayMetrics);
+            }
+          };
+
+      InstrumentationRegistry.registerInstrumentationProvider(provider, new Bundle());
+    } else { // LoadingMode.EAGER
+      installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+    }
   }
 
   // If certain Android classes are required to be loaded in a particular order, do so here.
@@ -185,9 +204,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
-  private void installAndCreateApplication(AndroidManifest appManifest, Config config,
-      android.content.res.Configuration androidConfiguration, DisplayMetrics displayMetrics) {
-
+  private Instrumentation installAndCreateApplication(
+      AndroidManifest appManifest,
+      Config config,
+      android.content.res.Configuration androidConfiguration,
+      DisplayMetrics displayMetrics) {
     final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
@@ -233,6 +254,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     systemResources.updateConfiguration(androidConfiguration, displayMetrics);
 
     Application application = createApplication(appManifest, config, applicationInfo);
+    RuntimeEnvironment.setConfiguredApplicationClass(application.getClass());
+
     RuntimeEnvironment.application = application;
 
     Instrumentation instrumentation =
@@ -294,6 +317,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       PerfStatsCollector.getInstance()
           .measure("application onCreate()", () -> application.onCreate());
     }
+
+    return instrumentation;
   }
 
   private Package loadAppPackage(Config config, AndroidManifest appManifest) {
@@ -395,41 +420,27 @@ public class AndroidTestEnvironment implements TestEnvironment {
   @VisibleForTesting
   static Application createApplication(AndroidManifest appManifest, Config config,
       ApplicationInfo applicationInfo) {
-    Application application = null;
+    return ReflectionHelpers.callConstructor(
+        getApplicationClass(appManifest, config, applicationInfo));
+  }
+
+  private static Class<? extends Application> getApplicationClass(
+      AndroidManifest appManifest, Config config, ApplicationInfo applicationInfo) {
+    Class<? extends Application> applicationClass = null;
     if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
       if (config.application().getCanonicalName() != null) {
-        Class<? extends Application> applicationClass;
         try {
           applicationClass = ClassNameResolver.resolve(null, config.application().getName());
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
-        application = ReflectionHelpers.callConstructor(applicationClass);
       }
     } else if (appManifest != null && appManifest.getApplicationName() != null) {
-      Class<? extends Application> applicationClass = null;
       try {
-        applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
-            getTestApplicationName(appManifest.getApplicationName()));
-      } catch (ClassNotFoundException e) {
-        // no problem
-      }
-
-      if (applicationClass == null) {
-        try {
-          applicationClass = ClassNameResolver.resolve(appManifest.getPackageName(),
-              appManifest.getApplicationName());
-        } catch (ClassNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      application = ReflectionHelpers.callConstructor(applicationClass);
-    } else if (applicationInfo.className != null) {
-      Class<? extends Application> applicationClass = null;
-      try {
-        applicationClass = (Class<? extends Application>) Class.forName(
-            getTestApplicationName(applicationInfo.className));
+        applicationClass =
+            ClassNameResolver.resolve(
+                appManifest.getPackageName(),
+                getTestApplicationName(appManifest.getApplicationName()));
       } catch (ClassNotFoundException e) {
         // no problem
       }
@@ -437,18 +448,36 @@ public class AndroidTestEnvironment implements TestEnvironment {
       if (applicationClass == null) {
         try {
           applicationClass =
-              (Class<? extends Application>) Class.forName(applicationInfo.className);
+              ClassNameResolver.resolve(
+                  appManifest.getPackageName(), appManifest.getApplicationName());
         } catch (ClassNotFoundException e) {
           throw new RuntimeException(e);
         }
       }
-
-      application = ReflectionHelpers.callConstructor(applicationClass);
     } else {
-      application = new Application();
+      if (applicationInfo.className != null) {
+        try {
+          applicationClass =
+              (Class<? extends Application>)
+                  Class.forName(getTestApplicationName(applicationInfo.className));
+        } catch (ClassNotFoundException e) {
+          // no problem
+        }
+
+        if (applicationClass == null) {
+          try {
+            applicationClass =
+                (Class<? extends Application>) Class.forName(applicationInfo.className);
+          } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      } else {
+        applicationClass = Application.class;
+      }
     }
 
-    return application;
+    return applicationClass;
   }
 
   @VisibleForTesting

@@ -18,7 +18,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
-import android.content.BroadcastReceiver.PendingResult;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -739,8 +738,10 @@ public class ShadowContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick});
 
-    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(pick);
-    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(view);
+    assertThat(shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity())
+        .isEqualTo(pick);
+    assertThat(shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity())
+        .isEqualTo(view);
   }
 
   @Test
@@ -749,8 +750,10 @@ public class ShadowContextWrapperTest {
     final Intent pick = new Intent(Intent.ACTION_PICK).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     contextWrapper.startActivities(new Intent[] {view, pick}, new Bundle());
 
-    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(pick);
-    assertThat(shadowOf(RuntimeEnvironment.application).getNextStartedActivity()).isEqualTo(view);
+    assertThat(shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity())
+        .isEqualTo(pick);
+    assertThat(shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivity())
+        .isEqualTo(view);
   }
 
   @Test
@@ -760,9 +763,9 @@ public class ShadowContextWrapperTest {
     contextWrapper.startActivities(new Intent[] {view, pick});
 
     IntentForResult second =
-        shadowOf(RuntimeEnvironment.application).getNextStartedActivityForResult();
+        shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivityForResult();
     IntentForResult first =
-        shadowOf(RuntimeEnvironment.application).getNextStartedActivityForResult();
+        shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivityForResult();
 
     assertThat(second.intent).isEqualTo(pick);
     assertThat(second.options).isNull();
@@ -780,9 +783,9 @@ public class ShadowContextWrapperTest {
     contextWrapper.startActivities(new Intent[] {view, pick}, options);
 
     IntentForResult second =
-        shadowOf(RuntimeEnvironment.application).getNextStartedActivityForResult();
+        shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivityForResult();
     IntentForResult first =
-        shadowOf(RuntimeEnvironment.application).getNextStartedActivityForResult();
+        shadowOf(RuntimeEnvironment.getApplication()).getNextStartedActivityForResult();
 
     assertThat(second.intent).isEqualTo(pick);
     assertThat(second.options).isEqualTo(options);

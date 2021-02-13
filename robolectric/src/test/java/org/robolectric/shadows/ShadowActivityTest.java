@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
-import static org.robolectric.RuntimeEnvironment.application;
+import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.RuntimeEnvironment.systemContext;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -546,9 +546,9 @@ public class ShadowActivityTest {
   }
 
   @Test public void setContentView_shouldReplaceOldContentView() throws Exception {
-    View view1 = new View(application);
+    View view1 = new View(getApplication());
     view1.setId(R.id.burritos);
-    View view2 = new View(application);
+    View view2 = new View(getApplication());
     view2.setId(R.id.button);
 
     Activity activity = buildActivity(Activity.class).create().get();

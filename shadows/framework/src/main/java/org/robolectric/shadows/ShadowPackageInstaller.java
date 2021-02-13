@@ -151,8 +151,8 @@ public class ShadowPackageInstaller {
     ShadowSession shadowSession = Shadow.extract(session);
     if (success) {
       try {
-        shadowSession.statusReceiver
-            .sendIntent(RuntimeEnvironment.application, 0, null, null, null, null);
+        shadowSession.statusReceiver.sendIntent(
+            RuntimeEnvironment.getApplication(), 0, null, null, null, null);
       } catch (SendIntentException e) {
         throw new RuntimeException(e);
       }

@@ -515,11 +515,11 @@ public class ShadowSettings {
    */
   public static void setAirplaneMode(boolean isAirplaneMode) {
     Settings.Global.putInt(
-        RuntimeEnvironment.application.getContentResolver(),
+        RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.Global.AIRPLANE_MODE_ON,
         isAirplaneMode ? 1 : 0);
     Settings.System.putInt(
-        RuntimeEnvironment.application.getContentResolver(),
+        RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.System.AIRPLANE_MODE_ON,
         isAirplaneMode ? 1 : 0);
   }
@@ -531,9 +531,13 @@ public class ShadowSettings {
    */
   public static void setWifiOn(boolean isOn) {
     Settings.Global.putInt(
-        RuntimeEnvironment.application.getContentResolver(), Settings.Global.WIFI_ON, isOn ? 1 : 0);
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.Global.WIFI_ON,
+        isOn ? 1 : 0);
     Settings.System.putInt(
-        RuntimeEnvironment.application.getContentResolver(), Settings.System.WIFI_ON, isOn ? 1 : 0);
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.System.WIFI_ON,
+        isOn ? 1 : 0);
   }
 
   /**
@@ -543,7 +547,7 @@ public class ShadowSettings {
    */
   public static void set24HourTimeFormat(boolean use24HourTimeFormat) {
     Settings.System.putString(
-        RuntimeEnvironment.application.getContentResolver(),
+        RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.System.TIME_12_24,
         use24HourTimeFormat ? "24" : "12");
   }
@@ -571,13 +575,13 @@ public class ShadowSettings {
     // This setting moved from Secure to Global in JELLY_BEAN_MR1
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       Settings.Global.putInt(
-          RuntimeEnvironment.application.getContentResolver(),
+          RuntimeEnvironment.getApplication().getContentResolver(),
           Settings.Global.ADB_ENABLED,
           adbEnabled ? 1 : 0);
     }
     // Support all clients by always setting the Secure version of the setting
     Settings.Secure.putInt(
-        RuntimeEnvironment.application.getContentResolver(),
+        RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.Secure.ADB_ENABLED,
         adbEnabled ? 1 : 0);
   }
@@ -594,13 +598,13 @@ public class ShadowSettings {
     // JELLY_BEAN_MR1.
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       Settings.Global.putInt(
-          RuntimeEnvironment.application.getContentResolver(),
+          RuntimeEnvironment.getApplication().getContentResolver(),
           Settings.Global.INSTALL_NON_MARKET_APPS,
           installNonMarketApps ? 1 : 0);
     }
     // Always set the Secure version of the setting
     Settings.Secure.putInt(
-        RuntimeEnvironment.application.getContentResolver(),
+        RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.Secure.INSTALL_NON_MARKET_APPS,
         installNonMarketApps ? 1 : 0);
   }

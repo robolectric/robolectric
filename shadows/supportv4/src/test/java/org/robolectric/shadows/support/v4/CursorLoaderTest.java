@@ -18,12 +18,14 @@ public class CursorLoaderTest {
     String selection = "_id = ?";
     String[] selectionArgs = new String[] { "5" };
     String sortOrder = "_id";
-    CursorLoader cursorLoader = new CursorLoader(RuntimeEnvironment.application,
-        uri,
-        projection,
-        selection,
-        selectionArgs,
-        sortOrder);
+    CursorLoader cursorLoader =
+        new CursorLoader(
+            RuntimeEnvironment.getApplication(),
+            uri,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder);
 
     assertThat(cursorLoader.getUri()).isEqualTo(uri);
     assertThat(cursorLoader.getProjection()).isEqualTo(projection);
@@ -39,7 +41,7 @@ public class CursorLoaderTest {
     String selection = "_id = ?";
     String[] selectionArgs = new String[] { "5" };
     String sortOrder = "_id";
-    CursorLoader cursorLoader = new CursorLoader(RuntimeEnvironment.application);
+    CursorLoader cursorLoader = new CursorLoader(RuntimeEnvironment.getApplication());
     cursorLoader.setUri(uri);
     cursorLoader.setProjection(projection);
     cursorLoader.setSelection(selection);
