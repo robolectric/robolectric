@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -211,6 +212,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       Config config,
       android.content.res.Configuration androidConfiguration,
       DisplayMetrics displayMetrics) {
+    checkState(Looper.myLooper() == Looper.getMainLooper(), "Must be called on the main thread!");
+
     final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
     RuntimeEnvironment.setActivityThread(activityThread);
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
