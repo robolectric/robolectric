@@ -26,9 +26,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +39,8 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBitmapFactoryTest {
+  private static final int TEST_JPEG_WIDTH = 50;
+  private static final int TEST_JPEG_HEIGHT = 50;
 
   private Application context;
 
@@ -393,9 +397,9 @@ public class ShadowBitmapFactoryTest {
 
   @Test
   public void decodeFile_shouldHaveCorrectWidthAndHeight() throws IOException {
-    Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
-    assertThat(bitmap.getWidth()).isEqualTo(500);
-    assertThat(bitmap.getHeight()).isEqualTo(600);
+    Bitmap bitmap = getBitmapFromResourceStream("res/drawable/test_jpeg.jpg");
+    assertThat(bitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+    assertThat(bitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
     File tmpFile = File.createTempFile("ShadowBitmapFactoryTest", ".jpg");
     tmpFile.deleteOnExit();
     try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
@@ -403,44 +407,51 @@ public class ShadowBitmapFactoryTest {
     }
     bitmap.recycle();
     Bitmap loadedBitmap = BitmapFactory.decodeFile(tmpFile.getAbsolutePath());
-    assertThat(loadedBitmap.getWidth()).isEqualTo(500);
-    assertThat(loadedBitmap.getHeight()).isEqualTo(600);
+    assertThat(loadedBitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+    assertThat(loadedBitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
     loadedBitmap.recycle();
   }
 
   @Test
-  public void decodeFile_shouldGetCorrectColorFromCompressedPngFile() throws IOException {
-    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.PNG);
-  }
-
-  @Test
-  public void decodeFile_shouldGetCorrectColorFromCompressedJpegFile() throws IOException {
-    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.JPEG);
+  public void decodeFile_shouldGetCorrectColorFromCompressedPngFile()
+      throws IOException, URISyntaxException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.PNG,
+        getBitmapByteArrayFromResourceStream("res/drawable/an_image.png"));
   }
 
   @Test
   @Config(minSdk = ICE_CREAM_SANDWICH)
-  public void decodeFile_shouldGetCorrectColorFromCompressedWebpFile() throws IOException {
-    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.WEBP);
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpFile()
+      throws IOException, URISyntaxException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.WEBP,
+        getBitmapByteArrayFromResourceStream("res/drawable/test_webp.webp"));
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.R)
-  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLossyFile() throws IOException {
-    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.WEBP_LOSSY);
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLossyFile()
+      throws IOException, URISyntaxException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.WEBP_LOSSY,
+        getBitmapByteArrayFromResourceStream("res/drawable/test_webp_lossy.webp"));
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.R)
-  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLosslessFile() throws IOException {
-    decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat.WEBP_LOSSLESS);
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLosslessFile()
+      throws IOException, URISyntaxException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.WEBP_LOSSLESS,
+        getBitmapByteArrayFromResourceStream("res/drawable/test_webp_lossless.webp"));
   }
 
   @Test
   public void decodeFileDescriptor_shouldHaveCorrectWidthAndHeight() throws IOException {
-    Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
-    assertEquals(500, bitmap.getWidth());
-    assertEquals(600, bitmap.getHeight());
+    Bitmap bitmap = getBitmapFromResourceStream("res/drawable/test_jpeg.jpg");
+    assertThat(bitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+    assertThat(bitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
 
     File tmpFile = File.createTempFile("ShadowBitmapFactoryTest", ".jpg");
     tmpFile.deleteOnExit();
@@ -450,15 +461,14 @@ public class ShadowBitmapFactoryTest {
     bitmap.recycle();
     try (FileInputStream fileInputStream = new FileInputStream(tmpFile)) {
       Bitmap loadedBitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
-      assertEquals(500, loadedBitmap.getWidth());
-      assertEquals(600, loadedBitmap.getHeight());
+      assertThat(loadedBitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+      assertThat(loadedBitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
       loadedBitmap.recycle();
     }
   }
 
-  private void decodeFile_shouldGetCorrectColorFromCompressedFile(Bitmap.CompressFormat format)
-      throws IOException {
-    byte[] bitmapData = new byte[] {23, 100, 23, 52, 23, 18, 76, 43};
+  private void decodeFile_shouldGetCorrectColorFromCompressedFile(
+      Bitmap.CompressFormat format, byte[] bitmapData) throws IOException {
     Bitmap oldBitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
     Path tempFile = Files.createTempFile("bitmap", null);
     FileOutputStream fileOutputStream = new FileOutputStream(tempFile.toFile());
@@ -495,12 +505,22 @@ public class ShadowBitmapFactoryTest {
   }
 
   private int getPngImageColorFromResourceStream(String pngImagePath) throws IOException {
+    Bitmap bitmap = getBitmapFromResourceStream(pngImagePath);
+    return bitmap.getPixel(0, 0);
+  }
+
+  private Bitmap getBitmapFromResourceStream(String imagePath) throws IOException {
     InputStream inputStream =
-        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(imagePath));
     inputStream.mark(inputStream.available());
     BitmapFactory.Options opts = new BitmapFactory.Options();
     Resources resources = context.getResources();
-    Bitmap bitmap = BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
-    return bitmap.getPixel(0, 0);
+    return BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
+  }
+
+  private byte[] getBitmapByteArrayFromResourceStream(String imagePath)
+      throws IOException, URISyntaxException {
+    return Files.readAllBytes(
+        Paths.get(getClass().getClassLoader().getResource(imagePath).toURI()));
   }
 }
