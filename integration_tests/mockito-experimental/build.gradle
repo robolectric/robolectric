@@ -1,4 +1,6 @@
-apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
 
 test {
     systemProperty "robolectric.resourcesMode", "binary"

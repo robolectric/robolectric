@@ -174,7 +174,7 @@ task prefetchDependencies() {
                 if (config.isCanBeResolved()) {
                     try {
                         config.files
-                    } catch (org.gradle.api.artifacts.ResolveException e) {
+                    } catch (ResolveException e) {
                         // ignore resolution issues for integration tests, sigh
                         if (!p.path.startsWith(":integration_tests:")) {
                             throw e

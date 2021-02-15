@@ -1,5 +1,9 @@
-apply plugin: org.robolectric.gradle.RoboJavaModulePlugin
-apply plugin: org.robolectric.gradle.DeployedRoboJavaModulePlugin
+import org.gradle.internal.jvm.Jvm
+import org.robolectric.gradle.DeployedRoboJavaModulePlugin
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
+apply plugin: DeployedRoboJavaModulePlugin
 
 class GenerateSdksFileTask extends DefaultTask {
     @OutputFile File outFile
@@ -37,7 +41,7 @@ dependencies {
     api "com.google.guava:guava:27.0.1-jre"
     api "com.google.code.gson:gson:2.8.2"
 
-    def toolsJar = org.gradle.internal.jvm.Jvm.current().getToolsJar()
+    def toolsJar = Jvm.current().getToolsJar()
     if (toolsJar != null) {
         implementation files(toolsJar)
     }
