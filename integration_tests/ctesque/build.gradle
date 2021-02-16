@@ -1,5 +1,7 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
 apply plugin: 'com.android.library'
-apply plugin: org.robolectric.gradle.AndroidProjectConfigPlugin
+apply plugin: AndroidProjectConfigPlugin
 
 android {
     compileSdkVersion 30
