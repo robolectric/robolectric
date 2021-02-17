@@ -33,7 +33,9 @@ import android.view.animation.Transformation;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -52,6 +54,8 @@ public class ShadowView {
   @RealObject
   protected View realView;
 
+  private static final List<OnAccessibilityEventListener> accessibilityEventListeners =
+      new CopyOnWriteArrayList<>();
   private View.OnClickListener onClickListener;
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
@@ -71,9 +75,20 @@ public class ShadowView {
   private int layerType;
   private AnimationRunner animationRunner;
 
+  /** A listener that is called whenever an accessibility event is sent. */
+  public interface OnAccessibilityEventListener {
+
+    /**
+     * Called when an accessibility event is triggered.
+     *
+     * @param eventType The {@link AccessibilityEvent} being triggered.
+     */
+    void onAccessibilityEventSent(View view, int eventType);
+  }
+
   /**
-   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
-   * is enabled.
+   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
+   * visible and that it is enabled.
    *
    * @param view the view to click on
    * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
@@ -214,6 +229,33 @@ public class ShadowView {
   protected void requestLayout() {
     didRequestLayout = true;
     directly().requestLayout();
+  }
+
+  @Implementation
+  protected void sendAccessibilityEvent(int eventType) {
+    for (OnAccessibilityEventListener listener : accessibilityEventListeners) {
+      listener.onAccessibilityEventSent(realView, eventType);
+    }
+    directlyOn(
+        realView, View.class, "sendAccessibilityEvent", ClassParameter.from(int.class, eventType));
+  }
+
+  /**
+   * Registers an {@link OnAccessibilityEventListener} to the {@link ShadowView}.
+   *
+   * @param listener The {@link OnAccessibilityEventListener} to be registered.
+   */
+  public static void addAccessibilityEventListener(OnAccessibilityEventListener listener) {
+    ShadowView.accessibilityEventListeners.add(listener);
+  }
+
+  /**
+   * Removes an {@link OnAccessibilityEventListener} from the {@link ShadowView}.
+   *
+   * @param listener The {@link OnAccessibilityEventListener} to be removed.
+   */
+  public static void removeAccessibilityEventListener(OnAccessibilityEventListener listener) {
+    ShadowView.accessibilityEventListeners.remove(listener);
   }
 
   public boolean didRequestLayout() {

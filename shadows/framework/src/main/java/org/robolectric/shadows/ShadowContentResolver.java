@@ -677,7 +677,9 @@ public class ShadowContentResolver {
   private static synchronized ContentProvider getProvider(String authority) {
     if (!providers.containsKey(authority)) {
       ProviderInfo providerInfo =
-          RuntimeEnvironment.application.getPackageManager().resolveContentProvider(authority, 0);
+          RuntimeEnvironment.getApplication()
+              .getPackageManager()
+              .resolveContentProvider(authority, 0);
       if (providerInfo != null) {
         ContentProvider contentProvider = createAndInitialize(providerInfo);
         for (String auth : Splitter.on(';').split(providerInfo.authority)) {
