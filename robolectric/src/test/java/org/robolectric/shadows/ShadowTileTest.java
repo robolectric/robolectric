@@ -26,7 +26,7 @@ public final class ShadowTileTest {
   }
 
   @Test
-  public void updateTile() throws Exception {
+  public void updateTile() {
     // this test passes if updateTile() throws no Exception.
     tile.updateTile();
     shadowTile.updateTile();

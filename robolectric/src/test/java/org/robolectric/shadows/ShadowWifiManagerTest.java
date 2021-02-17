@@ -59,8 +59,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void setWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
-      throws Exception {
+  public void setWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
     try {
       wifiManager.setWifiEnabled(true);
@@ -71,8 +70,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void isWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
-      throws Exception {
+  public void isWifiEnabled_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
     try {
       wifiManager.isWifiEnabled();
@@ -83,8 +81,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void getWifiState_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
-      throws Exception {
+  public void getWifiState_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
     try {
       wifiManager.getWifiState();
@@ -96,8 +93,7 @@ public class ShadowWifiManagerTest {
 
   @Test
   public void
-      getConnectionInfo_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted()
-          throws Exception {
+      getConnectionInfo_shouldThrowSecurityExceptionWhenAccessWifiStatePermissionNotGranted() {
     shadowOf(wifiManager).setAccessWifiStatePermission(false);
     try {
       wifiManager.getConnectionInfo();
@@ -108,7 +104,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void getWifiState() throws Exception {
+  public void getWifiState() {
     wifiManager.setWifiEnabled(true);
     assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_ENABLED);
 
@@ -117,7 +113,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void startScan() throws Exception {
+  public void startScan() {
     // By default startScan() succeeds.
     assertThat(wifiManager.startScan()).isTrue();
 
@@ -139,7 +135,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldEnableNetworks() throws Exception {
+  public void shouldEnableNetworks() {
     wifiManager.enableNetwork(666, true);
     Pair<Integer, Boolean> lastEnabled = shadowOf(wifiManager).getLastEnabledNetwork();
     assertThat(lastEnabled).isEqualTo(new Pair<>(666, true));
@@ -156,7 +152,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldDisableNetwork() throws Exception {
+  public void shouldDisableNetwork() {
     wifiManager.enableNetwork(666, true);
     boolean enabledNetwork = shadowOf(wifiManager).isNetworkEnabled(666);
     assertThat(enabledNetwork).isTrue();
@@ -167,7 +163,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldReturnSetScanResults() throws Exception {
+  public void shouldReturnSetScanResults() {
     List<ScanResult> scanResults = new ArrayList<>();
     shadowOf(wifiManager).setScanResults(scanResults);
     assertThat(wifiManager.getScanResults()).isSameInstanceAs(scanResults);
@@ -181,7 +177,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldRecordTheLastAddedNetwork() throws Exception {
+  public void shouldRecordTheLastAddedNetwork() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = -1;
     int networkId = wifiManager.addNetwork(wifiConfiguration);
@@ -198,7 +194,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void updateNetwork_shouldReplaceNetworks() throws Exception {
+  public void updateNetwork_shouldReplaceNetworks() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = -1;
     wifiManager.addNetwork(wifiConfiguration);
@@ -219,7 +215,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void updateNetworkTests_permissions() throws Exception {
+  public void updateNetworkTests_permissions() {
     int networkId = 1;
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = networkId;
@@ -237,7 +233,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void removeNetwork() throws Exception {
+  public void removeNetwork() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = 123;
     wifiManager.addNetwork(wifiConfiguration);
@@ -254,7 +250,7 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
-  public void getPrivilegedConfiguredNetworks_shouldReturnConfiguredNetworks() throws Exception {
+  public void getPrivilegedConfiguredNetworks_shouldReturnConfiguredNetworks() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = 123;
     wifiManager.addNetwork(wifiConfiguration);
@@ -269,7 +265,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void updateNetwork_shouldRejectNullandNewConfigs() throws Exception {
+  public void updateNetwork_shouldRejectNullandNewConfigs() {
     WifiConfiguration config = new WifiConfiguration();
     config.networkId = -1;
     assertThat(wifiManager.updateNetwork(config)).isEqualTo(-1);
@@ -278,19 +274,19 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldSaveConfigurations() throws Exception {
+  public void shouldSaveConfigurations() {
     assertThat(wifiManager.saveConfiguration()).isTrue();
     assertThat(shadowOf(wifiManager).wasConfigurationSaved()).isTrue();
   }
 
   @Test
-  public void shouldCreateWifiLock() throws Exception {
+  public void shouldCreateWifiLock() {
     assertThat(wifiManager.createWifiLock("TAG")).isNotNull();
     assertThat(wifiManager.createWifiLock(1, "TAG")).isNotNull();
   }
 
   @Test
-  public void wifiLockAcquireIncreasesActiveLockCount() throws Exception {
+  public void wifiLockAcquireIncreasesActiveLockCount() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(0);
     lock.acquire();
@@ -300,7 +296,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void multicastLockAcquireIncreasesActiveLockCount() throws Exception {
+  public void multicastLockAcquireIncreasesActiveLockCount() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     assertThat(shadowOf(wifiManager).getActiveLockCount()).isEqualTo(0);
     lock.acquire();
@@ -310,7 +306,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldAcquireAndReleaseWifilockRefCounted() throws Exception {
+  public void shouldAcquireAndReleaseWifilockRefCounted() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.acquire();
     lock.acquire();
@@ -322,7 +318,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldAcquireAndReleaseWifilockNonRefCounted() throws Exception {
+  public void shouldAcquireAndReleaseWifilockNonRefCounted() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     lock.setReferenceCounted(false);
     lock.acquire();
@@ -334,7 +330,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowRuntimeExceptionIfWifiLockisUnderlocked() throws Exception {
+  public void shouldThrowRuntimeExceptionIfWifiLockisUnderlocked() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     try {
       lock.release();
@@ -345,7 +341,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowUnsupportedOperationIfWifiLockisOverlocked() throws Exception {
+  public void shouldThrowUnsupportedOperationIfWifiLockisOverlocked() {
     WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
     try {
       for (int i = 0; i < ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) {
@@ -358,12 +354,12 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldCreateMulticastLock() throws Exception {
+  public void shouldCreateMulticastLock() {
     assertThat(wifiManager.createMulticastLock("TAG")).isNotNull();
   }
 
   @Test
-  public void shouldAcquireAndReleaseMulticastLockRefCounted() throws Exception {
+  public void shouldAcquireAndReleaseMulticastLockRefCounted() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     lock.acquire();
     lock.acquire();
@@ -375,7 +371,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldAcquireAndReleaseMulticastLockNonRefCounted() throws Exception {
+  public void shouldAcquireAndReleaseMulticastLockNonRefCounted() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     lock.setReferenceCounted(false);
     lock.acquire();
@@ -387,7 +383,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowRuntimeExceptionIfMulticastLockisUnderlocked() throws Exception {
+  public void shouldThrowRuntimeExceptionIfMulticastLockisUnderlocked() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     try{
       lock.release();
@@ -396,7 +392,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  public void shouldThrowUnsupportedOperationIfMulticastLockisOverlocked() throws Exception {
+  public void shouldThrowUnsupportedOperationIfMulticastLockisOverlocked() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
     try {
       for (int i = 0; i < ShadowWifiManager.ShadowMulticastLock.MAX_ACTIVE_LOCKS; i++) {
@@ -500,7 +496,7 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.KITKAT)
-  public void connect_setsNetworkId_shouldHasNetworkId() throws Exception {
+  public void connect_setsNetworkId_shouldHasNetworkId() {
     // WHEN
     wifiManager.connect(123, null);
 
@@ -510,7 +506,7 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.KITKAT)
-  public void connect_setsConnectionInfo() throws Exception {
+  public void connect_setsConnectionInfo() {
     // GIVEN
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.SSID = "foo";
@@ -524,7 +520,7 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void is5GhzBandSupportedAndConfigurable() throws Exception {
+  public void is5GhzBandSupportedAndConfigurable() {
     assertThat(wifiManager.is5GHzBandSupported()).isFalse();
     shadowOf(wifiManager).setIs5GHzBandSupported(true);
     assertThat(wifiManager.is5GHzBandSupported()).isTrue();

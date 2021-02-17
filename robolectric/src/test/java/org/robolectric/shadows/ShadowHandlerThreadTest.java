@@ -31,7 +31,7 @@ public class ShadowHandlerThreadTest {
   }
 
   @Test
-  public void shouldReturnLooper() throws Exception {
+  public void shouldReturnLooper() {
     handlerThread = new HandlerThread("test");
     handlerThread.start();
     assertNotNull(handlerThread.getLooper());
@@ -40,7 +40,7 @@ public class ShadowHandlerThreadTest {
   }
 
   @Test
-  public void shouldReturnNullIfThreadHasNotBeenStarted() throws Exception {
+  public void shouldReturnNullIfThreadHasNotBeenStarted() {
     handlerThread = new HandlerThread("test");
     assertNull(handlerThread.getLooper());
   }

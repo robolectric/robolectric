@@ -21,49 +21,49 @@ public class ShadowAppWidgetHostTest {
   private Context context;
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     context = ApplicationProvider.getApplicationContext();
     appWidgetHost = new AppWidgetHost(context, 404);
     shadowAppWidgetHost = shadowOf(appWidgetHost);
   }
 
   @Test
-  public void shouldKnowItsContext() throws Exception {
+  public void shouldKnowItsContext() {
     assertThat(shadowAppWidgetHost.getContext()).isSameInstanceAs(context);
   }
 
   @Test
-  public void shouldKnowItsHostId() throws Exception {
+  public void shouldKnowItsHostId() {
     assertThat(shadowAppWidgetHost.getHostId()).isEqualTo(404);
   }
 
   @Test
-  public void createView_shouldReturnAppWidgetHostView() throws Exception {
+  public void createView_shouldReturnAppWidgetHostView() {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
     assertNotNull(hostView);
   }
 
   @Test
-  public void createView_shouldSetViewsContext() throws Exception {
+  public void createView_shouldSetViewsContext() {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
     assertThat(hostView.getContext()).isSameInstanceAs(context);
   }
 
   @Test
-  public void createView_shouldSetViewsAppWidgetId() throws Exception {
+  public void createView_shouldSetViewsAppWidgetId() {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 765, null);
     assertThat(hostView.getAppWidgetId()).isEqualTo(765);
   }
 
   @Test
-  public void createView_shouldSetViewsAppWidgetInfo() throws Exception {
+  public void createView_shouldSetViewsAppWidgetInfo() {
     AppWidgetProviderInfo info = new AppWidgetProviderInfo();
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, info);
     assertThat(hostView.getAppWidgetInfo()).isSameInstanceAs(info);
   }
 
   @Test
-  public void createView_shouldSetHostViewsHost() throws Exception {
+  public void createView_shouldSetHostViewsHost() {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
     assertThat(shadowOf(hostView).getHost()).isSameInstanceAs(appWidgetHost);
   }

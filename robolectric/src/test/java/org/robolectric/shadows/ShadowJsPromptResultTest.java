@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 public class ShadowJsPromptResultTest {
 
   @Test
-  public void shouldConstruct() throws Exception {
+  public void shouldConstruct() {
     JsPromptResult result = ShadowJsPromptResult.newInstance();
     assertNotNull(result);
   }

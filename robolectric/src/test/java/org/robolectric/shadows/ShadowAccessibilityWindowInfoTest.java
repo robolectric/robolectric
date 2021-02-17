@@ -15,15 +15,14 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowAccessibilityWindowInfoTest {
-  private AccessibilityWindowInfo window;
   private ShadowAccessibilityWindowInfo shadow;
 
   @Before
   public void setUp() {
     ShadowAccessibilityWindowInfo.resetObtainedInstances();
     assertThat(ShadowAccessibilityWindowInfo.areThereUnrecycledWindows(true)).isEqualTo(false);
-    window = ShadowAccessibilityWindowInfo.obtain();
-    assertThat(window == null).isEqualTo(false);
+    AccessibilityWindowInfo window = ShadowAccessibilityWindowInfo.obtain();
+    assertThat(window).isNotNull();
     shadow = shadowOf(window);
   }
 

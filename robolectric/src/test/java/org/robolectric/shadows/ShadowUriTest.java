@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowUriTest {
   @Test
-  public void shouldParseUris() throws Exception {
+  public void shouldParseUris() {
     Uri testUri =
         Uri.parse("http://someplace.com:8080/a/path?param=value&another_param=another_value#top");
 
@@ -23,7 +23,8 @@ public class ShadowUriTest {
     assertThat(testUri.getScheme()).isEqualTo("http");
   }
 
-  @Test public void getQueryParameter_shouldWork() throws Exception {
+  @Test
+  public void getQueryParameter_shouldWork() {
     Uri testUri =
         Uri.parse("http://someplace.com:8080/a/path?param=value&another_param=another_value#top");
     assertThat(testUri.getQueryParameter("param")).isEqualTo("value");

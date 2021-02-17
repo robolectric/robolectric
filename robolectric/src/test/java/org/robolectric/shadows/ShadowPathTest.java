@@ -21,7 +21,7 @@ public class ShadowPathTest {
   private static final float ERROR_TOLERANCE = 0.5f;
 
   @Test
-  public void testMoveTo() throws Exception {
+  public void testMoveTo() {
     Path path = new Path();
     path.moveTo(2, 3);
     path.moveTo(3, 4);
@@ -33,7 +33,7 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void testLineTo() throws Exception {
+  public void testLineTo() {
     Path path = new Path();
     path.lineTo(2, 3);
     path.lineTo(3, 4);
@@ -45,7 +45,7 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void testReset() throws Exception {
+  public void testReset() {
     Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
@@ -58,7 +58,7 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void copyConstructor_copiesShadowPoints() throws Exception {
+  public void copyConstructor_copiesShadowPoints() {
     Path path = new Path();
     path.moveTo(0, 3);
     path.lineTo(2, 3);
@@ -71,7 +71,7 @@ public class ShadowPathTest {
 
   @Test
   @Config(minSdk = O)
-  public void copyConstructor_copiesPathSegments() throws Exception {
+  public void copyConstructor_copiesPathSegments() {
     Path path = new Path();
     path.moveTo(9, 3);
     path.lineTo(2, 3);
@@ -84,7 +84,7 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void copyConstructor_copiesFillType() throws Exception {
+  public void copyConstructor_copiesFillType() {
     Path.FillType fillType = Path.FillType.INVERSE_EVEN_ODD;
     Path path = new Path();
     path.setFillType(fillType);
@@ -95,7 +95,7 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void copyConstructor_emptyPath_isEmpty() throws Exception {
+  public void copyConstructor_emptyPath_isEmpty() {
     Path emptyPath = new Path();
 
     Path copiedEmptyPath = new Path(emptyPath);
@@ -104,7 +104,7 @@ public class ShadowPathTest {
   }
 
   @Test
-  public void emptyConstructor_isEmpty() throws Exception {
+  public void emptyConstructor_isEmpty() {
     Path emptyPath = new Path();
 
     assertTrue(emptyPath.isEmpty());

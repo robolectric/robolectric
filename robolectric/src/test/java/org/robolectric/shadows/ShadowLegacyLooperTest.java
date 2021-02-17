@@ -161,12 +161,12 @@ public class ShadowLegacyLooperTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void shouldThrowRuntimeExceptionIfTryingToQuitMainLooper() throws Exception {
+  public void shouldThrowRuntimeExceptionIfTryingToQuitMainLooper() {
     Looper.getMainLooper().quit();
   }
 
   @Test
-  public void shouldNotQueueMessagesIfLooperIsQuit() throws Exception {
+  public void shouldNotQueueMessagesIfLooperIsQuit() {
     HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
     looper.quit();
@@ -197,7 +197,7 @@ public class ShadowLegacyLooperTest {
   }
 
   @Test
-  public void shouldThrowawayRunnableQueueIfLooperQuits() throws Exception {
+  public void shouldThrowawayRunnableQueueIfLooperQuits() {
     HandlerThread ht = getHandlerThread();
     Looper looper = ht.getLooper();
     shadowOf(looper).pause();
@@ -288,8 +288,7 @@ public class ShadowLegacyLooperTest {
 
   @Test
   public void
-      soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler()
-          throws Exception {
+      soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() {
     Looper mainLooper = Looper.getMainLooper();
     Scheduler scheduler = shadowOf(mainLooper).getScheduler();
     ShadowLegacyLooper shadowLooper = Shadow.extract(mainLooper);

@@ -13,52 +13,52 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowOpenGLMatrixTest {
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfResIsNull() throws Exception {
+  public void multiplyMM_failIfResIsNull() {
     Matrix.multiplyMM(null, 0, new float[16], 0, new float[16], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfLhsIsNull() throws Exception {
+  public void multiplyMM_failIfLhsIsNull() {
     Matrix.multiplyMM(new float[16], 0, null, 0, new float[16], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfRhsIsNull() throws Exception {
+  public void multiplyMM_failIfRhsIsNull() {
     Matrix.multiplyMM(new float[16], 0, new float[16], 0, null, 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfResIsSmall() throws Exception {
+  public void multiplyMM_failIfResIsSmall() {
     Matrix.multiplyMM(new float[15], 0, new float[16], 0, new float[16], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfLhsIsSmall() throws Exception {
+  public void multiplyMM_failIfLhsIsSmall() {
     Matrix.multiplyMM(new float[16], 0, new float[15], 0, new float[16], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfRhsIsSmall() throws Exception {
+  public void multiplyMM_failIfRhsIsSmall() {
     Matrix.multiplyMM(new float[16], 0, new float[16], 0, new float[15], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfResOffsetIsOutOfBounds() throws Exception {
+  public void multiplyMM_failIfResOffsetIsOutOfBounds() {
     Matrix.multiplyMM(new float[32], 30, new float[16], 0, new float[16], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfLhsOffsetIsOutOfBounds() throws Exception {
+  public void multiplyMM_failIfLhsOffsetIsOutOfBounds() {
     Matrix.multiplyMM(new float[16], 0, new float[32], 30, new float[16], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMM_failIfRhsOffsetIsOutOfBounds() throws Exception {
+  public void multiplyMM_failIfRhsOffsetIsOutOfBounds() {
     Matrix.multiplyMM(new float[16], 0, new float[16], 0, new float[32], 30);
   }
 
   @Test
-  public void multiplyIdentity() throws Exception {
+  public void multiplyIdentity() {
     final float[] res = new float[16];
     final float[] i = new float[16];
     Matrix.setIdentityM(i, 0);
@@ -76,7 +76,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyIdentityWithOffset() throws Exception {
+  public void multiplyIdentityWithOffset() {
     final float[] res = new float[32];
     final float[] i = new float[32];
     Matrix.setIdentityM(i, 16);
@@ -99,7 +99,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyMM() throws Exception {
+  public void multiplyMM() {
     final float[] res = new float[16];
     final float[] m1 = new float[]{
             0, 1, 2, 3,
@@ -127,7 +127,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyMMWithOffset() throws Exception {
+  public void multiplyMMWithOffset() {
     final float[] res = new float[32];
     final float[] m1 = new float[]{
             0, 0, 0, 0,
@@ -166,7 +166,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyMMRandom() throws Exception {
+  public void multiplyMMRandom() {
     final float[] m1 = new float[]{
             0.730964f, 0.006556f, 0.999294f, 0.886486f,
             0.703636f, 0.865595f, 0.464857f, 0.861619f,
@@ -192,53 +192,52 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfResIsNull() throws Exception {
+  public void multiplyMVFailsIfResIsNull() {
     Matrix.multiplyMV(null, 0, new float[16], 0, new float[4], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfLhsIsNull() throws Exception {
+  public void multiplyMVFailsIfLhsIsNull() {
     Matrix.multiplyMV(new float[4], 0, null, 0, new float[4], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfRhsIsNull() throws Exception {
+  public void multiplyMVFailsIfRhsIsNull() {
     Matrix.multiplyMV(new float[4], 0, new float[16], 0, null, 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfResIsSmall() throws Exception {
+  public void multiplyMVFailsIfResIsSmall() {
     Matrix.multiplyMV(new float[3], 0, new float[16], 0, new float[4], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfLhsIsSmall() throws Exception {
+  public void multiplyMVFailsIfLhsIsSmall() {
     Matrix.multiplyMV(new float[4], 0, new float[15], 0, new float[4], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfRhsIsSmall() throws Exception {
+  public void multiplyMVFailsIfRhsIsSmall() {
     Matrix.multiplyMV(new float[4], 0, new float[16], 0, new float[3], 0);
   }
 
-
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfResOffsetIsOutOfBounds() throws Exception {
+  public void multiplyMVFailsIfResOffsetIsOutOfBounds() {
     Matrix.multiplyMV(new float[4], 1, new float[16], 0, new float[4], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfLhsOffsetIsOutOfBounds() throws Exception {
+  public void multiplyMVFailsIfLhsOffsetIsOutOfBounds() {
     Matrix.multiplyMV(new float[4], 0, new float[16], 1, new float[4], 0);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void multiplyMVFailsIfRhsOffsetIsOutOfBounds() throws Exception {
+  public void multiplyMVFailsIfRhsOffsetIsOutOfBounds() {
     Matrix.multiplyMV(new float[4], 0, new float[16], 0, new float[4], 1);
   }
 
   @Test
-  public void multiplyMVIdentity() throws Exception {
+  public void multiplyMVIdentity() {
     final float[] res = new float[4];
     final float[] i = new float[16];
     Matrix.setIdentityM(i, 0);
@@ -248,7 +247,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyMV() throws Exception {
+  public void multiplyMV() {
     final float[] res = new float[4];
     final float[] m1 = new float[]{
             0, 1, 2, 3,
@@ -264,7 +263,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyMVWithOffset() throws Exception {
+  public void multiplyMVWithOffset() {
     final float[] res = new float[5];
     final float[] m1 = new float[]{
             0, 0, 0, 0,
@@ -287,7 +286,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  public void multiplyMVRandom() throws Exception {
+  public void multiplyMVRandom() {
     final float[] m1 = new float[]{
             0.575544f, 0.182558f, 0.097663f, 0.413832f,
             0.781248f, 0.466904f, 0.353418f, 0.790540f,

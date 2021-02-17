@@ -18,7 +18,7 @@ public class ShadowExpandableListViewTest {
   }
 
   @Test
-  public void shouldTolerateNullChildClickListener() throws Exception {
+  public void shouldTolerateNullChildClickListener() {
     expandableListView.performItemClick(null, 6, -1);
   }
 }

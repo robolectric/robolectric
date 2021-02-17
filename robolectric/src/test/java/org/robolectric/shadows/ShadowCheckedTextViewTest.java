@@ -38,7 +38,8 @@ public class ShadowCheckedTextViewTest {
     assertTrue(checkedTextView.isChecked());
   }
 
-  @Test public void toggle_shouldChangeCheckedness() throws Exception {
+  @Test
+  public void toggle_shouldChangeCheckedness() {
     CheckedTextView view = new CheckedTextView(ApplicationProvider.getApplicationContext());
     assertFalse(view.isChecked());
     view.toggle();

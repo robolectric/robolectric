@@ -200,7 +200,7 @@ public class ShadowUserManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void enforcePermissionChecks() throws Exception {
+  public void enforcePermissionChecks() {
     shadowOf(userManager).enforcePermissionChecks(true);
 
     try {

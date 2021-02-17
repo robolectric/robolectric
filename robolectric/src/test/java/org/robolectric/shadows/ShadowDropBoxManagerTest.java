@@ -55,28 +55,28 @@ public class ShadowDropBoxManagerTest {
 
   /** Checks that we retrieve the first entry <em>after</em> the specified time. */
   @Test
-  public void dataNotExpected_timestampSameAsEntry() throws Exception {
+  public void dataNotExpected_timestampSameAsEntry() {
     shadowDropBoxManager.addData(TAG, 1, DATA);
 
     assertThat(manager.getNextEntry(null, 1)).isNull();
   }
 
   @Test
-  public void dataNotExpected_timestampAfterEntry() throws Exception {
+  public void dataNotExpected_timestampAfterEntry() {
     shadowDropBoxManager.addData(TAG, 1, DATA);
 
     assertThat(manager.getNextEntry(null, 2)).isNull();
   }
 
   @Test
-  public void dataNotExpected_wrongTag() throws Exception {
+  public void dataNotExpected_wrongTag() {
     shadowDropBoxManager.addData(TAG, 1, DATA);
 
     assertThat(manager.getNextEntry(ANOTHER_TAG, 0)).isNull();
   }
 
   @Test
-  public void dataExpectedWithSort() throws Exception {
+  public void dataExpectedWithSort() {
     shadowDropBoxManager.addData(TAG, 3, DATA);
     shadowDropBoxManager.addData(TAG, 1, new byte[] {(byte) 0x0});
 
@@ -87,7 +87,7 @@ public class ShadowDropBoxManagerTest {
   }
 
   @Test()
-  public void resetClearsData() throws Exception {
+  public void resetClearsData() {
     shadowDropBoxManager.addData(TAG, 1, DATA);
 
     shadowDropBoxManager.reset();
@@ -96,7 +96,7 @@ public class ShadowDropBoxManagerTest {
   }
 
   @Test
-  public void testAddText() throws Exception {
+  public void testAddText() {
     long baseTimestamp = 55000L;
     SystemClock.setCurrentTimeMillis(baseTimestamp);
     manager.addText(TAG, "HELLO WORLD");

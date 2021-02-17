@@ -284,7 +284,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  public void schedule_useRequestCodeToMatchExistingPendingIntents() throws Exception {
+  public void schedule_useRequestCodeToMatchExistingPendingIntents() {
     Intent intent = new Intent("ACTION!");
     PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
@@ -296,7 +296,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  public void cancel_useRequestCodeToMatchExistingPendingIntents() throws Exception {
+  public void cancel_useRequestCodeToMatchExistingPendingIntents() {
     Intent intent = new Intent("ACTION!");
     PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
     alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);

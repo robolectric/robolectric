@@ -8,7 +8,7 @@ import android.widget.RadioGroup;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,33 +26,33 @@ public class ShadowRadioGroupTest {
   }
 
   @Test
-  public void checkedRadioButtonId() throws Exception {
+  public void checkedRadioButtonId() {
     assertThat(radioGroup.getCheckedRadioButtonId()).isEqualTo(-1);
     radioGroup.check(99);
     assertThat(radioGroup.getCheckedRadioButtonId()).isEqualTo(99);
   }
 
   @Test
-  public void check_shouldCallOnCheckedChangeListener() throws Exception {
+  public void check_shouldCallOnCheckedChangeListener() {
     TestOnCheckedChangeListener listener = new TestOnCheckedChangeListener();
     radioGroup.setOnCheckedChangeListener(listener);
 
     radioGroup.check(BUTTON_ID);
 
-    assertEquals(Arrays.asList(BUTTON_ID), listener.onCheckedChangedCheckedIds);
-    assertEquals(Arrays.asList(radioGroup), listener.onCheckedChangedGroups);
+    assertEquals(Collections.singletonList(BUTTON_ID), listener.onCheckedChangedCheckedIds);
+    assertEquals(Collections.singletonList(radioGroup), listener.onCheckedChangedGroups);
   }
 
   @Test
-  public void clearCheck_shouldCallOnCheckedChangeListenerTwice() throws Exception {
+  public void clearCheck_shouldCallOnCheckedChangeListenerTwice() {
     TestOnCheckedChangeListener listener = new TestOnCheckedChangeListener();
 
     radioGroup.check(BUTTON_ID);
     radioGroup.setOnCheckedChangeListener(listener);
     radioGroup.clearCheck();
 
-    assertEquals(Arrays.asList(-1), listener.onCheckedChangedCheckedIds);
-    assertEquals(Arrays.asList(radioGroup), listener.onCheckedChangedGroups);
+    assertEquals(Collections.singletonList(-1), listener.onCheckedChangedCheckedIds);
+    assertEquals(Collections.singletonList(radioGroup), listener.onCheckedChangedGroups);
   }
 
   private static class TestOnCheckedChangeListener implements RadioGroup.OnCheckedChangeListener {

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 public class ShadowTrafficStatsTest {
 
   @Test
-  public void allUidSpecificAccessorsAreStubbed() throws Exception {
+  public void allUidSpecificAccessorsAreStubbed() {
     int anything = -2;
 
     assertThat(TrafficStats.getUidTxBytes(anything)).isEqualTo(TrafficStats.UNSUPPORTED);
@@ -42,7 +42,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setMobileTxPacketsUpdatesMobileTxPackets() throws Exception {
+  public void setMobileTxPacketsUpdatesMobileTxPackets() {
     assertThat(TrafficStats.getMobileTxPackets()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setMobileTxPackets(1);
@@ -50,7 +50,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setMobileRxPacketsUpdatesMobileRxPackets() throws Exception {
+  public void setMobileRxPacketsUpdatesMobileRxPackets() {
     assertThat(TrafficStats.getMobileRxPackets()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setMobileRxPackets(2);
@@ -58,7 +58,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setMobileTxBytesUpdatesMobileTxBytes() throws Exception {
+  public void setMobileTxBytesUpdatesMobileTxBytes() {
     assertThat(TrafficStats.getMobileTxBytes()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setMobileTxBytes(3);
@@ -66,7 +66,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setMobileRxBytesUpdatesMobileRxBytes() throws Exception {
+  public void setMobileRxBytesUpdatesMobileRxBytes() {
     assertThat(TrafficStats.getMobileRxBytes()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setMobileRxBytes(4);
@@ -74,7 +74,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setTotalTxPacketsUpdatesTotalTxPackets() throws Exception {
+  public void setTotalTxPacketsUpdatesTotalTxPackets() {
     assertThat(TrafficStats.getTotalTxPackets()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setTotalTxPackets(5);
@@ -82,7 +82,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setTotalRxPacketsUpdatesTotalRxPackets() throws Exception {
+  public void setTotalRxPacketsUpdatesTotalRxPackets() {
     assertThat(TrafficStats.getTotalRxPackets()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setTotalRxPackets(6);
@@ -90,7 +90,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setTotalTxBytesUpdatesTotalTxBytes() throws Exception {
+  public void setTotalTxBytesUpdatesTotalTxBytes() {
     assertThat(TrafficStats.getTotalTxBytes()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setTotalTxBytes(7);
@@ -98,7 +98,7 @@ public class ShadowTrafficStatsTest {
   }
 
   @Test
-  public void setTotalRxBytesUpdatesTotalRxBytes() throws Exception {
+  public void setTotalRxBytesUpdatesTotalRxBytes() {
     assertThat(TrafficStats.getTotalRxBytes()).isEqualTo(TrafficStats.UNSUPPORTED);
 
     ShadowTrafficStats.setTotalRxBytes(8);

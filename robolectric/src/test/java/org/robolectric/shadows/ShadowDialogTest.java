@@ -38,7 +38,7 @@ public class ShadowDialogTest {
   }
 
   @Test
-  public void shouldCallOnDismissListener() throws Exception {
+  public void shouldCallOnDismissListener() {
     final List<String> transcript = new ArrayList<>();
 
     final Dialog dialog = new Dialog(context);
@@ -56,7 +56,7 @@ public class ShadowDialogTest {
   }
 
   @Test
-  public void setContentViewWithViewAllowsFindById() throws Exception {
+  public void setContentViewWithViewAllowsFindById() {
     final int viewId = 1234;
     final Dialog dialog = new Dialog(context);
     final View view = new View(context);
@@ -90,14 +90,14 @@ public class ShadowDialogTest {
   }
 
   @Test
-  public void shouldDismissTheRealDialogWhenCancelled() throws Exception {
+  public void shouldDismissTheRealDialogWhenCancelled() {
     TestDialog dialog = new TestDialog(context);
     dialog.cancel();
     assertThat(dialog.wasDismissed).isTrue();
   }
 
   @Test
-  public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
+  public void shouldDefaultCancelableToTrueAsTheSDKDoes() {
     Dialog dialog = new Dialog(context);
     ShadowDialog shadow = shadowOf(dialog);
 
@@ -138,7 +138,7 @@ public class ShadowDialogTest {
   }
 
   @Test
-  public void getLatestDialog_shouldReturnARealDialog() throws Exception {
+  public void getLatestDialog_shouldReturnARealDialog() {
     assertThat(ShadowDialog.getLatestDialog()).isNull();
 
     Dialog dialog = new Dialog(context);
@@ -147,7 +147,7 @@ public class ShadowDialogTest {
   }
 
   @Test
-  public void shouldKeepListOfOpenedDialogs() throws Exception {
+  public void shouldKeepListOfOpenedDialogs() {
     assertEquals(0, ShadowDialog.getShownDialogs().size());
 
     TestDialog dialog = new TestDialog(context);
@@ -172,17 +172,17 @@ public class ShadowDialogTest {
   }
 
   @Test
-  public void shouldPopulateListOfRecentDialogsInCorrectOrder() throws Exception {
+  public void shouldPopulateListOfRecentDialogsInCorrectOrder() {
     new NestingTestDialog().show();
 
     assertEquals(TestDialog.class, ShadowDialog.getLatestDialog().getClass());
   }
 
   @Test
-  public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() throws Exception {
+  public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() {
     Dialog dialog = new Dialog(context);
     dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
-    assertThat(dialog.<TextView>findViewById(R.id.title)).isInstanceOf((Class<? extends TextView>) TextView.class);
+    assertThat(dialog.<TextView>findViewById(R.id.title)).isInstanceOf(TextView.class);
   }
 
   @Test

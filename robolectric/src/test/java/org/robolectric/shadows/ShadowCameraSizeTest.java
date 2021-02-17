@@ -20,20 +20,20 @@ public class ShadowCameraSizeTest {
   }
 
   @Test
-  public void testConstructor() throws Exception {
+  public void testConstructor() {
     assertThat(cameraSize.width).isEqualTo(480);
     assertThat(cameraSize.height).isEqualTo(320);
   }
 
   @Test
-  public void testSetWidth() throws Exception {
+  public void testSetWidth() {
     assertThat(cameraSize.width).isNotEqualTo(640);
     cameraSize.width = 640;
     assertThat(cameraSize.width).isEqualTo(640);
   }
 
   @Test
-  public void testSetHeight() throws Exception {
+  public void testSetHeight() {
     assertThat(cameraSize.height).isNotEqualTo(480);
     cameraSize.height = 480;
     assertThat(cameraSize.height).isEqualTo(480);

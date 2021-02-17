@@ -23,7 +23,6 @@ import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +40,8 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  public void createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() throws Exception {
+  public void
+      createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() {
     String corruptedStreamSource = "http://foo.com/image.jpg";
     ShadowDrawable.addCorruptStreamSource(corruptedStreamSource);
     assertNull(ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
@@ -60,14 +60,15 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  public void createFromStream__shouldReturnDrawableWithSpecificSource() throws Exception {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+  public void createFromStream__shouldReturnDrawableWithSpecificSource() {
+    Drawable drawable =
+        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     assertNotNull(drawable);
     assertEquals("my_source", ((ShadowBitmapDrawable) shadowOf(drawable)).getSource());
   }
 
   @Test
-  public void reset__shouldClearStaticState() throws Exception {
+  public void reset__shouldClearStaticState() {
     String src = "source1";
     ShadowDrawable.addCorruptStreamSource(src);
     assertTrue(ShadowDrawable.corruptStreamSources.contains(src));
@@ -76,15 +77,16 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  public void testCreateFromStream_shouldSetTheInputStreamOnTheReturnedDrawable() throws Exception {
+  public void testCreateFromStream_shouldSetTheInputStreamOnTheReturnedDrawable() {
     ByteArrayInputStream byteInputStream = new ByteArrayInputStream(new byte[0]);
     Drawable drawable = Drawable.createFromStream(byteInputStream, "src name");
-    assertThat(shadowOf(drawable).getInputStream()).isEqualTo((InputStream) byteInputStream);
+    assertThat(shadowOf(drawable).getInputStream()).isEqualTo(byteInputStream);
   }
 
   @Test
   public void copyBoundsWithPassedRect() {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable =
+        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     drawable.setBounds(1, 2, 3, 4);
     Rect r = new Rect();
     drawable.copyBounds(r);
@@ -96,7 +98,8 @@ public class ShadowDrawableTest {
 
   @Test
   public void copyBoundsToReturnedRect() {
-    Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable =
+        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     drawable.setBounds(1, 2, 3, 4);
     Rect r = drawable.copyBounds();
     assertThat(r.left).isEqualTo(1);
@@ -106,27 +109,27 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  public void createFromPath__shouldReturnDrawableWithSpecificPath() throws Exception {
+  public void createFromPath__shouldReturnDrawableWithSpecificPath() {
     Drawable drawable = ShadowDrawable.createFromPath("/foo");
     assertNotNull(drawable);
     assertEquals("/foo", ((ShadowBitmapDrawable) shadowOf(drawable)).getPath());
   }
 
   @Test
-  public void testGetLoadedFromResourceId_shouldDefaultToNegativeOne() throws Exception {
+  public void testGetLoadedFromResourceId_shouldDefaultToNegativeOne() {
     Drawable drawable = new TestDrawable();
     assertThat(shadowOf(drawable).getCreatedFromResId()).isEqualTo(-1);
   }
 
   @Test
-  public void testCreateFromResourceId_shouldSetTheId() throws Exception {
+  public void testCreateFromResourceId_shouldSetTheId() {
     Drawable drawable = ShadowDrawable.createFromResourceId(34758);
     ShadowDrawable shadowDrawable = shadowOf(drawable);
     assertThat(shadowDrawable.getCreatedFromResId()).isEqualTo(34758);
   }
 
   @Test
-  public void testWasSelfInvalidated() throws Exception {
+  public void testWasSelfInvalidated() {
     Drawable drawable = ShadowDrawable.createFromResourceId(34758);
     ShadowDrawable shadowDrawable = shadowOf(drawable);
     assertThat(shadowDrawable.wasInvalidated()).isFalse();
@@ -134,7 +137,8 @@ public class ShadowDrawableTest {
     assertThat(shadowDrawable.wasInvalidated()).isTrue();
   }
 
-  @Test public void shouldLoadNinePatchFromDrawableXml() throws Exception {
+  @Test
+  public void shouldLoadNinePatchFromDrawableXml() {
     assertThat(context.getResources().getDrawable(R.drawable.drawable_with_nine_patch)).isNotNull();
   }
 

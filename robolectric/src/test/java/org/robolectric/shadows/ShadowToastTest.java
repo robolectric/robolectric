@@ -26,21 +26,21 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldHaveShortDuration() throws Exception {
+  public void shouldHaveShortDuration() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     assertThat(toast).isNotNull();
     assertThat(toast.getDuration()).isEqualTo(Toast.LENGTH_SHORT);
   }
 
   @Test
-  public void shouldHaveLongDuration() throws Exception {
+  public void shouldHaveLongDuration() {
     Toast toast = Toast.makeText(context, "long toast", Toast.LENGTH_LONG);
     assertThat(toast).isNotNull();
     assertThat(toast.getDuration()).isEqualTo(Toast.LENGTH_LONG);
   }
 
   @Test
-  public void shouldMakeTextCorrectly() throws Exception {
+  public void shouldMakeTextCorrectly() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     assertThat(toast).isNotNull();
     assertThat(toast.getDuration()).isEqualTo(Toast.LENGTH_SHORT);
@@ -51,7 +51,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldSetTextCorrectly() throws Exception {
+  public void shouldSetTextCorrectly() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.setText("other toast");
     toast.show();
@@ -61,7 +61,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldSetTextWithIdCorrectly() throws Exception {
+  public void shouldSetTextWithIdCorrectly() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.setText(R.string.hello);
     toast.show();
@@ -71,7 +71,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldSetViewCorrectly() throws Exception {
+  public void shouldSetViewCorrectly() {
     Toast toast = new Toast(context);
     toast.setDuration(Toast.LENGTH_SHORT);
     final View view = new TextView(context);
@@ -80,7 +80,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldSetGravityCorrectly() throws Exception {
+  public void shouldSetGravityCorrectly() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     assertThat(toast).isNotNull();
     toast.setGravity(Gravity.CENTER, 0, 0);
@@ -88,7 +88,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldSetOffsetsCorrectly() throws Exception {
+  public void shouldSetOffsetsCorrectly() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.setGravity(0, 12, 34);
     assertThat(toast.getXOffset()).isEqualTo(12);
@@ -96,7 +96,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldCountToastsCorrectly() throws Exception {
+  public void shouldCountToastsCorrectly() {
     assertThat(ShadowToast.shownToastCount()).isEqualTo(0);
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     assertThat(toast).isNotNull();
@@ -112,7 +112,7 @@ public class ShadowToastTest {
   }
 
   @Test
-  public void shouldBeCancelled() throws Exception {
+  public void shouldBeCancelled() {
     Toast toast = Toast.makeText(context, "short toast", Toast.LENGTH_SHORT);
     toast.cancel();
     ShadowToast shadowToast = shadowOf(toast);

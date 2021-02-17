@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 public class ShadowNotificationTest {
 
   @Test
-  public void setLatestEventInfo__shouldCaptureContentIntent() throws Exception {
+  public void setLatestEventInfo__shouldCaptureContentIntent() {
     PendingIntent pendingIntent = PendingIntent.getActivity(getApplication(), 0, new Intent(), 0);
     Notification notification = new Notification();
     notification.setLatestEventInfo(getApplication(), "title", "content", pendingIntent);

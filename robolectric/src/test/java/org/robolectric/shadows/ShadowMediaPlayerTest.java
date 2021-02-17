@@ -1060,12 +1060,7 @@ public class ShadowMediaPlayerTest {
   public void testSimulatenousEventsAllRun() {
     // Simultaneous events should all run even if
     // one of them stops playback.
-    MediaEvent e1 = new MediaEvent() {
-      @Override
-      public void run(MediaPlayer mp, ShadowMediaPlayer smp) {
-        smp.doStop();
-      }
-    };
+    MediaEvent e1 = (mp, smp) -> smp.doStop();
     MediaEvent e2 = Mockito.mock(MediaEvent.class);
 
     info.scheduleEventAtOffset(100, e1);

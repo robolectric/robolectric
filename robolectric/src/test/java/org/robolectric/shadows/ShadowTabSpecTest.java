@@ -30,7 +30,7 @@ public class ShadowTabSpecTest {
   }
 
   @Test
-  public void shouldGetAndSetTheIndicator() throws Exception {
+  public void shouldGetAndSetTheIndicator() {
     TabHost.TabSpec spec = new TabHost(context).newTabSpec("foo");
     View view = new View(context);
     TabHost.TabSpec self = spec.setIndicator(view);
@@ -39,7 +39,7 @@ public class ShadowTabSpecTest {
   }
 
   @Test
-  public void shouldGetAndSetTheIntentContent() throws Exception {
+  public void shouldGetAndSetTheIntentContent() {
     TabHost.TabSpec spec = new TabHost(context).newTabSpec("foo");
     Intent intent = new Intent();
     TabHost.TabSpec self = spec.setContent(intent);
@@ -48,7 +48,7 @@ public class ShadowTabSpecTest {
   }
 
   @Test
-  public void shouldGetAndSetTheIndicatorLabel() throws Exception {
+  public void shouldGetAndSetTheIndicatorLabel() {
     TabHost.TabSpec spec =
         new TabHost(context).newTabSpec("foo").setContent(R.layout.main).setIndicator("labelText");
 
@@ -57,7 +57,7 @@ public class ShadowTabSpecTest {
   }
 
   @Test
-  public void shouldGetAndSetTheIndicatorLabelAndIcon() throws Exception {
+  public void shouldGetAndSetTheIndicatorLabelAndIcon() {
     TabHost.TabSpec spec =
         new TabHost(context)
             .newTabSpec("foo")
@@ -70,7 +70,7 @@ public class ShadowTabSpecTest {
   }
 
   @Test
-  public void shouldSetTheContentView() throws Exception {
+  public void shouldSetTheContentView() {
     TabHost.TabSpec foo =
         new TabHost(context)
             .newTabSpec("Foo")
@@ -89,7 +89,7 @@ public class ShadowTabSpecTest {
   }
 
   @Test
-  public void shouldSetTheContentViewId() throws Exception {
+  public void shouldSetTheContentViewId() {
     TabHost.TabSpec foo = new TabHost(context).newTabSpec("Foo").setContent(R.id.title);
 
     ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);

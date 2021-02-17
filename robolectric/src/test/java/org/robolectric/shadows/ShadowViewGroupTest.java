@@ -13,7 +13,6 @@ import android.app.Application;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
@@ -64,7 +63,7 @@ public class ShadowViewGroupTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     System.setProperty("line.separator", defaultLineSeparator);
   }
 
@@ -104,24 +103,24 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void testRemoveChildAt() throws Exception {
+  public void testRemoveChildAt() {
     root.removeViewAt(1);
 
     assertThat(root.getChildCount()).isEqualTo(2);
     assertThat(root.getChildAt(0)).isSameInstanceAs(child1);
-    assertThat(root.getChildAt(1)).isSameInstanceAs((View) child3);
+    assertThat(root.getChildAt(1)).isSameInstanceAs(child3);
 
     assertThat(child2.getParent()).isNull();
   }
 
   @Test
-  public void testAddViewAt() throws Exception {
+  public void testAddViewAt() {
     root.removeAllViews();
     root.addView(child1);
     root.addView(child2);
     root.addView(child3, 1);
     assertThat(root.getChildAt(0)).isSameInstanceAs(child1);
-    assertThat(root.getChildAt(1)).isSameInstanceAs((View) child3);
+    assertThat(root.getChildAt(1)).isSameInstanceAs(child3);
     assertThat(root.getChildAt(2)).isSameInstanceAs(child2);
   }
 
@@ -135,7 +134,7 @@ public class ShadowViewGroupTest {
     root.addView(child2);
     root.addView(child3, 1);
     assertThat((View) root.findViewWithTag("tag1")).isSameInstanceAs(child1);
-    assertThat((View) root.findViewWithTag("tag2")).isSameInstanceAs((View) child2);
+    assertThat((View) root.findViewWithTag("tag2")).isSameInstanceAs(child2);
     assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameInstanceAs(child3);
   }
 
@@ -167,7 +166,7 @@ public class ShadowViewGroupTest {
 
     // can find views by tag from root
     assertThat((View) root.findViewWithTag("tag1")).isSameInstanceAs(child1);
-    assertThat((View) root.findViewWithTag("tag2")).isSameInstanceAs((View) child2);
+    assertThat((View) root.findViewWithTag("tag2")).isSameInstanceAs(child2);
     assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameInstanceAs(child3);
 
     // can find views by tag from child3
@@ -176,7 +175,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() throws Exception {
+  public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() {
     makeFocusable(root, child1, child2, child3, child3a, child3b);
     assertFalse(root.hasFocus());
 
@@ -205,7 +204,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void clearFocus_shouldRecursivelyClearTheFocusOfAllChildren() throws Exception {
+  public void clearFocus_shouldRecursivelyClearTheFocusOfAllChildren() {
     child3a.requestFocus();
 
     root.clearFocus();
@@ -220,7 +219,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void dump_shouldDumpStructure() throws Exception {
+  public void dump_shouldDumpStructure() {
     child3.setId(R.id.snippet_text);
     child3b.setVisibility(View.GONE);
     TextView textView = new TextView(context);
@@ -243,7 +242,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
+  public void addViewWithLayoutParams_shouldStoreLayoutParams() {
     FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     View child1 = new View(ApplicationProvider.getApplicationContext());
@@ -282,26 +281,26 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void removeView_removesView() throws Exception {
+  public void removeView_removesView() {
     assertThat(root.getChildCount()).isEqualTo(3);
     root.removeView(child1);
     assertThat(root.getChildCount()).isEqualTo(2);
     assertThat(root.getChildAt(0)).isSameInstanceAs(child2);
-    assertThat(root.getChildAt(1)).isSameInstanceAs((View) child3);
+    assertThat(root.getChildAt(1)).isSameInstanceAs(child3);
     assertThat(child1.getParent()).isNull();
   }
 
   @Test
-  public void removeView_resetsParentOnlyIfViewIsInViewGroup() throws Exception {
+  public void removeView_resetsParentOnlyIfViewIsInViewGroup() {
     assertThat(root.getChildCount()).isEqualTo(3);
     assertNotSame(child3a.getParent(), root);
     root.removeView(child3a);
     assertThat(root.getChildCount()).isEqualTo(3);
-    assertThat(child3a.getParent()).isSameInstanceAs((ViewParent) child3);
+    assertThat(child3a.getParent()).isSameInstanceAs(child3);
   }
 
   @Test
-  public void addView_whenChildAlreadyHasAParent_shouldThrow() throws Exception {
+  public void addView_whenChildAlreadyHasAParent_shouldThrow() {
     ViewGroup newRoot = new FrameLayout(context);
     try {
       newRoot.addView(child1);
@@ -312,7 +311,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void shouldKnowWhenOnInterceptTouchEventWasCalled() throws Exception {
+  public void shouldKnowWhenOnInterceptTouchEventWasCalled() {
     ViewGroup viewGroup = new FrameLayout(context);
 
     MotionEvent touchEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
@@ -322,7 +321,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void removeView_shouldRequestLayout() throws Exception {
+  public void removeView_shouldRequestLayout() {
     View view = new View(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view);
@@ -333,7 +332,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void removeViewAt_shouldRequestLayout() throws Exception {
+  public void removeViewAt_shouldRequestLayout() {
     View view = new View(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view);
@@ -344,7 +343,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void removeAllViews_shouldRequestLayout() throws Exception {
+  public void removeAllViews_shouldRequestLayout() {
     View view = new View(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view);
@@ -355,7 +354,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void addView_shouldRequestLayout() throws Exception {
+  public void addView_shouldRequestLayout() {
     View view = new View(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view);
@@ -364,7 +363,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void addView_withIndex_shouldRequestLayout() throws Exception {
+  public void addView_withIndex_shouldRequestLayout() {
     View view = new View(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view, 0);
@@ -373,7 +372,7 @@ public class ShadowViewGroupTest {
   }
 
   @Test
-  public void removeAllViews_shouldCallOnChildViewRemovedWithEachChild() throws Exception {
+  public void removeAllViews_shouldCallOnChildViewRemovedWithEachChild() {
     View view = new View(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view);

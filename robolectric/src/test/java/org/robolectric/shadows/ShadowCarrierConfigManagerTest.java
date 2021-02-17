@@ -32,13 +32,13 @@ public class ShadowCarrierConfigManagerTest {
   }
 
   @Test
-  public void getConfigForSubId_shouldReturnNonNullValue() throws Exception {
+  public void getConfigForSubId_shouldReturnNonNullValue() {
     PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(-1);
     assertThat(persistableBundle).isNotNull();
   }
 
   @Test
-  public void testGetConfigForSubId() throws Exception {
+  public void testGetConfigForSubId() {
     PersistableBundle persistableBundle = new PersistableBundle();
     persistableBundle.putString("key1", "test");
     persistableBundle.putInt("key2", 100);
@@ -55,13 +55,13 @@ public class ShadowCarrierConfigManagerTest {
   }
 
   @Test
-  public void getConfigForSubId_defaultsToEmpty() throws Exception {
+  public void getConfigForSubId_defaultsToEmpty() {
     PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(99999);
     assertThat(persistableBundle).isNotNull();
   }
 
   @Test
-  public void getConfigForSubId_afterSetNullConfig_shouldReturnNullValue() throws Exception {
+  public void getConfigForSubId_afterSetNullConfig_shouldReturnNullValue() {
     shadowOf(carrierConfigManager).setConfigForSubId(TEST_ID, null);
     PersistableBundle persistableBundle = carrierConfigManager.getConfigForSubId(TEST_ID);
     assertThat(persistableBundle).isNull();

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -39,7 +38,7 @@ public class ShadowContentProviderClientTest {
 
   @Mock ContentProvider provider;
   ContentResolver contentResolver =
-      ((Application) ApplicationProvider.getApplicationContext()).getContentResolver();
+      ApplicationProvider.getApplicationContext().getContentResolver();
 
   @Before
   public void setUp() {

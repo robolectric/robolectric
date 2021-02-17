@@ -63,7 +63,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createInvalidWidthThrows() throws Exception {
+  public void createInvalidWidthThrows() {
     try {
       HardwareBuffer.create(
           INVALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, VALID_USAGE_FLAGS_O);
@@ -75,7 +75,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createInvalidHeightThrows() throws Exception {
+  public void createInvalidHeightThrows() {
     try {
       HardwareBuffer.create(
           VALID_WIDTH, INVALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, VALID_USAGE_FLAGS_O);
@@ -87,7 +87,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createInvalidFormatThrows() throws Exception {
+  public void createInvalidFormatThrows() {
     try {
       HardwareBuffer.create(
           VALID_WIDTH, VALID_HEIGHT, INVALID_FORMAT, VALID_LAYERS, VALID_USAGE_FLAGS_O);
@@ -99,7 +99,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createInvalidLayersThrows() throws Exception {
+  public void createInvalidLayersThrows() {
     try {
       HardwareBuffer.create(
           VALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, INVALID_LAYERS, VALID_USAGE_FLAGS_O);
@@ -111,7 +111,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createInvalidUsageFlagsThrows() throws Exception {
+  public void createInvalidUsageFlagsThrows() {
     try {
       HardwareBuffer.create(
           VALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, INVALID_USAGE_FLAGS);
@@ -123,7 +123,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O, maxSdk = O)
-  public void createWithPFormatsFailsOnO() throws Exception {
+  public void createWithPFormatsFailsOnO() {
     for (int format : VALID_FORMATS_P) {
       try {
         HardwareBuffer.create(
@@ -142,7 +142,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O, maxSdk = O)
-  public void createWithPFlagsThrowsOnO() throws Exception {
+  public void createWithPFlagsThrowsOnO() {
     try {
       HardwareBuffer.create(
           VALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, VALID_USAGE_FLAGS_P);
@@ -154,7 +154,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createWithBlobFormatInvalidHeightThrows() throws Exception {
+  public void createWithBlobFormatInvalidHeightThrows() {
     try {
       HardwareBuffer.create(VALID_WIDTH, 0, HardwareBuffer.BLOB, VALID_LAYERS, VALID_USAGE_FLAGS_O);
       fail("IllegalArgumentException should be thrown when creating a BLOB buffer with height 0.");
@@ -172,7 +172,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void createWithOFormatsAndFlagsSucceedsOnOAndLater() throws Exception {
+  public void createWithOFormatsAndFlagsSucceedsOnOAndLater() {
     for (int format : VALID_FORMATS_O) {
       int height = format == HardwareBuffer.BLOB ? 1 : VALID_HEIGHT;
       assertNotNull(
@@ -182,7 +182,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = P)
-  public void createWithPFormatsAndFlagsSucceedsOnPAndLater() throws Exception {
+  public void createWithPFormatsAndFlagsSucceedsOnPAndLater() {
     for (int format : VALID_FORMATS_P) {
       assertNotNull(
           HardwareBuffer.create(
@@ -192,7 +192,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = P)
-  public void createWithPFlagsSucceedsOnPAndLater() throws Exception {
+  public void createWithPFlagsSucceedsOnPAndLater() {
     assertNotNull(
         HardwareBuffer.create(
             VALID_WIDTH,
@@ -204,7 +204,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void gettersOnHardwareBufferAreCorrect() throws Exception {
+  public void gettersOnHardwareBufferAreCorrect() {
     HardwareBuffer buffer =
         HardwareBuffer.create(
             VALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, VALID_USAGE_FLAGS_O);
@@ -218,7 +218,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void gettersOnClosedHardwareBufferThrows() throws Exception {
+  public void gettersOnClosedHardwareBufferThrows() {
     HardwareBuffer buffer =
         HardwareBuffer.create(
             VALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, VALID_USAGE_FLAGS_O);
@@ -259,7 +259,7 @@ public class ShadowHardwareBufferTest {
 
   @Test
   @Config(minSdk = O)
-  public void gettersOnParceledBufferAreCorrect() throws Exception {
+  public void gettersOnParceledBufferAreCorrect() {
     HardwareBuffer buffer =
         HardwareBuffer.create(
             VALID_WIDTH, VALID_HEIGHT, HardwareBuffer.RGBA_8888, VALID_LAYERS, VALID_USAGE_FLAGS_O);

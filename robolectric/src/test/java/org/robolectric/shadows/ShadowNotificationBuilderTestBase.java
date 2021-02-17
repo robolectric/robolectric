@@ -26,7 +26,7 @@ public abstract class ShadowNotificationBuilderTestBase {
       new Notification.Builder(ApplicationProvider.getApplicationContext());
 
   @Test
-  public void build_setsContentTitleOnNotification() throws Exception {
+  public void build_setsContentTitleOnNotification() {
     Notification notification = builder.setContentTitle("Hello").build();
     assertThat(shadowOf(notification).getContentTitle().toString()).isEqualTo("Hello");
   }
@@ -60,21 +60,21 @@ public abstract class ShadowNotificationBuilderTestBase {
   }
 
   @Test
-  public void build_setsContentTextOnNotification() throws Exception {
+  public void build_setsContentTextOnNotification() {
     Notification notification = builder.setContentText("Hello Text").build();
 
     assertThat(shadowOf(notification).getContentText().toString()).isEqualTo("Hello Text");
   }
 
   @Test
-  public void build_setsTickerOnNotification() throws Exception {
+  public void build_setsTickerOnNotification() {
     Notification notification = builder.setTicker("My ticker").build();
 
     assertThat(notification.tickerText.toString()).isEqualTo("My ticker");
   }
 
   @Test
-  public void build_setsContentInfoOnNotification() throws Exception {
+  public void build_setsContentInfoOnNotification() {
     builder.setContentInfo("11");
     Notification notification = builder.build();
     assertThat(shadowOf(notification).getContentInfo().toString()).isEqualTo("11");
@@ -82,28 +82,28 @@ public abstract class ShadowNotificationBuilderTestBase {
 
   @Test
   @Config(minSdk = M)
-  public void build_setsIconOnNotification() throws Exception {
+  public void build_setsIconOnNotification() {
     Notification notification = builder.setSmallIcon(R.drawable.an_image).build();
 
     assertThat(notification.getSmallIcon().getResId()).isEqualTo(R.drawable.an_image);
   }
 
   @Test
-  public void build_setsWhenOnNotification() throws Exception {
+  public void build_setsWhenOnNotification() {
     Notification notification = builder.setWhen(11L).build();
 
     assertThat(notification.when).isEqualTo(11L);
   }
 
   @Test
-  public void build_setsProgressOnNotification_true() throws Exception {
+  public void build_setsProgressOnNotification_true() {
     Notification notification = builder.setProgress(36, 57, true).build();
     // If indeterminate then max and progress values are ignored.
     assertThat(shadowOf(notification).isIndeterminate()).isTrue();
   }
 
   @Test
-  public void build_setsProgressOnNotification_false() throws Exception {
+  public void build_setsProgressOnNotification_false() {
     Notification notification = builder.setProgress(50, 10, false).build();
 
     assertThat(shadowOf(notification).getMax()).isEqualTo(50);
@@ -113,7 +113,7 @@ public abstract class ShadowNotificationBuilderTestBase {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void build_setsUsesChronometerOnNotification_true() throws Exception {
+  public void build_setsUsesChronometerOnNotification_true() {
     Notification notification = builder.setUsesChronometer(true).setWhen(10).setShowWhen(true).build();
 
     assertThat(shadowOf(notification).usesChronometer()).isTrue();
@@ -121,7 +121,7 @@ public abstract class ShadowNotificationBuilderTestBase {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void build_setsUsesChronometerOnNotification_false() throws Exception {
+  public void build_setsUsesChronometerOnNotification_false() {
     Notification notification = builder.setUsesChronometer(false).setWhen(10).setShowWhen(true).build();
 
     assertThat(shadowOf(notification).usesChronometer()).isFalse();

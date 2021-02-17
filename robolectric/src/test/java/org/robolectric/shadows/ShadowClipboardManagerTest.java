@@ -27,31 +27,31 @@ public class ShadowClipboardManagerTest {
   }
 
   @Test
-  public void shouldStoreText() throws Exception {
+  public void shouldStoreText() {
     clipboardManager.setText("BLARG!!!");
     assertThat(clipboardManager.getText().toString()).isEqualTo("BLARG!!!");
   }
 
   @Test
-  public void shouldNotHaveTextIfTextIsNull() throws Exception {
+  public void shouldNotHaveTextIfTextIsNull() {
     clipboardManager.setText(null);
     assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
-  public void shouldNotHaveTextIfTextIsEmpty() throws Exception {
+  public void shouldNotHaveTextIfTextIsEmpty() {
     clipboardManager.setText("");
     assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
-  public void shouldHaveTextIfEmptyString() throws Exception {
+  public void shouldHaveTextIfEmptyString() {
     clipboardManager.setText(" ");
     assertThat(clipboardManager.hasText()).isTrue();
   }
 
   @Test
-  public void shouldHaveTextIfString() throws Exception {
+  public void shouldHaveTextIfString() {
     clipboardManager.setText("BLARG");
     assertThat(clipboardManager.hasText()).isTrue();
   }
@@ -64,19 +64,19 @@ public class ShadowClipboardManagerTest {
   }
 
   @Test
-  public void shouldNotHaveTextIfPrimaryClipIsNull() throws Exception {
+  public void shouldNotHaveTextIfPrimaryClipIsNull() {
     clipboardManager.setPrimaryClip(null);
     assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
-  public void shouldNotHaveTextIfPrimaryClipIsEmpty() throws Exception {
+  public void shouldNotHaveTextIfPrimaryClipIsEmpty() {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
     assertThat(clipboardManager.hasText()).isFalse();
   }
 
   @Test
-  public void shouldHaveTextIfEmptyPrimaryClip() throws Exception {
+  public void shouldHaveTextIfEmptyPrimaryClip() {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(null, " "));
     assertThat(clipboardManager.hasText()).isTrue();
   }

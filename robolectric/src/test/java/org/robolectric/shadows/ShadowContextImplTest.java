@@ -59,7 +59,7 @@ public class ShadowContextImplTest {
 
   @Test
   @Config(minSdk = N)
-  public void testMoveSharedPreferencesFrom() throws Exception {
+  public void testMoveSharedPreferencesFrom() {
     String PREFS = "PREFS";
     String PREF_NAME = "TOKEN_PREF";
 
@@ -172,14 +172,14 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void createPackageContextRemoteViews() throws Exception {
+  public void createPackageContextRemoteViews() {
     RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.remote_views);
     remoteViews.apply(context, new FrameLayout(context));
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void bindServiceAsUser() throws Exception {
+  public void bindServiceAsUser() {
     Intent serviceIntent = new Intent().setPackage("dummy.package");
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
@@ -194,7 +194,7 @@ public class ShadowContextImplTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void bindServiceAsUser_shouldThrowOnImplicitIntent() throws Exception {
+  public void bindServiceAsUser_shouldThrowOnImplicitIntent() {
     Intent serviceIntent = new Intent();
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
@@ -208,7 +208,7 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void bindService() throws Exception {
+  public void bindService() {
     Intent serviceIntent = new Intent().setPackage("dummy.package");
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
@@ -219,7 +219,7 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void bindService_shouldAllowImplicitIntentPreLollipop() throws Exception {
+  public void bindService_shouldAllowImplicitIntentPreLollipop() {
     context.getApplicationInfo().targetSdkVersion = KITKAT;
     Intent serviceIntent = new Intent();
     ServiceConnection serviceConnection = buildServiceConnection();
@@ -231,7 +231,7 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void bindService_shouldThrowOnImplicitIntentOnLollipop() throws Exception {
+  public void bindService_shouldThrowOnImplicitIntentOnLollipop() {
     Intent serviceIntent = new Intent();
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
@@ -245,7 +245,7 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void bindService_unbindable() throws Exception {
+  public void bindService_unbindable() {
     String action = "foo-action";
     Intent serviceIntent = new Intent(action).setPackage("dummy.package");
     ServiceConnection serviceConnection = buildServiceConnection();
@@ -256,14 +256,14 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void startService_shouldAllowImplicitIntentPreLollipop() throws Exception {
+  public void startService_shouldAllowImplicitIntentPreLollipop() {
     context.getApplicationInfo().targetSdkVersion = KITKAT;
     context.startService(new Intent("dummy_action"));
     assertThat(shadowOf(context).getNextStartedService().getAction()).isEqualTo("dummy_action");
   }
 
   @Test
-  public void startService_shouldThrowOnImplicitIntentOnLollipop() throws Exception {
+  public void startService_shouldThrowOnImplicitIntentOnLollipop() {
     try {
       context.startService(new Intent("dummy_action"));
       fail("startService should throw IllegalArgumentException!");
@@ -273,13 +273,13 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  public void stopService_shouldAllowImplicitIntentPreLollipop() throws Exception {
+  public void stopService_shouldAllowImplicitIntentPreLollipop() {
     context.getApplicationInfo().targetSdkVersion = KITKAT;
     context.stopService(new Intent("dummy_action"));
   }
 
   @Test
-  public void stopService_shouldThrowOnImplicitIntentOnLollipop() throws Exception {
+  public void stopService_shouldThrowOnImplicitIntentOnLollipop() {
     try {
       context.stopService(new Intent("dummy_action"));
       fail("stopService should throw IllegalArgumentException!");
@@ -290,7 +290,7 @@ public class ShadowContextImplTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void sendBroadcastAsUser_sendBroadcast() throws IntentSender.SendIntentException {
+  public void sendBroadcastAsUser_sendBroadcast() {
     UserHandle userHandle = Process.myUserHandle();
     String action = "foo-action";
     Intent intent = new Intent(action);
@@ -303,7 +303,7 @@ public class ShadowContextImplTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void sendOrderedBroadcastAsUser_sendsBroadcast() throws IntentSender.SendIntentException {
+  public void sendOrderedBroadcastAsUser_sendsBroadcast() {
     UserHandle userHandle = Process.myUserHandle();
     String action = "foo-action";
     Intent intent = new Intent(action);

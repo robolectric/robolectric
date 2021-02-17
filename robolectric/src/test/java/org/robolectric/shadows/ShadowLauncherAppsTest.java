@@ -65,7 +65,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     launcherApps =
         (LauncherApps)
             ApplicationProvider.getApplicationContext()
@@ -180,7 +180,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  public void testGetShortcuts() throws Exception {
+  public void testGetShortcuts() {
     final ShortcutInfo shortcut1 =
         new ShortcutInfo.Builder(ApplicationProvider.getApplicationContext(), "ID1").build();
     final ShortcutInfo shortcut2 =
@@ -193,7 +193,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  public void testGetShortcutsWithFilters() throws Exception {
+  public void testGetShortcutsWithFilters() {
     String myPackage = ApplicationProvider.getApplicationContext().getPackageName();
     String otherPackage = "other";
     ComponentName c1 = new ComponentName(ApplicationProvider.getApplicationContext(), "Activity1");

@@ -24,25 +24,25 @@ public class ShadowAppWidgetHostViewTest {
   }
 
   @Test
-  public void shouldKnowItsWidgetId() throws Exception {
+  public void shouldKnowItsWidgetId() {
     appWidgetHostView.setAppWidget(789, null);
     assertThat(appWidgetHostView.getAppWidgetId()).isEqualTo(789);
   }
 
   @Test
-  public void shouldKnowItsAppWidgetProviderInfo() throws Exception {
+  public void shouldKnowItsAppWidgetProviderInfo() {
     AppWidgetProviderInfo providerInfo = new AppWidgetProviderInfo();
     appWidgetHostView.setAppWidget(0, providerInfo);
     assertThat(appWidgetHostView.getAppWidgetInfo()).isSameInstanceAs(providerInfo);
   }
 
   @Test
-  public void shouldHaveNullHost() throws Exception {
+  public void shouldHaveNullHost() {
     assertThat(shadowAppWidgetHostView.getHost()).isNull();
   }
 
   @Test
-  public void shouldBeAbleToHaveHostSet() throws Exception {
+  public void shouldBeAbleToHaveHostSet() {
     AppWidgetHost host = new AppWidgetHost(ApplicationProvider.getApplicationContext(), 0);
     shadowAppWidgetHostView.setHost(host);
     assertThat(shadowAppWidgetHostView.getHost()).isSameInstanceAs(host);

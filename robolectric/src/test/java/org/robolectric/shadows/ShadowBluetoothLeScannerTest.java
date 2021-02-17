@@ -61,13 +61,13 @@ public class ShadowBluetoothLeScannerTest {
   }
 
   @Test
-  public void startScanning() throws Exception {
+  public void startScanning() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, scanCallback);
     assertThat(shadowOf(bluetoothLeScanner).getScanCallbacks()).containsExactly(scanCallback);
   }
 
   @Test
-  public void stopScanning() throws Exception {
+  public void stopScanning() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, scanCallback);
     assertThat(shadowOf(bluetoothLeScanner).getScanCallbacks()).containsExactly(scanCallback);
     bluetoothLeScanner.stopScan(scanCallback);
@@ -75,7 +75,7 @@ public class ShadowBluetoothLeScannerTest {
   }
 
   @Test
-  public void stopScanning_neverStarted() throws Exception {
+  public void stopScanning_neverStarted() {
     bluetoothLeScanner.stopScan(scanCallback);
   }
 }

@@ -10,12 +10,12 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowIntentFilterAuthorityEntryTest {
   @Test(expected = NumberFormatException.class)
-  public void constructor_shouldThrowAnExceptionIfPortIsNotAValidNumber() throws Exception {
+  public void constructor_shouldThrowAnExceptionIfPortIsNotAValidNumber() {
     new IntentFilter.AuthorityEntry("", "not a number");
   }
 
   @Test
-  public void constructor_shouldAllowNullPortAndSetToNegativeOne() throws Exception {
+  public void constructor_shouldAllowNullPortAndSetToNegativeOne() {
     IntentFilter.AuthorityEntry authorityEntry = new IntentFilter.AuthorityEntry("host", null);
     assertThat(authorityEntry.getPort()).isEqualTo(-1);
   }

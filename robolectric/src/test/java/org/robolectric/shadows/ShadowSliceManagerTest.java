@@ -37,8 +37,8 @@ public final class ShadowSliceManagerTest {
     PackageManager packageManager = RuntimeEnvironment.getApplication().getPackageManager();
     ShadowApplicationPackageManager shadowPackageManager =
         (ShadowApplicationPackageManager) shadowOf(packageManager);
-    shadowPackageManager.setPackagesForUid(PACKAGE_1_UID, new String[] {PACKAGE_NAME_1});
-    shadowPackageManager.setPackagesForUid(PACKAGE_2_UID, new String[] {PACKAGE_NAME_2});
+    shadowPackageManager.setPackagesForUid(PACKAGE_1_UID, PACKAGE_NAME_1);
+    shadowPackageManager.setPackagesForUid(PACKAGE_2_UID, PACKAGE_NAME_2);
     sliceUri1 = Uri.parse("content://a/b");
     sliceUri2 = Uri.parse("content://c/d");
     sliceManager = ApplicationProvider.getApplicationContext().getSystemService(SliceManager.class);

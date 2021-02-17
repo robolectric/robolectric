@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
 public class ShadowMediaSessionTest {
   @Test
-  public void mediaSessionCompat_creation() throws Exception {
+  public void mediaSessionCompat_creation() {
     // Should not result in an exception.
     new MediaSession(ApplicationProvider.getApplicationContext(), "test");
   }

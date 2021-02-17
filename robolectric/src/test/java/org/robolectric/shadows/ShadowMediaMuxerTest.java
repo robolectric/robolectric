@@ -26,12 +26,12 @@ public final class ShadowMediaMuxerTest {
   private TempDirectory tempDirectory;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     tempDirectory = new TempDirectory();
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     tempDirectory.destroy();
   }
 

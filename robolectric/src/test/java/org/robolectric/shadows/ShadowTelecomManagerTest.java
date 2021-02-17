@@ -395,13 +395,13 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
-  public void canSetAndGetIsInCall() throws Exception {
+  public void canSetAndGetIsInCall() {
     shadowOf(telecomService).setIsInCall(true);
     assertThat(telecomService.isInCall()).isTrue();
   }
 
   @Test
-  public void isInCall_setIsInCallNotCalled_shouldReturnFalse() throws Exception {
+  public void isInCall_setIsInCallNotCalled_shouldReturnFalse() {
     assertThat(telecomService.isInCall()).isFalse();
   }
 

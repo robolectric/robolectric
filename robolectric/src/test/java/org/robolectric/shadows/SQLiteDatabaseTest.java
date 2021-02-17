@@ -87,14 +87,14 @@ public class SQLiteDatabaseTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     for (SQLiteDatabase openDatabase : openDatabases) {
       openDatabase.close();
     }
   }
 
   @Test
-  public void testInsertAndQuery() throws Exception {
+  public void testInsertAndQuery() {
     String stringColumnValue = "column_value";
     byte[] byteColumnValue = new byte[] {1, 2, 3};
 
@@ -125,7 +125,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testInsertAndRawQuery() throws Exception {
+  public void testInsertAndRawQuery() {
     String stringColumnValue = "column_value";
     byte[] byteColumnValue = new byte[] {1, 2, 3};
 
@@ -176,19 +176,19 @@ public class SQLiteDatabaseTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testRawQueryThrowsIndex0NullException() throws Exception {
+  public void testRawQueryThrowsIndex0NullException() {
     database.rawQuery(
         "select second_column, first_column from rawtable" + " WHERE `id` = ?",
         new String[] {null});
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testRawQueryThrowsIndex0NullException2() throws Exception {
+  public void testRawQueryThrowsIndex0NullException2() {
     database.rawQuery("select second_column, first_column from rawtable", new String[] {null});
   }
 
   @Test
-  public void testRawQueryCountWithOneArgument() throws Exception {
+  public void testRawQueryCountWithOneArgument() {
     Cursor cursor =
         database.rawQuery(
             "select second_column, first_column from rawtable WHERE" + " `id` = ?",
@@ -197,13 +197,13 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testRawQueryCountWithNullArgs() throws Exception {
+  public void testRawQueryCountWithNullArgs() {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", null);
     assertThat(cursor.getCount()).isEqualTo(2);
   }
 
   @Test
-  public void testRawQueryCountWithEmptyArguments() throws Exception {
+  public void testRawQueryCountWithEmptyArguments() {
     Cursor cursor =
         database.rawQuery(
             "select second_column, first_column" + " from" + " rawtable", new String[] {});
@@ -211,7 +211,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowWhenArgumentsDoNotMatchQuery() throws Exception {
+  public void shouldThrowWhenArgumentsDoNotMatchQuery() {
     database.rawQuery("select second_column, first_column from rawtable", new String[] {"1"});
   }
 
@@ -223,7 +223,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testEmptyTable() throws Exception {
+  public void testEmptyTable() {
     Cursor cursor =
         database.query(
             "table_name",
@@ -238,7 +238,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testInsertRowIdGeneration() throws Exception {
+  public void testInsertRowIdGeneration() {
     ContentValues values = new ContentValues();
     values.put("name", "Chuck");
 
@@ -248,7 +248,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testInsertKeyGeneration() throws Exception {
+  public void testInsertKeyGeneration() {
     ContentValues values = new ContentValues();
     values.put("name", "Chuck");
 
@@ -259,7 +259,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testInsertDuplicatedKeyGeneration() throws Exception {
+  public void testInsertDuplicatedKeyGeneration() {
     ContentValues values = new ContentValues();
     values.put("id", 123);
     values.put("name", "Chuck");
@@ -276,7 +276,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testInsertEmptyBlobArgument() throws Exception {
+  public void testInsertEmptyBlobArgument() {
     ContentValues emptyBlobValues = new ContentValues();
     emptyBlobValues.put("id", 1);
     emptyBlobValues.put("blob_col", new byte[] {});
@@ -314,7 +314,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testUpdate() throws Exception {
+  public void testUpdate() {
     addChuck();
 
     assertThat(updateName(1234L, "Buster")).isEqualTo(1);
@@ -328,7 +328,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testUpdateNoMatch() throws Exception {
+  public void testUpdateNoMatch() {
     addChuck();
 
     assertThat(updateName(5678L, "Buster")).isEqualTo(0);
@@ -342,7 +342,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testUpdateAll() throws Exception {
+  public void testUpdateAll() {
     addChuck();
     addJulie();
 
@@ -364,7 +364,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testDelete() throws Exception {
+  public void testDelete() {
     addChuck();
 
     int deleted = database.delete("table_name", "id=1234", null);
@@ -374,7 +374,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testDeleteNoMatch() throws Exception {
+  public void testDeleteNoMatch() {
     addChuck();
 
     int deleted = database.delete("table_name", "id=5678", null);
@@ -384,7 +384,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testDeleteAll() throws Exception {
+  public void testDeleteAll() {
     addChuck();
     addJulie();
 
@@ -395,7 +395,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testExecSQL() throws Exception {
+  public void testExecSQL() {
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
 
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
@@ -412,7 +412,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testExecSQLParams() throws Exception {
+  public void testExecSQLParams() {
     database.execSQL(
         "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name`"
             + " VARCHAR , `lastUsed` INTEGER DEFAULT 0 , "
@@ -446,33 +446,33 @@ public class SQLiteDatabaseTest {
   }
 
   @Test(expected = SQLiteException.class)
-  public void execSqlShouldThrowOnBadQuery() throws Exception {
+  public void execSqlShouldThrowOnBadQuery() {
     database.execSQL("INSERT INTO table_name;"); // invalid SQL
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLExceptionParametersWithoutArguments() throws Exception {
+  public void testExecSQLExceptionParametersWithoutArguments() {
     database.execSQL("insert into exectable (first_column) values (?);", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLWithNullBindArgs() throws Exception {
+  public void testExecSQLWithNullBindArgs() {
     database.execSQL("insert into exectable (first_column) values ('sdfsfs');", null);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testExecSQLTooManyBindArguments() throws Exception {
+  public void testExecSQLTooManyBindArguments() {
     database.execSQL(
         "insert into exectable (first_column) values" + " ('kjhk');", new String[] {"xxxx"});
   }
 
   @Test
-  public void testExecSQLWithEmptyBindArgs() throws Exception {
+  public void testExecSQLWithEmptyBindArgs() {
     database.execSQL("insert into exectable (first_column) values ('eff');", new String[] {});
   }
 
   @Test
-  public void testExecSQLInsertNull() throws Exception {
+  public void testExecSQLInsertNull() {
     String name = "nullone";
 
     database.execSQL(
@@ -490,7 +490,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testExecSQLAutoIncrementSQLite() throws Exception {
+  public void testExecSQLAutoIncrementSQLite() {
     database.execSQL(
         "CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name" + " VARCHAR(255));");
 
@@ -505,21 +505,21 @@ public class SQLiteDatabaseTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void testClose() throws Exception {
+  public void testClose() {
     database.close();
 
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
   }
 
   @Test
-  public void testIsOpen() throws Exception {
+  public void testIsOpen() {
     assertThat(database.isOpen()).isTrue();
     database.close();
     assertThat(database.isOpen()).isFalse();
   }
 
   @Test
-  public void shouldStoreGreatBigHonkingIntegersCorrectly() throws Exception {
+  public void shouldStoreGreatBigHonkingIntegersCorrectly() {
     database.execSQL("INSERT INTO table_name(big_int) VALUES(1234567890123456789);");
     Cursor cursor =
         database.query("table_name", new String[] {"big_int"}, null, null, null, null, null);
@@ -528,7 +528,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testSuccessTransaction() throws Exception {
+  public void testSuccessTransaction() {
     database.beginTransaction();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
     database.setTransactionSuccessful();
@@ -540,7 +540,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testFailureTransaction() throws Exception {
+  public void testFailureTransaction() {
     database.beginTransaction();
 
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
@@ -560,7 +560,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testSuccessNestedTransaction() throws Exception {
+  public void testSuccessNestedTransaction() {
     database.beginTransaction();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
     database.beginTransaction();
@@ -576,7 +576,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testFailureNestedTransaction() throws Exception {
+  public void testFailureNestedTransaction() {
     database.beginTransaction();
     database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
     database.beginTransaction();
@@ -604,7 +604,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testInTransaction() throws Exception {
+  public void testInTransaction() {
     assertThat(database.inTransaction()).isFalse();
     database.beginTransaction();
     assertThat(database.inTransaction()).isTrue();
@@ -613,7 +613,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testReplace() throws Exception {
+  public void testReplace() {
     long id = addChuck();
     assertThat(id).isNotEqualTo(-1L);
 
@@ -632,7 +632,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testReplaceIsReplacing() throws Exception {
+  public void testReplaceIsReplacing() {
     final String query = "SELECT first_column FROM table_name WHERE id = ";
     String stringValueA = "column_valueA";
     String stringValueB = "column_valueB";
@@ -660,17 +660,17 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() throws Exception {
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() {
     database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
   }
 
   @Test
-  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToQuery() throws Exception {
+  public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToQuery() {
     database.queryWithFactory(null, false, "table_name", null, null, null, null, null, null, null);
   }
 
   @Test
-  public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() throws Exception {
+  public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() {
 
     database.close();
 
@@ -690,28 +690,28 @@ public class SQLiteDatabaseTest {
   }
 
   @Test(expected = SQLiteException.class)
-  public void shouldThrowIfFileDoesNotExist() throws Exception {
+  public void shouldThrowIfFileDoesNotExist() {
     File testDb = new File("/i/do/not/exist");
     assertThat(testDb.exists()).isFalse();
     SQLiteDatabase.openOrCreateDatabase(testDb.getAbsolutePath(), null);
   }
 
   @Test
-  public void shouldUseInMemoryDatabaseWhenCallingCreate() throws Exception {
+  public void shouldUseInMemoryDatabaseWhenCallingCreate() {
     SQLiteDatabase db = SQLiteDatabase.create(null);
     assertThat(db.isOpen()).isTrue();
     assertThat(db.getPath()).isEqualTo(":memory:");
   }
 
   @Test
-  public void shouldSetAndGetVersion() throws Exception {
+  public void shouldSetAndGetVersion() {
     assertThat(database.getVersion()).isEqualTo(0);
     database.setVersion(20);
     assertThat(database.getVersion()).isEqualTo(20);
   }
 
   @Test
-  public void testTwoConcurrentDbConnections() throws Exception {
+  public void testTwoConcurrentDbConnections() {
     SQLiteDatabase db1 = openOrCreateDatabase("db1");
     SQLiteDatabase db2 = openOrCreateDatabase("db2");
 
@@ -741,7 +741,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test(expected = SQLiteException.class)
-  public void testQueryThrowsSQLiteException() throws Exception {
+  public void testQueryThrowsSQLiteException() {
     SQLiteDatabase db1 = openOrCreateDatabase("db1");
     db1.query("FOO", null, null, null, null, null, null);
   }
@@ -771,7 +771,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testCreateAndAlterTable() throws Exception {
+  public void testCreateAndAlterTable() {
     SQLiteDatabase db = openOrCreateDatabase("db1");
     db.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     Cursor c = db.query("FOO", null, null, null, null, null, null);
@@ -788,7 +788,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testDataInMemoryDatabaseIsPersistentAfterClose() throws Exception {
+  public void testDataInMemoryDatabaseIsPersistentAfterClose() {
     SQLiteDatabase db1 = openOrCreateDatabase("db1");
     db1.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     ContentValues d1 = new ContentValues();
@@ -805,7 +805,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void testRawQueryWithFactoryAndCancellationSignal() throws Exception {
+  public void testRawQueryWithFactoryAndCancellationSignal() {
     CancellationSignal signal = new CancellationSignal();
 
     Cursor cursor =
@@ -939,7 +939,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void shouldAlwaysReturnCorrectIdFromInsert() throws Exception {
+  public void shouldAlwaysReturnCorrectIdFromInsert() {
     database.execSQL(
         "CREATE TABLE table_A (\n"
             + "  _id INTEGER PRIMARY KEY AUTOINCREMENT,\n"

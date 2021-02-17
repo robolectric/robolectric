@@ -60,21 +60,21 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testDynamicShortcuts_twoAdded() throws Exception {
+  public void testDynamicShortcuts_twoAdded() {
     shortcutManager.addDynamicShortcuts(
         ImmutableList.of(createShortcut("id1"), createShortcut("id2")));
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(2);
   }
 
   @Test
-  public void testDynamicShortcuts_duplicateGetsDeduped() throws Exception {
+  public void testDynamicShortcuts_duplicateGetsDeduped() {
     shortcutManager.addDynamicShortcuts(
         ImmutableList.of(createShortcut("id1"), createShortcut("id1")));
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(1);
   }
 
   @Test
-  public void testDynamicShortcuts_immutableShortcutDoesntGetUpdated() throws Exception {
+  public void testDynamicShortcuts_immutableShortcutDoesntGetUpdated() {
     ShortcutInfo shortcut1 = createImmutableShortcut("id1");
     when(shortcut1.getLongLabel()).thenReturn("original");
     ShortcutInfo shortcut2 = createImmutableShortcut("id1");
@@ -89,7 +89,7 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testShortcutWithIdenticalIdGetsUpdated() throws Exception {
+  public void testShortcutWithIdenticalIdGetsUpdated() {
 
     ShortcutInfo shortcut1 = createShortcutWithLabel("id1", "original");
     ShortcutInfo shortcut2 = createShortcutWithLabel("id1", "updated");
@@ -103,7 +103,7 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testRemoveAllDynamicShortcuts() throws Exception {
+  public void testRemoveAllDynamicShortcuts() {
     shortcutManager.addDynamicShortcuts(
         ImmutableList.of(createShortcut("id1"), createShortcut("id2")));
     assertThat(shortcutManager.getDynamicShortcuts()).hasSize(2);
@@ -113,7 +113,7 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testRemoveDynamicShortcuts() throws Exception {
+  public void testRemoveDynamicShortcuts() {
     ShortcutInfo shortcut1 = createShortcut("id1");
     ShortcutInfo shortcut2 = createShortcut("id2");
     shortcutManager.addDynamicShortcuts(
@@ -125,7 +125,7 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testSetDynamicShortcutsClearOutOldList() throws Exception {
+  public void testSetDynamicShortcutsClearOutOldList() {
     ShortcutInfo shortcut1 = createShortcut("id1");
     ShortcutInfo shortcut2 = createShortcut("id2");
     ShortcutInfo shortcut3 = createShortcut("id3");
@@ -138,7 +138,7 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testUpdateShortcut_dynamic() throws Exception {
+  public void testUpdateShortcut_dynamic() {
     ShortcutInfo shortcut1 = createShortcutWithLabel("id1", "original");
     ShortcutInfo shortcutUpdated = createShortcutWithLabel("id1", "updated");
     shortcutManager.addDynamicShortcuts(
@@ -151,7 +151,7 @@ public final class ShadowShortcutManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
-  public void testUpdateShortcut_pinned() throws Exception {
+  public void testUpdateShortcut_pinned() {
     ShortcutInfo shortcut1 = createShortcutWithLabel("id1", "original");
     ShortcutInfo shortcutUpdated = createShortcutWithLabel("id1", "updated");
     shortcutManager.requestPinShortcut(
@@ -163,7 +163,7 @@ public final class ShadowShortcutManagerTest {
   }
 
   @Test
-  public void testUpdateShortcutsOnlyUpdatesExistingShortcuts() throws Exception {
+  public void testUpdateShortcutsOnlyUpdatesExistingShortcuts() {
     ShortcutInfo shortcut1 = createShortcutWithLabel("id1", "original");
     ShortcutInfo shortcutUpdated = createShortcutWithLabel("id1", "updated");
     ShortcutInfo shortcut2 = createShortcut("id2");
@@ -178,7 +178,7 @@ public final class ShadowShortcutManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
-  public void testPinningExistingDynamicShortcut() throws Exception {
+  public void testPinningExistingDynamicShortcut() {
     ShortcutInfo shortcut1 = createShortcut("id1");
     ShortcutInfo shortcut2 = createShortcut("id2");
     shortcutManager.addDynamicShortcuts(ImmutableList.of(shortcut1, shortcut2));
@@ -191,7 +191,7 @@ public final class ShadowShortcutManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
-  public void testPinningNewShortcut() throws Exception {
+  public void testPinningNewShortcut() {
     ShortcutInfo shortcut1 = createShortcut("id1");
     shortcutManager.requestPinShortcut(shortcut1, null /* resultIntent */);
     assertThat(shortcutManager.getPinnedShortcuts()).containsExactly(shortcut1);

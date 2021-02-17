@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowListPopupWindowTest {
   @Test
-  public void show_setsLastListPopupWindow() throws Exception {
+  public void show_setsLastListPopupWindow() {
     Context context = ApplicationProvider.getApplicationContext();
     ListPopupWindow popupWindow = new ListPopupWindow(context);
     assertThat(ShadowListPopupWindow.getLatestListPopupWindow()).isNull();

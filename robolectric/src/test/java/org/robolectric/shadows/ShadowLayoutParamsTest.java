@@ -12,14 +12,14 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowLayoutParamsTest {
   @Test
-  public void testConstructor() throws Exception {
+  public void testConstructor() {
     Gallery.LayoutParams layoutParams = new Gallery.LayoutParams(123, 456);
     assertThat(layoutParams.width).isEqualTo(123);
     assertThat(layoutParams.height).isEqualTo(456);
   }
 
   @Test
-  public void constructor_canTakeSourceLayoutParams() throws Exception {
+  public void constructor_canTakeSourceLayoutParams() {
     ViewGroup.LayoutParams sourceLayoutParams = new ViewGroup.LayoutParams(123, 456);
     ViewGroup.LayoutParams layoutParams1 = new ViewGroup.LayoutParams(sourceLayoutParams);
     FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(sourceLayoutParams);

@@ -162,7 +162,7 @@ public class ShadowActivityManagerTest {
 
   @Test
   @Config(minSdk = M)
-  public void getLockTaskModeState() throws Exception {
+  public void getLockTaskModeState() {
     assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
 
@@ -173,7 +173,7 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  public void getMyMemoryState() throws Exception {
+  public void getMyMemoryState() {
     ActivityManager.RunningAppProcessInfo inState = new ActivityManager.RunningAppProcessInfo();
     ActivityManager.getMyMemoryState(inState);
     assertThat(inState.uid).isEqualTo(Process.myUid());

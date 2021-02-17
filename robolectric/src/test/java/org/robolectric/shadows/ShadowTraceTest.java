@@ -26,7 +26,7 @@ public class ShadowTraceTest {
   private static final Integer COOKIE = 353882576;
 
   @Test
-  public void beginSection_calledOnce_addsSection() throws Exception {
+  public void beginSection_calledOnce_addsSection() {
     Trace.beginSection("section1");
 
     assertThat(ShadowTrace.getCurrentSections()).containsExactly("section1");
@@ -34,7 +34,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void beginSection_calledTwice_addsBothSections() throws Exception {
+  public void beginSection_calledTwice_addsBothSections() {
     Trace.beginSection("section1");
     Trace.beginSection("section2");
 
@@ -43,7 +43,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void beginSection_tagIsNull_throwsNullPointerException() throws Exception {
+  public void beginSection_tagIsNull_throwsNullPointerException() {
     try {
       Trace.beginSection(null);
       fail("Must throw");
@@ -53,14 +53,14 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void beginSection_tagIsNullAndCrashDisabled_doesNotThrow() throws Exception {
+  public void beginSection_tagIsNullAndCrashDisabled_doesNotThrow() {
     ShadowTrace.doNotUseSetCrashOnIncorrectUsage(false);
     Trace.beginSection(null);
     // Should not crash.
   }
 
   @Test
-  public void beginSection_tagIsTooLong_throwsIllegalArgumentException() throws Exception {
+  public void beginSection_tagIsTooLong_throwsIllegalArgumentException() {
     try {
       Trace.beginSection(VERY_LONG_TAG_NAME);
       fail("Must throw");
@@ -70,14 +70,14 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void beginSection_tagIsTooLongAndCrashDisabled_doesNotThrow() throws Exception {
+  public void beginSection_tagIsTooLongAndCrashDisabled_doesNotThrow() {
     ShadowTrace.doNotUseSetCrashOnIncorrectUsage(false);
     Trace.beginSection(VERY_LONG_TAG_NAME);
     // Should not crash.
   }
 
   @Test
-  public void endSection_oneSection_closesSection() throws Exception {
+  public void endSection_oneSection_closesSection() {
     Trace.beginSection("section1");
 
     Trace.endSection();
@@ -87,7 +87,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void endSection_twoSections_closesLastSection() throws Exception {
+  public void endSection_twoSections_closesLastSection() {
     Trace.beginSection("section1");
     Trace.beginSection("section2");
 
@@ -98,7 +98,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void endSection_twoRecursiveSectionsAndCalledTwice_closesAllSections() throws Exception {
+  public void endSection_twoRecursiveSectionsAndCalledTwice_closesAllSections() {
     Trace.beginSection("section1");
     Trace.beginSection("section2");
 
@@ -110,7 +110,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void endSection_twoSequentialSections_closesAllSections() throws Exception {
+  public void endSection_twoSequentialSections_closesAllSections() {
     Trace.beginSection("section1");
     Trace.endSection();
     Trace.beginSection("section2");
@@ -121,13 +121,13 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void endSection_calledBeforeBeginning_doesNotThrow() throws Exception {
+  public void endSection_calledBeforeBeginning_doesNotThrow() {
     Trace.endSection();
     // Should not crash.
   }
 
   @Test
-  public void endSection_oneSectionButCalledTwice_doesNotThrow() throws Exception {
+  public void endSection_oneSectionButCalledTwice_doesNotThrow() {
     Trace.beginSection("section1");
 
     Trace.endSection();
@@ -137,7 +137,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void beginAsyncSection_calledOnce_addsSection() throws Exception {
+  public void beginAsyncSection_calledOnce_addsSection() {
     Trace.beginAsyncSection("section1", COOKIE);
 
     assertThat(ShadowTrace.getCurrentAsyncSections())
@@ -148,7 +148,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void beginAsyncSection_calledTwice_addsBothSections() throws Exception {
+  public void beginAsyncSection_calledTwice_addsBothSections() {
     Trace.beginAsyncSection("section1", COOKIE);
     Trace.beginAsyncSection("section2", COOKIE);
 
@@ -161,7 +161,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void beginAsyncSection_tagIsNull_throwsNullPointerException() throws Exception {
+  public void beginAsyncSection_tagIsNull_throwsNullPointerException() {
     try {
       Trace.beginAsyncSection(null, COOKIE);
       fail("Must throw");
@@ -172,7 +172,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void beginAsyncSection_tagIsNullAndCrashDisabled_doesNotThrow() throws Exception {
+  public void beginAsyncSection_tagIsNullAndCrashDisabled_doesNotThrow() {
     ShadowTrace.doNotUseSetCrashOnIncorrectUsage(false);
     Trace.beginAsyncSection(null, COOKIE);
     // Should not crash.
@@ -180,7 +180,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void beginAsyncSection_tagIsTooLong_throwsIllegalArgumentException() throws Exception {
+  public void beginAsyncSection_tagIsTooLong_throwsIllegalArgumentException() {
     try {
       Trace.beginAsyncSection(VERY_LONG_TAG_NAME, COOKIE);
       fail("Must throw");
@@ -191,7 +191,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void beginAsyncSection_tagIsTooLongAndCrashDisabled_doesNotThrow() throws Exception {
+  public void beginAsyncSection_tagIsTooLongAndCrashDisabled_doesNotThrow() {
     ShadowTrace.doNotUseSetCrashOnIncorrectUsage(false);
     Trace.beginAsyncSection(VERY_LONG_TAG_NAME, COOKIE);
     // Should not crash.
@@ -199,7 +199,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void endAsyncSection_oneSection_closesSection() throws Exception {
+  public void endAsyncSection_oneSection_closesSection() {
     Trace.beginAsyncSection("section1", COOKIE);
 
     Trace.endAsyncSection("section1", COOKIE);
@@ -212,7 +212,7 @@ public class ShadowTraceTest {
 
   @Test
   @Config(minSdk = Q)
-  public void async_sameSectionTwoCookies_separateTraces() throws Exception {
+  public void async_sameSectionTwoCookies_separateTraces() {
     Trace.beginAsyncSection("section1", COOKIE);
     Trace.beginAsyncSection("section1", COOKIE + 1);
 
@@ -237,7 +237,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void reset_resetsInternalState() throws Exception {
+  public void reset_resetsInternalState() {
     Trace.beginSection("section1");
     Trace.endSection();
     Trace.beginSection("section2");
@@ -249,7 +249,7 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void toggleEnabledTest() throws Exception {
+  public void toggleEnabledTest() {
     Trace.beginSection("section1");
     assertThat(ShadowTrace.isEnabled()).isTrue();
     ShadowTrace.setEnabled(false);

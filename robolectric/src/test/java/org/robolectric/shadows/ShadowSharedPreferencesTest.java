@@ -51,7 +51,7 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void commit_shouldStoreValues() throws Exception {
+  public void commit_shouldStoreValues() {
     editor.commit();
 
     SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
@@ -64,28 +64,30 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void commit_shouldClearEditsThatNeedRemoveAndEditsThatNeedCommit() throws Exception {
+  public void commit_shouldClearEditsThatNeedRemoveAndEditsThatNeedCommit() {
     editor.commit();
     editor.remove("string").commit();
 
-    assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("no value for key");
+    assertThat(sharedPreferences.getString("string", "no value for key"))
+        .isEqualTo("no value for key");
 
     SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
     anotherSharedPreferences.edit().putString("string", "value for key").commit();
 
     editor.commit();
-    assertThat(sharedPreferences.getString("string", "no value for key")).isEqualTo("value for key");
+    assertThat(sharedPreferences.getString("string", "no value for key"))
+        .isEqualTo("value for key");
   }
 
   @Test
-  public void getAll_shouldReturnAllValues() throws Exception {
+  public void getAll_shouldReturnAllValues() {
     editor.commit();
     assertThat(sharedPreferences.getAll()).hasSize(6);
     assertThat(sharedPreferences.getAll().get("int")).isEqualTo(2);
   }
 
   @Test
-  public void commit_shouldRemoveValuesThenSetValues() throws Exception {
+  public void commit_shouldRemoveValuesThenSetValues() {
     editor.putString("deleteMe", "foo").commit();
 
     editor.remove("deleteMe");
@@ -107,7 +109,7 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void commit_shouldClearThenSetValues() throws Exception {
+  public void commit_shouldClearThenSetValues() {
     editor.putString("deleteMe", "foo");
 
     editor.clear();
@@ -128,7 +130,7 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void putString_shouldRemovePairIfValueIsNull() throws Exception {
+  public void putString_shouldRemovePairIfValueIsNull() {
     editor.putString("deleteMe", "foo");
 
     editor.putString("deleteMe", null);
@@ -138,8 +140,8 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void putStringSet_shouldRemovePairIfValueIsNull() throws Exception {
-    editor.putStringSet("deleteMe", new HashSet<String>());
+  public void putStringSet_shouldRemovePairIfValueIsNull() {
+    editor.putStringSet("deleteMe", new HashSet<>());
 
     editor.putStringSet("deleteMe", null);
     editor.commit();
@@ -148,7 +150,7 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void apply_shouldStoreValues() throws Exception {
+  public void apply_shouldStoreValues() {
     editor.apply();
 
     SharedPreferences anotherSharedPreferences = context.getSharedPreferences(FILENAME, Context.MODE_PRIVATE);
@@ -156,8 +158,9 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void shouldReturnDefaultValues() throws Exception {
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
+  public void shouldReturnDefaultValues() {
+    SharedPreferences anotherSharedPreferences =
+        context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
 
     assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
     assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(666f);
@@ -168,7 +171,8 @@ public class ShadowSharedPreferencesTest {
 
   @Test
   public void shouldRemoveRegisteredListenersOnUnresgister() {
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
+    SharedPreferences anotherSharedPreferences =
+        context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
 
     SharedPreferences.OnSharedPreferenceChangeListener mockListener = mock(SharedPreferences.OnSharedPreferenceChangeListener.class);
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(mockListener);
@@ -181,18 +185,15 @@ public class ShadowSharedPreferencesTest {
 
   @Test
   public void shouldTriggerRegisteredListeners() {
-    SharedPreferences anotherSharedPreferences = context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
+    SharedPreferences anotherSharedPreferences =
+        context.getSharedPreferences("bazBang", Context.MODE_PRIVATE);
 
     final String testKey = "foo";
 
     final List<String> transcript = new ArrayList<>();
 
-    SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-      @Override
-      public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        transcript.add(key + " called");
-      }
-    };
+    SharedPreferences.OnSharedPreferenceChangeListener listener =
+        (sharedPreferences, key) -> transcript.add(key + " called");
     anotherSharedPreferences.registerOnSharedPreferenceChangeListener(listener);
     anotherSharedPreferences.edit().putString(testKey, "bar").commit();
 
@@ -200,7 +201,7 @@ public class ShadowSharedPreferencesTest {
   }
 
   @Test
-  public void defaultSharedPreferences() throws Exception {
+  public void defaultSharedPreferences() {
     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     sharedPreferences.edit().putString("foo", "bar").commit();
 
@@ -209,13 +210,9 @@ public class ShadowSharedPreferencesTest {
     assertThat(restored).isEqualTo("bar");
   }
 
-  /**
-   * Tests a sequence of operations in SharedPrefereces that would previously cause a deadlock.
-   *
-   * @throws Exception
-   */
+  /** Tests a sequence of operations in SharedPrefereces that would previously cause a deadlock. */
   @Test
-  public void commit_multipleTimes() throws Exception {
+  public void commit_multipleTimes() {
     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     sharedPreferences.edit().putBoolean("foo", true).apply();
     sharedPreferences.edit().putBoolean("bar", true).commit();

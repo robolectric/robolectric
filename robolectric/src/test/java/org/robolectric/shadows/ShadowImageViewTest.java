@@ -17,7 +17,7 @@ import org.robolectric.R;
 public class ShadowImageViewTest {
 
   @Test
-  public void getDrawableResourceId_shouldWorkWhenTheDrawableWasCreatedFromAResource() throws Exception {
+  public void getDrawableResourceId_shouldWorkWhenTheDrawableWasCreatedFromAResource() {
 
     Resources resources = ApplicationProvider.getApplicationContext().getResources();
     Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image);

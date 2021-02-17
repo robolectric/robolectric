@@ -48,7 +48,8 @@ public class ShadowAssetManagerTest {
   public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
     assumeTrue(!useLegacy());
     expectedException.expect(FileNotFoundException.class);
-    expectedException.expectMessage("This file can not be opened as a file descriptor; it is probably compressed");
+    expectedException.expectMessage(
+        "This file can not be opened as a file descriptor; it is probably compressed");
 
     assetManager.openFd("deflatedAsset.xml");
   }
@@ -176,7 +177,7 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void attrsToTypedArray_shouldAllowMockedAttributeSets() throws Exception {
+  public void attrsToTypedArray_shouldAllowMockedAttributeSets() {
     if (!useLegacy()) return;
 
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
@@ -189,13 +190,12 @@ public class ShadowAssetManagerTest {
   }
 
   @Test
-  public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage()
-      throws Exception {
+  public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage() {
     if (!useLegacy()) return;
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
-        "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme " +
-            "in theme with applied styles: [Style org.robolectric:Theme.Robolectric (and parents)]");
+        "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme in theme with applied"
+            + " styles: [Style org.robolectric:Theme.Robolectric (and parents)]");
 
    Resources.Theme theme = resources.newTheme();
    theme.applyStyle(R.style.Theme_Robolectric, false);

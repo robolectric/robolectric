@@ -13,13 +13,12 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentProviderOperationBuilderTest {
-  private ContentProviderOperation.Builder builder;
 
   @Test
   public void build() throws Exception {
     Uri uri = Uri.parse("content://authority/path");
 
-    builder = ContentProviderOperation.newUpdate(uri);
+    ContentProviderOperation.Builder builder = ContentProviderOperation.newUpdate(uri);
     builder.withSelection("a=?", new String[] {"a"});
     builder.withValue("k1", "v1");
     ContentValues cv = new ContentValues();

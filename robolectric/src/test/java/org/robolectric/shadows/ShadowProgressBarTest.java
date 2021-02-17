@@ -61,14 +61,14 @@ public class ShadowProgressBarTest {
   }
 
   @Test
-  public void testIsDeterminate() throws Exception {
+  public void testIsDeterminate() {
     assertFalse(progressBar.isIndeterminate());
     progressBar.setIndeterminate(true);
     assertTrue(progressBar.isIndeterminate());
   }
 
   @Test
-  public void shouldReturnZeroAsProgressWhenIndeterminate() throws Exception {
+  public void shouldReturnZeroAsProgressWhenIndeterminate() {
     progressBar.setProgress(10);
     progressBar.setSecondaryProgress(20);
     progressBar.setIndeterminate(true);
@@ -81,7 +81,7 @@ public class ShadowProgressBarTest {
   }
 
   @Test
-  public void shouldNotSetProgressWhenIndeterminate() throws Exception {
+  public void shouldNotSetProgressWhenIndeterminate() {
     progressBar.setIndeterminate(true);
     progressBar.setProgress(10);
     progressBar.setSecondaryProgress(20);
@@ -92,7 +92,7 @@ public class ShadowProgressBarTest {
   }
 
   @Test
-  public void testIncrementProgressBy() throws Exception {
+  public void testIncrementProgressBy() {
     assertEquals(0, progressBar.getProgress());
     progressBar.incrementProgressBy(1);
     assertEquals(1, progressBar.getProgress());
@@ -107,7 +107,7 @@ public class ShadowProgressBarTest {
   }
 
   @Test
-  public void shouldRespectMax() throws Exception {
+  public void shouldRespectMax() {
     progressBar.setMax(20);
     progressBar.setProgress(50);
     assertEquals(20, progressBar.getProgress());

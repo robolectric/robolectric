@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-/** Unit tests for {@link #ShadowIsoDep}. */
+/** Unit tests for {@link ShadowIsoDep}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = KITKAT)
 public final class ShadowIsoDepTest {
@@ -40,19 +40,19 @@ public final class ShadowIsoDepTest {
   }
 
   @Test
-  public void timeout() throws Exception {
+  public void timeout() {
     isoDep.setTimeout(1000);
     assertThat(isoDep.getTimeout()).isEqualTo(1000);
   }
 
   @Test
-  public void maxTransceiveLength() throws Exception {
+  public void maxTransceiveLength() {
     shadowOf(isoDep).setMaxTransceiveLength(1000);
     assertThat(isoDep.getMaxTransceiveLength()).isEqualTo(1000);
   }
 
   @Test
-  public void isExtendedLengthApduSupported() throws Exception {
+  public void isExtendedLengthApduSupported() {
     shadowOf(isoDep).setExtendedLengthApduSupported(true);
     assertThat(isoDep.isExtendedLengthApduSupported()).isTrue();
     shadowOf(isoDep).setExtendedLengthApduSupported(false);

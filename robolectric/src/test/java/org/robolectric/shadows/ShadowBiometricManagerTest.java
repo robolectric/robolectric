@@ -6,7 +6,6 @@ import static com.google.common.truth.Truth.assertThat;
 import android.hardware.biometrics.BiometricManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

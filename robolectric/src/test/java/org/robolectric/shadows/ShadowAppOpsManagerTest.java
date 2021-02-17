@@ -199,16 +199,15 @@ public class ShadowAppOpsManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.Q)
   public void getOpsForPackageStr_withOpFilter() {
-    List<PackageOps> results =
-        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS});
+    List<PackageOps> results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, OPSTR_GPS);
     assertOps(results);
 
     appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
-    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS});
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, OPSTR_GPS);
     assertOps(results);
 
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
-    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS});
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, OPSTR_GPS);
     assertOps(results, OP_GPS);
   }
 
@@ -216,15 +215,15 @@ public class ShadowAppOpsManagerTest {
   @Config(minSdk = VERSION_CODES.Q)
   public void getOpsForPackageStr_withOpFilter_withMeaninglessString() {
     List<PackageOps> results =
-        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS, "something"});
+        appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, OPSTR_GPS, "something");
     assertOps(results);
 
     appOps.noteOp(OP_SEND_SMS, UID_1, PACKAGE_NAME1);
-    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS, "something"});
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, OPSTR_GPS, "something");
     assertOps(results);
 
     appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1);
-    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, new String[] {OPSTR_GPS, "something"});
+    results = appOps.getOpsForPackage(UID_1, PACKAGE_NAME1, OPSTR_GPS, "something");
     assertOps(results, OP_GPS);
   }
 

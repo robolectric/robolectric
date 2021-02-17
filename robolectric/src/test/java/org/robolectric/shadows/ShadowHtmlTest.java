@@ -32,21 +32,21 @@ public class ShadowHtmlTest {
   }
 
   @Test
-  public void shouldBeAbleToGetTextFromTextViewAfterUsingSetTextWithHtmlDotFromHtml() throws Exception {
+  public void shouldBeAbleToGetTextFromTextViewAfterUsingSetTextWithHtmlDotFromHtml() {
     TextView textView = new TextView(context);
     textView.setText(Html.fromHtml("<b>some</b> html text"));
     assertThat(textView.getText().toString()).isEqualTo("some html text");
   }
 
   @Test
-  public void shouldBeAbleToGetTextFromEditTextAfterUsingSetTextWithHtmlDotFromHtml() throws Exception {
+  public void shouldBeAbleToGetTextFromEditTextAfterUsingSetTextWithHtmlDotFromHtml() {
     EditText editText = new EditText(context);
     editText.setText(Html.fromHtml("<b>some</b> html text"));
     assertThat(editText.getText().toString()).isEqualTo("some html text");
   }
 
   @Test(expected = NullPointerException.class)
-  public void shouldThrowNullPointerExceptionWhenNullStringEncountered() throws Exception {
+  public void shouldThrowNullPointerExceptionWhenNullStringEncountered() {
     Html.fromHtml(null);
   }
 

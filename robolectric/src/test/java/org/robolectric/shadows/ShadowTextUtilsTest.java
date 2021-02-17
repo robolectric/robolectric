@@ -13,12 +13,13 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowTextUtilsTest {
   @Test
-  public void testExpandTemplate() throws Exception {
-    assertThat(TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D").toString()).isEqualTo("aAbBcCd");
+  public void testExpandTemplate() {
+    assertThat(TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D").toString())
+        .isEqualTo("aAbBcCd");
   }
 
   @Test
-  public void testIsEmpty() throws Exception {
+  public void testIsEmpty() {
     assertThat(TextUtils.isEmpty(null)).isTrue();
     assertThat(TextUtils.isEmpty("")).isTrue();
     assertThat(TextUtils.isEmpty(" ")).isFalse();
@@ -32,7 +33,7 @@ public class ShadowTextUtilsTest {
   }
 
   @Test
-  public void testIsDigitsOnly() throws Exception {
+  public void testIsDigitsOnly() {
     assertThat(TextUtils.isDigitsOnly("123456")).isTrue();
     assertThat(TextUtils.isDigitsOnly("124a56")).isFalse();
   }

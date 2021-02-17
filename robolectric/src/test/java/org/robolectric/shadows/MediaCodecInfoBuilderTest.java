@@ -204,7 +204,7 @@ public class MediaCodecInfoBuilderTest {
             .setName(AAC_ENCODER_NAME)
             .setIsEncoder(true)
             .setIsVendor(true)
-            .setCapabilities(new CodecCapabilities[] {codecCapabilities})
+            .setCapabilities(codecCapabilities)
             .build();
 
     assertThat(mediaCodecInfo.getName()).isEqualTo(AAC_ENCODER_NAME);
@@ -246,7 +246,7 @@ public class MediaCodecInfoBuilderTest {
             .setName(VP9_DECODER_NAME)
             .setIsSoftwareOnly(true)
             .setIsHardwareAccelerated(true)
-            .setCapabilities(new CodecCapabilities[] {codecCapabilities})
+            .setCapabilities(codecCapabilities)
             .build();
 
     assertThat(mediaCodecInfo.getName()).isEqualTo(VP9_DECODER_NAME);
@@ -281,8 +281,7 @@ public class MediaCodecInfoBuilderTest {
         MediaCodecInfoBuilder.newBuilder()
             .setName(MULTIFORMAT_ENCODER_NAME)
             .setIsEncoder(true)
-            .setCapabilities(
-                new CodecCapabilities[] {avcEncoderCapabilities, vp9EncoderCapabilities})
+            .setCapabilities(avcEncoderCapabilities, vp9EncoderCapabilities)
             .build();
 
     assertThat(mediaCodecInfo.getName()).isEqualTo(MULTIFORMAT_ENCODER_NAME);
@@ -323,7 +322,7 @@ public class MediaCodecInfoBuilderTest {
         MediaCodecInfoBuilder.newBuilder()
             .setName(AAC_ENCODER_NAME)
             .setIsEncoder(true)
-            .setCapabilities(new CodecCapabilities[] {codecCapabilities})
+            .setCapabilities(codecCapabilities)
             .build();
 
     assertThat(mediaCodecInfo.getName()).isEqualTo(AAC_ENCODER_NAME);

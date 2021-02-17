@@ -21,7 +21,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowLocaleDataTest {
 
   @Test
-  public void shouldSupportLocaleEn_US() throws Exception {
+  public void shouldSupportLocaleEn_US() {
     LocaleData localeData = LocaleData.get(Locale.US);
 
     assertThat(localeData.amPm).isEqualTo(new String[]{"AM", "PM"});
@@ -100,7 +100,7 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(maxSdk = Build.VERSION_CODES.O)
-  public void shouldSupportLocaleEn_US_perMill() throws Exception {
+  public void shouldSupportLocaleEn_US_perMill() {
     LocaleData localeData = LocaleData.get(Locale.US);
     char perMillValue = ReflectionHelpers.getField(localeData, "perMill");
     assertThat(perMillValue).isEqualTo('‰');
@@ -108,21 +108,21 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.P)
-  public void shouldSupportLocaleEn_US_perMillPostP() throws Exception {
+  public void shouldSupportLocaleEn_US_perMillPostP() {
     LocaleData localeData = LocaleData.get(Locale.US);
     assertThat(localeData.perMill).isEqualTo("‰");
   }
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
-  public void shouldSupportLocaleEn_US_percentPost22() throws Exception {
+  public void shouldSupportLocaleEn_US_percentPost22() {
     LocaleData localeData = LocaleData.get(Locale.US);
     assertThat(localeData.percent).isEqualTo("%");
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void shouldSupportLocaleEn_US_since_jelly_bean_mr1() throws Exception {
+  public void shouldSupportLocaleEn_US_since_jelly_bean_mr1() {
     LocaleData localeData = LocaleData.get(Locale.US);
 
     assertThat(localeData.tinyMonthNames)
@@ -141,7 +141,7 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(minSdk = M)
-  public void shouldSupportLocaleEn_US_since_m() throws Exception {
+  public void shouldSupportLocaleEn_US_since_m() {
     LocaleData localeData = LocaleData.get(Locale.US);
 
     assertThat(localeData.timeFormat_Hm).isEqualTo("HH:mm");
@@ -150,14 +150,14 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void shouldSupportLocaleEn_US_since_lollipop() throws Exception {
+  public void shouldSupportLocaleEn_US_since_lollipop() {
     LocaleData localeData = LocaleData.get(Locale.US);
 
     assertThat(localeData.minusSign).isEqualTo("-");
   }
 
   @Test
-  public void shouldDefaultToTheDefaultLocale() throws Exception {
+  public void shouldDefaultToTheDefaultLocale() {
     Locale.setDefault(Locale.US);
     LocaleData localeData = LocaleData.get(null);
 

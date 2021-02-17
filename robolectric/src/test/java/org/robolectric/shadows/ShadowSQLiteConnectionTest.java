@@ -46,7 +46,7 @@ public class ShadowSQLiteConnectionTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     database.close();
   }
 
@@ -71,17 +71,15 @@ public class ShadowSQLiteConnectionTest {
   }
 
   @Test
-  public void testSQLWithLocalizedOrUnicodeCollatorShouldBeSortedAsNoCase() throws Exception {
+  public void testSQLWithLocalizedOrUnicodeCollatorShouldBeSortedAsNoCase() {
     database.execSQL("insert into routine(name) values ('الصحافة اليدوية')");
     database.execSQL("insert into routine(name) values ('Hand press 1')");
     database.execSQL("insert into routine(name) values ('hand press 2')");
     database.execSQL("insert into routine(name) values ('Hand press 3')");
 
-    List<String> expected = Arrays.asList("Hand press"
-                                              + " 1", "hand press"
-                                                              + " 2", "Hand press"
-                                                                              + " 3", "الصحافة"
-                                                                                              + " اليدوية" );
+    List<String> expected =
+        Arrays.asList(
+            "Hand press" + " 1", "hand press" + " 2", "Hand press" + " 3", "الصحافة" + " اليدوية");
     String sqlLocalized = "SELECT `name` FROM `routine` ORDER BY `name` collate localized";
     String sqlUnicode = "SELECT `name` FROM `routine` ORDER BY `name` collate unicode";
 
@@ -119,7 +117,8 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void reset_clearsConnectionCache() {
-    final Map<Long, SQLiteConnection> connectionsMap = ReflectionHelpers.getField(CONNECTIONS, "connectionsMap");
+    final Map<Long, SQLiteConnection> connectionsMap =
+        ReflectionHelpers.getField(CONNECTIONS, "connectionsMap");
 
     assertWithMessage("connections before").that(connectionsMap).isNotEmpty();
     ShadowSQLiteConnection.reset();
@@ -129,7 +128,8 @@ public class ShadowSQLiteConnectionTest {
   
   @Test
   public void reset_clearsStatementCache() {
-    final Map<Long, SQLiteStatement> statementsMap = ReflectionHelpers.getField(CONNECTIONS, "statementsMap");
+    final Map<Long, SQLiteStatement> statementsMap =
+        ReflectionHelpers.getField(CONNECTIONS, "statementsMap");
 
     assertWithMessage("statements before").that(statementsMap).isNotEmpty();
     ShadowSQLiteConnection.reset();
@@ -154,7 +154,7 @@ public class ShadowSQLiteConnectionTest {
   }
 
   @Test
-  public void interruption_doesNotConcurrentlyModifyDatabase() throws Exception {
+  public void interruption_doesNotConcurrentlyModifyDatabase() {
     Thread.currentThread().interrupt();
     try {
       database.execSQL("insert into routine(name) values ('الصحافة اليدوية')");
@@ -165,7 +165,7 @@ public class ShadowSQLiteConnectionTest {
   }
 
   @Test
-  public void test_setUseInMemoryDatabase() throws Exception {
+  public void test_setUseInMemoryDatabase() {
     assertThat(conn.isMemoryDatabase()).isFalse();
     ShadowSQLiteConnection.setUseInMemoryDatabase(true);
     SQLiteDatabase inMemoryDb = createDatabase("in_memory.db");
@@ -194,7 +194,10 @@ public class ShadowSQLiteConnectionTest {
   }
 
   private SQLiteConnection getSQLiteConnection() {
-    ptr = ShadowSQLiteConnection.nativeOpen(databasePath.getPath(), 0, "test connection", false, false).longValue();
+    ptr =
+        ShadowSQLiteConnection.nativeOpen(
+                databasePath.getPath(), 0, "test connection", false, false)
+            .longValue();
     CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
     return CONNECTIONS.getConnection(ptr);
   }

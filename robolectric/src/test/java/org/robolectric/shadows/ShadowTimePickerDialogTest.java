@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 public class ShadowTimePickerDialogTest {
 
   @Test
-  public void returnsTheIntialHourAndMinutePassedIntoTheTimePickerDialog() throws Exception {
+  public void returnsTheIntialHourAndMinutePassedIntoTheTimePickerDialog() {
     TimePickerDialog timePickerDialog =
         new TimePickerDialog(ApplicationProvider.getApplicationContext(), 0, null, 6, 55, false);
     ShadowTimePickerDialog shadow = shadowOf(timePickerDialog);

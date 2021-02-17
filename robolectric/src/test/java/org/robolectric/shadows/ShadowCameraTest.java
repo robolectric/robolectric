@@ -32,25 +32,25 @@ public class ShadowCameraTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     ShadowCamera.clearCameraInfo();
   }
 
   @Test
-  public void testOpen() throws Exception {
+  public void testOpen() {
     assertThat(camera).isNotNull();
     assertThat(ShadowCamera.getLastOpenedCameraId()).isEqualTo(0);
   }
 
   @Test
-  public void testOpenWithId() throws Exception {
+  public void testOpenWithId() {
     camera = Camera.open(12);
     assertThat(camera).isNotNull();
     assertThat(ShadowCamera.getLastOpenedCameraId()).isEqualTo(12);
   }
 
   @Test
-  public void testUnlock() throws Exception {
+  public void testUnlock() {
     assertThat(shadowCamera.isLocked()).isTrue();
     camera.unlock();
     assertThat(shadowCamera.isLocked()).isFalse();
@@ -65,7 +65,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testGetParameters() throws Exception {
+  public void testGetParameters() {
     Camera.Parameters parameters = camera.getParameters();
     assertThat(parameters).isNotNull();
     assertThat(parameters.getSupportedPreviewFormats()).isNotNull();
@@ -73,7 +73,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testSetParameters() throws Exception {
+  public void testSetParameters() {
     Camera.Parameters parameters = camera.getParameters();
     assertThat(parameters.getPreviewFormat()).isEqualTo(ImageFormat.NV21);
     parameters.setPreviewFormat(ImageFormat.JPEG);
@@ -89,14 +89,14 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testStartPreview() throws Exception {
+  public void testStartPreview() {
     assertThat(shadowCamera.isPreviewing()).isFalse();
     camera.startPreview();
     assertThat(shadowCamera.isPreviewing()).isTrue();
   }
 
   @Test
-  public void testStopPreview() throws Exception {
+  public void testStopPreview() {
     camera.startPreview();
     assertThat(shadowCamera.isPreviewing()).isTrue();
     camera.stopPreview();
@@ -104,14 +104,14 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testRelease() throws Exception {
+  public void testRelease() {
     assertThat(shadowCamera.isReleased()).isFalse();
     camera.release();
     assertThat(shadowCamera.isReleased()).isTrue();
   }
 
   @Test
-  public void testSetPreviewCallbacks() throws Exception {
+  public void testSetPreviewCallbacks() {
     TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
@@ -124,7 +124,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testSetOneShotPreviewCallbacks() throws Exception {
+  public void testSetOneShotPreviewCallbacks() {
     TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
@@ -137,7 +137,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testPreviewCallbacksWithBuffers() throws Exception {
+  public void testPreviewCallbacksWithBuffers() {
     TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
@@ -150,7 +150,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testClearPreviewCallback() throws Exception {
+  public void testClearPreviewCallback() {
     TestPreviewCallback callback = new TestPreviewCallback();
     assertThat(callback.camera).isNull();
     assertThat(callback.data).isNull();
@@ -247,12 +247,12 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testCameraInfoNoCameras() throws Exception {
+  public void testCameraInfoNoCameras() {
     assertThat(Camera.getNumberOfCameras()).isEqualTo(0);
   }
 
   @Test
-  public void testCameraInfoBackOnly() throws Exception {
+  public void testCameraInfoBackOnly() {
     Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
 
     addBackCamera();
@@ -264,7 +264,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testCameraInfoBackAndFront() throws Exception {
+  public void testCameraInfoBackAndFront() {
     Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
     addBackCamera();
     addFrontCamera();
@@ -279,7 +279,7 @@ public class ShadowCameraTest {
   }
 
   @Test
-  public void testTakePicture() throws Exception {
+  public void testTakePicture() {
     camera.takePicture(null, null, null);
 
     TestShutterCallback shutterCallback = new TestShutterCallback();
@@ -294,7 +294,7 @@ public class ShadowCameraTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void testShutterEnabled() throws Exception {
+  public void testShutterEnabled() {
     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
     cameraInfo.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
     cameraInfo.canDisableShutterSound = false;

@@ -30,7 +30,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void newTabSpec_shouldMakeATabSpec() throws Exception {
+  public void newTabSpec_shouldMakeATabSpec() {
     TabHost tabHost = new TabHost(context);
     TabHost.TabSpec tabSpec = tabHost.newTabSpec("Foo");
     assertThat(tabSpec.getTag()).isEqualTo("Foo");
@@ -54,7 +54,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void shouldReturnTabSpecsByTag() throws Exception {
+  public void shouldReturnTabSpecsByTag() {
     TabHost tabHost = new TabHost(context);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
@@ -70,7 +70,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void shouldFireTheTabChangeListenerWhenCurrentTabIsSet() throws Exception {
+  public void shouldFireTheTabChangeListenerWhenCurrentTabIsSet() {
     TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
@@ -90,7 +90,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void shouldFireTheTabChangeListenerWhenTheCurrentTabIsSetByTag() throws Exception {
+  public void shouldFireTheTabChangeListenerWhenTheCurrentTabIsSetByTag() {
     TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
@@ -154,7 +154,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void canGetCurrentTabTag() throws Exception {
+  public void canGetCurrentTabTag() {
     TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
@@ -171,7 +171,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void canGetCurrentTab() throws Exception {
+  public void canGetCurrentTab() {
     TabHost tabHost = new TabHost(context);
 
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
@@ -195,7 +195,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void setCurrentTabByTagShouldAcceptNullAsParameter() throws Exception {
+  public void setCurrentTabByTagShouldAcceptNullAsParameter() {
     TabHost tabHost = new TabHost(context);
     TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
     tabHost.addTab(foo);
@@ -205,7 +205,7 @@ public class ShadowTabHostTest {
   }
 
   @Test
-  public void shouldGetTabWidget() throws Exception {
+  public void shouldGetTabWidget() {
     TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
     activity.setContentView(R.layout.tab_activity);
     TabHost host = new TabHost(activity);

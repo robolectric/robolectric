@@ -14,14 +14,14 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowBaseAdapterTest {
   @Test
-  public void shouldRecordNotifyDataSetChanged() throws Exception {
+  public void shouldRecordNotifyDataSetChanged() {
     BaseAdapter adapter = new TestBaseAdapter();
     adapter.notifyDataSetChanged();
     assertTrue(shadowOf(adapter).wasNotifyDataSetChangedCalled());
   }
 
   @Test
-  public void canResetNotifyDataSetChangedFlag() throws Exception {
+  public void canResetNotifyDataSetChangedFlag() {
     BaseAdapter adapter = new TestBaseAdapter();
     adapter.notifyDataSetChanged();
     shadowOf(adapter).clearWasDataSetChangedCalledFlag();

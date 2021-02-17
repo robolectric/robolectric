@@ -28,14 +28,14 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testAudioChannels() throws Exception {
+  public void testAudioChannels() {
     assertThat(shadowMediaRecorder.getAudioChannels()).isNotEqualTo(2);
     mediaRecorder.setAudioChannels(2);
     assertThat(shadowMediaRecorder.getAudioChannels()).isEqualTo(2);
   }
 
   @Test
-  public void testAudioEncoder() throws Exception {
+  public void testAudioEncoder() {
     assertThat(shadowMediaRecorder.getAudioEncoder()).isNotEqualTo(MediaRecorder.AudioEncoder.AMR_NB);
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
@@ -44,21 +44,21 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testAudioEncodingBitRate() throws Exception {
+  public void testAudioEncodingBitRate() {
     assertThat(shadowMediaRecorder.getAudioEncodingBitRate()).isNotEqualTo(128000);
     mediaRecorder.setAudioEncodingBitRate(128000);
     assertThat(shadowMediaRecorder.getAudioEncodingBitRate()).isEqualTo(128000);
   }
 
   @Test
-  public void testAudioSamplingRate() throws Exception {
+  public void testAudioSamplingRate() {
     assertThat(shadowMediaRecorder.getAudioSamplingRate()).isNotEqualTo(22050);
     mediaRecorder.setAudioSamplingRate(22050);
     assertThat(shadowMediaRecorder.getAudioSamplingRate()).isEqualTo(22050);
   }
 
   @Test
-  public void testAudioSource() throws Exception {
+  public void testAudioSource() {
     assertThat(shadowMediaRecorder.getAudioSource()).isNotEqualTo(MediaRecorder.AudioSource.CAMCORDER);
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_INITIALIZED);
     mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
@@ -67,7 +67,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testCamera() throws Exception {
+  public void testCamera() {
     assertThat(shadowMediaRecorder.getCamera()).isNull();
     Camera c = Shadow.newInstanceOf(Camera.class);
     mediaRecorder.setCamera(c);
@@ -76,41 +76,39 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testMaxDuration() throws Exception {
+  public void testMaxDuration() {
     assertThat(shadowMediaRecorder.getMaxDuration()).isNotEqualTo(30000);
     mediaRecorder.setMaxDuration(30000);
     assertThat(shadowMediaRecorder.getMaxDuration()).isEqualTo(30000);
   }
 
   @Test
-  public void testMaxFileSize() throws Exception {
+  public void testMaxFileSize() {
     assertThat(shadowMediaRecorder.getMaxFileSize()).isNotEqualTo(512000L);
     mediaRecorder.setMaxFileSize(512000);
     assertThat(shadowMediaRecorder.getMaxFileSize()).isEqualTo(512000L);
   }
 
   @Test
-  public void testOnErrorListener() throws Exception {
+  public void testOnErrorListener() {
     assertThat(shadowMediaRecorder.getErrorListener()).isNull();
     TestErrorListener listener = new TestErrorListener();
     mediaRecorder.setOnErrorListener(listener);
     assertThat(shadowMediaRecorder.getErrorListener()).isNotNull();
-    assertThat(shadowMediaRecorder.getErrorListener())
-        .isSameInstanceAs((MediaRecorder.OnErrorListener) listener);
+    assertThat(shadowMediaRecorder.getErrorListener()).isSameInstanceAs(listener);
   }
 
   @Test
-  public void testOnInfoListener() throws Exception {
+  public void testOnInfoListener() {
     assertThat(shadowMediaRecorder.getInfoListener()).isNull();
     TestInfoListener listener = new TestInfoListener();
     mediaRecorder.setOnInfoListener(listener);
     assertThat(shadowMediaRecorder.getInfoListener()).isNotNull();
-    assertThat(shadowMediaRecorder.getInfoListener())
-        .isSameInstanceAs((MediaRecorder.OnInfoListener) listener);
+    assertThat(shadowMediaRecorder.getInfoListener()).isSameInstanceAs(listener);
   }
 
   @Test
-  public void testOutputFile() throws Exception {
+  public void testOutputFile() {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getOutputPath()).isNull();
     mediaRecorder.setOutputFile("/dev/null");
@@ -119,7 +117,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testOutputFormat() throws Exception {
+  public void testOutputFormat() {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getOutputFormat()).isNotEqualTo(MediaRecorder.OutputFormat.MPEG_4);
     mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
@@ -128,7 +126,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testPreviewDisplay() throws Exception {
+  public void testPreviewDisplay() {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getPreviewDisplay()).isNull();
     Surface surface = Shadow.newInstanceOf(Surface.class);
@@ -139,7 +137,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testVideoEncoder() throws Exception {
+  public void testVideoEncoder() {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getVideoEncoder()).isNotEqualTo(MediaRecorder.VideoEncoder.H264);
     mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
@@ -148,14 +146,14 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testVideoEncodingBitRate() throws Exception {
+  public void testVideoEncodingBitRate() {
     assertThat(shadowMediaRecorder.getVideoEncodingBitRate()).isNotEqualTo(320000);
     mediaRecorder.setVideoEncodingBitRate(320000);
     assertThat(shadowMediaRecorder.getVideoEncodingBitRate()).isEqualTo(320000);
   }
 
   @Test
-  public void testVideoFrameRate() throws Exception {
+  public void testVideoFrameRate() {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getVideoFrameRate()).isNotEqualTo(30);
     mediaRecorder.setVideoFrameRate(30);
@@ -164,7 +162,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testVideoSize() throws Exception {
+  public void testVideoSize() {
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_DATA_SOURCE_CONFIGURED);
     assertThat(shadowMediaRecorder.getVideoWidth()).isNotEqualTo(640);
     assertThat(shadowMediaRecorder.getVideoHeight()).isNotEqualTo(480);
@@ -175,7 +173,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testVideoSource() throws Exception {
+  public void testVideoSource() {
     assertThat(shadowMediaRecorder.getVideoSource()).isNotEqualTo(MediaRecorder.VideoSource.CAMERA);
     assertThat(shadowMediaRecorder.getState()).isNotEqualTo(ShadowMediaRecorder.STATE_INITIALIZED);
     mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
@@ -199,7 +197,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testStop() throws Exception {
+  public void testStop() {
     mediaRecorder.start();
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_RECORDING);
     mediaRecorder.stop();
@@ -207,7 +205,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testReset() throws Exception {
+  public void testReset() {
     mediaRecorder.start();
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_RECORDING);
     mediaRecorder.reset();
@@ -215,7 +213,7 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  public void testRelease() throws Exception {
+  public void testRelease() {
     mediaRecorder.start();
     mediaRecorder.reset();
     assertThat(shadowMediaRecorder.getState()).isEqualTo(ShadowMediaRecorder.STATE_INITIAL);
@@ -233,7 +231,7 @@ public class ShadowMediaRecorderTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.LOLLIPOP)
-  public void testGetSurface_beforePrepare() throws Exception {
+  public void testGetSurface_beforePrepare() {
     mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
     assertThrows(IllegalStateException.class, () -> mediaRecorder.getSurface());
   }

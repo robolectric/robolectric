@@ -22,6 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,20 +43,20 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testGetExtraReturnsNull_whenThereAreNoExtrasAdded() throws Exception {
+  public void testGetExtraReturnsNull_whenThereAreNoExtrasAdded() {
     Intent intent = new Intent();
     assertEquals(intent.getExtras(), null);
   }
 
   @Test
-  public void testStringExtra() throws Exception {
+  public void testStringExtra() {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", "bar"));
     assertEquals("bar", intent.getExtras().get("foo"));
   }
 
   @Test
-  public void testCharSequenceExtra() throws Exception {
+  public void testCharSequenceExtra() {
     Intent intent = new Intent();
     CharSequence cs = new TestCharSequence("bar");
     assertSame(intent, intent.putExtra("foo", cs));
@@ -63,7 +64,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testIntExtra() throws Exception {
+  public void testIntExtra() {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2));
     assertEquals(2, intent.getExtras().get("foo"));
@@ -71,7 +72,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testDoubleExtra() throws Exception {
+  public void testDoubleExtra() {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2d));
     assertEquals(2d, intent.getExtras().get("foo"));
@@ -79,7 +80,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testFloatExtra() throws Exception {
+  public void testFloatExtra() {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2f));
     assertThat(intent.getExtras().get("foo")).isEqualTo(2f);
@@ -87,7 +88,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testIntArrayExtra() throws Exception {
+  public void testIntArrayExtra() {
     Intent intent = new Intent();
     int[] array = new int[2];
     array[0] = 1;
@@ -98,7 +99,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testLongArrayExtra() throws Exception {
+  public void testLongArrayExtra() {
     Intent intent = new Intent();
     long[] array = new long[2];
     array[0] = 1L;
@@ -109,7 +110,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSerializableExtra() throws Exception {
+  public void testSerializableExtra() {
     Intent intent = new Intent();
     TestSerializable serializable = new TestSerializable("some string");
     assertSame(intent, intent.putExtra("foo", serializable));
@@ -118,7 +119,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSerializableOfParcelableExtra() throws Exception {
+  public void testSerializableOfParcelableExtra() {
     Intent intent = new Intent();
     ArrayList<Parcelable> serializable = new ArrayList<>();
     serializable.add(new TestParcelable(12));
@@ -128,7 +129,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testParcelableExtra() throws Exception {
+  public void testParcelableExtra() {
     Intent intent = new Intent();
     Parcelable parcelable = new TestParcelable(44);
     assertSame(intent, intent.putExtra("foo", parcelable));
@@ -137,7 +138,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testParcelableArrayExtra() throws Exception {
+  public void testParcelableArrayExtra() {
     Intent intent = new Intent();
     Parcelable parcelable = new TestParcelable(11);
     intent.putExtra("foo", parcelable);
@@ -164,7 +165,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testLongExtra() throws Exception {
+  public void testLongExtra() {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", 2L));
     assertEquals(2L, intent.getExtras().get("foo"));
@@ -173,7 +174,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testBundleExtra() throws Exception {
+  public void testBundleExtra() {
     Intent intent = new Intent();
     Bundle bundle = new Bundle();
     bundle.putInt("bar", 5);
@@ -182,7 +183,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testHasExtra() throws Exception {
+  public void testHasExtra() {
     Intent intent = new Intent();
     assertSame(intent, intent.putExtra("foo", ""));
     assertTrue(intent.hasExtra("foo"));
@@ -190,14 +191,14 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testGetActionReturnsWhatWasSet() throws Exception {
+  public void testGetActionReturnsWhatWasSet() {
     Intent intent = new Intent();
     assertSame(intent, intent.setAction("foo"));
     assertEquals("foo", intent.getAction());
   }
 
   @Test
-  public void testSetData() throws Exception {
+  public void testSetData() {
     Intent intent = new Intent();
     Uri uri = Uri.parse("content://this/and/that");
     intent.setType("abc");
@@ -205,9 +206,9 @@ public class ShadowIntentTest {
     assertSame(uri, intent.getData());
     assertNull(intent.getType());
   }
-  
+
   @Test
-  public void testGetScheme() throws Exception {
+  public void testGetScheme() {
     Intent intent = new Intent();
     Uri uri = Uri.parse("http://robolectric.org");
     assertSame(intent, intent.setData(uri));
@@ -216,7 +217,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSetType() throws Exception {
+  public void testSetType() {
     Intent intent = new Intent();
     intent.setData(Uri.parse("content://this/and/that"));
     assertSame(intent, intent.setType("def"));
@@ -225,7 +226,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSetDataAndType() throws Exception {
+  public void testSetDataAndType() {
     Intent intent = new Intent();
     Uri uri = Uri.parse("content://this/and/that");
     assertSame(intent, intent.setDataAndType(uri, "ghi"));
@@ -234,7 +235,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSetClass() throws Exception {
+  public void testSetClass() {
     Intent intent = new Intent();
     Class<? extends ShadowIntentTest> thisClass = getClass();
     Intent output = intent.setClass(ApplicationProvider.getApplicationContext(), thisClass);
@@ -244,7 +245,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSetClassName() throws Exception {
+  public void testSetClassName() {
     Intent intent = new Intent();
     Class<? extends ShadowIntentTest> thisClass = getClass();
     intent.setClassName("package.name", thisClass.getName());
@@ -254,13 +255,13 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void testSetClassThroughConstructor() throws Exception {
+  public void testSetClassThroughConstructor() {
     Intent intent = new Intent(ApplicationProvider.getApplicationContext(), getClass());
     assertThat(intent.getComponent().getClassName()).isEqualTo(getClass().getName());
   }
 
   @Test
-  public void shouldSetFlags() throws Exception {
+  public void shouldSetFlags() {
     Intent intent = new Intent();
     Intent self = intent.setFlags(1234);
     assertEquals(1234, intent.getFlags());
@@ -268,7 +269,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void shouldAddFlags() throws Exception {
+  public void shouldAddFlags() {
     Intent intent = new Intent();
     Intent self = intent.addFlags(4);
     self.addFlags(8);
@@ -277,7 +278,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void shouldSupportCategories() throws Exception {
+  public void shouldSupportCategories() {
     Intent intent = new Intent();
     Intent self = intent.addCategory("category.name.1");
     intent.addCategory("category.name.2");
@@ -302,7 +303,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void shouldAddCategories() throws Exception {
+  public void shouldAddCategories() {
     Intent intent = new Intent();
     Intent self = intent.addCategory("foo");
     assertTrue(intent.getCategories().contains("foo"));
@@ -310,7 +311,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void shouldFillIn() throws Exception {
+  public void shouldFillIn() {
     Intent intentA = new Intent();
     Intent intentB = new Intent();
 
@@ -342,7 +343,7 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void createChooser_shouldWrapIntent() throws Exception {
+  public void createChooser_shouldWrapIntent() {
     Intent originalIntent = new Intent(Intent.ACTION_BATTERY_CHANGED, Uri.parse("foo://blah"));
     Intent chooserIntent = Intent.createChooser(originalIntent, "The title");
     assertThat(chooserIntent.getAction()).isEqualTo(Intent.ACTION_CHOOSER);
@@ -352,21 +353,21 @@ public class ShadowIntentTest {
   }
 
   @Test
-  public void setUri_setsUri() throws Exception {
+  public void setUri_setsUri() {
     Intent intent = new Intent();
     intent.setData(Uri.parse("http://foo"));
     assertThat(intent.getData()).isEqualTo(Uri.parse("http://foo"));
   }
 
   @Test
-  public void setUri_shouldReturnUriString() throws Exception {
+  public void setUri_shouldReturnUriString() {
     Intent intent = new Intent();
     intent.setData(Uri.parse("http://foo"));
     assertThat(intent.getDataString()).isEqualTo("http://foo");
   }
 
   @Test
-  public void setUri_shouldReturnNullUriString() throws Exception {
+  public void setUri_shouldReturnNullUriString() {
     Intent intent = new Intent();
     assertThat(intent.getDataString()).isNull();
   }
@@ -485,9 +486,7 @@ public class ShadowIntentTest {
 
       TestSerializable that = (TestSerializable) o;
 
-      if (someValue != null ? !someValue.equals(that.someValue) : that.someValue != null) return false;
-
-      return true;
+      return Objects.equals(someValue, that.someValue);
     }
 
     @Override

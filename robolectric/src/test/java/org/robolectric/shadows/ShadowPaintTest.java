@@ -55,7 +55,7 @@ public class ShadowPaintTest {
   }
 
   @Test
-  public void shouldGetAndSetTextAlignment() throws Exception {
+  public void shouldGetAndSetTextAlignment() {
     Paint paint = Shadow.newInstanceOf(Paint.class);
     assertThat(paint.getTextAlign()).isEqualTo(Paint.Align.LEFT);
     paint.setTextAlign(Paint.Align.CENTER);
@@ -72,7 +72,7 @@ public class ShadowPaintTest {
   }
 
   @Test
-  public void measureTextActuallyMeasuresLength() throws Exception {
+  public void measureTextActuallyMeasuresLength() {
     Paint paint = Shadow.newInstanceOf(Paint.class);
     assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2.0f);
@@ -80,13 +80,13 @@ public class ShadowPaintTest {
   }
 
   @Test
-  public void createPaintFromPaint() throws Exception {
+  public void createPaintFromPaint() {
     Paint origPaint = new Paint();
     assertThat(new Paint(origPaint).getTextLocale()).isSameInstanceAs(origPaint.getTextLocale());
   }
 
   @Test
-  public void breakTextReturnsNonZeroResult() throws Exception {
+  public void breakTextReturnsNonZeroResult() {
     Paint paint = new Paint();
     assertThat(
             paint.breakText(

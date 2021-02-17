@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 public class ShadowActivityGroupTest {
 
   @Test
-  public void getCurrentActivity_shouldReturnTheProvidedCurrentActivity() throws Exception {
+  public void getCurrentActivity_shouldReturnTheProvidedCurrentActivity() {
   ActivityGroup activityGroup = new ActivityGroup();
   Activity activity = new Activity();
   shadowOf(activityGroup).setCurrentActivity(activity);

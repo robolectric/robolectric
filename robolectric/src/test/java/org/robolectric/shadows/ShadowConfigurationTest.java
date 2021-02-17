@@ -46,7 +46,8 @@ public class ShadowConfigurationTest {
     assertThat(configuration).isEqualTo(clone);
   }
 
-  @Test public void testToString_shouldntExplode() throws Exception {
+  @Test
+  public void testToString_shouldntExplode() {
     assertThat(new Configuration().toString()).contains("mcc");
   }
 }

@@ -18,13 +18,13 @@ public class ShadowLinearLayoutTest {
   private ShadowLinearLayout shadow;
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     linearLayout = new LinearLayout(ApplicationProvider.getApplicationContext());
     shadow = shadowOf(linearLayout);
   }
 
   @Test
-  public void getLayoutParams_shouldReturnTheSameLinearLayoutParamsFromTheSetter() throws Exception {
+  public void getLayoutParams_shouldReturnTheSameLinearLayoutParamsFromTheSetter() {
     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1, 2);
     linearLayout.setLayoutParams(params);
 
@@ -32,7 +32,7 @@ public class ShadowLinearLayoutTest {
   }
 
   @Test
-  public void canAnswerOrientation() throws Exception {
+  public void canAnswerOrientation() {
     assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
     linearLayout.setOrientation(LinearLayout.VERTICAL);
     assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.VERTICAL);
@@ -41,7 +41,7 @@ public class ShadowLinearLayoutTest {
   }
 
   @Test
-  public void canAnswerGravity() throws Exception {
+  public void canAnswerGravity() {
     assertThat(shadow.getGravity()).isEqualTo(Gravity.TOP | Gravity.START);
     linearLayout.setGravity(Gravity.CENTER_VERTICAL); // Only affects horizontal.
     assertThat(shadow.getGravity()).isEqualTo(Gravity.CENTER_VERTICAL | Gravity.START);

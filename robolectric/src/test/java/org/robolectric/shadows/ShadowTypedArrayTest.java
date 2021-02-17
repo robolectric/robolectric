@@ -25,22 +25,22 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getResources() throws Exception {
+  public void getResources() {
     assertNotNull(context.obtainStyledAttributes(new int[]{}).getResources());
   }
 
   @Test
-  public void getInt_shouldReturnDefaultValue() throws Exception {
+  public void getInt_shouldReturnDefaultValue() {
     assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInt(0, -1)).isEqualTo(-1);
   }
 
   @Test
-  public void getInteger_shouldReturnDefaultValue() throws Exception {
+  public void getInteger_shouldReturnDefaultValue() {
     assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInteger(0, -1)).isEqualTo(-1);
   }
 
   @Test
-  public void getInt_withFlags_shouldReturnValue() throws Exception {
+  public void getInt_withFlags_shouldReturnValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.gravity, "top|left")
@@ -50,12 +50,12 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getResourceId_shouldReturnDefaultValue() throws Exception {
+  public void getResourceId_shouldReturnDefaultValue() {
     assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getResourceId(0, -1)).isEqualTo(-1);
   }
 
   @Test
-  public void getResourceId_shouldReturnActualValue() throws Exception {
+  public void getResourceId_shouldReturnActualValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.id, "@+id/snippet_text")
@@ -65,13 +65,13 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getFraction_shouldReturnDefaultValue() throws Exception {
+  public void getFraction_shouldReturnDefaultValue() {
     assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f))
         .isEqualTo(-1f);
   }
 
   @Test
-  public void getFraction_shouldReturnGivenValue() throws Exception {
+  public void getFraction_shouldReturnGivenValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.width, "50%")
@@ -82,12 +82,12 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getDimension_shouldReturnDefaultValue() throws Exception {
+  public void getDimension_shouldReturnDefaultValue() {
     assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.width}).getDimension(0, -1f)).isEqualTo(-1f);
   }
 
   @Test
-  public void getDimension_shouldReturnGivenValue() throws Exception {
+  public void getDimension_shouldReturnGivenValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.width, "50dp")
@@ -97,7 +97,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getDrawable_withExplicitColorValue_shouldReturnColorDrawable() throws Exception {
+  public void getDrawable_withExplicitColorValue_shouldReturnColorDrawable() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.background, "#ff777777")
@@ -108,7 +108,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getTextArray_whenNoSuchAttribute_shouldReturnNull() throws Exception {
+  public void getTextArray_whenNoSuchAttribute_shouldReturnNull() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.keycode, "@array/greetings")
@@ -122,7 +122,7 @@ public class ShadowTypedArrayTest {
   }
 
   @Test
-  public void getTextArray_shouldReturnValues() throws Exception {
+  public void getTextArray_shouldReturnValues() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(R.attr.responses, "@array/greetings")
@@ -131,7 +131,8 @@ public class ShadowTypedArrayTest {
     assertThat(typedArray.getTextArray(0)).asList().containsExactly("hola", "Hello");
   }
 
-  @Test public void hasValue_withValue() throws Exception {
+  @Test
+  public void hasValue_withValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(R.attr.responses, "@array/greetings")
@@ -140,14 +141,16 @@ public class ShadowTypedArrayTest {
     assertThat(typedArray.hasValue(0)).isTrue();
   }
 
-  @Test public void hasValue_withoutValue() throws Exception {
+  @Test
+  public void hasValue_withoutValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         null,
         new int[]{R.attr.responses});
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 
-  @Test public void hasValue_withNullValue() throws Exception {
+  @Test
+  public void hasValue_withNullValue() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(R.attr.responses, AttributeResource.NULL_VALUE)
@@ -156,7 +159,8 @@ public class ShadowTypedArrayTest {
     assertThat(typedArray.hasValue(0)).isFalse();
   }
 
-  @Test public void shouldEnumeratePresentValues() throws Exception {
+  @Test
+  public void shouldEnumeratePresentValues() {
     TypedArray typedArray = context.obtainStyledAttributes(
         Robolectric.buildAttributeSet()
             .addAttribute(R.attr.responses, "@array/greetings")

@@ -87,7 +87,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testGetUrls() throws Exception {
+  public void testGetUrls() {
     Locale.setDefault(Locale.ENGLISH);
     textView.setAutoLinkMask(Linkify.ALL);
     textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
@@ -99,7 +99,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testGetGravity() throws Exception {
+  public void testGetGravity() {
     assertThat(textView.getGravity()).isNotEqualTo(Gravity.CENTER);
     textView.setGravity(Gravity.CENTER);
     assertThat(textView.getGravity()).isEqualTo(Gravity.CENTER);
@@ -126,7 +126,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testGetTextAppearanceId() throws Exception {
+  public void testGetTextAppearanceId() {
     textView.setTextAppearance(
         ApplicationProvider.getApplicationContext(), android.R.style.TextAppearance_Small);
 
@@ -134,37 +134,37 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void shouldSetTextAndTextColorWhileInflatingXmlLayout() throws Exception {
+  public void shouldSetTextAndTextColorWhileInflatingXmlLayout() {
     Activity activity = activityController.get();
     activity.setContentView(R.layout.text_views);
 
-    TextView black = (TextView) activity.findViewById(R.id.black_text_view);
+    TextView black = activity.findViewById(R.id.black_text_view);
     assertThat(black.getText().toString()).isEqualTo("Black Text");
     assertThat(black.getCurrentTextColor()).isEqualTo(0xff000000);
 
-    TextView white = (TextView) activity.findViewById(R.id.white_text_view);
+    TextView white = activity.findViewById(R.id.white_text_view);
     assertThat(white.getText().toString()).isEqualTo("White Text");
     assertThat(white.getCurrentTextColor()).isEqualTo(activity.getResources().getColor(android.R.color.white));
 
-    TextView grey = (TextView) activity.findViewById(R.id.grey_text_view);
+    TextView grey = activity.findViewById(R.id.grey_text_view);
     assertThat(grey.getText().toString()).isEqualTo("Grey Text");
     assertThat(grey.getCurrentTextColor()).isEqualTo(activity.getResources().getColor(R.color.grey42));
   }
 
   @Test
-  public void shouldSetHintAndHintColorWhileInflatingXmlLayout() throws Exception {
+  public void shouldSetHintAndHintColorWhileInflatingXmlLayout() {
     Activity activity = activityController.get();
     activity.setContentView(R.layout.text_views_hints);
 
-    TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);
+    TextView black = activity.findViewById(R.id.black_text_view_hint);
     assertThat(black.getHint().toString()).isEqualTo("Black Hint");
     assertThat(black.getCurrentHintTextColor()).isEqualTo(0xff000000);
 
-    TextView white = (TextView) activity.findViewById(R.id.white_text_view_hint);
+    TextView white = activity.findViewById(R.id.white_text_view_hint);
     assertThat(white.getHint().toString()).isEqualTo("White Hint");
     assertThat(white.getCurrentHintTextColor()).isEqualTo(activity.getResources().getColor(android.R.color.white));
 
-    TextView grey = (TextView) activity.findViewById(R.id.grey_text_view_hint);
+    TextView grey = activity.findViewById(R.id.grey_text_view_hint);
     assertThat(grey.getHint().toString()).isEqualTo("Grey Hint");
     assertThat(grey.getCurrentHintTextColor()).isEqualTo(activity.getResources().getColor(R.color.grey42));
   }
@@ -181,7 +181,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testGetInputType() throws Exception {
+  public void testGetInputType() {
     assertThat(textView.getInputType()).isNotEqualTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
     textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
     assertThat(textView.getInputType()).isEqualTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -309,7 +309,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void removeTextChangedListener_shouldRemoveTheListener() throws Exception {
+  public void removeTextChangedListener_shouldRemoveTheListener() {
     MockTextWatcher watcher = new MockTextWatcher();
     textView.addTextChangedListener(watcher);
     assertTrue(shadowOf(textView).getWatchers().contains(watcher));
@@ -319,12 +319,12 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void getPaint_returnsMeasureTextEnabledObject() throws Exception {
+  public void getPaint_returnsMeasureTextEnabledObject() {
     assertThat(textView.getPaint().measureText("12345")).isEqualTo(5f);
   }
 
   @Test
-  public void append_whenSelectionIsAtTheEnd_shouldKeepSelectionAtTheEnd() throws Exception {
+  public void append_whenSelectionIsAtTheEnd_shouldKeepSelectionAtTheEnd() {
     textView.setText("1", TextView.BufferType.EDITABLE);
     Selection.setSelection(textView.getEditableText(), 0, 0);
     textView.append("2");
@@ -338,7 +338,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void append_whenSelectionReachesToEnd_shouldExtendSelectionToTheEnd() throws Exception {
+  public void append_whenSelectionReachesToEnd_shouldExtendSelectionToTheEnd() {
     textView.setText("12", TextView.BufferType.EDITABLE);
     Selection.setSelection(textView.getEditableText(), 0, 2);
     textView.append("3");
@@ -347,7 +347,8 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() throws Exception {
+  public void
+      testSetCompountDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() {
     textView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.an_image, R.drawable.an_other_image, R.drawable.third_image, R.drawable.fourth_image);
 
     assertEquals(R.drawable.an_image, shadowOf(textView.getCompoundDrawables()[0]).getCreatedFromResId());
@@ -357,7 +358,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldNotCreateDrawablesForZero() throws Exception {
+  public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldNotCreateDrawablesForZero() {
     textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 
     assertNull(textView.getCompoundDrawables()[0]);
@@ -367,14 +368,14 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void canSetAndGetTypeface() throws Exception {
+  public void canSetAndGetTypeface() {
     Typeface typeface = Shadow.newInstanceOf(Typeface.class);
     textView.setTypeface(typeface);
     assertSame(typeface, textView.getTypeface());
   }
 
   @Test
-  public void onTouchEvent_shouldCallMovementMethodOnTouchEventWithSetMotionEvent() throws Exception {
+  public void onTouchEvent_shouldCallMovementMethodOnTouchEventWithSetMotionEvent() {
     TestMovementMethod testMovementMethod = new TestMovementMethod();
     textView.setMovementMethod(testMovementMethod);
     textView.setLayoutParams(new FrameLayout.LayoutParams(100, 100));
@@ -395,7 +396,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void canSetAndGetInputFilters() throws Exception {
+  public void canSetAndGetInputFilters() {
     final InputFilter[] expectedFilters = new InputFilter[]{new InputFilter.LengthFilter(1)};
     textView.setFilters(expectedFilters);
     assertThat(textView.getFilters()).isSameInstanceAs(expectedFilters);
@@ -439,7 +440,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void setTextSize_shouldHandleDips() throws Exception {
+  public void setTextSize_shouldHandleDips() {
     ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
@@ -448,7 +449,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void setTextSize_shouldHandleSp() throws Exception {
+  public void setTextSize_shouldHandleSp() {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
@@ -460,7 +461,7 @@ public class ShadowTextViewTest {
   }
 
   @Test
-  public void setTextSize_shouldHandlePixels() throws Exception {
+  public void setTextSize_shouldHandlePixels() {
     ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);

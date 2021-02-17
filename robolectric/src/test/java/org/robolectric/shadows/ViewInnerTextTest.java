@@ -23,7 +23,7 @@ public class ViewInnerTextTest {
   }
 
   @Test
-  public void testInnerText() throws Exception {
+  public void testInnerText() {
     LinearLayout top = new LinearLayout(context);
     top.addView(textView("blah"));
     top.addView(new View(context));
@@ -44,7 +44,7 @@ public class ViewInnerTextTest {
   }
 
   @Test
-  public void shouldOnlyIncludeViewTextViewsText() throws Exception {
+  public void shouldOnlyIncludeViewTextViewsText() {
     LinearLayout top = new LinearLayout(context);
     top.addView(textView("blah", View.VISIBLE));
     top.addView(textView("blarg", View.GONE));
@@ -54,7 +54,7 @@ public class ViewInnerTextTest {
   }
 
   @Test
-  public void shouldNotPrefixBogusSpaces() throws Exception {
+  public void shouldNotPrefixBogusSpaces() {
     LinearLayout top = new LinearLayout(context);
     top.addView(textView("blarg", View.GONE));
     top.addView(textView("arrg", View.INVISIBLE));

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowCornerPathEffectTest {
   @Test
-  public void shouldGetRadius() throws Exception {
+  public void shouldGetRadius() {
     CornerPathEffect cornerPathEffect = new CornerPathEffect(4.0f);
     assertThat(shadowOf(cornerPathEffect).getRadius()).isEqualTo(4.0f);
   }

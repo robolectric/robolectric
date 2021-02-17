@@ -23,7 +23,7 @@ import org.robolectric.internal.bytecode.RobolectricInternals;
 public class ShadowLegacySystemClockTest {
 
   @Test
-  public void shouldAllowForFakingOfTime() throws Exception {
+  public void shouldAllowForFakingOfTime() {
     assertThat(SystemClock.uptimeMillis()).isNotEqualTo(1000);
     Robolectric.getForegroundThreadScheduler().advanceTo(1000);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);

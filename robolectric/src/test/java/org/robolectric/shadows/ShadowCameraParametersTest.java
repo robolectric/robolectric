@@ -8,6 +8,7 @@ import android.hardware.Camera;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Lists;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testPictureSize() throws Exception {
+  public void testPictureSize() {
     assertThat(Shadows.shadowOf(parameters).getPictureHeight()).isNotEqualTo(600);
     assertThat(Shadows.shadowOf(parameters).getPictureWidth()).isNotEqualTo(800);
     parameters.setPictureSize(800, 600);
@@ -38,7 +39,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testPreviewFpsRange() throws Exception {
+  public void testPreviewFpsRange() {
     int[] fpsRange = new int[2];
     parameters.getPreviewFpsRange(fpsRange);
     assertThat(fpsRange[1]).isNotEqualTo(15);
@@ -50,14 +51,14 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testPreviewFrameRate() throws Exception {
+  public void testPreviewFrameRate() {
     assertThat(parameters.getPreviewFrameRate()).isNotEqualTo(15);
     parameters.setPreviewFrameRate(15);
     assertThat(parameters.getPreviewFrameRate()).isEqualTo(15);
   }
 
   @Test
-  public void testPreviewSize() throws Exception {
+  public void testPreviewSize() {
     assertThat(Shadows.shadowOf(parameters).getPreviewWidth()).isNotEqualTo(320);
     assertThat(Shadows.shadowOf(parameters).getPreviewHeight()).isNotEqualTo(240);
     parameters.setPreviewSize(320, 240);
@@ -69,14 +70,14 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testPreviewFormat() throws Exception {
+  public void testPreviewFormat() {
     assertThat(parameters.getPreviewFormat()).isEqualTo(ImageFormat.NV21);
     parameters.setPreviewFormat(ImageFormat.JPEG);
     assertThat(parameters.getPreviewFormat()).isEqualTo(ImageFormat.JPEG);
   }
 
   @Test
-  public void testGetSupportedPreviewFormats() throws Exception {
+  public void testGetSupportedPreviewFormats() {
     List<Integer> supportedFormats = parameters.getSupportedPreviewFormats();
     assertThat(supportedFormats).isNotNull();
     assertThat(supportedFormats.size()).isNotEqualTo(0);
@@ -84,7 +85,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testGetSupportedPictureFormats() throws Exception {
+  public void testGetSupportedPictureFormats() {
     List<Integer> supportedFormats = parameters.getSupportedPictureFormats();
     assertThat(supportedFormats).isNotNull();
     assertThat(supportedFormats.size()).isEqualTo(2);
@@ -92,7 +93,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testGetSupportedPictureSizes() throws Exception {
+  public void testGetSupportedPictureSizes() {
     List<Camera.Size> supportedSizes = parameters.getSupportedPictureSizes();
     assertThat(supportedSizes).isNotNull();
     assertThat(supportedSizes.size()).isEqualTo(3);
@@ -101,7 +102,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testGetSupportedPreviewSizes() throws Exception {
+  public void testGetSupportedPreviewSizes() {
     List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
     assertThat(supportedSizes).isNotNull();
     assertThat(supportedSizes.size()).isEqualTo(2);
@@ -110,14 +111,14 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testInitSupportedPreviewSizes() throws Exception {
+  public void testInitSupportedPreviewSizes() {
     Shadows.shadowOf(parameters).initSupportedPreviewSizes();
     assertThat(parameters.getSupportedPreviewSizes()).isNotNull();
     assertThat(parameters.getSupportedPreviewSizes()).isEmpty();
   }
 
   @Test
-  public void testAddSupportedPreviewSizes() throws Exception {
+  public void testAddSupportedPreviewSizes() {
     Shadows.shadowOf(parameters).initSupportedPreviewSizes();
     Shadows.shadowOf(parameters).addSupportedPreviewSize(320, 240);
     List<Camera.Size> supportedSizes = parameters.getSupportedPreviewSizes();
@@ -128,7 +129,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testGetSupportedPreviewFpsRange() throws Exception {
+  public void testGetSupportedPreviewFpsRange() {
     List<int[]> supportedRanges = parameters.getSupportedPreviewFpsRange();
     assertThat(supportedRanges).isNotNull();
     assertThat(supportedRanges.size()).isEqualTo(2);
@@ -139,7 +140,7 @@ public class ShadowCameraParametersTest {
   }
 
   @Test
-  public void testGetSupportedPreviewFrameRates() throws Exception {
+  public void testGetSupportedPreviewFrameRates() {
     List<Integer> supportedRates = parameters.getSupportedPreviewFrameRates();
     assertThat(supportedRates).isNotNull();
     assertThat(supportedRates.size()).isEqualTo(3);
@@ -213,7 +214,7 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testSetAndGetFocusAreas() {
-    List<Camera.Area> focusAreas1 = Arrays.asList(new Camera.Area(new Rect(), 1));
+    List<Camera.Area> focusAreas1 = Collections.singletonList(new Camera.Area(new Rect(), 1));
     parameters.setFocusAreas(focusAreas1);
     assertThat(parameters.getFocusAreas()).isEqualTo(focusAreas1);
 
@@ -236,7 +237,7 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testSetAndGetMaxMeteringAreas() {
-    List<Camera.Area> meteringAreas1 = Arrays.asList(new Camera.Area(new Rect(), 1));
+    List<Camera.Area> meteringAreas1 = Collections.singletonList(new Camera.Area(new Rect(), 1));
     parameters.setMeteringAreas(meteringAreas1);
     assertThat(parameters.getMeteringAreas()).isEqualTo(meteringAreas1);
 

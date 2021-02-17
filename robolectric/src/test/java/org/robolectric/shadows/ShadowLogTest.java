@@ -14,7 +14,6 @@ import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.shadows.ShadowLog.LogItem;
@@ -306,13 +305,7 @@ public class ShadowLogTest {
 
   @Test
   public void shouldLogTimeWithTimeSupplier() {
-    ShadowLog.setTimeSupplier(
-        new Supplier<String>() {
-          @Override
-          public String get() {
-            return "20 July 1969 20:17";
-          }
-        });
+    ShadowLog.setTimeSupplier(() -> "20 July 1969 20:17");
 
     Log.d("tag", "msg");
 
@@ -320,14 +313,8 @@ public class ShadowLogTest {
   }
 
   @Test
-  public void shouldLogToProvidedStreamWithTimeSupplier() throws Exception {
-    ShadowLog.setTimeSupplier(
-        new Supplier<String>() {
-          @Override
-          public String get() {
-            return "20 July 1969 20:17";
-          }
-        });
+  public void shouldLogToProvidedStreamWithTimeSupplier() {
+    ShadowLog.setTimeSupplier(() -> "20 July 1969 20:17");
 
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     PrintStream old = ShadowLog.stream;

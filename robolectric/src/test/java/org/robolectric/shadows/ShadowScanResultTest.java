@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 public class ShadowScanResultTest {
 
   @Test
-  public void shouldConstruct() throws Exception {
+  public void shouldConstruct() {
     ScanResult scanResult = ShadowScanResult.newInstance("SSID", "BSSID", "Caps", 11, 42);
     assertThat(scanResult.SSID).isEqualTo("SSID");
     assertThat(scanResult.BSSID).isEqualTo("BSSID");

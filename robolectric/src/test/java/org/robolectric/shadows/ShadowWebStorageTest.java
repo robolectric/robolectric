@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 public final class ShadowWebStorageTest {
 
   @Test
-  public void webStorageDoesNotCrash() throws Exception {
+  public void webStorageDoesNotCrash() {
     WebStorage.getInstance().deleteAllData();
   }
 }

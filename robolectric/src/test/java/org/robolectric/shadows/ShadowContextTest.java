@@ -52,7 +52,7 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void shouldGetApplicationDataDirectory() throws IOException {
+  public void shouldGetApplicationDataDirectory() {
     File dataDir = context.getDir("data", Context.MODE_PRIVATE);
     assertThat(dataDir.exists()).isTrue();
   }
@@ -69,7 +69,7 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void shouldStubThemeStuff() throws Exception {
+  public void shouldStubThemeStuff() {
     assertThat(context.obtainStyledAttributes(new int[0])).isNotNull();
     assertThat(context.obtainStyledAttributes(0, new int[0])).isNotNull();
     assertThat(context.obtainStyledAttributes(null, new int[0])).isNotNull();
@@ -77,12 +77,12 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void getCacheDir_shouldCreateDirectory() throws Exception {
+  public void getCacheDir_shouldCreateDirectory() {
     assertThat(context.getCacheDir().exists()).isTrue();
   }
 
   @Test
-  public void getExternalCacheDir_shouldCreateDirectory() throws Exception {
+  public void getExternalCacheDir_shouldCreateDirectory() {
     assertThat(context.getExternalCacheDir().exists()).isTrue();
   }
 
@@ -135,29 +135,29 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void getFilesDir_shouldCreateDirectory() throws Exception {
+  public void getFilesDir_shouldCreateDirectory() {
     assertThat(context.getFilesDir().exists()).isTrue();
   }
 
   @Test
-  public void fileList() throws Exception {
+  public void fileList() {
     assertThat(context.fileList()).isEqualTo(context.getFilesDir().list());
   }
 
   @Test
-  public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
+  public void getExternalFilesDir_shouldCreateDirectory() {
     assertThat(context.getExternalFilesDir(null).exists()).isTrue();
   }
 
   @Test
-  public void getExternalFilesDir_shouldCreateNamedDirectory() throws Exception {
+  public void getExternalFilesDir_shouldCreateNamedDirectory() {
     File f = context.getExternalFilesDir("__test__");
     assertThat(f.exists()).isTrue();
     assertThat(f.getAbsolutePath()).endsWith("__test__");
   }
 
   @Test
-  public void getDatabasePath_shouldAllowAbsolutePaths() throws Exception {
+  public void getDatabasePath_shouldAllowAbsolutePaths() {
       String testDbName;
 
       if (System.getProperty("os.name").startsWith("Windows")) {
@@ -187,14 +187,16 @@ public class ShadowContextTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void openFileInput_shouldNotAcceptPathsWithSeparatorCharacters() throws Exception {
-    try (FileInputStream fileInputStream = context.openFileInput("data" + File.separator + "test")) {}
+    try (FileInputStream fileInputStream =
+        context.openFileInput("data" + File.separator + "test")) {}
   }
 
   @Test
   public void openFileOutput_shouldReturnAFileOutputStream() throws Exception {
     File file = new File("__test__");
     String fileContents = "blah";
-    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_PRIVATE)) {
+    try (FileOutputStream fileOutputStream =
+        context.openFileOutput("__test__", Context.MODE_PRIVATE)) {
       fileOutputStream.write(fileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
@@ -206,7 +208,9 @@ public class ShadowContextTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void openFileOutput_shouldNotAcceptPathsWithSeparatorCharacters() throws Exception {
-    try (FileOutputStream fos = context.openFileOutput(File.separator + "data" + File.separator + "test" + File.separator + "hi", 0)) {}
+    try (FileOutputStream fos =
+        context.openFileOutput(
+            File.separator + "data" + File.separator + "test" + File.separator + "hi", 0)) {}
   }
 
   @Test
@@ -215,10 +219,12 @@ public class ShadowContextTest {
     String initialFileContents = "foo";
     String appendedFileContents = "bar";
     String finalFileContents = initialFileContents + appendedFileContents;
-    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_APPEND)) {
+    try (FileOutputStream fileOutputStream =
+        context.openFileOutput("__test__", Context.MODE_APPEND)) {
       fileOutputStream.write(initialFileContents.getBytes(UTF_8));
     }
-    try (FileOutputStream fileOutputStream = context.openFileOutput("__test__", Context.MODE_APPEND)) {
+    try (FileOutputStream fileOutputStream =
+        context.openFileOutput("__test__", Context.MODE_APPEND)) {
       fileOutputStream.write(appendedFileContents.getBytes(UTF_8));
     }
     try (FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()))) {
@@ -257,7 +263,7 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void deleteFile_shouldReturnFalse() throws IOException {
+  public void deleteFile_shouldReturnFalse() {
     File filesDir = context.getFilesDir();
     File file = new File(filesDir, "test.txt");
     boolean successfully = context.deleteFile(file.getName());
@@ -265,7 +271,7 @@ public class ShadowContextTest {
   }
 
   @Test
-  public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
+  public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() {
     AttributeSet roboAttributeSet = Robolectric.buildAttributeSet()
         .addAttribute(R.attr.itemType, "ungulate")
         .addAttribute(R.attr.scrollBars, "horizontal|vertical")

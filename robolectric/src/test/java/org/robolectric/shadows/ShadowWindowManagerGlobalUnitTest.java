@@ -21,13 +21,13 @@ public class ShadowWindowManagerGlobalUnitTest {
   @Config(sdk = 23)
   public static class DummyTest {
     @Test
-    public void first() throws Exception {
+    public void first() {
       assertThat(WindowManagerGlobal.getInstance().getViewRootNames()).isEmpty();
       Robolectric.setupActivity(Activity.class);
     }
 
     @Test
-    public void second() throws Exception {
+    public void second() {
       assertThat(WindowManagerGlobal.getInstance().getViewRootNames()).isEmpty();
       Robolectric.setupActivity(Activity.class);
     }

@@ -21,7 +21,7 @@ public class ShadowVpnServiceTest {
   }
 
   @Test
-  public void prepare() throws Exception {
+  public void prepare() {
     Intent intent = new Intent("foo");
     ShadowVpnService.setPrepareResult(intent);
 

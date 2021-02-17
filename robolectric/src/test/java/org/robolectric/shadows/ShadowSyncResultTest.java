@@ -13,13 +13,13 @@ import org.junit.runner.RunWith;
 public class ShadowSyncResultTest {
 
   @Test
-  public void testConstructor() throws Exception {
+  public void testConstructor() {
     SyncResult result = new SyncResult();
     assertThat(result.stats).isNotNull();
   }
 
   @Test
-  public void hasSoftError() throws Exception {
+  public void hasSoftError() {
     SyncResult result = new SyncResult();
     assertFalse(result.hasSoftError());
     result.stats.numIoExceptions++;
@@ -28,7 +28,7 @@ public class ShadowSyncResultTest {
   }
 
   @Test
-  public void hasHardError() throws Exception {
+  public void hasHardError() {
     SyncResult result = new SyncResult();
     assertFalse(result.hasHardError());
     result.stats.numAuthExceptions++;
@@ -37,7 +37,7 @@ public class ShadowSyncResultTest {
   }
 
   @Test
-  public void testMadeSomeProgress() throws Exception {
+  public void testMadeSomeProgress() {
     SyncResult result = new SyncResult();
     assertFalse(result.madeSomeProgress());
     result.stats.numInserts++;
@@ -45,7 +45,7 @@ public class ShadowSyncResultTest {
   }
 
   @Test
-  public void testClear() throws Exception {
+  public void testClear() {
     SyncResult result = new SyncResult();
     result.moreRecordsToGet = true;
     result.stats.numInserts++;

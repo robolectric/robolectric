@@ -53,7 +53,7 @@ public class ShadowSurfaceViewTest {
   }
 
   @Test
-  public void canCreateASurfaceView_attachedToAWindowWithActionBar() throws Exception {
+  public void canCreateASurfaceView_attachedToAWindowWithActionBar() {
     TestActivity testActivity = buildActivity(TestActivity.class).create().start().resume().visible().get();
     assertThat(testActivity).isNotNull();
   }

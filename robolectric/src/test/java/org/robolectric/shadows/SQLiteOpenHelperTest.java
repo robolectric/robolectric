@@ -30,7 +30,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testConstructorWithNullPathShouldCreateInMemoryDatabase() throws Exception {
+  public void testConstructorWithNullPathShouldCreateInMemoryDatabase() {
     TestOpenHelper helper = new TestOpenHelper(null, null, null, 1);
     SQLiteDatabase database = helper.getReadableDatabase();
     assertDatabaseOpened(database, helper);
@@ -38,13 +38,13 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testInitialGetReadableDatabase() throws Exception {
+  public void testInitialGetReadableDatabase() {
     SQLiteDatabase database = helper.getReadableDatabase();
     assertInitialDB(database, helper);
   }
 
   @Test
-  public void testSubsequentGetReadableDatabase() throws Exception {
+  public void testSubsequentGetReadableDatabase() {
     helper.getReadableDatabase();
     helper.close();
     SQLiteDatabase database = helper.getReadableDatabase();
@@ -53,7 +53,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testSameDBInstanceSubsequentGetReadableDatabase() throws Exception {
+  public void testSameDBInstanceSubsequentGetReadableDatabase() {
     SQLiteDatabase db1 = helper.getReadableDatabase();
     SQLiteDatabase db2 = helper.getReadableDatabase();
 
@@ -61,13 +61,13 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testInitialGetWritableDatabase() throws Exception {
+  public void testInitialGetWritableDatabase() {
     SQLiteDatabase database = helper.getWritableDatabase();
     assertInitialDB(database, helper);
   }
 
   @Test
-  public void testSubsequentGetWritableDatabase() throws Exception {
+  public void testSubsequentGetWritableDatabase() {
     helper.getWritableDatabase();
     helper.close();
 
@@ -75,7 +75,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testSameDBInstanceSubsequentGetWritableDatabase() throws Exception {
+  public void testSameDBInstanceSubsequentGetWritableDatabase() {
     SQLiteDatabase db1 = helper.getWritableDatabase();
     SQLiteDatabase db2 = helper.getWritableDatabase();
 
@@ -83,7 +83,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testClose() throws Exception {
+  public void testClose() {
     SQLiteDatabase database = helper.getWritableDatabase();
 
     assertThat(database.isOpen()).isTrue();
@@ -92,7 +92,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testGetPath() throws Exception {
+  public void testGetPath() {
     final String path1 = "path1", path2 = "path2";
 
     TestOpenHelper helper1 =
@@ -109,7 +109,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testCloseMultipleDbs() throws Exception {
+  public void testCloseMultipleDbs() {
     TestOpenHelper helper2 =
         new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
     SQLiteDatabase database1 = helper.getWritableDatabase();
@@ -124,7 +124,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testOpenMultipleDbsOnCreate() throws Exception {
+  public void testOpenMultipleDbsOnCreate() {
     TestOpenHelper helper2 =
         new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
     assertThat(helper.onCreateCalled).isFalse();
@@ -159,7 +159,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testMultipleDbsPreserveData() throws Exception {
+  public void testMultipleDbsPreserveData() {
     final String TABLE_NAME1 = "fart", TABLE_NAME2 = "fart2";
     SQLiteDatabase db1 = helper.getWritableDatabase();
     setupTable(db1, TABLE_NAME1);
@@ -174,7 +174,7 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testCloseOneDbKeepsDataForOther() throws Exception {
+  public void testCloseOneDbKeepsDataForOther() {
     final String TABLE_NAME1 = "fart", TABLE_NAME2 = "fart2";
     TestOpenHelper helper2 =
         new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path2", null, 1);
@@ -194,14 +194,14 @@ public class SQLiteOpenHelperTest {
   }
 
   @Test
-  public void testCreateAndDropTable() throws Exception {
+  public void testCreateAndDropTable() {
     SQLiteDatabase database = helper.getWritableDatabase();
     database.execSQL("CREATE TABLE foo(id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);");
     database.execSQL("DROP TABLE IF EXISTS foo;");
   }
 
   @Test
-  public void testCloseThenOpen() throws Exception {
+  public void testCloseThenOpen() {
     final String TABLE_NAME1 = "fart";
     SQLiteDatabase db1 = helper.getWritableDatabase();
     setupTable(db1, TABLE_NAME1);

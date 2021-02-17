@@ -45,7 +45,7 @@ public class ShadowContentProviderOperationTest {
     assertThat(shadow.getContentValues().getAsString("updateKey")).isEqualTo("updateValue");
     assertThat(shadow.getSelection()).isEqualTo("a=? and b=?");
     assertThat(shadow.getSelectionArgs()).asList().containsExactly("abc");
-    assertThat(shadow.getSelectionArgsBackReferences()).isEqualTo(Collections.<Integer, Integer>singletonMap(1, 3));
+    assertThat(shadow.getSelectionArgsBackReferences()).isEqualTo(Collections.singletonMap(1, 3));
 
     // delete and expected count
     op = ContentProviderOperation.newDelete(uri)

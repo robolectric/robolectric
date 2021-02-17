@@ -27,7 +27,7 @@ public class ShadowWifiInfoTest {
   }
 
   @Test
-  public void newInstance_shouldNotCrash() throws Exception {
+  public void newInstance_shouldNotCrash() {
     assertThat(ShadowWifiInfo.newInstance()).isNotNull();
   }
 

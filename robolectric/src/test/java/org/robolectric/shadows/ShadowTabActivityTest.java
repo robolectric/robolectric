@@ -15,7 +15,7 @@ import org.robolectric.Robolectric;
 public class ShadowTabActivityTest {
 
   @Test
-  public void tabActivityShouldNotMakeNewTabHostEveryGet() throws Exception {
+  public void tabActivityShouldNotMakeNewTabHostEveryGet() {
     TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
     TabHost tabHost1 = activity.getTabHost();
     TabHost tabHost2 = activity.getTabHost();
@@ -24,7 +24,7 @@ public class ShadowTabActivityTest {
   }
 
   @Test
-  public void shouldGetTabWidget() throws Exception {
+  public void shouldGetTabWidget() {
     TabActivity activity = Robolectric.buildActivity(TabActivity.class).create().get();
     activity.setContentView(R.layout.tab_activity);
     assertThat(activity.getTabWidget()).isInstanceOf(TabWidget.class);

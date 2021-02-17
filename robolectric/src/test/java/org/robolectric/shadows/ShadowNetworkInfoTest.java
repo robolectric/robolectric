@@ -13,7 +13,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowNetworkInfoTest {
 
   @Test
-  public void getDetailedState_shouldReturnTheAssignedState() throws Exception {
+  public void getDetailedState_shouldReturnTheAssignedState() {
     NetworkInfo networkInfo = Shadow.newInstanceOf(NetworkInfo.class);
     shadowOf(networkInfo).setDetailedState(NetworkInfo.DetailedState.SCANNING);
     assertThat(networkInfo.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.SCANNING);

@@ -90,7 +90,7 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   @Config(minSdk = Q)
-  public void currentGnssTimeClock_shouldReturnGnssTime() throws Exception {
+  public void currentGnssTimeClock_shouldReturnGnssTime() {
     ShadowSystemClock.setGnssTimeAvailable(true);
     SystemClock.setCurrentTimeMillis(123456L);
     assertThat(SystemClock.currentGnssTimeClock().millis()).isEqualTo(123456);
@@ -98,7 +98,7 @@ public class ShadowPausedSystemClockTest {
 
   @Test
   @Config(minSdk = Q)
-  public void currentGnssTimeClock_shouldThrowDateTimeException() throws Exception {
+  public void currentGnssTimeClock_shouldThrowDateTimeException() {
     ShadowSystemClock.setGnssTimeAvailable(false);
     try {
       SystemClock.currentGnssTimeClock().millis();

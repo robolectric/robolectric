@@ -33,7 +33,7 @@ public final class ShadowAsyncQueryHandlerTest {
   }
 
   @Test
-  public void startQuery_callbackIsCalled() throws Exception {
+  public void startQuery_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
     shadowOf(contentResolver).setCursor(EXTERNAL_CONTENT_URI, CURSOR);
 
@@ -52,7 +52,7 @@ public final class ShadowAsyncQueryHandlerTest {
   }
 
   @Test
-  public void startInsert_callbackIsCalled() throws Exception {
+  public void startInsert_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
 
     asyncQueryHandler.startInsert(TOKEN, COOKIE, EXTERNAL_CONTENT_URI, null /* initialValues */);
@@ -64,7 +64,7 @@ public final class ShadowAsyncQueryHandlerTest {
   }
 
   @Test
-  public void startUpdate_callbackIsCalled() throws Exception {
+  public void startUpdate_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
     contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues());
 
@@ -82,7 +82,7 @@ public final class ShadowAsyncQueryHandlerTest {
   }
 
   @Test
-  public void startDelete_callbackIsCalled() throws Exception {
+  public void startDelete_callbackIsCalled() {
     FakeAsyncQueryHandler asyncQueryHandler = new FakeAsyncQueryHandler(contentResolver);
     contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues());
 

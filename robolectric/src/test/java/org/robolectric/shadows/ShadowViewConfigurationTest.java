@@ -75,7 +75,7 @@ public class ShadowViewConfigurationTest {
   }
 
   @Test
-  public void testHasPermanentMenuKey() throws Exception {
+  public void testHasPermanentMenuKey() {
     ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
     assertThat(viewConfiguration.hasPermanentMenuKey()).isTrue();
 

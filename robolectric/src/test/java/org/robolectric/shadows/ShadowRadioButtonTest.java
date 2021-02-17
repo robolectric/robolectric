@@ -29,7 +29,7 @@ public class ShadowRadioButtonTest {
   }
 
   @Test
-  public void canBeExplicitlyChecked() throws Exception {
+  public void canBeExplicitlyChecked() {
     assertFalse(radioButton.isChecked());
 
     radioButton.setChecked(true);
@@ -40,7 +40,7 @@ public class ShadowRadioButtonTest {
   }
 
   @Test
-  public void canBeToggledBetweenCheckedState() throws Exception {
+  public void canBeToggledBetweenCheckedState() {
     assertFalse(radioButton.isChecked());
 
     radioButton.toggle();
@@ -51,7 +51,7 @@ public class ShadowRadioButtonTest {
   }
 
   @Test
-  public void canBeClickedToToggleCheckedState() throws Exception {
+  public void canBeClickedToToggleCheckedState() {
     assertFalse(radioButton.isChecked());
 
     radioButton.performClick();
@@ -62,7 +62,7 @@ public class ShadowRadioButtonTest {
   }
 
   @Test
-  public void shouldInformRadioGroupThatItIsChecked() throws Exception {
+  public void shouldInformRadioGroupThatItIsChecked() {
     RadioButton radioButton1 = new RadioButton(context);
     radioButton1.setId(99);
     RadioButton radioButton2 = new RadioButton(context);

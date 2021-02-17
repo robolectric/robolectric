@@ -42,7 +42,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void testBuilder() throws Exception {
+  public void testBuilder() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     builder.setTitle("title").setMessage("message");
     builder.setCancelable(true);
@@ -61,7 +61,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void nullTitleAndMessageAreOkay() throws Exception {
+  public void nullTitleAndMessageAreOkay() {
     AlertDialog.Builder builder =
         new AlertDialog.Builder(getApplication()) //
             .setTitle(null) //
@@ -72,7 +72,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void getLatestAlertDialog_shouldReturnARealAlertDialog() throws Exception {
+  public void getLatestAlertDialog_shouldReturnARealAlertDialog() {
     assertThat(ShadowAlertDialog.getLatestAlertDialog()).isNull();
 
     AlertDialog dialog = new AlertDialog.Builder(getApplication()).show();
@@ -80,7 +80,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldOnlyCreateRequestedButtons() throws Exception {
+  public void shouldOnlyCreateRequestedButtons() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     builder.setPositiveButton("OK", null);
     AlertDialog dialog = builder.create();
@@ -91,7 +91,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldAllowNullButtonListeners() throws Exception {
+  public void shouldAllowNullButtonListeners() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     builder.setPositiveButton("OK", null);
     AlertDialog dialog = builder.create();
@@ -116,7 +116,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldSetMessageFromResourceId() throws Exception {
+  public void shouldSetMessageFromResourceId() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     builder.setTitle("title").setMessage(R.string.hello);
 
@@ -126,7 +126,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldSetView() throws Exception {
+  public void shouldSetView() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     EditText view = new EditText(getApplication());
     builder.setView(view);
@@ -137,7 +137,7 @@ public class ShadowAlertDialogTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void shouldSetView_withLayoutId() throws Exception {
+  public void shouldSetView_withLayoutId() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     builder.setView(R.layout.custom_layout);
 
@@ -147,7 +147,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldSetCustomTitleView() throws Exception {
+  public void shouldSetCustomTitleView() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     View view = new View(getApplication());
     assertThat(builder.setCustomTitle(view)).isSameInstanceAs(builder);
@@ -157,7 +157,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void clickingPositiveButtonDismissesDialog() throws Exception {
+  public void clickingPositiveButtonDismissesDialog() {
     AlertDialog alertDialog =
         new AlertDialog.Builder(getApplication()).setPositiveButton("Positive", null).create();
     alertDialog.show();
@@ -168,15 +168,10 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void clickingNeutralButtonDismissesDialog() throws Exception {
+  public void clickingNeutralButtonDismissesDialog() {
     AlertDialog alertDialog =
         new AlertDialog.Builder(getApplication())
-            .setNeutralButton(
-                "Neutral",
-                new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialog, int which) {}
-                })
+            .setNeutralButton("Neutral", (dialog, which) -> {})
             .create();
     alertDialog.show();
 
@@ -186,15 +181,10 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void clickingNegativeButtonDismissesDialog() throws Exception {
+  public void clickingNegativeButtonDismissesDialog() {
     AlertDialog alertDialog =
         new AlertDialog.Builder(getApplication())
-            .setNegativeButton(
-                "Negative",
-                new DialogInterface.OnClickListener() {
-                  @Override
-                  public void onClick(DialogInterface dialog, int which) {}
-                })
+            .setNegativeButton("Negative", (dialog, which) -> {})
             .create();
     alertDialog.show();
 
@@ -204,7 +194,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void testBuilderWithItemArrayViaResourceId() throws Exception {
+  public void testBuilderWithItemArrayViaResourceId() {
     AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(context));
 
     builder.setTitle("title");
@@ -224,7 +214,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void testBuilderWithAdapter() throws Exception {
+  public void testBuilderWithAdapter() {
     List<Integer> list = new ArrayList<>();
     list.add(99);
     list.add(88);
@@ -232,12 +222,7 @@ public class ShadowAlertDialogTest {
     ArrayAdapter<Integer> adapter = new ArrayAdapter<>(context, R.layout.main, R.id.title, list);
 
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
-    builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int item) {
-        dialog.dismiss();
-      }
-    });
+    builder.setSingleChoiceItems(adapter, -1, (dialog, item) -> dialog.dismiss());
     AlertDialog alert = builder.create();
     alert.show();
 
@@ -260,8 +245,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog()
-      throws Exception {
+  public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog() {
     AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(context));
 
     TestDialogOnClickListener listener = new TestDialogOnClickListener();
@@ -297,7 +281,7 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  public void shouldNotExplodeWhenNestingAlerts() throws Exception {
+  public void shouldNotExplodeWhenNestingAlerts() {
     final Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     final AlertDialog nestedDialog = new AlertDialog.Builder(activity)
         .setTitle("Dialog 2")
@@ -305,15 +289,12 @@ public class ShadowAlertDialogTest {
         .setPositiveButton("OK", null)
         .create();
 
-    final AlertDialog dialog = new AlertDialog.Builder(activity)
-        .setTitle("Dialog 1")
-        .setMessage("A dialog")
-        .setPositiveButton("Button 1", new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            nestedDialog.show();
-          }
-        }).create();
+    final AlertDialog dialog =
+        new AlertDialog.Builder(activity)
+            .setTitle("Dialog 1")
+            .setMessage("A dialog")
+            .setPositiveButton("Button 1", (dialog1, which) -> nestedDialog.show())
+            .create();
 
     dialog.show();
     assertThat(ShadowDialog.getLatestDialog()).isEqualTo(dialog);
