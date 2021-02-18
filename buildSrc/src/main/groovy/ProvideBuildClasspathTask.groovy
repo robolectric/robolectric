@@ -11,8 +11,8 @@ class ProvideBuildClasspathTask extends DefaultTask {
 
         AndroidSdk.ALL_SDKS.each { androidSdk ->
             def config = project.configurations.create("sdk${androidSdk.apiLevel}")
-            project.dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
-            props.setProperty(androidSdk.coordinates, config.files.join(File.pathSeparator))
+            project.dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.preinstrumentedCoordinates)
+            props.setProperty(androidSdk.preinstrumentedCoordinates, config.files.join(File.pathSeparator))
         }
 
         File outDir = outFile.parentFile

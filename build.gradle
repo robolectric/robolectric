@@ -139,16 +139,16 @@ afterEvaluate {
 task prefetchSdks() {
     AndroidSdk.ALL_SDKS.each { androidSdk ->
         doLast {
-            println("Prefetching ${androidSdk.coordinates}...")
+            println("Prefetching ${androidSdk.preinstrumentedCoordinates}...")
             // prefetch into maven local repo...
             def mvnCommand = "mvn -q dependency:get -DrepoUrl=http://maven.google.com \
-                -DgroupId=${androidSdk.groupId} -DartifactId=${androidSdk.artifactId} \
-                -Dversion=${androidSdk.version}"
+                -DgroupId=${androidSdk.groupId} -DartifactId=${androidSdk.preinstrumentedArtifactId} \
+                -Dversion=${androidSdk.preinstrumentedVersion}"
             shellExec(mvnCommand)
 
             // prefetch into gradle local cache...
             def config = configurations.create("sdk${androidSdk.apiLevel}")
-            dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.coordinates)
+            dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.preinstrumentedCoordinates)
             // causes dependencies to be resolved:
             config.files
         }
