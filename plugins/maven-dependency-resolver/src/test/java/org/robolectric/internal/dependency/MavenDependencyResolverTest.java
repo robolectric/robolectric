@@ -177,6 +177,15 @@ public class MavenDependencyResolverTest {
     protected File getLocalRepositoryDir() {
       return localRepositoryDir;
     }
+
+    @Override
+    protected File createLockFile() {
+      try {
+        return File.createTempFile("MavenDependencyResolverTest", null);
+      } catch (IOException e) {
+        throw new AssertionError(e);
+      }
+    }
   }
 
   static class TestMavenArtifactFetcher extends MavenArtifactFetcher {
