@@ -69,4 +69,9 @@ public class BootstrapWrapper extends AndroidTestEnvironment implements Bootstra
   public void changeAppManifest(AndroidManifest manifest) {
     this.appManifest = manifest;
   }
+
+  @Override
+  public void resetState() {
+    wrappedTestEnvironment.resetState();
+  }
 }

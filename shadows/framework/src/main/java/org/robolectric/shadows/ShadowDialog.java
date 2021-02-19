@@ -41,6 +41,8 @@ public class ShadowDialog {
   private static final ArrayList<Dialog> shownDialogs = new ArrayList<>();
   private boolean isCancelableOnTouchOutside;
 
+  private static ShadowDialog latestDialog;
+
   @Resetter
   public static void reset() {
     setLatestDialog(null);
@@ -48,13 +50,11 @@ public class ShadowDialog {
   }
 
   public static Dialog getLatestDialog() {
-    ShadowDialog dialog = ShadowApplication.getInstance().getLatestDialog();
-    return dialog == null ? null : dialog.realDialog;
+    return latestDialog == null ? null : latestDialog.realDialog;
   }
 
-  public static void setLatestDialog(ShadowDialog latestDialog) {
-    ShadowApplication shadowApplication = ShadowApplication.getInstance();
-    if (shadowApplication != null) shadowApplication.setLatestDialog(latestDialog);
+  public static void setLatestDialog(ShadowDialog dialog) {
+    latestDialog = dialog;
   }
 
   @Implementation
@@ -146,6 +146,7 @@ public class ShadowDialog {
   }
 
   public void callOnCreate(Bundle bundle) {
-    ReflectionHelpers.callInstanceMethod(realDialog, "onCreate", ClassParameter.from(Bundle.class, bundle));
+    ReflectionHelpers.callInstanceMethod(
+        realDialog, "onCreate", ClassParameter.from(Bundle.class, bundle));
   }
 }

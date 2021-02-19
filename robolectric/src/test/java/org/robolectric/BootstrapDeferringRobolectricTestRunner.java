@@ -86,6 +86,8 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
     void changeAppManifest(AndroidManifest manifest);
 
     void tearDownApplication();
+
+    void resetState();
   }
 
 }
