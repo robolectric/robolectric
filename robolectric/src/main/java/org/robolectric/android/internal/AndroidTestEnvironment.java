@@ -172,6 +172,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
     preloadClasses(apiLevel);
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
+    ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
+    RuntimeEnvironment.setActivityThread(activityThread);
+    Bootstrap.setUpDisplay(androidConfiguration, displayMetrics);
+    activityThread.applyConfigurationToResources(androidConfiguration);
+
+    Resources systemResources = Resources.getSystem();
+    systemResources.updateConfiguration(androidConfiguration, displayMetrics);
 
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
       RuntimeEnvironment.setConfiguredApplicationClass(
@@ -214,8 +221,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       DisplayMetrics displayMetrics) {
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Must be called on the main thread!");
 
-    final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
-    RuntimeEnvironment.setActivityThread(activityThread);
+    final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
 
     Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
@@ -249,12 +255,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     _activityThread_.setCompatConfiguration(androidConfiguration);
     ReflectionHelpers
         .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
-
-    Bootstrap.setUpDisplay(androidConfiguration, displayMetrics);
-    activityThread.applyConfigurationToResources(androidConfiguration);
-
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(androidConfiguration, displayMetrics);
 
     Application application = createApplication(appManifest, config, applicationInfo);
     RuntimeEnvironment.setConfiguredApplicationClass(application.getClass());
