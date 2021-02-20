@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.res.Resources;
+import android.net.Uri;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,5 +20,10 @@ public class LazyLoadApplicationShadowTest {
   @Test
   public void testResourcesGetSystem_doesNotCrash_whenLazyLoading() {
     Resources.getSystem();
+  }
+
+  @Test
+  public void testShadowContentResolverGetProvider_doesNotCrash_whenLazyLoading() {
+    ShadowContentResolver.getProvider(Uri.parse("content://my.provider"));
   }
 }
