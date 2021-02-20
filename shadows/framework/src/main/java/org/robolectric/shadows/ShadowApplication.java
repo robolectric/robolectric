@@ -41,9 +41,8 @@ import org.robolectric.util.reflector.Reflector;
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
-  private Scheduler backgroundScheduler = RoboSettings.isUseGlobalScheduler()
-      ? getForegroundThreadScheduler()
-      : new Scheduler();
+  private Scheduler backgroundScheduler =
+      RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
   private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private PowerManager.WakeLock latestWakeLock;
   private ShadowAlertDialog latestAlertDialog;
@@ -59,15 +58,13 @@ public class ShadowApplication extends ShadowContextWrapper {
    */
   @Deprecated
   public static ShadowApplication getInstance() {
-    return RuntimeEnvironment.application == null
-        ? null
-        : Shadow.extract(RuntimeEnvironment.application);
+    return Shadow.extract(RuntimeEnvironment.getApplication());
   }
 
   /**
    * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
    *
-   * Note: calling this method does not pause or un-pause the scheduler.
+   * <p>Note: calling this method does not pause or un-pause the scheduler.
    */
   public static void runBackgroundTasks() {
     getInstance().getBackgroundThreadScheduler().advanceBy(0);
@@ -85,11 +82,14 @@ public class ShadowApplication extends ShadowContextWrapper {
   /**
    * Attaches an application to a base context.
    *
-   * @param context The context with which to initialize the application, whose base context will
-   *                be attached to the application
+   * @param context The context with which to initialize the application, whose base context will be
+   *     attached to the application
    */
   public void callAttach(Context context) {
-    ReflectionHelpers.callInstanceMethod(Application.class, realApplication, "attach",
+    ReflectionHelpers.callInstanceMethod(
+        Application.class,
+        realApplication,
+        "attach",
         ReflectionHelpers.ClassParameter.from(Context.class, context));
   }
 
@@ -100,7 +100,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   /**
    * Return the foreground scheduler.
    *
-   * @return  Foreground scheduler.
+   * @return Foreground scheduler.
    */
   public Scheduler getForegroundThreadScheduler() {
     return RuntimeEnvironment.getMasterScheduler();
@@ -109,7 +109,7 @@ public class ShadowApplication extends ShadowContextWrapper {
   /**
    * Return the background scheduler.
    *
-   * @return  Background scheduler.
+   * @return Background scheduler.
    */
   public Scheduler getBackgroundThreadScheduler() {
     assertLooperMode(LEGACY);
@@ -117,9 +117,9 @@ public class ShadowApplication extends ShadowContextWrapper {
   }
 
   /**
-   *  Sets whether or not calls to unbindService should call onServiceDisconnected().
+   * Sets whether or not calls to unbindService should call onServiceDisconnected().
    *
-   * The default for this is currently {@code true} because that is the historical behavior.
+   * <p>The default for this is currently {@code true} because that is the historical behavior.
    * However, this does not correctly mirror Android's actual behavior. This value will eventually
    * default to {@code false} once users have had a chance to migrate, and eventually the option
    * will be removed altogether.
@@ -200,9 +200,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return (AppWidgetManager) realApplication.getSystemService(Context.APPWIDGET_SERVICE);
   }
 
-  /**
-   * @deprecated Use {@link ShadowAlertDialog#getLatestAlertDialog()} instead.
-   */
+  /** @deprecated Use {@link ShadowAlertDialog#getLatestAlertDialog()} instead. */
   @Deprecated
   public ShadowAlertDialog getLatestAlertDialog() {
     return latestAlertDialog;
@@ -212,9 +210,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     this.latestAlertDialog = latestAlertDialog;
   }
 
-  /**
-   * @deprecated Use {@link ShadowDialog#getLatestDialog()} instead.
-   */
+  /** @deprecated Use {@link ShadowDialog#getLatestDialog()} instead. */
   @Deprecated
   public ShadowDialog getLatestDialog() {
     return latestDialog;
@@ -244,7 +240,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return latestWakeLock;
   }
 
-  public void addWakeLock( PowerManager.WakeLock wl ) {
+  public void addWakeLock(PowerManager.WakeLock wl) {
     latestWakeLock = wl;
   }
 
@@ -267,11 +263,11 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   /**
    * Set to true if you'd like Robolectric to strictly simulate the real Android behavior when
-   * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a
-   * {@link android.content.ActivityNotFoundException} if given
-   * an {@link Intent} that is not known to the {@link android.content.pm.PackageManager}
+   * calling {@link Context#startActivity(android.content.Intent)}. Real Android throws a {@link
+   * android.content.ActivityNotFoundException} if given an {@link Intent} that is not known to the
+   * {@link android.content.pm.PackageManager}
    *
-   * By default, this behavior is off (false).
+   * <p>By default, this behavior is off (false).
    *
    * @param checkActivities True to validate activities.
    */
@@ -282,9 +278,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     shadowInstrumentation.checkActivities(checkActivities);
   }
 
-  /**
-   * @deprecated Use {@link ShadowPopupMenu#getLatestPopupMenu()} instead.
-   */
+  /** @deprecated Use {@link ShadowPopupMenu#getLatestPopupMenu()} instead. */
   @Deprecated
   public ShadowPopupMenu getLatestPopupMenu() {
     return latestPopupMenu;
@@ -355,12 +349,11 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   /**
    * @deprecated Do not depend on this method to override services as it will be removed in a future
-   * update. The preferered method is use the shadow of the corresponding service.
+   *     update. The preferered method is use the shadow of the corresponding service.
    */
   @Deprecated
   public void setSystemService(String key, Object service) {
     ShadowContextImpl shadowContext = Shadow.extract(realApplication.getBaseContext());
     shadowContext.setSystemService(key, service);
   }
-
 }
