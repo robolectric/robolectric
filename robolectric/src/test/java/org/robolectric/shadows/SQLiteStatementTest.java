@@ -39,12 +39,12 @@ public class SQLiteStatementTest {
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     database.close();
   }
 
   @Test
-  public void testExecuteInsert() throws Exception {
+  public void testExecuteInsert() {
     SQLiteStatement insertStatement =
         database.compileStatement("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)");
     insertStatement.bindString(1, "Leg Press");
@@ -76,7 +76,7 @@ public class SQLiteStatementTest {
   }
 
   @Test
-  public void testExecuteInsertShouldCloseGeneratedKeysResultSet() throws Exception {
+  public void testExecuteInsertShouldCloseGeneratedKeysResultSet() {
     // NOTE:
     // As a side-effect we will get "database locked" exception
     // on rollback if generatedKeys wasn't closed
@@ -100,7 +100,7 @@ public class SQLiteStatementTest {
   }
 
   @Test
-  public void testExecuteUpdateDelete() throws Exception {
+  public void testExecuteUpdateDelete() {
 
     SQLiteStatement insertStatement =
         database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
@@ -120,7 +120,7 @@ public class SQLiteStatementTest {
   }
 
   @Test
-  public void simpleQueryTest() throws Exception {
+  public void simpleQueryTest() {
 
     SQLiteStatement stmt = database.compileStatement("SELECT count(*) FROM `countme`");
     assertThat(stmt.simpleQueryForLong()).isEqualTo(0L);
@@ -153,7 +153,7 @@ public class SQLiteStatementTest {
   }
 
   @Test(expected = SQLiteDoneException.class)
-  public void simpleQueryForStringThrowsSQLiteDoneExceptionTest() throws Exception {
+  public void simpleQueryForStringThrowsSQLiteDoneExceptionTest() {
     // throw SQLiteDOneException if no rows returned.
     SQLiteStatement stmt =
         database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
@@ -162,7 +162,7 @@ public class SQLiteStatementTest {
   }
 
   @Test(expected = SQLiteDoneException.class)
-  public void simpleQueryForLongThrowsSQLiteDoneExceptionTest() throws Exception {
+  public void simpleQueryForLongThrowsSQLiteDoneExceptionTest() {
     // throw SQLiteDOneException if no rows returned.
     SQLiteStatement stmt =
         database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
@@ -170,7 +170,7 @@ public class SQLiteStatementTest {
   }
 
   @Test
-  public void testCloseShouldCloseUnderlyingPreparedStatement() throws Exception {
+  public void testCloseShouldCloseUnderlyingPreparedStatement() {
     SQLiteStatement insertStatement =
         database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
     insertStatement.bindString(1, "Hand Press");

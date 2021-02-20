@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 public class ShadowFilterTest {
 
   @Test
-  public void testFilterShouldCallPerformFilteringAndPublishResults() throws InterruptedException {
+  public void testFilterShouldCallPerformFilteringAndPublishResults() {
     final AtomicBoolean performFilteringCalled = new AtomicBoolean(false);
     final AtomicBoolean publishResultsCalled = new AtomicBoolean(false);
     Filter filter = new Filter() {
@@ -34,7 +34,7 @@ public class ShadowFilterTest {
   }
 
   @Test
-  public void testFilterShouldCallListenerWithCorrectCount() throws InterruptedException {
+  public void testFilterShouldCallListenerWithCorrectCount() {
     final AtomicBoolean listenerCalled = new AtomicBoolean(false);
     Filter filter = new Filter() {
       @Override
@@ -51,18 +51,17 @@ public class ShadowFilterTest {
         assertThat(filterResults.count).isEqualTo(4);
       }
     };
-    filter.filter("", new Filter.FilterListener() {
-      @Override
-      public void onFilterComplete(int i) {
-        assertThat(i).isEqualTo(4);
-        listenerCalled.set(true);
-      }
-    });
+    filter.filter(
+        "",
+        i -> {
+          assertThat(i).isEqualTo(4);
+          listenerCalled.set(true);
+        });
     assertThat(listenerCalled.get()).isTrue();
   }
 
   @Test
-  public void testFilter_whenNullResults_ShouldCallListenerWithMinusOne() throws InterruptedException {
+  public void testFilter_whenNullResults_ShouldCallListenerWithMinusOne() {
     final AtomicBoolean listenerCalled = new AtomicBoolean(false);
     Filter filter = new Filter() {
       @Override
@@ -73,18 +72,17 @@ public class ShadowFilterTest {
       @Override
       protected void publishResults(CharSequence charSequence, FilterResults filterResults) {}
     };
-    filter.filter("", new Filter.FilterListener() {
-      @Override
-      public void onFilterComplete(int i) {
-        assertThat(i).isEqualTo(-1);
-        listenerCalled.set(true);
-      }
-    });
+    filter.filter(
+        "",
+        i -> {
+          assertThat(i).isEqualTo(-1);
+          listenerCalled.set(true);
+        });
     assertThat(listenerCalled.get()).isTrue();
   }
 
   @Test
-  public void testFilter_whenExceptionThrown_ShouldReturn() throws InterruptedException {
+  public void testFilter_whenExceptionThrown_ShouldReturn() {
     final AtomicBoolean listenerCalled = new AtomicBoolean(false);
     Filter filter = new Filter() {
       @Override
@@ -95,13 +93,12 @@ public class ShadowFilterTest {
       @Override
       protected void publishResults(CharSequence charSequence, FilterResults filterResults) {}
     };
-    filter.filter("", new Filter.FilterListener() {
-      @Override
-      public void onFilterComplete(int resultCount) {
-        assertThat(resultCount).isEqualTo(0);
-        listenerCalled.set(true);
-      }
-    });
+    filter.filter(
+        "",
+        resultCount -> {
+          assertThat(resultCount).isEqualTo(0);
+          listenerCalled.set(true);
+        });
     assertThat(listenerCalled.get()).isTrue();
   }
 }

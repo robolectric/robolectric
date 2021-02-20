@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 public class ShadowLinkMovementMethodTest {
 
   @Test
-  public void getInstance_shouldReturnAnInstanceOf_LinkedMovementMethod() throws Exception {
+  public void getInstance_shouldReturnAnInstanceOf_LinkedMovementMethod() {
     assertThat(LinkMovementMethod.getInstance()).isInstanceOf(LinkMovementMethod.class);
   }
 

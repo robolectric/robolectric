@@ -30,7 +30,7 @@ public class ShadowTypefaceTest {
   private File fontFile;
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     fontFile = TestUtil.resourcesBaseDir().resolve("assets/myFont.ttf").toFile();
   }
 
@@ -73,7 +73,7 @@ public class ShadowTypefaceTest {
   @Test
   @Config(minSdk = P)
   public void create_withoutFamily_customWeight_shouldCreateTypeface() {
-    Typeface typeface = Typeface.create((Typeface) null, /* weight= */ 500, /* italic= */ false);
+    Typeface typeface = Typeface.create(null, /* weight= */ 500, /* italic= */ false);
     assertThat(typeface.getStyle()).isEqualTo(500);
     assertThat(shadowOf(typeface).getFontDescription().getFamilyName()).isEqualTo(null);
     assertThat(shadowOf(typeface).getFontDescription().getStyle()).isEqualTo(500);
@@ -108,7 +108,7 @@ public class ShadowTypefaceTest {
   }
 
   @Test
-  public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
+  public void createFromAsset_throwsExceptionWhenFontNotFound() {
     try {
       Typeface.createFromAsset(
           ApplicationProvider.getApplicationContext().getAssets(), "nonexistent.ttf");

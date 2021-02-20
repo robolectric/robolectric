@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowInputEventTest {
   @Test
-  public void canSetInputDeviceOnKeyEvent() throws Exception {
+  public void canSetInputDeviceOnKeyEvent() {
     InputDevice myDevice = ShadowInputDevice.makeInputDeviceNamed("myDevice");
     KeyEvent keyEvent = new KeyEvent(1, 2);
     shadowOf(keyEvent).setDevice(myDevice);

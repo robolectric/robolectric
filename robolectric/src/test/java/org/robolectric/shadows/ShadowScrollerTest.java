@@ -17,12 +17,12 @@ public class ShadowScrollerTest {
   private Scroller scroller;
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     scroller = new Scroller(ApplicationProvider.getApplicationContext(), new BounceInterpolator());
   }
 
   @Test
-  public void shouldScrollOverTime() throws Exception {
+  public void shouldScrollOverTime() {
     scroller.startScroll(0, 0, 12, 36, 1000);
 
     assertThat(scroller.getStartX()).isEqualTo(0);
@@ -60,7 +60,7 @@ public class ShadowScrollerTest {
   }
 
   @Test
-  public void computeScrollOffsetShouldCalculateWhetherScrollIsFinished() throws Exception {
+  public void computeScrollOffsetShouldCalculateWhetherScrollIsFinished() {
     assertThat(scroller.computeScrollOffset()).isFalse();
 
     scroller.startScroll(0, 0, 12, 36, 1000);
@@ -75,7 +75,7 @@ public class ShadowScrollerTest {
   }
 
   @Test
-  public void computeScrollOffsetStopsWhenAborted() throws Exception {
+  public void computeScrollOffsetStopsWhenAborted() {
     scroller.startScroll(0, 0, 12, 36, 1000);
 
     assertThat(scroller.getStartX()).isEqualTo(0);

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 public class ShadowTextPaintTest {
 
   @Test
-  public void measureText_returnsStringLengthAsMeasurement() throws Exception {
+  public void measureText_returnsStringLengthAsMeasurement() {
     TextPaint paint = new TextPaint();
     assertThat(paint.measureText("1234")).isEqualTo(4f);
   }

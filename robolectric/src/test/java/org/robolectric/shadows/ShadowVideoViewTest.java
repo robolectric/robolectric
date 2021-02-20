@@ -22,7 +22,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSetOnPreparedListener() throws Exception {
+  public void shouldSetOnPreparedListener() {
     TestPreparedListener l = new TestPreparedListener();
     view.setOnPreparedListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
@@ -30,7 +30,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSetOnErrorListener() throws Exception {
+  public void shouldSetOnErrorListener() {
     TestErrorListener l = new TestErrorListener();
     view.setOnErrorListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
@@ -38,7 +38,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSetOnCompletionListener() throws Exception {
+  public void shouldSetOnCompletionListener() {
     TestCompletionListener l = new TestCompletionListener();
     view.setOnCompletionListener(l);
     ShadowVideoView shadowVideoView = shadowOf(view);
@@ -46,7 +46,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSetVideoPath() throws Exception {
+  public void shouldSetVideoPath() {
     view.setVideoPath("video.mp4");
     ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getVideoPath()).isEqualTo("video.mp4");
@@ -55,7 +55,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSetVideoURI() throws Exception {
+  public void shouldSetVideoURI() {
     view.setVideoURI(Uri.parse("video.mp4"));
     ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getVideoURIString()).isEqualTo("video.mp4");
@@ -64,7 +64,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSetVideoDuration() throws Exception {
+  public void shouldSetVideoDuration() {
     assertThat(view.getDuration()).isEqualTo(0);
     ShadowVideoView shadowVideoView = shadowOf(view);
     shadowVideoView.setDuration(10);
@@ -72,7 +72,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldDetermineIsPlaying() throws Exception {
+  public void shouldDetermineIsPlaying() {
     assertThat(view.isPlaying()).isFalse();
     view.start();
     assertThat(view.isPlaying()).isTrue();
@@ -81,21 +81,21 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldStartPlaying() throws Exception {
+  public void shouldStartPlaying() {
     view.start();
     ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.START);
   }
 
   @Test
-  public void shouldStopPlayback() throws Exception {
+  public void shouldStopPlayback() {
     view.stopPlayback();
     ShadowVideoView shadowVideoView = shadowOf(view);
     assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.STOP);
   }
 
   @Test
-  public void shouldSuspendPlaying() throws Exception {
+  public void shouldSuspendPlaying() {
     view.start();
     view.suspend();
     ShadowVideoView shadowVideoView = shadowOf(view);
@@ -104,7 +104,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldResumePlaying() throws Exception {
+  public void shouldResumePlaying() {
     view.start();
     view.suspend();
     view.resume();
@@ -114,7 +114,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldPausePlaying() throws Exception {
+  public void shouldPausePlaying() {
     view.start();
     view.pause();
     ShadowVideoView shadowVideoView = shadowOf(view);
@@ -123,7 +123,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldDetermineIfPausable() throws Exception {
+  public void shouldDetermineIfPausable() {
     view.start();
     assertThat(view.canPause()).isTrue();
 
@@ -138,7 +138,7 @@ public class ShadowVideoViewTest {
   }
 
   @Test
-  public void shouldSeekToSpecifiedPosition() throws Exception {
+  public void shouldSeekToSpecifiedPosition() {
     assertThat(view.getCurrentPosition()).isEqualTo(0);
     view.seekTo(10000);
     assertThat(view.getCurrentPosition()).isEqualTo(10000);

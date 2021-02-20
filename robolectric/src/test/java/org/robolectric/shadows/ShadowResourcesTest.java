@@ -41,16 +41,24 @@ public class ShadowResourcesTest {
   }
 
   /**
-   * Public framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml
-   * Private framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/symbols.xml
+   * Public framework symbols are defined here:
+   * https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml
+   * Private framework symbols are defined here:
+   * https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/symbols.xml
    *
-   * These generate android.R and com.android.internal.R respectively, when Framework Java code does not need to reference a framework resource
-   * it will not have an R value generated. Robolectric is then missing an identifier for this resource so we must generate a placeholder ourselves.
+   * <p>These generate android.R and com.android.internal.R respectively, when Framework Java code
+   * does not need to reference a framework resource it will not have an R value generated.
+   * Robolectric is then missing an identifier for this resource so we must generate a placeholder
+   * ourselves.
    */
   @Test
-  @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
-  public void shouldGenerateIdsForResourcesThatAreMissingRValues() throws Exception {
-    int identifier_missing_from_r_file = resources.getIdentifier("secondary_text_material_dark", "color", "android");
+  @Config(
+      sdk =
+          Build.VERSION_CODES
+              .LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
+  public void shouldGenerateIdsForResourcesThatAreMissingRValues() {
+    int identifier_missing_from_r_file =
+        resources.getIdentifier("secondary_text_material_dark", "color", "android");
 
     // We expect Robolectric to generate a placeholder identifier where one was not generated in the android R files.
     assertThat(identifier_missing_from_r_file).isNotEqualTo(0);
@@ -59,8 +67,9 @@ public class ShadowResourcesTest {
     assertThat(resources.getColorStateList(identifier_missing_from_r_file)).isNotNull();
   }
 
-  @Test @Config(qualifiers = "fr")
-  public void openRawResource_shouldLoadDrawableWithQualifiers() throws Exception {
+  @Test
+  @Config(qualifiers = "fr")
+  public void openRawResource_shouldLoadDrawableWithQualifiers() {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
     assertThat(bitmap.getHeight()).isEqualTo(100);
@@ -68,7 +77,7 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
+  public void openRawResourceFd_returnsNull_todo_FIX() {
     if (useLegacy()) {
       assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
     } else {
@@ -106,7 +115,7 @@ public class ShadowResourcesTest {
 
   // todo: port to ResourcesTest
   @Test
-  public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() throws Exception {
+  public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() {
     // android:id/mask was introduced in API 21, but it's still possible for apps built against API 21 to refer to it
     // in older runtimes because referenced resource ids are compiled (by aapt) into the binary XML format.
     AttributeSet attributeSet = Robolectric.buildAttributeSet()
@@ -127,7 +136,7 @@ public class ShadowResourcesTest {
 
   // todo: port to ResourcesTest
   @Test
-  public void obtainAttributes_shouldReturnValuesFromAttributeSet() throws Exception {
+  public void obtainAttributes_shouldReturnValuesFromAttributeSet() {
     AttributeSet attributes = Robolectric.buildAttributeSet()
         .addAttribute(android.R.attr.title, "A title!")
         .addAttribute(android.R.attr.width, "12px")
@@ -160,7 +169,7 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() throws Exception {
+  public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() {
 
     // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
     // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
@@ -187,7 +196,7 @@ public class ShadowResourcesTest {
 
   // todo: port to ResourcesTest
   @Test
-  public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() throws Exception {
+  public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() {
     // TODO: investigate failure with binary resources
     assumeTrue(useLegacy());
 
@@ -215,7 +224,7 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void getXml_shouldHavePackageContextForReferenceResolution() throws Exception {
+  public void getXml_shouldHavePackageContextForReferenceResolution() {
     if (!useLegacy()) {
       return;
     }

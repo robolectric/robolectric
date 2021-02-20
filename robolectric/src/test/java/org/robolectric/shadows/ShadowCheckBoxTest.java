@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowCheckBoxTest {
   @Test
-  public void testWorks() throws Exception {
+  public void testWorks() {
     CheckBox checkBox = new CheckBox(ApplicationProvider.getApplicationContext());
     assertThat(checkBox.isChecked()).isFalse();
 

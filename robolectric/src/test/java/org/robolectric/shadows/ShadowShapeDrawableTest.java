@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowShapeDrawableTest {
   @Test
-  public void getPaint_ShouldReturnTheSamePaint() throws Exception {
+  public void getPaint_ShouldReturnTheSamePaint() {
     ShapeDrawable shapeDrawable = new ShapeDrawable();
     Paint paint = shapeDrawable.getPaint();
     assertNotNull(paint);

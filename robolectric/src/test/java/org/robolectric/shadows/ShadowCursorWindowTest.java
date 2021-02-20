@@ -13,16 +13,19 @@ import org.junit.runner.RunWith;
 public class ShadowCursorWindowTest {
 
   @Test
-  public void shouldCreateWindowWithName() throws Exception {
+  public void shouldCreateWindowWithName() {
     CursorWindow window = new CursorWindow("name");
     assertThat(window.getName()).isEqualTo("name");
   }
 
   @Test
-  public void shouldFillWindowWithCursor() throws Exception {
+  public void shouldFillWindowWithCursor() {
     CursorWindow window = new CursorWindow("name");
     MatrixCursor testCursor = new MatrixCursor(new String[] { "a", "b", "c", "d"});
-    testCursor.addRow(new Object[] { 12, "hello", null, new byte[] {(byte) 0xba, (byte) 0xdc, (byte) 0xaf, (byte) 0xfe} });
+    testCursor.addRow(
+        new Object[] {
+          12, "hello", null, new byte[] {(byte) 0xba, (byte) 0xdc, (byte) 0xaf, (byte) 0xfe}
+        });
     testCursor.addRow(new Object[] { 34, "baz",   1.2,  null  });
     testCursor.addRow(new Object[] { 46, "foo",   2.4,  new byte[]{}  });
 

@@ -46,7 +46,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testInsertsRunnablesBasedOnLooper() throws Exception {
+  public void testInsertsRunnablesBasedOnLooper() {
     Looper looper = newLooper(false);
 
     Handler handler1 = new Handler(looper);
@@ -61,7 +61,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testDefaultConstructorUsesDefaultLooper() throws Exception {
+  public void testDefaultConstructorUsesDefaultLooper() {
     Handler handler1 = new Handler();
     handler1.post(new Say("first thing"));
 
@@ -77,9 +77,9 @@ public class ShadowHandlerTest {
     return ReflectionHelpers.callConstructor(
         Looper.class, ClassParameter.from(boolean.class, canQuit));
   }
-  
+
   @Test
-  public void testDifferentLoopersGetDifferentQueues() throws Exception {
+  public void testDifferentLoopersGetDifferentQueues() {
     Looper looper1 = newLooper(true);
     ShadowLooper.pauseLooper(looper1);
 
@@ -107,28 +107,28 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testPostAndIdleMainLooper() throws Exception {
+  public void testPostAndIdleMainLooper() {
     new Handler().post(scratchRunnable);
     ShadowLooper.idleMainLooper();
     assertThat(scratchRunnable.wasRun).isTrue();
   }
 
   @Test
-  public void postDelayedThenIdleMainLooper_shouldNotRunRunnable() throws Exception {
+  public void postDelayedThenIdleMainLooper_shouldNotRunRunnable() {
     new Handler().postDelayed(scratchRunnable, 1);
     ShadowLooper.idleMainLooper();
     assertThat(scratchRunnable.wasRun).isFalse();
   }
 
   @Test
-  public void testPostDelayedThenRunMainLooperOneTask() throws Exception {
+  public void testPostDelayedThenRunMainLooperOneTask() {
     new Handler().postDelayed(scratchRunnable, 1);
     ShadowLooper.runMainLooperOneTask();
     assertThat(scratchRunnable.wasRun).isTrue();
   }
 
   @Test
-  public void testRemoveCallbacks() throws Exception {
+  public void testRemoveCallbacks() {
     Handler handler = new Handler();
     ShadowLooper shadowLooper = shadowOf(handler.getLooper());
     shadowLooper.pause();
@@ -141,14 +141,14 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() throws Exception {
+  public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() {
     new Handler().postDelayed(scratchRunnable, 1);
     ShadowLooper.runMainLooperToNextTask();
     assertThat(scratchRunnable.wasRun).isTrue();
   }
 
   @Test
-  public void testPostDelayedTwiceThenRunMainLooperToNextTask_shouldRunMultipleTasks() throws Exception {
+  public void testPostDelayedTwiceThenRunMainLooperToNextTask_shouldRunMultipleTasks() {
     TestRunnable task1 = new TestRunnable();
     TestRunnable task2 = new TestRunnable();
 
@@ -161,7 +161,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testPostDelayedTwiceThenRunMainLooperOneTask_shouldRunOnlyOneTask() throws Exception {
+  public void testPostDelayedTwiceThenRunMainLooperOneTask_shouldRunOnlyOneTask() {
     TestRunnable task1 = new TestRunnable();
     TestRunnable task2 = new TestRunnable();
 
@@ -174,7 +174,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testPostDelayedMultipleThenRunMainLooperOneTask_shouldRunMultipleTask() throws Exception {
+  public void testPostDelayedMultipleThenRunMainLooperOneTask_shouldRunMultipleTask() {
     TestRunnable task1 = new TestRunnable();
     TestRunnable task2 = new TestRunnable();
     TestRunnable task3 = new TestRunnable();
@@ -190,7 +190,8 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testPostAtFrontOfQueueThenRunMainLooperOneTaskAtATime_shouldRunFrontOfQueueTaskFirst() throws Exception {
+  public void
+      testPostAtFrontOfQueueThenRunMainLooperOneTaskAtATime_shouldRunFrontOfQueueTaskFirst() {
     TestRunnable task1 = new TestRunnable();
     TestRunnable task2 = new TestRunnable();
 
@@ -208,7 +209,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testNestedPost_shouldRunLast() throws Exception {
+  public void testNestedPost_shouldRunLast() {
     ShadowLooper.pauseMainLooper();
     final List<Integer> order = new ArrayList<>();
     final Handler h = new Handler();
@@ -235,7 +236,8 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void testSendMessageAtFrontOfQueueThenRunMainLooperOneMsgAtATime_shouldRunFrontOfQueueMsgFirst() throws Exception {
+  public void
+      testSendMessageAtFrontOfQueueThenRunMainLooperOneMsgAtATime_shouldRunFrontOfQueueMsgFirst() {
     Handler handler = new Handler();
 
     ShadowLooper.pauseMainLooper();
@@ -304,7 +306,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void removeMessage_withSpecifiedObject() throws Exception {
+  public void removeMessage_withSpecifiedObject() {
     ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     Message.obtain(handler, 123, "foo").sendToTarget();
@@ -391,7 +393,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void shouldRemoveAllCallbacksAndMessages() throws Exception {
+  public void shouldRemoveAllCallbacksAndMessages() {
     final boolean[] wasRun = new boolean[1];
     ShadowLooper.pauseMainLooper();
     Handler handler = new Handler() {
@@ -411,7 +413,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void shouldRemoveSingleMessage() throws Exception {
+  public void shouldRemoveSingleMessage() {
     final List<Object> objects = new ArrayList<>();
     ShadowLooper.pauseMainLooper();
 
@@ -435,7 +437,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void shouldRemoveTaggedCallback() throws Exception {
+  public void shouldRemoveTaggedCallback() {
     ShadowLooper.pauseMainLooper();
     Handler handler = new Handler();
     
@@ -464,7 +466,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void shouldObtainMessage() throws Exception {
+  public void shouldObtainMessage() {
     Message m0 = new Handler().obtainMessage();
     assertThat(m0.what).isEqualTo(0);
     assertThat(m0.obj).isNull();
@@ -491,15 +493,14 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void shouldSetWhenOnMessage() throws Exception {
+  public void shouldSetWhenOnMessage() {
     final List<Long>  whens = new ArrayList<>();
-    Handler h = new Handler(new Handler.Callback() {
-      @Override
-      public boolean handleMessage(Message msg) {
-        whens.add(msg.getWhen());
-        return false;
-      }
-    });
+    Handler h =
+        new Handler(
+            msg -> {
+              whens.add(msg.getWhen());
+              return false;
+            });
 
     final long startTime = Robolectric.getForegroundThreadScheduler().getCurrentTime();
     h.sendEmptyMessage(0);
@@ -514,7 +515,7 @@ public class ShadowHandlerTest {
   }
 
   @Test
-  public void shouldRemoveMessageFromQueueBeforeDispatching() throws Exception {
+  public void shouldRemoveMessageFromQueueBeforeDispatching() {
     Handler h = new Handler(Looper.myLooper()) {
       @Override
       public void handleMessage(Message msg) {

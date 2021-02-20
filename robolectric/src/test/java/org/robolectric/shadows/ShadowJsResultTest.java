@@ -14,7 +14,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowJsResultTest {
 
   @Test
-  public void shouldRecordCanceled() throws Exception {
+  public void shouldRecordCanceled() {
     JsResult jsResult = Shadow.newInstanceOf(JsResult.class);
 
     assertFalse(shadowOf(jsResult).wasCancelled());

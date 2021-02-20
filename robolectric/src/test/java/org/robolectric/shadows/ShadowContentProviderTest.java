@@ -14,7 +14,8 @@ import org.robolectric.shadows.testing.TestContentProvider1;
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentProviderTest {
   @Config(minSdk = KITKAT)
-  @Test public void testSetCallingPackage() throws Exception {
+  @Test
+  public void testSetCallingPackage() {
     ContentProvider provider = new TestContentProvider1();
     shadowOf(provider).setCallingPackage("calling-package");
     assertThat(provider.getCallingPackage()).isEqualTo("calling-package");

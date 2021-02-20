@@ -29,7 +29,7 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  public void testSystemGetInt() throws Exception {
+  public void testSystemGetInt() {
     assertThat(Settings.System.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.System.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
@@ -38,7 +38,7 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  public void testSecureGetInt() throws Exception {
+  public void testSecureGetInt() {
     assertThat(Settings.Secure.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Secure.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
@@ -48,7 +48,7 @@ public class ShadowSettingsTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void testGlobalGetInt() throws Exception {
+  public void testGlobalGetInt() {
     assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Global.getInt(contentResolver, "property", 2)).isEqualTo(2);
 
@@ -57,7 +57,7 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  public void testSystemGetString() throws Exception {
+  public void testSystemGetString() {
     assertThat(Settings.System.getString(contentResolver, "property")).isNull();
 
     Settings.System.putString(contentResolver, "property", "value");
@@ -73,7 +73,7 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  public void testSystemGetFloat() throws Exception {
+  public void testSystemGetFloat() {
     assertThat(Settings.System.getFloat(contentResolver, "property", 23.23f)).isEqualTo(23.23f);
     Settings.System.putFloat(contentResolver, "property", 42.42f);
     assertThat(Settings.System.getFloat(contentResolver, "property", 10L)).isEqualTo(42.42f);

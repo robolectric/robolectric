@@ -18,7 +18,7 @@ import org.robolectric.shadow.api.Shadow;
 @Config(minSdk = Build.VERSION_CODES.P)
 public final class ShadowSigningInfoTest {
   @Test
-  public void testParceling_preservesCurrentSignatures() throws Exception {
+  public void testParceling_preservesCurrentSignatures() {
     Signature[] signatures = { new Signature("0123"), new Signature("4657") };
     SigningInfo signingInfo = Shadow.newInstanceOf(SigningInfo.class);
     shadowOf(signingInfo).setSignatures(signatures);
@@ -32,7 +32,7 @@ public final class ShadowSigningInfoTest {
   }
 
   @Test
-  public void testParceling_preservesPastSigningCertificates() throws Exception {
+  public void testParceling_preservesPastSigningCertificates() {
     Signature[] signatures = { new Signature("0123")};
     Signature[] pastSignatures = { new Signature("0123"), new Signature("4567") };
     SigningInfo signingInfo = Shadow.newInstanceOf(SigningInfo.class);

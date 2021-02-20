@@ -16,18 +16,17 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAbsSpinnerTest {
-  private Context context;
   private Spinner spinner;
   private ShadowAbsSpinner shadowSpinner;
   private ArrayAdapter<String> arrayAdapter;
 
   @Before
   public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
+    Context context = ApplicationProvider.getApplicationContext();
     spinner = new Spinner(context);
     shadowSpinner = shadowOf(spinner);
     String [] testItems = {"foo", "bar"};
-    arrayAdapter = new MyArrayAdapter(this.context, testItems);
+    arrayAdapter = new MyArrayAdapter(context, testItems);
   }
 
   @Test

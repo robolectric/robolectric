@@ -13,7 +13,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowStatFsTest {
   @Test
-  public void shouldRegisterStats() throws Exception {
+  public void shouldRegisterStats() {
     ShadowStatFs.registerStats("/tmp", 100, 20, 10);
     StatFs statsFs = new StatFs("/tmp");
 
@@ -24,7 +24,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  public void shouldRegisterStatsWithFile() throws Exception {
+  public void shouldRegisterStatsWithFile() {
     ShadowStatFs.registerStats(new File("/tmp"), 100, 20, 10);
     StatFs statsFs = new StatFs(new File("/tmp").getAbsolutePath());
 
@@ -35,7 +35,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  public void shouldUseBestMatch() throws Exception {
+  public void shouldUseBestMatch() {
     ShadowStatFs.registerStats("/tmp", 101, 21, 11);
     ShadowStatFs.registerStats("/tmp/a", 102, 22, 12);
     StatFs statsFsForTmp = new StatFs("/tmp");
@@ -68,7 +68,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  public void shouldResetStateBetweenTests() throws Exception {
+  public void shouldResetStateBetweenTests() {
     StatFs statsFs = new StatFs("/tmp");
     assertThat(statsFs.getBlockCount()).isEqualTo(0);
     assertThat(statsFs.getFreeBlocks()).isEqualTo(0);
@@ -117,7 +117,7 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  public void shouldRestat() throws Exception {
+  public void shouldRestat() {
     ShadowStatFs.registerStats("/tmp", 100, 20, 10);
     StatFs statsFs = new StatFs("/tmp");
 
@@ -135,7 +135,7 @@ public class ShadowStatFsTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void withApi18_shouldRestat() throws Exception {
+  public void withApi18_shouldRestat() {
     ShadowStatFs.registerStats("/tmp", 100, 20, 10);
     StatFs statsFs = new StatFs("/tmp");
 

@@ -3,8 +3,10 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.L;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
@@ -39,7 +41,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  public void createWidget_shouldInflateViewAndAssignId() throws Exception {
+  public void createWidget_shouldInflateViewAndAssignId() {
     int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
@@ -47,7 +49,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  public void getViewFor_shouldReturnSameViewEveryTimeForGivenWidgetId() throws Exception {
+  public void getViewFor_shouldReturnSameViewEveryTimeForGivenWidgetId() {
     int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
@@ -56,7 +58,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  public void createWidget_shouldAllowForMultipleInstancesOfWidgets() throws Exception {
+  public void createWidget_shouldAllowForMultipleInstancesOfWidgets() {
     int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
@@ -67,7 +69,7 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  public void shouldReplaceLayoutIfAndOnlyIfLayoutIdIsDifferent() throws Exception {
+  public void shouldReplaceLayoutIfAndOnlyIfLayoutIdIsDifferent() {
     int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View originalWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
     assertContains("Main Layout", originalWidgetView);
@@ -103,33 +105,31 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  public void getAppWidgetInfo_shouldReturnSpecifiedAppWidgetInfo() throws Exception {
+  public void getAppWidgetInfo_shouldReturnSpecifiedAppWidgetInfo() {
     AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo();
     shadowAppWidgetManager.addBoundWidget(26, expectedWidgetInfo);
 
     assertEquals(expectedWidgetInfo, appWidgetManager.getAppWidgetInfo(26));
-    assertEquals(null, appWidgetManager.getAppWidgetInfo(27));
+    assertNull(appWidgetManager.getAppWidgetInfo(27));
   }
 
   @Test
-  public void bindAppWidgetIdIfAllowed_shouldReturnThePresetBoolean() throws Exception {
+  public void bindAppWidgetIdIfAllowed_shouldReturnThePresetBoolean() {
     shadowAppWidgetManager.setAllowedToBindAppWidgets(false);
-    assertEquals(
-        shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
+    assertFalse(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")));
     shadowAppWidgetManager.setAllowedToBindAppWidgets(true);
-    assertEquals(
-        shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
+    assertTrue(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")));
   }
 
   @Test
-  public void bindAppWidgetIdIfAllowed_shouldRecordTheBinding() throws Exception {
+  public void bindAppWidgetIdIfAllowed_shouldRecordTheBinding() {
     ComponentName provider = new ComponentName("A", "B");
     appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
     assertArrayEquals(new int[]{789}, appWidgetManager.getAppWidgetIds(provider));
   }
 
   @Test
-  public void bindAppWidgetId_shouldRecordAppWidgetInfo() throws Exception {
+  public void bindAppWidgetId_shouldRecordAppWidgetInfo() {
     ComponentName provider = new ComponentName("abc", "123");
     AppWidgetProviderInfo providerInfo = new AppWidgetProviderInfo();
     providerInfo.provider = provider;
@@ -141,13 +141,13 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void bindAppWidgetIdIfAllowed_shouldThrowIllegalArgumentExceptionWhenPrompted() throws Exception {
+  public void bindAppWidgetIdIfAllowed_shouldThrowIllegalArgumentExceptionWhenPrompted() {
     shadowAppWidgetManager.setValidWidgetProviderComponentName(false);
     shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", ""));
   }
 
   @Test
-  public void getInstalledProviders_returnsWidgetList() throws Exception {
+  public void getInstalledProviders_returnsWidgetList() {
     AppWidgetProviderInfo info1 = new AppWidgetProviderInfo();
     info1.label = "abc";
     AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
@@ -162,7 +162,7 @@ public class ShadowAppWidgetManagerTest {
 
   @Test
   @Config(minSdk = L)
-  public void getInstalledProvidersForProfile_returnsWidgetList() throws Exception {
+  public void getInstalledProvidersForProfile_returnsWidgetList() {
     UserHandle userHandle = UserHandle.CURRENT;
     assertTrue(appWidgetManager.getInstalledProvidersForProfile(userHandle).isEmpty());
 

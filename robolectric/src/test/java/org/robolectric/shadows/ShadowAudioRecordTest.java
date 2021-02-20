@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSource;
-import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSourceProvider;
 
 /** Tests for {@link ShadowAudioRecord}. */
 @RunWith(AndroidJUnit4.class)
@@ -44,14 +43,11 @@ public class ShadowAudioRecordTest {
     AudioRecordSource subsequentAudioRecordSource = createAudioRecordSource(secondAudioRecordInput);
     AudioRecord secondAudioRecord = createAudioRecord();
     ShadowAudioRecord.setSourceProvider(
-        new AudioRecordSourceProvider() {
-          @Override
-          public AudioRecordSource get(AudioRecord audioRecord) {
-            if (audioRecord == firstAudioRecord) {
-              return firstAudioRecordSource;
-            }
-            return subsequentAudioRecordSource;
+        audioRecord -> {
+          if (audioRecord == firstAudioRecord) {
+            return firstAudioRecordSource;
           }
+          return subsequentAudioRecordSource;
         });
 
     firstAudioRecord.startRecording();

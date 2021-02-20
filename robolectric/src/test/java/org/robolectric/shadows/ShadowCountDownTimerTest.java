@@ -13,26 +13,26 @@ import org.robolectric.Shadows;
 public class ShadowCountDownTimerTest {
 
   private ShadowCountDownTimer shadowCountDownTimer;
-  private CountDownTimer countDownTimer;
-  private long millisInFuture = 2000;
-  private long countDownInterval = 1000;
+  private final long millisInFuture = 2000;
+  private final long countDownInterval = 1000;
   private String msg = null;
 
   @Before
   public void setUp() throws Exception {
 
-    countDownTimer = new CountDownTimer(millisInFuture, countDownInterval) {
+    CountDownTimer countDownTimer =
+        new CountDownTimer(millisInFuture, countDownInterval) {
 
-      @Override
-      public void onFinish() {
-        msg = "onFinish() is called";
-      }
+          @Override
+          public void onFinish() {
+            msg = "onFinish() is called";
+          }
 
-      @Override
-      public void onTick(long millisUnitilFinished) {
-        msg = "onTick() is called";
-      }
-    };
+          @Override
+          public void onTick(long millisUnitilFinished) {
+            msg = "onTick() is called";
+          }
+        };
     shadowCountDownTimer = Shadows.shadowOf(countDownTimer);
   }
 

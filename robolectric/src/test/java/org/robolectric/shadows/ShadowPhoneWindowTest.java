@@ -25,13 +25,13 @@ public class ShadowPhoneWindowTest {
   }
 
   @Test
-  public void getTitle() throws Exception {
+  public void getTitle() {
     window.setTitle("Some title");
     assertThat(shadowOf(window).getTitle().toString()).isEqualTo("Some title");
   }
 
   @Test
-  public void getBackgroundDrawable() throws Exception {
+  public void getBackgroundDrawable() {
     Drawable drawable = activity.getResources().getDrawable(android.R.drawable.bottom_bar);
     window.setBackgroundDrawable(drawable);
     assertThat(shadowOf(window).getBackgroundDrawable()).isSameInstanceAs(drawable);

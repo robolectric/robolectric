@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 public class ShadowAccountTest {
 
   @Test
-  public void shouldHaveStringsConstructor() throws Exception {
+  public void shouldHaveStringsConstructor() {
     Account account = new Account("name", "type");
 
     assertThat(account.name).isEqualTo("name");
@@ -20,7 +20,7 @@ public class ShadowAccountTest {
   }
 
   @Test
-  public void shouldHaveParcelConstructor() throws Exception {
+  public void shouldHaveParcelConstructor() {
     Account expected = new Account("name", "type");
     Parcel p = Parcel.obtain();
     expected.writeToParcel(p, 0);
@@ -31,7 +31,7 @@ public class ShadowAccountTest {
   }
 
   @Test
-  public void shouldBeParcelable() throws Exception {
+  public void shouldBeParcelable() {
     Account expected = new Account("name", "type");
     Parcel p = Parcel.obtain();
     expected.writeToParcel(p, 0);
@@ -41,23 +41,23 @@ public class ShadowAccountTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowIfNameIsEmpty() throws Exception {
+  public void shouldThrowIfNameIsEmpty() {
     new Account("", "type");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void shouldThrowIfTypeIsEmpty() throws Exception {
+  public void shouldThrowIfTypeIsEmpty() {
     new Account("name", "");
   }
 
   @Test
-  public void shouldHaveToString() throws Exception {
+  public void shouldHaveToString() {
     Account account = new Account("name", "type");
     assertThat(account.toString()).isEqualTo("Account {name=name, type=type}");
   }
 
   @Test
-  public void shouldProvideEqualAndHashCode() throws Exception {
+  public void shouldProvideEqualAndHashCode() {
     assertThat(new Account("a", "b")).isEqualTo(new Account("a", "b"));
     assertThat(new Account("a", "b")).isNotEqualTo(new Account("c", "b"));
     assertThat(new Account("a", "b").hashCode()).isEqualTo(new Account("a", "b").hashCode());

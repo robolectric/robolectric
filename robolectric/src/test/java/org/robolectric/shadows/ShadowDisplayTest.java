@@ -35,7 +35,7 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  public void shouldProvideDisplayMetrics() throws Exception {
+  public void shouldProvideDisplayMetrics() {
     shadow.setDensity(1.5f);
     shadow.setDensityDpi(DisplayMetrics.DENSITY_HIGH);
     shadow.setScaledDensity(1.6f);
@@ -75,7 +75,7 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  public void changedStateShouldApplyToOtherInstancesOfSameDisplay() throws Exception {
+  public void changedStateShouldApplyToOtherInstancesOfSameDisplay() {
     shadow.setName("another name");
     shadow.setWidth(1024);
     shadow.setHeight(600);
@@ -86,8 +86,9 @@ public class ShadowDisplayTest {
     assertEquals("another name", display.getName());
   }
 
-  @Test @Config(minSdk = LOLLIPOP)
-  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay_postKitKatFields() throws Exception {
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay_postKitKatFields() {
     shadow.setState(Display.STATE_DOZE_SUSPEND);
 
     display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
@@ -95,7 +96,7 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  public void shouldProvideDisplaySize() throws Exception {
+  public void shouldProvideDisplaySize() {
     Point outSmallestSize = new Point();
     Point outLargestSize = new Point();
     Point outSize = new Point();

@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config;
 public class ShadowPeerHandleTest {
 
   @Test
-  public void canCreatePeerHandleViaNewInstance() throws Exception {
+  public void canCreatePeerHandleViaNewInstance() {
     PeerHandle peerHandle = ShadowPeerHandle.newInstance();
     assertThat(peerHandle).isNotNull();
   }

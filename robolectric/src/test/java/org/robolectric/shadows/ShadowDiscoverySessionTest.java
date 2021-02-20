@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config;
 public class ShadowDiscoverySessionTest {
 
   @Test
-  public void canCreateDiscoverySessionViaNewInstance() throws Exception {
+  public void canCreateDiscoverySessionViaNewInstance() {
     DiscoverySession discoverySession = ShadowDiscoverySession.newInstance();
     assertThat(discoverySession).isNotNull();
   }

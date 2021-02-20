@@ -53,7 +53,7 @@ public class ShadowLayerDrawableTest {
   }
 
   @Test
-  public void testSetDrawableByLayerId1() throws Exception {
+  public void testSetDrawableByLayerId1() {
     LayerDrawable layerDrawable = new LayerDrawable(drawables);
     int index = 1;
     int layerId = 345;
@@ -66,7 +66,7 @@ public class ShadowLayerDrawableTest {
   }
 
   @Test
-  public void testSetDrawableByLayerId2() throws Exception {
+  public void testSetDrawableByLayerId2() {
     LayerDrawable layerDrawable = new LayerDrawable(drawables);
     int index = 0;
     int layerId = 345;
@@ -79,14 +79,14 @@ public class ShadowLayerDrawableTest {
   }
 
   @Test
-  public void setDrawableByLayerId_shouldReturnFalseIfIdNotFound() throws Exception {
+  public void setDrawableByLayerId_shouldReturnFalseIfIdNotFound() {
     LayerDrawable layerDrawable = new LayerDrawable(drawables);
     boolean ret = layerDrawable.setDrawableByLayerId(123, drawable4000);
     assertFalse(ret);
   }
 
   @Test
-  public void setDrawableByLayerId_shouldReturnTrueIfIdWasFound() throws Exception {
+  public void setDrawableByLayerId_shouldReturnTrueIfIdWasFound() {
     LayerDrawable layerDrawable = new LayerDrawable(drawables);
     int index = 0;
     int layerId = 345;

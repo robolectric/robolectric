@@ -31,7 +31,7 @@ public class ShadowEditTextTest {
   }
 
   @Test
-  public void shouldRespectMaxLength() throws Exception {
+  public void shouldRespectMaxLength() {
     editText.setText("0123456678");
     assertThat(editText.getText().toString()).isEqualTo("01234");
   }

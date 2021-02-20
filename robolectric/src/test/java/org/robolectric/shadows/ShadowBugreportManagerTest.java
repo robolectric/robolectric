@@ -34,7 +34,7 @@ import org.robolectric.shadow.api.Shadow;
 public final class ShadowBugreportManagerTest {
 
   private ShadowBugreportManager shadowBugreportManager;
-  private Context context = ApplicationProvider.getApplicationContext();
+  private final Context context = ApplicationProvider.getApplicationContext();
 
   @Before
   public void setUp() {

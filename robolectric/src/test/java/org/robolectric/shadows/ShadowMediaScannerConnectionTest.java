@@ -13,7 +13,7 @@ public class ShadowMediaScannerConnectionTest {
   private static final String[] mimeTypes = {"c", "d"};
 
   @Test
-  public void scanFile_validParameters_shouldContainsSamePaths() throws Exception {
+  public void scanFile_validParameters_shouldContainsSamePaths() {
     ShadowMediaScannerConnection.scanFile(null, paths, mimeTypes, null);
 
     assertThat(ShadowMediaScannerConnection.getSavedPaths()).containsExactlyElementsIn(paths);
@@ -22,7 +22,7 @@ public class ShadowMediaScannerConnectionTest {
   }
 
   @Test
-  public void scanFile_nullParameters_shouldContainsSamePaths() throws Exception {
+  public void scanFile_nullParameters_shouldContainsSamePaths() {
     int pathsSize = ShadowMediaScannerConnection.getSavedPaths().size();
     int mimeTypesSize = ShadowMediaScannerConnection.getSavedMimeTypes().size();
 

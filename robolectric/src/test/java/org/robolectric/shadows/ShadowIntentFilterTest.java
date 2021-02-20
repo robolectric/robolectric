@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowIntentFilterTest {
   @Test
-  public void copyConstructorTest() throws Exception {
+  public void copyConstructorTest() {
     String action = "test";
     IntentFilter intentFilter = new IntentFilter(action);
     IntentFilter copy = new IntentFilter(intentFilter);
@@ -19,14 +19,14 @@ public class ShadowIntentFilterTest {
   }
 
   @Test
-  public void setsPriority() throws Exception {
+  public void setsPriority() {
     IntentFilter filter = new IntentFilter();
     filter.setPriority(123);
     assertThat(filter.getPriority()).isEqualTo(123);
   }
 
   @Test
-  public void addDataScheme_shouldAddTheDataScheme() throws Exception {
+  public void addDataScheme_shouldAddTheDataScheme() {
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addDataScheme("http");
     intentFilter.addDataScheme("ftp");
@@ -36,7 +36,7 @@ public class ShadowIntentFilterTest {
   }
 
   @Test
-  public void addDataAuthority_shouldAddTheDataAuthority() throws Exception {
+  public void addDataAuthority_shouldAddTheDataAuthority() {
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addDataAuthority("test.com", "8080");
     intentFilter.addDataAuthority("example.com", "42");
@@ -146,7 +146,7 @@ public class ShadowIntentFilterTest {
   }
 
   @Test
-  public void matchData_MatchScheme() throws IntentFilter.MalformedMimeTypeException {
+  public void matchData_MatchScheme() {
     IntentFilter intentFilter = new IntentFilter();
     intentFilter.addDataScheme("http");
 
@@ -156,7 +156,7 @@ public class ShadowIntentFilterTest {
   }
 
   @Test
-  public void matchData_MatchEmpty() throws IntentFilter.MalformedMimeTypeException {
+  public void matchData_MatchEmpty() {
     IntentFilter intentFilter = new IntentFilter();
 
     assertThat(intentFilter.matchData(null, "noscheme", null))

@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-/** Unit tests for {@link #ShadowBasicTagTechnology}. */
+/** Unit tests for {@link ShadowBasicTagTechnology}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = KITKAT)
 public final class ShadowBasicTagTechnologyTest {

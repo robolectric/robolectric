@@ -33,7 +33,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() throws Exception {
+  public void acquire_shouldAcquireAndReleaseReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     assertThat(lock.isHeld()).isFalse();
     lock.acquire();
@@ -63,7 +63,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldLogLatestWakeLock() throws Exception {
+  public void acquire_shouldLogLatestWakeLock() {
     ShadowPowerManager.reset();
     assertThat(ShadowPowerManager.getLatestWakeLock()).isNull();
 
@@ -85,18 +85,18 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void newWakeLock_shouldCreateWakeLock() throws Exception {
+  public void newWakeLock_shouldCreateWakeLock() {
     assertThat(powerManager.newWakeLock(0, "TAG")).isNotNull();
   }
 
   @Test
-  public void newWakeLock_shouldSetWakeLockTag() throws Exception {
+  public void newWakeLock_shouldSetWakeLockTag() {
     PowerManager.WakeLock wakeLock = powerManager.newWakeLock(0, "FOO");
     assertThat(shadowOf(wakeLock).getTag()).isEqualTo("FOO");
   }
 
   @Test
-  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() throws Exception {
+  public void newWakeLock_shouldAcquireAndReleaseNonReferenceCountedLock() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.setReferenceCounted(false);
 
@@ -112,7 +112,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() throws Exception {
+  public void newWakeLock_shouldThrowRuntimeExceptionIfLockIsUnderlocked() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     try {
       lock.release();
@@ -130,7 +130,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void isReferenceCounted_shouldGetAndSet() throws Exception {
+  public void isReferenceCounted_shouldGetAndSet() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     assertThat(shadowOf(lock).isReferenceCounted()).isTrue();
     lock.setReferenceCounted(false);
@@ -196,7 +196,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void workSource_shouldGetAndSet() throws Exception {
+  public void workSource_shouldGetAndSet() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     WorkSource workSource = new WorkSource();
     assertThat(shadowOf(lock).getWorkSource()).isNull();
@@ -249,7 +249,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void acquire_shouldIncreaseTimesHeld() throws Exception {
+  public void acquire_shouldIncreaseTimesHeld() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
 
     assertThat(shadowOf(lock).getTimesHeld()).isEqualTo(0);
@@ -262,7 +262,7 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  public void release_shouldNotDecreaseTimesHeld() throws Exception {
+  public void release_shouldNotDecreaseTimesHeld() {
     PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     lock.acquire();
     lock.acquire();

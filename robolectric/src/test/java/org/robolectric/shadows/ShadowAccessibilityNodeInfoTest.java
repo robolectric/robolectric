@@ -8,7 +8,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -145,16 +144,8 @@ public class ShadowAccessibilityNodeInfoTest {
     node.setClickable(true);
     node.addAction(AccessibilityNodeInfo.ACTION_CLICK);
     shadow = shadowOf(node);
-    shadow.setOnPerformActionListener(new ShadowAccessibilityNodeInfo.OnPerformActionListener() {
-      @Override
-      public boolean onPerformAccessibilityAction(int action, Bundle arguments) {
-        if (action == AccessibilityNodeInfo.ACTION_CLICK) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    });
+    shadow.setOnPerformActionListener(
+        (action, arguments) -> action == AccessibilityNodeInfo.ACTION_CLICK);
 
     boolean clickResult = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
     assertThat(clickResult).isEqualTo(true);

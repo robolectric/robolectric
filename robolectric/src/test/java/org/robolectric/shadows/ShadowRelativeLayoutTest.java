@@ -18,7 +18,7 @@ public class ShadowRelativeLayoutTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void getRules_shouldShowAddRuleData_sinceApiLevel17() throws Exception {
+  public void getRules_shouldShowAddRuleData_sinceApiLevel17() {
     ImageView imageView = new ImageView(ApplicationProvider.getApplicationContext());
     RelativeLayout layout = new RelativeLayout(ApplicationProvider.getApplicationContext());
     layout.addView(imageView, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -31,7 +31,7 @@ public class ShadowRelativeLayoutTest {
 
   @Test
   @Config(maxSdk = JELLY_BEAN)
-  public void getRules_shouldShowAddRuleData_uptoApiLevel16() throws Exception {
+  public void getRules_shouldShowAddRuleData_uptoApiLevel16() {
     ImageView imageView = new ImageView(ApplicationProvider.getApplicationContext());
     RelativeLayout layout = new RelativeLayout(ApplicationProvider.getApplicationContext());
     layout.addView(imageView, new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));

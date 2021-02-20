@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -45,7 +44,7 @@ public class ShadowAudioManagerTest {
   @Before
   public void setUp() {
     appContext = ApplicationProvider.getApplicationContext();
-    audioManager = new AudioManager((Application) appContext);
+    audioManager = new AudioManager(appContext);
   }
 
   @Test
@@ -393,11 +392,7 @@ public class ShadowAudioManagerTest {
     AudioAttributes musicAttribute =
         new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
     shadowOf(audioManager)
-        .setActivePlaybackConfigurationsFor(
-            Arrays.asList(
-                new AudioAttributes[] {
-                  movieAttribute, musicAttribute,
-                }));
+        .setActivePlaybackConfigurationsFor(Arrays.asList(movieAttribute, musicAttribute));
     List<AudioPlaybackConfiguration> playbackConfigurations =
         audioManager.getActivePlaybackConfigurations();
     assertThat(playbackConfigurations).hasSize(2);

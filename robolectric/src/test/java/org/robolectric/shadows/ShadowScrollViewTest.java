@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowScrollViewTest {
   @Test
-  public void shouldSmoothScrollTo() throws Exception {
+  public void shouldSmoothScrollTo() {
     ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
     scrollView.smoothScrollTo(7, 6);
 
@@ -20,7 +20,7 @@ public class ShadowScrollViewTest {
   }
 
   @Test
-  public void shouldSmoothScrollBy() throws Exception {
+  public void shouldSmoothScrollBy() {
     ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
     scrollView.smoothScrollTo(7, 6);
     scrollView.smoothScrollBy(10, 20);

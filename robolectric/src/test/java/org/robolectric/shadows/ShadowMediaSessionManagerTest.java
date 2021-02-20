@@ -6,7 +6,6 @@ import android.content.Context;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
-import android.media.session.MediaSessionManager.OnActiveSessionsChangedListener;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -47,14 +46,7 @@ public class ShadowMediaSessionManagerTest {
     MediaController mediaController = new MediaController(context, mediaSession.getSessionToken());
     final List<MediaController> changedMediaControllers = new ArrayList<>();
     Shadows.shadowOf(mediaSessionManager)
-        .addOnActiveSessionsChangedListener(
-            new OnActiveSessionsChangedListener() {
-              @Override
-              public void onActiveSessionsChanged(List<MediaController> list) {
-                changedMediaControllers.addAll(list);
-              }
-            },
-            null);
+        .addOnActiveSessionsChangedListener(list -> changedMediaControllers.addAll(list), null);
     Shadows.shadowOf(mediaSessionManager).addController(mediaController);
     assertThat(changedMediaControllers).containsExactly(mediaController);
   }

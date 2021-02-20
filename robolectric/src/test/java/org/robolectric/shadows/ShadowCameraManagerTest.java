@@ -154,7 +154,7 @@ public class ShadowCameraManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.M)
-  public void testGetTorchModeCameraTorchModeNotSet() throws CameraAccessException {
+  public void testGetTorchModeCameraTorchModeNotSet() {
     try {
       shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
       shadowOf(cameraManager).getTorchMode(CAMERA_ID_0);

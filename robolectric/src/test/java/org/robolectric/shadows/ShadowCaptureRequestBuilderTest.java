@@ -46,7 +46,7 @@ public class ShadowCaptureRequestBuilderTest {
 
   @Test
   @Config(sdk = VERSION_CODES.P)
-  public void testGetAndSet() throws Exception {
+  public void testGetAndSet() {
     builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
     builder.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_FAST);
     assertThat(builder.get(CaptureRequest.CONTROL_AF_MODE))

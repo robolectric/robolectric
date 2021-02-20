@@ -26,36 +26,36 @@ public class ShadowDownloadManagerTest {
   private final ShadowRequest shadow = shadowOf(request);
 
   @Test
-  public void request_shouldGetUri() throws Exception {
+  public void request_shouldGetUri() {
     assertThat(shadow.getUri().toString()).isEqualTo("http://example.com/foo.mp4");
   }
 
   @Test
-  public void request_shouldGetDestinationUri() throws Exception {
+  public void request_shouldGetDestinationUri() {
     request.setDestinationUri(Uri.parse("/storage/media/foo.mp4"));
     assertThat(shadow.getDestination().toString()).isEqualTo("/storage/media/foo.mp4");
   }
 
   @Test
-  public void request_shouldGetTitle() throws Exception {
+  public void request_shouldGetTitle() {
     request.setTitle("Title");
     assertThat(shadow.getTitle().toString()).isEqualTo("Title");
   }
 
   @Test
-  public void request_shouldGetDescription() throws Exception {
+  public void request_shouldGetDescription() {
     request.setDescription("Description");
     assertThat(shadow.getDescription().toString()).isEqualTo("Description");
   }
 
   @Test
-  public void request_shouldGetMimeType() throws Exception {
+  public void request_shouldGetMimeType() {
     request.setMimeType("application/json");
     assertThat(shadow.getMimeType().toString()).isEqualTo("application/json");
   }
 
   @Test
-  public void request_shouldGetRequestHeaders() throws Exception {
+  public void request_shouldGetRequestHeaders() {
     request.addRequestHeader("Authorization", "Bearer token");
     List<Pair<String, String>> headers = shadow.getRequestHeaders();
     assertThat(headers).hasSize(1);
@@ -64,31 +64,31 @@ public class ShadowDownloadManagerTest {
   }
 
   @Test
-  public void request_shouldGetNotificationVisibility() throws Exception {
+  public void request_shouldGetNotificationVisibility() {
     request.setNotificationVisibility(Request.VISIBILITY_VISIBLE);
     assertThat(shadow.getNotificationVisibility()).isEqualTo(Request.VISIBILITY_VISIBLE);
   }
 
   @Test
-  public void request_shouldGetAllowedNetworkTypes() throws Exception {
+  public void request_shouldGetAllowedNetworkTypes() {
     request.setAllowedNetworkTypes(Request.NETWORK_BLUETOOTH);
     assertThat(shadow.getAllowedNetworkTypes()).isEqualTo(Request.NETWORK_BLUETOOTH);
   }
 
   @Test
-  public void request_shouldGetAllowedOverRoaming() throws Exception {
+  public void request_shouldGetAllowedOverRoaming() {
     request.setAllowedOverRoaming(true);
     assertThat(shadow.getAllowedOverRoaming()).isTrue();
   }
 
   @Test
-  public void request_shouldGetAllowedOverMetered() throws Exception {
+  public void request_shouldGetAllowedOverMetered() {
     request.setAllowedOverMetered(true);
     assertThat(shadow.getAllowedOverMetered()).isTrue();
   }
 
   @Test
-  public void request_shouldGetVisibleInDownloadsUi() throws Exception {
+  public void request_shouldGetVisibleInDownloadsUi() {
     request.setVisibleInDownloadsUi(true);
     assertThat(shadow.getVisibleInDownloadsUi()).isTrue();
   }
@@ -103,7 +103,7 @@ public class ShadowDownloadManagerTest {
   }
 
   @Test
-  public void query_shouldReturnCursor() throws Exception {
+  public void query_shouldReturnCursor() {
     ShadowDownloadManager manager = new ShadowDownloadManager();
     long id = manager.enqueue(request);
 
@@ -113,7 +113,7 @@ public class ShadowDownloadManagerTest {
   }
 
   @Test
-  public void query_shouldReturnColumnIndexes() throws Exception {
+  public void query_shouldReturnColumnIndexes() {
     ShadowDownloadManager manager = new ShadowDownloadManager();
     long id = manager.enqueue(request.setDestinationUri(destination));
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
@@ -127,7 +127,7 @@ public class ShadowDownloadManagerTest {
   }
 
   @Test
-  public void query_shouldReturnColumnValues() throws Exception {
+  public void query_shouldReturnColumnValues() {
     ShadowDownloadManager manager = new ShadowDownloadManager();
     long id = manager.enqueue(request.setDestinationUri(destination));
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));

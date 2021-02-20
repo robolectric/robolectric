@@ -35,13 +35,13 @@ public class ShadowGestureDetectorTest {
   }
 
   @Test
-  public void test_getOnTouchEventMotionEvent() throws Exception {
+  public void test_getOnTouchEventMotionEvent() {
     detector.onTouchEvent(motionEvent);
     assertSame(motionEvent, shadowOf(detector).getOnTouchEventMotionEvent());
   }
 
   @Test
-  public void test_reset() throws Exception {
+  public void test_reset() {
     detector.onTouchEvent(motionEvent);
     assertSame(motionEvent, shadowOf(detector).getOnTouchEventMotionEvent());
 
@@ -50,14 +50,14 @@ public class ShadowGestureDetectorTest {
   }
 
   @Test
-  public void test_getListener() throws Exception {
+  public void test_getListener() {
     TestOnGestureListener listener = new TestOnGestureListener();
     assertSame(listener, shadowOf(new GestureDetector(listener)).getListener());
     assertSame(listener, shadowOf(new GestureDetector(null, listener)).getListener());
   }
 
   @Test
-  public void canAnswerLastGestureDetector() throws Exception {
+  public void canAnswerLastGestureDetector() {
     GestureDetector newDetector = new GestureDetector(context, new TestOnGestureListener());
     assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
     newDetector.onTouchEvent(motionEvent);
@@ -65,7 +65,7 @@ public class ShadowGestureDetectorTest {
   }
 
   @Test
-  public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() throws Exception {
+  public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() {
     GestureDetector subject = new GestureDetector(context, new TestOnGestureListener());
     GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
       @Override
@@ -92,7 +92,7 @@ public class ShadowGestureDetectorTest {
   }
 
   @Test
-  public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() throws Exception {
+  public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() {
     GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener();
     GestureDetector subject = new GestureDetector(context, onGestureListener);
     assertEquals(shadowOf(subject).getOnDoubleTapListener(), onGestureListener);

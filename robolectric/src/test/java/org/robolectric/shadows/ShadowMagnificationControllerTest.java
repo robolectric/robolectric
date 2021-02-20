@@ -21,12 +21,11 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = N)
 public final class ShadowMagnificationControllerTest {
 
-  private MyService myService;
   private MagnificationController magnificationController;
 
   @Before
   public void setUp() {
-    myService = Robolectric.setupService(MyService.class);
+    MyService myService = Robolectric.setupService(MyService.class);
     magnificationController = myService.getMagnificationController();
   }
 

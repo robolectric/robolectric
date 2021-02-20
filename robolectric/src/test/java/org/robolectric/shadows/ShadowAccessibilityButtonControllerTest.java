@@ -19,15 +19,12 @@ import org.robolectric.annotation.Config;
 public class ShadowAccessibilityButtonControllerTest {
 
   private AccessibilityButtonController accessibilityButtonController;
-  private AccessibilityButtonController.AccessibilityButtonCallback accessibilityButtonCallback;
 
   private boolean isClicked;
 
-  private MyService service;
-
   @Before
   public void setUp() {
-    service = new MyService();
+    MyService service = new MyService();
     accessibilityButtonController = service.getAccessibilityButtonController();
   }
 
@@ -40,7 +37,7 @@ public class ShadowAccessibilityButtonControllerTest {
 
   private void createAndRegisterAccessibilityButtonCallback() {
     isClicked = false;
-    accessibilityButtonCallback =
+    AccessibilityButtonController.AccessibilityButtonCallback accessibilityButtonCallback =
         new AccessibilityButtonController.AccessibilityButtonCallback() {
           @Override
           public void onClicked(AccessibilityButtonController controller) {

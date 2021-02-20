@@ -23,7 +23,7 @@ public final class ShadowRollbackManagerTest {
   private ShadowRollbackManager instance;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     instance =
         extract(
             ApplicationProvider.getApplicationContext().getSystemService(RollbackManager.class));

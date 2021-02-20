@@ -42,7 +42,7 @@ public class ShadowSpeechRecognizerTest {
   }
 
   @Test
-  public void onPartialResultsCalled() throws Exception {
+  public void onPartialResultsCalled() {
     startListening();
     Bundle expectedBundle = new Bundle();
     ArrayList<String> results = new ArrayList<>();
@@ -56,7 +56,7 @@ public class ShadowSpeechRecognizerTest {
   }
 
   @Test
-  public void onResultCalled() throws Exception {
+  public void onResultCalled() {
     startListening();
     Bundle expectedBundle = new Bundle();
     ArrayList<String> results = new ArrayList<>();
@@ -71,7 +71,7 @@ public class ShadowSpeechRecognizerTest {
   }
 
   @Test
-  public void onRmsChangedCalled() throws Exception {
+  public void onRmsChangedCalled() {
     startListening();
 
     shadowOf(speechRecognizer).triggerOnRmsChanged(1.0f);
@@ -80,7 +80,7 @@ public class ShadowSpeechRecognizerTest {
   }
 
   @Test
-  public void startAndStopListening() throws Exception {
+  public void startAndStopListening() {
     startListening();
     shadowOf(speechRecognizer).triggerOnResults(new Bundle());
     speechRecognizer.stopListening();

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
-import android.app.Application;
 import android.content.Context;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -20,10 +19,10 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowAutoCompleteTextViewTest {
   private final AutoCompleteAdapter adapter =
-      new AutoCompleteAdapter((Application) ApplicationProvider.getApplicationContext());
+      new AutoCompleteAdapter(ApplicationProvider.getApplicationContext());
 
   @Test
-  public void shouldInvokeFilter() throws Exception {
+  public void shouldInvokeFilter() {
     shadowMainLooper().pause();
     AutoCompleteTextView view =
         new AutoCompleteTextView(ApplicationProvider.getApplicationContext());

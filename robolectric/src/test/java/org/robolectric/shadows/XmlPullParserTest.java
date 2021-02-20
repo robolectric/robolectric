@@ -96,7 +96,7 @@ http://schemas.android.com/apk/res-auto:title(resId=2130771971) type=CDATA: valu
   }
 
   @Test
-  public void buildAttrSet() throws Exception {
+  public void buildAttrSet() {
     XmlResourceParser parser = (XmlResourceParser) Robolectric.buildAttributeSet()
         .addAttribute(android.R.attr.width, "1234px")
         .addAttribute(android.R.attr.height, "@android:dimen/app_icon_size")

@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowBroadcastPendingResultTest {
   @Test
-  public void testCreate() throws Exception {
+  public void testCreate() {
     assertThat(ShadowBroadcastPendingResult.create(1, "result", new Bundle(), true))
         .isNotNull();
   }

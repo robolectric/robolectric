@@ -21,7 +21,7 @@ import org.robolectric.annotation.Config;
 public class ShadowNetworkCapabilitiesTest {
 
   @Test
-  public void hasTransport_shouldReturnAsPerAssignedTransportTypes() throws Exception {
+  public void hasTransport_shouldReturnAsPerAssignedTransportTypes() {
     NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
 
     // Assert default false state.

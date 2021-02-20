@@ -27,26 +27,26 @@ public class ShadowScaleGestureDetectorTest {
   }
 
   @Test
-  public void test_getOnTouchEventMotionEvent() throws Exception {
+  public void test_getOnTouchEventMotionEvent() {
     detector.onTouchEvent(motionEvent);
     assertSame(motionEvent, shadowOf(detector).getOnTouchEventMotionEvent());
   }
 
   @Test
-  public void test_getScaleFactor() throws Exception {
+  public void test_getScaleFactor() {
     shadowOf(detector).setScaleFactor(2.0f);
     assertThat(detector.getScaleFactor()).isEqualTo(2.0f);
   }
 
   @Test
-  public void test_getFocusXY() throws Exception {
+  public void test_getFocusXY() {
     shadowOf(detector).setFocusXY(2.0f, 3.0f);
     assertThat(detector.getFocusX()).isEqualTo(2.0f);
     assertThat(detector.getFocusY()).isEqualTo(3.0f);
   }
 
   @Test
-  public void test_getListener() throws Exception {
+  public void test_getListener() {
     TestOnGestureListener listener = new TestOnGestureListener();
     assertSame(
         listener,
@@ -55,7 +55,7 @@ public class ShadowScaleGestureDetectorTest {
   }
 
   @Test
-  public void test_reset() throws Exception {
+  public void test_reset() {
     assertDefaults();
 
     detector.onTouchEvent(motionEvent);

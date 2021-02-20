@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class ShadowGradientDrawableTest {
   @Test
-  public void testGetLastSetColor_returnsColor() throws Exception {
+  public void testGetLastSetColor_returnsColor() {
     GradientDrawable gradientDrawable = new GradientDrawable();
     ShadowGradientDrawable shadowGradientDrawable = shadowOf(gradientDrawable);
     int color = 123;
@@ -20,7 +20,7 @@ public class ShadowGradientDrawableTest {
   }
 
   @Test
-  public void testGetStrokeWidth_returnsStrokeWidth() throws Exception {
+  public void testGetStrokeWidth_returnsStrokeWidth() {
     int strokeWidth = 123;
     GradientDrawable gradientDrawable = new GradientDrawable();
 
@@ -31,7 +31,7 @@ public class ShadowGradientDrawableTest {
   }
 
   @Test
-  public void testGetStrokeColor_returnsStrokeColor() throws Exception {
+  public void testGetStrokeColor_returnsStrokeColor() {
     int stokeColor = 123;
     GradientDrawable gradientDrawable = new GradientDrawable();
 

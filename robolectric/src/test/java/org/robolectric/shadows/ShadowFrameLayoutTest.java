@@ -27,7 +27,7 @@ public class ShadowFrameLayoutTest {
   }
 
   @Test
-  public void onMeasure_shouldNotLayout() throws Exception {
+  public void onMeasure_shouldNotLayout() {
     assertThat(frameLayout.getHeight()).isEqualTo(0);
     assertThat(frameLayout.getWidth()).isEqualTo(0);
 

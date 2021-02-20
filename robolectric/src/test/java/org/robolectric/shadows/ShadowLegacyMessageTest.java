@@ -25,13 +25,13 @@ import org.robolectric.util.Scheduler;
 public class ShadowLegacyMessageTest {
 
   @Test
-  public void testGetDataShouldLazilyCreateBundle() throws Exception {
+  public void testGetDataShouldLazilyCreateBundle() {
     assertThat(new Message().getData()).isNotNull();
     assertThat(new Message().getData().isEmpty()).isTrue();
   }
 
   @Test
-  public void testGetData() throws Exception {
+  public void testGetData() {
     Message m = new Message();
     Bundle b = new Bundle();
     m.setData(b);
@@ -39,7 +39,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testPeekData() throws Exception {
+  public void testPeekData() {
     assertThat(new Message().peekData()).isNull();
 
     Message m = new Message();
@@ -49,7 +49,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testGetTarget() throws Exception {
+  public void testGetTarget() {
     Message m = new Message();
     Handler h = new Handler();
     m.setTarget(h);
@@ -57,7 +57,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testCopyFrom() throws Exception {
+  public void testCopyFrom() {
     Bundle b = new Bundle();
     Message m = new Message();
     m.arg1 = 10;
@@ -79,20 +79,20 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testObtain() throws Exception {
+  public void testObtain() {
     Message m = Message.obtain();
     assertThat(m).isNotNull();
   }
 
   @Test
-  public void testObtainWithHandler() throws Exception {
+  public void testObtainWithHandler() {
     Handler h = new Handler();
     Message m = Message.obtain(h);
     assertThat(m.getTarget()).isEqualTo(h);
   }
 
   @Test
-  public void testObtainWithHandlerAndWhat() throws Exception {
+  public void testObtainWithHandlerAndWhat() {
     Handler h = new Handler();
     int what = 10;
     Message m = Message.obtain(h, what);
@@ -103,7 +103,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testObtainWithHandlerWhatAndObject() throws Exception {
+  public void testObtainWithHandlerWhatAndObject() {
     Handler h = new Handler();
     int what = 10;
     Object obj = "test";
@@ -116,7 +116,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testObtainWithHandlerWhatAndTwoArgs() throws Exception {
+  public void testObtainWithHandlerWhatAndTwoArgs() {
     Handler h = new Handler();
     int what = 2;
     int arg1 = 3;
@@ -130,7 +130,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testObtainWithHandlerWhatTwoArgsAndObj() throws Exception {
+  public void testObtainWithHandlerWhatTwoArgsAndObj() {
     Handler h = new Handler();
     int what = 2;
     int arg1 = 3;
@@ -146,7 +146,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testObtainWithMessage() throws Exception {
+  public void testObtainWithMessage() {
     Bundle b = new Bundle();
     Message m = new Message();
     m.arg1 = 10;
@@ -167,7 +167,7 @@ public class ShadowLegacyMessageTest {
   }
 
   @Test
-  public void testSendToTarget() throws Exception {
+  public void testSendToTarget() {
     ShadowLooper.pauseMainLooper();
     Handler h = new Handler();
     Message.obtain(h, 123).sendToTarget();

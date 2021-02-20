@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config;
 public class ShadowTimeTest {
 
   @Test
-  public void shouldFormatAllFormats() throws Exception {
+  public void shouldFormatAllFormats() {
     Time t = new Time("Asia/Tokyo");
     t.set(1407496560000L);
 
@@ -70,7 +70,7 @@ public class ShadowTimeTest {
   @Test
   @Config(maxSdk = KITKAT_WATCH)
   // these fail on LOLLIPOP+; is the shadow impl of format correct for pre-LOLLIPOP?
-  public void shouldFormatAllFormats_withQuestionableResults() throws Exception {
+  public void shouldFormatAllFormats_withQuestionableResults() {
     Time t = new Time("Asia/Tokyo");
     t.set(1407496560000L);
 
@@ -83,7 +83,7 @@ public class ShadowTimeTest {
   }
 
   @Test
-  public void shouldSetToNow() throws Exception {
+  public void shouldSetToNow() {
     Time t = new Time();
     SystemClock.setCurrentTimeMillis(1000);
     t.setToNow();

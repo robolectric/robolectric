@@ -58,13 +58,13 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  public void getUuids_setUuidsNotCalled_shouldReturnNull() throws Exception {
+  public void getUuids_setUuidsNotCalled_shouldReturnNull() {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.getUuids()).isNull();
   }
 
   @Test
-  public void canSetAndGetBondState() throws Exception {
+  public void canSetAndGetBondState() {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     assertThat(device.getBondState()).isEqualTo(BOND_NONE);
@@ -108,7 +108,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  public void canSetAndGetFetchUuidsWithSdpResult() throws Exception {
+  public void canSetAndGetFetchUuidsWithSdpResult() {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.fetchUuidsWithSdp()).isFalse();
 
@@ -129,7 +129,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  public void getCorrectFetchUuidsWithSdpCount() throws Exception {
+  public void getCorrectFetchUuidsWithSdpCount() {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(shadowOf(device).getFetchUuidsWithSdpCount()).isEqualTo(0);
 
@@ -142,7 +142,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void connectGatt_doesntCrash() throws Exception {
+  public void connectGatt_doesntCrash() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
             bluetoothDevice.connectGatt(
@@ -152,7 +152,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = M)
-  public void connectGatt_withTransport_doesntCrash() throws Exception {
+  public void connectGatt_withTransport_doesntCrash() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
             bluetoothDevice.connectGatt(
@@ -165,7 +165,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = O)
-  public void connectGatt_withTransportPhy_doesntCrash() throws Exception {
+  public void connectGatt_withTransportPhy_doesntCrash() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
         bluetoothDevice.connectGatt(
@@ -179,7 +179,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = O)
-  public void connectGatt_withTransportPhyHandler_doesntCrash() throws Exception {
+  public void connectGatt_withTransportPhyHandler_doesntCrash() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
         bluetoothDevice.connectGatt(
@@ -194,7 +194,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void canSetAndGetType() throws Exception {
+  public void canSetAndGetType() {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     shadowOf(device).setType(DEVICE_TYPE_CLASSIC);
@@ -203,7 +203,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void canGetBluetoothGatts() throws Exception {
+  public void canGetBluetoothGatts() {
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     List<BluetoothGatt> createdGatts = new ArrayList<>();
 
@@ -219,7 +219,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void connectGatt_setsBluetoothGattCallback() throws Exception {
+  public void connectGatt_setsBluetoothGattCallback() {
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGattCallback callback = new BluetoothGattCallback() {};
 
@@ -232,7 +232,7 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void canSimulateGattConnectionChange() throws Exception {
+  public void canSimulateGattConnectionChange() {
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGattCallback callback = mock(BluetoothGattCallback.class);
     BluetoothGatt bluetoothGatt =

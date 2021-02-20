@@ -45,7 +45,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void addHeaderView_ShouldRecordHeaders() throws Exception {
+  public void addHeaderView_ShouldRecordHeaders() {
     View view0 = new View(context);
     view0.setId(0);
     View view1 = new View(context);
@@ -72,7 +72,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void addHeaderView_shouldAttachTheViewToTheList() throws Exception {
+  public void addHeaderView_shouldAttachTheViewToTheList() {
     View view = new View(context);
     view.setId(42);
 
@@ -82,7 +82,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void addFooterView_ShouldRecordFooters() throws Exception {
+  public void addFooterView_ShouldRecordFooters() {
     View view0 = new View(context);
     View view1 = new View(context);
     listView.addFooterView(view0);
@@ -93,7 +93,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void addFooterView_shouldAttachTheViewToTheList() throws Exception {
+  public void addFooterView_shouldAttachTheViewToTheList() {
     View view = new View(context);
     view.setId(42);
 
@@ -103,7 +103,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void setAdapter_shouldNotClearHeaderOrFooterViews() throws Exception {
+  public void setAdapter_shouldNotClearHeaderOrFooterViews() {
     View header = new View(context);
     listView.addHeaderView(header);
     View footer = new View(context);
@@ -117,7 +117,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void testGetFooterViewsCount() throws Exception {
+  public void testGetFooterViewsCount() {
     listView.addHeaderView(new View(context));
     listView.addFooterView(new View(context));
     listView.addFooterView(new View(context));
@@ -128,58 +128,50 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void smoothScrollBy_shouldBeRecorded() throws Exception {
+  public void smoothScrollBy_shouldBeRecorded() {
     listView.smoothScrollBy(42, 420);
     assertThat(shadowOf(listView).getLastSmoothScrollByDistance()).isEqualTo(42);
     assertThat(shadowOf(listView).getLastSmoothScrollByDuration()).isEqualTo(420);
   }
 
   @Test
-  public void testPerformItemClick_ShouldFireOnItemClickListener() throws Exception {
-    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        transcript.add("item was clicked: " + position);
-      }
-    });
+  public void testPerformItemClick_ShouldFireOnItemClickListener() {
+    listView.setOnItemClickListener(
+        (parent, view, position, id) -> transcript.add("item was clicked: " + position));
 
     listView.performItemClick(null, 0, -1);
     assertThat(transcript).containsExactly("item was clicked: 0");
   }
 
   @Test
-  public void testSetSelection_WhenNoItemSelectedListenerIsSet_ShouldDoNothing() throws Exception {
+  public void testSetSelection_WhenNoItemSelectedListenerIsSet_ShouldDoNothing() {
     listView.setSelection(0);
   }
 
   @Test
-  public void findItemContainingText_shouldFindChildByString() throws Exception {
+  public void findItemContainingText_shouldFindChildByString() {
     ShadowListView shadowListView = prepareListWithThreeItems();
     View item1 = shadowListView.findItemContainingText("Item 1");
     assertThat(item1).isSameInstanceAs(listView.getChildAt(1));
   }
 
   @Test
-  public void findItemContainingText_shouldReturnNullIfNotFound() throws Exception {
+  public void findItemContainingText_shouldReturnNullIfNotFound() {
     ShadowListView shadowListView = prepareListWithThreeItems();
     assertThat(shadowListView.findItemContainingText("Non-existent item")).isNull();
   }
 
   @Test
-  public void clickItemContainingText_shouldPerformItemClickOnList() throws Exception {
+  public void clickItemContainingText_shouldPerformItemClickOnList() {
     ShadowListView shadowListView = prepareListWithThreeItems();
-    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        transcript.add("clicked on item " + position);
-      }
-    });
+    listView.setOnItemClickListener(
+        (parent, view, position, id) -> transcript.add("clicked on item " + position));
     shadowListView.clickFirstItemContainingText("Item 1");
     assertThat(transcript).containsExactly("clicked on item 1");
   }
 
   @Test
-  public void clickItemContainingText_shouldPerformItemClickOnList_arrayAdapter() throws Exception {
+  public void clickItemContainingText_shouldPerformItemClickOnList_arrayAdapter() {
     ArrayList<String> adapterFileList = new ArrayList<>();
     adapterFileList.add("Item 1");
     adapterFileList.add("Item 2");
@@ -189,46 +181,43 @@ public class ShadowListViewTest {
     listView.setAdapter(adapter);
     shadowOf(listView).populateItems();
     ShadowListView shadowListView = shadowOf(listView);
-    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        transcript.add("clicked on item " + adapter.getItem(position));
-      }
-    });
+    listView.setOnItemClickListener(
+        (parent, view, position, id) ->
+            transcript.add("clicked on item " + adapter.getItem(position)));
     shadowListView.clickFirstItemContainingText("Item 3");
     assertThat(transcript).containsExactly("clicked on item Item 3");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void clickItemContainingText_shouldThrowExceptionIfNotFound() throws Exception {
+  public void clickItemContainingText_shouldThrowExceptionIfNotFound() {
     ShadowListView shadowListView = prepareListWithThreeItems();
     shadowListView.clickFirstItemContainingText("Non-existant item");
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void removeAllViews_shouldThrowAnException() throws Exception {
+  public void removeAllViews_shouldThrowAnException() {
     listView.removeAllViews();
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void removeView_shouldThrowAnException() throws Exception {
+  public void removeView_shouldThrowAnException() {
     listView.removeView(new View(context));
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void removeViewAt_shouldThrowAnException() throws Exception {
+  public void removeViewAt_shouldThrowAnException() {
     listView.removeViewAt(0);
   }
 
   @Test
-  public void getPositionForView_shouldReturnThePositionInTheListForTheView() throws Exception {
+  public void getPositionForView_shouldReturnThePositionInTheListForTheView() {
     prepareWithListAdapter();
     View childViewOfListItem = ((ViewGroup) listView.getChildAt(1)).getChildAt(0);
     assertThat(listView.getPositionForView(childViewOfListItem)).isEqualTo(1);
   }
 
   @Test
-  public void getPositionForView_shouldReturnInvalidPositionForViewThatIsNotFound() throws Exception {
+  public void getPositionForView_shouldReturnInvalidPositionForViewThatIsNotFound() {
     prepareWithListAdapter();
     View view = new View(context);
     shadowOf(view).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class)); // Android implementation requires the item have a parent
@@ -236,7 +225,7 @@ public class ShadowListViewTest {
   }
 
   @Test
-  public void shouldRecordLatestCallToSmoothScrollToPostion() throws Exception {
+  public void shouldRecordLatestCallToSmoothScrollToPostion() {
     listView.smoothScrollToPosition(10);
     assertThat(shadowOf(listView).getSmoothScrolledPosition()).isEqualTo(10);
   }

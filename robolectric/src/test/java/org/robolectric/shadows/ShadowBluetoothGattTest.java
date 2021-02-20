@@ -20,14 +20,14 @@ public class ShadowBluetoothGattTest {
   private static final String MOCK_MAC_ADDRESS = "00:11:22:33:AA:BB";
 
   @Test
-  public void canCreateBluetoothGattViaNewInstance() throws Exception {
+  public void canCreateBluetoothGattViaNewInstance() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(bluetoothDevice);
     assertThat(bluetoothGatt).isNotNull();
   }
 
   @Test
-  public void canSetAndGetGattCallback() throws Exception {
+  public void canSetAndGetGattCallback() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(bluetoothDevice);
     BluetoothGattCallback callback = new BluetoothGattCallback() {};
@@ -38,7 +38,7 @@ public class ShadowBluetoothGattTest {
   }
 
   @Config(minSdk = JELLY_BEAN_MR2)
-  public void connect_returnsTrue() throws Exception {
+  public void connect_returnsTrue() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGatt bluetoothGatt = ShadowBluetoothGatt.newInstance(bluetoothDevice);
     assertThat(bluetoothGatt.connect()).isTrue();

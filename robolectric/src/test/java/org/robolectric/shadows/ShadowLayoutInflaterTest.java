@@ -54,7 +54,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testCreatesCorrectClasses() throws Exception {
+  public void testCreatesCorrectClasses() {
     ViewGroup view = inflate(R.layout.media);
     assertThat(view).isInstanceOf(LinearLayout.class);
 
@@ -62,7 +62,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testChoosesLayoutBasedOnDefaultScreenSize() throws Exception {
+  public void testChoosesLayoutBasedOnDefaultScreenSize() {
     ViewGroup view = inflate(R.layout.different_screen_sizes);
     TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("default");
@@ -70,7 +70,7 @@ public class ShadowLayoutInflaterTest {
 
   @Test
   @Config(qualifiers = "xlarge")
-  public void testChoosesLayoutBasedOnScreenSize() throws Exception {
+  public void testChoosesLayoutBasedOnScreenSize() {
     ViewGroup view = inflate(R.layout.different_screen_sizes);
     TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("xlarge");
@@ -78,14 +78,14 @@ public class ShadowLayoutInflaterTest {
 
   @Test
   @Config(qualifiers = "land")
-  public void testChoosesLayoutBasedOnQualifiers() throws Exception {
+  public void testChoosesLayoutBasedOnQualifiers() {
     ViewGroup view = inflate(R.layout.different_screen_sizes);
     TextView textView = view.findViewById(android.R.id.text1);
     assertThat(textView.getText().toString()).isEqualTo("land");
   }
 
   @Test
-  public void testWebView() throws Exception {
+  public void testWebView() {
     ViewGroup view = inflate(R.layout.webview_holder);
     WebView webView = view.findViewById(R.id.web_view);
 
@@ -95,7 +95,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testAddsChildren() throws Exception {
+  public void testAddsChildren() {
     ViewGroup view = inflate(R.layout.media);
     assertTrue(view.getChildCount() > 0);
 
@@ -103,7 +103,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testFindsChildrenById() throws Exception {
+  public void testFindsChildrenById() {
     ViewGroup mediaView = inflate(R.layout.media);
     assertThat(mediaView.<TextView>findViewById(R.id.title)).isInstanceOf(TextView.class);
 
@@ -112,7 +112,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testInflatingConflictingSystemAndLocalViewsWorks() throws Exception {
+  public void testInflatingConflictingSystemAndLocalViewsWorks() {
     ViewGroup view = inflate(R.layout.activity_list_item);
     assertThat(view.<ImageView>findViewById(R.id.icon)).isInstanceOf(ImageView.class);
 
@@ -121,37 +121,37 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testInclude() throws Exception {
+  public void testInclude() {
     ViewGroup mediaView = inflate(R.layout.media);
     assertThat(mediaView.<TextView>findViewById(R.id.include_id)).isInstanceOf(TextView.class);
   }
 
   @Test
-  public void testIncludeShouldRetainAttributes() throws Exception {
+  public void testIncludeShouldRetainAttributes() {
     ViewGroup mediaView = inflate(R.layout.media);
     assertThat(mediaView.findViewById(R.id.include_id).getVisibility()).isEqualTo(View.GONE);
   }
 
   @Test
-  public void shouldOverwriteIdOnIncludedNonMerge() throws Exception {
+  public void shouldOverwriteIdOnIncludedNonMerge() {
     ViewGroup mediaView = inflate(R.layout.media);
     assertNull(mediaView.findViewById(R.id.snippet_text));
   }
 
   @Test
-  public void shouldRetainIdOnIncludedMergeWhenIncludeSpecifiesNoId() throws Exception {
+  public void shouldRetainIdOnIncludedMergeWhenIncludeSpecifiesNoId() {
     ViewGroup mediaView = inflate(R.layout.override_include);
     assertThat(mediaView.<TextView>findViewById(R.id.inner_text)).isInstanceOf(TextView.class);
   }
 
   @Test
-  public void shouldRetainIdOnIncludedNonMergeWhenIncludeSpecifiesNoId() throws Exception {
+  public void shouldRetainIdOnIncludedNonMergeWhenIncludeSpecifiesNoId() {
     ViewGroup mediaView = inflate(R.layout.override_include);
     assertThat(mediaView.<TextView>findViewById(R.id.snippet_text)).isInstanceOf(TextView.class);
   }
 
   @Test
-  public void testIncludedIdShouldNotBeFoundWhenIncludedIsMerge() throws Exception {
+  public void testIncludedIdShouldNotBeFoundWhenIncludedIsMerge() {
     ViewGroup overrideIncludeView = inflate(R.layout.outer);
     assertThat(overrideIncludeView.<LinearLayout>findViewById(R.id.outer_merge))
         .isInstanceOf(LinearLayout.class);
@@ -162,59 +162,59 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testIncludeShouldOverrideAttributesOfIncludedRootNode() throws Exception {
+  public void testIncludeShouldOverrideAttributesOfIncludedRootNode() {
     ViewGroup overrideIncludeView = inflate(R.layout.override_include);
     assertThat(overrideIncludeView.findViewById(R.id.snippet_text).getVisibility())
         .isEqualTo(View.INVISIBLE);
   }
 
   @Test
-  public void shouldNotCountRequestFocusElementAsChild() throws Exception {
+  public void shouldNotCountRequestFocusElementAsChild() {
     ViewGroup viewGroup = inflate(R.layout.request_focus);
     ViewGroup frameLayout = (ViewGroup) viewGroup.getChildAt(1);
     assertEquals(0, frameLayout.getChildCount());
   }
 
   @Test
-  public void focusRequest_shouldNotExplodeOnViewRootImpl() throws Exception {
+  public void focusRequest_shouldNotExplodeOnViewRootImpl() {
     LinearLayout parent = new LinearLayout(context);
     shadowOf(parent).setMyParent(ReflectionHelpers.createNullProxy(ViewParent.class));
     LayoutInflater.from(context).inflate(R.layout.request_focus, parent);
   }
 
   @Test
-  public void shouldGiveFocusToElementContainingRequestFocusElement() throws Exception {
+  public void shouldGiveFocusToElementContainingRequestFocusElement() {
     ViewGroup viewGroup = inflate(R.layout.request_focus);
     EditText editText = viewGroup.findViewById(R.id.edit_text);
     assertFalse(editText.isFocused());
   }
 
   @Test
-  public void testMerge() throws Exception {
+  public void testMerge() {
     ViewGroup mediaView = inflate(R.layout.outer);
     assertThat(mediaView.<TextView>findViewById(R.id.inner_text)).isInstanceOf(TextView.class);
   }
 
   @Test
-  public void mergeIncludesShouldNotCreateAncestryLoops() throws Exception {
+  public void mergeIncludesShouldNotCreateAncestryLoops() {
     ViewGroup mediaView = inflate(R.layout.outer);
     mediaView.hasFocus();
   }
 
   @Test
-  public void testViewGroupsLooksAtItsOwnId() throws Exception {
+  public void testViewGroupsLooksAtItsOwnId() {
     TextView mediaView = inflate(layout.snippet);
     assertSame(mediaView, mediaView.findViewById(R.id.snippet_text));
   }
 
   @Test
-  public void shouldConstructCustomViewsWithAttributesConstructor() throws Exception {
+  public void shouldConstructCustomViewsWithAttributesConstructor() {
     CustomView view = inflate(layout.custom_layout);
     assertThat(view.attributeResourceValue).isEqualTo(R.string.hello);
   }
 
   @Test
-  public void shouldConstructCustomViewsWithCustomState() throws Exception {
+  public void shouldConstructCustomViewsWithCustomState() {
     CustomStateView view = inflate(layout.custom_layout6);
     assertThat(view.getDrawableState()).asList().doesNotContain(R.attr.stateFoo);
 
@@ -225,26 +225,26 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void shouldConstructCustomViewsWithAttributesInResAutoNamespace() throws Exception {
+  public void shouldConstructCustomViewsWithAttributesInResAutoNamespace() {
     CustomView view = inflate(layout.custom_layout5);
     assertThat(view.attributeResourceValue).isEqualTo(R.string.hello);
   }
 
   @Test
-  public void shouldConstructCustomViewsWithAttributesWithURLEncodedNamespaces() throws Exception {
+  public void shouldConstructCustomViewsWithAttributesWithURLEncodedNamespaces() {
     CustomView view = inflate(layout.custom_layout4).findViewById(R.id.custom_view);
     assertThat(view.namespacedResourceValue).isEqualTo(R.layout.text_views);
   }
 
   @Test
-  public void testViewVisibilityIsSet() throws Exception {
+  public void testViewVisibilityIsSet() {
     View mediaView = inflate(layout.media);
     assertThat(mediaView.findViewById(R.id.title).getVisibility()).isEqualTo(View.VISIBLE);
     assertThat(mediaView.findViewById(R.id.subtitle).getVisibility()).isEqualTo(View.GONE);
   }
 
   @Test
-  public void testTextViewTextIsSet() throws Exception {
+  public void testTextViewTextIsSet() {
     View mediaView = inflate(layout.main);
     assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString())
         .isEqualTo("Main Layout");
@@ -253,7 +253,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testTextViewCompoundDrawablesAreSet() throws Exception {
+  public void testTextViewCompoundDrawablesAreSet() {
     View mediaView = inflate(layout.main);
     TextView view = mediaView.findViewById(R.id.title);
 
@@ -265,7 +265,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testCheckBoxCheckedIsSet() throws Exception {
+  public void testCheckBoxCheckedIsSet() {
     View mediaView = inflate(layout.main);
     assertThat(((CheckBox) mediaView.findViewById(R.id.true_checkbox)).isChecked()).isTrue();
     assertThat(((CheckBox) mediaView.findViewById(R.id.false_checkbox)).isChecked()).isFalse();
@@ -273,7 +273,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testImageViewSrcIsSet() throws Exception {
+  public void testImageViewSrcIsSet() {
     View mediaView = inflate(layout.main);
     ImageView imageView = mediaView.findViewById(R.id.image);
     BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
@@ -281,7 +281,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testImageViewSrcIsSetFromMipmap() throws Exception {
+  public void testImageViewSrcIsSetFromMipmap() {
     View mediaView = inflate(layout.main);
     ImageView imageView = mediaView.findViewById(R.id.mipmapImage);
     BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
@@ -290,14 +290,14 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void shouldInflateMergeLayoutIntoParent() throws Exception {
+  public void shouldInflateMergeLayoutIntoParent() {
     LinearLayout linearLayout = new LinearLayout(context);
     LayoutInflater.from(context).inflate(R.layout.inner_merge, linearLayout);
     assertThat(linearLayout.getChildAt(0)).isInstanceOf(TextView.class);
   }
 
   @Test
-  public void testMultiOrientation() throws Exception {
+  public void testMultiOrientation() {
     Activity activity = buildActivity(Activity.class).create().start().resume().get();
 
     // Default screen orientation should be portrait.
@@ -318,7 +318,7 @@ public class ShadowLayoutInflaterTest {
 
   @Test
   @Config(qualifiers = "land")
-  public void testMultiOrientation_explicitLandscape() throws Exception {
+  public void testMultiOrientation_explicitLandscape() {
     Activity activity = buildActivity(Activity.class).create().start().resume().get();
 
     // Confirm explicit "orientation = landscape" works.
@@ -331,7 +331,7 @@ public class ShadowLayoutInflaterTest {
 
   @Test
   @Config(qualifiers = "w0dp")
-  public void testSetContentViewByItemResource() throws Exception {
+  public void testSetContentViewByItemResource() {
     Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.main_layout);
 
@@ -343,7 +343,7 @@ public class ShadowLayoutInflaterTest {
 
   @Test
   @Config(qualifiers = "w820dp")
-  public void testSetContentViewByItemResourceWithW820dp() throws Exception {
+  public void testSetContentViewByItemResourceWithW820dp() {
     Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.main_layout);
 
@@ -354,26 +354,26 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testViewEnabled() throws Exception {
+  public void testViewEnabled() {
     View mediaView = inflate(layout.main);
     assertThat(mediaView.findViewById(R.id.time).isEnabled()).isFalse();
   }
 
   @Test
-  public void testContentDescriptionIsSet() throws Exception {
+  public void testContentDescriptionIsSet() {
     View mediaView = inflate(layout.main);
     assertThat(mediaView.findViewById(R.id.time).getContentDescription().toString())
         .isEqualTo("Howdy");
   }
 
   @Test
-  public void testAlphaIsSet() throws Exception {
+  public void testAlphaIsSet() {
     View mediaView = inflate(layout.main);
     assertThat(mediaView.findViewById(R.id.time).getAlpha()).isEqualTo(.3f);
   }
 
   @Test
-  public void testViewBackgroundIdIsSet() throws Exception {
+  public void testViewBackgroundIdIsSet() {
     View mediaView = inflate(layout.main);
     ImageView imageView = mediaView.findViewById(R.id.image);
 
@@ -382,7 +382,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testOnClickAttribute() throws Exception {
+  public void testOnClickAttribute() {
     ClickActivity activity = buildActivity(ClickActivity.class).create().get();
 
     assertThat(activity.clicked).isFalse();
@@ -394,7 +394,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void testInvalidOnClickAttribute() throws Exception {
+  public void testInvalidOnClickAttribute() {
     Activity activity = buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.with_invalid_onclick);
 
@@ -413,7 +413,7 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void shouldInvokeOnFinishInflate() throws Exception {
+  public void shouldInvokeOnFinishInflate() {
     int layoutResId = R.layout.custom_layout2;
     CustomView2 outerCustomView = inflate(layoutResId);
     CustomView2 innerCustomView = (CustomView2) outerCustomView.getChildAt(0);
@@ -437,19 +437,19 @@ public class ShadowLayoutInflaterTest {
   }
 
   @Test
-  public void shouldInflateViewsWithClassAttr() throws Exception {
+  public void shouldInflateViewsWithClassAttr() {
     CustomView3 outerCustomView = inflate(layout.custom_layout3);
     assertThat(outerCustomView.getText().toString()).isEqualTo("Hello bonjour");
   }
 
   @Test
-  public void testIncludesLinearLayoutsOnlyOnce() throws Exception {
+  public void testIncludesLinearLayoutsOnlyOnce() {
     ViewGroup parentView = inflate(R.layout.included_layout_parent);
     assertEquals(1, parentView.getChildCount());
   }
 
   @Test
-  public void testConverterAcceptsEnumOrdinal() throws Exception {
+  public void testConverterAcceptsEnumOrdinal() {
     ViewGroup view = inflate(R.layout.ordinal_scrollbar);
     assertThat(view).isInstanceOf(RelativeLayout.class);
     ListView listView = view.findViewById(R.id.list_view_with_enum_scrollbar);

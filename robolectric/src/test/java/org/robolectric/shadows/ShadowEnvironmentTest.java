@@ -185,14 +185,14 @@ public class ShadowEnvironmentTest {
 
   @Test
   @Config(sdk = JELLY_BEAN_MR1)
-  public void getExternalStorageStateJB() throws Exception {
+  public void getExternalStorageStateJB() {
     ShadowEnvironment.setExternalStorageState("blah");
     assertThat(ShadowEnvironment.getExternalStorageState()).isEqualTo("blah");
   }
 
   @Test
   @Config(minSdk = KITKAT, maxSdk = LOLLIPOP)
-  public void getExternalStorageStatePreLollipopMR1() throws Exception {
+  public void getExternalStorageStatePreLollipopMR1() {
     File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
     File storageDir2 = ShadowEnvironment.addExternalDir("dir2");
     ShadowEnvironment.setExternalStorageState(storageDir1, Environment.MEDIA_MOUNTED);
@@ -210,7 +210,7 @@ public class ShadowEnvironmentTest {
 
   @Test
   @Config(minSdk = LOLLIPOP_MR1)
-  public void getExternalStorageState() throws Exception {
+  public void getExternalStorageState() {
     File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
     File storageDir2 = ShadowEnvironment.addExternalDir("dir2");
     ShadowEnvironment.setExternalStorageState(storageDir1, Environment.MEDIA_MOUNTED);

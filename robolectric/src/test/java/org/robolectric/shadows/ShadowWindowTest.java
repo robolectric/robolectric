@@ -33,7 +33,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowWindowTest {
   @Test
-  public void getFlag_shouldReturnWindowFlags() throws Exception {
+  public void getFlag_shouldReturnWindowFlags() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
 
@@ -45,7 +45,7 @@ public class ShadowWindowTest {
   }
 
   @Test
-  public void getTitle_shouldReturnWindowTitle() throws Exception {
+  public void getTitle_shouldReturnWindowTitle() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     window.setTitle("My Window Title");
@@ -53,7 +53,7 @@ public class ShadowWindowTest {
   }
 
   @Test
-  public void getBackgroundDrawable_returnsSetDrawable() throws Exception {
+  public void getBackgroundDrawable_returnsSetDrawable() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
     ShadowWindow shadowWindow = shadowOf(window);
@@ -65,7 +65,7 @@ public class ShadowWindowTest {
   }
 
   @Test
-  public void getSoftInputMode_returnsSoftInputMode() throws Exception {
+  public void getSoftInputMode_returnsSoftInputMode() {
     TestActivity activity = Robolectric.buildActivity(TestActivity.class).create().get();
     Window window = activity.getWindow();
     ShadowWindow shadowWindow = shadowOf(window);

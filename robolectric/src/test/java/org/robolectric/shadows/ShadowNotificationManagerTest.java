@@ -438,7 +438,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testNotify() throws Exception {
+  public void testNotify() {
     notificationManager.notify(1, notification1);
     assertEquals(1, shadowOf(notificationManager).size());
     assertEquals(notification1, shadowOf(notificationManager).getNotification(null, 1));
@@ -449,7 +449,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testNotifyReplaces() throws Exception {
+  public void testNotifyReplaces() {
     notificationManager.notify(1, notification1);
 
     notificationManager.notify(1, notification2);
@@ -458,21 +458,21 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testNotifyWithTag() throws Exception {
+  public void testNotifyWithTag() {
     notificationManager.notify("a tag", 1, notification1);
     assertEquals(1, shadowOf(notificationManager).size());
     assertEquals(notification1, shadowOf(notificationManager).getNotification("a tag", 1));
   }
 
   @Test
-  public void notifyWithTag_shouldReturnNullForNullTag() throws Exception {
+  public void notifyWithTag_shouldReturnNullForNullTag() {
     notificationManager.notify("a tag", 1, notification1);
     assertEquals(1, shadowOf(notificationManager).size());
     assertNull(shadowOf(notificationManager).getNotification(null, 1));
   }
 
   @Test
-  public void notifyWithTag_shouldReturnNullForUnknownTag() throws Exception {
+  public void notifyWithTag_shouldReturnNullForUnknownTag() {
     notificationManager.notify("a tag", 1, notification1);
     assertEquals(1, shadowOf(notificationManager).size());
     assertNull(shadowOf(notificationManager).getNotification("unknown tag", 1));
@@ -480,7 +480,7 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.M)
-  public void testNotify_setsPostTime() throws Exception {
+  public void testNotify_setsPostTime() {
     long startTimeMillis = ShadowSystem.currentTimeMillis();
 
     ShadowSystemClock.advanceBy(Duration.ofSeconds(1)); // Now startTimeMillis + 1000.
@@ -493,7 +493,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testNotify_withLimitEnforced() throws Exception {
+  public void testNotify_withLimitEnforced() {
     shadowOf(notificationManager).setEnforceMaxNotificationLimit(true);
 
     for (int i = 0; i < 25; i++) {
@@ -509,7 +509,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testNotify_withLimitNotEnforced() throws Exception {
+  public void testNotify_withLimitNotEnforced() {
     for (int i = 0; i < 25; i++) {
       Notification notification = new Notification();
       notificationManager.notify(i, notification);
@@ -521,7 +521,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testCancel() throws Exception {
+  public void testCancel() {
     notificationManager.notify(1, notification1);
     notificationManager.cancel(1);
 
@@ -530,7 +530,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testCancelWithTag() throws Exception {
+  public void testCancelWithTag() {
     notificationManager.notify("a tag", 1, notification1);
     notificationManager.cancel("a tag", 1);
 
@@ -540,7 +540,7 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
-  public void testCancelAll() throws Exception {
+  public void testCancelAll() {
     notificationManager.notify(1, notification1);
     notificationManager.notify(31, notification2);
     notificationManager.cancelAll();
@@ -552,7 +552,7 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.M)
-  public void testGetActiveNotifications() throws Exception {
+  public void testGetActiveNotifications() {
     notificationManager.notify(1, notification1);
     notificationManager.notify(31, notification2);
 
@@ -565,7 +565,7 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testSetNotificationDelegate() throws Exception {
+  public void testSetNotificationDelegate() {
     notificationManager.setNotificationDelegate("com.example.myapp");
 
     assertThat(notificationManager.getNotificationDelegate()).isEqualTo("com.example.myapp");
@@ -573,7 +573,7 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testSetNotificationDelegate_null() throws Exception {
+  public void testSetNotificationDelegate_null() {
     notificationManager.setNotificationDelegate("com.example.myapp");
     notificationManager.setNotificationDelegate(null);
 
@@ -582,13 +582,13 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_isFalseWhenNoDelegateIsSet() throws Exception {
+  public void testCanNotifyAsPackage_isFalseWhenNoDelegateIsSet() {
     assertThat(notificationManager.canNotifyAsPackage("some.package")).isFalse();
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_isTrueWhenDelegateIsSet() throws Exception {
+  public void testCanNotifyAsPackage_isTrueWhenDelegateIsSet() {
     String pkg = "some.package";
     shadowOf(notificationManager).setCanNotifyAsPackage(pkg, true);
     assertThat(notificationManager.canNotifyAsPackage(pkg)).isTrue();
@@ -596,7 +596,7 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_isFalseWhenDelegateIsUnset() throws Exception {
+  public void testCanNotifyAsPackage_isFalseWhenDelegateIsUnset() {
     String pkg = "some.package";
     shadowOf(notificationManager).setCanNotifyAsPackage(pkg, true);
     shadowOf(notificationManager).setCanNotifyAsPackage(pkg, false);
@@ -605,15 +605,14 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_isFalseWhenOtherDelegateIsSet() throws Exception {
+  public void testCanNotifyAsPackage_isFalseWhenOtherDelegateIsSet() {
     shadowOf(notificationManager).setCanNotifyAsPackage("other.package", true);
     assertThat(notificationManager.canNotifyAsPackage("some.package")).isFalse();
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.Q)
-  public void testCanNotifyAsPackage_workAsExpectedWhenMultipleDelegatesSetAndUnset()
-      throws Exception {
+  public void testCanNotifyAsPackage_workAsExpectedWhenMultipleDelegatesSetAndUnset() {
     String pkg1 = "some.package";
     String pkg2 = "another.package";
     // When pkg1 and pkg2 where set for delegation

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
 import androidx.test.core.app.ApplicationProvider;
@@ -26,44 +25,39 @@ public class ShadowPopupMenuTest {
   }
 
   @Test
-  public void testIsShowing_returnsFalseUponCreation() throws Exception {
+  public void testIsShowing_returnsFalseUponCreation() {
     assertThat(shadowPopupMenu.isShowing()).isFalse();
   }
 
   @Test
-  public void testIsShowing_returnsTrueIfShown() throws Exception {
+  public void testIsShowing_returnsTrueIfShown() {
     popupMenu.show();
     assertThat(shadowPopupMenu.isShowing()).isTrue();
   }
 
   @Test
-  public void testIsShowing_returnsFalseIfShownThenDismissed() throws Exception {
+  public void testIsShowing_returnsFalseIfShownThenDismissed() {
     popupMenu.show();
     popupMenu.dismiss();
     assertThat(shadowPopupMenu.isShowing()).isFalse();
   }
 
   @Test
-  public void getLatestPopupMenu_returnsNullUponCreation() throws Exception {
+  public void getLatestPopupMenu_returnsNullUponCreation() {
     assertThat(ShadowPopupMenu.getLatestPopupMenu()).isNull();
   }
 
   @Test
-  public void getLatestPopupMenu_returnsLastMenuShown() throws Exception {
+  public void getLatestPopupMenu_returnsLastMenuShown() {
     popupMenu.show();
     assertThat(ShadowPopupMenu.getLatestPopupMenu()).isEqualTo(popupMenu);
   }
 
   @Test
-  public void getOnClickListener_returnsOnClickListener() throws Exception {
+  public void getOnClickListener_returnsOnClickListener() {
     assertThat(shadowOf(popupMenu).getOnMenuItemClickListener()).isNull();
 
-    PopupMenu.OnMenuItemClickListener listener = new PopupMenu.OnMenuItemClickListener() {
-      @Override
-      public boolean onMenuItemClick(MenuItem menuItem) {
-        return false;
-      }
-    };
+    PopupMenu.OnMenuItemClickListener listener = menuItem -> false;
     popupMenu.setOnMenuItemClickListener(listener);
 
     assertThat(shadowOf(popupMenu).getOnMenuItemClickListener()).isEqualTo(listener);

@@ -18,6 +18,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.Correspondence;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class ShadowBackupManagerTest {
     backupManager = new BackupManager(ApplicationProvider.getApplicationContext());
 
     shadowOf(backupManager).addAvailableRestoreSets(123L, Arrays.asList("foo.bar", "bar.baz"));
-    shadowOf(backupManager).addAvailableRestoreSets(456L, Arrays.asList("hello.world"));
+    shadowOf(backupManager).addAvailableRestoreSets(456L, Collections.singletonList("hello.world"));
   }
 
   @Test

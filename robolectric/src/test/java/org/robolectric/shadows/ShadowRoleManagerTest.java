@@ -20,7 +20,7 @@ public final class ShadowRoleManagerTest {
   private RoleManager roleManager;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     roleManager = (RoleManager) getApplication().getSystemService(Context.ROLE_SERVICE);
   }
 

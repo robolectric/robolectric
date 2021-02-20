@@ -52,7 +52,7 @@ public class ShadowPausedAsyncTaskTest {
   }
 
   @Test
-  public void testCancelBeforeBackground() throws Exception {
+  public void testCancelBeforeBackground() {
     AsyncTask<String, String, String> asyncTask = new RecordingAsyncTask();
 
     // rely on AsyncTask being processed serially on a single background thread, and block

@@ -22,13 +22,13 @@ public class ShadowMimeTypeMapTest {
   private static final String IMAGE_MIMETYPE = "image/jpeg";
 
   @Test
-  public void shouldResetStaticStateBetweenTests() throws Exception {
+  public void shouldResetStaticStateBetweenTests() {
     assertFalse(MimeTypeMap.getSingleton().hasExtension(VIDEO_EXTENSION));
     shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
   }
 
   @Test
-  public void shouldResetStaticStateBetweenTests_anotherTime() throws Exception {
+  public void shouldResetStaticStateBetweenTests_anotherTime() {
     assertFalse(MimeTypeMap.getSingleton().hasExtension(VIDEO_EXTENSION));
     shadowOf(MimeTypeMap.getSingleton()).addExtensionMimeTypMapping(VIDEO_EXTENSION, VIDEO_MIMETYPE);
   }

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 public class ShadowLruTest {
 
   @Test
-  public void shouldLru() throws Exception {
+  public void shouldLru() {
     LruCache<Integer, String> lruCache = new LruCache<>(2);
     lruCache.put(1, "one");
     lruCache.put(2, "two");

@@ -24,7 +24,7 @@ public final class ShadowFileObserverTest {
   private File testDir;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
     File cacheDir = context.getCacheDir();
     testDir = new File(cacheDir, "test");

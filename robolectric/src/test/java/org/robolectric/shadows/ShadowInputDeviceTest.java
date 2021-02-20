@@ -13,14 +13,14 @@ import org.robolectric.shadow.api.Shadow;
 @RunWith(AndroidJUnit4.class)
 public class ShadowInputDeviceTest {
   @Test
-  public void canConstructInputDeviceWithName() throws Exception {
+  public void canConstructInputDeviceWithName() {
     InputDevice inputDevice = ShadowInputDevice.makeInputDeviceNamed("foo");
     assertThat(inputDevice.getName()).isEqualTo("foo");
   }
 
   @Test
   @Config(minSdk = KITKAT)
-  public void canChangeProductId() throws Exception {
+  public void canChangeProductId() {
     InputDevice inputDevice = ShadowInputDevice.makeInputDeviceNamed("foo");
     ShadowInputDevice shadowInputDevice = Shadow.extract(inputDevice);
     shadowInputDevice.setProductId(1337);
@@ -30,7 +30,7 @@ public class ShadowInputDeviceTest {
 
   @Test
   @Config(minSdk = KITKAT)
-  public void canChangeVendorId() throws Exception {
+  public void canChangeVendorId() {
     InputDevice inputDevice = ShadowInputDevice.makeInputDeviceNamed("foo");
     ShadowInputDevice shadowInputDevice = Shadow.extract(inputDevice);
     shadowInputDevice.setVendorId(1337);

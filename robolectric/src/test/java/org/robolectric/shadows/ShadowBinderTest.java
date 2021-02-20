@@ -9,7 +9,6 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.os.Binder;
 import android.os.Parcel;
-import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -23,11 +22,10 @@ import org.robolectric.annotation.Config;
 public class ShadowBinderTest {
 
   private UserManager userManager;
-  private Context context;
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    Context context = ApplicationProvider.getApplicationContext();
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
   }
 
@@ -53,7 +51,7 @@ public class ShadowBinderTest {
     int flags;
 
     @Override
-    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
       this.code = code;
       this.data = data;
       this.reply = reply;
@@ -82,7 +80,7 @@ public class ShadowBinderTest {
   static class TestThrowingBinder extends Binder {
 
     @Override
-    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) {
       throw new SecurityException("Halt! Who goes there?");
     }
   }

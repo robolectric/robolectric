@@ -145,7 +145,7 @@ public class ShadowLegacyAsyncTaskTest {
   }
 
   @Test
-  public void onPostExecute_doesNotSwallowExceptions() throws Exception {
+  public void onPostExecute_doesNotSwallowExceptions() {
     Robolectric.getBackgroundThreadScheduler().unPause();
     Robolectric.getForegroundThreadScheduler().unPause();
 

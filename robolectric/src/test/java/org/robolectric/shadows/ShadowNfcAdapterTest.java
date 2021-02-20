@@ -133,7 +133,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  public void setNdefPushMessage_setsNonNullMessage() throws Exception {
+  public void setNdefPushMessage_setsNonNullMessage() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
     final NdefMessage message =
@@ -145,7 +145,7 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  public void getNdefPushMessage_messageNotSet_throwsIllegalStateException() throws Exception {
+  public void getNdefPushMessage_messageNotSet_throwsIllegalStateException() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
 

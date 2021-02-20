@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-/** Tests for {@link ShadowFrameMetrics}. */
+/** Tests for {@link FrameMetricsBuilder}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = N)
 public class FrameMetricsBuilderTest {

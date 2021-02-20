@@ -73,10 +73,7 @@ public class ShadowProcessTest {
     AtomicBoolean ok = new AtomicBoolean(false);
 
     Thread thread =
-        new Thread(
-            () -> {
-              ok.set(android.os.Process.myTid() == Thread.currentThread().getId());
-            });
+        new Thread(() -> ok.set(android.os.Process.myTid() == Thread.currentThread().getId()));
     thread.start();
     thread.join();
 

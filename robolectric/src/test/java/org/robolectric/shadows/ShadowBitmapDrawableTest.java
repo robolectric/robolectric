@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Application;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,11 +24,10 @@ import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBitmapDrawableTest {
-  private final Resources resources =
-      ((Application) ApplicationProvider.getApplicationContext()).getResources();
+  private final Resources resources = ApplicationProvider.getApplicationContext().getResources();
 
   @Test
-  public void constructors_shouldSetBitmap() throws Exception {
+  public void constructors_shouldSetBitmap() {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
     assertThat(drawable.getBitmap()).isEqualTo(bitmap);
@@ -39,14 +37,14 @@ public class ShadowBitmapDrawableTest {
   }
 
   @Test
-  public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
+  public void getBitmap_shouldReturnBitmapUsedToDraw() {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
-    assertThat(shadowOf(drawable.getBitmap()).getDescription()).isEqualTo("Bitmap for"
-                                                                              + " resource:org.robolectric:drawable/an_image");
+    assertThat(shadowOf(drawable.getBitmap()).getDescription())
+        .isEqualTo("Bitmap for" + " resource:org.robolectric:drawable/an_image");
   }
 
   @Test
-  public void mutate_createsDeepCopy() throws Exception {
+  public void mutate_createsDeepCopy() {
     BitmapDrawable original = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     Drawable mutated = original.mutate();
     assertThat(original).isNotSameInstanceAs(mutated);
@@ -57,45 +55,47 @@ public class ShadowBitmapDrawableTest {
   }
 
   @Test
-  public void draw_shouldCopyDescriptionToCanvas() throws Exception {
+  public void draw_shouldCopyDescriptionToCanvas() {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     Canvas canvas = new Canvas();
     drawable.draw(canvas);
 
-    assertThat(shadowOf(canvas).getDescription()).isEqualTo("Bitmap for"
-                                                                + " resource:org.robolectric:drawable/an_image");
+    assertThat(shadowOf(canvas).getDescription())
+        .isEqualTo("Bitmap for" + " resource:org.robolectric:drawable/an_image");
   }
 
   @Test
-  public void shouldInheritSourceStringFromDrawableDotCreateFromStream() throws Exception {
+  public void shouldInheritSourceStringFromDrawableDotCreateFromStream() {
     InputStream emptyInputStream = new ByteArrayInputStream("".getBytes(UTF_8));
-    BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(emptyInputStream, "source"
-                                                                                               + " string"
-                                                                                               + " value");
+    BitmapDrawable drawable =
+        (BitmapDrawable)
+            Drawable.createFromStream(emptyInputStream, "source" + " string" + " value");
     assertThat(shadowOf(drawable).getSource()).isEqualTo("source string value");
   }
 
   @Test
-  public void withColorFilterSet_draw_shouldCopyDescriptionToCanvas() throws Exception {
+  public void withColorFilterSet_draw_shouldCopyDescriptionToCanvas() {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     drawable.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix()));
     Canvas canvas = new Canvas();
     drawable.draw(canvas);
 
-    assertThat(shadowOf(canvas).getDescription()).isEqualTo("Bitmap for"
-                                                                + " resource:org.robolectric:drawable/an_image"
-                                                                + " with"
-                                                                + " ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>");
+    assertThat(shadowOf(canvas).getDescription())
+        .isEqualTo(
+            "Bitmap for"
+                + " resource:org.robolectric:drawable/an_image"
+                + " with"
+                + " ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>");
   }
 
   @Test
-  public void shouldStillHaveShadow() throws Exception {
+  public void shouldStillHaveShadow() {
     Drawable drawable = resources.getDrawable(R.drawable.an_image);
     assertThat(Shadows.shadowOf(drawable).getCreatedFromResId()).isEqualTo(R.drawable.an_image);
   }
 
   @Test
-  public void shouldSetTileModeXY() throws Exception {
+  public void shouldSetTileModeXY() {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     drawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.MIRROR);
     assertThat(drawable.getTileModeX()).isEqualTo(Shader.TileMode.REPEAT);
@@ -103,7 +103,7 @@ public class ShadowBitmapDrawableTest {
   }
 
   @Test
-  public void constructor_shouldSetTheIntrinsicWidthAndHeightToTheWidthAndHeightOfTheBitmap() throws Exception {
+  public void constructor_shouldSetTheIntrinsicWidthAndHeightToTheWidthAndHeightOfTheBitmap() {
     Bitmap bitmap = Bitmap.createBitmap(5, 10, Bitmap.Config.ARGB_8888);
     BitmapDrawable drawable =
         new BitmapDrawable(ApplicationProvider.getApplicationContext().getResources(), bitmap);
@@ -112,7 +112,7 @@ public class ShadowBitmapDrawableTest {
   }
 
   @Test
-  public void constructor_shouldAcceptNullBitmap() throws Exception {
+  public void constructor_shouldAcceptNullBitmap() {
     assertThat(
             new BitmapDrawable(
                 ApplicationProvider.getApplicationContext().getResources(), (Bitmap) null))

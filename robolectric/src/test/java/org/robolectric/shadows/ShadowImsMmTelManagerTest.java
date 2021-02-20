@@ -157,7 +157,7 @@ public class ShadowImsMmTelManagerTest {
   }
 
   @Test
-  public void isAvailable_mmTelCapabilitiesNeverSet_noneAvailable() throws ImsException {
+  public void isAvailable_mmTelCapabilitiesNeverSet_noneAvailable() {
     assertThat(
             shadowImsMmTelManager.isAvailable(
                 MmTelCapabilities.CAPABILITY_TYPE_SMS,
@@ -202,8 +202,7 @@ public class ShadowImsMmTelManagerTest {
 
   @Test
   public void
-      isAvailable_imsRegisteredWifi_voiceAndVideoMmTelCapabilitiesSet_voiceAndVideoOverWifiAvailable()
-          throws ImsException {
+      isAvailable_imsRegisteredWifi_voiceAndVideoMmTelCapabilitiesSet_voiceAndVideoOverWifiAvailable() {
     shadowImsMmTelManager.setImsRegistered(ImsRegistrationImplBase.REGISTRATION_TECH_IWLAN);
 
     MmTelCapabilities voiceAndVideoMmTelCapabilities = new MmTelCapabilities();
@@ -256,8 +255,7 @@ public class ShadowImsMmTelManagerTest {
   }
 
   @Test
-  public void isAvailable_imsNotRegistered_voiceAndVideoMmTelCapabilitiesSet_noneAvailable()
-      throws ImsException {
+  public void isAvailable_imsNotRegistered_voiceAndVideoMmTelCapabilitiesSet_noneAvailable() {
     MmTelCapabilities voiceAndVideoMmTelCapabilities = new MmTelCapabilities();
     voiceAndVideoMmTelCapabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VOICE);
     voiceAndVideoMmTelCapabilities.addCapabilities(MmTelCapabilities.CAPABILITY_TYPE_VIDEO);

@@ -15,13 +15,13 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiConfigurationTest {
   @Test
-  public void shouldSetTheBitSetsAndWepKeyArrays() throws Exception {
+  public void shouldSetTheBitSetsAndWepKeyArrays() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     assertNotNull(wifiConfiguration.allowedAuthAlgorithms);
   }
 
   @Test
-  public void shouldCopy() throws Exception {
+  public void shouldCopy() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
 
     wifiConfiguration.networkId = 1;
@@ -65,7 +65,7 @@ public class ShadowWifiConfigurationTest {
 
   @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
   @Test
-  public void shouldCopy_sdk18() throws Exception {
+  public void shouldCopy_sdk18() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
 
     wifiConfiguration.networkId = 1;
@@ -86,7 +86,7 @@ public class ShadowWifiConfigurationTest {
 
   @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   @Test
-  public void shouldCopy_sdk21() throws Exception {
+  public void shouldCopy_sdk21() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
 
     wifiConfiguration.networkId = 1;
@@ -102,7 +102,7 @@ public class ShadowWifiConfigurationTest {
 
   @Config(minSdk = Build.VERSION_CODES.M)
   @Test
-  public void shouldCopy_sdk23() throws Exception {
+  public void shouldCopy_sdk23() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
 
     wifiConfiguration.networkId = 1;

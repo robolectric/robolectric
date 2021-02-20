@@ -25,17 +25,15 @@ public class ShadowMediaCodecListTest {
           .setIsEncoder(true)
           .setIsVendor(true)
           .setCapabilities(
-              new CodecCapabilities[] {
-                MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
-                    .setMediaFormat(createMediaFormat(MediaFormat.MIMETYPE_AUDIO_AAC))
-                    .setIsEncoder(true)
-                    .setProfileLevels(
-                        new CodecProfileLevel[] {
-                          createCodecProfileLevel(CodecProfileLevel.AACObjectELD, 0),
-                          createCodecProfileLevel(CodecProfileLevel.AACObjectHE, 0)
-                        })
-                    .build()
-              })
+              MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+                  .setMediaFormat(createMediaFormat(MediaFormat.MIMETYPE_AUDIO_AAC))
+                  .setIsEncoder(true)
+                  .setProfileLevels(
+                      new CodecProfileLevel[] {
+                        createCodecProfileLevel(CodecProfileLevel.AACObjectELD, 0),
+                        createCodecProfileLevel(CodecProfileLevel.AACObjectHE, 0)
+                      })
+                  .build())
           .build();
 
   private static final MediaCodecInfo VP9_DECODER_INFO =
@@ -43,22 +41,20 @@ public class ShadowMediaCodecListTest {
           .setName("shadow.test.decoder.vp9")
           .setIsHardwareAccelerated(true)
           .setCapabilities(
-              new CodecCapabilities[] {
-                MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
-                    .setMediaFormat(createMediaFormat(MediaFormat.MIMETYPE_VIDEO_VP9))
-                    .setIsEncoder(true)
-                    .setProfileLevels(
-                        new CodecProfileLevel[] {
-                          createCodecProfileLevel(
-                              CodecProfileLevel.VP9Profile3, CodecProfileLevel.VP9Level52)
-                        })
-                    .setColorFormats(
-                        new int[] {
-                          CodecCapabilities.COLOR_FormatYUV420Flexible,
-                          CodecCapabilities.COLOR_FormatYUV420Planar
-                        })
-                    .build()
-              })
+              MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+                  .setMediaFormat(createMediaFormat(MediaFormat.MIMETYPE_VIDEO_VP9))
+                  .setIsEncoder(true)
+                  .setProfileLevels(
+                      new CodecProfileLevel[] {
+                        createCodecProfileLevel(
+                            CodecProfileLevel.VP9Profile3, CodecProfileLevel.VP9Level52)
+                      })
+                  .setColorFormats(
+                      new int[] {
+                        CodecCapabilities.COLOR_FormatYUV420Flexible,
+                        CodecCapabilities.COLOR_FormatYUV420Planar
+                      })
+                  .build())
           .build();
 
   private static MediaFormat createMediaFormat(String mime) {

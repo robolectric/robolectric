@@ -26,12 +26,7 @@ public class ShadowValueAnimatorTest {
 
     final ValueAnimator animator = ValueAnimator.ofInt(0, 10);
     animator.setDuration(1000);
-    animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-      @Override
-      public void onAnimationUpdate(ValueAnimator animation) {
-        values.add((int) animation.getAnimatedValue());
-      }
-    });
+    animator.addUpdateListener(animation -> values.add((int) animation.getAnimatedValue()));
     animator.start();
 
     assertThat(values).isInOrder(Ordering.natural());
@@ -47,7 +42,7 @@ public class ShadowValueAnimatorTest {
   }
 
   @Test
-  public void test_WhenInfiniteAnimationIsPlayed_AnimationIsOnlyPlayedOnce() throws InterruptedException {
+  public void test_WhenInfiniteAnimationIsPlayed_AnimationIsOnlyPlayedOnce() {
     ShadowChoreographer.setFrameInterval(100 * TimeUtils.NANOS_PER_MS);
     final ValueAnimator animator = ValueAnimator.ofInt(0, 10);
     animator.setDuration(200);

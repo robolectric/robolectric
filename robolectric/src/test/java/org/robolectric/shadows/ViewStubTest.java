@@ -27,7 +27,7 @@ public class ViewStubTest {
   }
 
   @Test
-  public void inflate_shouldReplaceOriginalWithLayout() throws Exception {
+  public void inflate_shouldReplaceOriginalWithLayout() {
     ViewStub viewStub = new ViewStub(ctxt);
     int stubId = 12345;
     int inflatedId = 12346;
@@ -52,7 +52,7 @@ public class ViewStubTest {
   }
 
   @Test
-  public void shouldApplyAttributes() throws Exception {
+  public void shouldApplyAttributes() {
     ViewStub viewStub = new ViewStub(ctxt,
         Robolectric.buildAttributeSet()
             .addAttribute(android.R.attr.inflatedId, "@+id/include_id")

@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.DatePickerDialog;
-import android.widget.DatePicker;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
@@ -15,7 +14,7 @@ import org.junit.runner.RunWith;
 public class ShadowDatePickerDialogTest {
 
   @Test
-  public void returnsTheInitialYearMonthAndDayPassedIntoTheDatePickerDialog() throws Exception {
+  public void returnsTheInitialYearMonthAndDayPassedIntoTheDatePickerDialog() {
     Locale.setDefault(Locale.US);
     DatePickerDialog datePickerDialog =
         new DatePickerDialog(ApplicationProvider.getApplicationContext(), null, 2012, 6, 7);
@@ -26,12 +25,10 @@ public class ShadowDatePickerDialogTest {
 
   @Test
   public void savesTheCallback() {
-    DatePickerDialog.OnDateSetListener expectedDateSetListener = new DatePickerDialog.OnDateSetListener() {
-      @Override
-      public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-        // ignored
-      }
-    };
+    DatePickerDialog.OnDateSetListener expectedDateSetListener =
+        (datePicker, i, i1, i2) -> {
+          // ignored
+        };
 
     DatePickerDialog datePickerDialog =
         new DatePickerDialog(

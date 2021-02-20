@@ -134,7 +134,7 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryWithoutSetup_shouldFail() throws Exception {
+  public void queryWithoutSetup_shouldFail() {
     assertThrows(
         PackageManager.NameNotFoundException.class,
         () ->
@@ -161,7 +161,7 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryWithWrongArguments_shouldFail() throws Exception {
+  public void queryWithWrongArguments_shouldFail() {
     // Arrange
     StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
@@ -199,7 +199,7 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryAfterClearSetup_shouldFail() throws Exception {
+  public void queryAfterClearSetup_shouldFail() {
     // Arrange
     StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();

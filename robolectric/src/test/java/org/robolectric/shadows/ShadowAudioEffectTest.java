@@ -20,7 +20,6 @@ public class ShadowAudioEffectTest {
   private static final UUID EFFECT_TYPE_NULL =
       UUID.fromString("ec7178ec-e5e1-4432-a3f4-4657e6795210");
 
-  @Config(maxSdk = -1)
   @Test
   public void queryEffects() {
 
@@ -140,7 +139,7 @@ public class ShadowAudioEffectTest {
     AudioEffect audioEffect = createAudioEffect();
     shadowOf(audioEffect).setInitialized(false);
 
-    assertThrows(IllegalStateException.class, () -> audioEffect.getEnabled());
+    assertThrows(IllegalStateException.class, audioEffect::getEnabled);
   }
 
   @Test
@@ -164,7 +163,7 @@ public class ShadowAudioEffectTest {
     AudioEffect audioEffect = createAudioEffect();
     audioEffect.release();
 
-    assertThrows(IllegalStateException.class, () -> audioEffect.getEnabled());
+    assertThrows(IllegalStateException.class, audioEffect::getEnabled);
   }
 
   @Test

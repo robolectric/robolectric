@@ -14,7 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
-/** Test for {@link org.robolectric.shadows.ShadowPhoneAccount}. */
+/** Test for {@link PhoneAccountBuilder}. */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = M)
 public class PhoneAccountBuilderTest {

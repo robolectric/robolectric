@@ -35,7 +35,7 @@ public final class ShadowWifiAwareManagerTest {
   private static final int CLIENT_ID = 1;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     Context context = ApplicationProvider.getApplicationContext();
     wifiAwareManager = (WifiAwareManager) context.getSystemService(Context.WIFI_AWARE_SERVICE);
     binder = new Binder();
@@ -47,14 +47,14 @@ public final class ShadowWifiAwareManagerTest {
   }
 
   @Test
-  public void setAvailable_shouldUpdateWithAvailableStatus() throws Exception {
+  public void setAvailable_shouldUpdateWithAvailableStatus() {
     boolean available = false;
     shadowOf(wifiAwareManager).setAvailable(available);
     assertThat(wifiAwareManager.isAvailable()).isEqualTo(available);
   }
 
   @Test
-  public void attach_shouldAttachIfSessionDetachedAndWifiAwareManagerAvailable() throws Exception {
+  public void attach_shouldAttachIfSessionDetachedAndWifiAwareManagerAvailable() {
     shadowOf(wifiAwareManager).setAvailable(true);
     shadowOf(wifiAwareManager).setSessionDetached(true);
     TestAttachCallback testAttachCallback = new TestAttachCallback();
@@ -131,7 +131,7 @@ public final class ShadowWifiAwareManagerTest {
   }
 
   @Test
-  public void canCreatePublishDiscoverySessionViaNewInstance() throws Exception {
+  public void canCreatePublishDiscoverySessionViaNewInstance() {
     int sessionId = 1;
     PublishDiscoverySession publishDiscoverySession =
         ShadowWifiAwareManager.newPublishDiscoverySession(wifiAwareManager, CLIENT_ID, sessionId);
@@ -139,7 +139,7 @@ public final class ShadowWifiAwareManagerTest {
   }
 
   @Test
-  public void canCreateSubscribeDiscoverySessionViaNewInstance() throws Exception {
+  public void canCreateSubscribeDiscoverySessionViaNewInstance() {
     int sessionId = 1;
     SubscribeDiscoverySession subscribeDiscoverySession =
         ShadowWifiAwareManager.newSubscribeDiscoverySession(wifiAwareManager, CLIENT_ID, sessionId);
@@ -147,7 +147,7 @@ public final class ShadowWifiAwareManagerTest {
   }
 
   @Test
-  public void canCreateWifiAwareSessionViaNewInstance() throws Exception {
+  public void canCreateWifiAwareSessionViaNewInstance() {
     WifiAwareSession wifiAwareSession =
         ShadowWifiAwareManager.newWifiAwareSession(wifiAwareManager, binder, CLIENT_ID);
     assertThat(wifiAwareSession).isNotNull();

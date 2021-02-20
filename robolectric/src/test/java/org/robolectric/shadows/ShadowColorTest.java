@@ -23,7 +23,7 @@ public class ShadowColorTest {
   }
 
   @Test
-  public void testParseColor() throws Exception {
+  public void testParseColor() {
     assertThat(Color.parseColor("#ffffffff")).isEqualTo(-1);
     assertThat(Color.parseColor("#00000000")).isEqualTo(0);
 
