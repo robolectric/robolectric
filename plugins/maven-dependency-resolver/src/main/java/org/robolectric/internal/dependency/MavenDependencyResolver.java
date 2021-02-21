@@ -93,7 +93,7 @@ public class MavenDependencyResolver implements DependencyResolver {
   }
 
   private void whileLocked(Runnable runnable) {
-    File lockFile = new File(System.getProperty("user.home"), ".robolectric-download-lock");
+    File lockFile = createLockFile();
     try (RandomAccessFile raf = new RandomAccessFile(lockFile, "rw")) {
       try (FileChannel channel = raf.getChannel()) {
         try (FileLock ignored = channel.lock()) {
@@ -105,6 +105,10 @@ public class MavenDependencyResolver implements DependencyResolver {
     } finally {
       lockFile.delete();
     }
+  }
+
+  protected File createLockFile() {
+    return new File(System.getProperty("user.home"), ".robolectric-download-lock");
   }
 
   @Override
