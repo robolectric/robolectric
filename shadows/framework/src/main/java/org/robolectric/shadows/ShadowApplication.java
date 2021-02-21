@@ -5,7 +5,9 @@ import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.ActivityThread;
+import android.app.AlertDialog;
 import android.app.Application;
+import android.app.Dialog;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -44,9 +46,6 @@ public class ShadowApplication extends ShadowContextWrapper {
   private Scheduler backgroundScheduler =
       RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
   private List<android.widget.Toast> shownToasts = new ArrayList<>();
-  private PowerManager.WakeLock latestWakeLock;
-  private ShadowAlertDialog latestAlertDialog;
-  private ShadowDialog latestDialog;
   private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
   private PopupWindow latestPopupWindow;
@@ -203,21 +202,15 @@ public class ShadowApplication extends ShadowContextWrapper {
   /** @deprecated Use {@link ShadowAlertDialog#getLatestAlertDialog()} instead. */
   @Deprecated
   public ShadowAlertDialog getLatestAlertDialog() {
-    return latestAlertDialog;
-  }
-
-  protected void setLatestAlertDialog(ShadowAlertDialog latestAlertDialog) {
-    this.latestAlertDialog = latestAlertDialog;
+    AlertDialog dialog = ShadowAlertDialog.getLatestAlertDialog();
+    return dialog == null ? null : Shadow.extract(dialog);
   }
 
   /** @deprecated Use {@link ShadowDialog#getLatestDialog()} instead. */
   @Deprecated
   public ShadowDialog getLatestDialog() {
-    return latestDialog;
-  }
-
-  protected void setLatestDialog(ShadowDialog latestDialog) {
-    this.latestDialog = latestDialog;
+    Dialog dialog = ShadowDialog.getLatestDialog();
+    return dialog == null ? null : Shadow.extract(dialog);
   }
 
   public Object getBluetoothAdapter() {
@@ -236,16 +229,22 @@ public class ShadowApplication extends ShadowContextWrapper {
     getShadowInstrumentation().declareComponentUnbindable(component);
   }
 
+  /** @deprecated use ShadowPowerManager.getLatestWakeLock */
+  @Deprecated
   public PowerManager.WakeLock getLatestWakeLock() {
-    return latestWakeLock;
+    return ShadowPowerManager.getLatestWakeLock();
   }
 
+  /** @deprecated use PowerManager APIs instead */
+  @Deprecated
   public void addWakeLock(PowerManager.WakeLock wl) {
-    latestWakeLock = wl;
+    ShadowPowerManager.addWakeLock(wl);
   }
 
+  /** @deprecated use ShadowPowerManager.clearWakeLocks */
+  @Deprecated
   public void clearWakeLocks() {
-    latestWakeLock = null;
+    ShadowPowerManager.clearWakeLocks();
   }
 
   private final Map<String, Object> singletons = new HashMap<>();

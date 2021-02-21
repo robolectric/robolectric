@@ -8,13 +8,13 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkState;
-import static org.robolectric.shadows.ShadowApplication.getInstance;
 
 import android.Manifest.permission;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.os.Binder;
 import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import android.os.WorkSource;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -56,11 +56,13 @@ public class ShadowPowerManager {
   private volatile boolean isAmbientDisplayAvailable = true;
   private volatile boolean isRebootingUserspaceSupported = false;
 
+  private static PowerManager.WakeLock latestWakeLock;
+
   @Implementation
   protected PowerManager.WakeLock newWakeLock(int flags, String tag) {
     PowerManager.WakeLock wl = Shadow.newInstanceOf(PowerManager.WakeLock.class);
     ((ShadowWakeLock) Shadow.extract(wl)).setTag(tag);
-    getInstance().addWakeLock(wl);
+    latestWakeLock = wl;
     return wl;
   }
 
@@ -192,10 +194,7 @@ public class ShadowPowerManager {
   /** Discards the most recent {@code PowerManager.WakeLock}s */
   @Resetter
   public static void reset() {
-    ShadowApplication shadowApplication = ShadowApplication.getInstance();
-    if (shadowApplication != null) {
-      shadowApplication.clearWakeLocks();
-    }
+    clearWakeLocks();
   }
 
   /**
@@ -204,8 +203,22 @@ public class ShadowPowerManager {
    * @return Most recent wake lock.
    */
   public static PowerManager.WakeLock getLatestWakeLock() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
-    return shadowApplication.getLatestWakeLock();
+    return latestWakeLock;
+  }
+
+  /** Clears most recent recorded wakelock. */
+  public static void clearWakeLocks() {
+    latestWakeLock = null;
+  }
+
+  /**
+   * Controls result from {@link #getLatestWakeLock()}
+   *
+   * @deprecated do not use
+   */
+  @Deprecated
+  static void addWakeLock(WakeLock wl) {
+    latestWakeLock = wl;
   }
 
   @Implementation(minSdk = M)

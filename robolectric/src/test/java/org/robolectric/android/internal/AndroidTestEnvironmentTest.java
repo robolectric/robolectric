@@ -288,4 +288,13 @@ public class AndroidTestEnvironmentTest {
       assertThat(e.getCause()).isInstanceOf(IllegalStateException.class);
     }
   }
+
+  @LazyLoadApplication(LazyLoad.ON)
+  @Test
+  public void resetState_doesNotLoadApplication() {
+    RuntimeEnvironment.application = null;
+    assertThat(RuntimeEnvironment.application).isNull();
+    bootstrapWrapper.resetState();
+    assertThat(RuntimeEnvironment.application).isNull();
+  }
 }

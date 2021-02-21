@@ -6,9 +6,9 @@ import android.view.View;
 import android.widget.Adapter;
 import android.widget.FrameLayout;
 import com.android.internal.app.AlertController;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -25,13 +25,13 @@ public class ShadowAlertDialog extends ShadowDialog {
   private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
   private FrameLayout custom;
 
+  private static ShadowAlertDialog latestAlertDialog;
+
   /**
    * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
    */
   public static AlertDialog getLatestAlertDialog() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
-    ShadowAlertDialog dialog = shadowApplication.getLatestAlertDialog();
-    return dialog == null ? null : dialog.realAlertDialog;
+    return latestAlertDialog == null ? null : latestAlertDialog.realAlertDialog;
   }
 
   public FrameLayout getCustomView() {
@@ -41,12 +41,10 @@ public class ShadowAlertDialog extends ShadowDialog {
     return custom;
   }
 
-  /**
-   * Resets the tracking of the most recently created {@code AlertDialog}
-   */
+  /** Resets the tracking of the most recently created {@code AlertDialog} */
+  @Resetter
   public static void reset() {
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
-    shadowApplication.setLatestAlertDialog(null);
+    latestAlertDialog = null;
   }
 
   /**
@@ -91,8 +89,7 @@ public class ShadowAlertDialog extends ShadowDialog {
   @Override
   public void show() {
     super.show();
-    ShadowApplication shadowApplication = Shadow.extract(RuntimeEnvironment.getApplication());
-    shadowApplication.setLatestAlertDialog(this);
+    latestAlertDialog = this;
   }
 
   /**
