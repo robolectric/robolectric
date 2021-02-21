@@ -41,6 +41,10 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         return "android-all"
     }
 
+    String getPreinstrumentedArtifactId() {
+        return "android-all-instrumented"
+    }
+
     String getVersion() {
         return "${androidVersion}-robolectric-${frameworkSdkBuildVersion}"
     }
@@ -51,6 +55,10 @@ class AndroidSdk implements Comparable<AndroidSdk> {
 
     String getCoordinates() {
         return "${groupId}:${artifactId}:${version}"
+    }
+
+    String getPreinstrumentedCoordinates() {
+        return "${groupId}:${preinstrumentedArtifactId}:${preinstrumentedVersion}"
     }
 
     String getJarFileName() {

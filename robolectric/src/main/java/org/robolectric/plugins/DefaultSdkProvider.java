@@ -45,6 +45,8 @@ public class DefaultSdkProvider implements SdkProvider {
 
   private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
+  private static final int PREINSTRUMENTED_VERSION = 1;
+
   private final DependencyResolver dependencyResolver;
 
   private final SortedMap<Integer, Sdk> knownSdks;
@@ -118,9 +120,14 @@ public class DefaultSdkProvider implements SdkProvider {
         throw new UnsupportedClassVersionError(getUnsupportedMessage());
       }
 
-      return new DependencyJar("org.robolectric",
-          "android-all",
-          getAndroidVersion() + "-robolectric-" + robolectricVersion, null);
+      String version =
+          String.join(
+              "-",
+              getAndroidVersion(),
+              "robolectric",
+              robolectricVersion,
+              "i" + PREINSTRUMENTED_VERSION);
+      return new DependencyJar("org.robolectric", "android-all-instrumented", version, null);
     }
 
     @Override
