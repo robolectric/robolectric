@@ -3,10 +3,12 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import android.os.Trace;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.base.VerifyException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowTrace.AsyncTraceSection;
+import org.robolectric.shadows.ShadowTrace.Counter;
 
 /** Test for {@link ShadowTrace}. */
 @RunWith(AndroidJUnit4.class)
@@ -237,10 +240,35 @@ public class ShadowTraceTest {
   }
 
   @Test
-  public void reset_resetsInternalState() {
-    Trace.beginSection("section1");
+  @Config(minSdk = Q)
+  public void setCounter_setsValuesInOrder() {
+    Trace.setCounter(/* counterName= */ "Test", /* counterValue= */ 1);
+    Trace.setCounter(/* counterName= */ "Test", /* counterValue= */ 2);
+    Trace.setCounter(/* counterName= */ "Test", /* counterValue= */ 3);
+
+    assertThat(ShadowTrace.getCounters())
+        .containsExactlyElementsIn(
+            new Counter[] {
+              Counter.newBuilder().setName("Test").setValue(1).build(),
+              Counter.newBuilder().setName("Test").setValue(2).build(),
+              Counter.newBuilder().setName("Test").setValue(3).build()
+            })
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setCounter_nameIsNull_throwsException() {
+    assertThrows(
+        VerifyException.class,
+        () -> Trace.setCounter(/* counterName= */ null, /* counterValue= */ 1));
+  }
+
+  @Test
+  public void reset_resetsInternalState() throws Exception {
+    Trace.beginSection(/* sectionName= */ "section1");
     Trace.endSection();
-    Trace.beginSection("section2");
+    Trace.beginSection(/* sectionName= */ "section2");
 
     ShadowTrace.reset();
 
@@ -257,7 +285,6 @@ public class ShadowTraceTest {
     ShadowTrace.setEnabled(true);
     assertThat(ShadowTrace.isEnabled()).isTrue();
     Trace.endSection();
-
   }
 
   @Test

@@ -2,15 +2,19 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.Verify.verifyNotNull;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.Trace;
 import android.util.Log;
 import com.google.auto.value.AutoValue;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -36,6 +40,8 @@ public class ShadowTrace {
   private static final Set<AsyncTraceSection> currentAsyncSections = new HashSet<>();
 
   private static final Set<AsyncTraceSection> previousAsyncSections = new HashSet<>();
+
+  private static final List<Counter> counters = new ArrayList<>();
 
   private static final boolean CRASH_ON_INCORRECT_USAGE_DEFAULT = true;
   private static boolean crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
@@ -127,6 +133,12 @@ public class ShadowTrace {
     return isEnabled;
   }
 
+  @Implementation(minSdk = Q)
+  protected static void setCounter(String counterName, long counterValue) {
+    verifyNotNull(counterName);
+    counters.add(Counter.newBuilder().setName(counterName).setValue(counterValue).build());
+  }
+
   /** Sets the systrace to enabled or disabled. */
   public static void setEnabled(boolean enabled) {
     ShadowTrace.isEnabled = enabled;
@@ -150,6 +162,11 @@ public class ShadowTrace {
   /** Returns a set of all the previously active async trace sections. */
   public static ImmutableSet<AsyncTraceSection> getPreviousAsyncSections() {
     return ImmutableSet.copyOf(previousAsyncSections);
+  }
+
+  /** Returns an ordered list of previous counters. */
+  public static ImmutableList<Counter> getCounters() {
+    return ImmutableList.copyOf(counters);
   }
 
   /**
@@ -187,6 +204,7 @@ public class ShadowTrace {
     previousSections.get().clear();
     currentAsyncSections.clear();
     previousAsyncSections.clear();
+    counters.clear();
     ShadowTrace.isEnabled = true;
     crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
   }
@@ -211,6 +229,30 @@ public class ShadowTrace {
       public abstract Builder setCookie(Integer cookie);
 
       public abstract AsyncTraceSection build();
+    }
+  }
+
+  /** Counters emitted with the setCounter API */
+  @AutoValue
+  public abstract static class Counter {
+
+    public abstract String getName();
+
+    public abstract long getValue();
+
+    public static Builder newBuilder() {
+      return new AutoValue_ShadowTrace_Counter.Builder();
+    }
+
+    /** Builder for counters emitted with the setCounter API */
+    @AutoValue.Builder()
+    public abstract static class Builder {
+
+      public abstract Builder setName(String value);
+
+      public abstract Builder setValue(long value);
+
+      public abstract Counter build();
     }
   }
 }
