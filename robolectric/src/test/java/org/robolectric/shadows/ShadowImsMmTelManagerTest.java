@@ -317,7 +317,6 @@ public class ShadowImsMmTelManagerTest {
 
   @Test
   @SuppressLint("NewApi")
-  @Config(maxSdk = VERSION_CODES.R)
   public void createForSubscriptionId_multipleValidSubscriptionIds_sharesInstances() {
     ImsMmTelManager imsMmTelManager1 = ShadowImsMmTelManager.createForSubscriptionId(1);
     ImsMmTelManager imsMmTelManager2 = ShadowImsMmTelManager.createForSubscriptionId(2);

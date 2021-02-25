@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -316,6 +317,10 @@ public class ShadowBitmap {
     shadowNewBitmap.createdFromHeight = height;
     shadowNewBitmap.createdFromMatrix = matrix;
     shadowNewBitmap.createdFromFilter = filter;
+    shadowNewBitmap.config = src.getConfig();
+    if (shadowNewBitmap.config == null) {
+      shadowNewBitmap.config = Config.ARGB_8888;
+    }
 
     if (matrix != null) {
       ShadowMatrix shadowMatrix = Shadow.extract(matrix);

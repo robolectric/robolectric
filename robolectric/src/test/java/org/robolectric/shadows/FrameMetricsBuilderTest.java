@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.view.FrameMetrics;
@@ -25,7 +24,7 @@ public class FrameMetricsBuilderTest {
   }
 
   @Test
-  @Config(minSdk = O, maxSdk = R)
+  @Config(minSdk = O)
   public void intendedVsyncTimestamp() throws Exception {
     FrameMetrics metrics =
         new FrameMetricsBuilder().setMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP, 123L).build();
@@ -34,7 +33,7 @@ public class FrameMetricsBuilderTest {
   }
 
   @Test
-  @Config(minSdk = O, maxSdk = R)
+  @Config(minSdk = O)
   public void vsyncTimestamp() throws Exception {
     FrameMetrics metrics =
         new FrameMetricsBuilder().setMetric(FrameMetrics.VSYNC_TIMESTAMP, 321L).build();

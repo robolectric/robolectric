@@ -10,6 +10,8 @@ import android.graphics.Bitmap.CompressFormat;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,5 +104,17 @@ public class BitmapTest {
     ByteArrayOutputStream stm = new ByteArrayOutputStream();
     assertThat(bitmap.compress(CompressFormat.JPEG, 0, stm)).isTrue();
     assertThat(stm.toByteArray()).isNotEmpty();
+  }
+
+  @Test
+  public void getConfigAfterCompress() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    Matrix matrix = new Matrix();
+    matrix.setScale(0.5f, 0.5f);
+    Bitmap scaledBitmap =
+        Bitmap.createBitmap(
+            bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, /* filter */ true);
+    assertThat(scaledBitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
   }
 }

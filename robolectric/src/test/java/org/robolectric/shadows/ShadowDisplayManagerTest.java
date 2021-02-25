@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -331,7 +330,7 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = Q, maxSdk = R)
+  @Config(minSdk = Q)
   public void getBrightnessEvent_setToValue_shouldReturnValue() {
     List<BrightnessChangeEvent> events = new ArrayList<>();
     events.add(
