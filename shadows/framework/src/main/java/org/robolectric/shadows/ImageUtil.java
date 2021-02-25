@@ -110,6 +110,9 @@ public class ImageUtil {
   }
 
   private static int getBufferedImageType(Bitmap.Config config, boolean needAlphaChannel) {
+    if (config == null) {
+      return needAlphaChannel ? TYPE_INT_ARGB : TYPE_INT_RGB;
+    }
     switch (config) {
       case RGB_565:
         return BufferedImage.TYPE_USHORT_565_RGB;
