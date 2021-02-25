@@ -117,4 +117,12 @@ public class BitmapTest {
             bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, /* filter */ true);
     assertThat(scaledBitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
   }
+
+  @Test
+  public void getConfigAfterCreateScaledBitmap() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, /* filter= */ false);
+    assertThat(scaledBitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
+  }
 }
