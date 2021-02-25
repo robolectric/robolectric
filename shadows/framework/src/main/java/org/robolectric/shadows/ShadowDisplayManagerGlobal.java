@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -49,14 +50,17 @@ public class ShadowDisplayManagerGlobal {
   }
 
   @Implementation
-  synchronized public static DisplayManagerGlobal getInstance() {
+  public static synchronized DisplayManagerGlobal getInstance() {
     if (instance == null) {
       MyDisplayManager myIDisplayManager = new MyDisplayManager();
-      IDisplayManager proxy = ReflectionHelpers.createDelegatingProxy(IDisplayManager.class, myIDisplayManager);
-      instance = ReflectionHelpers.callConstructor(DisplayManagerGlobal.class,
-          ClassParameter.from(IDisplayManager.class, proxy));
+      IDisplayManager proxy =
+          ReflectionHelpers.createDelegatingProxy(IDisplayManager.class, myIDisplayManager);
+      instance =
+          ReflectionHelpers.callConstructor(
+              DisplayManagerGlobal.class, ClassParameter.from(IDisplayManager.class, proxy));
       ShadowDisplayManagerGlobal shadow = Shadow.extract(instance);
       shadow.mDm = myIDisplayManager;
+      Bootstrap.setUpDisplay();
     }
     return instance;
   }
@@ -116,18 +120,19 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // @Override
-    public void registerCallback(IDisplayManagerCallback iDisplayManagerCallback) throws RemoteException {
+    public void registerCallback(IDisplayManagerCallback iDisplayManagerCallback)
+        throws RemoteException {
       this.callbacks.add(iDisplayManagerCallback);
     }
 
-    synchronized private int addDisplay(DisplayInfo displayInfo) {
+    private synchronized int addDisplay(DisplayInfo displayInfo) {
       int nextId = nextDisplayId++;
       displayInfos.put(nextId, displayInfo);
       notifyListeners(nextId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
       return nextId;
     }
 
-    synchronized private void changeDisplay(int displayId, DisplayInfo displayInfo) {
+    private synchronized void changeDisplay(int displayId, DisplayInfo displayInfo) {
       if (!displayInfos.containsKey(displayId)) {
         throw new IllegalStateException("no display " + displayId);
       }
@@ -136,7 +141,7 @@ public class ShadowDisplayManagerGlobal {
       notifyListeners(displayId, DisplayManagerGlobal.EVENT_DISPLAY_CHANGED);
     }
 
-    synchronized private void removeDisplay(int displayId) {
+    private synchronized void removeDisplay(int displayId) {
       if (!displayInfos.containsKey(displayId)) {
         throw new IllegalStateException("no display " + displayId);
       }
