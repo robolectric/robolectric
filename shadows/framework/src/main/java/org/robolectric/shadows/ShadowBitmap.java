@@ -244,7 +244,9 @@ public class ShadowBitmap {
     if (dstWidth == src.getWidth() && dstHeight == src.getHeight() && !filter) {
       return src; // Return the original.
     }
-
+    if (dstWidth <= 0 || dstHeight <= 0) {
+      throw new IllegalArgumentException("width and height must be > 0");
+    }
     Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
 
@@ -261,10 +263,18 @@ public class ShadowBitmap {
     shadowBitmap.width = dstWidth;
     shadowBitmap.height = dstHeight;
     shadowBitmap.config = src.getConfig();
+    shadowBitmap.mutable = true;
     if (shadowBitmap.config == null) {
       shadowBitmap.config = Config.ARGB_8888;
     }
-    shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, 0, 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
+    shadowBitmap.setPixels(
+        new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()],
+        0,
+        0,
+        0,
+        0,
+        shadowBitmap.getWidth(),
+        shadowBitmap.getHeight());
     return scaledBitmap;
   }
 
@@ -410,11 +420,12 @@ public class ShadowBitmap {
   @Implementation
   protected void getPixels(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    if (x != 0 ||
-        y != 0 ||
-        width != getWidth() ||
-        height != getHeight() ||
-        pixels.length != colors.length) {
+    if (x != 0
+        || y != 0
+        || width != getWidth()
+        || height != getHeight()
+        || stride != getWidth()
+        || pixels.length != colors.length) {
       for (int y0 = 0; y0 < height; y0++) {
         for (int x0 = 0; x0 < width; x0++) {
           pixels[offset + y0 * stride + x0] = colors[(y0 + y) * getWidth() + x0 + x];
@@ -782,5 +793,10 @@ public class ShadowBitmap {
           (startY + y) * getWidth() + startX,
           lenX);
     }
+  }
+
+  /** Used to access the underlying data buffers for faster image operations. */
+  int[] getColorsInternal() {
+    return colors;
   }
 }

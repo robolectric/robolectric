@@ -6,9 +6,13 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
@@ -180,7 +184,7 @@ public class ShadowSettings {
         SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_BATTERY_SAVING);
         SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "network");
       } else {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_OFF);
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, LOCATION_MODE_OFF);
       }
     }
 
@@ -207,6 +211,10 @@ public class ShadowSettings {
         providers.addAll(Arrays.asList(oldProviders.split(",")));
       }
 
+      if (enabled == oldProviders.contains(provider)) {
+        return true;
+      }
+
       if (enabled) {
         providers.add(provider);
       } else {
@@ -214,25 +222,45 @@ public class ShadowSettings {
       }
 
       String newProviders = TextUtils.join(",", providers.toArray());
-      return Settings.Secure.putString(
-          cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED, newProviders);
+      boolean r =
+          Settings.Secure.putString(cr, Settings.Secure.LOCATION_PROVIDERS_ALLOWED, newProviders);
+
+      Intent providersBroadcast = new Intent(LocationManager.PROVIDERS_CHANGED_ACTION);
+      if (RuntimeEnvironment.getApiLevel() >= Q) {
+        providersBroadcast.putExtra(LocationManager.EXTRA_PROVIDER_NAME, provider);
+      }
+      if (RuntimeEnvironment.getApiLevel() >= R) {
+        providersBroadcast.putExtra(LocationManager.EXTRA_PROVIDER_ENABLED, enabled);
+      }
+      RuntimeEnvironment.getApplication().sendBroadcast(providersBroadcast);
+
+      return r;
     }
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
       boolean changed = !Objects.equals(get(cr).put(name, value), value);
 
-      if (Settings.Secure.LOCATION_MODE.equals(name) && RuntimeEnvironment.getApiLevel() <= P) {
-        // do this after setting location mode but before invoking contentobservers, so that
-        // observers for both settings will see the correct values
-        boolean gps =
-            (value == Settings.Secure.LOCATION_MODE_SENSORS_ONLY
-                || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
-        boolean network =
-            (value == Settings.Secure.LOCATION_MODE_BATTERY_SAVING
-                || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
-        Settings.Secure.setLocationProviderEnabled(cr, LocationManager.GPS_PROVIDER, gps);
-        Settings.Secure.setLocationProviderEnabled(cr, LocationManager.NETWORK_PROVIDER, network);
+      if (Settings.Secure.LOCATION_MODE.equals(name)) {
+        if (RuntimeEnvironment.getApiLevel() <= P) {
+          // do this after setting location mode but before invoking contentobservers, so that
+          // observers for both settings will see the correct values
+          boolean gps =
+              (value == Settings.Secure.LOCATION_MODE_SENSORS_ONLY
+                  || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
+          boolean network =
+              (value == Settings.Secure.LOCATION_MODE_BATTERY_SAVING
+                  || value == Settings.Secure.LOCATION_MODE_HIGH_ACCURACY);
+          Settings.Secure.setLocationProviderEnabled(cr, LocationManager.GPS_PROVIDER, gps);
+          Settings.Secure.setLocationProviderEnabled(cr, LocationManager.NETWORK_PROVIDER, network);
+        }
+
+        Intent modeBroadcast = new Intent(LocationManager.MODE_CHANGED_ACTION);
+        if (RuntimeEnvironment.getApiLevel() >= R) {
+          modeBroadcast.putExtra(
+              LocationManager.EXTRA_LOCATION_ENABLED, value != LOCATION_MODE_OFF);
+        }
+        RuntimeEnvironment.getApplication().sendBroadcast(modeBroadcast);
       }
 
       if (changed && cr != null) {
