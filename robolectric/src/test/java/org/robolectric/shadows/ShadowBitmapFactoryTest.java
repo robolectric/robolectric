@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
+import static com.google.common.io.Resources.toByteArray;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -30,7 +31,6 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -518,9 +518,7 @@ public class ShadowBitmapFactoryTest {
     return BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
   }
 
-  private byte[] getBitmapByteArrayFromResourceStream(String imagePath)
-      throws IOException, URISyntaxException {
-    return Files.readAllBytes(
-        Paths.get(getClass().getClassLoader().getResource(imagePath).toURI()));
+  private byte[] getBitmapByteArrayFromResourceStream(String imagePath) throws IOException {
+    return toByteArray(com.google.common.io.Resources.getResource(imagePath));
   }
 }
