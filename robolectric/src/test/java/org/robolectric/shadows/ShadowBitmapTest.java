@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -469,6 +470,15 @@ public class ShadowBitmapTest {
     int[] pixelsReconstructed = new int[width * height];
     bitmapReconstructed.getPixels(pixelsReconstructed, 0, width, 0, 0, width, height);
     assertThat(Arrays.equals(pixelsOriginal, pixelsReconstructed)).isTrue();
+  }
+
+  @Test
+  public void compress_shouldLessThanBeforeForWebp() {
+    Bitmap bitmap = Bitmap.createBitmap(400, 200, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.WEBP, 75, stream);
+    byte[] compressedImageByteArray = stream.toByteArray();
+    assertThat(compressedImageByteArray.length).isLessThan(bitmap.getByteCount());
   }
 
   @Config(sdk = Build.VERSION_CODES.O)
