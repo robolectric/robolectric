@@ -68,6 +68,8 @@ public class ShadowAppOpsManager {
 
   @RealObject private AppOpsManager realObject;
 
+  private static boolean staticallyInitialized = false;
+
   // Recorded operations, keyed by (uid, packageName)
   private final Multimap<Key, Integer> storedOps = HashMultimap.create();
   // (uid, packageName, opCode) => opMode
@@ -92,6 +94,12 @@ public class ShadowAppOpsManager {
         realObject,
         ClassParameter.from(Context.class, context),
         ClassParameter.from(IAppOpsService.class, service));
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected static void __staticInitializer__() {
+    staticallyInitialized = true;
+    Shadow.directInitialize(AppOpsManager.class);
   }
 
   /**
@@ -508,7 +516,10 @@ public class ShadowAppOpsManager {
   @Resetter
   public static void reset() {
     // The callback passed in AppOpsManager#setOnOpNotedCallback is stored statically.
-    if (RuntimeEnvironment.getApiLevel() >= R) {
+    // The check for staticallyInitialized is to make it so that we don't load AppOpsManager if it
+    // hadn't already been loaded (both to save time and to also avoid any errors that might
+    // happen if we tried to lazy load the class during reset)
+    if (RuntimeEnvironment.getApiLevel() >= R && staticallyInitialized) {
       ReflectionHelpers.setStaticField(AppOpsManager.class, "sOnOpNotedCallback", null);
     }
   }

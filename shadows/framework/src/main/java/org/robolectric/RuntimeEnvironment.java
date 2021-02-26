@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
-import android.app.ActivityThread;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -15,7 +14,6 @@ import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -135,9 +133,6 @@ public class RuntimeEnvironment {
   }
 
   public static Object getActivityThread() {
-    if (activityThread == null) {
-      activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
-    }
     return activityThread;
   }
 

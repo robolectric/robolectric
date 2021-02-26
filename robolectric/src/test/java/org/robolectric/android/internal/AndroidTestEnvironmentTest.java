@@ -268,4 +268,13 @@ public class AndroidTestEnvironmentTest {
     bootstrapWrapper.resetState();
     assertThat(RuntimeEnvironment.application).isNull();
   }
+
+  @LazyLoadApplication(LazyLoad.ON)
+  @Test
+  public void tearDownApplication_doesNotLoadApplication() {
+    bootstrapWrapper.callSetUpApplicationState();
+    RuntimeEnvironment.application = null;
+    bootstrapWrapper.tearDownApplication();
+    assertThat(RuntimeEnvironment.application).isNull();
+  }
 }
