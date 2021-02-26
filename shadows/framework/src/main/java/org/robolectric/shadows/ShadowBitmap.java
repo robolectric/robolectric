@@ -507,7 +507,7 @@ public class ShadowBitmap {
   protected Bitmap extractAlpha() {
     int[] alphaPixels = new int[colors.length];
     for (int i = 0; i < alphaPixels.length; i++) {
-      alphaPixels[i] = Color.alpha(colors[i]);
+      alphaPixels[i] = Color.argb(Color.alpha(colors[i]), 0, 0, 0);
     }
 
     return createBitmap(alphaPixels, getWidth(), getHeight(), Bitmap.Config.ALPHA_8);

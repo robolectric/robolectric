@@ -70,7 +70,7 @@ public class BitmapTest {
     Bitmap ret = bitmap.extractAlpha();
     int source = bitmap.getPixel(10, 20);
     int result = ret.getPixel(10, 20);
-    assertThat(result).isEqualTo(Color.alpha(source));
+    assertThat(Color.alpha(result)).isEqualTo(Color.alpha(source));
   }
 
   @Test
