@@ -40,6 +40,7 @@ public class ShadowBitmap {
   FileDescriptor createdFromFileDescriptor;
   byte[] createdFromBytes;
   private Bitmap createdFromBitmap;
+  private Bitmap scaledFromBitmap;
   private int createdFromX = -1;
   private int createdFromY = -1;
   private int createdFromWidth = -1;
@@ -251,6 +252,7 @@ public class ShadowBitmap {
     }
 
     shadowBitmap.createdFromBitmap = src;
+    shadowBitmap.scaledFromBitmap = src;
     shadowBitmap.createdFromFilter = filter;
     shadowBitmap.width = dstWidth;
     shadowBitmap.height = dstHeight;
@@ -674,6 +676,11 @@ public class ShadowBitmap {
     }
     if (!Arrays.equals(colors, shadowOtherBitmap.colors)) {
       return false;
+    }
+    // When Bitmap.createScaledBitmap is called, the colors array is cleared, so we need a basic
+    // way to detect if two scaled bitmaps are the same.
+    if (scaledFromBitmap != null && shadowOtherBitmap.scaledFromBitmap != null) {
+      return scaledFromBitmap.sameAs(shadowOtherBitmap.scaledFromBitmap);
     }
     return true;
   }
