@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -749,6 +750,37 @@ public class ShadowBitmap {
     for (int y = toDraw.top; y < toDraw.bottom; y++) {
       Arrays.fill(
           colors, y * getWidth() + toDraw.left, y * getWidth() + toDraw.right, paint.getColor());
+    }
+  }
+
+  void drawBitmap(Bitmap source, int left, int top) {
+    ShadowBitmap shadowSource = Shadows.shadowOf(source);
+    if (shadowSource.colors == null) {
+      // pixel data not available, so there's nothing we can do
+      return;
+    }
+    // fast path
+    if (left == 0 && top == 0 && getWidth() == source.getWidth()) {
+      int size = min(getWidth() * getHeight(), source.getWidth() * source.getHeight());
+      System.arraycopy(shadowSource.colors, 0, colors, 0, size);
+      return;
+    }
+    // slower (row-by-row) path
+    int startSourceY = max(0, -top);
+    int startSourceX = max(0, -left);
+    int startY = max(0, top);
+    int startX = max(0, left);
+    int endY = min(getHeight(), top + source.getHeight());
+    int endX = min(getWidth(), left + source.getWidth());
+    int lenY = endY - startY;
+    int lenX = endX - startX;
+    for (int y = 0; y < lenY; y++) {
+      System.arraycopy(
+          shadowSource.colors,
+          (startSourceY + y) * source.getWidth() + startSourceX,
+          colors,
+          (startY + y) * getWidth() + startX,
+          lenX);
     }
   }
 }

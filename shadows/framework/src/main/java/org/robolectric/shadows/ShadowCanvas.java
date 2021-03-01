@@ -137,6 +137,11 @@ public class ShadowCanvas {
     if (scaleX != 1 && scaleY != 1) {
       appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
     }
+
+    if (bitmap != null && targetBitmap != null) {
+      ShadowBitmap shadowTargetBitmap = Shadows.shadowOf(targetBitmap);
+      shadowTargetBitmap.drawBitmap(bitmap, (int) left, (int) top);
+    }
   }
 
   @Implementation
