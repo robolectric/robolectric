@@ -248,12 +248,13 @@ public class ShadowBitmapFactory {
           ClassParameter.from(Bitmap.class, bitmap),
           ClassParameter.from(BitmapFactory.Options.class, options));
     } else {
-      ReflectionHelpers.callStaticMethod(
-          BitmapFactory.class,
-          "finishDecode",
-          ClassParameter.from(Bitmap.class, bitmap),
-          ClassParameter.from(Rect.class, outPadding),
-          ClassParameter.from(BitmapFactory.Options.class, options));
+      bitmap =
+          ReflectionHelpers.callStaticMethod(
+              BitmapFactory.class,
+              "finishDecode",
+              ClassParameter.from(Bitmap.class, bitmap),
+              ClassParameter.from(Rect.class, outPadding),
+              ClassParameter.from(BitmapFactory.Options.class, options));
     }
     return bitmap;
   }
