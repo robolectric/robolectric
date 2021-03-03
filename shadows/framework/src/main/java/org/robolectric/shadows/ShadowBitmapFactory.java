@@ -290,6 +290,7 @@ public class ShadowBitmapFactory {
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;
+      shadowBitmap.setMutable(options.inMutable);
     }
 
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {

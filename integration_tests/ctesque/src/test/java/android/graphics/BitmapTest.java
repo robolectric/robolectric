@@ -151,4 +151,12 @@ public class BitmapTest {
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
     assertThat(bitmap.isRecycled()).isFalse();
   }
+
+  @Test
+  public void decodeResource_withMutableOpt_isMutable() {
+    BitmapFactory.Options opt = new BitmapFactory.Options();
+    opt.inMutable = true;
+    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opt);
+    assertThat(bitmap.isMutable()).isTrue();
+  }
 }
