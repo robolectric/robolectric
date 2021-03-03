@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ComponentName;
@@ -68,6 +70,31 @@ public class ShadowVoiceInteractionServiceTest {
             VoiceInteractionService.isActiveService(
                 ApplicationProvider.getApplicationContext(), new ComponentName("test", "test")))
         .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void showSessionInvokedBeforeServiceReady_throwsException() {
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          service.showSession(new Bundle(), 0);
+        });
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void showSessionNotInvoked_returnsNull() {
+    service.onReady();
+    assertThat(shadowService.getLastSessionBundle()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void showSessionInvoked_returnsValues() {
+    service.onReady();
+    service.showSession(new Bundle(), /* flags= */ 0);
+    assertThat(shadowService.getLastSessionBundle()).isNotNull();
   }
 
   @Test
