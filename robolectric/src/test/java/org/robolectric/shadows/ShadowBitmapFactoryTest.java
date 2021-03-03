@@ -82,6 +82,19 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeResource_sameAs() throws IOException {
+    Resources resources = context.getResources();
+    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image);
+    File tmp = Files.createTempFile("BitmapTest", null).toFile();
+    try (FileOutputStream stream = new FileOutputStream(tmp)) {
+      bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+    }
+    FileInputStream fileInputStream = new FileInputStream(tmp);
+    Bitmap bitmap2 = BitmapFactory.decodeStream(fileInputStream);
+    assertThat(bitmap.sameAs(bitmap2)).isTrue();
+  }
+
+  @Test
   public void decodeResource_shouldGetCorrectColorFromPngImage() {
     Resources resources = context.getResources();
     BitmapFactory.Options opts = new BitmapFactory.Options();

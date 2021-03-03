@@ -51,6 +51,37 @@ public class ImageUtil {
     }
   }
 
+  public static RobolectricBufferedImage getImageFromStream(InputStream is) {
+    if (!initialized) {
+      // Stops ImageIO from creating temp files when reading images
+      // from input stream.
+      ImageIO.setUseCache(false);
+      initialized = true;
+    }
+
+    try {
+      ImageInputStream imageStream = createImageInputStream(is);
+      Iterator<ImageReader> readers = ImageIO.getImageReaders(imageStream);
+      if (!readers.hasNext()) return null;
+
+      ImageReader reader = readers.next();
+      try {
+        reader.setInput(imageStream);
+        String mimeType = reader.getFormatName();
+        int minIndex = reader.getMinIndex();
+        BufferedImage image = reader.read(minIndex);
+        RobolectricBufferedImage robolectricBufferedImage = new RobolectricBufferedImage();
+        robolectricBufferedImage.bufferedImage = image;
+        robolectricBufferedImage.mimeType = mimeType;
+        return robolectricBufferedImage;
+      } finally {
+        reader.dispose();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static boolean writeToStream(
       Bitmap realBitmap, CompressFormat format, int quality, OutputStream stream) {
     if ((quality < 0) || (quality > 100)) {
@@ -125,5 +156,10 @@ public class ImageUtil {
       default:
         return needAlphaChannel ? TYPE_INT_ARGB : TYPE_INT_RGB;
     }
+  }
+
+  static class RobolectricBufferedImage {
+    BufferedImage bufferedImage;
+    String mimeType;
   }
 }
