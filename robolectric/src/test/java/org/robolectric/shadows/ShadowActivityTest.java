@@ -1011,6 +1011,27 @@ public class ShadowActivityTest {
   }
 
   @Test
+  public void getCallingActivity_returnsValueSetInPackage() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    String packageName = "com.example.package";
+
+    shadowOf(activity).setCallingPackage(packageName);
+
+    assertEquals(packageName, activity.getCallingActivity().getPackageName());
+  }
+
+  @Test
+  public void getCallingActivity_notOverwrittenByPackage() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ComponentName componentName = new ComponentName("com.example.package", "SomeActivity");
+
+    shadowOf(activity).setCallingActivity(componentName);
+    shadowOf(activity).setCallingPackage(componentName.getPackageName());
+
+    assertEquals(componentName, activity.getCallingActivity());
+  }
+
+  @Test
   public void getCallingPackage_defaultsToNull() {
     Activity activity = Robolectric.setupActivity(Activity.class);
 
@@ -1025,6 +1046,16 @@ public class ShadowActivityTest {
     shadowOf(activity).setCallingPackage(packageName);
 
     assertEquals(packageName, activity.getCallingPackage());
+  }
+
+  @Test
+  public void getCallingPackage_returnsValueSetInActivity() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    ComponentName componentName = new ComponentName("com.example.package", "SomeActivity");
+
+    shadowOf(activity).setCallingActivity(componentName);
+
+    assertEquals(componentName.getPackageName(), activity.getCallingPackage());
   }
 
   @Test

@@ -80,7 +80,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean mIsTaskRoot = true;
   private Menu optionsMenu;
   private ComponentName callingActivity;
-  private String callingPackage;
   private PermissionsRequest lastRequestedPermission;
   private ActivityController controller;
   private boolean inMultiWindowMode = false;
@@ -137,7 +136,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
   }
 
-  public void setCallingActivity(ComponentName activityName) {
+  /**
+   * Sets the calling activity that will be reflected in {@link Activity#getCallingActivity} and
+   * {@link Activity#getCallingPackage}.
+   */
+  public void setCallingActivity(@Nullable ComponentName activityName) {
     callingActivity = activityName;
   }
 
@@ -146,13 +149,25 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return callingActivity;
   }
 
-  public void setCallingPackage(String packageName) {
-    callingPackage = packageName;
+  /**
+   * Sets the calling package that will be reflected in {@link Activity#getCallingActivity} and
+   * {@link Activity#getCallingPackage}.
+   *
+   * <p>Activity name defaults to some default value.
+   */
+  public void setCallingPackage(@Nullable String packageName) {
+    if (callingActivity != null && callingActivity.getPackageName().equals(packageName)) {
+      // preserve the calling activity as it was, so non-conflicting setCallingActivity followed by
+      // setCallingPackage will not erase previously set information.
+      return;
+    }
+    callingActivity =
+        packageName != null ? new ComponentName(packageName, "unknown.Activity") : null;
   }
 
   @Implementation
   protected String getCallingPackage() {
-    return callingPackage;
+    return callingActivity != null ? callingActivity.getPackageName() : null;
   }
 
   @Implementation
