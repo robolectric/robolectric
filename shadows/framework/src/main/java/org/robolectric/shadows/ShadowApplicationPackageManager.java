@@ -92,6 +92,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1401,14 +1402,43 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return -1;
   }
 
+  /**
+   * This method differs from the real implementation in that we only return the permission flags
+   * that were added via updatePermissionFlags, and do not perform any verification of permissions,
+   * packages or users.
+   */
   @Implementation(minSdk = M)
   protected int getPermissionFlags(String permissionName, String packageName, UserHandle user) {
+    if (permissionFlags.containsKey(packageName)) {
+      return permissionFlags.get(packageName).getOrDefault(permissionName, /* defaultValue= */ 0);
+    }
+
     return 0;
   }
 
+  /**
+   * This method differs from the real implementation in that no permission checking or package
+   * existent checks are performed here.
+   */
   @Implementation(minSdk = M)
   protected void updatePermissionFlags(
-      String permissionName, String packageName, int flagMask, int flagValues, UserHandle user) {}
+      String permissionName,
+      String packageName,
+      @PackageManager.PermissionFlags int flagMask,
+      @PackageManager.PermissionFlags int flagValues,
+      UserHandle user) {
+    if (!permissionFlags.containsKey(packageName)) {
+      permissionFlags.put(packageName, new HashMap<String, Integer>());
+    }
+
+    int existingFlags =
+        permissionFlags.get(packageName).getOrDefault(permissionName, /* defaultValue= */ 0);
+    int flagsToKeep = ~flagMask & existingFlags;
+    int flagsToChange = flagMask & flagValues;
+    int newFlags = flagsToKeep | flagsToChange;
+
+    permissionFlags.get(packageName).put(permissionName, newFlags);
+  }
 
   @Implementation
   protected int getUidForSharedUser(String sharedUserName) throws NameNotFoundException {

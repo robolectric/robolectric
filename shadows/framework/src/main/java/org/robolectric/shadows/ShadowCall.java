@@ -18,8 +18,45 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Robolectric test for {@link android.telecom.Call}. */
-@Implements(Call.class)
+@Implements(value = Call.class, minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowCall {
+
+  private boolean hasSentRttRequest;
+  private boolean hasRespondedToRttRequest;
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void sendRttRequest() {
+    hasSentRttRequest = true;
+  }
+
+  /**
+   * Determines whether sendRttRequest() was called.
+   *
+   * @return true if sendRttRequest() was called, false otherwise.
+   */
+  public boolean hasSentRttRequest() {
+    return hasSentRttRequest;
+  }
+
+  /** "Forgets" that sendRttRequest() was called. */
+  public void clearHasSentRttRequest() {
+    hasSentRttRequest = false;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected void respondToRttRequest(int id, boolean accept) {
+    hasRespondedToRttRequest = true;
+  }
+
+  /**
+   * Determines whether respondToRttRequest() was called.
+   *
+   * @return True if respondToRttRequest() was called, false otherwise.
+   */
+  public boolean hasRespondedToRttRequest() {
+    return hasRespondedToRttRequest;
+  }
+
   /** Robolectric test for {@link android.telecom.Call.RttCall}. */
   @Implements(value = Call.RttCall.class, minSdk = VERSION_CODES.O_MR1)
   public static class ShadowRttCall {
