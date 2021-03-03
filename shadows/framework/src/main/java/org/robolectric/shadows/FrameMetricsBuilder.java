@@ -4,6 +4,8 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.FrameMetrics;
 import android.view.FrameMetrics.Metric;
+import com.google.common.primitives.Longs;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.util.ReflectionHelpers;
@@ -19,7 +21,6 @@ public final class FrameMetricsBuilder {
   private static final int FLAGS_INDEX = 0;
   private static final int INTENDED_VSYNC_INDEX = 1;
   private static final int VSYNC_INDEX = 2;
-  private static final int FRAME_STATS_COUNT = 16;
 
   private final Map<Integer, Long> metricsMap = new HashMap<>();
   private long syncDelayTimeNanos = 0;
@@ -54,8 +55,7 @@ public final class FrameMetricsBuilder {
 
   public FrameMetrics build() throws Exception {
     FrameMetrics metrics = ReflectionHelpers.callConstructor(FrameMetrics.class);
-    // TODO: get the right size
-    long[] timingData = new long[FRAME_STATS_COUNT];
+    long[] timingData = reflector(FrameMetricsReflector.class, metrics).getTimingData();
 
     // This value is left shifted 0 in the real code.
     timingData[FLAGS_INDEX] = getMetric(FrameMetrics.FIRST_DRAW_FRAME);
@@ -63,14 +63,7 @@ public final class FrameMetricsBuilder {
     timingData[INTENDED_VSYNC_INDEX] = getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP);
     timingData[VSYNC_INDEX] = getMetric(FrameMetrics.VSYNC_TIMESTAMP);
 
-    // This is more complicated than it seems it should be because
-    // TOTAL_DURATION != sum(other durations).
-    // This is because TOTAL_DURATION is from Index.INTENDED_VSYNC to Index.FRAME_COMPLETED and
-    // there's a discontinuity between the end of DRAW_DURATION and the start of SYNC_DURATION,
-    // presumably because there's a delay between when the sync is queued and when the sync starts,
-    // and that enqueued time isn't directly measurable.
-
-    // So first we calculate everything up to and including DRAW_DURATION.
+    // First we calculate everything up to and including DRAW_DURATION.
     for (@Metric int metric = FrameMetrics.UNKNOWN_DELAY_DURATION;
         metric <= FrameMetrics.DRAW_DURATION;
         metric++) {
@@ -94,7 +87,10 @@ public final class FrameMetricsBuilder {
           timingData[getStartIndexForMetric(metric)] + getMetric(metric);
     }
 
-    reflector(FrameMetricsReflector.class, metrics).setTimingData(timingData);
+    // Even as FrameMetrics are added, the end point of TOTAL_DURATION should always equal the
+    // maximum of this list.
+    timingData[getEndIndexForMetric(FrameMetrics.TOTAL_DURATION)] =
+        Collections.max(Longs.asList(timingData));
     return metrics;
   }
 
@@ -121,7 +117,7 @@ public final class FrameMetricsBuilder {
   @ForType(FrameMetrics.class)
   private interface FrameMetricsReflector {
     @Accessor("mTimingData")
-    void setTimingData(long[] timingData);
+    long[] getTimingData();
 
     @Accessor("DURATIONS")
     @Static
