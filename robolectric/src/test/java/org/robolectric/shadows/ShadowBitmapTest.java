@@ -24,6 +24,7 @@ import java.nio.ShortBuffer;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -685,6 +686,18 @@ public class ShadowBitmapTest {
     assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00000000);
     assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88000000);
     assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12000000);
+  }
+
+  @Test
+  public void eraseColor_clearsDescription() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap scaled = Bitmap.createScaledBitmap(original, 200, 200, false);
+    scaled.eraseColor(Color.TRANSPARENT);
+    String description = Shadows.shadowOf(scaled).getDescription();
+    assertThat(description).isEqualTo("Bitmap (200, 200)");
+    scaled.eraseColor(Color.BLUE);
+    description = Shadows.shadowOf(scaled).getDescription();
+    assertThat(description).isEqualTo("Bitmap (200, 200) erased with 0xff0000ff");
   }
 
   private static Bitmap create(String name) {

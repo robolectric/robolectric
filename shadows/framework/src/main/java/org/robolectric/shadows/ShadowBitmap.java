@@ -3,12 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
@@ -19,6 +22,7 @@ import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -567,6 +571,10 @@ public class ShadowBitmap {
     if (colors != null) {
       Arrays.fill(colors, color);
     }
+    setDescription(String.format("Bitmap (%d, %d)", width, height));
+    if (color != 0) {
+      appendDescription(String.format(" erased with 0x%08x", color));
+    }
   }
 
   @Implementation
@@ -725,6 +733,54 @@ public class ShadowBitmap {
     }
     if (y >= getHeight()) {
       throw new IllegalArgumentException("y must be < bitmap.height()");
+    }
+  }
+
+  void drawRect(Rect r, Paint paint) {
+    if (colors == null) {
+      return;
+    }
+    Rect toDraw =
+        new Rect(
+            max(0, r.left), max(0, r.top), min(getWidth(), r.right), min(getHeight(), r.bottom));
+    if (toDraw.left == 0 && toDraw.top == 0 && toDraw.right == getWidth()) {
+      Arrays.fill(colors, 0, getWidth() * toDraw.bottom, paint.getColor());
+      return;
+    }
+    for (int y = toDraw.top; y < toDraw.bottom; y++) {
+      Arrays.fill(
+          colors, y * getWidth() + toDraw.left, y * getWidth() + toDraw.right, paint.getColor());
+    }
+  }
+
+  void drawBitmap(Bitmap source, int left, int top) {
+    ShadowBitmap shadowSource = Shadows.shadowOf(source);
+    if (shadowSource.colors == null) {
+      // pixel data not available, so there's nothing we can do
+      return;
+    }
+    // fast path
+    if (left == 0 && top == 0 && getWidth() == source.getWidth()) {
+      int size = min(getWidth() * getHeight(), source.getWidth() * source.getHeight());
+      System.arraycopy(shadowSource.colors, 0, colors, 0, size);
+      return;
+    }
+    // slower (row-by-row) path
+    int startSourceY = max(0, -top);
+    int startSourceX = max(0, -left);
+    int startY = max(0, top);
+    int startX = max(0, left);
+    int endY = min(getHeight(), top + source.getHeight());
+    int endX = min(getWidth(), left + source.getWidth());
+    int lenY = endY - startY;
+    int lenX = endX - startX;
+    for (int y = 0; y < lenY; y++) {
+      System.arraycopy(
+          shadowSource.colors,
+          (startSourceY + y) * source.getWidth() + startSourceX,
+          colors,
+          (startY + y) * getWidth() + startX,
+          lenX);
     }
   }
 }

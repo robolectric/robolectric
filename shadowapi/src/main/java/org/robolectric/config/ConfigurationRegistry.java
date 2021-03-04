@@ -44,6 +44,7 @@ public class ConfigurationRegistry {
     return someConfigClass.cast(configInSandboxLoader);
   }
 
+  @SuppressWarnings("BanSerializableRead")
   private static Object reloadInSandboxClassLoader(Object configInParentLoader) {
     ByteArrayOutputStream buf = new ByteArrayOutputStream();
     try (ObjectOutputStream out = new ObjectOutputStream(buf)) {

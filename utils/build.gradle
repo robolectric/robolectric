@@ -16,7 +16,7 @@ dependencies {
 
     testCompileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
     testAnnotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
-    testAnnotationProcessor "com.google.errorprone:error_prone_core:2.3.4"
+    testAnnotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
 
     testImplementation "junit:junit:4.13.1"
     testImplementation "com.google.truth:truth:${truthVersion}"

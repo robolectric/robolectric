@@ -6,7 +6,7 @@ apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
     annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
-    annotationProcessor "com.google.errorprone:error_prone_core:2.3.4"
+    annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
 
     api project(":annotations")
     api project(":utils")

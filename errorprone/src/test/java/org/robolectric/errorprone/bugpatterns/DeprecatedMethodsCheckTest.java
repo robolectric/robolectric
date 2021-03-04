@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** @author christianw@google.com (Christian Williams) */
+/** Tests for {@link DeprecatedMethodsCheck} */
 @RunWith(JUnit4.class)
 @SuppressWarnings("LineLength")
 public class DeprecatedMethodsCheckTest {
@@ -21,7 +21,7 @@ public class DeprecatedMethodsCheckTest {
   public void setUp() {
     this.testHelper =
         BugCheckerRefactoringTestHelper.newInstance(
-            new DeprecatedMethodsCheckForTest(), getClass());
+            DeprecatedMethodsCheckForTest.class, getClass());
   }
 
   @Test
@@ -75,9 +75,11 @@ public class DeprecatedMethodsCheckTest {
             "",
             "public class SomeTest {",
             "  @Test void theTest() {",
-            "    XShadowAlertDialog ad = shadowOf(RuntimeEnvironment.application).getLatestAlertDialog();",
+            "    XShadowAlertDialog ad ="
+                + " shadowOf(RuntimeEnvironment.application).getLatestAlertDialog();",
             "    XShadowDialog d = shadowOf(RuntimeEnvironment.application).getLatestDialog();",
-            "    XShadowPopupMenu pm = shadowOf(RuntimeEnvironment.application).getLatestPopupMenu();",
+            "    XShadowPopupMenu pm ="
+                + " shadowOf(RuntimeEnvironment.application).getLatestPopupMenu();",
             "  }",
             "}")
         .addOutputLines(
@@ -209,11 +211,9 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
-  @BugPattern(
-      name = "DeprecatedMethods",
-      summary = "",
-      severity = WARNING)
-  private static class DeprecatedMethodsCheckForTest extends DeprecatedMethodsCheck {
+  /** Test overrides for {@link DeprecatedMethodsCheck} */
+  @BugPattern(name = "DeprecatedMethods", summary = "", severity = WARNING)
+  public static class DeprecatedMethodsCheckForTest extends DeprecatedMethodsCheck {
     @Override
     String shadowName(String className) {
       return className.replaceAll("org\\.robolectric\\..*Shadow", "xxx.XShadow");
