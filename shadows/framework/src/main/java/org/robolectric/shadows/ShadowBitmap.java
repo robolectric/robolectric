@@ -567,6 +567,10 @@ public class ShadowBitmap {
     if (colors != null) {
       Arrays.fill(colors, color);
     }
+    setDescription(String.format("Bitmap (%d, %d)", width, height));
+    if (color != 0) {
+      appendDescription(String.format(" erased with 0x%08x", color));
+    }
   }
 
   @Implementation
