@@ -6,6 +6,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -40,10 +41,11 @@ public class ShadowInstrumentationTest {
 
     Intent intent = new Intent("do_the_thing");
     intent.setClassName("com.blah", "com.blah.service");
+    Context context = ApplicationProvider.getApplicationContext();
     Runnable startServicesTask =
         () -> {
           for (int i = 0; i < 10000; i++) {
-            ApplicationProvider.getApplicationContext().startService(intent);
+            context.startService(intent);
           }
         };
 

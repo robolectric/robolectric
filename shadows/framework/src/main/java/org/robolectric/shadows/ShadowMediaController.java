@@ -5,8 +5,10 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.annotation.NonNull;
 import android.media.MediaMetadata;
+import android.media.Rating;
 import android.media.session.MediaController;
 import android.media.session.MediaController.Callback;
+import android.media.session.MediaController.TransportControls;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 import java.util.ArrayList;
@@ -26,6 +28,13 @@ public class ShadowMediaController {
   private MediaController realMediaController;
   private PlaybackState playbackState;
   private MediaMetadata mediaMetadata;
+  private TransportControls transportControls;
+  /**
+   * A value of RATING_NONE for ratingType indicates that rating media is not supported by the media
+   * session associated with the media controller
+   */
+  private int ratingType = Rating.RATING_NONE;
+
   private final List<Callback> callbacks = new ArrayList<>();
 
   /** Saves the package name for use inside the shadow. */
@@ -58,6 +67,41 @@ public class ShadowMediaController {
   @Implementation
   protected MediaMetadata getMetadata() {
     return mediaMetadata;
+  }
+
+  /**
+   * Saves the rating type to control the return value of {@link MediaController#getRatingType()}.
+   */
+  public void setRatingType(int ratingType) {
+    if (ratingType >= 0 && ratingType <= Rating.RATING_PERCENTAGE) {
+      this.ratingType = ratingType;
+    } else {
+      throw new IllegalArgumentException(
+          "Invalid RatingType value "
+              + ratingType
+              + ". The valid range is from 0 to "
+              + Rating.RATING_PERCENTAGE);
+    }
+  }
+
+  /** Gets the rating type set via {@link #setRatingType}. */
+  @Implementation
+  protected int getRatingType() {
+    return ratingType;
+  }
+
+  /**
+   * Saves the transportControls to control the return value of {@link
+   * MediaController#getTransportControls()}.
+   */
+  public void setTransportControls(TransportControls transportControls) {
+    this.transportControls = transportControls;
+  }
+
+  /** Gets the transportControls set via {@link #setTransportControls}. */
+  @Implementation
+  protected TransportControls getTransportControls() {
+    return transportControls;
   }
 
   /**

@@ -248,7 +248,7 @@ public class ShadowBitmapFactory {
           ClassParameter.from(Bitmap.class, bitmap),
           ClassParameter.from(BitmapFactory.Options.class, options));
     } else {
-      ReflectionHelpers.callStaticMethod(
+      bitmap = ReflectionHelpers.callStaticMethod(
           BitmapFactory.class,
           "finishDecode",
           ClassParameter.from(Bitmap.class, bitmap),
