@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Looper.getMainLooper;
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -11,6 +13,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.media.MediaMetadata;
+import android.media.Rating;
 import android.media.session.ISessionController;
 import android.media.session.MediaController;
 import android.media.session.MediaController.Callback;
@@ -70,6 +73,36 @@ public final class ShadowMediaControllerTest {
     MediaMetadata metadata = createMetadata("test");
     shadowMediaController.setMetadata(metadata);
     assertEquals(metadata, mediaController.getMetadata());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setInvalidRatingType() {
+    int ratingType = Rating.RATING_PERCENTAGE + 1;
+    IllegalArgumentException thrown =
+        assertThrows(
+            IllegalArgumentException.class, () -> shadowMediaController.setRatingType(ratingType));
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains(
+            "Invalid RatingType value "
+                + ratingType
+                + ". The valid range is from 0 to "
+                + Rating.RATING_PERCENTAGE);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getDefaultRatingType() {
+    assertThat(mediaController.getRatingType()).isEqualTo(Rating.RATING_NONE);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setAndGetRatingType() {
+    int ratingType = Rating.RATING_HEART;
+    shadowMediaController.setRatingType(ratingType);
+    assertThat(mediaController.getRatingType()).isEqualTo(ratingType);
   }
 
   @Test
