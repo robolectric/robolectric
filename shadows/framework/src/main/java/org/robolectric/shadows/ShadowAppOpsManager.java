@@ -26,6 +26,7 @@ import android.os.Build;
 import android.util.LongSparseArray;
 import android.util.LongSparseLongArray;
 import com.android.internal.app.IAppOpsService;
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
@@ -62,19 +63,19 @@ public class ShadowAppOpsManager {
 
   @RealObject private AppOpsManager realObject;
 
-  // Recorded operations, keyed by "uid|packageName"
-  private Multimap<String, Integer> mStoredOps = HashMultimap.create();
-  // "uid|packageName|opCode" => opMode
-  private Map<String, Integer> appModeMap = new HashMap<>();
+  // Recorded operations, keyed by (uid, packageName)
+  private final Multimap<Key, Integer> storedOps = HashMultimap.create();
+  // (uid, packageName, opCode) => opMode
+  private final Map<Key, Integer> appModeMap = new HashMap<>();
 
-  // "uid|packageName|opCode" => opMode
-  private Set<String> longRunningOp = new HashSet<>();
+  // (uid, packageName, opCode)
+  private final Set<Key> longRunningOp = new HashSet<>();
 
-  // "packageName|opCode" => listener
-  private BiMap<String, OnOpChangedListener> appOpListeners = HashBiMap.create();
+  // (packageName, opCode) => listener
+  private final BiMap<Key, OnOpChangedListener> appOpListeners = HashBiMap.create();
 
   // op | (usage << 8) => ModeAndExcpetion
-  private Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
+  private final Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
 
   private Context context;
 
@@ -120,8 +121,8 @@ public class ShadowAppOpsManager {
   @HiddenApi
   @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
   public void setMode(int op, int uid, String packageName, int mode) {
-    Integer oldMode = appModeMap.put(getOpMapKey(uid, packageName, op), mode);
-    OnOpChangedListener listener = appOpListeners.get(getListenerKey(op, packageName));
+    Integer oldMode = appModeMap.put(Key.create(uid, packageName, op), mode);
+    OnOpChangedListener listener = appOpListeners.get(Key.create(null, packageName, op));
     if (listener != null && !Objects.equals(oldMode, mode)) {
       String[] sOpToString = ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
       listener.onOpChanged(sOpToString[op], packageName);
@@ -134,7 +135,7 @@ public class ShadowAppOpsManager {
   }
 
   private int unsafeCheckOpRawNoThrow(int op, int uid, String packageName) {
-    Integer mode = appModeMap.get(getOpMapKey(uid, packageName, op));
+    Integer mode = appModeMap.get(Key.create(uid, packageName, op));
     if (mode == null) {
       return AppOpsManager.MODE_ALLOWED;
     }
@@ -147,7 +148,7 @@ public class ShadowAppOpsManager {
       String op, int uid, String packageName, String attributionTag, String message) {
     int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
     if (mode == AppOpsManager.MODE_ALLOWED) {
-      longRunningOp.add(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+      longRunningOp.add(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
     }
     return mode;
   }
@@ -155,7 +156,7 @@ public class ShadowAppOpsManager {
   /** Removes a fake long-running operation from the set. */
   @Implementation(minSdk = R)
   protected void finishOp(String op, int uid, String packageName, String attributionTag) {
-    longRunningOp.remove(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+    longRunningOp.remove(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
   }
 
   /**
@@ -164,7 +165,7 @@ public class ShadowAppOpsManager {
    */
   @Implementation(minSdk = R)
   protected boolean isOpActive(String op, int uid, String packageName) {
-    return longRunningOp.contains(getOpMapKey(uid, packageName, AppOpsManager.strOpToOp(op)));
+    return longRunningOp.contains(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
   }
 
   /**
@@ -198,7 +199,7 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = KITKAT)
   public int noteOp(int op, int uid, String packageName) {
-    mStoredOps.put(getInternalKey(uid, packageName), op);
+    storedOps.put(Key.create(uid, packageName, null), op);
 
     // Permission check not currently implemented in this shadow.
     return AppOpsManager.MODE_ALLOWED;
@@ -211,7 +212,7 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = KITKAT)
   protected int noteOpNoThrow(int op, int uid, String packageName) {
-    mStoredOps.put(getInternalKey(uid, packageName), op);
+    storedOps.put(Key.create(uid, packageName, null), op);
     return checkOpNoThrow(op, uid, packageName);
   }
 
@@ -228,7 +229,7 @@ public class ShadowAppOpsManager {
   @Implementation(minSdk = M, maxSdk = Q)
   @HiddenApi
   protected int noteProxyOpNoThrow(int op, String proxiedPackageName) {
-    mStoredOps.put(getInternalKey(Binder.getCallingUid(), proxiedPackageName), op);
+    storedOps.put(Key.create(Binder.getCallingUid(), proxiedPackageName, null), op);
     return checkOpNoThrow(op, Binder.getCallingUid(), proxiedPackageName);
   }
 
@@ -243,7 +244,7 @@ public class ShadowAppOpsManager {
     }
 
     List<OpEntry> opEntries = new ArrayList<>();
-    for (Integer op : mStoredOps.get(getInternalKey(uid, packageName))) {
+    for (Integer op : storedOps.get(Key.create(uid, packageName, null))) {
       if (opFilter.isEmpty() || opFilter.contains(op)) {
         opEntries.add(toOpEntry(op));
       }
@@ -313,7 +314,7 @@ public class ShadowAppOpsManager {
   @HiddenApi
   @RequiresPermission(value = android.Manifest.permission.WATCH_APPOPS)
   protected void startWatchingMode(int op, String packageName, OnOpChangedListener callback) {
-    appOpListeners.put(getListenerKey(op, packageName), callback);
+    appOpListeners.put(Key.create(null, packageName, op), callback);
   }
 
   @Implementation(minSdk = KITKAT)
@@ -390,20 +391,24 @@ public class ShadowAppOpsManager {
     }
   }
 
-  private static String getInternalKey(int uid, String packageName) {
-    return uid + "|" + packageName;
-  }
-
-  private static String getOpMapKey(int uid, String packageName, int opInt) {
-    return String.format("%s|%s|%s", uid, packageName, opInt);
-  }
-
   private static int getAudioRestrictionKey(int code, @AttributeUsage int usage) {
     return code | (usage << 8);
   }
 
-  private static String getListenerKey(int op, String packageName) {
-    return String.format("%s|%s", op, packageName);
+  @AutoValue
+  abstract static class Key {
+    @Nullable
+    abstract Integer getUid();
+
+    @Nullable
+    abstract String getPackageName();
+
+    @Nullable
+    abstract Integer getOpCode();
+
+    static Key create(Integer uid, String packageName, Integer opCode) {
+      return new AutoValue_ShadowAppOpsManager_Key(uid, packageName, opCode);
+    }
   }
 
   /** Class holding usage mode and excpetion packages. */
