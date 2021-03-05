@@ -1,10 +1,13 @@
 package org.robolectric.plugins;
 
 import com.google.auto.service.AutoService;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import javax.annotation.Nonnull;
+import org.junit.Rule;
 import org.robolectric.annotation.LazyLoadApplication;
 import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
+import org.robolectric.junit.rules.BackgroundTestRule;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**
@@ -45,6 +48,17 @@ public class LazyLoadingConfigurer implements Configurer<LazyLoad> {
     if (testClass.isAnnotationPresent(LazyLoadApplication.class)) {
       return testClass.getAnnotation(LazyLoadApplication.class).value();
     } else {
+      for (Field field : testClass.getDeclaredFields()) {
+        if (field.isAnnotationPresent(Rule.class)
+            && field.getType().equals(BackgroundTestRule.class)) {
+          return LazyLoad.OFF;
+        }
+      }
+      for (Method m : testClass.getDeclaredMethods()) {
+        if (BackgroundTestRule.class.isAssignableFrom(m.getReturnType())) {
+          return LazyLoad.OFF;
+        }
+      }
       return null;
     }
   }

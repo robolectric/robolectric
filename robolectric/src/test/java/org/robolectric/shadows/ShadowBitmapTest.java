@@ -700,6 +700,18 @@ public class ShadowBitmapTest {
     assertThat(description).isEqualTo("Bitmap (200, 200) erased with 0xff0000ff");
   }
 
+  @Test
+  public void eraseColor_clearsDescription() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap scaled = Bitmap.createScaledBitmap(original, 200, 200, false);
+    scaled.eraseColor(Color.TRANSPARENT);
+    String description = Shadows.shadowOf(scaled).getDescription();
+    assertThat(description).isEqualTo("Bitmap (200, 200)");
+    scaled.eraseColor(Color.BLUE);
+    description = Shadows.shadowOf(scaled).getDescription();
+    assertThat(description).isEqualTo("Bitmap (200, 200) erased with 0xff0000ff");
+  }
+
   private static Bitmap create(String name) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     shadowOf(bitmap).appendDescription(name);
