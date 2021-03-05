@@ -1,5 +1,6 @@
 package android.graphics;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
@@ -10,6 +11,8 @@ import android.graphics.Bitmap.CompressFormat;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,5 +105,50 @@ public class BitmapTest {
     ByteArrayOutputStream stm = new ByteArrayOutputStream();
     assertThat(bitmap.compress(CompressFormat.JPEG, 0, stm)).isTrue();
     assertThat(stm.toByteArray()).isNotEmpty();
+  }
+
+  @Test
+  public void getConfigAfterCompress() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    Matrix matrix = new Matrix();
+    matrix.setScale(0.5f, 0.5f);
+    Bitmap scaledBitmap =
+        Bitmap.createBitmap(
+            bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, /* filter */ true);
+    assertThat(scaledBitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
+  }
+
+  @Test
+  public void getConfigAfterCreateScaledBitmap() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, /* filter= */ false);
+    assertThat(scaledBitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
+  }
+
+  @Test
+  public void scaledBitmap_sameAs() {
+    Bitmap bitmap1 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap1.eraseColor(0xffff0000);
+    Bitmap bitmap2 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap2.eraseColor(0xff00ff00);
+    assertThat(bitmap1.sameAs(bitmap2)).isFalse();
+
+    Bitmap scaled1 = Bitmap.createScaledBitmap(bitmap1, 200, 200, false);
+    Bitmap scaled2 = Bitmap.createScaledBitmap(bitmap2, 200, 200, false);
+    assertThat(scaled1.sameAs(scaled2)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN)
+  public void checkBitmapNotRecycled() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inScaled = true;
+    options.inDensity = 100;
+    options.inTargetDensity = 500;
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+    assertThat(bitmap.isRecycled()).isFalse();
   }
 }

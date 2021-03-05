@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.READ_CONTACTS;
+import static android.Manifest.permission.READ_SMS;
 import static android.Manifest.permission.SUSPEND_APPS;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
 import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
@@ -14,6 +16,9 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+import static android.content.pm.PackageManager.FLAG_PERMISSION_GRANTED_BY_DEFAULT;
+import static android.content.pm.PackageManager.FLAG_PERMISSION_SYSTEM_FIXED;
+import static android.content.pm.PackageManager.FLAG_PERMISSION_USER_FIXED;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
@@ -372,6 +377,283 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
     assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionFlags_whenNoPackagePermissionFlagsProvided_returnsZero() {
+    // Don't add any permission flags
+    int flags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+
+    assertThat(flags).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionFlags_whenPackagePermissionFlagsProvided_returnsPermissionFlags() {
+    // Add the SYSTEM_FIXED permission flag
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        Process.myUserHandle());
+
+    int flags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+
+    assertThat(flags).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionFlags_whenPackagePermissionFlagsProvidedForDiffPermission_returnsZero() {
+    // Add the SYSTEM_FIXED permission flag to the READ_SMS permission
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        Process.myUserHandle());
+
+    int flags =
+        packageManager.getPermissionFlags(READ_CONTACTS, TEST_PACKAGE_NAME, Process.myUserHandle());
+
+    assertThat(flags).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPermissionFlags_whenPermissionFlagsProvidedForDifferentPackage_returnsZero() {
+    // Add the SYSTEM_FIXED permission flag to the READ_SMS permission for TEST_PACKAGE_NAME
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        Process.myUserHandle());
+
+    int flags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE2_NAME, Process.myUserHandle());
+
+    assertThat(flags).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void updatePermissionFlags_whenNoFlagMaskProvided_doesNotUpdateFlags() {
+    // Check that we have no permission flags set beforehand
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags).isEqualTo(0);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        /* flagMask= */ 0,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(newFlags).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void updatePermissionFlags_whenPackageHasOnePermissionFlagTurnedOn_updatesFlagToBeOn() {
+    // Check that we have no permission flags set beforehand
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags).isEqualTo(0);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(newFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void updatePermissionFlags_whenPackageHasOnePermissionFlagTurnedOff_updatesFlagToBeOff() {
+    // Check that we have one permission flag set beforehand
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        Process.myUserHandle());
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        /* flagValues= */ 0,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(newFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOn_updatesFlagsToBeOn() {
+    // Check that we have no permission flags set beforehand
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags).isEqualTo(0);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(newFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+    assertThat(newFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOff_updatesFlagsToBeOff() {
+    // Check that we have one permission flag set beforehand
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        Process.myUserHandle());
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+    assertThat(oldFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        /* flagValues= */ 0,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(newFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(0);
+    assertThat(newFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOn_turnOneFlagOff_onlyAffectsOneFlag() {
+    // Check that we have one permission flag set beforehand
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        Process.myUserHandle());
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+    assertThat(oldFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED,
+        /* flagValues= */ 0,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(newFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(0);
+    // The GRANTED_BY_DEFAULT flag should be untouched
+    assertThat(newFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      updatePermissionFlags_whenPackageHasMultiplePermissionFlagsTurnedOn_turnDiffFlagOn_doesNotAffectOtherFlags() {
+    // Check that we have one permission flag set beforehand
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        Process.myUserHandle());
+    int oldFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+    assertThat(oldFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_USER_FIXED,
+        FLAG_PERMISSION_USER_FIXED,
+        Process.myUserHandle());
+
+    int newFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    // The SYSTEM_FIXED and GRANTED_BY_DEFAULT flags should not be affected
+    assertThat(newFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+    assertThat(newFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+    assertThat(newFlags & FLAG_PERMISSION_USER_FIXED).isEqualTo(FLAG_PERMISSION_USER_FIXED);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void updatePermissionFlags_forDifferentPermission_doesNotAffectOriginalPermissionFlags() {
+    // Check that we have one permission flag set beforehand
+    packageManager.updatePermissionFlags(
+        READ_SMS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        FLAG_PERMISSION_SYSTEM_FIXED | FLAG_PERMISSION_GRANTED_BY_DEFAULT,
+        Process.myUserHandle());
+    int oldSmsFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(oldSmsFlags & FLAG_PERMISSION_SYSTEM_FIXED).isEqualTo(FLAG_PERMISSION_SYSTEM_FIXED);
+    assertThat(oldSmsFlags & FLAG_PERMISSION_GRANTED_BY_DEFAULT)
+        .isEqualTo(FLAG_PERMISSION_GRANTED_BY_DEFAULT);
+
+    packageManager.updatePermissionFlags(
+        READ_CONTACTS,
+        TEST_PACKAGE_NAME,
+        FLAG_PERMISSION_USER_FIXED,
+        FLAG_PERMISSION_USER_FIXED,
+        Process.myUserHandle());
+
+    int newSmsFlags =
+        packageManager.getPermissionFlags(READ_SMS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    // Check we haven't changed the permission flags of the READ_SMS permission
+    assertThat(oldSmsFlags).isEqualTo(newSmsFlags);
+    int contactsFlags =
+        packageManager.getPermissionFlags(READ_CONTACTS, TEST_PACKAGE_NAME, Process.myUserHandle());
+    assertThat(contactsFlags & FLAG_PERMISSION_USER_FIXED).isEqualTo(FLAG_PERMISSION_USER_FIXED);
   }
 
   @Test
@@ -3625,7 +3907,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void addActicityIfNotPresent_newPackage() throws Exception {
+  public void addActivityIfNotPresent_newPackage() throws Exception {
     ComponentName componentName = new ComponentName("test.package", "Activity");
     shadowOf(packageManager).addActivityIfNotPresent(componentName);
 
@@ -3637,7 +3919,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void addActicityIfNotPresent_existing() throws Exception {
+  public void addActivityIfNotPresent_existing() throws Exception {
     String packageName = ApplicationProvider.getApplicationContext().getPackageName();
     ComponentName componentName =
         new ComponentName(packageName, ActivityWithFilters.class.getName());
@@ -3651,7 +3933,7 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void addActicityIfNotPresent_newActivity() throws Exception {
+  public void addActivityIfNotPresent_newActivity() throws Exception {
     String packageName = ApplicationProvider.getApplicationContext().getPackageName();
     ComponentName componentName = new ComponentName(packageName, "NewActivity");
     shadowOf(packageManager).addActivityIfNotPresent(componentName);

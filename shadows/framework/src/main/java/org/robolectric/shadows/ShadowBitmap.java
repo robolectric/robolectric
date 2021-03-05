@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -39,6 +40,7 @@ public class ShadowBitmap {
   FileDescriptor createdFromFileDescriptor;
   byte[] createdFromBytes;
   private Bitmap createdFromBitmap;
+  private Bitmap scaledFromBitmap;
   private int createdFromX = -1;
   private int createdFromY = -1;
   private int createdFromWidth = -1;
@@ -250,9 +252,14 @@ public class ShadowBitmap {
     }
 
     shadowBitmap.createdFromBitmap = src;
+    shadowBitmap.scaledFromBitmap = src;
     shadowBitmap.createdFromFilter = filter;
     shadowBitmap.width = dstWidth;
     shadowBitmap.height = dstHeight;
+    shadowBitmap.config = src.getConfig();
+    if (shadowBitmap.config == null) {
+      shadowBitmap.config = Config.ARGB_8888;
+    }
     shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, 0, 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
     return scaledBitmap;
   }
@@ -316,6 +323,10 @@ public class ShadowBitmap {
     shadowNewBitmap.createdFromHeight = height;
     shadowNewBitmap.createdFromMatrix = matrix;
     shadowNewBitmap.createdFromFilter = filter;
+    shadowNewBitmap.config = src.getConfig();
+    if (shadowNewBitmap.config == null) {
+      shadowNewBitmap.config = Config.ARGB_8888;
+    }
 
     if (matrix != null) {
       ShadowMatrix shadowMatrix = Shadow.extract(matrix);
@@ -665,6 +676,11 @@ public class ShadowBitmap {
     }
     if (!Arrays.equals(colors, shadowOtherBitmap.colors)) {
       return false;
+    }
+    // When Bitmap.createScaledBitmap is called, the colors array is cleared, so we need a basic
+    // way to detect if two scaled bitmaps are the same.
+    if (scaledFromBitmap != null && shadowOtherBitmap.scaledFromBitmap != null) {
+      return scaledFromBitmap.sameAs(shadowOtherBitmap.scaledFromBitmap);
     }
     return true;
   }
