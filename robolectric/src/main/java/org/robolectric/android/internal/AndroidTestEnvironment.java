@@ -102,7 +102,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
       @Named("compileSdk") Sdk compileSdk,
-      ResourcesMode resourcesMode, ApkLoader apkLoader,
+      ResourcesMode resourcesMode,
+      ApkLoader apkLoader,
       ShadowProvider[] shadowProviders,
       TestEnvironmentLifecyclePlugin[] lifecyclePlugins) {
     this.runtimeSdk = runtimeSdk;
@@ -119,8 +120,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @Override
-  public void setUpApplicationState(Method method,
-      Configuration configuration, AndroidManifest appManifest) {
+  public void setUpApplicationState(
+      Method method, Configuration configuration, AndroidManifest appManifest) {
 
     for (TestEnvironmentLifecyclePlugin e : testEnvironmentLifecyclePlugins) {
       e.onSetupApplicationState();
@@ -132,6 +133,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.application = null;
     RuntimeEnvironment.setActivityThread(null);
+    Bootstrap.displaySet = false;
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
@@ -151,12 +153,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
         new android.content.res.Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
-    Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration,
-        displayMetrics);
+    Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration, displayMetrics);
 
-    Locale locale = apiLevel >= VERSION_CODES.N
-        ? androidConfiguration.getLocales().get(0)
-        : androidConfiguration.locale;
+    Locale locale =
+        apiLevel >= VERSION_CODES.N
+            ? androidConfiguration.getLocales().get(0)
+            : androidConfiguration.locale;
     Locale.setDefault(locale);
 
     // Looper needs to be prepared before the activity thread is created
@@ -172,6 +174,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     preloadClasses(apiLevel);
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
+    Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
 
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
       RuntimeEnvironment.setConfiguredApplicationClass(
@@ -247,10 +250,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
     _activityThread_.setCompatConfiguration(androidConfiguration);
-    ReflectionHelpers
-        .setStaticField(ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
+    ReflectionHelpers.setStaticField(
+        ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
-    Bootstrap.setUpDisplay(androidConfiguration, displayMetrics);
+    Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
 
     Resources systemResources = Resources.getSystem();
@@ -326,9 +329,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   private Package loadAppPackage(Config config, AndroidManifest appManifest) {
     return PerfStatsCollector.getInstance()
-        .measure(
-            "parse package",
-            () -> loadAppPackage_measured(config, appManifest));
+        .measure("parse package", () -> loadAppPackage_measured(config, appManifest));
   }
 
   private Package loadAppPackage_measured(Config config, AndroidManifest appManifest) {
@@ -388,12 +389,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
-
   private void injectResourceStuffForLegacy(AndroidManifest appManifest) {
     PackageResourceTable systemResourceTable = getSystemResourceTable();
     PackageResourceTable appResourceTable = apkLoader.getAppResourceTable(appManifest);
-    RoutingResourceTable combinedAppResourceTable = new RoutingResourceTable(appResourceTable,
-        systemResourceTable);
+    RoutingResourceTable combinedAppResourceTable =
+        new RoutingResourceTable(appResourceTable, systemResourceTable);
 
     PackageResourceTable compileTimeSdkResourceTable = apkLoader.getCompileTimeSdkResourceTable();
     ResourceTable combinedCompileTimeResourceTable =
@@ -419,8 +419,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @VisibleForTesting
-  static Application createApplication(AndroidManifest appManifest, Config config,
-      ApplicationInfo applicationInfo) {
+  static Application createApplication(
+      AndroidManifest appManifest, Config config, ApplicationInfo applicationInfo) {
     return ReflectionHelpers.callConstructor(
         getApplicationClass(appManifest, config, applicationInfo));
   }
@@ -494,8 +494,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   private static Instrumentation createInstrumentation(
-      ActivityThread activityThread,
-      ApplicationInfo applicationInfo, Application application) {
+      ActivityThread activityThread, ApplicationInfo applicationInfo, Application application) {
     Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
     reflector(_ActivityThread_.class, activityThread).setInstrumentation(androidInstrumentation);
 
@@ -513,9 +512,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     return androidInstrumentation;
   }
 
-  /**
-   * Create a file system safe directory path name for the current test.
-   */
+  /** Create a file system safe directory path name for the current test. */
   private String createTestDataDirRootPath(Method method) {
     return method.getClass().getSimpleName()
         + "_"
@@ -557,15 +554,14 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   // TODO(christianw): reconcile with ShadowPackageManager.setUpPackageStorage
-  private void setUpPackageStorage(ApplicationInfo applicationInfo,
-      PackageParser.Package parsedPackage) {
+  private void setUpPackageStorage(
+      ApplicationInfo applicationInfo, PackageParser.Package parsedPackage) {
     // TempDirectory tempDirectory = RuntimeEnvironment.getTempDirectory();
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
     // "-dataDir").toAbsolutePath().toString());
 
     if (RuntimeEnvironment.useLegacyResources()) {
-      applicationInfo.sourceDir =
-          createTempDir(applicationInfo.packageName + "-sourceDir");
+      applicationInfo.sourceDir = createTempDir(applicationInfo.packageName + "-sourceDir");
       applicationInfo.publicSourceDir =
           createTempDir(applicationInfo.packageName + "-publicSourceDir");
     } else {
@@ -599,8 +595,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   // TODO move/replace this with packageManager
   @VisibleForTesting
-  static void registerBroadcastReceivers(
-      Application application, AndroidManifest androidManifest) {
+  static void registerBroadcastReceivers(Application application, AndroidManifest androidManifest) {
     for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();
       for (String action : receiver.getActions()) {
@@ -624,5 +619,4 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
     return receiverClassName;
   }
-
 }

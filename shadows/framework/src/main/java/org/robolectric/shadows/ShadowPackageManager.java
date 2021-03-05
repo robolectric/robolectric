@@ -149,6 +149,12 @@ public class ShadowPackageManager {
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   static Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
+  /**
+   * Map of package names to an inner map where the key is the permission and the integer represents
+   * the permission flags set for that particular permission
+   */
+  static Map<String, Map<String, Integer>> permissionFlags = new HashMap<>();
+
   public static Map<String, Resources> resources = new HashMap<>();
   static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
       new TreeMap<>(new IntentComparator());
@@ -1653,6 +1659,7 @@ public class ShadowPackageManager {
       applicationEnabledSettingMap.clear();
       extraPermissions.clear();
       permissionGroups.clear();
+      permissionFlags.clear();
       resources.clear();
       resolveInfoForIntent.clear();
       deletedPackages.clear();
