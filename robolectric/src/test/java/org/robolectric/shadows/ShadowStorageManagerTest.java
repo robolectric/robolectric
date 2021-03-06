@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
@@ -40,7 +39,7 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = R)
+  @Config(minSdk = N)
   public void getStorageVolumes() {
     File file1 = new File(sdcardStorage);
     shadowOf(storageManager).addStorageVolume(buildAndGetStorageVolume(file1, "sd card"));
@@ -48,7 +47,7 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = R)
+  @Config(minSdk = N)
   public void getStorageVolumesHaveDifferentUUID() {
     File file1 = new File(sdcardStorage);
     File file2 = new File(internalStorage);
@@ -64,7 +63,7 @@ public class ShadowStorageManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = R)
+  @Config(minSdk = N)
   public void getStorageVolume() {
     File file1 = new File(internalStorage);
     File file2 = new File(sdcardStorage);
