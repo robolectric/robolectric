@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
 import android.service.voice.VoiceInteractionService;
+import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ public class ShadowVoiceInteractionService extends ShadowService {
   @Nullable private static ComponentName activeService = null;
 
   private final List<Bundle> hintBundles = Collections.synchronizedList(new ArrayList<>());
+  private final List<Bundle> sessionBundles = Collections.synchronizedList(new ArrayList<>());
   private boolean isReady = false;
 
   /**
@@ -52,6 +55,18 @@ public class ShadowVoiceInteractionService extends ShadowService {
     }
   }
 
+  @Implementation(minSdk = M)
+  protected void showSession(Bundle args, int flags) {
+    if (!isReady) {
+      throw new NullPointerException(
+          "showSession() called before onReady() callback for VoiceInteractionService!");
+    }
+
+    if (args != null) {
+      sessionBundles.add(args);
+    }
+  }
+
   @Implementation
   protected static boolean isActiveService(Context context, ComponentName componentName) {
     return componentName.equals(activeService);
@@ -76,6 +91,15 @@ public class ShadowVoiceInteractionService extends ShadowService {
     }
 
     return hintBundles.get(hintBundles.size() - 1);
+  }
+
+  /**
+   * Returns the last Bundle object set via {@link #setUiHints(Bundle bundle)} or null if there
+   * wasn't any.
+   */
+  @Nullable
+  public Bundle getLastSessionBundle() {
+    return Iterables.getLast(sessionBundles, null);
   }
 
   /** Resets this shadow instance. */
