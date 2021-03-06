@@ -1,5 +1,6 @@
 package android.graphics;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
@@ -137,5 +138,17 @@ public class BitmapTest {
     Bitmap scaled1 = Bitmap.createScaledBitmap(bitmap1, 200, 200, false);
     Bitmap scaled2 = Bitmap.createScaledBitmap(bitmap2, 200, 200, false);
     assertThat(scaled1.sameAs(scaled2)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN)
+  public void checkBitmapNotRecycled() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    options.inScaled = true;
+    options.inDensity = 100;
+    options.inTargetDensity = 500;
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+    assertThat(bitmap.isRecycled()).isFalse();
   }
 }
