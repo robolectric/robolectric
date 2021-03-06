@@ -125,4 +125,17 @@ public class BitmapTest {
     Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, /* filter= */ false);
     assertThat(scaledBitmap.getConfig()).isEqualTo(Bitmap.Config.ARGB_8888);
   }
+
+  @Test
+  public void scaledBitmap_sameAs() {
+    Bitmap bitmap1 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap1.eraseColor(0xffff0000);
+    Bitmap bitmap2 = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap2.eraseColor(0xff00ff00);
+    assertThat(bitmap1.sameAs(bitmap2)).isFalse();
+
+    Bitmap scaled1 = Bitmap.createScaledBitmap(bitmap1, 200, 200, false);
+    Bitmap scaled2 = Bitmap.createScaledBitmap(bitmap2, 200, 200, false);
+    assertThat(scaled1.sameAs(scaled2)).isFalse();
+  }
 }
