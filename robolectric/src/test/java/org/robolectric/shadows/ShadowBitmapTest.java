@@ -16,6 +16,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
@@ -471,6 +472,15 @@ public class ShadowBitmapTest {
     assertThat(Arrays.equals(pixelsOriginal, pixelsReconstructed)).isTrue();
   }
 
+  @Test
+  public void compress_shouldLessThanBeforeForWebp() {
+    Bitmap bitmap = Bitmap.createBitmap(400, 200, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.WEBP, 75, stream);
+    byte[] compressedImageByteArray = stream.toByteArray();
+    assertThat(compressedImageByteArray.length).isLessThan(bitmap.getByteCount());
+  }
+
   @Config(sdk = Build.VERSION_CODES.O)
   @Test
   public void getBytesPerPixel_O() {
@@ -637,7 +647,7 @@ public class ShadowBitmapTest {
 
   @Test
   public void extractAlpha() {
-    int[] pixels = new int[] {0xFF000000, 0x00000000, 0x88999999, 0x12345678};
+    int[] pixels = new int[] {0xFF123456, 0x00123456, 0x88999999, 0x12345678};
     Bitmap bitmap = Bitmap.createBitmap(/* width= */ 2, /* height= */ 2, Bitmap.Config.ARGB_8888);
     bitmap.setPixels(
         pixels,
@@ -650,15 +660,15 @@ public class ShadowBitmapTest {
 
     Bitmap alpha = bitmap.extractAlpha();
 
-    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
-    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
-    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
-    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF000000);
+    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00000000);
+    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88000000);
+    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12000000);
   }
 
   @Test
   public void extractAlpha_withArgs() {
-    int[] pixels = new int[] {0xFF000000, 0x00000000, 0x88999999, 0x12345678};
+    int[] pixels = new int[] {0xFF123456, 0x00123456, 0x88999999, 0x12345678};
     Bitmap bitmap = Bitmap.createBitmap(/* width= */ 2, /* height= */ 2, Bitmap.Config.ARGB_8888);
     bitmap.setPixels(
         pixels,
@@ -671,10 +681,10 @@ public class ShadowBitmapTest {
 
     Bitmap alpha = bitmap.extractAlpha(/* paint= */ null, /* offsetXY= */ new int[2]);
 
-    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF);
-    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00);
-    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88);
-    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12);
+    assertThat(alpha.getPixel(0, 0)).isEqualTo(0xFF000000);
+    assertThat(alpha.getPixel(1, 0)).isEqualTo(0x00000000);
+    assertThat(alpha.getPixel(0, 1)).isEqualTo(0x88000000);
+    assertThat(alpha.getPixel(1, 1)).isEqualTo(0x12000000);
   }
 
   private static Bitmap create(String name) {

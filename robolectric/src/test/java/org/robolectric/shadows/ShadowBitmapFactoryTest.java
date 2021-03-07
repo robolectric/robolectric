@@ -1,32 +1,44 @@
 package org.robolectric.shadows;
 
+import static com.google.common.io.Resources.toByteArray;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowBitmapFactoryTest {
+  private static final int TEST_JPEG_WIDTH = 50;
+  private static final int TEST_JPEG_HEIGHT = 50;
 
   private Application context;
 
@@ -65,6 +77,27 @@ public class ShadowBitmapFactoryTest {
     Bitmap bitmap =
         BitmapFactory.decodeResource(context.getResources(), R.drawable.an_image, options);
     assertThat(bitmap.getConfig()).isEqualTo(Bitmap.Config.ALPHA_8);
+  }
+
+  @Test
+  public void decodeResource_sameAs() throws IOException {
+    Resources resources = context.getResources();
+    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image);
+    File tmp = Files.createTempFile("BitmapTest", null).toFile();
+    try (FileOutputStream stream = new FileOutputStream(tmp)) {
+      bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+    }
+    FileInputStream fileInputStream = new FileInputStream(tmp);
+    Bitmap bitmap2 = BitmapFactory.decodeStream(fileInputStream);
+    assertThat(bitmap.sameAs(bitmap2)).isTrue();
+  }
+
+  @Test
+  public void decodeResource_shouldGetCorrectColorFromPngImage() {
+    Resources resources = context.getResources();
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opts);
+    assertThat(bitmap.getPixel(0, 0) != 0).isTrue();
   }
 
   @Test
@@ -151,6 +184,15 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeResourceStream_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColorFromResourceStream("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromResourceStream("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromResourceStream("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromResourceStream("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromResourceStream("res/drawable/pure_white.png"));
+  }
+
+  @Test
   public void decodeFile_shouldGetWidthAndHeightFromHints() {
     ShadowBitmapFactory.provideWidthAndHeightHints("/some/file.jpg", 123, 456);
 
@@ -224,6 +266,15 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeByteArray_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColorFromByteArray("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromByteArray("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromByteArray("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromByteArray("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromByteArray("res/drawable/pure_white.png"));
+  }
+
+  @Test
   public void decodeStream_shouldGetWidthAndHeightFromHints() throws Exception {
     ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
@@ -279,6 +330,26 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeStream_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColorFromStream("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromStream("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromStream("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromStream("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromStream("res/drawable/pure_white.png"));
+  }
+
+  @Test
+  public void decodeStream_shouldSameAsCompressedBefore() {
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 10, /* height= */ 10, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.PNG, /* quality= */ 100, outStream);
+    byte[] outBytes = outStream.toByteArray();
+    ByteArrayInputStream inStream = new ByteArrayInputStream(outBytes);
+    Bitmap newBitmap = BitmapFactory.decodeStream(inStream);
+    assertThat(bitmap.sameAs(newBitmap)).isTrue();
+  }
+
+  @Test
   public void decodeWithDifferentSampleSize() {
     String name = "test";
     BitmapFactory.Options options = new BitmapFactory.Options();
@@ -326,10 +397,20 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeFile_shouldGetCorrectColorFromPngImage() {
+    int color = Color.RED;
+    String pathName =
+        getClass().getClassLoader().getResource("res/drawable/pure_red.png").getPath();
+    Bitmap bitmap = BitmapFactory.decodeFile(pathName);
+    assertEquals(color, bitmap.getPixel(0, 0));
+    bitmap.recycle();
+  }
+
+  @Test
   public void decodeFile_shouldHaveCorrectWidthAndHeight() throws IOException {
-    Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
-    assertThat(bitmap.getWidth()).isEqualTo(500);
-    assertThat(bitmap.getHeight()).isEqualTo(600);
+    Bitmap bitmap = getBitmapFromResourceStream("res/drawable/test_jpeg.jpg");
+    assertThat(bitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+    assertThat(bitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
     File tmpFile = File.createTempFile("ShadowBitmapFactoryTest", ".jpg");
     tmpFile.deleteOnExit();
     try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
@@ -337,16 +418,46 @@ public class ShadowBitmapFactoryTest {
     }
     bitmap.recycle();
     Bitmap loadedBitmap = BitmapFactory.decodeFile(tmpFile.getAbsolutePath());
-    assertThat(loadedBitmap.getWidth()).isEqualTo(500);
-    assertThat(loadedBitmap.getHeight()).isEqualTo(600);
+    assertThat(loadedBitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+    assertThat(loadedBitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
     loadedBitmap.recycle();
   }
 
   @Test
+  public void decodeFile_shouldGetCorrectColorFromCompressedPngFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.PNG,
+        getBitmapByteArrayFromResourceStream("res/drawable/an_image.png"));
+  }
+
+  @Test
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.WEBP,
+        getBitmapByteArrayFromResourceStream("res/drawable/test_webp.webp"));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLossyFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.WEBP_LOSSY,
+        getBitmapByteArrayFromResourceStream("res/drawable/test_webp_lossy.webp"));
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.R)
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLosslessFile() throws IOException {
+    decodeFile_shouldGetCorrectColorFromCompressedFile(
+        Bitmap.CompressFormat.WEBP_LOSSLESS,
+        getBitmapByteArrayFromResourceStream("res/drawable/test_webp_lossless.webp"));
+  }
+
+  @Test
   public void decodeFileDescriptor_shouldHaveCorrectWidthAndHeight() throws IOException {
-    Bitmap bitmap = Bitmap.createBitmap(500, 600, Bitmap.Config.ARGB_8888);
-    assertEquals(500, bitmap.getWidth());
-    assertEquals(600, bitmap.getHeight());
+    Bitmap bitmap = getBitmapFromResourceStream("res/drawable/test_jpeg.jpg");
+    assertThat(bitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+    assertThat(bitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
 
     File tmpFile = File.createTempFile("ShadowBitmapFactoryTest", ".jpg");
     tmpFile.deleteOnExit();
@@ -356,9 +467,64 @@ public class ShadowBitmapFactoryTest {
     bitmap.recycle();
     try (FileInputStream fileInputStream = new FileInputStream(tmpFile)) {
       Bitmap loadedBitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
-      assertEquals(500, loadedBitmap.getWidth());
-      assertEquals(600, loadedBitmap.getHeight());
+      assertThat(loadedBitmap.getWidth()).isEqualTo(TEST_JPEG_WIDTH);
+      assertThat(loadedBitmap.getHeight()).isEqualTo(TEST_JPEG_HEIGHT);
       loadedBitmap.recycle();
     }
+  }
+
+  private void decodeFile_shouldGetCorrectColorFromCompressedFile(
+      Bitmap.CompressFormat format, byte[] bitmapData) throws IOException {
+    Bitmap oldBitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
+    Path tempFile = Files.createTempFile("bitmap", null);
+    FileOutputStream fileOutputStream = new FileOutputStream(tempFile.toFile());
+    // lossless compression
+    oldBitmap.compress(format, 100, fileOutputStream);
+    fileOutputStream.close();
+    Bitmap newBitmap = BitmapFactory.decodeFile(tempFile.toAbsolutePath().toString());
+
+    ByteBuffer oldBuffer = ByteBuffer.allocate(oldBitmap.getHeight() * oldBitmap.getRowBytes());
+    oldBitmap.copyPixelsToBuffer(oldBuffer);
+
+    ByteBuffer newBuffer = ByteBuffer.allocate(newBitmap.getHeight() * newBitmap.getRowBytes());
+    newBitmap.copyPixelsToBuffer(newBuffer);
+    assertThat(oldBuffer.array()).isEqualTo(newBuffer.array());
+  }
+
+  private int getPngImageColorFromStream(String pngImagePath) throws IOException {
+    InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, opts);
+    return bitmap.getPixel(0, 0);
+  }
+
+  private int getPngImageColorFromByteArray(String pngImagePath) throws IOException {
+    InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
+    inputStream.mark(inputStream.available());
+    byte[] array = new byte[inputStream.available()];
+    inputStream.read(array);
+    Bitmap bitmap = BitmapFactory.decodeByteArray(array, 0, array.length);
+    return bitmap.getPixel(0, 0);
+  }
+
+  private int getPngImageColorFromResourceStream(String pngImagePath) throws IOException {
+    Bitmap bitmap = getBitmapFromResourceStream(pngImagePath);
+    return bitmap.getPixel(0, 0);
+  }
+
+  private Bitmap getBitmapFromResourceStream(String imagePath) throws IOException {
+    InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(imagePath));
+    inputStream.mark(inputStream.available());
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Resources resources = context.getResources();
+    return BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
+  }
+
+  private byte[] getBitmapByteArrayFromResourceStream(String imagePath) throws IOException {
+    return toByteArray(com.google.common.io.Resources.getResource(imagePath));
   }
 }
