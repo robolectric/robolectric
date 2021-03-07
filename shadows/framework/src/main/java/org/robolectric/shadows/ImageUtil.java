@@ -67,12 +67,12 @@ public class ImageUtil {
       ImageReader reader = readers.next();
       try {
         reader.setInput(imageStream);
-        String mimeType = reader.getFormatName();
+        String format = reader.getFormatName();
         int minIndex = reader.getMinIndex();
         BufferedImage image = reader.read(minIndex);
         RobolectricBufferedImage robolectricBufferedImage = new RobolectricBufferedImage();
         robolectricBufferedImage.bufferedImage = image;
-        robolectricBufferedImage.mimeType = mimeType;
+        robolectricBufferedImage.mimeType = ("image/" + format).toLowerCase();
         return robolectricBufferedImage;
       } finally {
         reader.dispose();

@@ -22,7 +22,6 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -174,7 +173,7 @@ public class ShadowBitmapFactory {
     shadowBitmap.createdFromStream = is;
 
     if (image != null && opts != null) {
-      opts.outMimeType = URLConnection.guessContentTypeFromName("test." + image.mimeType);
+      opts.outMimeType = image.mimeType;
     }
     initColorArray(bufferedImage, ninePatchChunk, shadowBitmap);
     return bitmap;
