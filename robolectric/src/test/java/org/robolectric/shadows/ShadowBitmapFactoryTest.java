@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static com.google.common.io.Resources.toByteArray;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -27,7 +26,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -341,7 +339,7 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeStream_shouldSameAsCompressedBefore() throws Exception {
+  public void decodeStream_shouldSameAsCompressedBefore() {
     Bitmap bitmap = Bitmap.createBitmap(/* width= */ 10, /* height= */ 10, Bitmap.Config.ARGB_8888);
     ByteArrayOutputStream outStream = new ByteArrayOutputStream();
     bitmap.compress(Bitmap.CompressFormat.PNG, /* quality= */ 100, outStream);
@@ -426,17 +424,14 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeFile_shouldGetCorrectColorFromCompressedPngFile()
-      throws IOException, URISyntaxException {
+  public void decodeFile_shouldGetCorrectColorFromCompressedPngFile() throws IOException {
     decodeFile_shouldGetCorrectColorFromCompressedFile(
         Bitmap.CompressFormat.PNG,
         getBitmapByteArrayFromResourceStream("res/drawable/an_image.png"));
   }
 
   @Test
-  @Config(minSdk = ICE_CREAM_SANDWICH)
-  public void decodeFile_shouldGetCorrectColorFromCompressedWebpFile()
-      throws IOException, URISyntaxException {
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpFile() throws IOException {
     decodeFile_shouldGetCorrectColorFromCompressedFile(
         Bitmap.CompressFormat.WEBP,
         getBitmapByteArrayFromResourceStream("res/drawable/test_webp.webp"));
@@ -444,8 +439,7 @@ public class ShadowBitmapFactoryTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.R)
-  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLossyFile()
-      throws IOException, URISyntaxException {
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLossyFile() throws IOException {
     decodeFile_shouldGetCorrectColorFromCompressedFile(
         Bitmap.CompressFormat.WEBP_LOSSY,
         getBitmapByteArrayFromResourceStream("res/drawable/test_webp_lossy.webp"));
@@ -453,8 +447,7 @@ public class ShadowBitmapFactoryTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.R)
-  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLosslessFile()
-      throws IOException, URISyntaxException {
+  public void decodeFile_shouldGetCorrectColorFromCompressedWebpLosslessFile() throws IOException {
     decodeFile_shouldGetCorrectColorFromCompressedFile(
         Bitmap.CompressFormat.WEBP_LOSSLESS,
         getBitmapByteArrayFromResourceStream("res/drawable/test_webp_lossless.webp"));
