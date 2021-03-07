@@ -31,9 +31,13 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
    */
   @Implementation
   protected void draw(Canvas canvas) {
+    Bitmap bitmap = realBitmapDrawable.getBitmap();
+    if (bitmap == null) {
+      return;
+    }
     Paint paint = new Paint();
     paint.setColorFilter(colorFilter);
-    canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
+    canvas.drawBitmap(bitmap, 0, 0, paint);
   }
 
   @Implementation
