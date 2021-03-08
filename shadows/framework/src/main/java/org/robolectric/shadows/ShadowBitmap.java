@@ -3,12 +3,15 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
@@ -729,6 +732,23 @@ public class ShadowBitmap {
     }
     if (y >= getHeight()) {
       throw new IllegalArgumentException("y must be < bitmap.height()");
+    }
+  }
+
+  void drawRect(Rect r, Paint paint) {
+    if (colors == null) {
+      return;
+    }
+    Rect toDraw =
+        new Rect(
+            max(0, r.left), max(0, r.top), min(getWidth(), r.right), min(getHeight(), r.bottom));
+    if (toDraw.left == 0 && toDraw.top == 0 && toDraw.right == getWidth()) {
+      Arrays.fill(colors, 0, getWidth() * toDraw.bottom, paint.getColor());
+      return;
+    }
+    for (int y = toDraw.top; y < toDraw.bottom; y++) {
+      Arrays.fill(
+          colors, y * getWidth() + toDraw.left, y * getWidth() + toDraw.right, paint.getColor());
     }
   }
 }

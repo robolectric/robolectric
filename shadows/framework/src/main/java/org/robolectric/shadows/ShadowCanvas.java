@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
@@ -204,6 +205,16 @@ public class ShadowCanvas {
   }
 
   @Implementation
+  protected void drawRect(Rect r, Paint paint) {
+    rectPaintEvents.add(new RectPaintHistoryEvent(r.left, r.top, r.right, r.bottom, paint));
+
+    if (targetBitmap != null) {
+      ShadowBitmap shadowTargetBitmap = Shadows.shadowOf(targetBitmap);
+      shadowTargetBitmap.drawRect(r, paint);
+    }
+  }
+
+  @Implementation
   protected void drawRoundRect(RectF rect, float rx, float ry, Paint paint) {
     roundRectPaintEvents.add(
         new RoundRectPaintHistoryEvent(
@@ -328,11 +339,17 @@ public class ShadowCanvas {
 
   @Implementation
   protected int getWidth() {
+    if (width == 0) {
+      return targetBitmap.getWidth();
+    }
     return width;
   }
 
   @Implementation
   protected int getHeight() {
+    if (height == 0) {
+      return targetBitmap.getHeight();
+    }
     return height;
   }
 
