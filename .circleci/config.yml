@@ -43,13 +43,14 @@ jobs:
           command: |
             curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/google-java-format-1.9/google-java-format-1.9-all-deps.jar
             curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/google-java-format-1.9/scripts/google-java-format-diff.py
+            chmod +x $HOME/google-java-format-diff.py
       - run:
           name: Check Java formatting
           command: |
-            diff=$(git diff -U0 $(git merge-base HEAD origin/master) | python $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
+            diff=$(git diff -U0 $(git merge-base HEAD origin/master) | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1)
             if [[ $diff ]]; then
               echo "Please run google-java-format on the changes in this pull request"
-              git diff -U0 $(git merge-base HEAD origin/master) | python $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
+              git diff -U0 $(git merge-base HEAD origin/master) | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
               exit 1
             fi
   build:
