@@ -897,6 +897,7 @@ public class ShadowParcel {
      * @param offset starting position in bytes to start reading array at
      * @param length number of bytes to read from array
      */
+    @SuppressWarnings("BanSerializableRead")
     public static ByteBuffer fromByteArray(byte[] array, int offset, int length) {
       ByteBuffer byteBuffer = new ByteBuffer();
 

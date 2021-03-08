@@ -109,6 +109,7 @@ public class CachedDependencyResolver implements DependencyResolver {
       this.validTime = validTime;
     }
 
+    @SuppressWarnings("BanSerializableRead")
     @Override
     public <T extends Serializable> T load(String id, Class<T> type) {
       try {
