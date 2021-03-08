@@ -15,6 +15,7 @@ import android.os.RemoteException;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
@@ -62,6 +63,11 @@ public class ShadowDisplayManagerGlobal {
       shadow.mDm = myIDisplayManager;
       Bootstrap.setUpDisplay();
     }
+    return instance;
+  }
+
+  @VisibleForTesting
+  static DisplayManagerGlobal getGlobalInstance() {
     return instance;
   }
 
