@@ -184,7 +184,7 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeResourceStream_shouldGetCorrectColorFromPngImage() throws Exception {
+  public void decodeResourceStream_shouldGetCorrectColorFromPngImage() {
     assertEquals(Color.BLACK, getPngImageColorFromResourceStream("res/drawable/pure_black.png"));
     assertEquals(Color.BLUE, getPngImageColorFromResourceStream("res/drawable/pure_blue.png"));
     assertEquals(Color.GREEN, getPngImageColorFromResourceStream("res/drawable/pure_green.png"));
@@ -266,7 +266,7 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeByteArray_shouldGetCorrectColorFromPngImage() throws Exception {
+  public void decodeByteArray_shouldGetCorrectColorFromPngImage() {
     assertEquals(Color.BLACK, getPngImageColorFromByteArray("res/drawable/pure_black.png"));
     assertEquals(Color.BLUE, getPngImageColorFromByteArray("res/drawable/pure_blue.png"));
     assertEquals(Color.GREEN, getPngImageColorFromByteArray("res/drawable/pure_green.png"));
@@ -473,6 +473,15 @@ public class ShadowBitmapFactoryTest {
     }
   }
 
+  @Test
+  public void decodeFileDescriptor_shouldGetCorrectColorFromPngImage() {
+    assertEquals(Color.BLACK, getPngImageColorFromFileDescriptor("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromFileDescriptor("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromFileDescriptor("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromFileDescriptor("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromFileDescriptor("res/drawable/pure_white.png"));
+  }
+
   private void decodeFile_shouldGetCorrectColorFromCompressedFile(
       Bitmap.CompressFormat format, byte[] bitmapData) throws IOException {
     Bitmap oldBitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
@@ -500,28 +509,46 @@ public class ShadowBitmapFactoryTest {
     return bitmap.getPixel(0, 0);
   }
 
-  private int getPngImageColorFromByteArray(String pngImagePath) throws IOException {
-    InputStream inputStream =
-        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath));
-    inputStream.mark(inputStream.available());
-    byte[] array = new byte[inputStream.available()];
-    inputStream.read(array);
-    Bitmap bitmap = BitmapFactory.decodeByteArray(array, 0, array.length);
-    return bitmap.getPixel(0, 0);
+  private int getPngImageColorFromFileDescriptor(String pngImagePath) {
+    try (FileInputStream fileInputStream =
+        new FileInputStream(getClass().getClassLoader().getResource(pngImagePath).getFile())) {
+      Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
+      int color = bitmap.getPixel(0, 0);
+      bitmap.recycle();
+      return color;
+    } catch (IOException e) {
+      return Integer.MIN_VALUE;
+    }
   }
 
-  private int getPngImageColorFromResourceStream(String pngImagePath) throws IOException {
+  private int getPngImageColorFromByteArray(String pngImagePath) {
+    try (InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(pngImagePath))) {
+      inputStream.mark(inputStream.available());
+      byte[] array = new byte[inputStream.available()];
+      inputStream.read(array);
+      Bitmap bitmap = BitmapFactory.decodeByteArray(array, 0, array.length);
+      return bitmap.getPixel(0, 0);
+    } catch (IOException e) {
+      return Integer.MIN_VALUE;
+    }
+  }
+
+  private int getPngImageColorFromResourceStream(String pngImagePath) {
     Bitmap bitmap = getBitmapFromResourceStream(pngImagePath);
-    return bitmap.getPixel(0, 0);
+    return bitmap == null ? Integer.MIN_VALUE : bitmap.getPixel(0, 0);
   }
 
-  private Bitmap getBitmapFromResourceStream(String imagePath) throws IOException {
-    InputStream inputStream =
-        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(imagePath));
-    inputStream.mark(inputStream.available());
-    BitmapFactory.Options opts = new BitmapFactory.Options();
-    Resources resources = context.getResources();
-    return BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
+  private Bitmap getBitmapFromResourceStream(String imagePath) {
+    try (InputStream inputStream =
+        new BufferedInputStream(getClass().getClassLoader().getResourceAsStream(imagePath))) {
+      inputStream.mark(inputStream.available());
+      BitmapFactory.Options opts = new BitmapFactory.Options();
+      Resources resources = context.getResources();
+      return BitmapFactory.decodeResourceStream(resources, null, inputStream, null, opts);
+    } catch (IOException e) {
+      return null;
+    }
   }
 
   private byte[] getBitmapByteArrayFromResourceStream(String imagePath) throws IOException {

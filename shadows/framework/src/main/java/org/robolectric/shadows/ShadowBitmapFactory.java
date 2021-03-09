@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ImageUtil.getImageFromStream;
-import static org.robolectric.shadows.ImageUtil.getImageSizeFromStream;
 
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
@@ -26,12 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.imageio.ImageIO;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ImageUtil.RobolectricBufferedImage;
 import org.robolectric.util.Join;
 import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
@@ -70,12 +69,17 @@ public class ShadowBitmapFactory {
     final TypedValue value = new TypedValue();
     InputStream is = res.openRawResource(id, value);
 
-    Point imageSizeFromStream = getImageSizeFromStream(is);
+    RobolectricBufferedImage image = getImageFromStream(is);
+    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
+    Point imageSizeFromStream =
+        bufferedImage == null
+            ? null
+            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
 
     Bitmap bitmap = create("resource:" + res.getResourceName(id), options, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
-    initColorArray(is, bitmap.getNinePatchChunk(), shadowBitmap);
+    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -87,26 +91,25 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
     // If a real file is used, attempt to get the image size from that file.
-    Point imageSizeFromStream = null;
+    RobolectricBufferedImage image = null;
     if (pathName != null && new File(pathName).exists()) {
       try (FileInputStream fileInputStream = new FileInputStream(pathName);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+        image = getImageFromStream(bufferedInputStream);
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
+
+    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
+    Point imageSizeFromStream =
+        bufferedImage == null
+            ? null
+            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
     Bitmap bitmap = create("file:" + pathName, options, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
-    if (pathName != null && new File(pathName).exists()) {
-      try (FileInputStream fileInputStream = new FileInputStream(pathName);
-          BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-        initColorArray(bufferedInputStream, bitmap.getNinePatchChunk(), shadowBitmap, false);
-      } catch (IOException e) {
-        Logger.warn("Error initialization of color array", e);
-      }
-    }
+    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -114,19 +117,25 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
-    Point imageSizeFromStream = null;
+    RobolectricBufferedImage image = null;
     // If a real FileDescriptor is used, attempt to get the image size.
     if (fd != null && fd.valid()) {
       try (FileInputStream fileInputStream = new FileInputStream(fd);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
-        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+        image = getImageFromStream(bufferedInputStream);
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
+    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
+    Point imageSizeFromStream =
+        bufferedImage == null
+            ? null
+            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
     Bitmap bitmap = create("fd:" + fd, outPadding, opts, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
+    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -160,8 +169,8 @@ public class ShadowBitmapFactory {
 
     boolean isNamedStream = is instanceof NamedStream;
     String name = isNamedStream ? is.toString().replace("stream for ", "") : null;
-    ImageUtil.RobolectricBufferedImage image = isNamedStream ? null : getImageFromStream(is);
-    BufferedImage bufferedImage = image == null ? null : image.bufferedImage;
+    RobolectricBufferedImage image = isNamedStream ? null : getImageFromStream(is);
+    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
     Point imageSize =
         bufferedImage == null
             ? null
@@ -197,9 +206,15 @@ public class ShadowBitmapFactory {
     }
 
     ByteArrayInputStream is = new ByteArrayInputStream(data, offset, length);
-    Point imageSize = getImageSizeFromStream(is);
+    RobolectricBufferedImage image = getImageFromStream(is);
+    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
+    Point imageSize =
+        bufferedImage == null
+            ? null
+            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
     Bitmap bitmap = create(desc, opts, imageSize);
-    initColorArray(is, bitmap.getNinePatchChunk(), Shadow.extract(bitmap));
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -214,28 +229,7 @@ public class ShadowBitmapFactory {
   public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
     return create(name, null, options, widthAndHeight);
   }
-
-  private static void initColorArray(
-      InputStream is, byte[] ninePatchChunk, ShadowBitmap shadowBitmap) {
-    initColorArray(is, ninePatchChunk, shadowBitmap, true);
-  }
-
-  private static void initColorArray(
-      InputStream is, byte[] ninePatchChunk, ShadowBitmap shadowBitmap, boolean needReset) {
-    if (is == null || ninePatchChunk != null) {
-      return;
-    }
-    try {
-      if (needReset) {
-        is.reset();
-      }
-      BufferedImage image = ImageIO.read(is);
-      initColorArray(image, null, shadowBitmap);
-    } catch (IOException ignore) {
-      // ignore
-    }
-  }
-
+  
   private static void initColorArray(
       BufferedImage image, byte[] ninePatchChunk, ShadowBitmap shadowBitmap) {
     if (image == null || ninePatchChunk != null) {
