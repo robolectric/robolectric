@@ -473,6 +473,15 @@ public class ShadowBitmapFactoryTest {
     }
   }
 
+  @Test
+  public void decodeFileDescriptor_shouldGetCorrectColorFromPngImage() throws Exception {
+    assertEquals(Color.BLACK, getPngImageColorFromFileDescriptor("res/drawable/pure_black.png"));
+    assertEquals(Color.BLUE, getPngImageColorFromFileDescriptor("res/drawable/pure_blue.png"));
+    assertEquals(Color.GREEN, getPngImageColorFromFileDescriptor("res/drawable/pure_green.png"));
+    assertEquals(Color.RED, getPngImageColorFromFileDescriptor("res/drawable/pure_red.png"));
+    assertEquals(Color.WHITE, getPngImageColorFromFileDescriptor("res/drawable/pure_white.png"));
+  }
+
   private void decodeFile_shouldGetCorrectColorFromCompressedFile(
       Bitmap.CompressFormat format, byte[] bitmapData) throws IOException {
     Bitmap oldBitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
@@ -498,6 +507,18 @@ public class ShadowBitmapFactoryTest {
     BitmapFactory.Options opts = new BitmapFactory.Options();
     Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, opts);
     return bitmap.getPixel(0, 0);
+  }
+
+  private int getPngImageColorFromFileDescriptor(String pngImagePath) {
+    try (FileInputStream fileInputStream =
+        new FileInputStream(getClass().getClassLoader().getResource(pngImagePath).getFile())) {
+      Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
+      int color = bitmap.getPixel(0, 0);
+      bitmap.recycle();
+      return color;
+    } catch (IOException e) {
+      return Integer.MIN_VALUE;
+    }
   }
 
   private int getPngImageColorFromByteArray(String pngImagePath) throws IOException {

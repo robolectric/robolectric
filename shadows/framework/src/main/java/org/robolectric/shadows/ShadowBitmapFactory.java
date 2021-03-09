@@ -32,6 +32,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ImageUtil.RobolectricBufferedImage;
 import org.robolectric.util.Join;
 import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
@@ -114,19 +115,25 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
-    Point imageSizeFromStream = null;
+    RobolectricBufferedImage image = null;
     // If a real FileDescriptor is used, attempt to get the image size.
     if (fd != null && fd.valid()) {
       try (FileInputStream fileInputStream = new FileInputStream(fd);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream); ) {
-        imageSizeFromStream = getImageSizeFromStream(bufferedInputStream);
+        image = getImageFromStream(bufferedInputStream);
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
+    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
+    Point imageSizeFromStream =
+        bufferedImage == null
+            ? null
+            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
     Bitmap bitmap = create("fd:" + fd, outPadding, opts, imageSizeFromStream);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
+    initColorArray(bufferedImage, null, shadowBitmap);
     return bitmap;
   }
 
@@ -160,7 +167,7 @@ public class ShadowBitmapFactory {
 
     boolean isNamedStream = is instanceof NamedStream;
     String name = isNamedStream ? is.toString().replace("stream for ", "") : null;
-    ImageUtil.RobolectricBufferedImage image = isNamedStream ? null : getImageFromStream(is);
+    RobolectricBufferedImage image = isNamedStream ? null : getImageFromStream(is);
     BufferedImage bufferedImage = image == null ? null : image.bufferedImage;
     Point imageSize =
         bufferedImage == null
