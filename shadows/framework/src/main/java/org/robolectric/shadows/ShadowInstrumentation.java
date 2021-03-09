@@ -794,6 +794,20 @@ public class ShadowInstrumentation {
   }
 
   /**
+   * Returns all {@code Intent} started by {@link #startService(android.content.Intent)} without
+   * consuming them.
+   *
+   * @return the list of {@code Intent}
+   */
+  List<Intent> getAllStartedServices() {
+    ArrayList<Intent> startedServicesIntents = new ArrayList<>();
+    for (Intent.FilterComparison filterComparison : startedServices) {
+      startedServicesIntents.add(filterComparison.getIntent());
+    }
+    return startedServicesIntents;
+  }
+
+  /**
    * Consumes the {@code Intent} requested to stop a service by {@link
    * #stopService(android.content.Intent)} from the bottom of the stack of stop requests.
    */

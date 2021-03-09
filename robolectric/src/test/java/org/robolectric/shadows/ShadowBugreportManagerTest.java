@@ -42,6 +42,14 @@ public final class ShadowBugreportManagerTest {
   }
 
   @Test
+  public void requestBugreport() {
+    shadowBugreportManager.requestBugreport(
+        new BugreportParams(BugreportParams.BUGREPORT_MODE_INTERACTIVE), "title", "description");
+
+    assertThat(shadowBugreportManager.wasBugreportRequested()).isTrue();
+  }
+
+  @Test
   public void startBugreport() throws Exception {
     BugreportCallback callback = mock(BugreportCallback.class);
     shadowBugreportManager.startBugreport(

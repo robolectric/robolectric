@@ -10,6 +10,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -665,6 +666,23 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  public void getAllStartedServices() {
+    Intent intent1 = getSomeActionIntent("some.action");
+    Intent intent2 = getSomeActionIntent("another.action");
+
+    context.startService(intent1);
+    context.startService(intent2);
+    List<Intent> startedServiceIntents = shadowOf(context).getAllStartedServices();
+
+    assertThat(startedServiceIntents).hasSize(2);
+    assertThat(startedServiceIntents.get(0).filterEquals(intent1)).isTrue();
+    assertThat(startedServiceIntents.get(1).filterEquals(intent2)).isTrue();
+    assertNotNull(shadowOf(context).getNextStartedService());
+    assertNotNull(shadowOf(context).getNextStartedService());
+    assertNull(shadowOf(context).getNextStartedService());
+  }
+
+  @Test
   public void shouldThrowIfContainsRegisteredReceiverOfAction() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
@@ -899,4 +917,3 @@ public class ShadowApplicationTest {
     }
   }
 }
-

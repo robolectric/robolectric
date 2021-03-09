@@ -88,6 +88,7 @@ public class ShadowBitmapFactory {
     return decodeFile(pathName, null);
   }
 
+  @SuppressWarnings("Var")
   @Implementation
   protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
     // If a real file is used, attempt to get the image size from that file.
@@ -113,7 +114,7 @@ public class ShadowBitmapFactory {
     return bitmap;
   }
 
-  @SuppressWarnings("ObjectToString")
+  @SuppressWarnings({"ObjectToString", "Var"})
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
