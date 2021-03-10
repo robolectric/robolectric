@@ -4,8 +4,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.FrameMetrics;
 import android.view.FrameMetrics.Metric;
-import com.google.common.primitives.Longs;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.robolectric.util.ReflectionHelpers;
@@ -87,10 +85,9 @@ public final class FrameMetricsBuilder {
           timingData[getStartIndexForMetric(metric)] + getMetric(metric);
     }
 
-    // Even as FrameMetrics are added, the end point of TOTAL_DURATION should always equal the
-    // maximum of this list.
+    // SWAP_BUFFERS_DURATION is the current endpoint in the chain of supported FrameMetrics.
     timingData[getEndIndexForMetric(FrameMetrics.TOTAL_DURATION)] =
-        Collections.max(Longs.asList(timingData));
+        timingData[getEndIndexForMetric(FrameMetrics.SWAP_BUFFERS_DURATION)];
     return metrics;
   }
 
