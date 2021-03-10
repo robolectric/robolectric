@@ -173,4 +173,75 @@ public class BitmapTest {
     colorDrawable.draw(canvas);
     assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
   }
+
+  @Test
+  public void drawCanvas_bitmap_sameSize() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xff00ff00);
+    Bitmap output = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(bitmap, 0, 0, null);
+    assertThat(bitmap.sameAs(output)).isTrue();
+  }
+
+  @Test
+  public void drawCanvas_bitmap_centered() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xff00ff00);
+    Bitmap output = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(bitmap, 50, 50, null);
+    assertThat(output.getPixel(49, 49)).isEqualTo(0);
+    assertThat(output.getPixel(50, 50)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(149, 149)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(150, 150)).isEqualTo(0);
+  }
+
+  @Test
+  public void drawCanvas_overflow_topLeft() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xff00ff00);
+    Bitmap output = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(bitmap, -50, -50, null);
+    assertThat(output.getPixel(0, 0)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(49, 49)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(50, 50)).isEqualTo(0);
+  }
+
+  @Test
+  public void drawCanvas_overflow_topRight() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xff00ff00);
+    Bitmap output = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(bitmap, 50, -50, null);
+    assertThat(output.getPixel(99, 0)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(50, 49)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(49, 50)).isEqualTo(0);
+  }
+
+  @Test
+  public void drawCanvas_overflow_bottomLeft() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xff00ff00);
+    Bitmap output = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(bitmap, -50, 50, null);
+    assertThat(output.getPixel(0, 99)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(49, 50)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(50, 49)).isEqualTo(0);
+  }
+
+  @Test
+  public void drawCanvas_overflow_bottomRight() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0xff00ff00);
+    Bitmap output = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(output);
+    canvas.drawBitmap(bitmap, 50, 50, null);
+    assertThat(output.getPixel(99, 99)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(50, 50)).isEqualTo(0xff00ff00);
+    assertThat(output.getPixel(49, 49)).isEqualTo(0);
+  }
 }
