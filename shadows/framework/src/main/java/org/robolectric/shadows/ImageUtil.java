@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static java.awt.image.AffineTransformOp.TYPE_BILINEAR;
+import static java.awt.image.AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB_PRE;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
@@ -10,6 +12,8 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Point;
 import com.google.auto.value.AutoValue;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +27,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import org.robolectric.Shadows;
+import org.robolectric.shadow.api.Shadow;
 
 public class ImageUtil {
   private static final String FORMAT_NAME_JPEG = "jpg";
@@ -80,6 +85,31 @@ public class ImageUtil {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  static boolean scaledBitmap(Bitmap src, Bitmap dst, boolean filter) {
+    if (src == null || dst == null) {
+      return false;
+    }
+    int srcWidth = src.getWidth();
+    int srcHeight = src.getHeight();
+    if (srcWidth <= 0 || srcHeight <= 0) {
+      return false;
+    }
+    BufferedImage before = ((ShadowBitmap) Shadow.extract(src)).getBufferedImage();
+    if (before == null || before.getColorModel() == null) {
+      return false;
+    }
+    int imageType = getBufferedImageType(src.getConfig(), before.getColorModel().hasAlpha());
+    BufferedImage after = new BufferedImage(srcWidth, srcHeight, imageType);
+    AffineTransform at = new AffineTransform();
+    at.scale(dst.getWidth() * 1.0f / srcWidth, dst.getHeight() * 1.0f / srcHeight);
+    // See Andriod's Bitmap#createScaledBitmap SDK doc
+    int interpolationType = filter ? TYPE_BILINEAR : TYPE_NEAREST_NEIGHBOR;
+    AffineTransformOp scaleOp = new AffineTransformOp(at, interpolationType);
+    ShadowBitmap shadowBitmap = Shadow.extract(dst);
+    shadowBitmap.setBufferedImage(scaleOp.filter(before, after));
+    return true;
   }
 
   public static boolean writeToStream(
