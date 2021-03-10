@@ -17,6 +17,7 @@ import android.os.Build;
 import android.provider.MediaStore;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.io.ByteStreams;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -397,11 +398,10 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeFile_shouldGetCorrectColorFromPngImage() {
+  public void decodeFile_shouldGetCorrectColorFromPngImage() throws IOException {
     int color = Color.RED;
-    String pathName =
-        getClass().getClassLoader().getResource("res/drawable/pure_red.png").getPath();
-    Bitmap bitmap = BitmapFactory.decodeFile(pathName);
+    File file = getBitmapFileFromResourceStream("res/drawable/pure_red.png");
+    Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
     assertEquals(color, bitmap.getPixel(0, 0));
     bitmap.recycle();
   }
@@ -474,7 +474,7 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
-  public void decodeFileDescriptor_shouldGetCorrectColorFromPngImage() {
+  public void decodeFileDescriptor_shouldGetCorrectColorFromPngImage() throws IOException {
     assertEquals(Color.BLACK, getPngImageColorFromFileDescriptor("res/drawable/pure_black.png"));
     assertEquals(Color.BLUE, getPngImageColorFromFileDescriptor("res/drawable/pure_blue.png"));
     assertEquals(Color.GREEN, getPngImageColorFromFileDescriptor("res/drawable/pure_green.png"));
@@ -509,16 +509,21 @@ public class ShadowBitmapFactoryTest {
     return bitmap.getPixel(0, 0);
   }
 
-  private int getPngImageColorFromFileDescriptor(String pngImagePath) {
-    try (FileInputStream fileInputStream =
-        new FileInputStream(getClass().getClassLoader().getResource(pngImagePath).getFile())) {
-      Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
-      int color = bitmap.getPixel(0, 0);
-      bitmap.recycle();
-      return color;
-    } catch (IOException e) {
-      return Integer.MIN_VALUE;
-    }
+  private int getPngImageColorFromFileDescriptor(String pngImagePath) throws IOException {
+    File file = getBitmapFileFromResourceStream(pngImagePath);
+    FileInputStream fileInputStream = new FileInputStream(file);
+    Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fileInputStream.getFD());
+    int color = bitmap.getPixel(0, 0);
+    bitmap.recycle();
+    return color;
+  }
+
+  private File getBitmapFileFromResourceStream(String imagePath) throws IOException {
+    InputStream inputStream = com.google.common.io.Resources.getResource(imagePath).openStream();
+    File tempFile = Files.createTempFile("ShadowBitmapFactoryTest", null).toFile();
+    tempFile.deleteOnExit();
+    ByteStreams.copy(inputStream, new FileOutputStream(tempFile));
+    return tempFile;
   }
 
   private int getPngImageColorFromByteArray(String pngImagePath) {
