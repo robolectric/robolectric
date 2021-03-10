@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
       - uses: actions/checkout@v2
@@ -32,7 +32,7 @@ jobs:
         run: SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
 
   tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     needs: build
     strategy:
       fail-fast: false

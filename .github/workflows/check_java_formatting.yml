@@ -9,7 +9,7 @@ on:
 
 jobs:
   check_java_formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
 
     steps:
       - uses: actions/checkout@v2
