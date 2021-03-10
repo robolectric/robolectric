@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** @author christianw@google.com (Christian Williams) */
+/** Tests for {@link DeprecatedMethodsCheck} */
 @RunWith(JUnit4.class)
 @SuppressWarnings("LineLength")
 public class DeprecatedMethodsCheckTest {
@@ -211,10 +211,8 @@ public class DeprecatedMethodsCheckTest {
         .doTest();
   }
 
-  @BugPattern(
-      name = "DeprecatedMethods",
-      summary = "",
-      severity = WARNING)
+  /** Test overrides for {@link DeprecatedMethodsCheck} */
+  @BugPattern(name = "DeprecatedMethods", summary = "", severity = WARNING)
   public static class DeprecatedMethodsCheckForTest extends DeprecatedMethodsCheck {
     @Override
     String shadowName(String className) {
