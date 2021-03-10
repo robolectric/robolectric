@@ -42,7 +42,6 @@ public class ShadowBackupManager {
   private static BackupManagerServiceState serviceState = new BackupManagerServiceState();
 
   @RealObject private BackupManager realBackupManager;
-  private int dataChangedCount;
   private Context context;
 
   @Resetter
@@ -59,17 +58,17 @@ public class ShadowBackupManager {
 
   @Implementation
   protected void dataChanged() {
-    dataChangedCount++;
+    serviceState.dataChangedCount.merge(context.getPackageName(), 1, Integer::sum);
   }
 
   /** Returns whether {@link #dataChanged()} was called. */
   public boolean isDataChanged() {
-    return dataChangedCount > 0;
+    return serviceState.dataChangedCount.containsKey(context.getPackageName());
   }
 
   /** Returns number of times {@link #dataChanged()} was called. */
   public int getDataChangedCount() {
-    return dataChangedCount;
+    return serviceState.dataChangedCount.getOrDefault(context.getPackageName(), 0);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -161,11 +160,11 @@ public class ShadowBackupManager {
     }
 
     // Override method for SDK <= 28
-    public int restoreSome(long token, IRestoreObserver observer, IBackupManagerMonitor monitor,
-        String[] packages) throws RemoteException {
+    public int restoreSome(
+        long token, IRestoreObserver observer, IBackupManagerMonitor monitor, String[] packages)
+        throws RemoteException {
       return restorePackages(token, observer, packages, monitor);
     }
-
 
     public int restorePackages(
         long token, IRestoreObserver observer, String[] packages, IBackupManagerMonitor monitor)
@@ -235,6 +234,7 @@ public class ShadowBackupManager {
   private static class BackupManagerServiceState {
     boolean backupEnabled = true;
     long lastRestoreToken = 0L;
+    final Map<String, Integer> dataChangedCount = new HashMap<>();
     final Map<Long, List<String>> restoreData = new HashMap<>();
     final Map<String, Long> restoredPackages = new HashMap<>();
   }

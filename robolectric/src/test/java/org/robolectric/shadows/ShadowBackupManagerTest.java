@@ -61,6 +61,10 @@ public class ShadowBackupManagerTest {
       assertThat(shadowOf(backupManager).isDataChanged()).isTrue();
       assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(i);
     }
+
+    ShadowBackupManager.reset();
+    assertThat(shadowOf(backupManager).isDataChanged()).isFalse();
+    assertThat(shadowOf(backupManager).getDataChangedCount()).isEqualTo(0);
   }
 
   @Test
