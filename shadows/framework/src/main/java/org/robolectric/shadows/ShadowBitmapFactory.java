@@ -176,8 +176,8 @@ public class ShadowBitmapFactory {
             ? null
             : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
     Bitmap bitmap = create(name, outPadding, opts, imageSize);
-    ReflectionHelpers.callInstanceMethod(bitmap, "setNinePatchChunk",
-            ClassParameter.from(byte[].class, ninePatchChunk));
+    ReflectionHelpers.callInstanceMethod(
+        bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
 
@@ -229,7 +229,7 @@ public class ShadowBitmapFactory {
   public static Bitmap create(final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
     return create(name, null, options, widthAndHeight);
   }
-  
+
   private static void initColorArray(
       BufferedImage image, byte[] ninePatchChunk, ShadowBitmap shadowBitmap) {
     if (image == null || ninePatchChunk != null) {
