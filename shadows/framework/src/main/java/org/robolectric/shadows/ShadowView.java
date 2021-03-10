@@ -30,6 +30,7 @@ import android.view.ViewParent;
 import android.view.WindowId;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import android.widget.ImageView;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -186,12 +187,21 @@ public class ShadowView {
   }
 
   @Implementation
-  protected void draw(android.graphics.Canvas canvas) {
+  protected void draw(Canvas canvas) {
     Drawable background = realView.getBackground();
     if (background != null) {
       ShadowCanvas shadowCanvas = Shadow.extract(canvas);
       shadowCanvas.appendDescription("background:");
       background.draw(canvas);
+    }
+    // Because ImageView does not override the draw(Canvas) method, this logic has to
+    // be here, otherwise there will be a ClassCastException if there is a custom View shadow,
+    // which is one of the more commonly occurring shadows.
+    if (realView instanceof ImageView) {
+      Drawable drawable = ((ImageView) realView).getDrawable();
+      if (drawable != null) {
+        drawable.draw(canvas);
+      }
     }
   }
 
