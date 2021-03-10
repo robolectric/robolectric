@@ -15,7 +15,7 @@ public class RobolectricShadowTest {
   @Before
   public void setUp() {
     this.testHelper =
-        BugCheckerRefactoringTestHelper.newInstance(new RobolectricShadow(), getClass());
+        BugCheckerRefactoringTestHelper.newInstance(RobolectricShadow.class, getClass());
   }
 
   @Test
