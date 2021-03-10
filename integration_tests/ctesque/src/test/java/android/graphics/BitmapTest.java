@@ -8,6 +8,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
@@ -158,5 +160,17 @@ public class BitmapTest {
     opt.inMutable = true;
     Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opt);
     assertThat(bitmap.isMutable()).isTrue();
+  }
+
+  @Test
+  public void colorDrawable_drawToBitmap() {
+    Drawable colorDrawable = new ColorDrawable(Color.RED);
+    Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    assertThat(canvas.getWidth()).isEqualTo(1);
+    assertThat(canvas.getHeight()).isEqualTo(1);
+    colorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+    colorDrawable.draw(canvas);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.RED);
   }
 }
