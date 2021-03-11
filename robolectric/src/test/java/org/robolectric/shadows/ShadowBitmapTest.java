@@ -282,6 +282,12 @@ public class ShadowBitmapTest {
     bitmap.setPixel(0, 0, 2);
   }
 
+  @Test(expected = IllegalStateException.class)
+  public void shouldThrowExceptionForSetPixelsOnImmutableBitmap() {
+    Bitmap bitmap = Bitmap.createBitmap(new int[] {1}, 1, 1, Bitmap.Config.ARGB_8888);
+    bitmap.setPixels(new int[] {1}, 0, 0, 0, 0, 1, 1);
+  }
+
   @Test
   public void bitmapsAreReused() {
     Bitmap b = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
