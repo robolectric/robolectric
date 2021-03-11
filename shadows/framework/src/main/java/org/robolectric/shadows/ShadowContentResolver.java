@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -30,7 +31,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
 import com.google.common.base.Splitter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +43,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -71,6 +75,7 @@ public class ShadowContentResolver {
   private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
   private Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
   private Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
+  private Map<Uri, Supplier<ParcelFileDescriptor>> fileDescriptorMap = new HashMap<>();
   private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
   private ContentProviderResult[] contentProviderResults;
@@ -159,6 +164,13 @@ public class ShadowContentResolver {
     outputStreamMap.put(uri, supplier);
   }
 
+  /**
+   * Registers a supplier of file descriptors that can be opened with {@link #openFileDescriptor}.
+   */
+  public void registerFileDescriptorSupplier(Uri uri, Supplier<ParcelFileDescriptor> supplier) {
+    fileDescriptorMap.put(uri, supplier);
+  }
+
   @Implementation
   protected final InputStream openInputStream(final Uri uri) {
     Supplier<InputStream> supplier = inputStreamMap.get(uri);
@@ -189,6 +201,30 @@ public class ShadowContentResolver {
         return "outputstream for " + uri;
       }
     };
+  }
+
+  /**
+   * If a supplier is registered with {@link #registerFileDescriptorSupplier} for the URI passed in,
+   * it will be called and the result returned. Otherwise, the framework implementation is invoked,
+   * calling through to any {@link ContentProvider}s registered.
+   */
+  @Implementation(minSdk = 19)
+  protected final ParcelFileDescriptor openFileDescriptor(
+      final Uri uri, String mode, CancellationSignal cancellationSignal)
+      throws FileNotFoundException {
+    Supplier<ParcelFileDescriptor> supplier = fileDescriptorMap.get(uri);
+    if (supplier != null) {
+      ParcelFileDescriptor fd = supplier.get();
+      if (fd == null) {
+        throw new FileNotFoundException(
+            String.format(Locale.US, "Supplier for %s returned null file descriptor", uri));
+      }
+
+      return fd;
+    }
+
+    return directlyOn(realContentResolver, ContentResolver.class)
+        .openFileDescriptor(uri, mode, cancellationSignal);
   }
 
   /**
