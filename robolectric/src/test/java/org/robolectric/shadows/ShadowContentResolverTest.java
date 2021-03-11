@@ -8,11 +8,13 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.Config.NONE;
 
@@ -54,6 +56,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -473,6 +476,69 @@ public class ShadowContentResolverTest {
 
     contentResolver.openOutputStream(uri).write(5);
     assertThat(streamCreateCount.get()).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void openFileDescriptor_noFileRegistered_throwsNotFound() throws Exception {
+    // WHEN a not-yet-registered file is being opened
+
+    // THEN it calls through to the framework, which then throws.
+    assertThrows(FileNotFoundException.class, () -> contentResolver.openFileDescriptor(
+        Uri.parse("content://com.unknown.authority/path"),
+        /* mode= */ "r",
+        /* cancellationSignal= */ null));
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void openFileDescriptor_noFileRegistered_providerExists_returnsDescriptor()
+      throws Exception {
+    // WHEN a not-yet-registered file is being opened
+
+    // ... but there is an underlying provider registered already
+    Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
+
+    // THEN we call through to the framework, which returns a descriptor.
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/path");
+    ParcelFileDescriptor descriptor = contentResolver.openFileDescriptor(
+        uri,
+        /* mode= */ "r",
+        /* cancellationSignal= */ null);
+
+    assertThat(descriptor).isNotNull();
+    descriptor.close();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void registerFileDescriptorSupplier_noCall_doesNotCallSupplier() throws Exception {
+    // WHEN a supplier is registered
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/path");
+    Supplier<ParcelFileDescriptor> mockSupplier = mock(Supplier.class);
+    shadowOf(contentResolver).registerFileDescriptorSupplier(uri, mockSupplier);
+
+    // THEN it is not called until someone actually requests the file
+    verifyNoMoreInteractions(mockSupplier);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void openFileDescriptor_supplierRegistered_asksSupplier() throws Exception {
+    // WHEN a supplier is registered
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/path");
+    ParcelFileDescriptor descriptorToReturn =
+        new MyContentProvider().openFile(/* uri= */ null, /* mode= */ null);
+    shadowOf(contentResolver).registerFileDescriptorSupplier(uri, () -> descriptorToReturn);
+
+    // WHEN the file is opened
+    ParcelFileDescriptor descriptor =
+        contentResolver.openFileDescriptor(uri, /* mode= */ "r", /* cancellationSignal= */ null);
+
+    // THEN we get the same descriptor back
+    assertThat(descriptor).isSameInstanceAs(descriptorToReturn);
+
+    descriptorToReturn.close();
   }
 
   @Test
