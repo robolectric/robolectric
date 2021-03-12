@@ -34,11 +34,14 @@ import android.widget.ImageView;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -52,7 +55,10 @@ public class ShadowView {
 
   @RealObject
   protected View realView;
-
+  private static final List<GlobalOnPerformClickListener> globalOnPerformClickListeners =
+      new CopyOnWriteArrayList<>();
+  private static final List<GlobalOnSendAccessibilityEventListener>
+      globalOnSendAccessibilityEventListeners = new CopyOnWriteArrayList<>();
   private View.OnClickListener onClickListener;
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
@@ -72,9 +78,32 @@ public class ShadowView {
   private int layerType;
   private AnimationRunner animationRunner;
 
+  /** A listener that is called whenever performClick() is called on any view. */
+  public interface GlobalOnPerformClickListener {
+
+    /**
+     * Called when performClick() is called.
+     *
+     * @param view The {@link View} being acted upon.
+     */
+    void onGlobalPerformClick(View view);
+  }
+
+  /** A listener that is called whenever sendAccessibilityEvent is called. */
+  public interface GlobalOnSendAccessibilityEventListener {
+
+    /**
+     * Called when sendAccessibilityEvent is called.
+     *
+     * @param view The {@link View} that sent the accessibility event.
+     * @param eventType The {@link AccessibilityEvent} of the event.
+     */
+    void onGlobalSendAccessibilityEvent(View view, int eventType);
+  }
+
   /**
-   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
-   * is enabled.
+   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
+   * visible and that it is enabled.
    *
    * @param view the view to click on
    * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
@@ -224,6 +253,68 @@ public class ShadowView {
   protected void requestLayout() {
     didRequestLayout = true;
     directly().requestLayout();
+  }
+
+  @Implementation
+  protected boolean performClick() {
+    for (GlobalOnPerformClickListener listener : globalOnPerformClickListeners) {
+      listener.onGlobalPerformClick(realView);
+    }
+    return directlyOn(realView, View.class, "performClick");
+  }
+
+  /**
+   * Registers an {@link GlobalOnPerformClickListener} to the {@link ShadowView}.
+   *
+   * @param listener The {@link GlobalOnPerformClickListener} to be registered.
+   */
+  public static void addGlobalOnPerformClickListener(GlobalOnPerformClickListener listener) {
+    ShadowView.globalOnPerformClickListeners.add(listener);
+  }
+
+  /**
+   * Removes an {@link GlobalOnPerformClickListener} from the {@link ShadowView}.
+   *
+   * @param listener The {@link GlobalOnPerformClickListener} to be removed.
+   */
+  public static void removeGlobalOnPerformClickListener(GlobalOnPerformClickListener listener) {
+    ShadowView.globalOnPerformClickListeners.remove(listener);
+  }
+
+  @Implementation
+  protected void sendAccessibilityEvent(int eventType) {
+    for (GlobalOnSendAccessibilityEventListener listener :
+        globalOnSendAccessibilityEventListeners) {
+      listener.onGlobalSendAccessibilityEvent(realView, eventType);
+    }
+    directlyOn(
+        realView, View.class, "sendAccessibilityEvent", ClassParameter.from(int.class, eventType));
+  }
+
+  /**
+   * Registers an {@link GlobalOnSendAccessibilityEventListener} to the {@link ShadowView}.
+   *
+   * @param listener The {@link GlobalOnSendAccessibilityEventListener} to be registered.
+   */
+  public static void addGlobalOnSendAccessibilityEventListener(
+      GlobalOnSendAccessibilityEventListener listener) {
+    ShadowView.globalOnSendAccessibilityEventListeners.add(listener);
+  }
+
+  /**
+   * Removes an {@link GlobalOnSendAccessibilityEventListener} from the {@link ShadowView}.
+   *
+   * @param listener The {@link GlobalOnSendAccessibilityEventListener} to be removed.
+   */
+  public static void removeGlobalOnSendAccessibilityEventListener(
+      GlobalOnSendAccessibilityEventListener listener) {
+    ShadowView.globalOnSendAccessibilityEventListeners.remove(listener);
+  }
+
+  @Resetter
+  public static void reset() {
+    ShadowView.globalOnPerformClickListeners.clear();
+    ShadowView.globalOnSendAccessibilityEventListeners.clear();
   }
 
   public boolean didRequestLayout() {

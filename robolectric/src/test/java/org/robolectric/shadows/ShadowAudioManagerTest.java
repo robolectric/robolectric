@@ -74,16 +74,20 @@ public class ShadowAudioManagerTest {
   public void requestAudioFocus2_shouldRecordArgumentsOfMostRecentCall() {
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest()).isNull();
 
-    AudioAttributes atts = new AudioAttributes.Builder().build();
+    AudioAttributes atts = new AudioAttributes.Builder()
+        .setLegacyStreamType(AudioManager.STREAM_MUSIC)
+        .build();
     android.media.AudioFocusRequest request =
         new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setOnAudioFocusChangeListener(listener)
             .setAudioAttributes(atts)
             .build();
 
     audioManager.requestAudioFocus(request);
-    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener).isNull();
-    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType).isEqualTo(-1);
-    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint).isEqualTo(-1);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener)
+        .isSameInstanceAs(listener);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType).isEqualTo(AudioManager.STREAM_MUSIC);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint).isEqualTo(AudioManager.AUDIOFOCUS_GAIN);
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest().audioFocusRequest)
         .isEqualTo(request);
   }
@@ -118,10 +122,14 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = O)
   public void abandonAudioFocusRequest_shouldRecordTheListenerOfTheMostRecentCall() {
     android.media.AudioFocusRequest request =
-        new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN).build();
+        new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setOnAudioFocusChangeListener(listener)
+            .build();
     audioManager.abandonAudioFocusRequest(request);
     assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusRequest())
         .isSameInstanceAs(request);
+    assertThat(shadowOf(audioManager).getLastAbandonedAudioFocusListener())
+        .isSameInstanceAs(listener);
   }
 
   @Test
@@ -491,7 +499,7 @@ public class ShadowAudioManagerTest {
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
     audioManager.adjustStreamVolume(
-            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
+        AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
 
     int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     assertThat(volumeAfter).isLessThan(volumeBefore);
@@ -504,7 +512,7 @@ public class ShadowAudioManagerTest {
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
     audioManager.adjustStreamVolume(
-            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
+        AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, /* flags= */ 0);
 
     int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     assertThat(volumeAfter).isEqualTo(volumeBefore);
@@ -517,7 +525,7 @@ public class ShadowAudioManagerTest {
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
     audioManager.adjustStreamVolume(
-            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
+        AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
 
     int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     assertThat(volumeAfter).isGreaterThan(volumeBefore);
@@ -531,7 +539,7 @@ public class ShadowAudioManagerTest {
     int volumeBefore = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 
     audioManager.adjustStreamVolume(
-            AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
+        AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, /* flags= */ 0);
 
     int volumeAfter = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     assertThat(volumeAfter).isEqualTo(volumeBefore);

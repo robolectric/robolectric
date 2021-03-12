@@ -2,7 +2,6 @@ package org.robolectric.android.internal;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
-import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -175,6 +174,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
+    RuntimeEnvironment.setActivityThread(ReflectionHelpers.newInstance(ActivityThread.class));
 
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
       RuntimeEnvironment.setConfiguredApplicationClass(
@@ -215,11 +215,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
       Config config,
       android.content.res.Configuration androidConfiguration,
       DisplayMetrics displayMetrics) {
-    checkState(Looper.myLooper() == Looper.getMainLooper(), "Must be called on the main thread!");
 
-    final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
-    RuntimeEnvironment.setActivityThread(activityThread);
+    final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
+    final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
 
     Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
@@ -249,7 +248,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // code in there that can be reusable, e.g: the XxxxIntentResolver code.
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
-    _activityThread_.setCompatConfiguration(androidConfiguration);
+    shadowActivityThread.setCompatConfiguration(androidConfiguration);
+
     ReflectionHelpers.setStaticField(
         ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
@@ -523,10 +523,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
-    }
-    Instrumentation instrumentation = ShadowInstrumentation.getInstrumentation();
-    if (instrumentation != null) {
-      instrumentation.finish(1, new Bundle());
+      ShadowInstrumentation.getInstrumentation().finish(1, new Bundle());
     }
   }
 

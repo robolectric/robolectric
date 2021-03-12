@@ -40,6 +40,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.WindowId;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -1011,6 +1012,113 @@ public class ShadowViewTest {
     assertThat(globalVisibleRect)
         .isEqualTo(new Rect(0, 25,
             DeviceConfig.DEFAULT_SCREEN_SIZE.width, DeviceConfig.DEFAULT_SCREEN_SIZE.height));
+  }
+
+  @Test
+  public void performClick_addListener_sendsGlobalViewAction() {
+    class GlobalListener implements ShadowView.GlobalOnPerformClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onGlobalPerformClick(View view) {
+        receivedEvent = true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalOnPerformClickListener(listener);
+    view.performClick();
+
+    assertThat(listener.receivedEvent).isTrue();
+  }
+
+  @Test
+  public void performClick_removeListener_sendsGlobalViewAction() {
+    class GlobalListener implements ShadowView.GlobalOnPerformClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onGlobalPerformClick(View view) {
+        receivedEvent = true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalOnPerformClickListener(listener);
+    ShadowView.removeGlobalOnPerformClickListener(listener);
+    view.performClick();
+
+    assertThat(listener.receivedEvent).isFalse();
+  }
+
+  @Test
+  public void sendAccessibiltyEvent_addListener_sendsGlobalViewAction() {
+    class GlobalListener implements ShadowView.GlobalOnSendAccessibilityEventListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onGlobalSendAccessibilityEvent(View view, int eventType) {
+        receivedEvent = true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalOnSendAccessibilityEventListener(listener);
+    view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_LONG_CLICKED);
+
+    assertThat(listener.receivedEvent).isTrue();
+  }
+
+  @Test
+  public void sendAccessibiltyEvent_removeListener_sendsGlobalViewAction() {
+    class GlobalListener implements ShadowView.GlobalOnSendAccessibilityEventListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onGlobalSendAccessibilityEvent(View view, int eventType) {
+        receivedEvent = true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalOnSendAccessibilityEventListener(listener);
+    ShadowView.removeGlobalOnSendAccessibilityEventListener(listener);
+    view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_LONG_CLICKED);
+
+    assertThat(listener.receivedEvent).isFalse();
+  }
+
+  @Test
+  public void reset_removesAllGlobalViewActionListeners() {
+    class GlobalClickListener implements ShadowView.GlobalOnPerformClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onGlobalPerformClick(View view) {
+        receivedEvent = true;
+      }
+    }
+    class GlobalA11yListener implements ShadowView.GlobalOnSendAccessibilityEventListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onGlobalSendAccessibilityEvent(View view, int eventType) {
+        receivedEvent = true;
+      }
+    }
+    GlobalClickListener globalClickListener = new GlobalClickListener();
+    GlobalA11yListener globalA11yListener = new GlobalA11yListener();
+
+    ShadowView.addGlobalOnPerformClickListener(globalClickListener);
+    ShadowView.addGlobalOnSendAccessibilityEventListener(globalA11yListener);
+
+    ShadowView.reset();
+
+    // Should call both listeners since this calls sendAccessibilityEvent.
+    view.performClick();
+
+    assertThat(globalClickListener.receivedEvent).isFalse();
+    assertThat(globalA11yListener.receivedEvent).isFalse();
   }
 
   public static class MyActivity extends Activity {

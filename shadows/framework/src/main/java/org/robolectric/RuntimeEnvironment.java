@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
-import android.app.ActivityThread;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -15,7 +14,6 @@ import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -135,9 +133,6 @@ public class RuntimeEnvironment {
   }
 
   public static Object getActivityThread() {
-    if (activityThread == null) {
-      activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
-    }
     return activityThread;
   }
 
@@ -182,6 +177,11 @@ public class RuntimeEnvironment {
   public static void setQualifiers(String newQualifiers) {
     Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
+    // Loading at the beginning, rather than at the end, ensures that the application is already
+    // loaded when Resources.getSystem() is called. Adding a load inside ShadowResources is not an
+    // option as it is called from within the loading logic itself.
+    Application application = getApplication();
+
     if (newQualifiers.startsWith("+")) {
       configuration = new Configuration(Resources.getSystem().getConfiguration());
       displayMetrics.setTo(Resources.getSystem().getDisplayMetrics());
@@ -192,10 +192,7 @@ public class RuntimeEnvironment {
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-
-    if (getApplication() != null) {
-      getApplication().getResources().updateConfiguration(configuration, displayMetrics);
-    }
+    application.getResources().updateConfiguration(configuration, displayMetrics);
   }
 
   public static int getApiLevel() {
