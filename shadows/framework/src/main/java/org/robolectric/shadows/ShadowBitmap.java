@@ -309,7 +309,7 @@ public class ShadowBitmap {
   protected void setPixels(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
     checkBitmapMutable();
-    this.colors = pixels;
+    setPixelsInternal(pixels, offset, stride, x, y, width, height);
   }
 
   @Implementation
@@ -732,12 +732,9 @@ public class ShadowBitmap {
     appendDescription(" for resource:" + description);
   }
 
-  void setPixelsForcibly(
+  void setPixelsInternal(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    boolean isMutable = isMutable();
-    setMutable(true);
-    setPixels(pixels, offset, stride, x, y, width, height);
-    setMutable(isMutable);
+    this.colors = pixels;
   }
 
   private void checkBitmapMutable() {
