@@ -244,7 +244,9 @@ public class ShadowBitmap {
     if (dstWidth == src.getWidth() && dstHeight == src.getHeight() && !filter) {
       return src; // Return the original.
     }
-
+    if (dstWidth <= 0 || dstHeight <= 0) {
+      throw new IllegalArgumentException("width and height must be > 0");
+    }
     Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
 
