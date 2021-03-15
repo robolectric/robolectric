@@ -400,6 +400,14 @@ public class ShadowAppOpsManagerTest {
 
   @Config(minSdk = KITKAT)
   @Test
+  public void getPackageForOps_setNone_getNull() {
+    int[] intNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(intNull);
+    assertThat(packageOps).isNull();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
   public void getPackageForOps_setOne_getOne() {
     String packageName = "com.android.package";
     int uid = 111;
@@ -455,6 +463,14 @@ public class ShadowAppOpsManagerTest {
     assertThat(containsPackageOpPair(packageOps, packageName1, 3, MODE_FOREGROUND)).isFalse();
     assertThat(containsPackageOpPair(packageOps, packageName1, 4, MODE_IGNORED)).isFalse();
     assertThat(containsPackageOpPair(packageOps, packageName2, 0, MODE_ALLOWED)).isTrue();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void getPackageForOpsStr_setNone_getEmptyList() {
+    String[] stringNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(stringNull);
+    assertThat(packageOps).isEmpty();
   }
 
   @Config(minSdk = Q)
