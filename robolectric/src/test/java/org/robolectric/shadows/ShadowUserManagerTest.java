@@ -111,6 +111,17 @@ public class ShadowUserManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
+  public void setUserRestriction() {
+    assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isFalse();
+
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(userManager).setUserRestriction(UserManager.ENSURE_VERIFY_APPS, true, userHandle);
+
+    assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR2)
   public void getUserRestrictions() {
     assertThat(userManager.getUserRestrictions().size()).isEqualTo(0);
 
