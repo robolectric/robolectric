@@ -102,16 +102,16 @@ public class ImageUtil {
         ImageWriteParam iwparam = writer.getDefaultWriteParam();
         iwparam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         iwparam.setCompressionQuality((quality / 100f));
+        int width = realBitmap.getWidth();
+        int height = realBitmap.getHeight();
         BufferedImage bufferedImage =
             new BufferedImage(
-                realBitmap.getWidth(),
-                realBitmap.getHeight(),
+                width,
+                height,
                 getBufferedImageType(realBitmap.getConfig(), needAlphaChannel(format)));
-        for (int x = 0; x < realBitmap.getWidth(); x++) {
-          for (int y = 0; y < realBitmap.getHeight(); y++) {
-            bufferedImage.setRGB(x, y, realBitmap.getPixel(x, y));
-          }
-        }
+        int[] pixels = new int[width * height];
+        realBitmap.getPixels(pixels, 0, 0, 0, 0, width, height);
+        bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
         writer.write(null, new IIOImage(bufferedImage, null, null), iwparam);
         ios.flush();
         writer.dispose();
