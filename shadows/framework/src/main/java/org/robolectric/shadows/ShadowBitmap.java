@@ -412,11 +412,12 @@ public class ShadowBitmap {
   @Implementation
   protected void getPixels(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    if (x != 0 ||
-        y != 0 ||
-        width != getWidth() ||
-        height != getHeight() ||
-        pixels.length != colors.length) {
+    if (x != 0
+        || y != 0
+        || width != getWidth()
+        || height != getHeight()
+        || stride != getWidth()
+        || pixels.length != colors.length) {
       for (int y0 = 0; y0 < height; y0++) {
         for (int x0 = 0; x0 < width; x0++) {
           pixels[offset + y0 * stride + x0] = colors[(y0 + y) * getWidth() + x0 + x];
