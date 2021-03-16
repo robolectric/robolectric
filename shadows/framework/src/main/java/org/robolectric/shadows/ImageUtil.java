@@ -20,6 +20,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import org.robolectric.shadow.api.Shadow;
 
 public class ImageUtil {
   private static final String FORMAT_NAME_JPEG = "jpg";
@@ -109,8 +110,8 @@ public class ImageUtil {
                 width,
                 height,
                 getBufferedImageType(realBitmap.getConfig(), needAlphaChannel(format)));
-        int[] pixels = new int[width * height];
-        realBitmap.getPixels(pixels, 0, 0, 0, 0, width, height);
+        ShadowBitmap shadowBitmap = Shadow.extract(realBitmap);
+        int[] pixels = shadowBitmap.getPixelsInternal();
         bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
         writer.write(null, new IIOImage(bufferedImage, null, null), iwparam);
         ios.flush();

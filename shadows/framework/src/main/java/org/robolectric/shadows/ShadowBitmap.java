@@ -736,6 +736,17 @@ public class ShadowBitmap {
     }
   }
 
+  /**
+   * Get pixels array internal.
+   *
+   * <p>Don't update the result directly. It is only used internal.
+   *
+   * @return The pixels array.
+   */
+  int[] getPixelsInternal() {
+    return colors;
+  }
+
   void drawRect(Rect r, Paint paint) {
     if (colors == null) {
       return;
