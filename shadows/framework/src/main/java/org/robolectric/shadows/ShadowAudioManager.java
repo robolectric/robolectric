@@ -640,7 +640,8 @@ public class ShadowAudioManager {
 
     private AudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
       this.listener = audioFocusRequest.getOnAudioFocusChangeListener();
-      this.streamType = this.durationHint = -1;
+      this.durationHint = audioFocusRequest.getFocusGain();
+      this.streamType = audioFocusRequest.getAudioAttributes().getVolumeControlStream();
       this.audioFocusRequest = audioFocusRequest;
     }
   }
