@@ -1,25 +1,73 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Activity;
+import android.app.ActivityThread;
 import android.app.Application;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.UserHandle;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for the ShadowInstrumentation class. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowInstrumentationTest {
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1, maxSdk = N_MR1)
+  public void testExecStartActivity_handledProperlyForSDK17to25() throws Exception {
+    Instrumentation instrumentation =
+        ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
+
+    Intent expectedIntent = new Intent("do_the_thing");
+
+    // Use reflection since the method doesn't exist in the latest SDK.
+    Method method =
+        Instrumentation.class.getMethod(
+            "execStartActivity",
+            Context.class,
+            IBinder.class,
+            IBinder.class,
+            Activity.class,
+            Intent.class,
+            int.class,
+            Bundle.class,
+            UserHandle.class);
+    method.invoke(
+        instrumentation,
+        instrumentation.getContext(),
+        null,
+        null,
+        null,
+        expectedIntent,
+        0,
+        null,
+        null);
+
+    Intent actualIntent =
+        shadowOf((Application) ApplicationProvider.getApplicationContext())
+            .getNextStartedActivity();
+
+    assertThat(actualIntent).isEqualTo(expectedIntent);
+  }
 
   /**
    * This tests that concurrent startService operations are handled correctly.
