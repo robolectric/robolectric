@@ -1013,6 +1013,96 @@ public class ShadowViewTest {
             DeviceConfig.DEFAULT_SCREEN_SIZE.width, DeviceConfig.DEFAULT_SCREEN_SIZE.height));
   }
 
+  @Test
+  public void performClick_sendsGlobalViewAction() {
+    class GlobalListener implements ShadowView.OnGlobalViewActionListener {
+      boolean wasClicked = false;
+      ShadowView.GlobalViewActionType globalViewActionType;
+
+      @Override
+      public void onGlobalViewAction(
+          View view, ShadowView.GlobalViewActionType globalViewActionType) {
+        wasClicked = true;
+        this.globalViewActionType = globalViewActionType;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalViewActionListener(listener);
+    view.performClick();
+
+    assertThat(listener.wasClicked).isTrue();
+    assertThat(listener.globalViewActionType).isEqualTo(ShadowView.GlobalViewActionType.CLICK);
+  }
+
+  @Test
+  public void performLongClick_sendsGlobalViewAction() {
+    class GlobalListener implements ShadowView.OnGlobalViewActionListener {
+      boolean wasClicked = false;
+      ShadowView.GlobalViewActionType globalViewActionType;
+
+      @Override
+      public void onGlobalViewAction(
+          View view, ShadowView.GlobalViewActionType globalViewActionType) {
+        wasClicked = true;
+        this.globalViewActionType = globalViewActionType;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalViewActionListener(listener);
+    view.performLongClick();
+
+    assertThat(listener.wasClicked).isTrue();
+    assertThat(listener.globalViewActionType).isEqualTo(ShadowView.GlobalViewActionType.LONG_CLICK);
+  }
+
+  @Test
+  public void performLongClick_removeGlobalViewActionListener_listenerRemoved() {
+    class GlobalListener implements ShadowView.OnGlobalViewActionListener {
+      boolean wasClicked = false;
+      ShadowView.GlobalViewActionType globalViewActionType;
+
+      @Override
+      public void onGlobalViewAction(
+          View view, ShadowView.GlobalViewActionType globalViewActionType) {
+        wasClicked = true;
+        this.globalViewActionType = globalViewActionType;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalViewActionListener(listener);
+    ShadowView.removeGlobalViewActionListener(listener);
+    view.performLongClick();
+
+    assertThat(listener.wasClicked).isFalse();
+  }
+
+  @Test
+  public void reset_removesAllGlobalViewActionListeners() {
+    class GlobalListener implements ShadowView.OnGlobalViewActionListener {
+      boolean wasClicked = false;
+      ShadowView.GlobalViewActionType globalViewActionType;
+
+      @Override
+      public void onGlobalViewAction(
+          View view, ShadowView.GlobalViewActionType globalViewActionType) {
+        wasClicked = true;
+        this.globalViewActionType = globalViewActionType;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalViewActionListener(listener);
+
+    ShadowView.reset();
+
+    view.performLongClick();
+
+    assertThat(listener.wasClicked).isFalse();
+  }
+
   public static class MyActivity extends Activity {
     public boolean called;
 

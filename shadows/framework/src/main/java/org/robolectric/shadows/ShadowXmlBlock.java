@@ -144,28 +144,37 @@ public class ShadowXmlBlock {
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static int nativeGetNamespace(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
+    if (resXMLParser == null) {
+      return -1;
+    }
     return resXMLParser.getElementNamespaceID();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
   protected static int nativeGetName(int state) {
-    return (int)nativeGetName((long)state);
+    return nativeGetName((long) state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static int nativeGetName(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
+    if (resXMLParser == null) {
+      return -1;
+    }
     return resXMLParser.getElementNameID();
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)
   protected static int nativeGetText(int state) {
-    return (int)nativeGetText((long)state);
+    return nativeGetText((long) state);
   }
 
   @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   protected static int nativeGetText(long state) {
     ResXMLParser resXMLParser = getResXMLParser(state);
+    if (resXMLParser == null) {
+      return -1;
+    }
     return resXMLParser.getTextID();
   }
 
@@ -346,6 +355,6 @@ public class ShadowXmlBlock {
   }
 
   private static ResXMLParser getResXMLParser(long state) {
-    return Registries.NATIVE_RES_XML_PARSERS.getNativeObject(state);
+    return Registries.NATIVE_RES_XML_PARSERS.peekNativeObject(state);
   }
 }

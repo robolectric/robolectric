@@ -575,6 +575,16 @@ public class ResourcesTest {
   }
 
   @Test
+  public void testGetXml_notNPEAfterClose() {
+    XmlResourceParser parser = resources.getXml(R.xml.preferences);
+    parser.close();
+    // the following methods should not NPE if the XmlResourceParser has been closed.
+    assertThat(parser.getName()).isNull();
+    assertThat(parser.getNamespace()).isEmpty();
+    assertThat(parser.getText()).isNull();
+  }
+
+  @Test
   public void openRawResource_shouldLoadRawResources() throws Exception {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();

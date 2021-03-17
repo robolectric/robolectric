@@ -3,6 +3,10 @@ package org.robolectric.shadows;
 import static android.app.AppOpsManager.MODE_ALLOWED;
 import static android.app.AppOpsManager.MODE_DEFAULT;
 import static android.app.AppOpsManager.MODE_ERRORED;
+import static android.app.AppOpsManager.MODE_FOREGROUND;
+import static android.app.AppOpsManager.MODE_IGNORED;
+import static android.app.AppOpsManager.OPSTR_BODY_SENSORS;
+import static android.app.AppOpsManager.OPSTR_COARSE_LOCATION;
 import static android.app.AppOpsManager.OPSTR_FINE_LOCATION;
 import static android.app.AppOpsManager.OPSTR_GPS;
 import static android.app.AppOpsManager.OPSTR_READ_PHONE_STATE;
@@ -12,6 +16,7 @@ import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
 import static android.app.AppOpsManager.OP_VIBRATE;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -393,6 +398,156 @@ public class ShadowAppOpsManagerTest {
     // check passes without exception
   }
 
+  @Config(minSdk = KITKAT)
+  @Test
+  public void getPackageForOps_setNone_getNull() {
+    int[] intNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(intNull);
+    assertThat(packageOps).isNull();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void getPackageForOps_setOne_getOne() {
+    String packageName = "com.android.package";
+    int uid = 111;
+    appOps.setMode(0, uid, packageName, MODE_ALLOWED);
+
+    int[] intNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(intNull);
+    assertThat(containsPackageOpPair(packageOps, packageName, 0, MODE_ALLOWED)).isTrue();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void getPackageForOps_setMultiple_getMultiple() {
+    String packageName1 = "com.android.package";
+    String packageName2 = "com.android.other";
+    int uid1 = 111;
+    int uid2 = 112;
+    appOps.setMode(0, uid1, packageName1, MODE_ALLOWED);
+    appOps.setMode(1, uid1, packageName1, MODE_DEFAULT);
+    appOps.setMode(2, uid1, packageName1, MODE_ERRORED);
+    appOps.setMode(3, uid1, packageName1, MODE_FOREGROUND);
+    appOps.setMode(4, uid1, packageName1, MODE_IGNORED);
+    appOps.setMode(0, uid2, packageName2, MODE_ALLOWED);
+
+    int[] intNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(intNull);
+    assertThat(containsPackageOpPair(packageOps, packageName1, 0, MODE_ALLOWED)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 1, MODE_DEFAULT)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 2, MODE_ERRORED)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 3, MODE_FOREGROUND)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 4, MODE_IGNORED)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName2, 0, MODE_ALLOWED)).isTrue();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void getPackageForOps_setMultiple_onlyGetThoseAskedFor() {
+    String packageName1 = "com.android.package";
+    String packageName2 = "com.android.other";
+    int uid1 = 111;
+    int uid2 = 112;
+    appOps.setMode(0, uid1, packageName1, MODE_ALLOWED);
+    appOps.setMode(1, uid1, packageName1, MODE_DEFAULT);
+    appOps.setMode(2, uid1, packageName1, MODE_ERRORED);
+    appOps.setMode(3, uid1, packageName1, MODE_FOREGROUND);
+    appOps.setMode(4, uid1, packageName1, MODE_IGNORED);
+    appOps.setMode(0, uid2, packageName2, MODE_ALLOWED);
+
+    List<PackageOps> packageOps = appOps.getPackagesForOps(new int[] {0, 1});
+    assertThat(containsPackageOpPair(packageOps, packageName1, 0, MODE_ALLOWED)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 1, MODE_DEFAULT)).isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 2, MODE_ERRORED)).isFalse();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 3, MODE_FOREGROUND)).isFalse();
+    assertThat(containsPackageOpPair(packageOps, packageName1, 4, MODE_IGNORED)).isFalse();
+    assertThat(containsPackageOpPair(packageOps, packageName2, 0, MODE_ALLOWED)).isTrue();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void getPackageForOpsStr_setNone_getEmptyList() {
+    String[] stringNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(stringNull);
+    assertThat(packageOps).isEmpty();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void getPackageForOpsStr_setOne_getOne() {
+    String packageName = "com.android.package";
+    int uid = 111;
+    appOps.setMode(AppOpsManager.OPSTR_COARSE_LOCATION, uid, packageName, MODE_ALLOWED);
+
+    String[] stringNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(stringNull);
+    assertThat(containsPackageOpPair(packageOps, packageName, OPSTR_COARSE_LOCATION, MODE_ALLOWED))
+        .isTrue();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void getPackageForOpsStr_setMultiple_getMultiple() {
+    String packageName1 = "com.android.package";
+    String packageName2 = "com.android.other";
+    int uid1 = 111;
+    int uid2 = 112;
+    appOps.setMode(OPSTR_COARSE_LOCATION, uid1, packageName1, MODE_ALLOWED);
+    appOps.setMode(OPSTR_FINE_LOCATION, uid1, packageName1, MODE_DEFAULT);
+    appOps.setMode(OPSTR_READ_PHONE_STATE, uid1, packageName1, MODE_ERRORED);
+    appOps.setMode(OPSTR_RECORD_AUDIO, uid1, packageName1, MODE_FOREGROUND);
+    appOps.setMode(OPSTR_BODY_SENSORS, uid1, packageName1, MODE_IGNORED);
+    appOps.setMode(OPSTR_COARSE_LOCATION, uid2, packageName2, MODE_ALLOWED);
+
+    String[] stringNull = null;
+    List<PackageOps> packageOps = appOps.getPackagesForOps(stringNull);
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_COARSE_LOCATION, MODE_ALLOWED))
+        .isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_FINE_LOCATION, MODE_DEFAULT))
+        .isTrue();
+    assertThat(
+            containsPackageOpPair(packageOps, packageName1, OPSTR_READ_PHONE_STATE, MODE_ERRORED))
+        .isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_RECORD_AUDIO, MODE_FOREGROUND))
+        .isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_BODY_SENSORS, MODE_IGNORED))
+        .isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName2, OPSTR_COARSE_LOCATION, MODE_ALLOWED))
+        .isTrue();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void getPackageForOpsStr_setMultiple_onlyGetThoseAskedFor() {
+    String packageName1 = "com.android.package";
+    String packageName2 = "com.android.other";
+    int uid1 = 111;
+    int uid2 = 112;
+    appOps.setMode(OPSTR_COARSE_LOCATION, uid1, packageName1, MODE_ALLOWED);
+    appOps.setMode(OPSTR_FINE_LOCATION, uid1, packageName1, MODE_DEFAULT);
+    appOps.setMode(OPSTR_READ_PHONE_STATE, uid1, packageName1, MODE_ERRORED);
+    appOps.setMode(OPSTR_RECORD_AUDIO, uid1, packageName1, MODE_FOREGROUND);
+    appOps.setMode(OPSTR_BODY_SENSORS, uid1, packageName1, MODE_IGNORED);
+    appOps.setMode(OPSTR_COARSE_LOCATION, uid2, packageName2, MODE_ALLOWED);
+
+    List<PackageOps> packageOps =
+        appOps.getPackagesForOps(new String[] {OPSTR_COARSE_LOCATION, OPSTR_FINE_LOCATION});
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_COARSE_LOCATION, MODE_ALLOWED))
+        .isTrue();
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_FINE_LOCATION, MODE_DEFAULT))
+        .isTrue();
+    assertThat(
+            containsPackageOpPair(packageOps, packageName1, OPSTR_READ_PHONE_STATE, MODE_ERRORED))
+        .isFalse();
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_RECORD_AUDIO, MODE_FOREGROUND))
+        .isFalse();
+    assertThat(containsPackageOpPair(packageOps, packageName1, OPSTR_BODY_SENSORS, MODE_IGNORED))
+        .isFalse();
+    assertThat(containsPackageOpPair(packageOps, packageName2, OPSTR_COARSE_LOCATION, MODE_ALLOWED))
+        .isTrue();
+  }
+
   /** Assert that the results contain the expected op codes. */
   private void assertOps(List<PackageOps> pkgOps, Integer... expectedOps) {
     Set<Integer> actualOps = new HashSet<>();
@@ -403,5 +558,35 @@ public class ShadowAppOpsManagerTest {
     }
 
     assertThat(actualOps).containsAtLeastElementsIn(expectedOps);
+  }
+
+  /** True if the given (package, op, mode) tuple is present in the given list. */
+  private boolean containsPackageOpPair(
+      List<PackageOps> pkgOps, String packageName, int op, int mode) {
+    for (PackageOps pkgOp : pkgOps) {
+      for (OpEntry entry : pkgOp.getOps()) {
+        if (packageName.equals(pkgOp.getPackageName())
+            && entry.getOp() == op
+            && entry.getMode() == mode) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /** True if the given (package, op, mode) tuple is present in the given list. */
+  private boolean containsPackageOpPair(
+      List<PackageOps> pkgOps, String packageName, String op, int mode) {
+    for (PackageOps pkgOp : pkgOps) {
+      for (OpEntry entry : pkgOp.getOps()) {
+        if (packageName.equals(pkgOp.getPackageName())
+            && op.equals(entry.getOpStr())
+            && entry.getMode() == mode) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }

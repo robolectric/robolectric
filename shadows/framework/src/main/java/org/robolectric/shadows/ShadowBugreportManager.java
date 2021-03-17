@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.os.BugreportManager;
 import android.os.BugreportManager.BugreportCallback;
@@ -25,6 +26,7 @@ public class ShadowBugreportManager {
   private ParcelFileDescriptor screenshotFd;
   private Executor executor;
   private BugreportCallback callback;
+  private boolean bugreportRequested;
 
   /**
    * Starts a bugreport with which can execute callback methods on the provided executor.
@@ -48,6 +50,18 @@ public class ShadowBugreportManager {
       this.executor = executor;
       this.callback = callback;
     }
+  }
+
+  /**
+   * Normally requests the platform/system to take a bugreport and make the final bugreport
+   * available to the user.
+   *
+   * <p>This implementation just sets a boolean recording that the method was invoked.
+   */
+  @Implementation(minSdk = R)
+  protected void requestBugreport(
+      BugreportParams params, CharSequence shareTitle, CharSequence shareDescription) {
+    this.bugreportRequested = true;
   }
 
   /** Cancels bugreport in progress and executes {@link BugreportCallback#onError}. */
@@ -87,6 +101,11 @@ public class ShadowBugreportManager {
     return executor != null && callback != null;
   }
 
+  /** Returns true if {@link #requestBugreport} was called. */
+  public boolean wasBugreportRequested() {
+    return bugreportRequested;
+  }
+
   /**
    * Simulates if the calling process has the required permissions to call BugreportManager methods.
    *
@@ -116,5 +135,6 @@ public class ShadowBugreportManager {
     screenshotFd = null;
     executor = null;
     callback = null;
+    bugreportRequested = false;
   }
 }

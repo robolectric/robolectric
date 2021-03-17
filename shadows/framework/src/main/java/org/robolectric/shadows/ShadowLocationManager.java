@@ -904,6 +904,10 @@ public class ShadowLocationManager {
         // this sets LOCATION_MODE and LOCATION_PROVIDERS_ALLOWED
         setLocationModeInternal(newLocationMode);
       } else if (RuntimeEnvironment.getApiLevel() >= Q) {
+        if (enabled == this.enabled) {
+          return;
+        }
+
         this.enabled = enabled;
         // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE. do this even
         // though LOCATION_PROVIDERS_ALLOWED is not the source of truth - we keep it up to date, but
