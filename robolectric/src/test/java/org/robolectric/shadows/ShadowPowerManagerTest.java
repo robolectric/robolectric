@@ -447,4 +447,29 @@ public class ShadowPowerManagerTest {
 
     assertThat(shadowOf(lock).isHeld()).isFalse();
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setAdaptivePowerSaveEnabled_default() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    assertThat(shadowPowerManager.getAdaptivePowerSaveEnabled()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setAdaptivePowerSaveEnabled_setTrue() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    assertThat(shadowPowerManager.getAdaptivePowerSaveEnabled()).isFalse();
+    boolean changed = powerManager.setAdaptivePowerSaveEnabled(true);
+    assertThat(changed).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setAdaptivePowerSaveEnabled_setFalse() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    assertThat(shadowPowerManager.getAdaptivePowerSaveEnabled()).isFalse();
+    boolean changed = powerManager.setAdaptivePowerSaveEnabled(false);
+    assertThat(changed).isFalse();
+  }
 }

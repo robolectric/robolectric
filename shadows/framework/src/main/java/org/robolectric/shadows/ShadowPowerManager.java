@@ -55,6 +55,7 @@ public class ShadowPowerManager {
       Collections.synchronizedSet(new HashSet<>());
   private volatile boolean isAmbientDisplayAvailable = true;
   private volatile boolean isRebootingUserspaceSupported = false;
+  private volatile boolean adaptivePowerSaveEnabled = false;
 
   private static PowerManager.WakeLock latestWakeLock;
 
@@ -312,6 +313,27 @@ public class ShadowPowerManager {
   @SystemApi
   protected boolean isRebootingUserspaceSupported() {
     return isRebootingUserspaceSupported;
+  }
+
+  /**
+   * Sets whether Adaptive Power Saver is enabled.
+   *
+   * <p>This has no effect, other than the value of {@link #getAdaptivePowerSaveEnabled()} is
+   * changed, which can be used to ensure this method is called correctly.
+   *
+   * @return true if the value has changed.
+   */
+  @Implementation(minSdk = Q)
+  @SystemApi
+  protected boolean setAdaptivePowerSaveEnabled(boolean enabled) {
+    boolean changed = adaptivePowerSaveEnabled != enabled;
+    adaptivePowerSaveEnabled = enabled;
+    return changed;
+  }
+
+  /** Gets the value set by {@link #setAdaptivePowerSaveEnabled(boolean)}. */
+  public boolean getAdaptivePowerSaveEnabled() {
+    return adaptivePowerSaveEnabled;
   }
 
   @Implements(PowerManager.WakeLock.class)
