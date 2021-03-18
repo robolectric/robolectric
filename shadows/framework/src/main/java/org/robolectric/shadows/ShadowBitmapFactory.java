@@ -44,6 +44,11 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowBitmapFactory {
   private static Map<String, Point> widthAndHeightMap = new HashMap<>();
 
+  // Determines whether BitmapFactory.decode methods should allow invalid bitmap data and always
+  // return a Bitmap object. Currently defaults to true to preserve legacy behavior. A
+  // forthcoming release will switch the default to false, which is consistent with real Android.
+  private static boolean allowInvalidImageData = true;
+
   @Implementation
   protected static Bitmap decodeResourceStream(
       Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
@@ -72,6 +77,13 @@ public class ShadowBitmapFactory {
     InputStream is = res.openRawResource(id, value);
 
     RobolectricBufferedImage image = getImageFromStream(is);
+    if (!allowInvalidImageData && image == null) {
+      if (options != null) {
+        options.outWidth = -1;
+        options.outHeight = -1;
+      }
+      return null;
+    }
     BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
     Point imageSizeFromStream =
         bufferedImage == null
@@ -103,7 +115,13 @@ public class ShadowBitmapFactory {
         Logger.warn("Error getting size of bitmap file", e);
       }
     }
-
+    if (!allowInvalidImageData && image == null) {
+      if (options != null) {
+        options.outWidth = -1;
+        options.outHeight = -1;
+      }
+      return null;
+    }
     BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
     Point imageSizeFromStream =
         bufferedImage == null
@@ -129,6 +147,13 @@ public class ShadowBitmapFactory {
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }
+    }
+    if (!allowInvalidImageData && image == null) {
+      if (opts != null) {
+        opts.outWidth = -1;
+        opts.outHeight = -1;
+      }
+      return null;
     }
     BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
     Point imageSizeFromStream =
@@ -173,6 +198,13 @@ public class ShadowBitmapFactory {
     boolean isNamedStream = is instanceof NamedStream;
     String name = isNamedStream ? is.toString().replace("stream for ", "") : null;
     RobolectricBufferedImage image = isNamedStream ? null : getImageFromStream(is);
+    if (!allowInvalidImageData && image == null) {
+      if (opts != null) {
+        opts.outWidth = -1;
+        opts.outHeight = -1;
+      }
+      return null;
+    }
     BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
     Point imageSize =
         bufferedImage == null
@@ -210,6 +242,13 @@ public class ShadowBitmapFactory {
 
     ByteArrayInputStream is = new ByteArrayInputStream(data, offset, length);
     RobolectricBufferedImage image = getImageFromStream(is);
+    if (!allowInvalidImageData && image == null) {
+      if (opts != null) {
+        opts.outWidth = -1;
+        opts.outHeight = -1;
+      }
+      return null;
+    }
     BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
     Point imageSize =
         bufferedImage == null
@@ -370,6 +409,7 @@ public class ShadowBitmapFactory {
   @Resetter
   public static void reset() {
     widthAndHeightMap.clear();
+    allowInvalidImageData = true;
   }
 
   private static Point selectWidthAndHeight(final String name, final Point widthAndHeight) {
@@ -384,5 +424,19 @@ public class ShadowBitmapFactory {
     }
 
     return new Point(100, 100);
+  }
+
+  /**
+   * Whether the BitmapFactory.decode methods, such as {@link
+   * BitmapFactory#decodeStream(InputStream, Rect, Options)} should allow invalid image data and
+   * always return Bitmap objects. If set to false, BitmapFactory.decode methods will be consistent
+   * with real Android, and return null Bitmap values and set {@link BitmapFactory.Options#outWidth}
+   * and {@link BitmapFactory.Options#outHeight} to -1.
+   *
+   * @param allowInvalidImageData whether invalid bitmap data is allowed and BitmapFactory should
+   *     always return Bitmap objects.
+   */
+  public static void setAllowInvalidImageData(boolean allowInvalidImageData) {
+    ShadowBitmapFactory.allowInvalidImageData = allowInvalidImageData;
   }
 }
