@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.L;
+import static android.os.Build.VERSION_CODES.O;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -174,6 +175,30 @@ public class ShadowAppWidgetManagerTest {
     shadowAppWidgetManager.addInstalledProvidersForProfile(userHandle, info2);
     List<AppWidgetProviderInfo> installedProvidersForProfile =
         appWidgetManager.getInstalledProvidersForProfile(userHandle);
+    assertEquals(2, installedProvidersForProfile.size());
+    assertTrue(installedProvidersForProfile.contains(info1));
+    assertTrue(installedProvidersForProfile.contains(info2));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getInstalledProvidersForPackage_returnsWidgetList() {
+    UserHandle userHandle = UserHandle.CURRENT;
+    String packageName = "com.google.fakeapp";
+
+    assertTrue(appWidgetManager.getInstalledProvidersForPackage(packageName, userHandle).isEmpty());
+
+    AppWidgetProviderInfo info1 = new AppWidgetProviderInfo();
+    info1.label = "abc";
+    info1.provider = new ComponentName(packageName, "123");
+    AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
+    info2.label = "def";
+    info2.provider = new ComponentName(packageName, "456");
+    shadowAppWidgetManager.addInstalledProvidersForProfile(userHandle, info1);
+    shadowAppWidgetManager.addInstalledProvidersForProfile(userHandle, info2);
+    List<AppWidgetProviderInfo> installedProvidersForProfile =
+        appWidgetManager.getInstalledProvidersForPackage(packageName, userHandle);
+
     assertEquals(2, installedProvidersForProfile.size());
     assertTrue(installedProvidersForProfile.contains(info1));
     assertTrue(installedProvidersForProfile.contains(info2));
