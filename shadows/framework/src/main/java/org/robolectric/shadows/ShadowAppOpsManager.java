@@ -148,18 +148,21 @@ public class ShadowAppOpsManager {
   @HiddenApi
   @SystemApi
   @NonNull
-  protected List<AppOpsManager.PackageOps> getPackagesForOps(@Nullable String[] ops) {
+  protected List<PackageOps> getPackagesForOps(@Nullable String[] ops) {
+    List<PackageOps> result = null;
+
     if (ops == null) {
       int[] intOps = null;
-      return getPackagesForOps(intOps);
+      result = getPackagesForOps(intOps);
+    } else {
+      List<Integer> intOpsList = new ArrayList<>();
+      for (String op : ops) {
+        intOpsList.add(AppOpsManager.strOpToOp(op));
+      }
+      result = getPackagesForOps(intOpsList.stream().mapToInt(i -> i).toArray());
     }
 
-    List<Integer> intOpsList = new ArrayList<>();
-    for (String op : ops) {
-      intOpsList.add(AppOpsManager.strOpToOp(op));
-    }
-
-    return getPackagesForOps(intOpsList.stream().mapToInt(i -> i).toArray());
+    return result != null ? result : new ArrayList<>();
   }
 
   /**
@@ -203,7 +206,7 @@ public class ShadowAppOpsManager {
               key.getPackageName(), key.getUid(), new ArrayList<>(packageInfo.getValue())));
     }
 
-    return result;
+    return result.isEmpty() ? null : result;
   }
 
   @Implementation(minSdk = Q)
