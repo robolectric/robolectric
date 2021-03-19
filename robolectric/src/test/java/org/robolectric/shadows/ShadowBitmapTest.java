@@ -482,6 +482,17 @@ public class ShadowBitmapTest {
     assertThat(compressedImageByteArray.length).isLessThan(bitmap.getByteCount());
   }
 
+  @Test
+  public void compress_shouldSucceedForNullColorArray() {
+    Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    shadowBitmap.setWidth(100);
+    shadowBitmap.setHeight(100);
+    assertThat(shadowBitmap.getPixelsInternal()).isNull();
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+  }
+
   @Config(sdk = Build.VERSION_CODES.O)
   @Test
   public void getBytesPerPixel_O() {
