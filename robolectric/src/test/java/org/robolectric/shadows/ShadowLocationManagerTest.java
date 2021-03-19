@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.MODE_CHANGED_ACTION;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
+import static android.location.LocationManager.PROVIDERS_CHANGED_ACTION;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.provider.Settings.Secure.LOCATION_MODE;
@@ -244,22 +246,76 @@ public class ShadowLocationManagerTest {
   @Config(maxSdk = VERSION_CODES.O)
   public void testSetProviderEnabled_Mode() {
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
+    assertNotBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_OFF);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
+    assertNotBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_SENSORS_ONLY);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_BATTERY_SAVING);
 
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
+    assertNotBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_HIGH_ACCURACY);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testSetProviderEnabled_RPlus() {
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
+    shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
+    shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
+    assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
+    assertNotBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
   }
 
   @Test
@@ -293,6 +349,18 @@ public class ShadowLocationManagerTest {
 
     shadowLocationManager.simulateLocation(createLocation(MY_PROVIDER));
     assertThat(myListener.locations).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void testSetLocationEnabled() {
+    shadowLocationManager.setLocationEnabled(false);
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
+
+    shadowLocationManager.setLocationEnabled(false);
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
   }
 
   @Test
@@ -385,6 +453,8 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isFalse();
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_OFF);
     assertThat(getProvidersAllowed()).containsExactly(MY_PROVIDER);
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
 
     shadowLocationManager.setLocationMode(LOCATION_MODE_SENSORS_ONLY);
     assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isTrue();
@@ -393,6 +463,8 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isFalse();
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_SENSORS_ONLY);
     assertThat(getProvidersAllowed()).containsExactly(MY_PROVIDER, GPS_PROVIDER);
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
 
     shadowLocationManager.setLocationMode(LOCATION_MODE_BATTERY_SAVING);
     assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isTrue();
@@ -401,6 +473,8 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isTrue();
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_BATTERY_SAVING);
     assertThat(getProvidersAllowed()).containsExactly(MY_PROVIDER, NETWORK_PROVIDER);
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
 
     shadowLocationManager.setLocationMode(LOCATION_MODE_HIGH_ACCURACY);
     assertThat(locationManager.isProviderEnabled(MY_PROVIDER)).isTrue();
@@ -409,6 +483,8 @@ public class ShadowLocationManagerTest {
     assertThat(locationManager.isProviderEnabled(NETWORK_PROVIDER)).isTrue();
     assertThat(getLocationMode()).isEqualTo(LOCATION_MODE_HIGH_ACCURACY);
     assertThat(getProvidersAllowed()).containsExactly(MY_PROVIDER, GPS_PROVIDER, NETWORK_PROVIDER);
+    assertBroadcast(new Intent(MODE_CHANGED_ACTION));
+    shadowOf(context).clearBroadcastIntents();
   }
 
   @Test
@@ -1020,6 +1096,32 @@ public class ShadowLocationManagerTest {
     }
 
     return new HashSet<>(Arrays.asList(providersAllowed.split(",")));
+  }
+
+  private void assertBroadcast(Intent... intents) {
+    for (Intent intent : intents) {
+      boolean found = false;
+      for (Intent broadcast : shadowOf(context).getBroadcastIntents()) {
+        if (broadcast.filterEquals(intent)) {
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        assertThat(shadowOf(context).getBroadcastIntents()).contains(intent);
+      }
+    }
+  }
+
+  private void assertNotBroadcast(Intent... intents) {
+    for (Intent intent : intents) {
+      for (Intent broadcast : shadowOf(context).getBroadcastIntents()) {
+        if (broadcast.filterEquals(intent)) {
+          assertThat(shadowOf(context).getBroadcastIntents()).doesNotContain(broadcast);
+        }
+      }
+    }
   }
 
   private static class TestLocationReceiver extends BroadcastReceiver {
