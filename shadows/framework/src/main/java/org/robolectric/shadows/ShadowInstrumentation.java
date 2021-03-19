@@ -7,6 +7,8 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
@@ -119,6 +121,25 @@ public class ShadowInstrumentation {
   }
 
   @Implementation
+  protected void execStartActivities(
+      Context who,
+      IBinder contextThread,
+      IBinder token,
+      Activity target,
+      Intent[] intents,
+      Bundle options) {
+    for (Intent intent : intents) {
+      execStartActivity(who, contextThread, token, target, intent, -1, options);
+    }
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void execStartActivityFromAppTask(
+      Context who, IBinder contextThread, Object appTask, Intent intent, Bundle options) {
+    throw new UnsupportedOperationException("Implement me!!");
+  }
+
+  @Implementation
   protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
@@ -152,42 +173,6 @@ public class ShadowInstrumentation {
     return null;
   }
 
-  private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
-    startedActivities.add(intent);
-    intentRequestCodeMap.put(
-        new FilterComparison(intent), new TargetAndRequestCode(target, requestCode));
-    startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
-  }
-
-  private void verifyActivityInManifest(Intent intent) {
-    if (checkActivities
-        && RuntimeEnvironment.getApplication()
-                .getPackageManager()
-                .resolveActivity(intent, MATCH_DEFAULT_ONLY)
-            == null) {
-      throw new ActivityNotFoundException(intent.getAction());
-    }
-  }
-
-  @Implementation
-  protected void execStartActivities(
-      Context who,
-      IBinder contextThread,
-      IBinder token,
-      Activity target,
-      Intent[] intents,
-      Bundle options) {
-    for (Intent intent : intents) {
-      execStartActivity(who, contextThread, token, target, intent, -1, options);
-    }
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void execStartActivityFromAppTask(
-      Context who, IBinder contextThread, Object appTask, Intent intent, Bundle options) {
-    throw new UnsupportedOperationException("Implement me!!");
-  }
-
   @Implementation(minSdk = M)
   protected ActivityResult execStartActivity(
       Context who,
@@ -205,11 +190,29 @@ public class ShadowInstrumentation {
   }
 
   /**
+   * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, Activity, Intent, int, Bundle).
+   *
+   * <p>Currently ignores the user.
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = N_MR1)
+  protected ActivityResult execStartActivity(
+      Context who,
+      IBinder contextThread,
+      IBinder token,
+      Activity resultWho,
+      Intent intent,
+      int requestCode,
+      Bundle options,
+      UserHandle user) {
+    return execStartActivity(who, contextThread, token, resultWho, intent, requestCode, options);
+  }
+
+  /**
    * Behaves as {@link #execStartActivity(Context, IBinder, IBinder, String, Intent, int, Bundle).
    *
    * <p>Currently ignores the user.
    */
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation(minSdk = O)
   protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
@@ -220,6 +223,23 @@ public class ShadowInstrumentation {
       Bundle options,
       UserHandle user) {
     return execStartActivity(who, contextThread, token, resultWho, intent, requestCode, options);
+  }
+
+  private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
+    startedActivities.add(intent);
+    intentRequestCodeMap.put(
+        new FilterComparison(intent), new TargetAndRequestCode(target, requestCode));
+    startedActivitiesForResults.add(new IntentForResult(intent, requestCode, options));
+  }
+
+  private void verifyActivityInManifest(Intent intent) {
+    if (checkActivities
+        && RuntimeEnvironment.getApplication()
+                .getPackageManager()
+                .resolveActivity(intent, MATCH_DEFAULT_ONLY)
+            == null) {
+      throw new ActivityNotFoundException(intent.getAction());
+    }
   }
 
   @Implementation(minSdk = M, maxSdk = P)
@@ -791,6 +811,20 @@ public class ShadowInstrumentation {
   /** Clears all {@code Intent} started by {@link #startService(android.content.Intent)}. */
   void clearStartedServices() {
     startedServices.clear();
+  }
+
+  /**
+   * Returns all {@code Intent} started by {@link #startService(android.content.Intent)} without
+   * consuming them.
+   *
+   * @return the list of {@code Intent}
+   */
+  List<Intent> getAllStartedServices() {
+    ArrayList<Intent> startedServicesIntents = new ArrayList<>();
+    for (Intent.FilterComparison filterComparison : startedServices) {
+      startedServicesIntents.add(filterComparison.getIntent());
+    }
+    return startedServicesIntents;
   }
 
   /**
