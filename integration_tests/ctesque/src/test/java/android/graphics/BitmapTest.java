@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
@@ -243,5 +244,15 @@ public class BitmapTest {
     assertThat(output.getPixel(99, 99)).isEqualTo(0xff00ff00);
     assertThat(output.getPixel(50, 50)).isEqualTo(0xff00ff00);
     assertThat(output.getPixel(49, 49)).isEqualTo(0);
+  }
+
+  @Test
+  public void createScaledBitmap_zeroWidthAndHeight_error() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Exception exception =
+        assertThrows(
+            IllegalArgumentException.class, () -> Bitmap.createScaledBitmap(bitmap, 0, 0, false));
+
+    assertThat(exception).hasMessageThat().contains("width and height must be > 0");
   }
 }
