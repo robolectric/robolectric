@@ -164,6 +164,16 @@ public class BitmapTest {
   }
 
   @Test
+  public void scaledBitmap_isMutable() throws IOException {
+    InputStream inputStream = resources.getAssets().open("robolectric.png");
+    BitmapFactory.Options opt = new BitmapFactory.Options();
+    opt.inMutable = true;
+    Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, opt);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
+    assertThat(scaledBitmap.isMutable()).isTrue();
+  }
+
+  @Test
   public void colorDrawable_drawToBitmap() {
     Drawable colorDrawable = new ColorDrawable(Color.RED);
     Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
