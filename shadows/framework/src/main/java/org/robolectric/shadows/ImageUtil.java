@@ -112,7 +112,9 @@ public class ImageUtil {
                 getBufferedImageType(realBitmap.getConfig(), needAlphaChannel(format)));
         ShadowBitmap shadowBitmap = Shadow.extract(realBitmap);
         int[] pixels = shadowBitmap.getPixelsInternal();
-        bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
+        if (pixels != null) {
+          bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
+        }
         writer.write(null, new IIOImage(bufferedImage, null, null), iwparam);
         ios.flush();
         writer.dispose();
