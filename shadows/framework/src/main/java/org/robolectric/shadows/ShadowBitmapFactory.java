@@ -237,12 +237,12 @@ public class ShadowBitmapFactory {
     }
     boolean mutable = shadowBitmap.isMutable();
     shadowBitmap.setMutable(true);
-    // There are provided width and height that less than real size
-    for (int x = 0; x < shadowBitmap.getWidth() && x < image.getWidth(); x++) {
-      for (int y = 0; y < shadowBitmap.getHeight() && y < image.getHeight(); y++) {
-        shadowBitmap.setPixel(x, y, image.getRGB(x, y));
-      }
-    }
+    // There are provided width and height that less than real size.
+    int width = Math.min(shadowBitmap.getWidth(), image.getWidth());
+    int height = Math.min(shadowBitmap.getHeight(), image.getHeight());
+    int[] pixels = new int[width * height];
+    image.getRGB(0, 0, width, height, pixels, 0, width);
+    shadowBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
     shadowBitmap.setMutable(mutable);
   }
 
