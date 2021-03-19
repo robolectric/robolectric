@@ -40,6 +40,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = AudioManager.class, looseSignatures = true)
 public class ShadowAudioManager {
+
   public static final int MAX_VOLUME_MUSIC_DTMF = 15;
   public static final int DEFAULT_MAX_VOLUME = 7;
   public static final int MIN_VOLUME = 0;
@@ -166,6 +167,7 @@ public class ShadowAudioManager {
    */
   @Implementation(minSdk = O)
   protected int abandonAudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
+    lastAbandonedAudioFocusListener = audioFocusRequest.getOnAudioFocusChangeListener();
     lastAbandonedAudioFocusRequest = audioFocusRequest;
     return nextResponseValue;
   }
@@ -637,7 +639,7 @@ public class ShadowAudioManager {
     }
 
     private AudioFocusRequest(android.media.AudioFocusRequest audioFocusRequest) {
-      this.listener = null;
+      this.listener = audioFocusRequest.getOnAudioFocusChangeListener();
       this.streamType = this.durationHint = -1;
       this.audioFocusRequest = audioFocusRequest;
     }
