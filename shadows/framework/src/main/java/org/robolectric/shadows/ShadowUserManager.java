@@ -437,9 +437,24 @@ public class ShadowUserManager {
     return bundle != null && bundle.getBoolean(restrictionKey);
   }
 
-  public void setUserRestriction(UserHandle userHandle, String restrictionKey, boolean value) {
+  /**
+   * Shadows UserManager.setUserRestriction() API. This allows UserManager.hasUserRestriction() to
+   * return meaningful results in test environment; thus, allowing test to verify the invoking of
+   * UserManager.setUserRestriction().
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected void setUserRestriction(String key, boolean value, UserHandle userHandle) {
     Bundle bundle = getUserRestrictionsForUser(userHandle);
-    bundle.putBoolean(restrictionKey, value);
+    bundle.putBoolean(key, value);
+  }
+
+  /**
+   * @deprecated When possible, please use the real Android framework API {@link
+   *     UserManager#setUserRestriction()}.
+   */
+  @Deprecated
+  public void setUserRestriction(UserHandle userHandle, String restrictionKey, boolean value) {
+    setUserRestriction(restrictionKey, value, userHandle);
   }
 
   /**
