@@ -174,6 +174,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
+    RuntimeEnvironment.setActivityThread(ReflectionHelpers.newInstance(ActivityThread.class));
 
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
       RuntimeEnvironment.setConfiguredApplicationClass(
@@ -215,8 +216,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       android.content.res.Configuration androidConfiguration,
       DisplayMetrics displayMetrics) {
 
-    final ActivityThread activityThread = ReflectionHelpers.newInstance(ActivityThread.class);
-    RuntimeEnvironment.setActivityThread(activityThread);
+    final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
 
@@ -523,10 +523,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
       RuntimeEnvironment.application.onTerminate();
-    }
-    Instrumentation instrumentation = ShadowInstrumentation.getInstrumentation();
-    if (instrumentation != null) {
-      instrumentation.finish(1, new Bundle());
+      ShadowInstrumentation.getInstrumentation().finish(1, new Bundle());
     }
   }
 
