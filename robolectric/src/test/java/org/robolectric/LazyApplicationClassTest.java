@@ -1,16 +1,16 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.annotation.LazyLoadApplication.LazyLoad.OFF;
-import static org.robolectric.annotation.LazyLoadApplication.LazyLoad.ON;
+import static org.robolectric.annotation.LazyApplication.LazyLoad.OFF;
+import static org.robolectric.annotation.LazyApplication.LazyLoad.ON;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.LazyLoadApplication;
+import org.robolectric.annotation.LazyApplication;
 
 /** Test case to make sure the application is lazily loaded when requested at the class level */
-@LazyLoadApplication(ON)
+@LazyApplication(ON)
 @RunWith(AndroidJUnit4.class)
 public class LazyApplicationClassTest {
   @Test
@@ -20,7 +20,7 @@ public class LazyApplicationClassTest {
     assertThat(RuntimeEnvironment.application).isNotNull();
   }
 
-  @LazyLoadApplication(OFF)
+  @LazyApplication(OFF)
   @Test
   public void testMethodLevelOverride() {
     assertThat(RuntimeEnvironment.application).isNotNull();

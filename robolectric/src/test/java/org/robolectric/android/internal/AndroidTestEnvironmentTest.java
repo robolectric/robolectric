@@ -31,8 +31,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LazyLoadApplication;
-import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
+import org.robolectric.annotation.LazyApplication;
+import org.robolectric.annotation.LazyApplication.LazyLoad;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.RoboNotFoundException;
@@ -260,7 +260,7 @@ public class AndroidTestEnvironmentTest {
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
   }
 
-  @LazyLoadApplication(LazyLoad.ON)
+  @LazyApplication(LazyLoad.ON)
   @Test
   public void resetState_doesNotLoadApplication() {
     RuntimeEnvironment.application = null;
@@ -269,7 +269,7 @@ public class AndroidTestEnvironmentTest {
     assertThat(RuntimeEnvironment.application).isNull();
   }
 
-  @LazyLoadApplication(LazyLoad.ON)
+  @LazyApplication(LazyLoad.ON)
   @Test
   public void tearDownApplication_doesNotLoadApplication() {
     bootstrapWrapper.callSetUpApplicationState();
