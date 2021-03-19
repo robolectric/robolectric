@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.ActivityThread;
 import android.app.Application;
@@ -16,12 +17,14 @@ import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowActivityThread {
   private static ApplicationInfo applicationInfo;
+  @RealObject protected ActivityThread realActivityThread;
 
   @Implementation
   public static Object getPackageManager() {
@@ -101,6 +104,16 @@ public class ShadowActivityThread {
   @Deprecated
   public static void setApplicationInfo(ApplicationInfo applicationInfo) {
     ShadowActivityThread.applicationInfo = applicationInfo;
+  }
+
+  /**
+   * internal, do not use
+   *
+   * @param androidConfiguration
+   */
+  public void setCompatConfiguration(Configuration androidConfiguration) {
+    reflector(_ActivityThread_.class, realActivityThread)
+        .setCompatConfiguration(androidConfiguration);
   }
 
   /** Accessor interface for {@link ActivityThread}'s internals. */

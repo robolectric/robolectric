@@ -119,7 +119,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     Instrumentation instrumentation = activityThread.getInstrumentation();
 
-    reflector(_Activity_.class, realActivity)
+    reflector(getActivityReflector(), realActivity)
         .callAttach(
             baseContext,
             activityThread,
@@ -134,6 +134,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (theme != 0) {
       realActivity.setTheme(theme);
     }
+  }
+
+  protected Class<? extends _Activity_> getActivityReflector() {
+    return _Activity_.class;
   }
 
   /**
