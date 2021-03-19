@@ -6,8 +6,14 @@ import static com.google.common.truth.Truth.assertThat;
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory.Options;
+import android.os.Build;
 import androidx.test.runner.AndroidJUnit4;
+import com.google.common.truth.TruthJUnit;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,5 +74,26 @@ public class BitmapFactoryTest {
     Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opt);
     bitmap.compress(CompressFormat.PNG, 0, stm);
     return stm.toByteArray();
+  }
+
+  /**
+   * When methods such as {@link BitmapFactory#decodeStream(InputStream, Rect, Options)} are called
+   * with invalid Bitmap data, the return value should be null, and {@link
+   * BitmapFactory.Options#outWidth} and {@link BitmapFactory.Options#outHeight} should be set to
+   * -1. This tests fails in Robolectric due to legacy BitmapFactory behavior of always returning a
+   * Bitmap object, even if the bitmap data is invalid. Once {@link
+   * org.robolectric.shadows.ShadowBitmap} defaults to not allowing invalid Bitmap data, this test
+   * can be enabled for Robolectric.
+   */
+  @Test
+  public void decodeStream_options_setsOutWidthToMinusOne() throws IOException {
+    TruthJUnit.assume().that(Build.FINGERPRINT).isNotEqualTo("robolectric");
+    byte[] invalidBitmapPixels = "invalid bitmap pixels".getBytes(Charset.defaultCharset());
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(invalidBitmapPixels);
+    BitmapFactory.Options opts = new Options();
+    Bitmap result = BitmapFactory.decodeStream(inputStream, null, opts);
+    assertThat(result).isEqualTo(null);
+    assertThat(opts.outWidth).isEqualTo(-1);
+    assertThat(opts.outHeight).isEqualTo(-1);
   }
 }

@@ -482,6 +482,24 @@ public class ShadowBitmapFactoryTest {
     assertEquals(Color.WHITE, getPngImageColorFromFileDescriptor("res/drawable/pure_white.png"));
   }
 
+  /**
+   * When methods such as {@link BitmapFactory#decodeStream(InputStream, android.graphics.Rect,
+   * android.graphics.BitmapFactory.Options)} are called with invalid Bitmap data, the return value
+   * should be null, and {@link BitmapFactory.Options#outWidth} and {@link
+   * BitmapFactory.Options#outHeight} should be set to -1.
+   */
+  @Test
+  public void decodeStream_options_setsOutWidthToMinusOne() {
+    ShadowBitmapFactory.setAllowInvalidImageData(false);
+    byte[] invalidBitmapPixels = "invalid bitmap pixels".getBytes(UTF_8);
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(invalidBitmapPixels);
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    Bitmap result = BitmapFactory.decodeStream(inputStream, null, opts);
+    assertThat(result).isEqualTo(null);
+    assertThat(opts.outWidth).isEqualTo(-1);
+    assertThat(opts.outHeight).isEqualTo(-1);
+  }
+
   private void decodeFile_shouldGetCorrectColorFromCompressedFile(
       Bitmap.CompressFormat format, byte[] bitmapData) throws IOException {
     Bitmap oldBitmap = BitmapFactory.decodeByteArray(bitmapData, 0, bitmapData.length);
