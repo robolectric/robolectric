@@ -255,4 +255,16 @@ public class BitmapTest {
 
     assertThat(exception).hasMessageThat().contains("width and height must be > 0");
   }
+
+  @Test
+  public void getBitmapPixels_strideTooLong() {
+    int[] bitmapPixels = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Bitmap bitmap = Bitmap.createBitmap(bitmapPixels, 3, 3, Bitmap.Config.ARGB_8888);
+    int[] pixelsCopy = new int[bitmap.getHeight() * bitmap.getWidth()];
+    assertThrows(
+        ArrayIndexOutOfBoundsException.class,
+        () ->
+            bitmap.getPixels(
+                pixelsCopy, 0, bitmap.getRowBytes(), 0, 0, bitmap.getWidth(), bitmap.getHeight()));
+  }
 }
