@@ -255,14 +255,14 @@ public class ShadowBitmapFactory {
         .measure(
             "initColorArray",
             () -> {
-              int[] colors = shadowBitmap.getColorsInternal();
-              if (colors.length == image.getWidth() * image.getHeight()) {
+              int[] pixels = shadowBitmap.getPixelsInternal();
+              if (pixels.length == image.getWidth() * image.getHeight()) {
                 image.getRGB(
                     0,
                     0,
                     image.getWidth(),
                     image.getHeight(),
-                    shadowBitmap.getPixelsInternal(),
+                    pixels,
                     0,
                     image.getWidth());
               }
