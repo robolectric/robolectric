@@ -34,6 +34,7 @@ import org.robolectric.shadows.ImageUtil.RobolectricBufferedImage;
 import org.robolectric.util.Join;
 import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -88,6 +89,7 @@ public class ShadowBitmapFactory {
     return decodeFile(pathName, null);
   }
 
+  @SuppressWarnings("Var")
   @Implementation
   protected static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
     // If a real file is used, attempt to get the image size from that file.
@@ -113,7 +115,7 @@ public class ShadowBitmapFactory {
     return bitmap;
   }
 
-  @SuppressWarnings("ObjectToString")
+  @SuppressWarnings({"ObjectToString", "Var"})
   @Implementation
   protected static Bitmap decodeFileDescriptor(
       FileDescriptor fd, Rect outPadding, BitmapFactory.Options opts) {
@@ -237,12 +239,22 @@ public class ShadowBitmapFactory {
     }
     boolean mutable = shadowBitmap.isMutable();
     shadowBitmap.setMutable(true);
-    // There are provided width and height that less than real size.
-    int width = Math.min(shadowBitmap.getWidth(), image.getWidth());
-    int height = Math.min(shadowBitmap.getHeight(), image.getHeight());
-    int[] pixels = new int[width * height];
-    image.getRGB(0, 0, width, height, pixels, 0, width);
-    shadowBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
+    PerfStatsCollector.getInstance()
+        .measure(
+            "initColorArray",
+            () -> {
+              int[] colors = shadowBitmap.getColorsInternal();
+              if (colors.length == image.getWidth() * image.getHeight()) {
+                image.getRGB(
+                    0,
+                    0,
+                    image.getWidth(),
+                    image.getHeight(),
+                    shadowBitmap.getPixelsInternal(),
+                    0,
+                    image.getWidth());
+              }
+            });
     shadowBitmap.setMutable(mutable);
   }
 

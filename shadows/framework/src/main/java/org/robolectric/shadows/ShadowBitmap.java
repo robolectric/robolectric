@@ -748,9 +748,7 @@ public class ShadowBitmap {
   }
 
   /**
-   * Get pixels array internal.
-   *
-   * <p>Don't update the result directly. It is only used internal.
+   * Access the underlying pixels buffer for faster image operations.
    *
    * @return The pixels array.
    */
