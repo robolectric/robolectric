@@ -74,7 +74,8 @@ public class ShadowAudioManagerTest {
   public void requestAudioFocus2_shouldRecordArgumentsOfMostRecentCall() {
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest()).isNull();
 
-    AudioAttributes atts = new AudioAttributes.Builder().build();
+    AudioAttributes atts =
+        new AudioAttributes.Builder().setLegacyStreamType(AudioManager.STREAM_MUSIC).build();
     android.media.AudioFocusRequest request =
         new android.media.AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
             .setOnAudioFocusChangeListener(listener)
@@ -84,8 +85,10 @@ public class ShadowAudioManagerTest {
     audioManager.requestAudioFocus(request);
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest().listener)
         .isSameInstanceAs(listener);
-    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType).isEqualTo(-1);
-    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint).isEqualTo(-1);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().streamType)
+        .isEqualTo(AudioManager.STREAM_MUSIC);
+    assertThat(shadowOf(audioManager).getLastAudioFocusRequest().durationHint)
+        .isEqualTo(AudioManager.AUDIOFOCUS_GAIN);
     assertThat(shadowOf(audioManager).getLastAudioFocusRequest().audioFocusRequest)
         .isEqualTo(request);
   }
