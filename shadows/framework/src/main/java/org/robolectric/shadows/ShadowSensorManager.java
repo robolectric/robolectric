@@ -53,6 +53,14 @@ public class ShadowSensorManager {
     sensorMap.put(sensor.getType(), sensor);
   }
 
+
+  public void removeSensor(Sensor sensor) {
+    if (sensor == null) {
+      return;
+    }
+    sensorMap.remove(sensor.getType());
+  }
+
   @Implementation
   protected Sensor getDefaultSensor(int type) {
     return sensorMap.get(type);
