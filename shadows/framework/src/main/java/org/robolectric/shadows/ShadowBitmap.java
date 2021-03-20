@@ -267,7 +267,7 @@ public class ShadowBitmap {
     if (shadowBitmap.config == null) {
       shadowBitmap.config = Config.ARGB_8888;
     }
-    shadowBitmap.setPixels(
+    shadowBitmap.setPixelsInternal(
         new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()],
         0,
         0,
@@ -305,7 +305,8 @@ public class ShadowBitmap {
   @Implementation
   protected void setPixels(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    this.colors = pixels;
+    checkBitmapMutable();
+    setPixelsInternal(pixels, offset, stride, x, y, width, height);
   }
 
   @Implementation
@@ -400,11 +401,7 @@ public class ShadowBitmap {
 
   @Implementation
   protected void setPixel(int x, int y, int color) {
-    if (isRecycled()) {
-      throw new IllegalStateException("Can't call setPixel() on a recycled bitmap");
-    } else if (!isMutable()) {
-      throw new IllegalStateException("Bitmap is immutable");
-    }
+    checkBitmapMutable();
     internalCheckPixelAccess(x, y);
     if (colors == null) {
       colors = new int[getWidth() * getHeight()];
@@ -730,6 +727,19 @@ public class ShadowBitmap {
   public void setCreatedFromResId(int resId, String description) {
     this.createdFromResId = resId;
     appendDescription(" for resource:" + description);
+  }
+
+  void setPixelsInternal(
+      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+    this.colors = pixels;
+  }
+
+  private void checkBitmapMutable() {
+    if (isRecycled()) {
+      throw new IllegalStateException("Can't call setPixel() on a recycled bitmap");
+    } else if (!isMutable()) {
+      throw new IllegalStateException("Bitmap is immutable");
+    }
   }
 
   private void internalCheckPixelAccess(int x, int y) {
