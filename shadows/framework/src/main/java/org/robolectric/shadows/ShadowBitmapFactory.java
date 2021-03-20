@@ -297,13 +297,7 @@ public class ShadowBitmapFactory {
               int[] pixels = shadowBitmap.getPixelsInternal();
               if (pixels.length == image.getWidth() * image.getHeight()) {
                 image.getRGB(
-                    0,
-                    0,
-                    image.getWidth(),
-                    image.getHeight(),
-                    pixels,
-                    0,
-                    image.getWidth());
+                    0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
               }
             });
     shadowBitmap.setMutable(mutable);
