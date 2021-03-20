@@ -50,9 +50,11 @@ public class ShadowSensorManager {
 
   /** Adds a {@link Sensor} to the {@link SensorManager} */
   public void addSensor(Sensor sensor) {
+    if (sensor == null) {
+      return;
+    }
     sensorMap.put(sensor.getType(), sensor);
   }
-
 
   public void removeSensor(Sensor sensor) {
     if (sensor == null) {
