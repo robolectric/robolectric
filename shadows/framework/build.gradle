@@ -62,4 +62,5 @@ dependencies {
     sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x64:$sqlite4javaVersion"
     sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-i386:$sqlite4javaVersion"
     sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x86:$sqlite4javaVersion"
+    sqlite4java "io.github.ganadist.sqlite4java:libsqlite4java-osx-aarch64:$sqlite4javaVersion"
 }
