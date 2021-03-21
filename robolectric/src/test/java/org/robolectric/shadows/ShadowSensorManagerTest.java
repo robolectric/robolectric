@@ -212,16 +212,6 @@ public class ShadowSensorManagerTest {
   }
 
   @Test
-  public void addSensor_shouldWorkFineWithNullInput() {
-    shadowOf(sensorManager).addSensor(null);
-  }
-
-  @Test
-  public void removeSensor_shouldWorkFineWithNullInput() {
-    shadowOf(sensorManager).removeSensor(null);
-  }
-
-  @Test
   public void removeSensor_shouldRemoveAddedSensor() {
     Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
     ShadowSensorManager shadowSensorManager = shadowOf(sensorManager);

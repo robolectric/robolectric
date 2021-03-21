@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
@@ -45,21 +46,18 @@ public class ShadowSensorManager {
    */
   @Deprecated
   public void addSensor(int sensorType, Sensor sensor) {
+    checkNotNull(sensor);
     sensorMap.put(sensorType, sensor);
   }
 
   /** Adds a {@link Sensor} to the {@link SensorManager} */
   public void addSensor(Sensor sensor) {
-    if (sensor == null) {
-      return;
-    }
+    checkNotNull(sensor);
     sensorMap.put(sensor.getType(), sensor);
   }
 
   public void removeSensor(Sensor sensor) {
-    if (sensor == null) {
-      return;
-    }
+    checkNotNull(sensor);
     sensorMap.remove(sensor.getType());
   }
 
