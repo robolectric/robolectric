@@ -478,8 +478,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    *
    * @deprecated Going away before 4.2. DO NOT SHIP.
    */
-  @Deprecated
-  protected Configuration getConfiguration(Method method) {
+  private Configuration getConfiguration(Method method) {
     Configuration configuration =
         configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
 
