@@ -471,13 +471,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * Calculate the configuration for a given test method.
-   *
-   * <p>Temporarily visible for migration.
-   *
-   * @deprecated Going away before 4.2. DO NOT SHIP.
-   */
+  /** Calculate the configuration for a given test method. */
   private Configuration getConfiguration(Method method) {
     Configuration configuration =
         configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
