@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
@@ -242,7 +243,7 @@ public class ShadowInstrumentation {
     }
   }
 
-  @Implementation(minSdk = M, maxSdk = P)
+  @Implementation(minSdk = M, maxSdk = R)
   protected ActivityResult execStartActivityAsCaller(
       Context who,
       IBinder contextThread,
