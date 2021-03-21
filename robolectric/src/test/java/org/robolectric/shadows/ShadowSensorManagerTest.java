@@ -212,6 +212,16 @@ public class ShadowSensorManagerTest {
   }
 
   @Test
+  public void removeSensor_shouldRemoveAddedSensor() {
+    Sensor sensor = ShadowSensor.newInstance(Sensor.TYPE_ACCELEROMETER);
+    ShadowSensorManager shadowSensorManager = shadowOf(sensorManager);
+    shadowSensorManager.addSensor(sensor);
+    assertThat(sensor).isSameInstanceAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+    shadowSensorManager.removeSensor(sensor);
+    assertThat(sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)).isNull();
+  }
+
+  @Test
   public void shouldReturnASensorList() {
     assertThat(sensorManager.getSensorList(0)).isNotNull();
   }
