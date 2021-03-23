@@ -256,9 +256,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
 
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(androidConfiguration, displayMetrics);
-
     Application application = createApplication(appManifest, config, applicationInfo);
     RuntimeEnvironment.setConfiguredApplicationClass(application.getClass());
 
