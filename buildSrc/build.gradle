@@ -3,7 +3,8 @@ apply plugin: "groovy"
 
 repositories {
     google()
-    jcenter()
+    mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {

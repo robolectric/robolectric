@@ -3,7 +3,7 @@ import org.gradle.plugins.ide.idea.model.IdeaModel
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         gradlePluginPortal()
     }
 
@@ -20,8 +20,8 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
+        gradlePluginPortal()
     }
 
     group = "org.robolectric"
