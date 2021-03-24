@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.util.TypedValue;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -35,7 +36,6 @@ import org.robolectric.shadows.ImageUtil.RobolectricBufferedImage;
 import org.robolectric.util.Join;
 import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
-import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -84,16 +84,9 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
-    Point imageSizeFromStream =
-        bufferedImage == null
-            ? null
-            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
-
-    Bitmap bitmap = create("resource:" + res.getResourceName(id), options, imageSizeFromStream);
+    Bitmap bitmap = create("resource:" + res.getResourceName(id), options, image);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
-    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -122,15 +115,9 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
-    Point imageSizeFromStream =
-        bufferedImage == null
-            ? null
-            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
-    Bitmap bitmap = create("file:" + pathName, options, imageSizeFromStream);
+    Bitmap bitmap = create("file:" + pathName, options, image);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
-    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -155,15 +142,9 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
-    Point imageSizeFromStream =
-        bufferedImage == null
-            ? null
-            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
-    Bitmap bitmap = create("fd:" + fd, outPadding, opts, imageSizeFromStream);
+    Bitmap bitmap = create("fd:" + fd, outPadding, opts, null, image);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
-    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
     return bitmap;
   }
 
@@ -205,21 +186,15 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
-    Point imageSize =
-        bufferedImage == null
-            ? null
-            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
-    Bitmap bitmap = create(name, outPadding, opts, imageSize);
+    Bitmap bitmap = create(name, outPadding, opts, null, image);
     ReflectionHelpers.callInstanceMethod(
         bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
 
     if (image != null && opts != null) {
-      opts.outMimeType = image.mimeType;
+      opts.outMimeType = image.getMimeType();
     }
-    initColorArray(bufferedImage, ninePatchChunk, shadowBitmap);
     return bitmap;
   }
 
@@ -249,14 +224,7 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    BufferedImage bufferedImage = image != null ? image.bufferedImage : null;
-    Point imageSize =
-        bufferedImage == null
-            ? null
-            : new Point(bufferedImage.getWidth(), bufferedImage.getHeight());
-    Bitmap bitmap = create(desc, opts, imageSize);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
-    initColorArray(bufferedImage, bitmap.getNinePatchChunk(), shadowBitmap);
+    Bitmap bitmap = create(desc, opts, image);
     return bitmap;
   }
 
@@ -270,7 +238,7 @@ public class ShadowBitmapFactory {
    */
   @Deprecated
   public static Bitmap create(String name, BitmapFactory.Options options) {
-    return create(name, options, null);
+    return create(name, options, (Point) null);
   }
 
   /**
@@ -280,34 +248,22 @@ public class ShadowBitmapFactory {
   @Deprecated
   public static Bitmap create(
       final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
-    return create(name, null, options, widthAndHeight);
+    return create(name, null, options, widthAndHeight, null);
   }
 
-  private static void initColorArray(
-      BufferedImage image, byte[] ninePatchChunk, ShadowBitmap shadowBitmap) {
-    if (image == null || ninePatchChunk != null) {
-      return;
-    }
-    boolean mutable = shadowBitmap.isMutable();
-    shadowBitmap.setMutable(true);
-    PerfStatsCollector.getInstance()
-        .measure(
-            "initColorArray",
-            () -> {
-              int[] pixels = shadowBitmap.getPixelsInternal();
-              if (pixels.length == image.getWidth() * image.getHeight()) {
-                image.getRGB(
-                    0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-              }
-            });
-    shadowBitmap.setMutable(mutable);
+  private static Bitmap create(
+      final String name,
+      final BitmapFactory.Options options,
+      final RobolectricBufferedImage image) {
+    return create(name, null, options, null, image);
   }
 
   private static Bitmap create(
       final String name,
       final Rect outPadding,
       final BitmapFactory.Options options,
-      final Point widthAndHeight) {
+      final Point widthAndHeightOverride,
+      final RobolectricBufferedImage image) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
@@ -326,7 +282,7 @@ public class ShadowBitmapFactory {
       shadowBitmap.appendDescription(optionsString);
     }
 
-    Point p = new Point(selectWidthAndHeight(name, widthAndHeight));
+    Point p = new Point(selectWidthAndHeight(name, widthAndHeightOverride, image));
     if (options != null && options.inSampleSize > 1) {
       p.x = p.x / options.inSampleSize;
       p.y = p.y / options.inSampleSize;
@@ -337,7 +293,16 @@ public class ShadowBitmapFactory {
 
     shadowBitmap.setWidth(p.x);
     shadowBitmap.setHeight(p.y);
-    shadowBitmap.setPixelsInternal(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
+    if (image != null) {
+      BufferedImage bufferedImage = new BufferedImage(p.x, p.y, BufferedImage.TYPE_INT_ARGB);
+      // Copy the image as TYPE_INT_ARGB for fast comparison (sameAs).
+      Graphics2D g = bufferedImage.createGraphics();
+      g.drawImage(image.getBufferedImage(), 0, 0, null);
+      g.dispose();
+      shadowBitmap.setBufferedImage(bufferedImage);
+    } else {
+      shadowBitmap.setPixelsInternal(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
+    }
     if (options != null) {
       options.outWidth = p.x;
       options.outHeight = p.y;
@@ -406,17 +371,20 @@ public class ShadowBitmapFactory {
     allowInvalidImageData = true;
   }
 
-  private static Point selectWidthAndHeight(final String name, final Point widthAndHeight) {
+  private static Point selectWidthAndHeight(
+      final String name,
+      final Point widthAndHeightOverride,
+      final RobolectricBufferedImage robolectricBufferedImage) {
     final Point widthAndHeightFromMap = widthAndHeightMap.get(name);
-
     if (widthAndHeightFromMap != null) {
       return widthAndHeightFromMap;
     }
-
-    if (widthAndHeight != null) {
-      return widthAndHeight;
+    if (robolectricBufferedImage != null) {
+      return robolectricBufferedImage.getWidthAndHeight();
     }
-
+    if (widthAndHeightOverride != null) {
+      return widthAndHeightOverride;
+    }
     return new Point(100, 100);
   }
 

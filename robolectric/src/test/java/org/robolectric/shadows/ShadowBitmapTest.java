@@ -489,12 +489,11 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  public void compress_shouldSucceedForNullColorArray() {
+  public void compress_shouldSucceedForNullPixelData() {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.setWidth(100);
     shadowBitmap.setHeight(100);
-    assertThat(shadowBitmap.getPixelsInternal()).isNull();
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
   }

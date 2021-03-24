@@ -34,11 +34,14 @@ import android.widget.ImageView;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -52,7 +55,10 @@ public class ShadowView {
 
   @RealObject
   protected View realView;
-
+  private static final List<View.OnClickListener> globalClickListeners =
+      new CopyOnWriteArrayList<>();
+  private static final List<View.OnLongClickListener> globalLongClickListeners =
+      new CopyOnWriteArrayList<>();
   private View.OnClickListener onClickListener;
   private View.OnLongClickListener onLongClickListener;
   private View.OnFocusChangeListener onFocusChangeListener;
@@ -224,6 +230,64 @@ public class ShadowView {
   protected void requestLayout() {
     didRequestLayout = true;
     directly().requestLayout();
+  }
+
+  @Implementation
+  protected boolean performClick() {
+    for (View.OnClickListener listener : globalClickListeners) {
+      listener.onClick(realView);
+    }
+    return directlyOn(realView, View.class).performClick();
+  }
+
+  /**
+   * Registers an {@link View.OnClickListener} to the {@link ShadowView}.
+   *
+   * @param listener The {@link View.OnClickListener} to be registered.
+   */
+  public static void addGlobalPerformClickListener(View.OnClickListener listener) {
+    ShadowView.globalClickListeners.add(listener);
+  }
+
+  /**
+   * Removes an {@link View.OnClickListener} from the {@link ShadowView}.
+   *
+   * @param listener The {@link View.OnClickListener} to be removed.
+   */
+  public static void removeGlobalPerformClickListener(View.OnClickListener listener) {
+    ShadowView.globalClickListeners.remove(listener);
+  }
+
+  @Implementation
+  protected boolean performLongClick() {
+    for (View.OnLongClickListener listener : globalLongClickListeners) {
+      listener.onLongClick(realView);
+    }
+    return directlyOn(realView, View.class).performLongClick();
+  }
+
+  /**
+   * Registers an {@link View.OnLongClickListener} to the {@link ShadowView}.
+   *
+   * @param listener The {@link View.OnLongClickListener} to be registered.
+   */
+  public static void addGlobalPerformLongClickListener(View.OnLongClickListener listener) {
+    ShadowView.globalLongClickListeners.add(listener);
+  }
+
+  /**
+   * Removes an {@link View.OnLongClickListener} from the {@link ShadowView}.
+   *
+   * @param listener The {@link View.OnLongClickListener} to be removed.
+   */
+  public static void removeGlobalPerformLongClickListener(View.OnLongClickListener listener) {
+    ShadowView.globalLongClickListeners.remove(listener);
+  }
+
+  @Resetter
+  public static void reset() {
+    ShadowView.globalClickListeners.clear();
+    ShadowView.globalLongClickListeners.clear();
   }
 
   public boolean didRequestLayout() {

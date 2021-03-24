@@ -34,4 +34,24 @@ public class ShadowRankingTest {
 
     assertThat(ranking.getChannel()).isEqualTo(notificationChannel);
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void testSetHiddenTrue() {
+    boolean hidden = true;
+
+    shadowOf(ranking).setHidden(hidden);
+
+    assertThat(ranking.isSuspended()).isEqualTo(hidden);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void testSetHiddenFalse() {
+    boolean hidden = false;
+
+    shadowOf(ranking).setHidden(hidden);
+
+    assertThat(ranking.isSuspended()).isEqualTo(hidden);
+  }
 }

@@ -5,13 +5,13 @@ import android.net.Uri;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.LazyLoadApplication;
-import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
+import org.robolectric.annotation.LazyApplication;
+import org.robolectric.annotation.LazyApplication.LazyLoad;
 
 /** Tests for interactions with shadows when lazily loading application */
-@LazyLoadApplication(LazyLoad.ON)
+@LazyApplication(LazyLoad.ON)
 @RunWith(AndroidJUnit4.class)
-public class LazyLoadApplicationShadowTest {
+public class LazyApplicationShadowTest {
 
   /**
    * Test to make sure that (Shadow)Resources.getSystem can safely be called when lazy loading is

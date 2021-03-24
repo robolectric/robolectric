@@ -16,4 +16,9 @@ public class ShadowRanking {
   public void setChannel(NotificationChannel notificationChannel) {
     ReflectionHelpers.setField(realObject, "mChannel", notificationChannel);
   }
+
+  /** Overrides the return value for {@link Ranking#isSuspended()}. */
+  public void setHidden(boolean hidden) {
+    ReflectionHelpers.setField(realObject, "mHidden", hidden);
+  }
 }

@@ -8,6 +8,8 @@ import static javax.imageio.ImageIO.createImageInputStream;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Point;
+import com.google.auto.value.AutoValue;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +22,7 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import org.robolectric.shadow.api.Shadow;
+import org.robolectric.Shadows;
 
 public class ImageUtil {
   private static final String FORMAT_NAME_JPEG = "jpg";
@@ -71,10 +73,7 @@ public class ImageUtil {
         String format = reader.getFormatName();
         int minIndex = reader.getMinIndex();
         BufferedImage image = reader.read(minIndex);
-        RobolectricBufferedImage robolectricBufferedImage = new RobolectricBufferedImage();
-        robolectricBufferedImage.bufferedImage = image;
-        robolectricBufferedImage.mimeType = ("image/" + format).toLowerCase();
-        return robolectricBufferedImage;
+        return RobolectricBufferedImage.create(image, ("image/" + format).toLowerCase());
       } finally {
         reader.dispose();
       }
@@ -105,15 +104,21 @@ public class ImageUtil {
         iwparam.setCompressionQuality((quality / 100f));
         int width = realBitmap.getWidth();
         int height = realBitmap.getHeight();
-        BufferedImage bufferedImage =
-            new BufferedImage(
-                width,
-                height,
-                getBufferedImageType(realBitmap.getConfig(), needAlphaChannel(format)));
-        ShadowBitmap shadowBitmap = Shadow.extract(realBitmap);
-        int[] pixels = shadowBitmap.getPixelsInternal();
-        if (pixels != null) {
-          bufferedImage.setRGB(0, 0, width, height, pixels, 0, width);
+        boolean needAlphaChannel = needAlphaChannel(format);
+        BufferedImage bufferedImage = Shadows.shadowOf(realBitmap).getBufferedImage();
+        if (bufferedImage == null) {
+          bufferedImage =
+              new BufferedImage(
+                  realBitmap.getWidth(), realBitmap.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        }
+        int outputImageType = getBufferedImageType(realBitmap.getConfig(), needAlphaChannel);
+        if (outputImageType != BufferedImage.TYPE_INT_ARGB) {
+          // re-encode image data with a type that is compatible with the output format.
+          BufferedImage outputBufferedImage = new BufferedImage(width, height, outputImageType);
+          Graphics2D g = outputBufferedImage.createGraphics();
+          g.drawImage(bufferedImage, 0, 0, null);
+          g.dispose();
+          bufferedImage = outputBufferedImage;
         }
         writer.write(null, new IIOImage(bufferedImage, null, null), iwparam);
         ios.flush();
@@ -161,8 +166,18 @@ public class ImageUtil {
     }
   }
 
-  static class RobolectricBufferedImage {
-    BufferedImage bufferedImage;
-    String mimeType;
+  @AutoValue
+  abstract static class RobolectricBufferedImage {
+    abstract BufferedImage getBufferedImage();
+
+    abstract String getMimeType();
+
+    public Point getWidthAndHeight() {
+      return new Point(getBufferedImage().getWidth(), getBufferedImage().getHeight());
+    }
+
+    static RobolectricBufferedImage create(BufferedImage bufferedImage, String mimeType) {
+      return new AutoValue_ImageUtil_RobolectricBufferedImage(bufferedImage, mimeType);
+    }
   }
 }
