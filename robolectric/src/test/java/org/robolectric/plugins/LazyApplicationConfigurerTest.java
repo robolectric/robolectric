@@ -1,18 +1,18 @@
 package org.robolectric.plugins;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.annotation.LazyLoadApplication.LazyLoad.OFF;
-import static org.robolectric.annotation.LazyLoadApplication.LazyLoad.ON;
+import static org.robolectric.annotation.LazyApplication.LazyLoad.OFF;
+import static org.robolectric.annotation.LazyApplication.LazyLoad.ON;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Unit test for {@link LazyLoadingConfigurer} */
+/** Unit test for {@link LazyApplicationConfigurer} */
 @RunWith(JUnit4.class)
-public class LazyLoadingConfigurerTest {
+public class LazyApplicationConfigurerTest {
 
-  private LazyLoadingConfigurer configurer = new LazyLoadingConfigurer();
+  private LazyApplicationConfigurer configurer = new LazyApplicationConfigurer();
 
   @Test
   public void merge_explicitChildConfigOverridesParent() {

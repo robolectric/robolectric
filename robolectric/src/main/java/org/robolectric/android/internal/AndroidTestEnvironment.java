@@ -43,7 +43,7 @@ import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
+import org.robolectric.annotation.LazyApplication.LazyLoad;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ResourcesMode;

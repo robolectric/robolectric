@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
-public @interface LazyLoadApplication {
+public @interface LazyApplication {
 
   /** Whether or not the Application should be lazily loaded */
   LazyLoad value();

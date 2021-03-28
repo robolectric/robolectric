@@ -22,8 +22,7 @@ public class RuntimeEnvironment {
    * @deprecated Use {@link #getApplication} or {@link
    *     androidx.test.core.app.ApplicationProvider#getApplicationContext} instead. Note that unlike
    *     the alternatives, this field is inherently incompatible with {@link
-   *     org.robolectric.annotation.LazyLoadApplication}. This field may be removed in a later
-   *     release
+   *     org.robolectric.annotation.LazyApplication}. This field may be removed in a later release
    */
   @Deprecated public static Context systemContext;
 
@@ -50,7 +49,7 @@ public class RuntimeEnvironment {
    * Get a reference to the {@link Application} under test.
    *
    * The Application may be created a test setup time or created lazily at call time, based on the
-   * test's {@link LazyLoadApplication) setting. If lazy loading is enabled, this method must be
+   * test's {@link LazyApplication) setting. If lazy loading is enabled, this method must be
    * called on the main/test thread.
    *
    * An alternate API is

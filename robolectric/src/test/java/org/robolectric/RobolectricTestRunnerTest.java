@@ -48,8 +48,8 @@ import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
-import org.robolectric.annotation.LazyLoadApplication;
-import org.robolectric.annotation.LazyLoadApplication.LazyLoad;
+import org.robolectric.annotation.LazyApplication;
+import org.robolectric.annotation.LazyApplication.LazyLoad;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
@@ -352,7 +352,7 @@ public class RobolectricTestRunnerTest {
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
   @Config(application = TestWithBrokenAppCreate.MyTestApplication.class)
-  @LazyLoadApplication(LazyLoad.OFF)
+  @LazyApplication(LazyLoad.OFF)
   public static class TestWithBrokenAppCreate {
     @Test
     public void first() throws Exception {}
@@ -372,7 +372,7 @@ public class RobolectricTestRunnerTest {
   @Ignore
   @FixMethodOrder(MethodSorters.NAME_ASCENDING)
   @Config(application = TestWithBrokenAppTerminate.MyTestApplication.class)
-  @LazyLoadApplication(LazyLoad.OFF)
+  @LazyApplication(LazyLoad.OFF)
   public static class TestWithBrokenAppTerminate {
     @Test
     public void first() throws Exception {}

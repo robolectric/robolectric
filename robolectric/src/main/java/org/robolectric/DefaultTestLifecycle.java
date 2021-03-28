@@ -6,8 +6,8 @@ import java.lang.reflect.Method;
  * The default {@link TestLifecycle} used by Robolectric.
  *
  * <p>Owing to tradeoffs, this class is not guaranteed to work with {@link
- * org.robolectric.annotation.LazyLoadApplication} enabled on tests where the application is
- * inferred from the apk (instead of explicitly specified in AndroidManifest.xml).
+ * org.robolectric.annotation.LazyApplication} enabled on tests where the application is inferred
+ * from the apk (instead of explicitly specified in AndroidManifest.xml).
  */
 public class DefaultTestLifecycle implements TestLifecycle {
 
@@ -16,13 +16,15 @@ public class DefaultTestLifecycle implements TestLifecycle {
    *
    * @param method the test method about to be run
    */
-  @Override public void beforeTest(final Method method) {
+  @Override
+  public void beforeTest(final Method method) {
     if (isTestLifecycleApplicationClass(RuntimeEnvironment.getConfiguredApplicationClass())) {
       ((TestLifecycleApplication) RuntimeEnvironment.getApplication()).beforeTest(method);
     }
   }
 
-  @Override public void prepareTest(final Object test) {
+  @Override
+  public void prepareTest(final Object test) {
     if (isTestLifecycleApplicationClass(RuntimeEnvironment.getConfiguredApplicationClass())) {
       ((TestLifecycleApplication) RuntimeEnvironment.getApplication()).prepareTest(test);
     }
@@ -33,7 +35,8 @@ public class DefaultTestLifecycle implements TestLifecycle {
    *
    * @param method the test method that just ran.
    */
-  @Override public void afterTest(final Method method) {
+  @Override
+  public void afterTest(final Method method) {
     if (isTestLifecycleApplicationClass(RuntimeEnvironment.getConfiguredApplicationClass())) {
       ((TestLifecycleApplication) RuntimeEnvironment.getApplication()).afterTest(method);
     }
