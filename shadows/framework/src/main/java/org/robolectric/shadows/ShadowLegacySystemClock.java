@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 
 import android.os.SystemClock;
 import java.time.DateTimeException;
+import java.util.concurrent.TimeUnit;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -29,38 +30,23 @@ public class ShadowLegacySystemClock extends ShadowSystemClock {
   private static final int MILLIS_PER_NANO = 1000000;
 
   static long now() {
-    if (!isApplicationLoaded()) {
-      return 0;
-    }
-    return ShadowApplication.getInstance().getForegroundThreadScheduler().getCurrentTime();
+    return RuntimeEnvironment.getMasterScheduler().getCurrentTime();
   }
 
   @Implementation
   protected static void sleep(long millis) {
-    if (!isApplicationLoaded()) {
-      return;
-    }
-
     nanoTime = millis * MILLIS_PER_NANO;
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceBy(millis);
+    RuntimeEnvironment.getMasterScheduler().advanceBy(millis, TimeUnit.MILLISECONDS);
   }
 
   @Implementation
   protected static boolean setCurrentTimeMillis(long millis) {
-    if (!isApplicationLoaded()) {
-      return false;
-    }
-
     if (now() > millis) {
       return false;
     }
     nanoTime = millis * MILLIS_PER_NANO;
-    ShadowApplication.getInstance().getForegroundThreadScheduler().advanceTo(millis);
+    RuntimeEnvironment.getMasterScheduler().advanceTo(millis);
     return true;
-  }
-
-  private static boolean isApplicationLoaded() {
-    return RuntimeEnvironment.application != null;
   }
 
   @Implementation
