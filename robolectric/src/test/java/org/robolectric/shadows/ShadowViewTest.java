@@ -1013,6 +1013,116 @@ public class ShadowViewTest {
             DeviceConfig.DEFAULT_SCREEN_SIZE.width, DeviceConfig.DEFAULT_SCREEN_SIZE.height));
   }
 
+  @Test
+  public void performClick_addListener_sendsGlobalViewAction() {
+    class GlobalListener implements View.OnClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onClick(View view) {
+        receivedEvent = true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalPerformClickListener(listener);
+    view.performClick();
+
+    assertThat(listener.receivedEvent).isTrue();
+  }
+
+  @Test
+  public void performClick_removeListener_sendsGlobalViewAction() {
+    class GlobalListener implements View.OnClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onClick(View view) {
+        receivedEvent = true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalPerformClickListener(listener);
+    ShadowView.removeGlobalPerformClickListener(listener);
+    view.performClick();
+
+    assertThat(listener.receivedEvent).isFalse();
+  }
+
+  @Test
+  public void performLongClick_addListener_sendsGlobalViewAction() {
+    class GlobalListener implements View.OnLongClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public boolean onLongClick(View view) {
+        receivedEvent = true;
+        return true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalPerformLongClickListener(listener);
+    view.performLongClick();
+
+    assertThat(listener.receivedEvent).isTrue();
+  }
+
+  @Test
+  public void performLongClick_removeListener_sendsGlobalViewAction() {
+    class GlobalListener implements View.OnLongClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public boolean onLongClick(View view) {
+        receivedEvent = true;
+        return true;
+      }
+    }
+    GlobalListener listener = new GlobalListener();
+
+    ShadowView.addGlobalPerformLongClickListener(listener);
+    ShadowView.removeGlobalPerformLongClickListener(listener);
+    view.performLongClick();
+
+    assertThat(listener.receivedEvent).isFalse();
+  }
+
+  @Test
+  public void reset_removesAllGlobalViewActionListeners() {
+    class GlobalClickListener implements View.OnClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public void onClick(View view) {
+        receivedEvent = true;
+      }
+    }
+    class GlobalLongClickListener implements View.OnLongClickListener {
+      boolean receivedEvent = false;
+
+      @Override
+      public boolean onLongClick(View view) {
+        receivedEvent = true;
+        return true;
+      }
+    }
+    GlobalClickListener globalClickListener = new GlobalClickListener();
+    GlobalLongClickListener globalLongClickListener = new GlobalLongClickListener();
+
+    ShadowView.addGlobalPerformClickListener(globalClickListener);
+    ShadowView.addGlobalPerformLongClickListener(globalLongClickListener);
+
+    ShadowView.reset();
+
+    // Should call both listeners since this calls sendAccessibilityEvent.
+    view.performClick();
+
+    assertThat(globalClickListener.receivedEvent).isFalse();
+    assertThat(globalLongClickListener.receivedEvent).isFalse();
+  }
+
   public static class MyActivity extends Activity {
     public boolean called;
 
