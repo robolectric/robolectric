@@ -77,7 +77,7 @@ public class LegacyDependencyResolver implements DependencyResolver {
 
     Class<?> clazz;
     try {
-      clazz = classLoader.loadClass("org.robolectric.plugins.CachedMavenDependencyResolver");
+      clazz = classLoader.loadClass("org.robolectric.internal.dependency.MavenDependencyResolver");
       return (DependencyResolver) ReflectionHelpers.callConstructor(clazz);
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);

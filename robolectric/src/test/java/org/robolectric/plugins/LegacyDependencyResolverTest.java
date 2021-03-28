@@ -104,7 +104,7 @@ public class LegacyDependencyResolverTest {
   @Test
   public void whenNoPropertiesOrResourceFile() throws Exception {
     when(mockClassLoader.getResource("robolectric-deps.properties")).thenReturn(null);
-    when(mockClassLoader.loadClass("org.robolectric.plugins.CachedMavenDependencyResolver"))
+    when(mockClassLoader.loadClass("org.robolectric.internal.dependency.MavenDependencyResolver"))
         .thenReturn((Class) FakeMavenDependencyResolver.class);
 
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
