@@ -1,6 +1,7 @@
 package android.graphics;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
@@ -9,10 +10,12 @@ import static org.junit.Assert.assertThrows;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -276,5 +279,72 @@ public class BitmapTest {
         () ->
             bitmap.getPixels(
                 pixelsCopy, 0, bitmap.getRowBytes(), 0, 0, bitmap.getWidth(), bitmap.getHeight()));
+  }
+
+  @Test
+  public void eraseColor_toTransparent() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(0);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  @SdkSuppress(minSdkVersion = KITKAT)
+  public void reconfigure_drawPixel() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 50, Bitmap.Config.ARGB_8888);
+    bitmap.reconfigure(50, 100, Bitmap.Config.ARGB_8888);
+    bitmap.setPixel(0, 99, Color.RED);
+    assertThat(bitmap.getPixel(0, 99)).isEqualTo(Color.RED);
+  }
+
+  /**
+   * Questionable ARGB_8888 pixel values like '10' may be simplified by some graphics engines to
+   * '0'. This happens because '10' has alpha transparency '0', so the values for RGB don't matter.
+   * This happens when Java's Graphics2d is used for certain.
+   */
+  @Test
+  public void recompress_png100_samePixelss() {
+    Bitmap applicationIconBitmap =
+        Bitmap.createBitmap(new int[] {10, 11, 12, 13}, 2, 2, Bitmap.Config.ARGB_8888);
+
+    BitmapDrawable applicationIcon = new BitmapDrawable(resources, applicationIconBitmap);
+
+    ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
+    applicationIconBitmap.compress(CompressFormat.PNG, 100, outputStream1);
+
+    Bitmap bitmap =
+        Bitmap.createBitmap(
+            applicationIcon.getIntrinsicWidth(),
+            applicationIcon.getIntrinsicHeight(),
+            Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    applicationIcon.draw(canvas);
+    ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
+    bitmap.compress(CompressFormat.PNG, 100, outputStream2);
+    assertThat(outputStream2.toByteArray()).isEqualTo(outputStream1.toByteArray());
+  }
+
+  @Test
+  public void compress_thenDecodeStream_sameAs() {
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 10, /* height= */ 10, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    bitmap.compress(CompressFormat.PNG, /* quality= */ 100, outStream);
+    byte[] outBytes = outStream.toByteArray();
+    ByteArrayInputStream inStream = new ByteArrayInputStream(outBytes);
+    Bitmap bitmap2 = BitmapFactory.decodeStream(inStream);
+    assertThat(bitmap.sameAs(bitmap2)).isTrue();
+  }
+
+  @Test
+  public void compress_asJpeg_convertsTransparentToBlack() {
+    Bitmap bitmap = Bitmap.createBitmap(/* width= */ 10, /* height= */ 10, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    bitmap.compress(CompressFormat.JPEG, /* quality= */ 90, outStream);
+    byte[] outBytes = outStream.toByteArray();
+    assertThat(outBytes).isNotEmpty();
+    ByteArrayInputStream inStream = new ByteArrayInputStream(outBytes);
+    Bitmap bitmap2 = BitmapFactory.decodeStream(inStream);
+    assertThat(bitmap2.getPixel(0, 0)).isEqualTo(Color.BLACK);
   }
 }

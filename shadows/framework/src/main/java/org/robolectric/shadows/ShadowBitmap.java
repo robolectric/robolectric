@@ -3,12 +3,11 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -16,11 +15,16 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBufferInt;
+import java.awt.image.WritableRaster;
 import java.io.FileDescriptor;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
@@ -32,7 +36,7 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
 public class ShadowBitmap {
-  /** Number of bytes used internally to represent each pixel (in the {@link #colors} array) */
+  /** Number of bytes used internally to represent each pixel */
   private static final int INTERNAL_BYTES_PER_PIXEL = 4;
 
   @RealObject
@@ -56,7 +60,7 @@ public class ShadowBitmap {
 
   private int width;
   private int height;
-  private int[] colors;
+  private BufferedImage bufferedImage;
   private Bitmap.Config config;
   private boolean mutable;
   private String description = "";
@@ -227,7 +231,7 @@ public class ShadowBitmap {
     if (displayMetrics != null) {
       scaledBitmap.setDensity(displayMetrics.densityDpi);
     }
-    shadowBitmap.setPixels(new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()], 0, shadowBitmap.getWidth(), 0, 0, shadowBitmap.getWidth(), shadowBitmap.getHeight());
+    shadowBitmap.bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     return scaledBitmap;
   }
 
@@ -236,46 +240,6 @@ public class ShadowBitmap {
     ShadowBitmap shadowBitmap = Shadow.extract(src);
     shadowBitmap.appendDescription(" created from Bitmap object");
     return src;
-  }
-
-  @Implementation
-  protected static Bitmap createScaledBitmap(
-      Bitmap src, int dstWidth, int dstHeight, boolean filter) {
-    if (dstWidth == src.getWidth() && dstHeight == src.getHeight() && !filter) {
-      return src; // Return the original.
-    }
-    if (dstWidth <= 0 || dstHeight <= 0) {
-      throw new IllegalArgumentException("width and height must be > 0");
-    }
-    Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
-
-    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
-    shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
-    shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight);
-    if (filter) {
-      shadowBitmap.appendDescription(" with filter " + filter);
-    }
-
-    shadowBitmap.createdFromBitmap = src;
-    shadowBitmap.scaledFromBitmap = src;
-    shadowBitmap.createdFromFilter = filter;
-    shadowBitmap.width = dstWidth;
-    shadowBitmap.height = dstHeight;
-    shadowBitmap.config = src.getConfig();
-    shadowBitmap.mutable = true;
-    if (shadowBitmap.config == null) {
-      shadowBitmap.config = Config.ARGB_8888;
-    }
-    shadowBitmap.setPixelsInternal(
-        new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()],
-        0,
-        0,
-        0,
-        0,
-        shadowBitmap.getWidth(),
-        shadowBitmap.getHeight());
-    return scaledBitmap;
   }
 
   @Implementation
@@ -303,16 +267,13 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected void setPixels(
-      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    checkBitmapMutable();
-    setPixelsInternal(pixels, offset, stride, x, y, width, height);
-  }
-
-  @Implementation
   protected static Bitmap createBitmap(
       Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
-    if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight() && (matrix == null || matrix.isIdentity())) {
+    if (x == 0
+        && y == 0
+        && width == src.getWidth()
+        && height == src.getHeight()
+        && (matrix == null || matrix.isIdentity())) {
       return src; // Return the original.
     }
 
@@ -374,26 +335,91 @@ public class ShadowBitmap {
               + (width * height)
               + ")");
     }
+    BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    bufferedImage.setRGB(0, 0, width, height, colors, 0, width);
+    Bitmap bitmap = createBitmap(bufferedImage, width, height, config);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    shadowBitmap.createdFromColors = colors;
+    return bitmap;
+  }
 
+  private static Bitmap createBitmap(
+      BufferedImage bufferedImage, int width, int height, Bitmap.Config config) {
     Bitmap newBitmap = Bitmap.createBitmap(width, height, config);
     ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
 
     shadowBitmap.setMutable(false);
-    shadowBitmap.createdFromColors = colors;
-    shadowBitmap.colors = new int[colors.length];
-    System.arraycopy(colors, 0, shadowBitmap.colors, 0, colors.length);
+    shadowBitmap.bufferedImage = bufferedImage;
+
     return newBitmap;
+  }
+
+  @Implementation
+  protected static Bitmap createScaledBitmap(
+      Bitmap src, int dstWidth, int dstHeight, boolean filter) {
+    if (dstWidth == src.getWidth() && dstHeight == src.getHeight() && !filter) {
+      return src; // Return the original.
+    }
+    if (dstWidth <= 0 || dstHeight <= 0) {
+      throw new IllegalArgumentException("width and height must be > 0");
+    }
+    Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
+    ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
+
+    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
+    shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
+    shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight);
+    if (filter) {
+      shadowBitmap.appendDescription(" with filter " + filter);
+    }
+
+    shadowBitmap.createdFromBitmap = src;
+    shadowBitmap.scaledFromBitmap = src;
+    shadowBitmap.createdFromFilter = filter;
+    shadowBitmap.width = dstWidth;
+    shadowBitmap.height = dstHeight;
+    shadowBitmap.config = src.getConfig();
+    shadowBitmap.mutable = true;
+    if (shadowBitmap.config == null) {
+      shadowBitmap.config = Config.ARGB_8888;
+    }
+    shadowBitmap.bufferedImage =
+        new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
+    shadowBitmap.setPixelsInternal(
+        new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()],
+        0,
+        0,
+        0,
+        0,
+        shadowBitmap.getWidth(),
+        shadowBitmap.getHeight());
+    return scaledBitmap;
+  }
+
+  @Implementation
+  protected void setPixels(
+      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+    checkBitmapMutable();
+    setPixelsInternal(pixels, offset, stride, x, y, width, height);
+  }
+
+  void setPixelsInternal(
+      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
+    if (bufferedImage == null) {
+      bufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+    }
+    bufferedImage.setRGB(x, y, width, height, pixels, offset, stride);
   }
 
   @Implementation
   protected int getPixel(int x, int y) {
     internalCheckPixelAccess(x, y);
-    if (colors != null) {
+    if (bufferedImage != null) {
       // Note that getPixel() returns a non-premultiplied ARGB value; if
       // config is RGB_565, our return value will likely be more precise than
       // on a physical device, since it needs to map each color component from
       // 5 or 6 bits to 8 bits.
-      return colors[y * getWidth() + x];
+      return bufferedImage.getRGB(x, y);
     } else {
       return 0;
     }
@@ -403,10 +429,10 @@ public class ShadowBitmap {
   protected void setPixel(int x, int y, int color) {
     checkBitmapMutable();
     internalCheckPixelAccess(x, y);
-    if (colors == null) {
-      colors = new int[getWidth() * getHeight()];
+    if (bufferedImage == null) {
+      bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     }
-    colors[y * getWidth() + x] = color;
+    bufferedImage.setRGB(x, y, color);
   }
 
   /**
@@ -417,20 +443,7 @@ public class ShadowBitmap {
   @Implementation
   protected void getPixels(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    if (x != 0
-        || y != 0
-        || width != getWidth()
-        || height != getHeight()
-        || stride != getWidth()
-        || pixels.length != colors.length) {
-      for (int y0 = 0; y0 < height; y0++) {
-        for (int x0 = 0; x0 < width; x0++) {
-          pixels[offset + y0 * stride + x0] = colors[(y0 + y) * getWidth() + x0 + x];
-        }
-      }
-    } else {
-      System.arraycopy(colors, 0, pixels, 0, colors.length);
-    }
+    bufferedImage.getRGB(x, y, width, height, pixels, offset, stride);
   }
 
   @Implementation
@@ -462,9 +475,10 @@ public class ShadowBitmap {
     shadowBitmap.mutable = isMutable;
     shadowBitmap.height = getHeight();
     shadowBitmap.width = getWidth();
-    if (colors != null) {
-      shadowBitmap.colors = new int[colors.length];
-      System.arraycopy(colors, 0, shadowBitmap.colors, 0, colors.length);
+    if (bufferedImage != null) {
+      ColorModel cm = bufferedImage.getColorModel();
+      WritableRaster raster = bufferedImage.copyData(null);
+      shadowBitmap.bufferedImage = new BufferedImage(cm, raster, false, null);
     }
     return newBitmap;
   }
@@ -517,12 +531,10 @@ public class ShadowBitmap {
 
   @Implementation
   protected Bitmap extractAlpha() {
-    int[] alphaPixels = new int[colors.length];
-    for (int i = 0; i < alphaPixels.length; i++) {
-      alphaPixels[i] = Color.argb(Color.alpha(colors[i]), 0, 0, 0);
-    }
-
-    return createBitmap(alphaPixels, getWidth(), getHeight(), Bitmap.Config.ALPHA_8);
+    WritableRaster raster = bufferedImage.getAlphaRaster();
+    BufferedImage alphaImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    alphaImage.getAlphaRaster().setRect(raster);
+    return createBitmap(alphaImage, getWidth(), getHeight(), Bitmap.Config.ALPHA_8);
   }
 
   /**
@@ -576,8 +588,9 @@ public class ShadowBitmap {
 
   @Implementation
   protected void eraseColor(int color) {
-    if (colors != null) {
-      Arrays.fill(colors, color);
+    if (bufferedImage != null) {
+      int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
+      Arrays.fill(pixels, color);
     }
     setDescription(String.format("Bitmap (%d, %d)", width, height));
     if (color != 0) {
@@ -590,8 +603,11 @@ public class ShadowBitmap {
     p.writeInt(width);
     p.writeInt(height);
     p.writeSerializable(config);
-    p.writeIntArray(colors);
+    int[] pixels = new int[width * height];
+    getPixels(pixels, 0, width, 0, 0, width, height);
+    p.writeIntArray(pixels);
   }
+
 
   @Implementation
   protected static Bitmap nativeCreateFromParcel(Parcel p) {
@@ -621,13 +637,15 @@ public class ShadowBitmap {
     }
 
     ByteBuffer byteBuffer = (ByteBuffer) dst;
-    if (byteBuffer.remaining() < colors.length * INTERNAL_BYTES_PER_PIXEL) {
+    if (byteBuffer.remaining() < (width * height) * INTERNAL_BYTES_PER_PIXEL) {
       throw new RuntimeException("Buffer not large enough for pixels");
     }
 
-    for (int i = 0; i < colors.length; i++) {
-      colors[i] = byteBuffer.getInt();
-    }
+    IntBuffer intBuffer = byteBuffer.asIntBuffer();
+    int[] colors = new int[width * height];
+    intBuffer.get(colors);
+    byteBuffer.position(byteBuffer.position() + intBuffer.position() * INTERNAL_BYTES_PER_PIXEL);
+    bufferedImage.setRGB(0, 0, width, height, colors, 0, width);
   }
 
   @Implementation
@@ -645,8 +663,10 @@ public class ShadowBitmap {
       throw new RuntimeException("Not implemented: unsupported Buffer subclass");
     }
 
+    int[] pixels = new int[width * height];
+    getPixels(pixels, 0, width, 0, 0, width, height);
     ByteBuffer byteBuffer = (ByteBuffer) dst;
-    for (int color : colors) {
+    for (int color : pixels) {
       byteBuffer.putInt(color);
     }
   }
@@ -664,6 +684,7 @@ public class ShadowBitmap {
     this.width = width;
     this.height = height;
     this.config = config;
+    bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
   }
 
   @Implementation(minSdk = KITKAT)
@@ -690,8 +711,18 @@ public class ShadowBitmap {
         && this.config != shadowOtherBitmap.config) {
       return false;
     }
-    if (!Arrays.equals(colors, shadowOtherBitmap.colors)) {
+
+    if (bufferedImage == null && shadowOtherBitmap.bufferedImage != null) {
       return false;
+    } else if (bufferedImage != null && shadowOtherBitmap.bufferedImage == null) {
+      return false;
+    } else if (bufferedImage != null && shadowOtherBitmap.bufferedImage != null) {
+      int[] pixels = ((DataBufferInt) bufferedImage.getData().getDataBuffer()).getData();
+      int[] otherPixels =
+          ((DataBufferInt) shadowOtherBitmap.bufferedImage.getData().getDataBuffer()).getData();
+      if (!Arrays.equals(pixels, otherPixels)) {
+        return false;
+      }
     }
     // When Bitmap.createScaledBitmap is called, the colors array is cleared, so we need a basic
     // way to detect if two scaled bitmaps are the same.
@@ -729,11 +760,6 @@ public class ShadowBitmap {
     appendDescription(" for resource:" + description);
   }
 
-  void setPixelsInternal(
-      int[] pixels, int offset, int stride, int x, int y, int width, int height) {
-    this.colors = pixels;
-  }
-
   private void checkBitmapMutable() {
     if (isRecycled()) {
       throw new IllegalStateException("Can't call setPixel() on a recycled bitmap");
@@ -757,42 +783,40 @@ public class ShadowBitmap {
     }
   }
 
-  /**
-   * Access the underlying pixels buffer for faster image operations.
-   *
-   * @return The pixels array.
-   */
-  int[] getPixelsInternal() {
-    return colors;
-  }
-
   void drawRect(Rect r, Paint paint) {
-    if (colors == null) {
+    if (bufferedImage == null) {
       return;
     }
+    int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
+
     Rect toDraw =
         new Rect(
             max(0, r.left), max(0, r.top), min(getWidth(), r.right), min(getHeight(), r.bottom));
     if (toDraw.left == 0 && toDraw.top == 0 && toDraw.right == getWidth()) {
-      Arrays.fill(colors, 0, getWidth() * toDraw.bottom, paint.getColor());
+      Arrays.fill(pixels, 0, getWidth() * toDraw.bottom, paint.getColor());
       return;
     }
     for (int y = toDraw.top; y < toDraw.bottom; y++) {
       Arrays.fill(
-          colors, y * getWidth() + toDraw.left, y * getWidth() + toDraw.right, paint.getColor());
+          pixels, y * getWidth() + toDraw.left, y * getWidth() + toDraw.right, paint.getColor());
     }
   }
 
   void drawBitmap(Bitmap source, int left, int top) {
     ShadowBitmap shadowSource = Shadows.shadowOf(source);
-    if (shadowSource.colors == null) {
+    if (bufferedImage == null || shadowSource.bufferedImage == null) {
       // pixel data not available, so there's nothing we can do
       return;
     }
+
+    int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
+    int[] sourcePixels =
+        ((DataBufferInt) shadowSource.bufferedImage.getRaster().getDataBuffer()).getData();
+
     // fast path
     if (left == 0 && top == 0 && getWidth() == source.getWidth()) {
       int size = min(getWidth() * getHeight(), source.getWidth() * source.getHeight());
-      System.arraycopy(shadowSource.colors, 0, colors, 0, size);
+      System.arraycopy(sourcePixels, 0, pixels, 0, size);
       return;
     }
     // slower (row-by-row) path
@@ -806,11 +830,19 @@ public class ShadowBitmap {
     int lenX = endX - startX;
     for (int y = 0; y < lenY; y++) {
       System.arraycopy(
-          shadowSource.colors,
+          sourcePixels,
           (startSourceY + y) * source.getWidth() + startSourceX,
-          colors,
+          pixels,
           (startY + y) * getWidth() + startX,
           lenX);
     }
+  }
+
+  void setBufferedImage(BufferedImage bufferedImage) {
+    this.bufferedImage = bufferedImage;
+  }
+
+  BufferedImage getBufferedImage() {
+    return bufferedImage;
   }
 }
