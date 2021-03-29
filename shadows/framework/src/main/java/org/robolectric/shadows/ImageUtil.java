@@ -34,7 +34,7 @@ public class ImageUtil {
   private static final String FORMAT_NAME_PNG = "png";
   private static boolean initialized;
 
-  public static Point getImageSizeFromStream(InputStream is) {
+  static Point getImageSizeFromStream(InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
@@ -59,7 +59,7 @@ public class ImageUtil {
     }
   }
 
-  public static RobolectricBufferedImage getImageFromStream(InputStream is) {
+  static RobolectricBufferedImage getImageFromStream(InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
