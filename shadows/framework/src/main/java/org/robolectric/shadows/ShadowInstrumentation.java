@@ -241,21 +241,7 @@ public class ShadowInstrumentation {
       throw new ActivityNotFoundException(intent.getAction());
     }
   }
-
-  @Implementation(minSdk = M, maxSdk = P)
-  protected ActivityResult execStartActivityAsCaller(
-      Context who,
-      IBinder contextThread,
-      IBinder token,
-      Activity target,
-      Intent intent,
-      int requestCode,
-      Bundle options,
-      boolean ignoreTargetSecurity,
-      int userId) {
-    throw new UnsupportedOperationException("Implement me!!");
-  }
-
+  
   void sendOrderedBroadcastAsUser(
       Intent intent,
       UserHandle userHandle,
