@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.BackgroundExecutor;
 
 /**
@@ -49,6 +50,12 @@ public final class BackgroundTestRule implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         AtomicReference<Throwable> throwable = new AtomicReference<>();
+        // In the @LazyApplication case, Robolectric cannot create the application from the
+        // background thread
+        //
+        // TODO Remove explicit loading when/if background threads can kick off
+        // application loading in the future
+        RuntimeEnvironment.getApplication();
         BackgroundExecutor.runInBackground(
             new Runnable() {
               @Override
