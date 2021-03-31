@@ -15,5 +15,5 @@ dependencies {
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation "com.google.testing.compile:compile-testing:0.18"
-    testImplementation "org.mockito:mockito-core:3.5.11"
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 }
