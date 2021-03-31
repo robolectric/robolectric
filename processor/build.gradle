@@ -39,7 +39,7 @@ dependencies {
     api "org.ow2.asm:asm:9.0"
     api "org.ow2.asm:asm-commons:9.0"
     api "com.google.guava:guava:27.0.1-jre"
-    api "com.google.code.gson:gson:2.8.2"
+    api "com.google.code.gson:gson:2.8.6"
 
     def toolsJar = Jvm.current().getToolsJar()
     if (toolsJar != null) {
@@ -47,8 +47,8 @@ dependencies {
     }
 
     testImplementation "javax.annotation:jsr250-api:1.0"
-    testImplementation "junit:junit:4.13.1"
-    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.mockito:mockito-core:3.5.11"
     testImplementation "com.google.testing.compile:compile-testing:0.18"
     testImplementation "com.google.truth:truth:${truthVersion}"
 }

@@ -11,6 +11,6 @@ dependencies {
     api project(":utils")
 
     testImplementation project(":shadowapi")
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
 }

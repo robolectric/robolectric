@@ -18,7 +18,7 @@ dependencies {
     testAnnotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
     testAnnotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
 
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "org.mockito:mockito-core:3.5.11"
 }

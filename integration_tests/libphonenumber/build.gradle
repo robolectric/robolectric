@@ -4,7 +4,7 @@ apply plugin: RoboJavaModulePlugin
 
 dependencies {
     api project(":robolectric")
-    api "junit:junit:4.13.1"
+    api "junit:junit:${junitVersion}"
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testRuntime AndroidSdk.MAX_SDK.coordinates

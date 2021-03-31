@@ -9,7 +9,7 @@ dependencies {
     api project(":utils")
     api "com.google.guava:guava:27.0.1-jre"
 
-    testImplementation "junit:junit:4.13.1"
-    testImplementation "org.mockito:mockito-core:2.5.4"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "org.mockito:mockito-core:3.5.11"
     testImplementation "com.google.truth:truth:${truthVersion}"
 }
