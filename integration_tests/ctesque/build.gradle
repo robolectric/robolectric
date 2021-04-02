@@ -36,7 +36,7 @@ dependencies {
     implementation project(path: ':shadowapi', configuration: 'default')
 
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:${junitVersion}"
     testImplementation("androidx.test:monitor:1.4.0-alpha04")
     testImplementation("androidx.test:runner:1.4.0-alpha04")
     testImplementation("androidx.test:rules:1.4.0-alpha04")

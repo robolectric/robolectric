@@ -27,23 +27,23 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.0.0")
-    implementation("androidx.constraintlayout:constraintlayout:1.1.0")
+    implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.0.4")
 
     // Testing dependencies
     testImplementation("androidx.test:runner:1.4.0-alpha04")
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:${junitVersion}"
     testImplementation("androidx.test:rules:1.4.0-alpha04")
     testImplementation("androidx.test.espresso:espresso-intents:3.4.0-alpha04")
     testImplementation("androidx.test.espresso:espresso-core:3.4.0-alpha04")
     testImplementation("androidx.test.ext:truth:1.4.0-alpha04")
     testImplementation("androidx.test:core:1.4.0-alpha04")
-    testImplementation("androidx.fragment:fragment:1.0.0")
-    testImplementation("androidx.fragment:fragment-testing:1.3.0-beta02")
+    testImplementation("androidx.fragment:fragment:1.2.5")
+    testImplementation("androidx.fragment:fragment-testing:1.3.0-rc01")
 
     // TODO: this should be a transitive dependency of core...
-    testImplementation("androidx.lifecycle:lifecycle-common:2.0.0")
+    testImplementation("androidx.lifecycle:lifecycle-common:2.2.0")
     testImplementation("androidx.test.ext:junit:1.1.3-alpha04")
     testImplementation("com.google.truth:truth:${truthVersion}")
 }

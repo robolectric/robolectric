@@ -7,11 +7,11 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testRuntime AndroidSdk.MAX_SDK.coordinates
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
 
-    testImplementation "org.powermock:powermock-module-junit4:2.0.0"
-    testImplementation "org.powermock:powermock-module-junit4-rule:2.0.0"
-    testImplementation "org.powermock:powermock-api-mockito2:2.0.0"
-    testImplementation "org.powermock:powermock-classloading-xstream:2.0.0"
+    testImplementation "org.powermock:powermock-module-junit4:2.0.9"
+    testImplementation "org.powermock:powermock-module-junit4-rule:2.0.9"
+    testImplementation "org.powermock:powermock-api-mockito2:2.0.9"
+    testImplementation "org.powermock:powermock-classloading-xstream:2.0.9"
 }

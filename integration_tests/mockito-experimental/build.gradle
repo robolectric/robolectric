@@ -12,7 +12,7 @@ dependencies {
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntime AndroidSdk.MAX_SDK.coordinates
-    testImplementation "junit:junit:4.13.1"
+    testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-inline:3.5.11"
+    testImplementation "org.mockito:mockito-inline:${mockitoVersion}"
 }
