@@ -18,30 +18,65 @@ import org.robolectric.Robolectric;
 @Deprecated
 public class SupportFragmentTestUtil {
 
+  /**
+   * Starts fragment.
+   *
+   * @deprecated Start fragments using {@link
+   *     androidx.fragment.app.testing.FragmentScenario#launch(Class, Bundle, FragmentFactory)}.
+   */
+  @Deprecated
   public static void startFragment(Fragment fragment) {
     buildSupportFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(fragment, null).commitNow();
     shadowMainLooper().idleIfPaused();
   }
 
-  public static void startFragment(Fragment fragment, Class<? extends FragmentActivity> fragmentActivityClass) {
+  /**
+   * Starts fragment hosted by the {@code fragmentActivityClass}.
+   *
+   * @deprecated Start fragments using {@link
+   *     androidx.fragment.app.testing.FragmentScenario#launch(Class, Bundle, Int,
+   *     FragmentFactory)}.
+   */
+  @Deprecated
+  public static void startFragment(
+      Fragment fragment, Class<? extends FragmentActivity> fragmentActivityClass) {
     buildSupportFragmentManager(fragmentActivityClass)
         .beginTransaction().add(fragment, null).commitNow();
     shadowMainLooper().idleIfPaused();
   }
 
+  /**
+   * Starts fragment with visible container for testing UI.
+   *
+   * @deprecated Start fragments using {@link
+   *     androidx.fragment.app.testing.FragmentScenario#launchInContainer(Class, Bundle,
+   *     FragmentFactory)}.
+   */
+  @Deprecated
   public static void startVisibleFragment(Fragment fragment) {
     buildSupportFragmentManager(FragmentUtilActivity.class)
         .beginTransaction().add(1, fragment, null).commitNow();
     shadowMainLooper().idleIfPaused();
   }
 
-  public static void startVisibleFragment(Fragment fragment, Class<? extends FragmentActivity> fragmentActivityClass, int containerViewId) {
+  /**
+   * Starts fragment hosted by the {@code fragmentActivityClass} with visible container for testing
+   * UI.
+   *
+   * @deprecated Start fragments using {@link
+   *     androidx.fragment.app.testing.FragmentScenario#launchInContainer(Class, Bundle, Int,
+   *     FragmentFactory)}.
+   */
+  @Deprecated
+  public static void startVisibleFragment(
+      Fragment fragment,
+      Class<? extends FragmentActivity> fragmentActivityClass,
+      int containerViewId) {
     buildSupportFragmentManager(fragmentActivityClass)
         .beginTransaction().add(containerViewId, fragment, null).commitNow();
     shadowMainLooper().idle();
   }
-
   private static FragmentManager buildSupportFragmentManager(Class<? extends FragmentActivity> fragmentActivityClass) {
     FragmentActivity activity = Robolectric.setupActivity(fragmentActivityClass);
     return activity.getSupportFragmentManager();

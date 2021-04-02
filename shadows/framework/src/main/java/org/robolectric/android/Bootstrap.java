@@ -1,6 +1,7 @@
 package org.robolectric.android;
 
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
@@ -21,6 +22,11 @@ public class Bootstrap {
       Configuration configuration, DisplayMetrics displayMetrics) {
     Bootstrap.configuration = configuration;
     Bootstrap.displayMetrics = displayMetrics;
+  }
+
+  /** internal only */
+  public static void updateConfiguration(Resources resources) {
+    resources.updateConfiguration(configuration, displayMetrics);
   }
 
   /** internal only */
