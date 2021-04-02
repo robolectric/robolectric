@@ -236,37 +236,6 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap createBitmap(Bitmap src) {
-    ShadowBitmap shadowBitmap = Shadow.extract(src);
-    shadowBitmap.appendDescription(" created from Bitmap object");
-    return src;
-  }
-
-  @Implementation
-  protected static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
-    if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight()) {
-      return src; // Return the original.
-    }
-
-    Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
-
-    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
-    shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
-    shadowBitmap.appendDescription(" at (" + x + "," + y);
-    shadowBitmap.appendDescription(" with width " + width + " and height " + height);
-
-    shadowBitmap.createdFromBitmap = src;
-    shadowBitmap.createdFromX = x;
-    shadowBitmap.createdFromY = y;
-    shadowBitmap.createdFromWidth = width;
-    shadowBitmap.createdFromHeight = height;
-    shadowBitmap.width = width;
-    shadowBitmap.height = height;
-    return newBitmap;
-  }
-
-  @Implementation
   protected static Bitmap createBitmap(
       Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
     if (x == 0
@@ -325,18 +294,45 @@ public class ShadowBitmap {
     return newBitmap;
   }
 
-  @Implementation
-  protected static Bitmap createBitmap(int[] colors, int width, int height, Bitmap.Config config) {
-    if (colors.length != width * height) {
-      throw new IllegalArgumentException(
-          "array length ("
-              + colors.length
-              + ") did not match width * height ("
-              + (width * height)
-              + ")");
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static Bitmap createBitmap(
+      DisplayMetrics displayMetrics,
+      int[] colors,
+      int offset,
+      int stride,
+      int width,
+      int height,
+      Config config) {
+    Bitmap bitmap = createBitmap(colors, offset, stride, width, height, config);
+    if (displayMetrics != null) {
+      bitmap.setDensity(displayMetrics.densityDpi);
     }
+    return bitmap;
+  }
+
+  @Implementation
+  protected static Bitmap createBitmap(
+      int[] colors, int offset, int stride, int width, int height, Config config) {
+    if (width <= 0) {
+      throw new IllegalArgumentException("width must be > 0");
+    }
+    if (height <= 0) {
+      throw new IllegalArgumentException("height must be > 0");
+    }
+    if (Math.abs(stride) < width) {
+      throw new IllegalArgumentException("abs(stride) must be >= width");
+    }
+    int lastScanline = offset + (height - 1) * stride;
+    int length = colors.length;
+    if (offset < 0
+        || (offset + width > length)
+        || lastScanline < 0
+        || (lastScanline + width > length)) {
+      throw new ArrayIndexOutOfBoundsException();
+    }
+
     BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-    bufferedImage.setRGB(0, 0, width, height, colors, 0, width);
+    bufferedImage.setRGB(0, 0, width, height, colors, offset, stride);
     Bitmap bitmap = createBitmap(bufferedImage, width, height, config);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromColors = colors;
@@ -618,7 +614,8 @@ public class ShadowBitmap {
     int[] parceledColors = new int[parceledHeight * parceledWidth];
     p.readIntArray(parceledColors);
 
-    return createBitmap(parceledColors, parceledWidth, parceledHeight, parceledConfig);
+    return createBitmap(
+        parceledColors, 0, parceledWidth, parceledWidth, parceledHeight, parceledConfig);
   }
 
   @Implementation
