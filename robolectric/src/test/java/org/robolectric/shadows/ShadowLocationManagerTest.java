@@ -37,6 +37,7 @@ import android.location.LocationRequest;
 import android.location.OnNmeaMessageListener;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -56,6 +57,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -321,21 +323,21 @@ public class ShadowLocationManagerTest {
   @Test
   public void testSetProviderEnabled_Listeners() {
     TestLocationListener myListener = new TestLocationListener();
-    TestLocationReceiver networkListener = new TestLocationReceiver(context);
+    TestLocationReceiver gpsListener = new TestLocationReceiver(context);
 
     locationManager.requestLocationUpdates(MY_PROVIDER, 0, 0, myListener, null);
-    locationManager.requestLocationUpdates(NETWORK_PROVIDER, 0, 0, networkListener.pendingIntent);
+    locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, gpsListener.pendingIntent);
 
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, false);
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
-    shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
-    shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
+    shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+    shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThat(myListener.providerEnabled).isTrue();
-    assertThat(networkListener.providerEnabled).isFalse();
+    assertThat(myListener.providerEnableds).containsExactly(false, true, false, true).inOrder();
+    assertThat(gpsListener.providerEnableds).containsExactly(false).inOrder();
   }
 
   @Test
@@ -525,6 +527,75 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testGetCurrentLocation() {
+    Location loc = createLocation(MY_PROVIDER);
+
+    TestLocationConsumer consumer = new TestLocationConsumer();
+
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+
+    locationManager.getCurrentLocation(MY_PROVIDER, null, Runnable::run, consumer);
+
+    shadowLocationManager.simulateLocation(loc);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThatLocations(consumer.locations).containsExactly(loc).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testGetCurrentLocation_ProviderDisabled() {
+    TestLocationConsumer consumer1 = new TestLocationConsumer();
+    TestLocationConsumer consumer2 = new TestLocationConsumer();
+
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, false);
+
+    locationManager.getCurrentLocation(GPS_PROVIDER, null, Runnable::run, consumer1);
+    locationManager.getCurrentLocation(MY_PROVIDER, null, Runnable::run, consumer2);
+
+    shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
+
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThatLocations(consumer1.locations).containsExactly((Location) null).inOrder();
+    assertThatLocations(consumer2.locations).containsExactly((Location) null).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testGetCurrentLocation_Timeout() {
+    TestLocationConsumer consumer = new TestLocationConsumer();
+
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+
+    locationManager.getCurrentLocation(MY_PROVIDER, null, Runnable::run, consumer);
+
+    shadowOf(Looper.getMainLooper())
+        .idleFor(shadowOf(Looper.getMainLooper()).getLastScheduledTaskTime());
+
+    assertThatLocations(consumer.locations).containsExactly((Location) null).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testGetCurrentLocation_Cancel() {
+    Location loc = createLocation(MY_PROVIDER);
+
+    TestLocationConsumer consumer = new TestLocationConsumer();
+
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+
+    CancellationSignal cs = new CancellationSignal();
+    locationManager.getCurrentLocation(MY_PROVIDER, cs, Runnable::run, consumer);
+
+    cs.cancel();
+    shadowLocationManager.simulateLocation(loc);
+
+    assertThat(consumer.locations).isEmpty();
+  }
+
+  @Test
   public void testRequestSingleUpdate_Provider_Listener() {
     Location loc1 = createLocation(GPS_PROVIDER);
     Location loc2 = createLocation(MY_PROVIDER);
@@ -584,6 +655,30 @@ public class ShadowLocationManagerTest {
 
     locationManager.requestLocationUpdates(NETWORK_PROVIDER, 0, 0, networkListener, null);
     locationManager.requestLocationUpdates(PASSIVE_PROVIDER, 0, 0, passiveListener, null);
+
+    shadowLocationManager.simulateLocation(loc1);
+    shadowLocationManager.simulateLocation(loc2);
+    locationManager.removeUpdates(networkListener);
+    shadowLocationManager.simulateLocation(loc3);
+    locationManager.removeUpdates(passiveListener);
+
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
+    assertThatLocations(passiveListener.locations).containsExactly(loc1, loc2, loc3).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testRequestLocationUpdates_Provider_Listener_Executor() {
+    Location loc1 = createLocation(NETWORK_PROVIDER);
+    Location loc2 = createLocation(NETWORK_PROVIDER);
+    Location loc3 = createLocation(NETWORK_PROVIDER);
+    TestLocationListener networkListener = new TestLocationListener();
+    TestLocationListener passiveListener = new TestLocationListener();
+
+    locationManager.requestLocationUpdates(NETWORK_PROVIDER, 0, 0, Runnable::run, networkListener);
+    locationManager.requestLocationUpdates(PASSIVE_PROVIDER, 0, 0, Runnable::run, passiveListener);
 
     shadowLocationManager.simulateLocation(loc1);
     shadowLocationManager.simulateLocation(loc2);
@@ -666,6 +761,29 @@ public class ShadowLocationManagerTest {
         LocationRequest.createFromDeprecatedProvider(NETWORK_PROVIDER, 0, 0, false),
         networkListener,
         null);
+
+    shadowLocationManager.simulateLocation(loc1);
+    shadowLocationManager.simulateLocation(loc2);
+    locationManager.removeUpdates(networkListener);
+    shadowLocationManager.simulateLocation(loc3);
+
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void testRequestLocationUpdates_LocationRequest_Executor() {
+    Location loc1 = createLocation(NETWORK_PROVIDER);
+    Location loc2 = createLocation(NETWORK_PROVIDER);
+    Location loc3 = createLocation(NETWORK_PROVIDER);
+    TestLocationListener networkListener = new TestLocationListener();
+
+    locationManager.requestLocationUpdates(
+        LocationRequest.createFromDeprecatedProvider(NETWORK_PROVIDER, 0, 0, false),
+        Runnable::run,
+        networkListener);
 
     shadowLocationManager.simulateLocation(loc1);
     shadowLocationManager.simulateLocation(loc2);
@@ -1125,8 +1243,8 @@ public class ShadowLocationManagerTest {
   }
 
   private static class TestLocationReceiver extends BroadcastReceiver {
-    private boolean providerEnabled = false;
     private final PendingIntent pendingIntent;
+    private final ArrayList<Boolean> providerEnableds = new ArrayList<>();
     private final ArrayList<Location> locations = new ArrayList<>();
 
     private TestLocationReceiver(Context context) {
@@ -1141,14 +1259,23 @@ public class ShadowLocationManagerTest {
         locations.add(intent.getParcelableExtra(LocationManager.KEY_LOCATION_CHANGED));
       }
       if (intent.hasExtra(LocationManager.KEY_PROVIDER_ENABLED)) {
-        providerEnabled = intent.getBooleanExtra(LocationManager.KEY_PROVIDER_ENABLED, false);
+        providerEnableds.add(intent.getBooleanExtra(LocationManager.KEY_PROVIDER_ENABLED, false));
       }
     }
   }
 
+  private static class TestLocationConsumer implements Consumer<Location> {
+    final ArrayList<Location> locations = new ArrayList<>();
+
+    @Override
+    public void accept(Location location) {
+      locations.add(location);
+    }
+  }
+
   private static class TestLocationListener implements LocationListener {
-    private boolean providerEnabled = false;
-    private final ArrayList<Location> locations = new ArrayList<>();
+    final ArrayList<Boolean> providerEnableds = new ArrayList<>();
+    final ArrayList<Location> locations = new ArrayList<>();
 
     @Override
     public void onLocationChanged(Location location) {
@@ -1161,12 +1288,12 @@ public class ShadowLocationManagerTest {
 
     @Override
     public void onProviderEnabled(String s) {
-      providerEnabled = true;
+      providerEnableds.add(true);
     }
 
     @Override
     public void onProviderDisabled(String s) {
-      providerEnabled = false;
+      providerEnableds.add(false);
     }
   }
 
@@ -1247,11 +1374,18 @@ public class ShadowLocationManagerTest {
 
     public static Correspondence<Location, Location> equality() {
       return Correspondence.from(
-          (actual, expected) ->
-              Objects.equals(actual.getProvider(), expected.getProvider())
-                  && actual.getLatitude() == expected.getLatitude()
-                  && actual.getLongitude() == expected.getLongitude()
-                  && actual.getTime() == expected.getTime(),
+          (actual, expected) -> {
+            if (actual == expected) {
+              return true;
+            }
+            if (actual == null || expected == null) {
+              return false;
+            }
+            return Objects.equals(actual.getProvider(), expected.getProvider())
+                && actual.getLatitude() == expected.getLatitude()
+                && actual.getLongitude() == expected.getLongitude()
+                && actual.getTime() == expected.getTime();
+          },
           "is equal to");
     }
 

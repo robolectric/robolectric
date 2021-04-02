@@ -8,12 +8,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
 import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
 import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static android.provider.Settings.Secure.LOCATION_PROVIDERS_ALLOWED;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -27,9 +29,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.location.OnNmeaMessageListener;
+import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.provider.Settings.Secure;
 import android.text.TextUtils;
@@ -45,6 +50,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.function.Consumer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -60,6 +68,9 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings("deprecation")
 @Implements(value = LocationManager.class, looseSignatures = true)
 public class ShadowLocationManager {
+
+  private static final long GET_CURRENT_LOCATION_TIMEOUT_MS = 30 * 1000;
+  private static final long MAX_CURRENT_LOCATION_AGE_MS = 10 * 1000;
 
   /** Properties of a provider. */
   public static class ProviderProperties {
@@ -223,7 +234,7 @@ public class ShadowLocationManager {
       }
       return locationProviderConstructor.newInstance(name, providerEntry.createRealProperties());
     } catch (ReflectiveOperationException e) {
-      throw new AssertionError(e);
+      throw new LinkageError(e.getMessage(), e);
     }
   }
 
@@ -378,11 +389,60 @@ public class ShadowLocationManager {
     getOrCreateProviderEntry(provider).lastLocation = location;
   }
 
+  @Implementation(minSdk = R)
+  protected void getCurrentLocation(
+      String provider,
+      @Nullable CancellationSignal cancellationSignal,
+      Executor executor,
+      Consumer<Location> consumer) {
+    getCurrentLocationInternal(provider, cancellationSignal, executor, consumer);
+  }
+
+  private void getCurrentLocationInternal(
+      String provider,
+      @Nullable CancellationSignal cancellationSignal,
+      Executor executor,
+      Consumer<Location> consumer) {
+    if (cancellationSignal != null) {
+      cancellationSignal.throwIfCanceled();
+    }
+
+    final Location location = getLastKnownLocation(provider);
+    if (location != null) {
+      long locationAgeMs =
+          SystemClock.elapsedRealtime() - NANOSECONDS.toMillis(location.getElapsedRealtimeNanos());
+      if (locationAgeMs < MAX_CURRENT_LOCATION_AGE_MS) {
+        executor.execute(() -> consumer.accept(location));
+        return;
+      }
+    }
+
+    CancellableLocationListener listener = new CancellableLocationListener(executor, consumer);
+    requestLocationUpdatesInternal(
+        provider,
+        new LocationRequest(new android.location.LocationRequest()),
+        Runnable::run,
+        listener);
+
+    if (cancellationSignal != null) {
+      cancellationSignal.setOnCancelListener(listener::cancel);
+    }
+
+    listener.startTimeout(GET_CURRENT_LOCATION_TIMEOUT_MS);
+  }
+
   @Implementation
   protected void requestSingleUpdate(
       String provider, LocationListener listener, @Nullable Looper looper) {
-    LocationRequest request = new LocationRequest(provider, 0, 0, true);
-    requestLocationUpdates(request, listener, looper, null);
+    if (looper == null) {
+      looper = Looper.myLooper();
+      if (looper == null) {
+        // forces appropriate exception
+        new Handler();
+      }
+    }
+    requestLocationUpdatesInternal(
+        provider, new LocationRequest(true), new HandlerExecutor(new Handler(looper)), listener);
   }
 
   @Implementation
@@ -392,31 +452,42 @@ public class ShadowLocationManager {
     if (bestProvider == null) {
       throw new IllegalArgumentException("no providers found for criteria");
     }
-    LocationRequest request = new LocationRequest(bestProvider, 0, 0, true);
-    requestLocationUpdates(request, listener, looper, null);
+    if (looper == null) {
+      looper = Looper.myLooper();
+      if (looper == null) {
+        // forces appropriate exception
+        new Handler();
+      }
+    }
+    requestLocationUpdatesInternal(
+        bestProvider,
+        new LocationRequest(true),
+        new HandlerExecutor(new Handler(looper)),
+        listener);
   }
 
   @Implementation
-  protected void requestSingleUpdate(String provider, PendingIntent intent) {
-    LocationRequest request = new LocationRequest(provider, 0, 0, true);
-    requestLocationUpdates(request, null, null, intent);
+  protected void requestSingleUpdate(String provider, PendingIntent pendingIntent) {
+    requestLocationUpdatesInternal(provider, new LocationRequest(true), pendingIntent);
   }
 
   @Implementation
-  protected void requestSingleUpdate(Criteria criteria, PendingIntent intent) {
+  protected void requestSingleUpdate(Criteria criteria, PendingIntent pendingIntent) {
     String bestProvider = getBestProvider(criteria, true);
     if (bestProvider == null) {
       throw new IllegalArgumentException("no providers found for criteria");
     }
-    LocationRequest request = new LocationRequest(bestProvider, 0, 0, true);
-    requestLocationUpdates(request, null, null, intent);
+    requestLocationUpdatesInternal(bestProvider, new LocationRequest(true), pendingIntent);
   }
 
   @Implementation
   protected void requestLocationUpdates(
       String provider, long minTime, float minDistance, LocationListener listener) {
-    LocationRequest request = new LocationRequest(provider, minTime, minDistance, false);
-    requestLocationUpdates(request, listener, null, null);
+    requestLocationUpdatesInternal(
+        provider,
+        new LocationRequest(minTime, minDistance),
+        new HandlerExecutor(new Handler()),
+        listener);
   }
 
   @Implementation
@@ -426,8 +497,29 @@ public class ShadowLocationManager {
       float minDistance,
       LocationListener listener,
       @Nullable Looper looper) {
-    LocationRequest request = new LocationRequest(provider, minTime, minDistance, false);
-    requestLocationUpdates(request, listener, looper, null);
+    if (looper == null) {
+      looper = Looper.myLooper();
+      if (looper == null) {
+        // forces appropriate exception
+        new Handler();
+      }
+    }
+    requestLocationUpdatesInternal(
+        provider,
+        new LocationRequest(minTime, minDistance),
+        new HandlerExecutor(new Handler(looper)),
+        listener);
+  }
+
+  @Implementation(minSdk = R)
+  protected void requestLocationUpdates(
+      String provider,
+      long minTime,
+      float minDistance,
+      Executor executor,
+      LocationListener listener) {
+    requestLocationUpdatesInternal(
+        provider, new LocationRequest(minTime, minDistance), executor, listener);
   }
 
   @Implementation
@@ -441,83 +533,116 @@ public class ShadowLocationManager {
     if (bestProvider == null) {
       throw new IllegalArgumentException("no providers found for criteria");
     }
-    LocationRequest request = new LocationRequest(bestProvider, minTime, minDistance, false);
-    requestLocationUpdates(request, listener, looper, null);
+    if (looper == null) {
+      looper = Looper.myLooper();
+      if (looper == null) {
+        // forces appropriate exception
+        new Handler();
+      }
+    }
+    requestLocationUpdatesInternal(
+        bestProvider,
+        new LocationRequest(minTime, minDistance),
+        new HandlerExecutor(new Handler(looper)),
+        listener);
   }
 
-  @Implementation
+  @Implementation(minSdk = R)
   protected void requestLocationUpdates(
-      String provider, long minTime, float minDistance, PendingIntent intent) {
-    LocationRequest request = new LocationRequest(provider, minTime, minDistance, false);
-    requestLocationUpdates(request, null, null, intent);
-  }
-
-  @Implementation
-  protected void requestLocationUpdates(
-      long minTime, float minDistance, Criteria criteria, PendingIntent intent) {
+      long minTime,
+      float minDistance,
+      Criteria criteria,
+      Executor executor,
+      LocationListener listener) {
     String bestProvider = getBestProvider(criteria, true);
     if (bestProvider == null) {
       throw new IllegalArgumentException("no providers found for criteria");
     }
-    LocationRequest request = new LocationRequest(bestProvider, minTime, minDistance, false);
-    requestLocationUpdates(request, null, null, intent);
+    requestLocationUpdatesInternal(
+        bestProvider, new LocationRequest(minTime, minDistance), executor, listener);
+  }
+
+  @Implementation
+  protected void requestLocationUpdates(
+      String provider, long minTime, float minDistance, PendingIntent pendingIntent) {
+    requestLocationUpdatesInternal(
+        provider, new LocationRequest(minTime, minDistance), pendingIntent);
+  }
+
+  @Implementation
+  protected void requestLocationUpdates(
+      long minTime, float minDistance, Criteria criteria, PendingIntent pendingIntent) {
+    String bestProvider = getBestProvider(criteria, true);
+    if (bestProvider == null) {
+      throw new IllegalArgumentException("no providers found for criteria");
+    }
+    requestLocationUpdatesInternal(
+        bestProvider, new LocationRequest(minTime, minDistance), pendingIntent);
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected void requestLocationUpdates(
-      @Nullable Object oRequest, Object listener, @Nullable Object looper) {
-    android.location.LocationRequest ogRequest = (android.location.LocationRequest) oRequest;
-    if (ogRequest == null) {
-      ogRequest = new android.location.LocationRequest();
+      @Nullable Object request, Object executorOrListener, Object listenerOrLooper) {
+    if (request == null) {
+      request = new android.location.LocationRequest();
     }
-    LocationRequest request =
-        new LocationRequest(
-            ogRequest.getProvider(),
-            ogRequest.getFastestInterval(),
-            ogRequest.getSmallestDisplacement(),
-            ogRequest.getNumUpdates() == 1);
-    requestLocationUpdates(request, (LocationListener) listener, (Looper) looper, null);
+    if (executorOrListener instanceof Executor) {
+      requestLocationUpdatesInternal(
+          ((android.location.LocationRequest) request).getProvider(),
+          new LocationRequest((android.location.LocationRequest) request),
+          (Executor) executorOrListener,
+          (LocationListener) listenerOrLooper);
+    } else if (executorOrListener instanceof LocationListener) {
+      if (listenerOrLooper == null) {
+        listenerOrLooper = Looper.myLooper();
+        if (listenerOrLooper == null) {
+          // forces appropriate exception
+          new Handler();
+        }
+      }
+      requestLocationUpdatesInternal(
+          ((android.location.LocationRequest) request).getProvider(),
+          new LocationRequest((android.location.LocationRequest) request),
+          new HandlerExecutor(new Handler((Looper) listenerOrLooper)),
+          (LocationListener) executorOrListener);
+    }
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  protected void requestLocationUpdates(@Nullable Object oRequest, Object intent) {
-    android.location.LocationRequest ogRequest = (android.location.LocationRequest) oRequest;
-    if (ogRequest == null) {
-      ogRequest = new android.location.LocationRequest();
+  protected void requestLocationUpdates(@Nullable Object request, Object pendingIntent) {
+    if (request == null) {
+      request = new android.location.LocationRequest();
     }
-    LocationRequest request =
-        new LocationRequest(
-            ogRequest.getProvider(),
-            ogRequest.getFastestInterval(),
-            ogRequest.getSmallestDisplacement(),
-            ogRequest.getNumUpdates() == 1);
-    requestLocationUpdates(request, null, null, (PendingIntent) intent);
+    requestLocationUpdatesInternal(
+        ((android.location.LocationRequest) request).getProvider(),
+        new LocationRequest((android.location.LocationRequest) request),
+        (PendingIntent) pendingIntent);
   }
 
-  private void requestLocationUpdates(
-      LocationRequest request,
-      @Nullable LocationListener locationListener,
-      @Nullable Looper looper,
-      @Nullable PendingIntent pendingIntent) {
-    if (locationListener == null && pendingIntent == null) {
-      throw new IllegalArgumentException("must supply listener or pending intent");
+  private void requestLocationUpdatesInternal(
+      String provider, LocationRequest request, Executor executor, LocationListener listener) {
+    if (provider == null || request == null || executor == null || listener == null) {
+      throw new IllegalArgumentException();
     }
-    if (locationListener != null && looper == null) {
-      looper = Looper.getMainLooper();
-    }
+    getOrCreateProviderEntry(provider).addListener(listener, request, executor);
+  }
 
-    getOrCreateProviderEntry(request.provider)
-        .addListener(locationListener, looper, pendingIntent, request);
+  private void requestLocationUpdatesInternal(
+      String provider, LocationRequest request, PendingIntent pendingIntent) {
+    if (provider == null || request == null || pendingIntent == null) {
+      throw new IllegalArgumentException();
+    }
+    getOrCreateProviderEntry(provider).addListener(pendingIntent, request);
   }
 
   @Implementation
   protected void removeUpdates(LocationListener listener) {
-    removeListener(listener, null);
+    removeListenerInternal(listener);
   }
 
   @Implementation
   protected void removeUpdates(PendingIntent pendingIntent) {
-    removeListener(null, pendingIntent);
+    removeListenerInternal(pendingIntent);
   }
 
   @Implementation(minSdk = P)
@@ -643,16 +768,16 @@ public class ShadowLocationManager {
   @Deprecated
   public List<LocationListener> getLocationUpdateListeners() {
     synchronized (providers) {
-      ArrayList<LocationListener> listeners = new ArrayList<>(providers.size());
+      HashSet<LocationListener> listeners = new HashSet<>();
       for (ProviderEntry providerEntry : providers) {
         for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-          if (listenerEntry.locationListener != null
-              && !listeners.contains(listenerEntry.locationListener)) {
-            listeners.add(listenerEntry.locationListener);
+          LocationTransport transport = listenerEntry.transport;
+          if (transport instanceof ListenerTransport) {
+            listeners.add(((ListenerTransport) transport).locationListener);
           }
         }
       }
-      return listeners;
+      return new ArrayList<>(listeners);
     }
   }
 
@@ -671,8 +796,9 @@ public class ShadowLocationManager {
 
     ArrayList<LocationListener> listeners = new ArrayList<>(providerEntry.listeners.size());
     for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-      if (listenerEntry.locationListener != null) {
-        listeners.add(listenerEntry.locationListener);
+      LocationTransport transport = listenerEntry.transport;
+      if (transport instanceof ListenerTransport) {
+        listeners.add(((ListenerTransport) transport).locationListener);
       }
     }
     return listeners;
@@ -687,16 +813,16 @@ public class ShadowLocationManager {
   @Deprecated
   public List<PendingIntent> getLocationUpdatePendingIntents() {
     synchronized (providers) {
-      ArrayList<PendingIntent> pendingIntents = new ArrayList<>(providers.size());
+      HashSet<PendingIntent> pendingIntents = new HashSet<>();
       for (ProviderEntry providerEntry : providers) {
         for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-          if (listenerEntry.pendingIntent != null
-              && !pendingIntents.contains(listenerEntry.pendingIntent)) {
-            pendingIntents.add(listenerEntry.pendingIntent);
+          LocationTransport transport = listenerEntry.transport;
+          if (transport instanceof PendingIntentTransport) {
+            pendingIntents.add(((PendingIntentTransport) transport).pendingIntent);
           }
         }
       }
-      return pendingIntents;
+      return new ArrayList<>(pendingIntents);
     }
   }
 
@@ -713,26 +839,18 @@ public class ShadowLocationManager {
       return Collections.emptyList();
     }
 
-    ArrayList<PendingIntent> listeners = new ArrayList<>(providerEntry.listeners.size());
+    ArrayList<PendingIntent> pendingIntents = new ArrayList<>(providerEntry.listeners.size());
     for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-      if (listenerEntry.pendingIntent != null) {
-        listeners.add(listenerEntry.pendingIntent);
+      LocationTransport transport = listenerEntry.transport;
+      if (transport instanceof PendingIntentTransport) {
+        pendingIntents.add(((PendingIntentTransport) transport).pendingIntent);
       }
     }
-    return listeners;
+    return pendingIntents;
   }
 
   private Context getContext() {
     return ReflectionHelpers.getField(realLocationManager, "mContext");
-  }
-
-  private void removeListener(
-      @Nullable LocationListener locationListener, @Nullable PendingIntent pendingIntent) {
-    synchronized (providers) {
-      for (ProviderEntry providerEntry : providers) {
-        providerEntry.removeListener(locationListener, pendingIntent);
-      }
-    }
   }
 
   private ProviderEntry getOrCreateProviderEntry(String name) {
@@ -747,6 +865,14 @@ public class ShadowLocationManager {
         providers.add(providerEntry);
       }
       return providerEntry;
+    }
+  }
+
+  private void removeListenerInternal(Object key) {
+    synchronized (providers) {
+      for (ProviderEntry providerEntry : providers) {
+        providerEntry.removeListener(key);
+      }
     }
   }
 
@@ -915,6 +1041,11 @@ public class ShadowLocationManager {
         ShadowSettings.ShadowSecure.updateEnabledProviders(
             getContext().getContentResolver(), name, enabled);
       } else {
+        if (enabled == this.enabled) {
+          return;
+        }
+
+        this.enabled = enabled;
         // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE
         ShadowSettings.ShadowSecure.updateEnabledProviders(
             getContext().getContentResolver(), name, enabled);
@@ -922,11 +1053,7 @@ public class ShadowLocationManager {
 
       // fire listeners
       for (ProviderEntry.ListenerEntry listener : listeners) {
-        if (enabled) {
-          listener.invokeOnProviderEnabled(name);
-        } else {
-          listener.invokeOnProviderDisabled(name);
-        }
+        listener.invokeOnProviderEnabled(name, enabled);
       }
     }
 
@@ -969,29 +1096,29 @@ public class ShadowLocationManager {
     }
 
     public void addListener(
-        @Nullable LocationListener locationListener,
-        Looper looper,
-        @Nullable PendingIntent pendingIntent,
-        LocationRequest request) {
-      final ListenerEntry entry;
-      if (locationListener != null) {
-        entry = new ListenerEntry(locationListener, looper, request);
-      } else if (pendingIntent != null) {
-        entry = new ListenerEntry(pendingIntent, request);
-      } else {
-        entry = null;
-      }
-
-      if (entry != null) {
-        listeners.add(entry);
-      }
+        LocationListener listener,
+        ShadowLocationManager.LocationRequest request,
+        Executor executor) {
+      add(new ListenerEntry(listener, request, new ListenerTransport(executor, listener)));
     }
 
-    public void removeListener(
-        @Nullable LocationListener locationListener, @Nullable PendingIntent pendingIntent) {
+    public void addListener(
+        PendingIntent pendingIntent, ShadowLocationManager.LocationRequest request) {
+      add(
+          new ListenerEntry(
+              pendingIntent, request, new PendingIntentTransport(pendingIntent, getContext())));
+    }
+
+    private void add(ListenerEntry entry) {
+      if (!enabled) {
+        entry.invokeOnProviderEnabled(name, false);
+      }
+      listeners.add(entry);
+    }
+
+    public void removeListener(Object key) {
       for (ListenerEntry listenerEntry : listeners) {
-        if (listenerEntry.locationListener == locationListener
-            && Objects.equals(listenerEntry.pendingIntent, pendingIntent)) {
+        if (listenerEntry.key == key) {
           listeners.remove(listenerEntry);
         }
       }
@@ -1015,83 +1142,54 @@ public class ShadowLocationManager {
     }
 
     private final class ListenerEntry {
-      private final PendingIntent pendingIntent;
-      private final LocationListener locationListener;
-      private final Handler handler;
 
-      private final LocationRequest locationRequest;
+      private final Object key;
+      private final LocationTransport transport;
+      private final ShadowLocationManager.LocationRequest request;
 
-      @Nullable Location lastDeliveredLocation;
-
-      private ListenerEntry(PendingIntent pendingIntent, LocationRequest locationRequest) {
-        this.pendingIntent = pendingIntent;
-        locationListener = null;
-        handler = null;
-        this.locationRequest = locationRequest;
-      }
+      private Location lastDeliveredLocation;
+      private int numDeliveries;
 
       private ListenerEntry(
-          LocationListener locationListener, Looper looper, LocationRequest locationRequest) {
-        this.locationListener = locationListener;
-        pendingIntent = null;
-        handler = new Handler(looper);
-        this.locationRequest = locationRequest;
+          Object key, ShadowLocationManager.LocationRequest request, LocationTransport transport) {
+        if (key == null) {
+          throw new IllegalArgumentException();
+        }
+
+        this.key = key;
+        this.request = request;
+        this.transport = transport;
       }
 
       public void simulateLocation(Location location) {
         if (lastDeliveredLocation != null) {
-          if (location.getTime() - lastDeliveredLocation.getTime() < locationRequest.minTime) {
+          if (location.getTime() - lastDeliveredLocation.getTime()
+              < request.minUpdateIntervalMillis) {
             return;
           }
-          if (distanceBetween(location, lastDeliveredLocation) < locationRequest.minDistance) {
+          if (distanceBetween(location, lastDeliveredLocation) < request.minUpdateDistanceMeters) {
             return;
           }
         }
 
         lastDeliveredLocation = new Location(location);
 
-        if (locationRequest.singleShot) {
+        if (++numDeliveries >= request.maxUpdates) {
           listeners.remove(this);
         }
 
-        if (locationListener != null) {
-          handler.post(() -> locationListener.onLocationChanged(new Location(location)));
-        } else if (pendingIntent != null) {
-          Intent intent = new Intent();
-          intent.putExtra(LocationManager.KEY_LOCATION_CHANGED, new Location(location));
-          try {
-            pendingIntent.send(getContext(), 0, intent);
-          } catch (CanceledException e) {
-            removeListener(null, pendingIntent);
-          }
+        try {
+          transport.onLocation(location);
+        } catch (Exception e) {
+          removeListener(key);
         }
       }
 
-      public void invokeOnProviderEnabled(String provider) {
-        if (locationListener != null) {
-          handler.post(() -> locationListener.onProviderEnabled(provider));
-        } else if (pendingIntent != null) {
-          Intent intent = new Intent();
-          intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, true);
-          try {
-            pendingIntent.send(getContext(), 0, intent);
-          } catch (CanceledException e) {
-            removeListener(null, pendingIntent);
-          }
-        }
-      }
-
-      public void invokeOnProviderDisabled(String provider) {
-        if (locationListener != null) {
-          handler.post(() -> locationListener.onProviderDisabled(provider));
-        } else if (pendingIntent != null) {
-          Intent intent = new Intent();
-          intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, false);
-          try {
-            pendingIntent.send(getContext(), 0, intent);
-          } catch (CanceledException e) {
-            removeListener(null, pendingIntent);
-          }
+      public void invokeOnProviderEnabled(String provider, boolean enabled) {
+        try {
+          transport.onProviderEnabled(provider, enabled);
+        } catch (Exception e) {
+          removeListener(key);
         }
       }
 
@@ -1104,13 +1202,12 @@ public class ShadowLocationManager {
           return false;
         }
         ListenerEntry that = (ListenerEntry) o;
-        return Objects.equals(pendingIntent, that.pendingIntent)
-            && Objects.equals(locationListener, that.locationListener);
+        return key == that.key;
       }
 
       @Override
       public int hashCode() {
-        return Objects.hash(pendingIntent, locationListener);
+        return Objects.hashCode(key);
       }
     }
   }
@@ -1140,16 +1237,85 @@ public class ShadowLocationManager {
   // LocationRequest doesn't exist on JB, so we can't use the platform version
   private static class LocationRequest {
 
-    private final String provider;
-    private final long minTime;
-    private final float minDistance;
-    private final boolean singleShot;
+    private final long minUpdateIntervalMillis;
+    private final int maxUpdates;
+    private final float minUpdateDistanceMeters;
 
-    private LocationRequest(String provider, long minTime, float minDistance, boolean singleShot) {
-      this.provider = provider;
-      this.minTime = minTime;
-      this.minDistance = minDistance;
-      this.singleShot = singleShot;
+    LocationRequest(android.location.LocationRequest locationRequest) {
+      minUpdateIntervalMillis = locationRequest.getFastestInterval();
+      maxUpdates = locationRequest.getNumUpdates();
+      minUpdateDistanceMeters = locationRequest.getSmallestDisplacement();
+    }
+
+    LocationRequest(long interval, float minUpdateDistanceMeters) {
+      minUpdateIntervalMillis = interval;
+      maxUpdates = Integer.MAX_VALUE;
+      this.minUpdateDistanceMeters = minUpdateDistanceMeters;
+    }
+
+    LocationRequest(boolean singleShot) {
+      minUpdateIntervalMillis = 0;
+      maxUpdates = singleShot ? 1 : Integer.MAX_VALUE;
+      minUpdateDistanceMeters = 0;
+    }
+  }
+
+  private interface LocationTransport {
+    void onLocation(Location location) throws Exception;
+
+    void onProviderEnabled(String provider, boolean enabled) throws Exception;
+  }
+
+  private static final class ListenerTransport implements LocationTransport {
+
+    private final Executor executor;
+    private final LocationListener locationListener;
+
+    ListenerTransport(Executor executor, LocationListener locationListener) {
+      this.executor = executor;
+      this.locationListener = locationListener;
+    }
+
+    @Override
+    public void onLocation(Location location) {
+      executor.execute(() -> locationListener.onLocationChanged(new Location(location)));
+    }
+
+    @Override
+    public void onProviderEnabled(String provider, boolean enabled) {
+      executor.execute(
+          () -> {
+            if (enabled) {
+              locationListener.onProviderEnabled(provider);
+            } else {
+              locationListener.onProviderDisabled(provider);
+            }
+          });
+    }
+  }
+
+  private static final class PendingIntentTransport implements LocationTransport {
+
+    private final PendingIntent pendingIntent;
+    private final Context context;
+
+    PendingIntentTransport(PendingIntent pendingIntent, Context context) {
+      this.pendingIntent = pendingIntent;
+      this.context = context;
+    }
+
+    @Override
+    public void onLocation(Location location) throws CanceledException {
+      Intent intent = new Intent();
+      intent.putExtra(LocationManager.KEY_LOCATION_CHANGED, new Location(location));
+      pendingIntent.send(context, 0, intent);
+    }
+
+    @Override
+    public void onProviderEnabled(String provider, boolean enabled) throws CanceledException {
+      Intent intent = new Intent();
+      intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, enabled);
+      pendingIntent.send(context, 0, intent);
     }
   }
 
@@ -1178,5 +1344,97 @@ public class ShadowLocationManager {
   @Resetter
   public static void reset() {
     locationProviderConstructor = null;
+  }
+
+  private final class CancellableLocationListener implements LocationListener {
+
+    private final Executor executor;
+    private final Consumer<Location> consumer;
+    private final Handler timeoutHandler;
+
+    @GuardedBy("this")
+    private boolean triggered;
+
+    @Nullable Runnable timeoutRunnable;
+
+    CancellableLocationListener(Executor executor, Consumer<Location> consumer) {
+      this.executor = executor;
+      this.consumer = consumer;
+      timeoutHandler = new Handler(Looper.getMainLooper());
+    }
+
+    public void cancel() {
+      synchronized (this) {
+        if (triggered) {
+          return;
+        }
+        triggered = true;
+      }
+
+      cleanup();
+    }
+
+    public void startTimeout(long timeoutMs) {
+      synchronized (this) {
+        if (triggered) {
+          return;
+        }
+
+        timeoutRunnable =
+            () -> {
+              timeoutRunnable = null;
+              onLocationChanged((Location) null);
+            };
+        timeoutHandler.postDelayed(timeoutRunnable, timeoutMs);
+      }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+    @Override
+    public void onProviderEnabled(String provider) {}
+
+    @Override
+    public void onProviderDisabled(String provider) {
+      onLocationChanged((Location) null);
+    }
+
+    @Override
+    public void onLocationChanged(@Nullable Location location) {
+      synchronized (this) {
+        if (triggered) {
+          return;
+        }
+        triggered = true;
+      }
+
+      executor.execute(() -> consumer.accept(location));
+
+      cleanup();
+    }
+
+    private void cleanup() {
+      removeUpdates(this);
+      if (timeoutRunnable != null) {
+        timeoutHandler.removeCallbacks(timeoutRunnable);
+        timeoutRunnable = null;
+      }
+    }
+  }
+
+  private static final class HandlerExecutor implements Executor {
+    private final Handler handler;
+
+    HandlerExecutor(Handler handler) {
+      this.handler = Objects.requireNonNull(handler);
+    }
+
+    @Override
+    public void execute(Runnable command) {
+      if (!handler.post(command)) {
+        throw new RejectedExecutionException(handler + " is shutting down");
+      }
+    }
   }
 }

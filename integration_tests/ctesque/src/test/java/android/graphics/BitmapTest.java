@@ -347,4 +347,18 @@ public class BitmapTest {
     Bitmap bitmap2 = BitmapFactory.decodeStream(inStream);
     assertThat(bitmap2.getPixel(0, 0)).isEqualTo(Color.BLACK);
   }
+
+  @Test
+  public void createBitmapWithOffsetAndStride() {
+    int[] pixels = new int[10];
+    Bitmap result = Bitmap.createBitmap(pixels, 0, 2, 2, 5, Bitmap.Config.ARGB_8888);
+    assertThat(result).isNotNull();
+  }
+
+  @Test
+  public void extractAlpha_isMutable() {
+    Bitmap result = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    Bitmap alphaBitmap = result.extractAlpha();
+    assertThat(alphaBitmap.isMutable()).isTrue();
+  }
 }

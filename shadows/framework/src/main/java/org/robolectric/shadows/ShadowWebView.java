@@ -77,13 +77,15 @@ public class ShadowWebView extends ShadowViewGroup {
   private HitTestResult hitTestResult = new HitTestResult();
   private int backgroundColor = 0;
   private DownloadListener downloadListener;
-  private static final WebViewFactoryProvider WEB_VIEW_FACTORY_PROVIDER =
-      ReflectionHelpers.createDeepProxy(WebViewFactoryProvider.class);
+  private static WebViewFactoryProvider webViewFactoryProvider;
 
   @HiddenApi
   @Implementation
   protected static WebViewFactoryProvider getFactory() {
-    return WEB_VIEW_FACTORY_PROVIDER;
+    if (webViewFactoryProvider == null) {
+      webViewFactoryProvider = ReflectionHelpers.createDeepProxy(WebViewFactoryProvider.class);
+    }
+    return webViewFactoryProvider;
   }
 
   @HiddenApi

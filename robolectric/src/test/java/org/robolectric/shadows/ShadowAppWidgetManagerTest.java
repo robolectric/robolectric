@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static org.junit.Assert.assertArrayEquals;
@@ -17,6 +18,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -43,7 +45,8 @@ public class ShadowAppWidgetManagerTest {
 
   @Test
   public void createWidget_shouldInflateViewAndAssignId() {
-    int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+    int widgetId =
+        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
     assertEquals("Hola", ((TextView) widgetView.findViewById(R.id.subtitle)).getText().toString());
@@ -51,7 +54,8 @@ public class ShadowAppWidgetManagerTest {
 
   @Test
   public void getViewFor_shouldReturnSameViewEveryTimeForGivenWidgetId() {
-    int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+    int widgetId =
+        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
     assertNotNull(widgetView);
@@ -60,18 +64,24 @@ public class ShadowAppWidgetManagerTest {
 
   @Test
   public void createWidget_shouldAllowForMultipleInstancesOfWidgets() {
-    int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+    int widgetId =
+        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
-    assertNotSame(widgetId,
+    assertNotSame(
+        widgetId,
         shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main));
-    assertNotSame(widgetView,
-        shadowAppWidgetManager.getViewFor(shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
+    assertNotSame(
+        widgetView,
+        shadowAppWidgetManager.getViewFor(
+            shadowAppWidgetManager.createWidget(
+                SpanishTestAppWidgetProvider.class, R.layout.main)));
   }
 
   @Test
   public void shouldReplaceLayoutIfAndOnlyIfLayoutIdIsDifferent() {
-    int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+    int widgetId =
+        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
     View originalWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
     assertContains("Main Layout", originalWidgetView);
 
@@ -93,7 +103,8 @@ public class ShadowAppWidgetManagerTest {
 
   @Test
   public void getAppWidgetIds() {
-    int expectedWidgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+    int expectedWidgetId =
+        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
 
     int[] appWidgetIds =
         appWidgetManager.getAppWidgetIds(
@@ -126,7 +137,24 @@ public class ShadowAppWidgetManagerTest {
   public void bindAppWidgetIdIfAllowed_shouldRecordTheBinding() {
     ComponentName provider = new ComponentName("A", "B");
     appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
-    assertArrayEquals(new int[]{789}, appWidgetManager.getAppWidgetIds(provider));
+    assertArrayEquals(new int[] {789}, appWidgetManager.getAppWidgetIds(provider));
+  }
+
+  @Test
+  public void bindAppWidgetIdIfAllowed_shouldSetEmptyOptionsBundleIfNotProvided() {
+    ComponentName provider = new ComponentName("A", "B");
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+    assertEquals(0, appWidgetManager.getAppWidgetOptions(789).size());
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void bindAppWidgetIdIfAllowed_shouldSetOptionsBundle() {
+    ComponentName provider = new ComponentName("A", "B");
+    Bundle options = new Bundle();
+    options.putString("key", "value");
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider, options);
+    assertEquals("value", appWidgetManager.getAppWidgetOptions(789).getString("key"));
   }
 
   @Test
@@ -204,6 +232,57 @@ public class ShadowAppWidgetManagerTest {
     assertTrue(installedProvidersForProfile.contains(info2));
   }
 
+  @Test
+  public void updateAppWidgetOptions_shouldSetOptionsBundle() {
+    ComponentName provider = new ComponentName("A", "B");
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+    Bundle options = new Bundle();
+    options.putString("key", "value");
+
+    appWidgetManager.updateAppWidgetOptions(789, options);
+
+    assertEquals("value", appWidgetManager.getAppWidgetOptions(789).getString("key"));
+  }
+
+  @Test
+  public void updateAppWidgetOptions_shouldMergeOptionsBundleIfAlreadyExists() {
+    ComponentName provider = new ComponentName("A", "B");
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+    Bundle options = new Bundle();
+    options.putString("key", "value");
+    Bundle newOptions = new Bundle();
+    options.putString("key2", "value2");
+
+    appWidgetManager.updateAppWidgetOptions(789, options);
+    appWidgetManager.updateAppWidgetOptions(789, newOptions);
+
+    Bundle retrievedOptions = appWidgetManager.getAppWidgetOptions(789);
+    assertEquals(2, retrievedOptions.size());
+    assertEquals("value", retrievedOptions.getString("key"));
+    assertEquals("value2", retrievedOptions.getString("key2"));
+  }
+
+  @Test
+  public void updateAppWidgetOptions_triggersOnAppWidgetOptionsUpdated() {
+    int widgetId =
+        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+
+    appWidgetManager.updateAppWidgetOptions(widgetId, new Bundle());
+    View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
+
+    assertEquals(
+        "Actualizar", ((TextView) widgetView.findViewById(R.id.subtitle)).getText().toString());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isRequestPinAppWidgetSupported_shouldReturnThePresetBoolean() {
+    shadowAppWidgetManager.setSupportedToRequestPinAppWidget(false);
+    assertFalse(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
+    shadowAppWidgetManager.setSupportedToRequestPinAppWidget(true);
+    assertTrue(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
+  }
+
   private void assertContains(String expectedText, View view) {
     String actualText = shadowOf(view).innerText();
     assertTrue(
@@ -217,6 +296,14 @@ public class ShadowAppWidgetManagerTest {
       RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
       remoteViews.setTextViewText(R.id.subtitle, "Hola");
       appWidgetManager.updateAppWidget(appWidgetIds, remoteViews);
+    }
+
+    @Override
+    public void onAppWidgetOptionsChanged(
+        Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+      RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
+      remoteViews.setTextViewText(R.id.subtitle, "Actualizar");
+      appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
   }
 }

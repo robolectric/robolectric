@@ -180,18 +180,26 @@ public class AndroidTestEnvironment implements TestEnvironment {
       RuntimeEnvironment.setConfiguredApplicationClass(
           getApplicationClass(appManifest, config, new ApplicationInfo()));
 
-      InstrumentationProvider provider =
-          new InstrumentationProvider() {
-            @Override
-            public Instrumentation provide() {
-              return installAndCreateApplication(
-                  appManifest, config, androidConfiguration, displayMetrics);
-            }
-          };
+      SingletonInstrumentationProviderWrapper provider =
+          new SingletonInstrumentationProviderWrapper(
+              new InstrumentationProvider() {
+                @Override
+                public Instrumentation provide() {
+                  return PerfStatsCollector.getInstance()
+                  .measure("installAndCreateApplication", () -> installAndCreateApplication(
+                      appManifest, config, androidConfiguration, displayMetrics));
+                }
+              });
 
+      RuntimeEnvironment.setInstrumentationProvider(provider);
       InstrumentationRegistry.registerInstrumentationProvider(provider, new Bundle());
-    } else { // LoadingMode.EAGER
-      installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+    } else { // LazyLoad.OFF
+      PerfStatsCollector.getInstance()
+          .measure(
+              "installAndCreateApplication",
+              () ->
+                  installAndCreateApplication(
+                      appManifest, config, androidConfiguration, displayMetrics));
     }
   }
 
@@ -255,9 +263,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
-
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(androidConfiguration, displayMetrics);
 
     Application application = createApplication(appManifest, config, applicationInfo);
     RuntimeEnvironment.setConfiguredApplicationClass(application.getClass());

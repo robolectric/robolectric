@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Notification;
@@ -99,6 +100,20 @@ public final class ShadowNotificationListenerServiceTest {
     assertThat(activeNotifications[0].getNotification()).isEqualTo(dummyNotification1);
     assertThat(activeNotifications[1].getPackageName()).isEqualTo(package2);
     assertThat(activeNotifications[1].getNotification()).isEqualTo(dummyNotification2);
+  }
+
+  @Test
+  public void getActiveNotifications_statusBarNotificationObjects_returnsAllNotifications() {
+    StatusBarNotification sbn1 = mock(StatusBarNotification.class);
+    StatusBarNotification sbn2 = mock(StatusBarNotification.class);
+    shadowService.addActiveNotification(sbn1);
+    shadowService.addActiveNotification(sbn2);
+
+    StatusBarNotification[] activeNotifications = service.getActiveNotifications();
+
+    assertThat(activeNotifications).hasLength(2);
+    assertThat(activeNotifications[0]).isSameInstanceAs(sbn1);
+    assertThat(activeNotifications[1]).isSameInstanceAs(sbn2);
   }
 
   @Test

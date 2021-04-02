@@ -295,8 +295,8 @@ public class ShadowSmsManager {
 
   // MMS functionality
 
-  private SendMultimediaMessageParams lastSentMultimediaMessageParams;
-  private DownloadMultimediaMessageParams lastDownloadedMultimediaMessageParams;
+  protected SendMultimediaMessageParams lastSentMultimediaMessageParams;
+  protected DownloadMultimediaMessageParams lastDownloadedMultimediaMessageParams;
 
   @Implementation(minSdk = LOLLIPOP)
   protected void sendMultimediaMessage(
@@ -310,7 +310,7 @@ public class ShadowSmsManager {
     }
 
     lastSentMultimediaMessageParams =
-        new SendMultimediaMessageParams(contentUri, locationUrl, configOverrides, sentIntent);
+        new SendMultimediaMessageParams(contentUri, locationUrl, configOverrides, sentIntent, 0L);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -329,7 +329,8 @@ public class ShadowSmsManager {
     }
 
     lastDownloadedMultimediaMessageParams =
-        new DownloadMultimediaMessageParams(contentUri, locationUrl, configOverrides, sentIntent);
+        new DownloadMultimediaMessageParams(
+            contentUri, locationUrl, configOverrides, sentIntent, 0L);
   }
 
   /** @return Parameters for last call to {@link #sendMultimediaMessage}. */
@@ -382,16 +383,19 @@ public class ShadowSmsManager {
     protected final String locationUrl;
     @Nullable private final Bundle configOverrides;
     @Nullable protected final PendingIntent pendingIntent;
+    protected final long messageId;
 
     protected MultimediaMessageParams(
         Uri contentUri,
         String locationUrl,
         @Nullable Bundle configOverrides,
-        @Nullable PendingIntent pendingIntent) {
+        @Nullable PendingIntent pendingIntent,
+        long messageId) {
       this.contentUri = contentUri;
       this.locationUrl = locationUrl;
       this.configOverrides = configOverrides;
       this.pendingIntent = pendingIntent;
+      this.messageId = messageId;
     }
 
     public Uri getContentUri() {
@@ -402,16 +406,21 @@ public class ShadowSmsManager {
     public Bundle getConfigOverrides() {
       return configOverrides;
     }
+
+    public long getMessageId() {
+      return messageId;
+    }
   }
 
   /** Testable parameters from calls to {@link #sendMultimediaMessage}. */
   public static final class SendMultimediaMessageParams extends MultimediaMessageParams {
-    protected SendMultimediaMessageParams(
+    public SendMultimediaMessageParams(
         Uri contentUri,
         @Nullable String locationUrl,
         @Nullable Bundle configOverrides,
-        @Nullable PendingIntent pendingIntent) {
-      super(contentUri, locationUrl, configOverrides, pendingIntent);
+        @Nullable PendingIntent pendingIntent,
+        long messageId) {
+      super(contentUri, locationUrl, configOverrides, pendingIntent, messageId);
     }
 
     @Nullable
@@ -427,12 +436,13 @@ public class ShadowSmsManager {
 
   /** Testable parameters from calls to {@link #downloadMultimediaMessage}. */
   public static final class DownloadMultimediaMessageParams extends MultimediaMessageParams {
-    protected DownloadMultimediaMessageParams(
+    public DownloadMultimediaMessageParams(
         Uri contentUri,
         String locationUrl,
         @Nullable Bundle configOverrides,
-        @Nullable PendingIntent pendingIntent) {
-      super(contentUri, locationUrl, configOverrides, pendingIntent);
+        @Nullable PendingIntent pendingIntent,
+        long messageId) {
+      super(contentUri, locationUrl, configOverrides, pendingIntent, messageId);
     }
 
     public String getLocationUrl() {

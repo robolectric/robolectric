@@ -9,7 +9,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
-import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationProvider;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
@@ -42,6 +42,7 @@ public class RuntimeEnvironment {
   private static TempDirectory tempDirectory = new TempDirectory("no-test-yet");
   private static Path androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
+  private static InstrumentationProvider instrumentationProvider;
 
   private static boolean useLegacyResources;
 
@@ -60,11 +61,15 @@ public class RuntimeEnvironment {
     if (application == null) {
       application =
           (Application)
-              InstrumentationRegistry.getInstrumentation()
+              instrumentationProvider.provide()
                   .getTargetContext()
                   .getApplicationContext();
     }
     return application;
+  }
+
+  public static void setInstrumentationProvider(InstrumentationProvider provider) {
+    instrumentationProvider = provider;
   }
 
   private static Class<? extends Application> applicationClass;
@@ -176,10 +181,6 @@ public class RuntimeEnvironment {
   public static void setQualifiers(String newQualifiers) {
     Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
-    // Loading at the beginning, rather than at the end, ensures that the application is already
-    // loaded when Resources.getSystem() is called. Adding a load inside ShadowResources is not an
-    // option as it is called from within the loading logic itself.
-    Application application = getApplication();
 
     if (newQualifiers.startsWith("+")) {
       configuration = new Configuration(Resources.getSystem().getConfiguration());
@@ -191,7 +192,9 @@ public class RuntimeEnvironment {
 
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
-    application.getResources().updateConfiguration(configuration, displayMetrics);
+    if (RuntimeEnvironment.application != null) {
+      getApplication().getResources().updateConfiguration(configuration, displayMetrics);
+    }
   }
 
   public static int getApiLevel() {
