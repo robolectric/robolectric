@@ -6,11 +6,14 @@ import static org.robolectric.Shadows.shadowOf;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
+import android.widget.RemoteViews;
+import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAppWidgetHostViewTest {
@@ -46,5 +49,16 @@ public class ShadowAppWidgetHostViewTest {
     AppWidgetHost host = new AppWidgetHost(ApplicationProvider.getApplicationContext(), 0);
     shadowAppWidgetHostView.setHost(host);
     assertThat(shadowAppWidgetHostView.getHost()).isSameInstanceAs(host);
+  }
+
+  @Test
+  public void shouldBeAbleToAddRemoteViews() {
+    RemoteViews remoteViews =
+        new RemoteViews(
+            ApplicationProvider.getApplicationContext().getPackageName(), R.layout.main);
+    remoteViews.setTextViewText(R.id.subtitle, "Hola");
+    appWidgetHostView.updateAppWidget(remoteViews);
+    assertThat(((TextView) appWidgetHostView.findViewById(R.id.subtitle)).getText().toString())
+        .isEqualTo("Hola");
   }
 }
