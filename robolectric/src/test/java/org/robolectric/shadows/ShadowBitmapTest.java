@@ -43,6 +43,18 @@ public class ShadowBitmapTest {
   }
 
   @Test
+  public void createScaledBitmap_succeedForLargeBitmapWithFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(100000, 10, Bitmap.Config.ARGB_8888);
+    Bitmap.createScaledBitmap(bitmap, 480000, 48, true);
+  }
+
+  @Test
+  public void createScaledBitmap_succeedForLargeBitmapWithoutFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(100000, 10, Bitmap.Config.ARGB_8888);
+    Bitmap.createScaledBitmap(bitmap, 480000, 48, false);
+  }
+
+  @Test
   public void createScaledBitmap_modifiesPixelsWithFilter() {
     Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
     bitmap.eraseColor(Color.BLUE);

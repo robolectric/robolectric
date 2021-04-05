@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static java.awt.image.AffineTransformOp.TYPE_BILINEAR;
-import static java.awt.image.AffineTransformOp.TYPE_NEAREST_NEIGHBOR;
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB_PRE;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
@@ -12,8 +12,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Point;
 import com.google.auto.value.AutoValue;
 import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,24 +92,24 @@ public class ImageUtil {
     }
     int srcWidth = src.getWidth();
     int srcHeight = src.getHeight();
-    if (srcWidth <= 0 || srcHeight <= 0) {
+    int dstWidth = dst.getWidth();
+    int dstHeight = dst.getHeight();
+    if (srcWidth <= 0 || srcHeight <= 0 || dstWidth <= 0 || dstHeight <= 0) {
       return false;
     }
     BufferedImage before = ((ShadowBitmap) Shadow.extract(src)).getBufferedImage();
     if (before == null || before.getColorModel() == null) {
       return false;
     }
-    int dstWidth = dst.getWidth();
-    int dstHeight = dst.getHeight();
     int imageType = getBufferedImageType(src.getConfig(), before.getColorModel().hasAlpha());
     BufferedImage after = new BufferedImage(dstWidth, dstHeight, imageType);
-    AffineTransform at = new AffineTransform();
-    at.scale(dstWidth * 1.0f / srcWidth, dstHeight * 1.0f / srcHeight);
-    // See Android's Bitmap#createScaledBitmap SDK doc
-    int interpolationType = filter ? TYPE_BILINEAR : TYPE_NEAREST_NEIGHBOR;
-    AffineTransformOp scaleOp = new AffineTransformOp(at, interpolationType);
-    ShadowBitmap shadowBitmap = Shadow.extract(dst);
-    shadowBitmap.setBufferedImage(scaleOp.filter(before, after));
+    Graphics2D graphics2D = after.createGraphics();
+    graphics2D.setRenderingHint(
+        RenderingHints.KEY_INTERPOLATION,
+        filter ? VALUE_INTERPOLATION_BILINEAR : VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+    graphics2D.drawImage(before, 0, 0, dstWidth, dstHeight, 0, 0, srcWidth, srcHeight, null);
+    graphics2D.dispose();
+    ((ShadowBitmap) Shadow.extract(dst)).setBufferedImage(after);
     return true;
   }
 
