@@ -100,11 +100,13 @@ public class ImageUtil {
     if (before == null || before.getColorModel() == null) {
       return false;
     }
+    int dstWidth = dst.getWidth();
+    int dstHeight = dst.getHeight();
     int imageType = getBufferedImageType(src.getConfig(), before.getColorModel().hasAlpha());
-    BufferedImage after = new BufferedImage(srcWidth, srcHeight, imageType);
+    BufferedImage after = new BufferedImage(dstWidth, dstHeight, imageType);
     AffineTransform at = new AffineTransform();
-    at.scale(dst.getWidth() * 1.0f / srcWidth, dst.getHeight() * 1.0f / srcHeight);
-    // See Andriod's Bitmap#createScaledBitmap SDK doc
+    at.scale(dstWidth * 1.0f / srcWidth, dstHeight * 1.0f / srcHeight);
+    // See Android's Bitmap#createScaledBitmap SDK doc
     int interpolationType = filter ? TYPE_BILINEAR : TYPE_NEAREST_NEIGHBOR;
     AffineTransformOp scaleOp = new AffineTransformOp(at, interpolationType);
     ShadowBitmap shadowBitmap = Shadow.extract(dst);

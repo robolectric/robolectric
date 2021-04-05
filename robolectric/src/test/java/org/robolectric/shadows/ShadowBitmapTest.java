@@ -12,6 +12,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
@@ -42,11 +43,71 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  public void createScaledBitmap_modifiesPixels() {
+  public void createScaledBitmap_modifiesPixelsWithFilter() {
     Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
     bitmap.eraseColor(Color.BLUE);
-    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, /* filter= */ false);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, true);
     assertThat(scaledBitmap.getPixel(0, 0)).isEqualTo(Color.BLUE);
+  }
+
+  @Test
+  public void createScaledBitmap_modifiesPixelsWithoutFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(Color.BLUE);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 50, 50, false);
+    assertThat(scaledBitmap.getPixel(0, 0)).isEqualTo(Color.BLUE);
+  }
+
+  @Test
+  public void createScaledBitmap_expectedUpSizeWithFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 32, 32, true);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getWidth()).isEqualTo(32);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getHeight()).isEqualTo(32);
+  }
+
+  @Test
+  public void createScaledBitmap_expectedUpSizeWithoutFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 32, 32, false);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getWidth()).isEqualTo(32);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getHeight()).isEqualTo(32);
+  }
+
+  @Test
+  public void createScaledBitmap_expectedDownSizeWithFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, true);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getWidth()).isEqualTo(10);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getHeight()).isEqualTo(10);
+  }
+
+  @Test
+  public void createScaledBitmap_expectedDownSizeWithoutFilter() {
+    Bitmap bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888);
+    Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, 10, 10, false);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getWidth()).isEqualTo(10);
+    assertThat(Shadows.shadowOf(scaledBitmap).getBufferedImage().getHeight()).isEqualTo(10);
+  }
+
+  @Test
+  public void createScaledBitmap_drawOnScaledWithFilter() {
+    Bitmap original = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    Bitmap scaled = Bitmap.createScaledBitmap(original, 32, 32, false);
+    Canvas canvas = new Canvas(scaled);
+    Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+    p.setColor(Color.BLACK);
+    canvas.drawRect(new Rect(0, 0, 32, 32), p);
+  }
+
+  @Test
+  public void createScaledBitmap_drawOnScaledWithoutFilter() {
+    Bitmap original = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    Bitmap scaled = Bitmap.createScaledBitmap(original, 32, 32, false);
+    Canvas canvas = new Canvas(scaled);
+    Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+    p.setColor(Color.BLACK);
+    canvas.drawRect(new Rect(0, 0, 32, 32), p);
   }
 
   @Test
