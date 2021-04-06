@@ -184,14 +184,20 @@ public class AndroidTestEnvironment implements TestEnvironment {
           new InstrumentationProvider() {
             @Override
             public Instrumentation provide() {
-              return installAndCreateApplication(
-                  appManifest, config, androidConfiguration, displayMetrics);
+              return PerfStatsCollector.getInstance()
+                  .measure("installAndCreateApplication", () -> installAndCreateApplication(
+                      appManifest, config, androidConfiguration, displayMetrics));
             }
           };
 
       InstrumentationRegistry.registerInstrumentationProvider(provider, new Bundle());
-    } else { // LoadingMode.EAGER
-      installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+    } else { // LazyLoad.OFF
+      PerfStatsCollector.getInstance()
+          .measure(
+              "installAndCreateApplication",
+              () ->
+                  installAndCreateApplication(
+                      appManifest, config, androidConfiguration, displayMetrics));
     }
   }
 
