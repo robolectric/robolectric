@@ -274,6 +274,15 @@ public class ShadowAppWidgetManagerTest {
         "Actualizar", ((TextView) widgetView.findViewById(R.id.subtitle)).getText().toString());
   }
 
+  @Test
+  @Config(minSdk = O)
+  public void isRequestPinAppWidgetSupported_shouldReturnThePresetBoolean() {
+    shadowAppWidgetManager.setSupportedToRequestPinAppWidget(false);
+    assertFalse(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
+    shadowAppWidgetManager.setSupportedToRequestPinAppWidget(true);
+    assertTrue(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
+  }
+
   private void assertContains(String expectedText, View view) {
     String actualText = shadowOf(view).innerText();
     assertTrue(
