@@ -158,6 +158,17 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.N)
+  public void setAndGetImportance() {
+    shadowOf(notificationManager).setImportance(NotificationManager.IMPORTANCE_DEFAULT);
+    assertThat(notificationManager.getImportance())
+        .isEqualTo(NotificationManager.IMPORTANCE_DEFAULT);
+
+    shadowOf(notificationManager).setImportance(NotificationManager.IMPORTANCE_NONE);
+    assertThat(notificationManager.getImportance()).isEqualTo(NotificationManager.IMPORTANCE_NONE);
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.M)
   public void isNotificationPolicyAccessGranted() {
     shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
