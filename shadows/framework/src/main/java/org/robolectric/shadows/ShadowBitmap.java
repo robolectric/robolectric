@@ -335,6 +335,7 @@ public class ShadowBitmap {
     bufferedImage.setRGB(0, 0, width, height, colors, offset, stride);
     Bitmap bitmap = createBitmap(bufferedImage, width, height, config);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    shadowBitmap.setMutable(false);
     shadowBitmap.createdFromColors = colors;
     return bitmap;
   }
@@ -343,10 +344,7 @@ public class ShadowBitmap {
       BufferedImage bufferedImage, int width, int height, Bitmap.Config config) {
     Bitmap newBitmap = Bitmap.createBitmap(width, height, config);
     ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
-
-    shadowBitmap.setMutable(false);
     shadowBitmap.bufferedImage = bufferedImage;
-
     return newBitmap;
   }
 
