@@ -11,6 +11,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
 import java.security.GeneralSecurityException;
@@ -276,5 +277,16 @@ public class AndroidTestEnvironmentTest {
     RuntimeEnvironment.application = null;
     bootstrapWrapper.tearDownApplication();
     assertThat(RuntimeEnvironment.application).isNull();
+  }
+
+  @LazyApplication(LazyLoad.ON)
+  @Test
+  @Config(qualifiers = "w480dp-h640dp-land-hdpi")
+  public void systemResources_getDisplayMetrics_correctValues() {
+    bootstrapWrapper.callSetUpApplicationState();
+    DisplayMetrics displayMetrics = Resources.getSystem().getDisplayMetrics();
+    assertThat(displayMetrics.densityDpi).isEqualTo(DisplayMetrics.DENSITY_HIGH);
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("w640dp-h480dp");
+    assertThat(RuntimeEnvironment.getQualifiers()).contains("land");
   }
 }

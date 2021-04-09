@@ -8,11 +8,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
-  @RealObject
-  private AppWidgetHost realAppWidgetHost;
+  @RealObject private AppWidgetHost realAppWidgetHost;
 
   private Context context;
   private int hostId;
@@ -44,7 +44,14 @@ public class ShadowAppWidgetHost {
   @Implementation
   protected AppWidgetHostView createView(
       Context context, int appWidgetId, AppWidgetProviderInfo appWidget) {
-    AppWidgetHostView hostView = new AppWidgetHostView(context);
+    AppWidgetHostView hostView =
+        ReflectionHelpers.callInstanceMethod(
+            AppWidgetHost.class,
+            realAppWidgetHost,
+            "onCreateView",
+            ReflectionHelpers.ClassParameter.from(Context.class, context),
+            ReflectionHelpers.ClassParameter.from(int.class, appWidgetId),
+            ReflectionHelpers.ClassParameter.from(AppWidgetProviderInfo.class, appWidget));
     hostView.setAppWidget(appWidgetId, appWidget);
     ShadowAppWidgetHostView shadowAppWidgetHostView = Shadow.extract(hostView);
     shadowAppWidgetHostView.setHost(realAppWidgetHost);

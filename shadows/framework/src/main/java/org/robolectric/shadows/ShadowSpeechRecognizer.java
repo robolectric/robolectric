@@ -92,6 +92,10 @@ public class ShadowSpeechRecognizer {
     recognitionListener = listener;
   }
 
+  public void triggerOnEndOfSpeech() {
+    recognitionListener.onEndOfSpeech();
+  }
+
   public void triggerOnError(int error) {
     recognitionListener.onError(error);
   }

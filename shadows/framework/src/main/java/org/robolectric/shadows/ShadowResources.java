@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -77,6 +78,7 @@ public class ShadowResources {
       DisplayMetrics metrics = new DisplayMetrics();
       Configuration config = new Configuration();
       system = new Resources(assetManager, metrics, config);
+      Bootstrap.updateConfiguration(system);
     }
     return system;
   }

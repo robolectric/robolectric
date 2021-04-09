@@ -56,6 +56,15 @@ public class ShadowSpeechRecognizerTest {
   }
 
   @Test
+  public void onEndOfSpeechCalled() {
+    startListening();
+
+    shadowOf(speechRecognizer).triggerOnEndOfSpeech();
+
+    assertThat(listener.endofSpeechCalled).isTrue();
+  }
+
+  @Test
   public void onResultCalled() {
     startListening();
     Bundle expectedBundle = new Bundle();
@@ -133,6 +142,7 @@ public class ShadowSpeechRecognizerTest {
     int errorReceived;
     Bundle bundleReceived;
     float rmsDbReceived;
+    boolean endofSpeechCalled = false;
 
     @Override
     public void onBeginningOfSpeech() {}
@@ -141,7 +151,9 @@ public class ShadowSpeechRecognizerTest {
     public void onBufferReceived(byte[] buffer) {}
 
     @Override
-    public void onEndOfSpeech() {}
+    public void onEndOfSpeech() {
+      endofSpeechCalled = true;
+    }
 
     @Override
     public void onError(int error) {

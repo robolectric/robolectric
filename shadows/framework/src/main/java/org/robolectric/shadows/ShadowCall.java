@@ -20,6 +20,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 /** Robolectric test for {@link android.telecom.Call}. */
 @Implements(value = Call.class, minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowCall {
+  @RealObject Call realObject;
 
   private boolean hasSentRttRequest;
   private boolean hasRespondedToRttRequest;
@@ -46,6 +47,7 @@ public class ShadowCall {
   @Implementation(minSdk = VERSION_CODES.P)
   protected void respondToRttRequest(int id, boolean accept) {
     hasRespondedToRttRequest = true;
+    // realObject.respondToRttRequest(id, accept);
   }
 
   /**

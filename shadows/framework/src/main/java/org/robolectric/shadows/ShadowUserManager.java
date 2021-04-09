@@ -922,6 +922,14 @@ public class ShadowUserManager {
     userManagerState.profileIsLocked.put(profileHandle.getIdentifier(), isLocked);
   }
 
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected long[] getSerialNumbersOfUsers(boolean excludeDying) {
+    return getUsers().stream()
+        .map(userInfo -> getUserSerialNumber(userInfo.getUserHandle().getIdentifier()))
+        .mapToLong(l -> l)
+        .toArray();
+  }
+
   @Implementation
   protected List<UserInfo> getUsers() {
     return new ArrayList<>(userManagerState.userInfoMap.values());

@@ -184,14 +184,20 @@ public class AndroidTestEnvironment implements TestEnvironment {
           new InstrumentationProvider() {
             @Override
             public Instrumentation provide() {
-              return installAndCreateApplication(
-                  appManifest, config, androidConfiguration, displayMetrics);
+              return PerfStatsCollector.getInstance()
+                  .measure("installAndCreateApplication", () -> installAndCreateApplication(
+                      appManifest, config, androidConfiguration, displayMetrics));
             }
           };
 
       InstrumentationRegistry.registerInstrumentationProvider(provider, new Bundle());
-    } else { // LoadingMode.EAGER
-      installAndCreateApplication(appManifest, config, androidConfiguration, displayMetrics);
+    } else { // LazyLoad.OFF
+      PerfStatsCollector.getInstance()
+          .measure(
+              "installAndCreateApplication",
+              () ->
+                  installAndCreateApplication(
+                      appManifest, config, androidConfiguration, displayMetrics));
     }
   }
 
@@ -255,9 +261,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
-
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(androidConfiguration, displayMetrics);
 
     Application application = createApplication(appManifest, config, applicationInfo);
     RuntimeEnvironment.setConfiguredApplicationClass(application.getClass());

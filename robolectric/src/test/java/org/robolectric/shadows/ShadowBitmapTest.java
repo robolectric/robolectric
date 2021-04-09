@@ -94,14 +94,6 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  public void shouldCreateBitmapFromAnotherBitmap() {
-    Bitmap originalBitmap = create("Original bitmap");
-    Bitmap newBitmap = Bitmap.createBitmap(originalBitmap);
-    assertThat(shadowOf(newBitmap).getDescription())
-        .isEqualTo("Original bitmap created from Bitmap object");
-  }
-
-  @Test
   public void shouldCreateBitmapWithMatrix() {
     Bitmap originalBitmap = create("Original bitmap");
     shadowOf(originalBitmap).setWidth(200);

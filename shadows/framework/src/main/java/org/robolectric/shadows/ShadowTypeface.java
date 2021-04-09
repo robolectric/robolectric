@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,8 +38,8 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 @Implements(value = Typeface.class, looseSignatures = true)
 @SuppressLint("NewApi")
 public class ShadowTypeface {
-  private static Map<Long, FontDesc> FONTS = new HashMap<>();
-  private static long nextFontId = 1;
+  private static final Map<Long, FontDesc> FONTS = Collections.synchronizedMap(new HashMap<>());
+  private static final AtomicLong nextFontId = new AtomicLong(1);
   private FontDesc description;
 
   @HiddenApi
@@ -198,7 +200,7 @@ public class ShadowTypeface {
   }
 
   protected static Typeface createUnderlyingTypeface(String familyName, int style) {
-    long thisFontId = nextFontId++;
+    long thisFontId = nextFontId.getAndIncrement();
     FONTS.put(thisFontId, new FontDesc(familyName, style));
     if (getApiLevel() >= LOLLIPOP) {
       return ReflectionHelpers.callConstructor(
@@ -219,7 +221,7 @@ public class ShadowTypeface {
   @Implementation(minSdk = O, maxSdk = VERSION_CODES.R)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly
-    long thisFontId = nextFontId++;
+    long thisFontId = nextFontId.getAndIncrement();
     FONTS.put(thisFontId, new FontDesc(null, weight));
     return thisFontId;
   }

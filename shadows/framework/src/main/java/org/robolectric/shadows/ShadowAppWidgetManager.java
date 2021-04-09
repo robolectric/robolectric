@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -10,6 +11,7 @@ import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +43,7 @@ public class ShadowAppWidgetManager {
   private int nextWidgetId = 1;
   private boolean alwaysRecreateViewsDuringUpdate = false;
   private boolean allowedToBindWidgets;
+  private boolean supportedToRequestPinAppWidget = false;
   private boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
@@ -145,11 +148,47 @@ public class ShadowAppWidgetManager {
     return widgetInfo.info;
   }
 
+  /** Gets the appWidgetOptions Bundle stored in a local cache. */
+  @Implementation
+  protected Bundle getAppWidgetOptions(int appWidgetId) {
+    WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
+    if (widgetInfo == null) {
+      return Bundle.EMPTY;
+    }
+    return (Bundle) widgetInfo.options.clone();
+  }
+
+  /**
+   * Update the locally cached appWidgetOptions Bundle. Instead of triggering associated
+   * AppWidgetProvider.onAppWidgetOptionsChanged through Intent, this implementation calls the
+   * method directly.
+   */
+  @Implementation
+  protected void updateAppWidgetOptions(int appWidgetId, Bundle options) {
+    WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
+    if (widgetInfo != null && options != null) {
+      widgetInfo.options.putAll(options);
+      if (widgetInfo.appWidgetProvider != null) {
+        widgetInfo.appWidgetProvider.onAppWidgetOptionsChanged(
+            context, realAppWidgetManager, appWidgetId, (Bundle) options.clone());
+      }
+    }
+  }
+
   @HiddenApi
   @Implementation
   public void bindAppWidgetId(int appWidgetId, ComponentName provider) {
+    bindAppWidgetId(appWidgetId, provider, null);
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected void bindAppWidgetId(int appWidgetId, ComponentName provider, Bundle options) {
     WidgetInfo widgetInfo = new WidgetInfo(provider);
     widgetInfos.put(appWidgetId, widgetInfo);
+    if (options != null) {
+      widgetInfo.options = (Bundle) options.clone();
+    }
     for (AppWidgetProviderInfo appWidgetProviderInfo : installedProviders) {
       if (provider != null && provider.equals(appWidgetProviderInfo.provider)) {
         widgetInfo.info = appWidgetProviderInfo;
@@ -157,14 +196,34 @@ public class ShadowAppWidgetManager {
     }
   }
 
+  /**
+   * Create an internal presentation of the widget and cache it locally. This implementation doesn't
+   * trigger {@code AppWidgetProvider.onUpdate}
+   */
   @Implementation
   protected boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
+    return bindAppWidgetIdIfAllowed(appWidgetId, provider, null);
+  }
+
+  /**
+   * Create an internal presentation of the widget locally and store the options {@link Bundle} with
+   * it. This implementation doesn't trigger {@code AppWidgetProvider.onUpdate}
+   */
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected boolean bindAppWidgetIdIfAllowed(
+      int appWidgetId, ComponentName provider, Bundle options) {
     if (validWidgetProviderComponentName) {
-      bindAppWidgetId(appWidgetId, provider);
+      bindAppWidgetId(appWidgetId, provider, options);
       return allowedToBindWidgets;
     } else {
       throw new IllegalArgumentException("not an appwidget provider");
     }
+  }
+
+  /** Returns true if {@link setSupportedToRequestPinAppWidget} is called with {@code true} */
+  @Implementation(minSdk = O)
+  protected boolean isRequestPinAppWidgetSupported() {
+    return supportedToRequestPinAppWidget;
   }
 
   /**
@@ -259,6 +318,10 @@ public class ShadowAppWidgetManager {
     allowedToBindWidgets = allowed;
   }
 
+  public void setSupportedToRequestPinAppWidget(boolean supported) {
+    supportedToRequestPinAppWidget = supported;
+  }
+
   public void setValidWidgetProviderComponentName(boolean validWidgetProviderComponentName) {
     this.validWidgetProviderComponentName = validWidgetProviderComponentName;
   }
@@ -270,6 +333,7 @@ public class ShadowAppWidgetManager {
     RemoteViews lastRemoteViews;
     final ComponentName providerComponent;
     AppWidgetProviderInfo info;
+    Bundle options = new Bundle();
 
     public WidgetInfo(
         View view, int layoutId, Context context, AppWidgetProvider appWidgetProvider) {
