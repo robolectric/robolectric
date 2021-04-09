@@ -17,6 +17,7 @@ public class ShadowRoleManager {
   @RealObject protected RoleManager roleManager;
 
   private final Set<String> heldRoles = new ArraySet<>();
+  private final Set<String> availableRoles = new ArraySet<>();
 
   /**
    * Check whether the calling application is holding a particular role.
@@ -27,7 +28,7 @@ public class ShadowRoleManager {
    * @return whether the calling application is holding the role
    */
   @Implementation
-  public boolean isRoleHeld(@NonNull String roleName) {
+  protected boolean isRoleHeld(@NonNull String roleName) {
     Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
     return heldRoles.contains(roleName);
   }
@@ -45,5 +46,35 @@ public class ShadowRoleManager {
     Preconditions.checkArgument(
         heldRoles.contains(roleName), "the supplied roleName was never added.");
     heldRoles.remove(roleName);
+  }
+
+  /**
+   * Check whether a particular role is available on the device.
+   *
+   * <p>Callers can add available roles via {@link #addAvailableRole(String)}
+   *
+   * @param roleName the name of the role to check for
+   * @return whether the role is available
+   */
+  @Implementation
+  protected boolean isRoleAvailable(@NonNull String roleName) {
+    Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
+    return availableRoles.contains(roleName);
+  }
+
+  /**
+   * Add a role that will be recognized as available when invoking {@link
+   * RoleManager#isRoleAvailable(String)}.
+   */
+  public void addAvailableRole(@NonNull String roleName) {
+    Preconditions.checkStringNotEmpty(roleName, "roleName cannot be null or empty");
+    availableRoles.add(roleName);
+  }
+
+  /* Remove a role previously added via {@link #addAvailableRole(String)}. */
+  public void removeAvailableRole(@NonNull String roleName) {
+    Preconditions.checkArgument(
+        availableRoles.contains(roleName), "the supplied roleName was never added.");
+    availableRoles.remove(roleName);
   }
 }

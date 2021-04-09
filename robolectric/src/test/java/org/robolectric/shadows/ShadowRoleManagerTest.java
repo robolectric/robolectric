@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -45,5 +46,33 @@ public final class ShadowRoleManagerTest {
   @Test()
   public void isRoleHeld_noValueByDefault() {
     assertThat(roleManager.isRoleHeld(RoleManager.ROLE_SMS)).isFalse();
+  }
+
+  @Test
+  public void isRoleAvailable_shouldThrowWithNullArgument() {
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(roleManager).isRoleAvailable(null));
+  }
+
+  @Test()
+  public void addAvailableRole_isPresentInIsRoleAvailable() {
+    shadowOf(roleManager).addAvailableRole(RoleManager.ROLE_SMS);
+    assertThat(roleManager.isRoleAvailable(RoleManager.ROLE_SMS)).isTrue();
+  }
+
+  @Test()
+  public void addAvailableRole_shouldThrowWithEmptyArgument() {
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(roleManager).addAvailableRole(""));
+  }
+
+  @Test()
+  public void removeAvailableRole_notPresentInIsRoleAvailable() {
+    shadowOf(roleManager).addAvailableRole(RoleManager.ROLE_SMS);
+    shadowOf(roleManager).removeAvailableRole(RoleManager.ROLE_SMS);
+    assertThat(roleManager.isRoleAvailable(RoleManager.ROLE_SMS)).isFalse();
+  }
+
+  @Test()
+  public void isRoleAvailable_noValueByDefault() {
+    assertThat(roleManager.isRoleAvailable(RoleManager.ROLE_SMS)).isFalse();
   }
 }
