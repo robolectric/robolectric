@@ -18,6 +18,7 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.OperationApplicationException;
@@ -37,6 +38,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,13 +82,14 @@ public class ShadowContentResolver {
       new CopyOnWriteArrayList<>();
 
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
-  private static final Map<String, ContentProvider> providers = new HashMap<>();
+  private static final Map<String, ContentProvider> providers =
+      Collections.synchronizedMap(new HashMap<>());
   private static boolean masterSyncAutomatically;
 
   private static SyncAdapterType[] syncAdapterTypes;
 
   @Resetter
-  public static synchronized void reset() {
+  public static void reset() {
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
@@ -674,20 +677,21 @@ public class ShadowContentResolver {
     return getProvider(uri.getAuthority());
   }
 
-  private static synchronized ContentProvider getProvider(String authority) {
-    if (!providers.containsKey(authority)) {
-      ProviderInfo providerInfo =
-          RuntimeEnvironment.getApplication()
-              .getPackageManager()
-              .resolveContentProvider(authority, 0);
-      if (providerInfo != null) {
-        ContentProvider contentProvider = createAndInitialize(providerInfo);
-        for (String auth : Splitter.on(';').split(providerInfo.authority)) {
-          providers.put(auth, contentProvider);
+  private static ContentProvider getProvider(String authority) {
+    Context context = RuntimeEnvironment.getApplication();
+    synchronized (providers) {
+      if (!providers.containsKey(authority)) {
+        ProviderInfo providerInfo =
+            context.getPackageManager().resolveContentProvider(authority, 0);
+        if (providerInfo != null) {
+          ContentProvider contentProvider = createAndInitialize(providerInfo);
+          for (String auth : Splitter.on(';').split(providerInfo.authority)) {
+            providers.put(auth, contentProvider);
+          }
         }
       }
+      return providers.get(authority);
     }
-    return providers.get(authority);
   }
 
   /**
@@ -701,8 +705,7 @@ public class ShadowContentResolver {
    * Robolectric.buildContentProvider(ContentProvider.class).create(info);
    * </pre>
    */
-  public static synchronized void registerProviderInternal(
-      String authority, ContentProvider provider) {
+  public static void registerProviderInternal(String authority, ContentProvider provider) {
     providers.put(authority, provider);
   }
 
