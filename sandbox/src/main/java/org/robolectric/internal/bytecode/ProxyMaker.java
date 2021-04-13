@@ -13,6 +13,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
+import org.robolectric.util.PerfStatsCollector;
 import sun.misc.Unsafe;
 
 public class ProxyMaker {
@@ -34,11 +35,14 @@ public class ProxyMaker {
 
   public ProxyMaker(MethodMapper methodMapper) {
     this.methodMapper = methodMapper;
-    factories = new ClassValueMap<Factory>() {
-      @Override protected Factory computeValue(Class<?> type) {
-        return createProxyFactory(type);
-      }
-    };
+    factories =
+        new ClassValueMap<Factory>() {
+          @Override
+          protected Factory computeValue(Class<?> type) {
+            return PerfStatsCollector.getInstance()
+                .measure("createProxyFactory", () -> createProxyFactory(type));
+          }
+        };
   }
 
   public <T> T createProxy(Class<T> targetClass, T target) {
