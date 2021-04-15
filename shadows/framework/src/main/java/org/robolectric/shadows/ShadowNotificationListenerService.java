@@ -36,7 +36,9 @@ public class ShadowNotificationListenerService extends ShadowService {
   private final RankingMap emptyRankingMap = createEmptyRankingMap();
 
   /**
-   * Adds the given Notification to the list of active Notification.
+   * Adds the given {@link Notification} to the list of active Notifications. A corresponding {@link
+   * StatusBarNotification} will be generated from this Notification, which will be included in the
+   * result of {@link NotificationListenerService#getActiveNotifications}.
    *
    * @return the key of the generated {@link StatusBarNotification}
    */
@@ -53,6 +55,17 @@ public class ShadowNotificationListenerService extends ShadowService {
             notification,
             UserHandle.CURRENT,
             notification.when);
+    return addActiveNotification(statusBarNotification);
+  }
+
+  /**
+   * Adds the given {@link StatusBarNotification} to the list of active Notifications. The given
+   * {@link StatusBarNotification} will be included in the result of {@link
+   * NotificationListenerService#getActiveNotifications}.
+   *
+   * @return the key of the given {@link StatusBarNotification}
+   */
+  public String addActiveNotification(StatusBarNotification statusBarNotification) {
     activeNotifications.add(statusBarNotification);
     return statusBarNotification.getKey();
   }
