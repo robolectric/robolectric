@@ -43,6 +43,7 @@ public class ShadowAppWidgetManager {
   private int nextWidgetId = 1;
   private boolean alwaysRecreateViewsDuringUpdate = false;
   private boolean allowedToBindWidgets;
+  private boolean supportedToRequestPinAppWidget = false;
   private boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
@@ -219,6 +220,12 @@ public class ShadowAppWidgetManager {
     }
   }
 
+  /** Returns true if {@link setSupportedToRequestPinAppWidget} is called with {@code true} */
+  @Implementation(minSdk = O)
+  protected boolean isRequestPinAppWidgetSupported() {
+    return supportedToRequestPinAppWidget;
+  }
+
   /**
    * Triggers a reapplication of the most recent set of actions against the widget, which is what
    * happens when the phone is rotated. Does not attempt to simulate a change in screen geometry.
@@ -309,6 +316,10 @@ public class ShadowAppWidgetManager {
 
   public void setAllowedToBindAppWidgets(boolean allowed) {
     allowedToBindWidgets = allowed;
+  }
+
+  public void setSupportedToRequestPinAppWidget(boolean supported) {
+    supportedToRequestPinAppWidget = supported;
   }
 
   public void setValidWidgetProviderComponentName(boolean validWidgetProviderComponentName) {
