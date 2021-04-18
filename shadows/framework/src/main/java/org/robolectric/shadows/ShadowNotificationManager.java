@@ -47,6 +47,7 @@ public class ShadowNotificationManager {
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
   private Policy notificationPolicy;
   private String notificationDelegate;
+  private int importance;
 
   @Implementation
   protected void notify(int id, Notification notification) {
@@ -86,6 +87,15 @@ public class ShadowNotificationManager {
 
   public void setNotificationsEnabled(boolean areNotificationsEnabled) {
     mAreNotificationsEnabled = areNotificationsEnabled;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected int getImportance() {
+    return importance;
+  }
+
+  public void setImportance(int importance) {
+    this.importance = importance;
   }
 
   @Implementation(minSdk = M)
