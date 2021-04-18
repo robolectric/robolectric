@@ -556,6 +556,21 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void getSerialNumbersOfUsers() {
+    assertThat(userManager.getSerialNumbersOfUsers(true)).hasLength(userManager.getUserCount());
+
+    UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    int userSerialNumber = userManager.getUserSerialNumber(userHandle.getIdentifier());
+    long[] serialNumbers = userManager.getSerialNumbersOfUsers(true);
+
+    assertThat(userHandle.getIdentifier()).isEqualTo(10);
+    assertThat(serialNumbers).hasLength(userManager.getUserCount());
+    assertThat(serialNumbers[0] == userSerialNumber || serialNumbers[1] == userSerialNumber)
+        .isTrue();
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void getUsers() {
     assertThat(userManager.getUsers()).hasSize(1);
