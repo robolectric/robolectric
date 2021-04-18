@@ -328,7 +328,7 @@ public class Robolectric {
    * @return Foreground scheduler.
    */
   public static Scheduler getForegroundThreadScheduler() {
-    return ShadowApplication.getInstance().getForegroundThreadScheduler();
+    return RuntimeEnvironment.getMasterScheduler();
   }
 
   /**
