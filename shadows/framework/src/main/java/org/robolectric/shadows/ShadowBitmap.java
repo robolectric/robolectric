@@ -236,37 +236,6 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap createBitmap(Bitmap src) {
-    ShadowBitmap shadowBitmap = Shadow.extract(src);
-    shadowBitmap.appendDescription(" created from Bitmap object");
-    return src;
-  }
-
-  @Implementation
-  protected static Bitmap createBitmap(Bitmap src, int x, int y, int width, int height) {
-    if (x == 0 && y == 0 && width == src.getWidth() && height == src.getHeight()) {
-      return src; // Return the original.
-    }
-
-    Bitmap newBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadow.extract(newBitmap);
-
-    ShadowBitmap shadowSrcBitmap = Shadow.extract(src);
-    shadowBitmap.appendDescription(shadowSrcBitmap.getDescription());
-    shadowBitmap.appendDescription(" at (" + x + "," + y);
-    shadowBitmap.appendDescription(" with width " + width + " and height " + height);
-
-    shadowBitmap.createdFromBitmap = src;
-    shadowBitmap.createdFromX = x;
-    shadowBitmap.createdFromY = y;
-    shadowBitmap.createdFromWidth = width;
-    shadowBitmap.createdFromHeight = height;
-    shadowBitmap.width = width;
-    shadowBitmap.height = height;
-    return newBitmap;
-  }
-
-  @Implementation
   protected static Bitmap createBitmap(
       Bitmap src, int x, int y, int width, int height, Matrix matrix, boolean filter) {
     if (x == 0
