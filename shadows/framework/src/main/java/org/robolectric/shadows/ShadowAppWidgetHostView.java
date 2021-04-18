@@ -9,20 +9,16 @@ import android.view.View;
 import android.widget.RemoteViews;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 
 @Implements(AppWidgetHostView.class)
 public class ShadowAppWidgetHostView extends ShadowViewGroup {
 
-  private Context context;
+  @RealObject private AppWidgetHostView appWidgetHostView;
   private int appWidgetId;
   private AppWidgetProviderInfo appWidgetInfo;
   private AppWidgetHost host;
   private View view;
-
-  @Implementation
-  protected void __constructor__(Context context) {
-    this.context = context;
-  }
 
   @Implementation
   protected void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
@@ -45,6 +41,7 @@ public class ShadowAppWidgetHostView extends ShadowViewGroup {
     if (view != null) {
       realViewGroup.removeView(view);
     }
+    Context context = appWidgetHostView.getContext();
     view = LayoutInflater.from(context).inflate(remoteViews.getLayoutId(), null);
     remoteViews.reapply(context, view);
     realViewGroup.addView(view);
