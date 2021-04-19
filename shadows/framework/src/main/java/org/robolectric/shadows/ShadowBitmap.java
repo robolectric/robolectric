@@ -377,16 +377,18 @@ public class ShadowBitmap {
     if (shadowBitmap.config == null) {
       shadowBitmap.config = Config.ARGB_8888;
     }
-    shadowBitmap.bufferedImage =
-        new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
-    shadowBitmap.setPixelsInternal(
-        new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()],
-        0,
-        0,
-        0,
-        0,
-        shadowBitmap.getWidth(),
-        shadowBitmap.getHeight());
+    if (!ImageUtil.scaledBitmap(src, scaledBitmap, filter)) {
+      shadowBitmap.bufferedImage =
+          new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
+      shadowBitmap.setPixelsInternal(
+          new int[shadowBitmap.getHeight() * shadowBitmap.getWidth()],
+          0,
+          0,
+          0,
+          0,
+          shadowBitmap.getWidth(),
+          shadowBitmap.getHeight());
+    }
     return scaledBitmap;
   }
 

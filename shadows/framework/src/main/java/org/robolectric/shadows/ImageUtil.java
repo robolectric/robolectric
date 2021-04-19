@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR;
+import static java.awt.RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB_PRE;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;
@@ -10,6 +12,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Point;
 import com.google.auto.value.AutoValue;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,13 +26,14 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import org.robolectric.Shadows;
+import org.robolectric.shadow.api.Shadow;
 
 public class ImageUtil {
   private static final String FORMAT_NAME_JPEG = "jpg";
   private static final String FORMAT_NAME_PNG = "png";
   private static boolean initialized;
 
-  public static Point getImageSizeFromStream(InputStream is) {
+  static Point getImageSizeFromStream(InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
@@ -54,7 +58,7 @@ public class ImageUtil {
     }
   }
 
-  public static RobolectricBufferedImage getImageFromStream(InputStream is) {
+  static RobolectricBufferedImage getImageFromStream(InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
@@ -80,6 +84,33 @@ public class ImageUtil {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  static boolean scaledBitmap(Bitmap src, Bitmap dst, boolean filter) {
+    if (src == null || dst == null) {
+      return false;
+    }
+    int srcWidth = src.getWidth();
+    int srcHeight = src.getHeight();
+    int dstWidth = dst.getWidth();
+    int dstHeight = dst.getHeight();
+    if (srcWidth <= 0 || srcHeight <= 0 || dstWidth <= 0 || dstHeight <= 0) {
+      return false;
+    }
+    BufferedImage before = ((ShadowBitmap) Shadow.extract(src)).getBufferedImage();
+    if (before == null || before.getColorModel() == null) {
+      return false;
+    }
+    int imageType = getBufferedImageType(src.getConfig(), before.getColorModel().hasAlpha());
+    BufferedImage after = new BufferedImage(dstWidth, dstHeight, imageType);
+    Graphics2D graphics2D = after.createGraphics();
+    graphics2D.setRenderingHint(
+        RenderingHints.KEY_INTERPOLATION,
+        filter ? VALUE_INTERPOLATION_BILINEAR : VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+    graphics2D.drawImage(before, 0, 0, dstWidth, dstHeight, 0, 0, srcWidth, srcHeight, null);
+    graphics2D.dispose();
+    ((ShadowBitmap) Shadow.extract(dst)).setBufferedImage(after);
+    return true;
   }
 
   public static boolean writeToStream(
