@@ -27,9 +27,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
 import android.util.DisplayMetrics;
-import androidx.test.platform.app.InstrumentationProvider;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
@@ -131,9 +132,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
 
-    RuntimeEnvironment.application = null;
-    RuntimeEnvironment.setActivityThread(null);
-    Bootstrap.displaySet = false;
+    clearEnvironment();
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
@@ -178,28 +177,18 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
     RuntimeEnvironment.setActivityThread(ReflectionHelpers.newInstance(ActivityThread.class));
 
+    Instrumentation instrumentation = createInstrumentation();
+    InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
+    Supplier<Application> applicationSupplier =
+        createApplicationSupplier(appManifest, config, androidConfiguration, displayMetrics);
+    RuntimeEnvironment.setApplicationSupplier(applicationSupplier);
+
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
       RuntimeEnvironment.setConfiguredApplicationClass(
           getApplicationClass(appManifest, config, new ApplicationInfo()));
-
-      InstrumentationProvider provider =
-          new InstrumentationProvider() {
-            @Override
-            public Instrumentation provide() {
-              return PerfStatsCollector.getInstance()
-                  .measure("installAndCreateApplication", () -> installAndCreateApplication(
-                      appManifest, config, androidConfiguration, displayMetrics));
-            }
-          };
-
-      InstrumentationRegistry.registerInstrumentationProvider(provider, new Bundle());
-    } else { // LazyLoad.OFF
-      PerfStatsCollector.getInstance()
-          .measure(
-              "installAndCreateApplication",
-              () ->
-                  installAndCreateApplication(
-                      appManifest, config, androidConfiguration, displayMetrics));
+    } else {
+      // force eager load of the application
+      RuntimeEnvironment.getApplication();
     }
   }
 
@@ -218,27 +207,58 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
-  private Instrumentation installAndCreateApplication(
+  // TODO Move synchronization logic into its own class for better readability
+  private Supplier<Application> createApplicationSupplier(
       AndroidManifest appManifest,
       Config config,
       android.content.res.Configuration androidConfiguration,
       DisplayMetrics displayMetrics) {
-
     final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
+
+    return Suppliers.memoize(
+        () ->
+            PerfStatsCollector.getInstance()
+                .measure(
+                    "installAndCreateApplication",
+                    () ->
+                        installAndCreateApplication(
+                            appManifest,
+                            config,
+                            androidConfiguration,
+                            displayMetrics,
+                            shadowActivityThread,
+                            _activityThread_,
+                            activityThread.getInstrumentation())));
+  }
+
+  private Application installAndCreateApplication(
+      AndroidManifest appManifest,
+      Config config,
+      android.content.res.Configuration androidConfiguration,
+      DisplayMetrics displayMetrics,
+      ShadowActivityThread shadowActivityThread,
+      _ActivityThread_ activityThreadReflector,
+      Instrumentation androidInstrumentation) {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
 
     Context systemContextImpl = reflector(_ContextImpl_.class).createSystemContext(activityThread);
     RuntimeEnvironment.systemContext = systemContextImpl;
 
     Application dummyInitialApplication = new Application();
-    _activityThread_.setInitialApplication(dummyInitialApplication);
+    activityThreadReflector.setInitialApplication(dummyInitialApplication);
     ShadowApplication shadowInitialApplication = Shadow.extract(dummyInitialApplication);
     shadowInitialApplication.callAttach(systemContextImpl);
 
     Package parsedPackage = loadAppPackage(config, appManifest);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
+
+    ComponentName actualComponentName =
+        new ComponentName(
+            applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
+    ReflectionHelpers.setField(androidInstrumentation, "mComponent", actualComponentName);
 
     // unclear why, but prior to P the processName wasn't set
     if (apiLevel < P && applicationInfo.processName == null) {
@@ -269,9 +289,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.application = application;
 
-    Instrumentation instrumentation =
-        createInstrumentation(activityThread, applicationInfo, application);
-
     if (application != null) {
       final Class<?> appBindDataClass;
       try {
@@ -283,7 +300,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
       _appBindData_.setProcessName(parsedPackage.packageName);
       _appBindData_.setAppInfo(applicationInfo);
-      _activityThread_.setBoundApplication(appBindData);
+      activityThreadReflector.setBoundApplication(appBindData);
 
       final LoadedApk loadedApk =
           activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
@@ -303,7 +320,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
       ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
       shadowPackageManager.addPackageInternal(parsedPackage);
-      _activityThread_.setInitialApplication(application);
+      activityThreadReflector.setInitialApplication(application);
       ShadowApplication shadowApplication = Shadow.extract(application);
       shadowApplication.callAttach(contextImpl);
       reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
@@ -323,13 +340,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
         populateAssetPaths(appResources.getAssets(), appManifest);
       }
 
-      instrumentation.onCreate(new Bundle());
-
       PerfStatsCollector.getInstance()
           .measure("application onCreate()", () -> application.onCreate());
     }
 
-    return instrumentation;
+    return application;
   }
 
   private Package loadAppPackage(Config config, AndroidManifest appManifest) {
@@ -498,24 +513,41 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
-  private static Instrumentation createInstrumentation(
-      ActivityThread activityThread, ApplicationInfo applicationInfo, Application application) {
-    Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
-    reflector(_ActivityThread_.class, activityThread).setInstrumentation(androidInstrumentation);
+  private Instrumentation createInstrumentation() {
+    final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    final _ActivityThread_ activityThreadReflector =
+        reflector(_ActivityThread_.class, activityThread);
 
-    final ComponentName component =
-        new ComponentName(
-            applicationInfo.packageName, androidInstrumentation.getClass().getSimpleName());
+    Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
+    activityThreadReflector.setInstrumentation(androidInstrumentation);
+
+    Application dummyInitialApplication = new Application();
+    final ComponentName dummyInitialComponent =
+        new ComponentName("", androidInstrumentation.getClass().getSimpleName());
+    // TODO Move the API check into a helper method inside ShadowInstrumentation
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
       reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(activityThread, application, application, component, null);
+          .init(
+              activityThread,
+              dummyInitialApplication,
+              dummyInitialApplication,
+              dummyInitialComponent,
+              null);
     } else {
       reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(activityThread, application, application, component, null, null);
+          .init(
+              activityThread,
+              dummyInitialApplication,
+              dummyInitialApplication,
+              dummyInitialComponent,
+              null,
+              null);
     }
 
+    androidInstrumentation.onCreate(new Bundle());
     return androidInstrumentation;
   }
+
 
   /** Create a file system safe directory path name for the current test. */
   private String createTestDataDirRootPath(Method method) {
@@ -530,6 +562,22 @@ public class AndroidTestEnvironment implements TestEnvironment {
       RuntimeEnvironment.application.onTerminate();
       ShadowInstrumentation.getInstrumentation().finish(1, new Bundle());
     }
+  }
+
+  /**
+   * Clear the global variables set and used by AndroidTestEnvironment TODO Move synchronization
+   * logic into its own class for better readability
+   */
+  private void clearEnvironment() {
+    // Need to clear both the application supplier and the instrumentation here *before* clearing
+    // RuntimeEnvironment.application. That way if RuntimeEnvironment.getApplication() or
+    // ApplicationProvider.getApplicationContext() get called in between here and the end of this
+    // method, we don't accidentally trigger application loading with stale references
+    RuntimeEnvironment.setApplicationSupplier(null);
+    InstrumentationRegistry.registerInstance(null, new Bundle());
+    RuntimeEnvironment.setActivityThread(null);
+    RuntimeEnvironment.application = null;
+    Bootstrap.displaySet = false;
   }
 
   @Override

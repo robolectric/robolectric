@@ -28,6 +28,7 @@ import androidx.test.runner.lifecycle.Stage;
 import java.util.Map;
 import java.util.Set;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
@@ -305,4 +306,14 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   @Override
   public void finish(int resultCode, Bundle bundle) { }
+
+  @Override
+  public Context getTargetContext() {
+    return RuntimeEnvironment.getApplication();
+  }
+
+  @Override
+  public Context getContext() {
+    return RuntimeEnvironment.getApplication();
+  }
 }

@@ -9,7 +9,6 @@ import android.app.Instrumentation;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import androidx.test.platform.app.InstrumentationRegistry;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -91,19 +90,6 @@ public class ShadowActivityThread {
     }
   }
 
-  @Implementation
-  protected Instrumentation getInstrumentation() {
-    // TODO: delete this shadow method once Instrumentation is not lazy loaded.
-    // Prefer the stored instrumentation from the real Activity Thread.
-    Instrumentation instrumentation =
-        Reflector.reflector(_ActivityThread_.class, realActivityThread).getInstrumentation();
-    if (instrumentation == null) {
-      return InstrumentationRegistry.getInstrumentation();
-    } else {
-      return instrumentation;
-    }
-  }
-
   @Implementation(minSdk = R)
   public static Object getPermissionManager() {
     ClassLoader classLoader = ShadowActivityThread.class.getClassLoader();
@@ -170,10 +156,6 @@ public class ShadowActivityThread {
 
     @Accessor("mInstrumentation")
     void setInstrumentation(Instrumentation instrumentation);
-
-    /** internal use only. Tests should use {@link ActivityThread.getInstrumentation} */
-    @Accessor("mInstrumentation")
-    Instrumentation getInstrumentation();
   }
 
   /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
