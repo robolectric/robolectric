@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.robolectric.RoboSettings;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -43,8 +42,6 @@ import org.robolectric.util.reflector.Reflector;
 public class ShadowApplication extends ShadowContextWrapper {
   @RealObject private Application realApplication;
 
-  private Scheduler backgroundScheduler =
-      RoboSettings.isUseGlobalScheduler() ? getForegroundThreadScheduler() : new Scheduler();
   private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private ShadowPopupMenu latestPopupMenu;
   private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
@@ -100,7 +97,9 @@ public class ShadowApplication extends ShadowContextWrapper {
    * Return the foreground scheduler.
    *
    * @return Foreground scheduler.
+   * @deprecated use {@link org.robolectric.Robolectric#getForegroundThreadScheduler()}
    */
+  @Deprecated
   public Scheduler getForegroundThreadScheduler() {
     return RuntimeEnvironment.getMasterScheduler();
   }
@@ -109,10 +108,12 @@ public class ShadowApplication extends ShadowContextWrapper {
    * Return the background scheduler.
    *
    * @return Background scheduler.
+   * @deprecated use {@link org.robolectric.Robolectric#getBackgroundThreadScheduler()}
    */
+  @Deprecated
   public Scheduler getBackgroundThreadScheduler() {
     assertLooperMode(LEGACY);
-    return backgroundScheduler;
+    return ShadowLegacyLooper.getBackgroundThreadScheduler();
   }
 
   /**

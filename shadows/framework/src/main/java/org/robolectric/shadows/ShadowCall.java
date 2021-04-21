@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build.VERSION_CODES;
 import android.telecom.Call;
@@ -16,17 +19,23 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Robolectric test for {@link android.telecom.Call}. */
 @Implements(value = Call.class, minSdk = VERSION_CODES.LOLLIPOP)
 public class ShadowCall {
-
+  @RealObject Call realObject;
   private boolean hasSentRttRequest;
   private boolean hasRespondedToRttRequest;
 
   @Implementation(minSdk = VERSION_CODES.P)
   protected void sendRttRequest() {
     hasSentRttRequest = true;
+    if (getInCallAdapter() == null) {
+      return;
+    }
+    directlyOn(realObject, Call.class, "sendRttRequest");
   }
 
   /**
@@ -46,6 +55,15 @@ public class ShadowCall {
   @Implementation(minSdk = VERSION_CODES.P)
   protected void respondToRttRequest(int id, boolean accept) {
     hasRespondedToRttRequest = true;
+    if (getInCallAdapter() == null) {
+      return;
+    }
+    directlyOn(
+        realObject,
+        Call.class,
+        "respondToRttRequest",
+        ClassParameter.from(int.class, id),
+        ClassParameter.from(boolean.class, accept));
   }
 
   /**
@@ -81,7 +99,8 @@ public class ShadowCall {
           RttCall.class,
           realRttCallObject,
           ClassParameter.from(String.class, telecomCallId),
-          ClassParameter.from(InputStreamReader.class, new InputStreamReader(pipedInputStream)),
+          ClassParameter.from(
+              InputStreamReader.class, new InputStreamReader(pipedInputStream, UTF_8)),
           ClassParameter.from(OutputStreamWriter.class, transmitStream),
           ClassParameter.from(int.class, mode),
           ClassParameter.from(InCallAdapter.class, inCallAdapter));
@@ -98,5 +117,22 @@ public class ShadowCall {
       byte[] messageBytes = message.getBytes();
       pipedOutputStream.write(messageBytes, 0, messageBytes.length);
     }
+  }
+
+  public String getId() {
+    return reflector(ReflectorCall.class, realObject).getId();
+  }
+
+  private InCallAdapter getInCallAdapter() {
+    return reflector(ReflectorCall.class, realObject).getInCallAdapter();
+  }
+
+  @ForType(Call.class)
+  interface ReflectorCall {
+    @Accessor("mTelecomCallId")
+    String getId();
+
+    @Accessor("mInCallAdapter")
+    InCallAdapter getInCallAdapter();
   }
 }

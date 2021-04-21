@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -18,6 +19,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
 import org.junit.Before;
@@ -26,6 +30,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.robolectric.RoboSettings;
+import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
@@ -33,6 +38,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
+@LooperMode(LEGACY)
 public class ShadowLegacyLooperTest {
 
   // testName is used when creating background threads. Makes it
@@ -536,6 +542,19 @@ public class ShadowLegacyLooperTest {
     mainHandler.postDelayed(() -> {}, 100);
     assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis())
         .isEqualTo(SystemClock.uptimeMillis() + 200);
+  }
+
+  @Test
+  public void backgroundSchedulerInBackgroundThread_isDeferred() throws Exception {
+    ExecutorService executorService = Executors.newSingleThreadExecutor();
+    AtomicBoolean ran = new AtomicBoolean(false);
+    executorService
+        .submit(() -> ShadowLegacyLooper.getBackgroundThreadScheduler().post(() -> ran.set(true)))
+        .get();
+
+    assertThat(ran.get()).isFalse();
+    Robolectric.flushBackgroundThreadScheduler();
+    assertThat(ran.get()).isTrue();
   }
 
   @After

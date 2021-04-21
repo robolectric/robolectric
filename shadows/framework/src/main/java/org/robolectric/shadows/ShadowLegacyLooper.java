@@ -49,6 +49,8 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   private static Looper mainLooper;
 
+  private static Scheduler backgroundScheduler;
+
   private @RealObject Looper realObject;
 
   boolean quit;
@@ -85,6 +87,18 @@ public class ShadowLegacyLooper extends ShadowLooper {
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
     }
+  }
+
+  static synchronized Scheduler getBackgroundThreadScheduler() {
+    return backgroundScheduler;
+  }
+
+  /** Internal API to initialize background thread scheduler from AndroidTestEnvironment. */
+  public static void internalInitializeBackgroundThreadScheduler() {
+    backgroundScheduler =
+        RoboSettings.isUseGlobalScheduler()
+            ? RuntimeEnvironment.getMasterScheduler()
+            : new Scheduler();
   }
 
   @Implementation
