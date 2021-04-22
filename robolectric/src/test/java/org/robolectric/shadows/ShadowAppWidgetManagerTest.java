@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Looper.getMainLooper;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,11 +14,15 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.View;
@@ -26,6 +31,9 @@ import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -281,6 +289,128 @@ public class ShadowAppWidgetManagerTest {
     assertFalse(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
     shadowAppWidgetManager.setRequestPinAppWidgetSupported(true);
     assertTrue(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
+  }
+
+  @SuppressWarnings("PendingIntentMutability")
+  @Test
+  @Config(minSdk = O)
+  public void
+      requestPinAppWidget_isRequestPinAppWidgetSupportedFalse_shouldNotBindAndReturnFalse() {
+    shadowAppWidgetManager.setRequestPinAppWidgetSupported(false);
+
+    String intentAction = "some_action";
+    PendingIntent testSuccessIntent =
+        PendingIntent.getBroadcast(
+            ApplicationProvider.getApplicationContext(), 0, new Intent(intentAction), 0);
+
+    AtomicBoolean successCallbackCalled = new AtomicBoolean(false);
+    ApplicationProvider.getApplicationContext()
+        .registerReceiver(
+            new BroadcastReceiver() {
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                successCallbackCalled.set(true);
+              }
+            },
+            new IntentFilter(intentAction));
+
+    assertFalse(
+        shadowAppWidgetManager.requestPinAppWidget(
+            new ComponentName("A", "B"), null, testSuccessIntent));
+    assertFalse(successCallbackCalled.get());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestPinAppWidget_isRequestPinAppWidgetSupportedTrue_shouldBindWidget() {
+    shadowAppWidgetManager.setRequestPinAppWidgetSupported(true);
+
+    ComponentName provider = new ComponentName("A", "B");
+
+    shadowAppWidgetManager.requestPinAppWidget(provider, null, null);
+    shadowOf(getMainLooper()).idle();
+
+    assertEquals(1, shadowAppWidgetManager.getAppWidgetIds(provider).length);
+  }
+
+  @SuppressWarnings("PendingIntentMutability")
+  @Test
+  @Config(minSdk = O)
+  public void
+      requestPinAppWidget_isRequestPinAppWidgetSupportedTrue_shouldExecuteCallbackWithOriginalIntentAndAppWidgetIdExtra() {
+    shadowAppWidgetManager.setRequestPinAppWidgetSupported(true);
+
+    String intentAction = "some_action";
+    Intent originalIntent = new Intent(intentAction);
+    originalIntent.setPackage(ApplicationProvider.getApplicationContext().getPackageName());
+    originalIntent.setComponent(
+        new ComponentName(
+            ApplicationProvider.getApplicationContext(), ShadowAppWidgetManagerTest.class));
+    originalIntent.putExtra("some_extra", "my_value");
+
+    PendingIntent testSuccessIntent =
+        PendingIntent.getBroadcast(
+            ApplicationProvider.getApplicationContext(), 0, originalIntent, 0);
+
+    AtomicReference<Intent> callbackIntent = new AtomicReference<>();
+    ApplicationProvider.getApplicationContext()
+        .registerReceiver(
+            new BroadcastReceiver() {
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                callbackIntent.set(intent);
+              }
+            },
+            new IntentFilter(intentAction));
+
+    shadowAppWidgetManager.requestPinAppWidget(
+        new ComponentName("A", "B"), null, testSuccessIntent);
+    shadowOf(getMainLooper()).idle();
+
+    assertNotNull(callbackIntent);
+
+    // Original intent fields still exist.
+    assertEquals("my_value", callbackIntent.get().getStringExtra("some_extra"));
+    assertEquals(intentAction, callbackIntent.get().getAction());
+
+    // Additionally, the newly created appwidget id is added to the extras.
+    assertEquals(1, callbackIntent.get().getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1));
+  }
+
+  @SuppressWarnings("PendingIntentMutability")
+  @Test
+  @Config(minSdk = O)
+  public void requestPinAppWidget_isRequestPinAppWidgetSupportedTrue_shouldUseUniqueWidgetIds() {
+    shadowAppWidgetManager.setRequestPinAppWidgetSupported(true);
+
+    String intentAction = "some_action";
+    PendingIntent testSuccessIntent =
+        PendingIntent.getBroadcast(
+            ApplicationProvider.getApplicationContext(), 0, new Intent(intentAction), 0);
+
+    AtomicInteger callbackAppWidgetId = new AtomicInteger();
+    ApplicationProvider.getApplicationContext()
+        .registerReceiver(
+            new BroadcastReceiver() {
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                callbackAppWidgetId.set(
+                    intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1));
+              }
+            },
+            new IntentFilter(intentAction));
+
+    // Create first widget.
+    shadowAppWidgetManager.requestPinAppWidget(
+        new ComponentName("A", "B"), null, testSuccessIntent);
+    shadowOf(getMainLooper()).idle();
+    assertEquals(1, callbackAppWidgetId.get());
+
+    // Create a second widget. It should have a different ID than the first.
+    shadowAppWidgetManager.requestPinAppWidget(
+        new ComponentName("C", "D"), null, testSuccessIntent);
+    shadowOf(getMainLooper()).idle();
+    assertEquals(2, callbackAppWidgetId.get());
   }
 
   private void assertContains(String expectedText, View view) {
