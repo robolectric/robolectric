@@ -198,6 +198,15 @@ public final class ShadowNotificationListenerServiceTest {
     assertThat(ShadowNotificationListenerService.getRebindRequestCount()).isEqualTo(2);
   }
 
+  @Test
+  @Config(minSdk = VERSION_CODES.N)
+  public void requestUnbind_incrementsCounter() {
+    service.requestUnbind();
+    service.requestUnbind();
+
+    assertThat(shadowService.getUnbindRequestCount()).isEqualTo(2);
+  }
+
   private Notification createDummyNotification() {
     return new Notification.Builder(context).build();
   }

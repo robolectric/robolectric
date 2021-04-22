@@ -277,9 +277,9 @@ public class ShadowAppWidgetManagerTest {
   @Test
   @Config(minSdk = O)
   public void isRequestPinAppWidgetSupported_shouldReturnThePresetBoolean() {
-    shadowAppWidgetManager.setSupportedToRequestPinAppWidget(false);
+    shadowAppWidgetManager.setRequestPinAppWidgetSupported(false);
     assertFalse(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
-    shadowAppWidgetManager.setSupportedToRequestPinAppWidget(true);
+    shadowAppWidgetManager.setRequestPinAppWidgetSupported(true);
     assertTrue(shadowAppWidgetManager.isRequestPinAppWidgetSupported());
   }
 

@@ -160,7 +160,7 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannel(Object /*NotificationChannel*/ channel) {
+  protected void createNotificationChannel(NotificationChannel channel) {
     String id = ReflectionHelpers.callInstanceMethod(channel, "getId");
     // Per documentation, recreating a deleted channel should have the same settings as the old
     // deleted channel. See
@@ -174,8 +174,8 @@ public class ShadowNotificationManager {
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected void createNotificationChannels(List<Object /*NotificationChannel*/> channelList) {
-    for (Object channel : channelList) {
+  protected void createNotificationChannels(List<NotificationChannel> channelList) {
+    for (NotificationChannel channel : channelList) {
       createNotificationChannel(channel);
     }
   }
