@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accounts.Account;
 import android.annotation.NonNull;
@@ -56,6 +57,8 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(ContentResolver.class)
 @SuppressLint("NewApi")
@@ -207,7 +210,7 @@ public class ShadowContentResolver {
    */
   @Implementation
   protected final Uri insert(Uri url, ContentValues values) {
-    ContentProvider provider = getProvider(url);
+    ContentProvider provider = getProvider(url, getContext());
     ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
     InsertStatement insertStatement = new InsertStatement(url, provider, valuesCopy);
     statements.add(insertStatement);
@@ -218,6 +221,10 @@ public class ShadowContentResolver {
     } else {
       return Uri.parse(url.toString() + "/" + ++nextDatabaseIdForInserts);
     }
+  }
+
+  private Context getContext() {
+    return reflector(ContentResolverReflector.class, realContentResolver).getContext();
   }
 
   /**
@@ -232,7 +239,7 @@ public class ShadowContentResolver {
    */
   @Implementation
   protected int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
     UpdateStatement updateStatement =
         new UpdateStatement(uri, provider, valuesCopy, where, selectionArgs);
@@ -249,7 +256,7 @@ public class ShadowContentResolver {
   @Implementation(minSdk = O)
   protected final Cursor query(
       Uri uri, String[] projection, Bundle queryArgs, CancellationSignal cancellationSignal) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     if (provider != null) {
       return provider.query(uri, projection, queryArgs, cancellationSignal);
     } else {
@@ -269,7 +276,7 @@ public class ShadowContentResolver {
   @Implementation
   protected final Cursor query(
       Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     if (provider != null) {
       return provider.query(uri, projection, selection, selectionArgs, sortOrder);
     } else {
@@ -291,7 +298,7 @@ public class ShadowContentResolver {
       String[] selectionArgs,
       String sortOrder,
       CancellationSignal cancellationSignal) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     if (provider != null) {
       return provider.query(
           uri, projection, selection, selectionArgs, sortOrder, cancellationSignal);
@@ -308,7 +315,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected String getType(Uri uri) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     if (provider != null) {
       return provider.getType(uri);
     } else {
@@ -318,7 +325,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected Bundle call(Uri uri, String method, String arg, Bundle extras) {
-    ContentProvider cp = getProvider(uri);
+    ContentProvider cp = getProvider(uri, getContext());
     if (cp != null) {
       return cp.call(method, arg, extras);
     } else {
@@ -328,7 +335,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final ContentProviderClient acquireContentProviderClient(String name) {
-    ContentProvider provider = getProvider(name);
+    ContentProvider provider = getProvider(name, getContext());
     if (provider == null) {
       return null;
     }
@@ -337,7 +344,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final ContentProviderClient acquireContentProviderClient(Uri uri) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     if (provider == null) {
       return null;
     }
@@ -346,7 +353,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final ContentProviderClient acquireUnstableContentProviderClient(String name) {
-    ContentProvider provider = getProvider(name);
+    ContentProvider provider = getProvider(name, getContext());
     if (provider == null) {
       return null;
     }
@@ -355,7 +362,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final ContentProviderClient acquireUnstableContentProviderClient(Uri uri) {
-    ContentProvider provider = getProvider(uri);
+    ContentProvider provider = getProvider(uri, getContext());
     if (provider == null) {
       return null;
     }
@@ -386,7 +393,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final IContentProvider acquireUnstableProvider(String name) {
-    ContentProvider cp = getProvider(name);
+    ContentProvider cp = getProvider(name, getContext());
     if (cp != null) {
       return cp.getIContentProvider();
     }
@@ -395,7 +402,7 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final IContentProvider acquireUnstableProvider(Uri uri) {
-    ContentProvider cp = getProvider(uri);
+    ContentProvider cp = getProvider(uri, getContext());
     if (cp != null) {
       return cp.getIContentProvider();
     }
@@ -414,7 +421,7 @@ public class ShadowContentResolver {
    */
   @Implementation
   protected final int delete(Uri url, String where, String[] selectionArgs) {
-    ContentProvider provider = getProvider(url);
+    ContentProvider provider = getProvider(url, getContext());
 
     DeleteStatement deleteStatement = new DeleteStatement(url, provider, where, selectionArgs);
     statements.add(deleteStatement);
@@ -439,7 +446,7 @@ public class ShadowContentResolver {
    */
   @Implementation
   protected final int bulkInsert(Uri url, ContentValues[] values) {
-    ContentProvider provider = getProvider(url);
+    ContentProvider provider = getProvider(url, getContext());
 
     InsertStatement insertStatement = new InsertStatement(url, provider, values);
     statements.add(insertStatement);
@@ -475,7 +482,7 @@ public class ShadowContentResolver {
   protected ContentProviderResult[] applyBatch(
       String authority, ArrayList<ContentProviderOperation> operations)
       throws OperationApplicationException {
-    ContentProvider provider = getProvider(authority);
+    ContentProvider provider = getProvider(authority, getContext());
     if (provider != null) {
       return provider.applyBatch(operations);
     } else {
@@ -671,14 +678,17 @@ public class ShadowContentResolver {
   }
 
   public static ContentProvider getProvider(Uri uri) {
+    return getProvider(uri, RuntimeEnvironment.getApplication());
+  }
+
+  private static ContentProvider getProvider(Uri uri, Context context) {
     if (uri == null || !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
       return null;
     }
-    return getProvider(uri.getAuthority());
+    return getProvider(uri.getAuthority(), context);
   }
 
-  private static ContentProvider getProvider(String authority) {
-    Context context = RuntimeEnvironment.getApplication();
+  private static ContentProvider getProvider(String authority, Context context) {
     synchronized (providers) {
       if (!providers.containsKey(authority)) {
         ProviderInfo providerInfo =
@@ -1099,5 +1109,11 @@ public class ShadowContentResolver {
     public String toString() {
       return "stream for " + uri;
     }
+  }
+
+  @ForType(ContentResolver.class)
+  interface ContentResolverReflector {
+    @Accessor("mContext")
+    Context getContext();
   }
 }
