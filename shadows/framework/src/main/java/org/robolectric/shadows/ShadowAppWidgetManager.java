@@ -43,7 +43,7 @@ public class ShadowAppWidgetManager {
   private int nextWidgetId = 1;
   private boolean alwaysRecreateViewsDuringUpdate = false;
   private boolean allowedToBindWidgets;
-  private boolean supportedToRequestPinAppWidget = false;
+  private boolean requestPinAppWidgetSupported = false;
   private boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
@@ -223,7 +223,7 @@ public class ShadowAppWidgetManager {
   /** Returns true if {@link setSupportedToRequestPinAppWidget} is called with {@code true} */
   @Implementation(minSdk = O)
   protected boolean isRequestPinAppWidgetSupported() {
-    return supportedToRequestPinAppWidget;
+    return requestPinAppWidgetSupported;
   }
 
   /**
@@ -318,8 +318,8 @@ public class ShadowAppWidgetManager {
     allowedToBindWidgets = allowed;
   }
 
-  public void setSupportedToRequestPinAppWidget(boolean supported) {
-    supportedToRequestPinAppWidget = supported;
+  public void setRequestPinAppWidgetSupported(boolean supported) {
+    requestPinAppWidgetSupported = supported;
   }
 
   public void setValidWidgetProviderComponentName(boolean validWidgetProviderComponentName) {

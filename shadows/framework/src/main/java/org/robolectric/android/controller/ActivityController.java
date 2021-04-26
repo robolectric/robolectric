@@ -242,17 +242,26 @@ public class ActivityController<T extends Activity>
     shadowMainLooper.runPaused(
         () -> {
           getInstrumentation().callActivityOnDestroy(component);
-          // Clear WindowManager state for this activity. On real Android this is done by
-          // ActivityThread.handleDestroyActivity, which is initiated by the window manager
-          // service.
-          boolean windowAdded = ReflectionHelpers.getField(component, "mWindowAdded");
-          if (windowAdded) {
-            WindowManager windowManager = component.getWindowManager();
-            windowManager.removeViewImmediate(component.getWindow().getDecorView());
-          }
+          makeActivityEligibleForGc();
         });
-
     return this;
+  }
+
+  private void makeActivityEligibleForGc() {
+    // Clear WindowManager state for this activity. On real Android this is done by
+    // ActivityThread.handleDestroyActivity, which is initiated by the window manager
+    // service.
+    boolean windowAdded = ReflectionHelpers.getField(component, "mWindowAdded");
+    if (windowAdded) {
+      WindowManager windowManager = component.getWindowManager();
+      windowManager.removeViewImmediate(component.getWindow().getDecorView());
+    }
+    if (RuntimeEnvironment.getApiLevel() >= O_MR1) {
+      // Starting Android O_MR1, there is a leak in Android where `ContextImpl` holds on to the
+      // activity after being destroyed. This "fixes" the leak in Robolectric only, and will be
+      // properly fixed in Android S.
+      component.setAutofillClient(null);
+    }
   }
 
   /**
@@ -366,6 +375,7 @@ public class ActivityController<T extends Activity>
                           .getActivity();
 
               _component_.performDestroy();
+              makeActivityEligibleForGc();
 
               // Restore theme in case it was set in the test manually.
               // This is not technically what happens but is purely to make this easier to use in
