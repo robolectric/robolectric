@@ -6,8 +6,8 @@ import java.lang.reflect.Method;
  * The default {@link TestLifecycle} used by Robolectric.
  *
  * <p>Owing to tradeoffs, this class is not guaranteed to work with {@link
- * org.robolectric.annotation.LazyApplication} enabled on tests where the application is inferred
- * from the apk (instead of explicitly specified in AndroidManifest.xml).
+ * org.robolectric.annotation.experimental.LazyApplication} enabled on tests where the application
+ * is inferred from the apk (instead of explicitly specified in AndroidManifest.xml).
  */
 public class DefaultTestLifecycle implements TestLifecycle {
 
