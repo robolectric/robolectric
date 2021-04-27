@@ -8,8 +8,8 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.LazyApplication;
-import org.robolectric.annotation.LazyApplication.LazyLoad;
+import org.robolectric.annotation.experimental.LazyApplication;
+import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 
 /** Tests for the ShadowActivityThread class. */
 @RunWith(AndroidJUnit4.class)
