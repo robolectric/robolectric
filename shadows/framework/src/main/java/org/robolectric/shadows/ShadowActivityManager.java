@@ -301,12 +301,24 @@ public class ShadowActivityManager {
 
   /** Adds an {@link ApplicationExitInfo} with the given information */
   public void addApplicationExitInfo(String processName, int pid, int reason, int status) {
-    ApplicationExitInfo appExitInfo = new ApplicationExitInfo();
-    appExitInfo.setProcessName(processName);
-    appExitInfo.setPid(pid);
-    appExitInfo.setReason(reason);
-    appExitInfo.setStatus(status);
-    appExitInfoList.addFirst(appExitInfo);
+    addApplicationExitInfo(processName, pid, reason, status, /* timestamp= */ 0);
+  }
+
+  /** Adds an {@link ApplicationExitInfo} with the given information */
+  public void addApplicationExitInfo(
+      String processName, int pid, int reason, int status, long timestamp) {
+    appExitInfoList.addFirst(
+        ApplicationExitInfoBuilder.newBuilder()
+            .setProcessName(processName)
+            .setPid(pid)
+            .setReason(reason)
+            .setStatus(status)
+            .setTimestamp(timestamp)
+            .build());
+  }
+
+  public void addApplicationExitInfo(ApplicationExitInfo info) {
+    appExitInfoList.addFirst(info);
   }
 
   @Implementation
@@ -326,5 +338,48 @@ public class ShadowActivityManager {
     return Shadow.<ShadowApplicationPackageManager>extract(packageManager)
         .getClearedApplicationUserDataPackages()
         .contains(RuntimeEnvironment.getApplication().getPackageName());
+  }
+
+  /** Builder class for {@link android.app.ApplicationExitInfo} */
+  public static class ApplicationExitInfoBuilder {
+
+    private final ApplicationExitInfo instance;
+
+    public static ApplicationExitInfoBuilder newBuilder() {
+      return new ApplicationExitInfoBuilder();
+    }
+
+    public ApplicationExitInfoBuilder setProcessName(String processName) {
+      instance.setProcessName(processName);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setPid(int pid) {
+      instance.setPid(pid);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setReason(int reason) {
+      instance.setReason(reason);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setStatus(int status) {
+      instance.setStatus(status);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setTimestamp(long timestamp) {
+      instance.setTimestamp(timestamp);
+      return this;
+    }
+
+    public ApplicationExitInfo build() {
+      return instance;
+    }
+
+    private ApplicationExitInfoBuilder() {
+      this.instance = new ApplicationExitInfo();
+    }
   }
 }

@@ -73,6 +73,23 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getUserProfiles_calledFromProfile_shouldReturnList() {
+    ShadowProcess.setUid(2 * 100000);
+    assertThat(userManager.getUserProfiles()).contains(new UserHandle(2));
+
+    shadowOf(userManager).addProfile(0, 2, "profile", /* profileFlags= */ 0);
+
+    assertThat(userManager.getUserProfiles()).containsExactly(new UserHandle(0), new UserHandle(2));
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void getUserProfiles_noProfiles_shouldReturnListOfSelf() {
+    assertThat(userManager.getUserProfiles()).containsExactly(new UserHandle(0));
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void testGetApplicationRestrictions() {
     String packageName = context.getPackageName();
