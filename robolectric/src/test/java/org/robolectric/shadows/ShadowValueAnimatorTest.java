@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -12,9 +13,11 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.TimeUtils;
 
 @RunWith(AndroidJUnit4.class)
+@Config(minSdk = JELLY_BEAN)
 public class ShadowValueAnimatorTest {
 
   @Test
@@ -72,5 +75,16 @@ public class ShadowValueAnimatorTest {
       shadowMainLooper().idleFor(Duration.ofMillis(16));
     }
     assertThat(animator.isRunning()).isFalse();
+  }
+
+  @Test
+  public void setDurationScale_disablesDurations() {
+    ShadowValueAnimator.setDurationScale(0);
+    ValueAnimator animator = ValueAnimator.ofInt(0, 10);
+    animator.setDuration(Duration.ofDays(100).toMillis());
+    animator.setRepeatCount(0);
+    animator.start();
+    // this would time out without the duration scale being set to zero
+    shadowMainLooper().runToEndOfTasks();
   }
 }

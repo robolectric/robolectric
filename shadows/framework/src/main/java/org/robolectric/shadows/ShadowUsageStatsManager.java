@@ -19,7 +19,7 @@ import android.os.Parcel;
 import android.util.ArraySet;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Range;
@@ -49,7 +49,8 @@ public class ShadowUsageStatsManager {
   @UsageSource
   private static int currentUsageSource = UsageStatsManager.USAGE_SOURCE_TASK_ROOT_ACTIVITY;
 
-  private static final NavigableMap<Long, Event> eventsByTimeStamp =
+  // This map will sort events by time, but otherwise will preserve order events were added in
+  private static final NavigableMap<Long, List<Event>> eventsByTimeStamp =
       Maps.synchronizedNavigableMap(Maps.newTreeMap());
 
   /**
@@ -307,7 +308,8 @@ public class ShadowUsageStatsManager {
   @Implementation
   protected UsageEvents queryEvents(long beginTime, long endTime) {
     List<Event> results =
-        ImmutableList.copyOf(eventsByTimeStamp.subMap(beginTime, endTime).values());
+        ImmutableList.copyOf(
+            Iterables.concat(eventsByTimeStamp.subMap(beginTime, endTime).values()));
     return createUsageEvents(results);
   }
 
@@ -337,7 +339,7 @@ public class ShadowUsageStatsManager {
   protected UsageEvents queryEventsForSelf(long beginTime, long endTime) {
     String packageName = RuntimeEnvironment.getApplication().getOpPackageName();
     ImmutableList.Builder<Event> listBuilder = new ImmutableList.Builder<>();
-    for (Event event : eventsByTimeStamp.subMap(beginTime, endTime).values()) {
+    for (Event event : Iterables.concat(eventsByTimeStamp.subMap(beginTime, endTime).values())) {
       if (packageName.equals(event.getPackageName())) {
         listBuilder.add(event);
       }
@@ -373,7 +375,12 @@ public class ShadowUsageStatsManager {
    * <p>The {@link Event} can be built by {@link EventBuilder}.
    */
   public void addEvent(Event event) {
-    eventsByTimeStamp.put(event.getTimeStamp(), event);
+    List<Event> eventsAtTime = eventsByTimeStamp.get(event.getTimeStamp());
+    if (eventsAtTime == null) {
+      eventsAtTime = new ArrayList<>(1);
+      eventsByTimeStamp.put(event.getTimeStamp(), eventsAtTime);
+    }
+    eventsAtTime.add(event);
   }
 
   /**
@@ -389,13 +396,12 @@ public class ShadowUsageStatsManager {
    *     will be shifted backward by 1 minute (into the past).
    */
   public void simulateTimeChange(long offsetToAddInMillis) {
-    ImmutableMap.Builder<Long, Event> eventMapBuilder = ImmutableMap.builder();
-    for (Event event : eventsByTimeStamp.values()) {
+    List<Event> oldEvents = ImmutableList.copyOf(Iterables.concat(eventsByTimeStamp.values()));
+    eventsByTimeStamp.clear();
+    for (Event event : oldEvents) {
       long newTimestamp = event.getTimeStamp() + offsetToAddInMillis;
-      eventMapBuilder.put(
-          newTimestamp, EventBuilder.fromEvent(event).setTimeStamp(newTimestamp).build());
+      addEvent(EventBuilder.fromEvent(event).setTimeStamp(newTimestamp).build());
     }
-    eventsByTimeStamp.putAll(eventMapBuilder.build());
   }
 
   /**

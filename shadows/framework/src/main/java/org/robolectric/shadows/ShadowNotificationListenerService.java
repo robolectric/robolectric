@@ -33,6 +33,7 @@ public class ShadowNotificationListenerService extends ShadowService {
   private final AtomicInteger interruptionFilter =
       new AtomicInteger(NotificationListenerService.INTERRUPTION_FILTER_UNKNOWN);
   private final AtomicInteger hint = new AtomicInteger(0);
+  private final AtomicInteger unbindRequestCount = new AtomicInteger(0);
   private final RankingMap emptyRankingMap = createEmptyRankingMap();
 
   /**
@@ -73,6 +74,11 @@ public class ShadowNotificationListenerService extends ShadowService {
   @Implementation(minSdk = VERSION_CODES.N)
   protected static void requestRebind(ComponentName componentName) {
     rebindRequestCount.incrementAndGet();
+  }
+
+  @Implementation(minSdk = VERSION_CODES.N)
+  protected void requestUnbind() {
+    unbindRequestCount.incrementAndGet();
   }
 
   @Implementation
@@ -139,9 +145,14 @@ public class ShadowNotificationListenerService extends ShadowService {
     return emptyRankingMap;
   }
 
-  /** Returns the number of time rebind was requested. */
+  /** Returns the number of times rebind was requested. */
   public static int getRebindRequestCount() {
     return rebindRequestCount.get();
+  }
+
+  /** Returns the number of times unbind was requested. */
+  public int getUnbindRequestCount() {
+    return unbindRequestCount.get();
   }
 
   /** Resets this shadow instance. */
