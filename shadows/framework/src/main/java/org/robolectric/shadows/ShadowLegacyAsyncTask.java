@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.os.AsyncTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -13,6 +15,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.ForType;
 
 /** A {@link AsyncTask} shadow for {@link LooperMode.Mode.LEGACY}. */
 @Implements(
@@ -42,12 +45,18 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
           final Result result = get();
 
           try {
-            RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onPostExecute(result));
+            RuntimeEnvironment.getMasterScheduler()
+                .post(
+                    () ->
+                        reflector(LegacyAsyncTaskReflector.class, realAsyncTask)
+                            .onPostExecute(result));
           } catch (Throwable t) {
             throw new OnPostExecuteException(t);
           }
         } catch (CancellationException e) {
-          RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onCancelled());
+          RuntimeEnvironment.getMasterScheduler()
+              .post(
+                  () -> reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onCancelled(null));
         } catch (InterruptedException e) {
           // Ignore.
         } catch (OnPostExecuteException e) {
@@ -84,7 +93,7 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
   @Implementation
   protected AsyncTask<Params, Progress, Result> execute(final Params... params) {
     status = AsyncTask.Status.RUNNING;
-    getBridge().onPreExecute();
+    reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onPreExecute();
 
     worker.params = params;
 
@@ -97,7 +106,7 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
   protected AsyncTask<Params, Progress, Result> executeOnExecutor(
       Executor executor, Params... params) {
     status = AsyncTask.Status.RUNNING;
-    getBridge().onPreExecute();
+    reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onPreExecute();
 
     worker.params = params;
     executor.execute(future);
@@ -119,19 +128,20 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
    */
   @Implementation
   protected void publishProgress(final Progress... values) {
-    RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onProgressUpdate(values));
-  }
-
-  private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
-    return new ShadowAsyncTaskBridge<>(realAsyncTask);
+    RuntimeEnvironment.getMasterScheduler()
+        .post(
+            () ->
+                reflector(LegacyAsyncTaskReflector.class, realAsyncTask).onProgressUpdate(values));
   }
 
   private final class BackgroundWorker implements Callable<Result> {
     Params[] params;
 
     @Override
+    @SuppressWarnings("unchecked")
     public Result call() throws Exception {
-      return getBridge().doInBackground(params);
+      return (Result)
+          reflector(LegacyAsyncTaskReflector.class, realAsyncTask).doInBackground(params);
     }
   }
 
@@ -139,5 +149,18 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
     public OnPostExecuteException(Throwable throwable) {
       super(throwable);
     }
+  }
+
+  @ForType(AsyncTask.class)
+  interface LegacyAsyncTaskReflector {
+    Object doInBackground(Object... params);
+
+    void onPreExecute();
+
+    void onPostExecute(Object result);
+
+    void onProgressUpdate(Object... values);
+
+    void onCancelled(Object object);
   }
 }
