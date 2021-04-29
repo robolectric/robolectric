@@ -22,7 +22,8 @@ public class RuntimeEnvironment {
    * @deprecated Use {@link #getApplication} or {@link
    *     androidx.test.core.app.ApplicationProvider#getApplicationContext} instead. Note that unlike
    *     the alternatives, this field is inherently incompatible with {@link
-   *     org.robolectric.annotation.LazyApplication}. This field may be removed in a later release
+   *     org.robolectric.annotation.experimental.LazyApplication}. This field may be removed in a
+   *     later release
    */
   @Deprecated public static Context systemContext;
 
