@@ -92,13 +92,15 @@ public class ShadowLegacyLooper extends ShadowLooper {
   }
 
   static synchronized Scheduler getBackgroundThreadScheduler() {
-    if (backgroundScheduler == null) {
-      backgroundScheduler =
-          RoboSettings.isUseGlobalScheduler()
-              ? RuntimeEnvironment.getMasterScheduler()
-              : new Scheduler();
-    }
     return backgroundScheduler;
+  }
+
+  /** Internal API to initialize background thread scheduler from AndroidTestEnvironment. */
+  public static void internalInitializeBackgroundThreadScheduler() {
+    backgroundScheduler =
+        RoboSettings.isUseGlobalScheduler()
+            ? RuntimeEnvironment.getMasterScheduler()
+            : new Scheduler();
   }
 
   @Implementation

@@ -72,6 +72,7 @@ import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
+import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
@@ -137,6 +138,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
       RuntimeEnvironment.setMainThread(Thread.currentThread());
+      ShadowLegacyLooper.internalInitializeBackgroundThreadScheduler();
     }
 
     if (!loggingInitialized) {
