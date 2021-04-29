@@ -361,4 +361,23 @@ public class BitmapTest {
     Bitmap alphaBitmap = result.extractAlpha();
     assertThat(alphaBitmap.isMutable()).isTrue();
   }
+
+  @Test
+  public void createBitmap_withBitmap_containsImageData() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(Color.BLUE);
+    Bitmap cropped = Bitmap.createBitmap(bitmap, 0, 0, 50, 50);
+    assertThat(cropped.isMutable()).isTrue();
+    assertThat(cropped.getPixel(0, 0)).isEqualTo(Color.BLUE);
+  }
+
+  @Test
+  public void createBitmap_withBitmap_thenCopy_isValid() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(Color.BLUE);
+    Bitmap cropped = Bitmap.createBitmap(bitmap, 50, 50, 50, 50);
+    Bitmap copy = cropped.copy(Bitmap.Config.ARGB_8888, true);
+    assertThat(copy.isMutable()).isTrue();
+    assertThat(copy.getPixel(0, 0)).isEqualTo(Color.BLUE);
+  }
 }

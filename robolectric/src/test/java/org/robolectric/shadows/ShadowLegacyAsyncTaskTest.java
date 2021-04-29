@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -12,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,6 +170,22 @@ public class ShadowLegacyAsyncTaskTest {
     } catch (RuntimeException e) {
       assertThat(e.getCause().getMessage()).isEqualTo("Don't swallow me!");
     }
+  }
+
+  @Test
+  public void doInBackground_exception_executionException() {
+    Robolectric.getBackgroundThreadScheduler().unPause();
+    Robolectric.getForegroundThreadScheduler().unPause();
+    AsyncTask<Void, Void, Void> asyncTask =
+        new AsyncTask<Void, Void, Void>() {
+          @Override
+          protected Void doInBackground(Void... params) {
+            throw new RuntimeException("Failed doInBackground");
+          }
+        };
+
+    ExecutionException ex = assertThrows(ExecutionException.class, () -> asyncTask.execute().get());
+    assertThat(ex.getCause()).hasMessageThat().isEqualTo("Failed doInBackground");
   }
 
   @Test

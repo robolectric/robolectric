@@ -1,19 +1,20 @@
 package org.robolectric.shadows;
 
 import android.os.AsyncTask;
+import com.google.common.util.concurrent.SettableFuture;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 
-/** A {@link AsyncTask} shadow for {@link LooperMode.Mode.LEGACY}. */
+/** A {@link AsyncTask} shadow for {@link LooperMode.Mode#LEGACY}. */
 @Implements(
     value = AsyncTask.class,
     shadowPicker = ShadowAsyncTask.Picker.class,
@@ -23,53 +24,13 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
 
   @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
 
-  private final FutureTask<Result> future;
-  private final BackgroundWorker worker;
+  private final SettableFuture<Result> future;
+
+  private Params[] params;
   private AsyncTask.Status status = AsyncTask.Status.PENDING;
 
   public ShadowLegacyAsyncTask() {
-    worker = new BackgroundWorker();
-    future =
-        new FutureTask<Result>(worker) {
-          @Override
-          protected void done() {
-            status = AsyncTask.Status.FINISHED;
-            try {
-              final Result result = get();
-
-              try {
-                ShadowApplication.getInstance()
-                    .getForegroundThreadScheduler()
-                    .post(
-                        new Runnable() {
-                          @Override
-                          public void run() {
-                            getBridge().onPostExecute(result);
-                          }
-                        });
-              } catch (Throwable t) {
-                throw new OnPostExecuteException(t);
-              }
-            } catch (CancellationException e) {
-              ShadowApplication.getInstance()
-                  .getForegroundThreadScheduler()
-                  .post(
-                      new Runnable() {
-                        @Override
-                        public void run() {
-                          getBridge().onCancelled();
-                        }
-                      });
-            } catch (InterruptedException e) {
-              // Ignore.
-            } catch (OnPostExecuteException e) {
-              throw new RuntimeException(e.getCause());
-            } catch (Throwable t) {
-              throw new RuntimeException(
-                  "An error occurred while executing doInBackground()", t.getCause());
-            }
-          }
-        };
+    future = SettableFuture.create();
   }
 
   @Implementation
@@ -97,18 +58,9 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
   protected AsyncTask<Params, Progress, Result> execute(final Params... params) {
     status = AsyncTask.Status.RUNNING;
     getBridge().onPreExecute();
+    this.params = params;
 
-    worker.params = params;
-
-    ShadowApplication.getInstance()
-        .getBackgroundThreadScheduler()
-        .post(
-            new Runnable() {
-              @Override
-              public void run() {
-                future.run();
-              }
-            });
+    ShadowLegacyLooper.getBackgroundThreadScheduler().post(this::runTask);
 
     return realAsyncTask;
   }
@@ -118,16 +70,8 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
       Executor executor, Params... params) {
     status = AsyncTask.Status.RUNNING;
     getBridge().onPreExecute();
-
-    worker.params = params;
-    executor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            future.run();
-          }
-        });
-
+    this.params = params;
+    executor.execute(this::runTask);
     return realAsyncTask;
   }
 
@@ -145,15 +89,7 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
    */
   @Implementation
   protected void publishProgress(final Progress... values) {
-    ShadowApplication.getInstance()
-        .getForegroundThreadScheduler()
-        .post(
-            new Runnable() {
-              @Override
-              public void run() {
-                getBridge().onProgressUpdate(values);
-              }
-            });
+    RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onProgressUpdate(values));
   }
 
   private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
@@ -169,9 +105,27 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
     }
   }
 
-  private static class OnPostExecuteException extends Exception {
-    public OnPostExecuteException(Throwable throwable) {
-      super(throwable);
+  protected void runTask() {
+    final AtomicReference<Result> result = new AtomicReference<>();
+    boolean success = false;
+    if (isCancelled()) {
+      RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onCancelled());
+    } else {
+      try {
+        result.set(getBridge().doInBackground(params));
+        success = true;
+      } catch (Exception e) {
+        future.setException(e);
+      }
+    }
+    if (success) {
+      status = AsyncTask.Status.FINISHED;
+      try {
+        RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onPostExecute(result.get()));
+      } catch (Throwable e) {
+        throw new RuntimeException(e);
+      }
+      future.set(result.get());
     }
   }
 }

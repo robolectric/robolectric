@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.animation.AnimationHandler;
 import android.animation.ValueAnimator;
@@ -11,6 +12,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator {
@@ -40,6 +44,8 @@ public class ShadowValueAnimator {
           ReflectionHelpers.getStaticField(ValueAnimator.class, "sAnimationHandler");
       animatorHandlerTL.remove();
     }
+
+    setDurationScale(1);
   }
 
   @Implementation
@@ -59,5 +65,20 @@ public class ShadowValueAnimator {
    */
   public int getActualRepeatCount() {
     return actualRepeatCount;
+  }
+
+  /**
+   * Sets the duration scale for value animator. Calling this method with {@code duration} set to
+   * zero will make all {@link ValueAnimator} based animations have zero duration.
+   */
+  public static void setDurationScale(float duration) {
+    reflector(ValueAnimatorReflector.class, null).setDurationScale(duration);
+  }
+
+  @ForType(ValueAnimator.class)
+  interface ValueAnimatorReflector {
+    @Static
+    @Accessor("sDurationScale")
+    void setDurationScale(float duration);
   }
 }
