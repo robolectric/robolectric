@@ -5,8 +5,8 @@ import android.net.Uri;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.LazyApplication;
-import org.robolectric.annotation.LazyApplication.LazyLoad;
+import org.robolectric.annotation.experimental.LazyApplication;
+import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 
 /** Tests for interactions with shadows when lazily loading application */
 @LazyApplication(LazyLoad.ON)

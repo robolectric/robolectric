@@ -18,6 +18,7 @@ import android.content.pm.ConfigurationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
 import java.util.ArrayDeque;
@@ -33,6 +34,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow for {@link android.app.ActivityManager} */
 @Implements(value = ActivityManager.class, looseSignatures = true)
@@ -51,12 +53,20 @@ public class ShadowActivityManager {
   private boolean isBackgroundRestricted;
   private final Deque<Object> appExitInfoList = new ArrayDeque<>();
   private ConfigurationInfo configurationInfo;
+  private Context context;
 
-  public ShadowActivityManager() {
+  @Implementation
+  protected void __constructor__(Context context, Handler handler) {
+    Shadow.invokeConstructor(
+        ActivityManager.class,
+        realObject,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(Handler.class, handler));
+    this.context = context;
     ActivityManager.RunningAppProcessInfo processInfo = new ActivityManager.RunningAppProcessInfo();
     fillInProcessInfo(processInfo);
-    processInfo.processName = RuntimeEnvironment.getApplication().getPackageName();
-    processInfo.pkgList = new String[] {RuntimeEnvironment.getApplication().getPackageName()};
+    processInfo.processName = context.getPackageName();
+    processInfo.pkgList = new String[] {context.getPackageName()};
     processes.add(processInfo);
   }
 
@@ -138,7 +148,7 @@ public class ShadowActivityManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected boolean switchUser(int userid) {
     ShadowUserManager shadowUserManager =
-        Shadow.extract(RuntimeEnvironment.getApplication().getSystemService(Context.USER_SERVICE));
+        Shadow.extract(context.getSystemService(Context.USER_SERVICE));
     shadowUserManager.switchUser(userid);
     return true;
   }
@@ -303,9 +313,7 @@ public class ShadowActivityManager {
   protected boolean clearApplicationUserData(String packageName, IPackageDataObserver observer) {
     // The real ActivityManager calls clearApplicationUserData on the ActivityManagerService that
     // calls PackageManager#clearApplicationUserData.
-    RuntimeEnvironment.getApplication()
-        .getPackageManager()
-        .clearApplicationUserData(packageName, observer);
+    context.getPackageManager().clearApplicationUserData(packageName, observer);
     return true;
   }
 
