@@ -15,6 +15,7 @@ import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
 import static android.telephony.PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED;
+import static android.telephony.PhoneStateListener.LISTEN_SERVICE_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_SIGNAL_STRENGTHS;
 import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_CA;
 import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE;
@@ -434,12 +435,15 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = O)
   public void shouldSetServiceState() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    telephonyManager.listen(listener, LISTEN_SERVICE_STATE);
     ServiceState serviceState = new ServiceState();
     serviceState.setState(ServiceState.STATE_OUT_OF_SERVICE);
 
     shadowOf(telephonyManager).setServiceState(serviceState);
 
     assertEquals(serviceState, telephonyManager.getServiceState());
+    verify(listener).onServiceStateChanged(serviceState);
   }
 
   @Test
