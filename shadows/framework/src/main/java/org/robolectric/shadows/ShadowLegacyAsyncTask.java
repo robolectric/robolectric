@@ -30,32 +30,34 @@ public class ShadowLegacyAsyncTask<Params, Progress, Result> extends ShadowAsync
 
   public ShadowLegacyAsyncTask() {
     worker = new BackgroundWorker();
-    future =
-        new FutureTask<Result>(worker) {
-          @Override
-          protected void done() {
-            status = AsyncTask.Status.FINISHED;
-            try {
-              final Result result = get();
+    future = createFuture(worker);
+  }
 
-              try {
-                RuntimeEnvironment.getMasterScheduler()
-                    .post(() -> getBridge().onPostExecute(result));
-              } catch (Throwable t) {
-                throw new OnPostExecuteException(t);
-              }
-            } catch (CancellationException e) {
-              RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onCancelled());
-            } catch (InterruptedException e) {
-              // Ignore.
-            } catch (OnPostExecuteException e) {
-              throw new RuntimeException(e.getCause());
-            } catch (Throwable t) {
-              throw new RuntimeException(
-                  "An error occurred while executing doInBackground()", t.getCause());
-            }
+  protected FutureTask<Result> createFuture(Callable<Result> callable) {
+    return new FutureTask<Result>(callable) {
+      @Override
+      protected void done() {
+        status = AsyncTask.Status.FINISHED;
+        try {
+          final Result result = get();
+
+          try {
+            RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onPostExecute(result));
+          } catch (Throwable t) {
+            throw new OnPostExecuteException(t);
           }
-        };
+        } catch (CancellationException e) {
+          RuntimeEnvironment.getMasterScheduler().post(() -> getBridge().onCancelled());
+        } catch (InterruptedException e) {
+          // Ignore.
+        } catch (OnPostExecuteException e) {
+          throw new RuntimeException(e.getCause());
+        } catch (Throwable t) {
+          throw new RuntimeException(
+              "An error occurred while executing doInBackground()", t.getCause());
+        }
+      }
+    };
   }
 
   @Implementation
