@@ -416,7 +416,7 @@ public class FakeHttpLayer {
       if (path != null && !path.equals(uri.getRawPath())) {
         return false;
       }
-      if (noParams && !uri.getRawQuery().equals(null)) {
+      if (noParams && uri.getRawQuery() != null) {
         return false;
       }
       if (params.size() > 0) {

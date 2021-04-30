@@ -14,6 +14,7 @@ import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
 import static android.telephony.PhoneStateListener.LISTEN_NONE;
+import static android.telephony.PhoneStateListener.LISTEN_SERVICE_STATE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
@@ -767,6 +768,10 @@ public class ShadowTelephonyManager {
   /** Sets the value returned by {@link TelephonyManager#getServiceState()}. */
   public void setServiceState(ServiceState serviceState) {
     this.serviceState = serviceState;
+
+    for (PhoneStateListener listener : getListenersForFlags(LISTEN_SERVICE_STATE)) {
+      listener.onServiceStateChanged(serviceState);
+    }
   }
 
   /**

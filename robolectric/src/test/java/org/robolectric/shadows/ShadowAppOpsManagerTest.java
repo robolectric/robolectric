@@ -357,6 +357,14 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void checkOp_ignoreModeSet_returnIgnored() {
+    appOps.setMode(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, MODE_IGNORED);
+
+    assertThat(appOps.checkOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_IGNORED);
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void setRestrictions() {
     appOps.setRestriction(

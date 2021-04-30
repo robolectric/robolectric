@@ -15,9 +15,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LazyApplication;
-import org.robolectric.annotation.LazyApplication.LazyLoad;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.experimental.LazyApplication;
+import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.internal.bytecode.RobolectricInternals;
 
 @RunWith(AndroidJUnit4.class)
