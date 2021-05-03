@@ -247,6 +247,12 @@ public class ShadowAppOpsManager {
     longRunningOp.remove(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
   }
 
+  /** Checks whether op was previously set using {@link #setMode} */
+  @Implementation(minSdk = R)
+  protected int checkOp(String op, int uid, String packageName) {
+    return checkOpNoThrow(op, uid, packageName);
+  }
+
   /**
    * Checks whether the given op is active, i.e. did someone call {@link #startOp(String, int,
    * String, String, String)} without {@link #finishOp(String, int, String, String)} yet.

@@ -76,12 +76,14 @@ public class ShadowActivityThread {
 
   @Implementation
   protected static Application currentApplication() {
-    // Get the initial application from the activity thread.
-    // If it's set, return it, otherwise call getApplication (which will also set the initial
-    // application on the activity thread
+    return ((ActivityThread) currentActivityThread()).getApplication();
+  }
+
+  @Implementation
+  protected Application getApplication() {
+    // Prefer the stored application from the real Activity Thread.
     Application currentApplication =
-        Reflector.reflector(_ActivityThread_.class, currentActivityThread())
-            .getInitialApplication();
+        Reflector.reflector(_ActivityThread_.class, realActivityThread).getInitialApplication();
     if (currentApplication == null) {
       return RuntimeEnvironment.getApplication();
     } else {
@@ -90,19 +92,12 @@ public class ShadowActivityThread {
   }
 
   @Implementation
-  protected Application getApplication() {
-    return RuntimeEnvironment.getApplication();
-  }
-
-  @Implementation
   protected Instrumentation getInstrumentation() {
-    // Get the instrumentation from the activity thread.
-    // If it's set, return it, otherwise get it from InstrumentationRegistry (which will also set
-    // the instrumentation for the activity thread to get later)
+    // TODO: delete this shadow method once Instrumentation is not lazy loaded.
+    // Prefer the stored instrumentation from the real Activity Thread.
     Instrumentation instrumentation =
-        Reflector.reflector(_ActivityThread_.class, currentActivityThread()).getInstrumentation();
+        Reflector.reflector(_ActivityThread_.class, realActivityThread).getInstrumentation();
     if (instrumentation == null) {
-      // TODO(b/182996016): switch to using an InstrumentationProvider directly
       return InstrumentationRegistry.getInstrumentation();
     } else {
       return instrumentation;

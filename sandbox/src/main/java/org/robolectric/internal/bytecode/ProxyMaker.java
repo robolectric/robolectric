@@ -26,7 +26,7 @@ public class ProxyMaker {
       unsafeField.setAccessible(true);
       UNSAFE = (Unsafe) unsafeField.get(null);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new AssertionError(e);
+      throw new LinkageError(e.getMessage(), e);
     }
   }
 
@@ -46,7 +46,10 @@ public class ProxyMaker {
   }
 
   public <T> T createProxy(Class<T> targetClass, T target) {
-    return factories.get(targetClass).createProxy(targetClass, target);
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "createProxyInstance",
+            () -> factories.get(targetClass).createProxy(targetClass, target));
   }
 
   <T> Factory createProxyFactory(Class<T> targetClass) {
