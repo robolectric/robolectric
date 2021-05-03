@@ -398,6 +398,16 @@ public class ShadowBluetoothAdapterTest {
     assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
   }
 
+  @Test
+  @Config(minSdk = O)
+  public void getLeMaximumAdvertisingDataLength_nonZero() {
+    assertThat(bluetoothAdapter.getLeMaximumAdvertisingDataLength()).isEqualTo(1650);
+
+    shadowOf(bluetoothAdapter).setIsLeExtendedAdvertisingSupported(false);
+
+    assertThat(bluetoothAdapter.getLeMaximumAdvertisingDataLength()).isEqualTo(31);
+  }
+
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {
     return new BluetoothAdapter.LeScanCallback() {
       @Override

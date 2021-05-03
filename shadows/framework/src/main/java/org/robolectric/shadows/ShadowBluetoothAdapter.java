@@ -39,6 +39,8 @@ public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 
   private static final int ADDRESS_LENGTH = 17;
+  private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH = 31;
+  private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED = 1650;
 
   private static boolean isBluetoothSupported = true;
   private static BluetoothLeScanner bluetoothLeScanner = null;
@@ -454,5 +456,12 @@ public class ShadowBluetoothAdapter {
    */
   public void setIsLeExtendedAdvertisingSupported(boolean supported) {
     isLeExtendedAdvertisingSupported = supported;
+  }
+
+  @Implementation(minSdk = O)
+  protected int getLeMaximumAdvertisingDataLength() {
+    return isLeExtendedAdvertisingSupported
+        ? LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED
+        : LE_MAXIMUM_ADVERTISING_DATA_LENGTH;
   }
 }
