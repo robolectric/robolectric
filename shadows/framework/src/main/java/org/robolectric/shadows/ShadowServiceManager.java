@@ -25,6 +25,9 @@ import android.app.slice.ISliceManager;
 import android.app.trust.ITrustManager;
 import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.IBluetooth;
+import android.bluetooth.IBluetoothManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
@@ -110,9 +113,11 @@ public class ShadowServiceManager {
     addBinderService(Context.APPWIDGET_SERVICE, IAppWidgetService.class);
     addBinderService(Context.NOTIFICATION_SERVICE, INotificationManager.class);
     addBinderService(Context.WALLPAPER_SERVICE, IWallpaperManager.class);
+    addBinderService(Context.BLUETOOTH_SERVICE, IBluetooth.class);
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       addBinderService(Context.USER_SERVICE, IUserManager.class);
+      addBinderService(BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE, IBluetoothManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
       addBinderService(Context.APP_OPS_SERVICE, IAppOpsService.class);

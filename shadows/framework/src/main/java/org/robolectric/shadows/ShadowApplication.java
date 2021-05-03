@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
-import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.ActivityThread;
@@ -9,6 +8,7 @@ import android.app.AlertDialog;
 import android.app.Application;
 import android.app.Dialog;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -44,7 +44,6 @@ public class ShadowApplication extends ShadowContextWrapper {
 
   private List<android.widget.Toast> shownToasts = new ArrayList<>();
   private ShadowPopupMenu latestPopupMenu;
-  private Object bluetoothAdapter = newInstanceOf("android.bluetooth.BluetoothAdapter");
   private PopupWindow latestPopupWindow;
   private ListPopupWindow latestListPopupWindow;
   private UserManagerState userManagerState;
@@ -214,8 +213,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     return dialog == null ? null : Shadow.extract(dialog);
   }
 
-  public Object getBluetoothAdapter() {
-    return bluetoothAdapter;
+  /** @deprecated Use {@link BluetoothAdapter#getDefaultAdapter()} ()} instead. */
+  @Deprecated
+  public final BluetoothAdapter getBluetoothAdapter() {
+    return BluetoothAdapter.getDefaultAdapter();
   }
 
   public void declareActionUnbindable(String action) {

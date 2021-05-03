@@ -43,7 +43,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Before
   public void setUp() throws Exception {
-    bluetoothAdapter = Shadow.newInstanceOf(BluetoothAdapter.class);
+    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
   }
 
   @Test
