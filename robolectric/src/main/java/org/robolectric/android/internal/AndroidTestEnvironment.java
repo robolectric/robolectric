@@ -176,6 +176,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
     RuntimeEnvironment.setActivityThread(ReflectionHelpers.newInstance(ActivityThread.class));
+    ReflectionHelpers.setStaticField(
+        ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Instrumentation instrumentation = createInstrumentation();
     InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
@@ -277,9 +279,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
     shadowActivityThread.setCompatConfiguration(androidConfiguration);
-
-    ReflectionHelpers.setStaticField(
-        ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
