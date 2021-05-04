@@ -54,7 +54,6 @@ public class ShadowBluetoothAdapter {
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
   private boolean isDiscovering;
   private String address;
-  private boolean enabled;
   private int state;
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
@@ -227,18 +226,18 @@ public class ShadowBluetoothAdapter {
 
   @Implementation
   protected boolean isEnabled() {
-    return enabled;
+    return state == BluetoothAdapter.STATE_ON;
   }
 
   @Implementation
   protected boolean enable() {
-    enabled = true;
+    setState(BluetoothAdapter.STATE_ON);
     return true;
   }
 
   @Implementation
   protected boolean disable() {
-    enabled = false;
+    setState(BluetoothAdapter.STATE_OFF);
     return true;
   }
 
@@ -356,8 +355,14 @@ public class ShadowBluetoothAdapter {
     this.state = state;
   }
 
+  /** @deprecated Use {@link BluetoothAdapter#enable()} or {@link BluetoothAdapter#disable()}. */
+  @Deprecated
   public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
+    if (enabled) {
+      enable();
+    } else {
+      disable();
+    }
   }
 
   /**

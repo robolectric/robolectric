@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -19,9 +20,7 @@ import android.bluetooth.le.BluetoothLeScanner;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -38,8 +37,6 @@ public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE2 = 21;
 
   private BluetoothAdapter bluetoothAdapter;
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -138,6 +135,23 @@ public class ShadowBluetoothAdapterTest {
   public void canEnable_withAndroidApi() throws Exception {
     bluetoothAdapter.enable();
     assertThat(bluetoothAdapter.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void getState_afterEnable() {
+    bluetoothAdapter.enable();
+    assertThat(bluetoothAdapter.getState()).isEqualTo(BluetoothAdapter.STATE_ON);
+    bluetoothAdapter.disable();
+    assertThat(bluetoothAdapter.getState()).isEqualTo(BluetoothAdapter.STATE_OFF);
+  }
+
+  @Test
+  public void isEnabled_afterSetState() {
+    assertThat(bluetoothAdapter.isEnabled()).isFalse();
+    shadowOf(bluetoothAdapter).setState(BluetoothAdapter.STATE_ON);
+    assertThat(bluetoothAdapter.isEnabled()).isTrue();
+    shadowOf(bluetoothAdapter).setState(BluetoothAdapter.STATE_DISCONNECTING);
+    assertThat(bluetoothAdapter.isEnabled()).isFalse();
   }
 
   @Test
@@ -259,9 +273,11 @@ public class ShadowBluetoothAdapterTest {
     assertThat(shadowOf(bluetoothAdapter).getSingleLeScanCallback()).isEqualTo(callback1);
 
     bluetoothAdapter.startLeScan(callback2);
-    thrown.expect(IllegalStateException.class);
-    thrown.expectMessage("There are 2 callbacks");
-    shadowOf(bluetoothAdapter).getSingleLeScanCallback();
+    IllegalStateException expected =
+        assertThrows(
+            IllegalStateException.class,
+            () -> shadowOf(bluetoothAdapter).getSingleLeScanCallback());
+    assertThat(expected).hasMessageThat().isEqualTo("There are 2 callbacks");
   }
 
   @Test
