@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
@@ -527,7 +528,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = Q)
+  @Config(minSdk = Q, maxSdk = R)
   public void testAddOnWifiUsabilityStatsListener() {
     // GIVEN
     WifiManager.OnWifiUsabilityStatsListener mockListener =
@@ -603,7 +604,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = Q)
+  @Config(minSdk = Q, maxSdk = R)
   public void testRemoveOnWifiUsabilityStatsListener() {
     // GIVEN
     WifiManager.OnWifiUsabilityStatsListener mockListener =
