@@ -92,14 +92,16 @@ public class ShadowActivityTest {
   public void shouldUseActivityLabelFromManifestAsTitleForActivity() throws Exception {
     activity = Robolectric.setupActivity(LabelTestActivity2.class);
     assertThat(activity.getTitle()).isNotNull();
-    assertThat(activity.getTitle().toString()).isEqualTo(activity.getString(R.string.activity_name));
+    assertThat(activity.getTitle().toString())
+        .isEqualTo(activity.getString(R.string.activity_name));
   }
 
   @Test
   public void shouldUseActivityLabelFromManifestAsTitleForActivityWithShortName() throws Exception {
     activity = Robolectric.setupActivity(LabelTestActivity3.class);
     assertThat(activity.getTitle()).isNotNull();
-    assertThat(activity.getTitle().toString()).isEqualTo(activity.getString(R.string.activity_name));
+    assertThat(activity.getTitle().toString())
+        .isEqualTo(activity.getString(R.string.activity_name));
   }
 
   @Test
@@ -131,12 +133,17 @@ public class ShadowActivityTest {
   }
 
   public static final class LabelTestActivity1 extends Activity {}
+
   public static final class LabelTestActivity2 extends Activity {}
+
   public static final class LabelTestActivity3 extends Activity {}
 
   @Test
-  public void shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers() throws Exception {
-    ActivityController<DialogCreatingActivity> controller = Robolectric.buildActivity(DialogCreatingActivity.class);
+  public void
+      shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers()
+          throws Exception {
+    ActivityController<DialogCreatingActivity> controller =
+        Robolectric.buildActivity(DialogCreatingActivity.class);
     activity = controller.get();
 
     DialogLifeCycleActivity activity2 = Robolectric.setupActivity(DialogLifeCycleActivity.class);
@@ -147,7 +154,8 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldNotRegisterNullBroadcastReceiver() {
-    ActivityController<DialogCreatingActivity> controller = Robolectric.buildActivity(DialogCreatingActivity.class);
+    ActivityController<DialogCreatingActivity> controller =
+        Robolectric.buildActivity(DialogCreatingActivity.class);
     activity = controller.get();
     activity.registerReceiver(null, new IntentFilter());
 
@@ -157,7 +165,8 @@ public class ShadowActivityTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldReportDestroyedStatus() {
-    ActivityController<DialogCreatingActivity> controller = Robolectric.buildActivity(DialogCreatingActivity.class);
+    ActivityController<DialogCreatingActivity> controller =
+        Robolectric.buildActivity(DialogCreatingActivity.class);
     activity = controller.get();
 
     controller.destroy();
@@ -171,8 +180,11 @@ public class ShadowActivityTest {
 
     activity.startActivity(new Intent().setType("image/*"));
 
-    shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
-        new Intent().setData(Uri.parse("content:foo")));
+    shadowOf(activity)
+        .receiveResult(
+            new Intent().setType("image/*"),
+            Activity.RESULT_OK,
+            new Intent().setData(Uri.parse("content:foo")));
     assertThat(activity.transcript)
         .containsExactly(
             "onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
@@ -218,28 +230,34 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
+  public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity()
+      throws Exception {
     TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
-    shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
-        new Intent().setData(Uri.parse("content:foo")));
+    shadowOf(activity)
+        .receiveResult(
+            new Intent().setType("image/*"),
+            Activity.RESULT_OK,
+            new Intent().setData(Uri.parse("content:foo")));
     assertThat(activity.transcript)
         .containsExactly(
             "onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
   }
 
   @Test
-  public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() throws Exception {
+  public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException()
+      throws Exception {
     ThrowOnResultActivity activity = Robolectric.buildActivity(ThrowOnResultActivity.class).get();
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
     Intent requestIntent = new Intent().setType("video/*");
     try {
-      shadowOf(activity).receiveResult(requestIntent, Activity.RESULT_OK,
-          new Intent().setData(Uri.parse("content:foo")));
+      shadowOf(activity)
+          .receiveResult(
+              requestIntent, Activity.RESULT_OK, new Intent().setData(Uri.parse("content:foo")));
       fail();
     } catch (Exception e) {
       assertThat(e.getMessage()).startsWith("No intent matches " + requestIntent);
@@ -302,7 +320,8 @@ public class ShadowActivityTest {
   @Test
   public void onContentChangedShouldBeCalledAfterContentViewIsSet() throws RuntimeException {
     final List<String> transcript = new ArrayList<>();
-    ActivityWithContentChangedTranscript customActivity = Robolectric.setupActivity(ActivityWithContentChangedTranscript.class);
+    ActivityWithContentChangedTranscript customActivity =
+        Robolectric.setupActivity(ActivityWithContentChangedTranscript.class);
     customActivity.setTranscript(transcript);
     customActivity.setContentView(R.layout.main);
     assertThat(transcript).containsExactly("onContentChanged was called; title is \"Main Layout\"");
@@ -351,7 +370,8 @@ public class ShadowActivityTest {
 
   @Test
   public void showDialog_shouldCreatePrepareAndShowDialog() {
-    final DialogLifeCycleActivity activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
+    final DialogLifeCycleActivity activity =
+        Robolectric.setupActivity(DialogLifeCycleActivity.class);
     final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
     new Dialog(activity) {
@@ -374,7 +394,8 @@ public class ShadowActivityTest {
 
   @Test
   public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
-    final DialogLifeCycleActivity activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
+    final DialogLifeCycleActivity activity =
+        Robolectric.setupActivity(DialogLifeCycleActivity.class);
     final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
     new Dialog(activity) {
@@ -397,7 +418,8 @@ public class ShadowActivityTest {
 
   @Test
   public void showDialog_shouldReturnFalseIfDialogDoesNotExist() {
-    final DialogLifeCycleActivity activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
+    final DialogLifeCycleActivity activity =
+        Robolectric.setupActivity(DialogLifeCycleActivity.class);
     boolean dialogCreated = activity.showDialog(97, new Bundle());
 
     assertThat(dialogCreated).isFalse();
@@ -460,7 +482,8 @@ public class ShadowActivityTest {
 
   @Test
   public void shouldCallOnCreateDialogFromShowDialog() {
-    ActivityWithOnCreateDialog activity = Robolectric.setupActivity(ActivityWithOnCreateDialog.class);
+    ActivityWithOnCreateDialog activity =
+        Robolectric.setupActivity(ActivityWithOnCreateDialog.class);
     activity.showDialog(123);
     assertTrue(activity.onCreateDialogWasCalled);
     assertThat(ShadowDialog.getLatestDialog()).isNotNull();
@@ -514,17 +537,18 @@ public class ShadowActivityTest {
   public void shouldSetOrientation() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-    assertThat(activity.getRequestedOrientation()).isEqualTo(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    assertThat(activity.getRequestedOrientation())
+        .isEqualTo(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
   }
 
   @Test
   public void setDefaultKeyMode_shouldSetKeyMode() {
     int[] modes = {
-        Activity.DEFAULT_KEYS_DISABLE,
-        Activity.DEFAULT_KEYS_SHORTCUT,
-        Activity.DEFAULT_KEYS_DIALER,
-        Activity.DEFAULT_KEYS_SEARCH_LOCAL,
-        Activity.DEFAULT_KEYS_SEARCH_GLOBAL
+      Activity.DEFAULT_KEYS_DISABLE,
+      Activity.DEFAULT_KEYS_SHORTCUT,
+      Activity.DEFAULT_KEYS_DIALER,
+      Activity.DEFAULT_KEYS_SEARCH_LOCAL,
+      Activity.DEFAULT_KEYS_SEARCH_GLOBAL
     };
     Activity activity = new Activity();
 
@@ -545,7 +569,8 @@ public class ShadowActivityTest {
     assertThat(((ViewGroup) contentView).getChildCount()).isEqualTo(2);
   }
 
-  @Test public void setContentView_shouldReplaceOldContentView() throws Exception {
+  @Test
+  public void setContentView_shouldReplaceOldContentView() throws Exception {
     View view1 = new View(getApplication());
     view1.setId(R.id.burritos);
     View view2 = new View(getApplication());
@@ -615,11 +640,20 @@ public class ShadowActivityTest {
 
     assertThat(oldActivity.transcript)
         .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
-            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+            "onCreate",
+            "onStart",
+            "onPostCreate",
+            "onResume",
+            "onPause",
+            "onStop",
+            "onSaveInstanceState",
+            "onRetainNonConfigurationInstance",
+            "onDestroy")
+        .inOrder();
     assertThat(activityController.get().transcript)
         .containsExactly(
-            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume").inOrder();
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume")
+        .inOrder();
   }
 
   @Test
@@ -634,11 +668,20 @@ public class ShadowActivityTest {
 
     assertThat(oldActivity.transcript)
         .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
-            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+            "onCreate",
+            "onStart",
+            "onPostCreate",
+            "onResume",
+            "onPause",
+            "onStop",
+            "onSaveInstanceState",
+            "onRetainNonConfigurationInstance",
+            "onDestroy")
+        .inOrder();
     assertThat(activityController.get().transcript)
         .containsExactly(
-            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume").inOrder();
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume")
+        .inOrder();
   }
 
   @Test
@@ -654,12 +697,20 @@ public class ShadowActivityTest {
 
     assertThat(oldActivity.transcript)
         .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
-            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+            "onCreate",
+            "onStart",
+            "onPostCreate",
+            "onResume",
+            "onPause",
+            "onStop",
+            "onSaveInstanceState",
+            "onRetainNonConfigurationInstance",
+            "onDestroy")
+        .inOrder();
     assertThat(activityController.get().transcript)
         .containsExactly(
-            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume",
-            "onPause").inOrder();
+            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume", "onPause")
+        .inOrder();
   }
 
   @Test
@@ -675,12 +726,26 @@ public class ShadowActivityTest {
 
     assertThat(oldActivity.transcript)
         .containsExactly(
-            "onCreate", "onStart", "onPostCreate", "onResume", "onPause", "onStop",
-            "onSaveInstanceState", "onRetainNonConfigurationInstance", "onDestroy").inOrder();
+            "onCreate",
+            "onStart",
+            "onPostCreate",
+            "onResume",
+            "onPause",
+            "onStop",
+            "onSaveInstanceState",
+            "onRetainNonConfigurationInstance",
+            "onDestroy")
+        .inOrder();
     assertThat(activityController.get().transcript)
         .containsExactly(
-            "onCreate", "onStart", "onRestoreInstanceState", "onPostCreate", "onResume",
-            "onPause", "onStop").inOrder();
+            "onCreate",
+            "onStart",
+            "onRestoreInstanceState",
+            "onPostCreate",
+            "onResume",
+            "onPause",
+            "onStop")
+        .inOrder();
   }
 
   @Test
@@ -836,13 +901,16 @@ public class ShadowActivityTest {
     parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-    assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
+    assertEquals(
+        ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+        parentActivity.getRequestedOrientation());
   }
 
   @Test
   public void shouldSupportIsTaskRoot() throws Exception {
     Activity activity = Robolectric.setupActivity(Activity.class);
-    assertTrue(activity.isTaskRoot()); // as implemented, Activities are considered task roots by default
+    assertTrue(
+        activity.isTaskRoot()); // as implemented, Activities are considered task roots by default
 
     shadowOf(activity).setIsTaskRoot(false);
     assertFalse(activity.isTaskRoot());
@@ -876,7 +944,8 @@ public class ShadowActivityTest {
 
   @Test
   public void getActionBar_shouldWorkIfActivityHasAnAppropriateTheme() throws Exception {
-    ActionBarThemedActivity myActivity = Robolectric.buildActivity(ActionBarThemedActivity.class).create().get();
+    ActionBarThemedActivity myActivity =
+        Robolectric.buildActivity(ActionBarThemedActivity.class).create().get();
     ActionBar actionBar = myActivity.getActionBar();
     assertThat(actionBar).isNotNull();
   }
@@ -915,7 +984,8 @@ public class ShadowActivityTest {
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 4);
 
-    ShadowActivity.IntentForResult intentForResult = shadowOf(activity).getNextStartedActivityForResult();
+    ShadowActivity.IntentForResult intentForResult =
+        shadowOf(activity).getNextStartedActivityForResult();
     assertThat(intentForResult.intent).isSameInstanceAs(intent);
     assertThat(intentForResult.requestCode).isEqualTo(4);
   }
@@ -928,7 +998,8 @@ public class ShadowActivityTest {
     Intent intent = new Intent(Intent.ACTION_VIEW);
     activity.startActivityFromFragment(new Fragment(), intent, 5, options);
 
-    ShadowActivity.IntentForResult intentForResult = shadowOf(activity).getNextStartedActivityForResult();
+    ShadowActivity.IntentForResult intentForResult =
+        shadowOf(activity).getNextStartedActivityForResult();
     assertThat(intentForResult.intent).isSameInstanceAs(intent);
     assertThat(intentForResult.options).isSameInstanceAs(options);
     assertThat(intentForResult.requestCode).isEqualTo(5);
@@ -939,7 +1010,9 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     Intent intent = new Intent(activity, OptionsMenuActivity.class);
 
-    Bundle animationBundle = ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1).toBundle();
+    Bundle animationBundle =
+        ActivityOptions.makeCustomAnimation(activity, R.anim.test_anim_1, R.anim.test_anim_1)
+            .toBundle();
     activity.startActivity(intent, animationBundle);
     assertThat(shadowOf(activity).getNextStartedActivityForResult().options)
         .isSameInstanceAs(animationBundle);
@@ -981,9 +1054,11 @@ public class ShadowActivityTest {
     assertThat(transcript).containsExactly("onActivityDestroyed");
   }
 
-  public static class ChildActivity extends Activity { }
+  /** Activity for testing */
+  public static class ChildActivity extends Activity {}
 
-  public static class ParentActivity extends Activity { }
+  /** Activity for testing */
+  public static class ParentActivity extends Activity {}
 
   @Test
   public void getParentActivityIntent() {
@@ -1158,6 +1233,14 @@ public class ShadowActivityTest {
     assertThat(activity.isInPictureInPictureMode()).isTrue();
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void initializeVoiceInteractor_succeeds() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    shadowOf(activity).initializeVoiceInteractor();
+    assertThat(activity.getVoiceInteractor()).isNotNull();
+  }
+
   /////////////////////////////
 
   private static class DialogCreatingActivity extends Activity {
@@ -1172,7 +1255,8 @@ public class ShadowActivityTest {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      // Requesting the action bar causes it to be properly initialized when the Activity becomes visible
+      // Requesting the action bar causes it to be properly initialized when the Activity becomes
+      // visible
       getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
       setContentView(new FrameLayout(this));
     }
@@ -1276,7 +1360,8 @@ public class ShadowActivityTest {
     }
   }
 
-  private static class ActivityLifecycleCallbacks implements Application.ActivityLifecycleCallbacks {
+  private static class ActivityLifecycleCallbacks
+      implements Application.ActivityLifecycleCallbacks {
     private final List<String> transcript;
 
     public ActivityLifecycleCallbacks(List<String> transcript) {
@@ -1319,7 +1404,7 @@ public class ShadowActivityTest {
     }
   }
 
-  public static class TestActivityWithAnotherTheme extends
-      org.robolectric.shadows.testing.TestActivity {
-  }
+  /** Activity for testing */
+  public static class TestActivityWithAnotherTheme
+      extends org.robolectric.shadows.testing.TestActivity {}
 }
