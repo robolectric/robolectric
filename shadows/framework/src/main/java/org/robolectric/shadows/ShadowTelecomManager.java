@@ -617,9 +617,14 @@ public class ShadowTelecomManager {
   @Implementation(minSdk = R)
   @SystemApi
   protected Intent createLaunchEmergencyDialerIntent(String number) {
+    // copy of logic from TelecomManager service
     Context context = ReflectionHelpers.getField(realObject, "mContext");
-    String packageName =
-        context.getString(com.android.internal.R.string.config_emergency_dialer_package);
+    // use reflection to get resource id since it can vary based on SDK version, and compiler will
+    // inline the value if used explicitly
+    int configEmergencyDialerPackageId =
+        ReflectionHelpers.getStaticField(
+            com.android.internal.R.string.class, "config_emergency_dialer_package");
+    String packageName = context.getString(configEmergencyDialerPackageId);
     Intent intent = new Intent(Intent.ACTION_DIAL_EMERGENCY).setPackage(packageName);
     ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(intent, 0);
     if (resolveInfo == null) {
