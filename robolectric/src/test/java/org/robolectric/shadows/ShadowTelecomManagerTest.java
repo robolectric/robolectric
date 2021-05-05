@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -464,6 +465,21 @@ public class ShadowTelecomManagerTest {
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
     shadowOf(telecomService).setUserSelectedOutgoingPhoneAccount(phoneAccountHandle);
     assertThat(telecomService.getUserSelectedOutgoingPhoneAccount()).isEqualTo(phoneAccountHandle);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void testSetManageBlockNumbersIntent() {
+    // Check initial state
+    Intent targetIntent = telecomService.createManageBlockedNumbersIntent();
+    assertThat(targetIntent).isNull();
+
+    // Set intent and verify
+    Intent initialIntent = new Intent();
+    shadowOf(telecomService).setManageBlockNumbersIntent(initialIntent);
+
+    targetIntent = telecomService.createManageBlockedNumbersIntent();
+    assertThat(initialIntent).isEqualTo(targetIntent);
   }
 
   private static PhoneAccountHandle createHandle(String id) {

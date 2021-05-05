@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Verify.verifyNotNull;
@@ -79,7 +80,7 @@ public class ShadowTelecomManager {
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
   private final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts = new ArrayMap<>();
-
+  private Intent manageBlockNumbersIntent;
   private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
   private PhoneAccountHandle simCallManager;
   private String defaultDialerPackageName;
@@ -597,6 +598,22 @@ public class ShadowTelecomManager {
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
   }
 
+  /**
+   * Returns the intent set by {@link ShadowTelecomManager#setManageBlockNumbersIntent(Intent)} ()}
+   */
+  @Implementation(minSdk = N)
+  protected Intent createManageBlockedNumbersIntent() {
+    return this.manageBlockNumbersIntent;
+  }
+
+  /**
+   * Sets the BlockNumbersIntent to be returned by {@link
+   * ShadowTelecomManager#createManageBlockedNumbersIntent()}
+   */
+  public void setManageBlockNumbersIntent(Intent intent) {
+    this.manageBlockNumbersIntent = intent;
+  }
+
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     this.simCallManager = simCallManager;
   }
@@ -617,9 +634,14 @@ public class ShadowTelecomManager {
   @Implementation(minSdk = R)
   @SystemApi
   protected Intent createLaunchEmergencyDialerIntent(String number) {
+    // copy of logic from TelecomManager service
     Context context = ReflectionHelpers.getField(realObject, "mContext");
-    String packageName =
-        context.getString(com.android.internal.R.string.config_emergency_dialer_package);
+    // use reflection to get resource id since it can vary based on SDK version, and compiler will
+    // inline the value if used explicitly
+    int configEmergencyDialerPackageId =
+        ReflectionHelpers.getStaticField(
+            com.android.internal.R.string.class, "config_emergency_dialer_package");
+    String packageName = context.getString(configEmergencyDialerPackageId);
     Intent intent = new Intent(Intent.ACTION_DIAL_EMERGENCY).setPackage(packageName);
     ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(intent, 0);
     if (resolveInfo == null) {
