@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -32,6 +33,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
@@ -39,6 +43,8 @@ public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 
   private static final int ADDRESS_LENGTH = 17;
+  private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH = 31;
+  private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED = 1650;
 
   private static boolean isBluetoothSupported = true;
   private static BluetoothLeScanner bluetoothLeScanner = null;
@@ -65,12 +71,15 @@ public class ShadowBluetoothAdapter {
     setIsBluetoothSupported(true);
     bluetoothLeScanner = null;
     bluetoothLeAdvertiser = null;
+    reflector(BluetoothAdapterReflector.class, null).setAdapter(null);
   }
 
   @Implementation
   protected static BluetoothAdapter getDefaultAdapter() {
-    return (BluetoothAdapter)
-        (isBluetoothSupported ? ShadowApplication.getInstance().getBluetoothAdapter() : null);
+    if (!isBluetoothSupported) {
+      return null;
+    }
+    return directlyOn(BluetoothAdapter.class, "getDefaultAdapter");
   }
 
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
@@ -454,5 +463,19 @@ public class ShadowBluetoothAdapter {
    */
   public void setIsLeExtendedAdvertisingSupported(boolean supported) {
     isLeExtendedAdvertisingSupported = supported;
+  }
+
+  @Implementation(minSdk = O)
+  protected int getLeMaximumAdvertisingDataLength() {
+    return isLeExtendedAdvertisingSupported
+        ? LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED
+        : LE_MAXIMUM_ADVERTISING_DATA_LENGTH;
+  }
+
+  @ForType(BluetoothAdapter.class)
+  interface BluetoothAdapterReflector {
+    @Accessor("sAdapter")
+    @Static
+    void setAdapter(BluetoothAdapter adapter);
   }
 }

@@ -43,7 +43,7 @@ public class ShadowBluetoothAdapterTest {
 
   @Before
   public void setUp() throws Exception {
-    bluetoothAdapter = Shadow.newInstanceOf(BluetoothAdapter.class);
+    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
   }
 
   @Test
@@ -396,6 +396,16 @@ public class ShadowBluetoothAdapterTest {
     bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
 
     assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getLeMaximumAdvertisingDataLength_nonZero() {
+    assertThat(bluetoothAdapter.getLeMaximumAdvertisingDataLength()).isEqualTo(1650);
+
+    shadowOf(bluetoothAdapter).setIsLeExtendedAdvertisingSupported(false);
+
+    assertThat(bluetoothAdapter.getLeMaximumAdvertisingDataLength()).isEqualTo(31);
   }
 
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {
