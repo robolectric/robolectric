@@ -140,6 +140,7 @@ public interface _Activity_ {
       IBinder assistToken);
 
   default void callAttach(
+      Activity realActivity,
       Context baseContext,
       ActivityThread activityThread,
       Instrumentation instrumentation,
