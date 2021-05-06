@@ -2,30 +2,31 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.UserHandle;
 import android.os.storage.StorageVolume;
 import java.io.File;
 import java.util.UUID;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Class to build {@link StorageVolume} */
 public final class StorageVolumeBuilder {
 
-  private String id;
+  private final String id;
   private int storageId = 0;
-  private File path;
-  private String description;
+  private final File path;
+  private final String description;
   private boolean primary = true;
   private boolean removable = false;
   private boolean emulated = false;
   private long mtpReserveSize = 00L;
   private boolean allowMassStorage = false;
   private long maxFileSize = 100L;
-  private UserHandle owner;
-  private String fsUuid = UUID.randomUUID().toString();
-  private String state;
+  private final UserHandle owner;
+  private final String fsUuid = UUID.randomUUID().toString();
+  private final UUID uuid = UUID.randomUUID();
+  private final String state;
 
   public StorageVolumeBuilder(
       String id, File path, String description, UserHandle owner, String state) {
@@ -65,7 +66,8 @@ public final class StorageVolumeBuilder {
   }
 
   public StorageVolume build() throws IllegalStateException {
-    if (Build.VERSION.SDK_INT >= VERSION_CODES.N && Build.VERSION.SDK_INT < VERSION_CODES.P) {
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    if (apiLevel >= VERSION_CODES.N && apiLevel < VERSION_CODES.P) {
       return ReflectionHelpers.callConstructor(
           StorageVolume.class,
           from(String.class, id), // String id,
@@ -81,7 +83,7 @@ public final class StorageVolumeBuilder {
           from(UserHandle.class, owner), // UserHandle owner,
           from(String.class, fsUuid), //  String fsUuid,
           from(String.class, state)); // String state
-    } else if (Build.VERSION.SDK_INT >= VERSION_CODES.P) {
+    } else if (apiLevel >= VERSION_CODES.P && apiLevel <= VERSION_CODES.R) {
       return ReflectionHelpers.callConstructor(
           StorageVolume.class,
           from(String.class, id), // String id,
@@ -94,6 +96,22 @@ public final class StorageVolumeBuilder {
           from(boolean.class, allowMassStorage), //  boolean allowMassStorage,
           from(long.class, maxFileSize), // long maxFileSize,
           from(UserHandle.class, owner), // UserHandle owner,
+          from(String.class, fsUuid), //  String fsUuid,
+          from(String.class, state)); // String state
+    } else if (apiLevel > VERSION_CODES.R) {
+      return ReflectionHelpers.callConstructor(
+          StorageVolume.class,
+          from(String.class, id), // String id,
+          from(File.class, path), // File path,
+          from(File.class, path), // File internalPath
+          from(String.class, description), // String description
+          from(boolean.class, primary), // boolean primary,
+          from(boolean.class, removable), // boolean removable,
+          from(boolean.class, emulated), // boolean emulated,
+          from(boolean.class, allowMassStorage), //  boolean allowMassStorage,
+          from(long.class, maxFileSize), // long maxFileSize,
+          from(UserHandle.class, owner), // UserHandle owner,
+          from(UUID.class, uuid), // UUID uuid
           from(String.class, fsUuid), //  String fsUuid,
           from(String.class, state)); // String state
     }

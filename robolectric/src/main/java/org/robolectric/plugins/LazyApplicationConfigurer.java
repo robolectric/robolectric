@@ -3,8 +3,8 @@ package org.robolectric.plugins;
 import com.google.auto.service.AutoService;
 import java.lang.reflect.Method;
 import javax.annotation.Nonnull;
-import org.robolectric.annotation.LazyApplication;
-import org.robolectric.annotation.LazyApplication.LazyLoad;
+import org.robolectric.annotation.experimental.LazyApplication;
+import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**

@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageLimitObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.AppUsageObserver;
+import org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver;
 import org.robolectric.shadows.ShadowUsageStatsManager.UsageStatsBuilder;
 
 /** Test for {@link ShadowUsageStatsManager}. */
@@ -60,6 +61,27 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(events.hasNextEvent()).isFalse();
     assertThat(events.getNextEvent(event)).isFalse();
+  }
+
+  @Test
+  public void testQueryEvents_overlappingEvents() throws Exception {
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 1000L, Event.MOVE_TO_BACKGROUND);
+    shadowOf(usageStatsManager).addEvent(TEST_PACKAGE_NAME1, 1000L, Event.MOVE_TO_FOREGROUND);
+
+    UsageEvents events = usageStatsManager.queryEvents(1000L, 2000L);
+    Event event = new Event();
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(1000L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_BACKGROUND);
+
+    assertThat(events.hasNextEvent()).isTrue();
+    assertThat(events.getNextEvent(event)).isTrue();
+    assertThat(event.getPackageName()).isEqualTo(TEST_PACKAGE_NAME1);
+    assertThat(event.getTimeStamp()).isEqualTo(1000L);
+    assertThat(event.getEventType()).isEqualTo(Event.MOVE_TO_FOREGROUND);
   }
 
   @Test
@@ -203,13 +225,13 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 123L,
                 TimeUnit.MINUTES,
                 pendingIntent1),
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 24, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
   }
 
@@ -225,7 +247,7 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 12, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
   }
 
@@ -243,7 +265,7 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 24, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
   }
 
@@ -261,13 +283,13 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 123L,
                 TimeUnit.MINUTES,
                 pendingIntent1),
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 24, ImmutableList.of("com.package3"), 456L, TimeUnit.SECONDS, pendingIntent2));
   }
 
@@ -294,7 +316,7 @@ public class ShadowUsageStatsManagerTest {
         .isEqualTo(500000L);
     assertThat(shadowOf(usageStatsManager).getRegisteredAppUsageObservers())
         .containsExactly(
-            new AppUsageObserver(
+            AppUsageObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 123L,
@@ -453,14 +475,14 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
         .containsExactly(
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 Duration.ofMinutes(123L),
                 Duration.ofSeconds(1L),
                 sessionStepIntent1,
                 sessionEndedIntent1),
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 24,
                 ImmutableList.of("com.package3"),
                 Duration.ofSeconds(456L),
@@ -498,7 +520,7 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
         .containsExactly(
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 12,
                 ImmutableList.of("com.package3"),
                 Duration.ofSeconds(456L),
@@ -537,7 +559,7 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
         .containsExactly(
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 24,
                 ImmutableList.of("com.package3"),
                 Duration.ofSeconds(456L),
@@ -576,14 +598,14 @@ public class ShadowUsageStatsManagerTest {
 
     assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
         .containsExactly(
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 Duration.ofMinutes(123L),
                 Duration.ofSeconds(1L),
                 sessionStepIntent1,
                 sessionEndedIntent1),
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 24,
                 ImmutableList.of("com.package3"),
                 Duration.ofSeconds(456L),
@@ -631,14 +653,14 @@ public class ShadowUsageStatsManagerTest {
         .isEqualTo(500000L);
     assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
         .containsExactly(
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 Duration.ofMinutes(123L),
                 Duration.ofSeconds(1L),
                 sessionStepIntent1,
                 sessionEndedIntent1),
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 24,
                 ImmutableList.of("com.package3"),
                 Duration.ofSeconds(456L),
@@ -682,14 +704,14 @@ public class ShadowUsageStatsManagerTest {
     assertThat(broadcastIntent.getIntExtra(UsageStatsManager.EXTRA_OBSERVER_ID, 0)).isEqualTo(24);
     assertThat(shadowOf(usageStatsManager).getRegisteredUsageSessionObservers())
         .containsExactly(
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 12,
                 ImmutableList.of("com.package1", "com.package2"),
                 Duration.ofMinutes(123L),
                 Duration.ofSeconds(1L),
                 sessionStepIntent1,
                 sessionEndedIntent1),
-            new org.robolectric.shadows.ShadowUsageStatsManager.UsageSessionObserver(
+            UsageSessionObserver.build(
                 24,
                 ImmutableList.of("com.package3"),
                 Duration.ofSeconds(456L),

@@ -9,8 +9,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.LazyApplication;
-import org.robolectric.annotation.LazyApplication.LazyLoad;
+import org.robolectric.annotation.experimental.LazyApplication;
+import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 
 /** Unit tests for {@link ShadowDisplayManagerGlobal} */
 @RunWith(AndroidJUnit4.class)

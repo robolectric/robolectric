@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.telecom.Call;
 import android.telecom.CallAudioState;
@@ -14,6 +15,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.telecom.Phone}. */
 @Implements(value = Phone.class, isInAndroidSdk = false)
@@ -24,6 +27,10 @@ public class ShadowPhone {
 
   @Implementation(minSdk = M)
   protected final List<Call> getCalls() {
+    List<Call> unmodifiableCalls = reflector(ReflectorPhone.class, phone).getUnmodifiableCalls();
+    if (unmodifiableCalls != null) {
+      return unmodifiableCalls;
+    }
     return Collections.unmodifiableList(calls);
   }
 
@@ -41,10 +48,27 @@ public class ShadowPhone {
   /** Add Call to a collection that returns when getCalls is called. */
   public void addCall(Call call) {
     calls.add(call);
+    List<Call> realCalls = reflector(ReflectorPhone.class, phone).getCalls();
+    if (realCalls != null) {
+      realCalls.add(call);
+    }
   }
 
   /** Remove call that has previously been added via addCall(). */
   public void removeCall(Call call) {
     calls.remove(call);
+    List<Call> realCalls = reflector(ReflectorPhone.class, phone).getCalls();
+    if (realCalls != null) {
+      realCalls.remove(call);
+    }
+  }
+
+  @ForType(Phone.class)
+  interface ReflectorPhone {
+    @Accessor("mUnmodifiableCalls")
+    List<Call> getUnmodifiableCalls();
+
+    @Accessor("mCalls")
+    List<Call> getCalls();
   }
 }

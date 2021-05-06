@@ -131,6 +131,12 @@ public class ShadowDisplayManagerGlobal {
       this.callbacks.add(iDisplayManagerCallback);
     }
 
+    public void registerCallbackWithEventMask(
+        IDisplayManagerCallback iDisplayManagerCallback, long ignoredEventsMask)
+        throws RemoteException {
+      registerCallback(iDisplayManagerCallback);
+    }
+
     private synchronized int addDisplay(DisplayInfo displayInfo) {
       int nextId = nextDisplayId++;
       displayInfos.put(nextId, displayInfo);

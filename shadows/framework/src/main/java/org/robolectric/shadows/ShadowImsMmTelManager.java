@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.shadow.api.Shadow.directlyOn;
+
 import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.RequiresPermission;
@@ -21,6 +23,7 @@ import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Supports IMS by default. IMS unregistered by default.
@@ -170,7 +173,7 @@ public class ShadowImsMmTelManager {
 
   /** Returns only one instance per subscription id. */
   @RequiresApi(api = VERSION_CODES.Q)
-  @Implementation(maxSdk = VERSION_CODES.R)
+  @Implementation
   protected static ImsMmTelManager createForSubscriptionId(int subId) {
     if (!SubscriptionManager.isValidSubscriptionId(subId)) {
       throw new IllegalArgumentException("Invalid subscription ID");
@@ -179,8 +182,11 @@ public class ShadowImsMmTelManager {
     if (existingInstances.containsKey(subId)) {
       return existingInstances.get(subId);
     }
-
-    ImsMmTelManager imsMmTelManager = new ImsMmTelManager(subId);
+    ImsMmTelManager imsMmTelManager =
+        directlyOn(
+            ImsMmTelManager.class,
+            "createForSubscriptionId",
+            ClassParameter.from(int.class, subId));
     existingInstances.put(subId, imsMmTelManager);
     return imsMmTelManager;
   }
