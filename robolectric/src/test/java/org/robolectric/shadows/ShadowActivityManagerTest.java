@@ -332,6 +332,23 @@ public class ShadowActivityManagerTest {
     assertThat(applicationExitInfoList.get(0).getProcessName()).isEqualTo(PROCESS_NAME);
   }
 
+  @Config(minSdk = R)
+  @Test
+  public void addApplicationExitInfo_timestampSet() {
+    shadowActivityManager.addApplicationExitInfo(
+        ShadowActivityManager.ApplicationExitInfoBuilder.newBuilder().setTimestamp(123).build());
+    shadowActivityManager.addApplicationExitInfo(
+        ShadowActivityManager.ApplicationExitInfoBuilder.newBuilder().setTimestamp(456).build());
+
+    List<ApplicationExitInfo> applicationExitInfoList =
+        activityManager.getHistoricalProcessExitReasons(
+            context.getPackageName(), /* pid= */ 0, /* maxNum= */ 0);
+
+    assertThat(applicationExitInfoList).hasSize(2);
+    assertThat(applicationExitInfoList.get(0).getTimestamp()).isEqualTo(456);
+    assertThat(applicationExitInfoList.get(1).getTimestamp()).isEqualTo(123);
+  }
+
   @Test
   public void getDeviceConfigurationInfo_returnsValueSet() {
     ConfigurationInfo configurationInfo = new ConfigurationInfo();
@@ -360,7 +377,12 @@ public class ShadowActivityManagerTest {
 
   private void addApplicationExitInfo(int pid, int reason, int status) {
     shadowActivityManager.addApplicationExitInfo(
-        PROCESS_NAME, /* pid= */ pid, /* reason= */ reason, /* status= */ status);
+        ShadowActivityManager.ApplicationExitInfoBuilder.newBuilder()
+            .setProcessName(PROCESS_NAME)
+            .setPid(pid)
+            .setReason(reason)
+            .setStatus(status)
+            .build());
   }
 
   private ActivityManager.RunningTaskInfo buildTaskInfo(ComponentName name) {
