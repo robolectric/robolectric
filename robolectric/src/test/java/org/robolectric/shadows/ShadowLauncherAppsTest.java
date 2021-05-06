@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -115,7 +116,7 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
-  @Config(minSdk = N)
+  @Config(minSdk = N, maxSdk = R)
   public void testGetActivityList() {
     String testPackageName = TEST_PACKAGE_NAME;
     UserHandle userHandle = UserHandle.CURRENT;

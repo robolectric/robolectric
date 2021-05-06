@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.hamcrest.Matcher;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -98,14 +99,33 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
   /**
    * Adds an expected log statement. If this log is not printed during test execution, the test case
-   * will fail. This will also match any log statement which contain a throwable as well. For
+   * will fail.
+   *
+   * <p>This will also match any log statement which contain a throwable as well. For
    * verifying the throwable, please see
    * {@link #expectLogMessageWithThrowable(int, String, String, Throwable)}.
-   * Do not use this to suppress failures. Use this to test that expected error cases in
+   *
+   * <p>Do not use this to suppress failures. Use this to test that expected error cases in
    * your code cause log messages to be printed.
    */
   public void expectLogMessage(int level, String tag, String message) {
-    expectLogMessageInternal(tag, new ExpectedLogItem(level, tag, message));
+    expectLogMessageInternal(tag, ExpectedLogItem.create(level, tag, message));
+  }
+
+  /**
+   * Adds an expected log statement using a regular expression. If this log is not printed during
+   * test execution, the test case will fail. When possible, log output should be made determinstic
+   * and {@link #expectLogMessage(int, String, String)} used instead.
+   *
+   * <p>This will also match any log statement which contain a throwable as well. For
+   * verifying the throwable, please see
+   * {@link #expectLogMessageWithThrowable(int, String, String, Throwable)}.
+   *
+   * <p>Do not use this to suppress failures. Use this to test that expected error cases in
+   * your code cause log messages to be printed.
+   */
+  public void expectLogMessagePattern(int level, String tag, Pattern messagePattern) {
+    expectLogMessageInternal(tag, ExpectedLogItem.create(level, tag, messagePattern));
   }
 
   /**
@@ -115,7 +135,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
    */
   public void expectLogMessageWithThrowable(
       int level, String tag, String message, Throwable throwable) {
-    expectLogMessageInternal(tag, new ExpectedLogItem(level, tag, message, equalTo(throwable)));
+    expectLogMessageWithThrowableMatcher(level, tag, message, equalTo(throwable));
   }
 
   /**
@@ -125,7 +145,9 @@ public final class ExpectedLogMessagesRule implements TestRule {
    */
   public void expectLogMessageWithThrowableMatcher(
       int level, String tag, String message, Matcher<Throwable> throwableMatcher) {
-    expectLogMessageInternal(tag, new ExpectedLogItem(level, tag, message, throwableMatcher));
+    expectLogMessageInternal(
+        tag,
+        ExpectedLogItem.create(level, tag, message, throwableMatcher));
   }
 
   /**
@@ -171,7 +193,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
     for (ExpectedLogItem expectedLogItem : expectedLogItemMap.keySet()) {
       if (expectedLogItem.type == logItem.type
           && equals(expectedLogItem.tag, logItem.tag)
-          && equals(expectedLogItem.msg, logItem.msg)
+          && matchMessage(expectedLogItem, logItem.msg)
           && matchThrowable(expectedLogItem, logItem.throwable)) {
         expectedLogItemMap.put(expectedLogItem, true);
         return true;
@@ -183,6 +205,18 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
   private static boolean equals(String a, String b) {
     return a == null ? b == null : a.equals(b);
+  }
+
+  private static boolean matchMessage(ExpectedLogItem logItem, String msg) {
+    if (logItem.msg != null) {
+      return logItem.msg.equals(msg);
+    }
+
+    if (logItem.msgPattern != null) {
+      return logItem.msgPattern.matcher(msg).matches();
+    }
+
+    return msg == null;
   }
 
   private static boolean matchThrowable(ExpectedLogItem logItem, Throwable throwable) {
@@ -198,16 +232,32 @@ public final class ExpectedLogMessagesRule implements TestRule {
     final int type;
     final String tag;
     final String msg;
-    private Matcher<Throwable> throwableMatcher = null;
+    final Pattern msgPattern;
+    final Matcher<Throwable> throwableMatcher;
 
-    ExpectedLogItem(int type, String tag, String msg) {
+    static ExpectedLogItem create(int type, String tag, String msg) {
+      return new ExpectedLogItem(type, tag, msg, null, null);
+    }
+
+    static ExpectedLogItem create(int type, String tag, Pattern msg) {
+      return new ExpectedLogItem(type, tag, null, msg, null);
+    }
+
+    static ExpectedLogItem create(
+        int type, String tag, String msg, Matcher<Throwable> throwableMatcher) {
+      return new ExpectedLogItem(type, tag, msg, null, throwableMatcher);
+    }
+
+    private ExpectedLogItem(
+        int type,
+        String tag,
+        String msg,
+        Pattern msgPattern,
+        Matcher<Throwable> throwableMatcher) {
       this.type = type;
       this.tag = tag;
       this.msg = msg;
-    }
-
-    ExpectedLogItem(int type, String tag, String msg, Matcher<Throwable> throwableMatcher) {
-      this(type, tag, msg);
+      this.msgPattern = msgPattern;
       this.throwableMatcher = throwableMatcher;
     }
 
@@ -223,8 +273,9 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
       ExpectedLogItem log = (ExpectedLogItem) o;
       return type == log.type
-          && !(msg != null ? !msg.equals(log.msg) : log.msg != null)
           && !(tag != null ? !tag.equals(log.tag) : log.tag != null)
+          && !(msg != null ? !msg.equals(log.msg) : log.msg != null)
+          && !(msgPattern != null ? !msgPattern.equals(log.msgPattern) : log.msgPattern != null)
           && !(throwableMatcher != null
               ? !throwableMatcher.equals(log.throwableMatcher)
               : log.throwableMatcher != null);
@@ -232,7 +283,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
     @Override
     public int hashCode() {
-      return Objects.hash(type, tag, msg, throwableMatcher);
+      return Objects.hash(type, tag, msg, msgPattern, throwableMatcher);
     }
 
     @Override
@@ -248,7 +299,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
           + tag
           + '\''
           + ", msg='"
-          + msg
+          + (msg != null ? msg : msgPattern)
           + '\''
           + throwableStr
           + '}';

@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.FrameMetrics;
 import android.view.FrameMetrics.Metric;
 import java.util.HashMap;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -17,8 +19,8 @@ public final class FrameMetricsBuilder {
   // android.view.FrameMetrics$Index defines all of these values, but has RetentionPolicy.SOURCE,
   // preventing use of reflection to read them.
   private static final int FLAGS_INDEX = 0;
-  private static final int INTENDED_VSYNC_INDEX = 1;
-  private static final int VSYNC_INDEX = 2;
+  private static final int INTENDED_VSYNC_INDEX = RuntimeEnvironment.getApiLevel() <= R ? 1 : 2;
+  private static final int VSYNC_INDEX = RuntimeEnvironment.getApiLevel() <= R ? 2 : 3;
 
   private final Map<Integer, Long> metricsMap = new HashMap<>();
   private long syncDelayTimeNanos = 0;
@@ -81,6 +83,12 @@ public final class FrameMetricsBuilder {
         continue;
       }
 
+      int endIndex = getEndIndexForMetric(metric);
+      int startIndex = getStartIndexForMetric(metric);
+      if (startIndex == 0 && endIndex == 0) {
+        // skip reserved fields
+        continue;
+      }
       timingData[getEndIndexForMetric(metric)] =
           timingData[getStartIndexForMetric(metric)] + getMetric(metric);
     }

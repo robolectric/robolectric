@@ -6,11 +6,15 @@ import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 
+import android.annotation.Nullable;
+import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.LayoutInflater;
@@ -43,7 +47,7 @@ public class ShadowAppWidgetManager {
   private int nextWidgetId = 1;
   private boolean alwaysRecreateViewsDuringUpdate = false;
   private boolean allowedToBindWidgets;
-  private boolean supportedToRequestPinAppWidget = false;
+  private boolean requestPinAppWidgetSupported = false;
   private boolean validWidgetProviderComponentName = true;
   private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<>();
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
@@ -223,7 +227,44 @@ public class ShadowAppWidgetManager {
   /** Returns true if {@link setSupportedToRequestPinAppWidget} is called with {@code true} */
   @Implementation(minSdk = O)
   protected boolean isRequestPinAppWidgetSupported() {
-    return supportedToRequestPinAppWidget;
+    return requestPinAppWidgetSupported;
+  }
+
+  /**
+   * This implementation currently uses {@code requestPinAppWidgetSupported} to determine if it
+   * should bind the app widget provided and execute the {@code successCallback}.
+   *
+   * <p>Note: This implementation doesn't trigger {@code AppWidgetProvider.onUpdate}.
+   *
+   * @param provider The provider for the app widget to bind.
+   * @param extras Returned in the callback along with the ID of the newly bound app widget, sent as
+   *     {@link AppWidgetManager#EXTRA_APPWIDGET_ID}.
+   * @param successCallback Called after binding the app widget, if possible.
+   * @return true if the widget was installed, false otherwise.
+   */
+  @Implementation(minSdk = O)
+  protected boolean requestPinAppWidget(
+      ComponentName provider, @Nullable Bundle extras, @Nullable PendingIntent successCallback) {
+    if (requestPinAppWidgetSupported) {
+      int myWidgetId = nextWidgetId++;
+      // Bind the widget.
+      bindAppWidgetId(myWidgetId, provider);
+
+      // Call the success callback if it exists.
+      if (successCallback != null) {
+        try {
+          successCallback.send(
+              context.getApplicationContext(),
+              0,
+              new Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, myWidgetId));
+        } catch (CanceledException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return true;
+    }
+
+    return false;
   }
 
   /**
@@ -318,8 +359,8 @@ public class ShadowAppWidgetManager {
     allowedToBindWidgets = allowed;
   }
 
-  public void setSupportedToRequestPinAppWidget(boolean supported) {
-    supportedToRequestPinAppWidget = supported;
+  public void setRequestPinAppWidgetSupported(boolean supported) {
+    requestPinAppWidgetSupported = supported;
   }
 
   public void setValidWidgetProviderComponentName(boolean validWidgetProviderComponentName) {

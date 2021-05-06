@@ -1,8 +1,8 @@
 package org.robolectric.plugins;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.annotation.LazyApplication.LazyLoad.OFF;
-import static org.robolectric.annotation.LazyApplication.LazyLoad.ON;
+import static org.robolectric.annotation.experimental.LazyApplication.LazyLoad.OFF;
+import static org.robolectric.annotation.experimental.LazyApplication.LazyLoad.ON;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
