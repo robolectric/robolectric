@@ -11,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowAccessibilityButtonController}. */
@@ -24,7 +25,7 @@ public class ShadowAccessibilityButtonControllerTest {
 
   @Before
   public void setUp() {
-    MyService service = new MyService();
+    MyService service = Robolectric.setupService(MyService.class);
     accessibilityButtonController = service.getAccessibilityButtonController();
   }
 
