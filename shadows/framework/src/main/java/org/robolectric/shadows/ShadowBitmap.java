@@ -290,7 +290,13 @@ public class ShadowBitmap {
     // updated if matrix is non-null
     shadowNewBitmap.width = width;
     shadowNewBitmap.height = height;
-
+    shadowNewBitmap.setMutable(true);
+    newBitmap.setDensity(src.getDensity());
+    if ((matrix == null || matrix.isIdentity()) && shadowSrcBitmap.bufferedImage != null) {
+      // Only simple cases are supported for setting image data to the new Bitmap.
+      shadowNewBitmap.bufferedImage =
+          shadowSrcBitmap.bufferedImage.getSubimage(x, y, width, height);
+    }
     return newBitmap;
   }
 
@@ -473,7 +479,8 @@ public class ShadowBitmap {
     shadowBitmap.width = getWidth();
     if (bufferedImage != null) {
       ColorModel cm = bufferedImage.getColorModel();
-      WritableRaster raster = bufferedImage.copyData(null);
+      WritableRaster raster =
+          bufferedImage.copyData(bufferedImage.getRaster().createCompatibleWritableRaster());
       shadowBitmap.bufferedImage = new BufferedImage(cm, raster, false, null);
     }
     return newBitmap;
