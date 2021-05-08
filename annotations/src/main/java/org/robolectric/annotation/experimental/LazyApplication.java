@@ -1,4 +1,4 @@
-package org.robolectric.annotation;
+package org.robolectric.annotation.experimental;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,6 +12,9 @@ import java.lang.annotation.Target;
  *
  * <p>In particular, any test with {@link LazyLoad.ON} that does not need either of the Application
  * or the Instrumentation will load neither (and recoup the associated cost)
+ *
+ * <p>NOTE: This feature is currently still experimental, so any users of {@link LazyLoad.ON} do so
+ * at their own risk
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
