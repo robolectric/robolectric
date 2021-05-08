@@ -6,9 +6,6 @@ import android.view.Choreographer;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Static;
 
 /**
  * A {@link Choreographer} shadow for {@link LooperMode.Mode.PAUSED}.
@@ -26,14 +23,6 @@ public class ShadowPausedChoreographer extends ShadowChoreographer {
 
   @Resetter
   public static void reset() {
-    reflector(ChoregrapherReflector.class).getThreadInstance().remove();
-  }
-
-  @ForType(Choreographer.class)
-  private interface ChoregrapherReflector {
-
-    @Accessor("sThreadInstance")
-    @Static
-    ThreadLocal<Choreographer> getThreadInstance();
+    reflector(ChoreographerReflector.class).getThreadInstance().remove();
   }
 }
