@@ -121,6 +121,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     reflector(getActivityReflector(), realActivity)
         .callAttach(
+            realActivity,
             baseContext,
             activityThread,
             instrumentation,
