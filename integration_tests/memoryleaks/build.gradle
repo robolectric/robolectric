@@ -1,0 +1,34 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+
+android {
+    compileSdkVersion 30
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 30
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+}
+
+dependencies {
+    // Testing dependencies
+    testImplementation project(path: ':testapp', configuration: 'default')
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "com.google.guava:guava-testlib:29.0-jre"
+    testImplementation "com.android.support:support-v4:28.0.0"
+}

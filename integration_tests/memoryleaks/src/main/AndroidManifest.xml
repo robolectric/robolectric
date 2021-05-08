@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest for androidx memoryleaks test module
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.robolectric.integrationtests.memoryleaks">
+    <uses-sdk android:targetSdkVersion="30"/>
+
+    <application>
+    </application>
+</manifest>
