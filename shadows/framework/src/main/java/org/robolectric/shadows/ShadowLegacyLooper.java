@@ -87,8 +87,6 @@ public class ShadowLegacyLooper extends ShadowLooper {
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
     }
-
-    backgroundScheduler = null;
   }
 
   static synchronized Scheduler getBackgroundThreadScheduler() {
