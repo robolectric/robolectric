@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
@@ -17,6 +18,7 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.ArraySet;
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -66,74 +68,31 @@ public class ShadowUsageStatsManager {
    * App usage observer registered via {@link UsageStatsManager#registerAppUsageObserver(int,
    * String[], long, TimeUnit, PendingIntent)}.
    */
-  public static final class AppUsageObserver {
-    private final int observerId;
-    private final Collection<String> packageNames;
-    private final long timeLimit;
-    private final TimeUnit timeUnit;
-    private final PendingIntent callbackIntent;
+  @AutoValue
+  public abstract static class AppUsageObserver {
 
-    public AppUsageObserver(
+    public static AppUsageObserver build(
         int observerId,
         @NonNull Collection<String> packageNames,
         long timeLimit,
         @NonNull TimeUnit timeUnit,
         @NonNull PendingIntent callbackIntent) {
-      this.observerId = observerId;
-      this.packageNames = packageNames;
-      this.timeLimit = timeLimit;
-      this.timeUnit = timeUnit;
-      this.callbackIntent = callbackIntent;
+      return new AutoValue_ShadowUsageStatsManager_AppUsageObserver(
+          observerId, ImmutableList.copyOf(packageNames), timeLimit, timeUnit, callbackIntent);
     }
 
-    public int getObserverId() {
-      return observerId;
-    }
+    public abstract int getObserverId();
 
     @NonNull
-    public Collection<String> getPackageNames() {
-      return packageNames;
-    }
+    public abstract ImmutableList<String> getPackageNames();
 
-    public long getTimeLimit() {
-      return timeLimit;
-    }
+    public abstract long getTimeLimit();
 
     @NonNull
-    public TimeUnit getTimeUnit() {
-      return timeUnit;
-    }
+    public abstract TimeUnit getTimeUnit();
 
     @NonNull
-    public PendingIntent getCallbackIntent() {
-      return callbackIntent;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      AppUsageObserver that = (AppUsageObserver) o;
-      return observerId == that.observerId
-          && timeLimit == that.timeLimit
-          && packageNames.equals(that.packageNames)
-          && timeUnit == that.timeUnit
-          && callbackIntent.equals(that.callbackIntent);
-    }
-
-    @Override
-    public int hashCode() {
-      int result = observerId;
-      result = 31 * result + packageNames.hashCode();
-      result = 31 * result + (int) (timeLimit ^ (timeLimit >>> 32));
-      result = 31 * result + timeUnit.hashCode();
-      result = 31 * result + callbackIntent.hashCode();
-      return result;
-    }
+    public abstract PendingIntent getCallbackIntent();
   }
 
   private static final Map<Integer, AppUsageObserver> appUsageObserversById =
@@ -144,83 +103,40 @@ public class ShadowUsageStatsManager {
    * UsageStatsManager#registerUsageSessionObserver(int, String[], long, TimeUnit, long, TimeUnit,
    * PendingIntent, PendingIntent)}.
    */
-  public static final class UsageSessionObserver {
-    private final int observerId;
-    private final List<String> packageNames;
-    private final Duration sessionStepDuration;
-    private final Duration thresholdDuration;
-    private final PendingIntent sessionStepTriggeredIntent;
-    private final PendingIntent sessionEndedIntent;
-
-    public UsageSessionObserver(
+  @AutoValue
+  public abstract static class UsageSessionObserver {
+    public static UsageSessionObserver build(
         int observerId,
         @NonNull List<String> packageNames,
         Duration sessionStepDuration,
         Duration thresholdDuration,
         @NonNull PendingIntent sessionStepTriggeredIntent,
         @NonNull PendingIntent sessionEndedIntent) {
-      this.observerId = observerId;
-      this.packageNames = packageNames;
-      this.sessionStepDuration = sessionStepDuration;
-      this.thresholdDuration = thresholdDuration;
-      this.sessionStepTriggeredIntent = sessionStepTriggeredIntent;
-      this.sessionEndedIntent = sessionEndedIntent;
+      return new AutoValue_ShadowUsageStatsManager_UsageSessionObserver(
+          observerId,
+          ImmutableList.copyOf(packageNames),
+          sessionStepDuration,
+          thresholdDuration,
+          sessionStepTriggeredIntent,
+          sessionEndedIntent);
     }
 
-    public int getObserverId() {
-      return observerId;
-    }
-
-    @NonNull
-    public List<String> getPackageNames() {
-      return packageNames;
-    }
-
-    public Duration getSessionStepDuration() {
-      return sessionStepDuration;
-    }
-
-    public Duration getThresholdDuration() {
-      return thresholdDuration;
-    }
+    public abstract int getObserverId();
 
     @NonNull
-    public PendingIntent getSessionStepTriggeredIntent() {
-      return sessionStepTriggeredIntent;
-    }
+    public abstract ImmutableList<String> getPackageNames();
+
+    @Nullable
+    public abstract Duration getSessionStepDuration();
+
+    @Nullable
+    public abstract Duration getThresholdDuration();
 
     @NonNull
-    public PendingIntent getSessionEndedIntent() {
-      return sessionEndedIntent;
-    }
+    public abstract PendingIntent getSessionStepTriggeredIntent();
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      UsageSessionObserver that = (UsageSessionObserver) o;
-      return observerId == that.observerId
-          && packageNames.equals(that.packageNames)
-          && sessionStepDuration.equals(that.sessionStepDuration)
-          && thresholdDuration.equals(that.thresholdDuration)
-          && sessionStepTriggeredIntent.equals(that.sessionStepTriggeredIntent)
-          && sessionEndedIntent.equals(that.sessionEndedIntent);
-    }
-
-    @Override
-    public int hashCode() {
-      int result = observerId;
-      result = 31 * result + packageNames.hashCode();
-      result = 31 * result + sessionStepDuration.hashCode();
-      result = 31 * result + thresholdDuration.hashCode();
-      result = 31 * result + sessionStepTriggeredIntent.hashCode();
-      result = 31 * result + sessionEndedIntent.hashCode();
-      return result;
-    }
+    @NonNull
+    public abstract PendingIntent getSessionEndedIntent();
   }
 
   protected static final Map<Integer, UsageSessionObserver> usageSessionObserversById =
@@ -476,7 +392,7 @@ public class ShadowUsageStatsManager {
       PendingIntent callbackIntent) {
     appUsageObserversById.put(
         observerId,
-        new AppUsageObserver(
+        AppUsageObserver.build(
             observerId, ImmutableList.copyOf(packages), timeLimit, timeUnit, callbackIntent));
   }
 
@@ -498,14 +414,14 @@ public class ShadowUsageStatsManager {
    */
   public void triggerRegisteredAppUsageObserver(int observerId, long timeUsedInMillis) {
     AppUsageObserver observer = appUsageObserversById.remove(observerId);
-    long timeLimitInMillis = observer.timeUnit.toMillis(observer.timeLimit);
+    long timeLimitInMillis = observer.getTimeUnit().toMillis(observer.getTimeLimit());
     Intent intent =
         new Intent()
             .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
             .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, timeLimitInMillis)
             .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
     try {
-      observer.callbackIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
+      observer.getCallbackIntent().send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
@@ -521,7 +437,7 @@ public class ShadowUsageStatsManager {
       PendingIntent sessionEndedIntent) {
     usageSessionObserversById.put(
         observerId,
-        new UsageSessionObserver(
+        UsageSessionObserver.build(
             observerId,
             ImmutableList.copyOf(packages),
             sessionStepDuration,
@@ -549,14 +465,14 @@ public class ShadowUsageStatsManager {
    */
   public void triggerRegisteredSessionStepObserver(int observerId, long timeUsedInMillis) {
     UsageSessionObserver observer = usageSessionObserversById.get(observerId);
-    long sessionStepTimeInMillis = observer.sessionStepDuration.toMillis();
+    long sessionStepTimeInMillis = observer.getSessionStepDuration().toMillis();
     Intent intent =
         new Intent()
             .putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId)
             .putExtra(UsageStatsManager.EXTRA_TIME_LIMIT, sessionStepTimeInMillis)
             .putExtra(UsageStatsManager.EXTRA_TIME_USED, timeUsedInMillis);
     try {
-      observer.sessionStepTriggeredIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
+      observer.getSessionStepTriggeredIntent().send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
@@ -571,7 +487,7 @@ public class ShadowUsageStatsManager {
     UsageSessionObserver observer = usageSessionObserversById.get(observerId);
     Intent intent = new Intent().putExtra(UsageStatsManager.EXTRA_OBSERVER_ID, observerId);
     try {
-      observer.sessionEndedIntent.send(RuntimeEnvironment.getApplication(), 0, intent);
+      observer.getSessionEndedIntent().send(RuntimeEnvironment.getApplication(), 0, intent);
     } catch (CanceledException e) {
       throw new RuntimeException(e);
     }
