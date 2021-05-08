@@ -116,12 +116,17 @@ public class FakeHttpLayer {
     }
     HttpResponse httpResponse = findResponse(httpRequest);
     if (logHttpRequests) {
-      System.out.println("  --> " + (httpResponse == null ? null : httpResponse.getStatusLine().getStatusCode()));
+      System.out.println(
+          "  --> " + (httpResponse == null ? null : httpResponse.getStatusLine().getStatusCode()));
     }
 
     if (httpResponse == null) {
-      throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: " +
-          httpRequest.getRequestLine().getMethod() + " " + httpRequest.getRequestLine().getUri());
+      throw new RuntimeException(
+          "Unexpected call to execute, no pending responses are available. See"
+              + " Robolectric.addPendingResponse(). Request was: "
+              + httpRequest.getRequestLine().getMethod()
+              + " "
+              + httpRequest.getRequestLine().getUri());
     } else {
       HttpParams params = httpResponse.getParams();
 
@@ -416,7 +421,7 @@ public class FakeHttpLayer {
       if (path != null && !path.equals(uri.getRawPath())) {
         return false;
       }
-      if (noParams && !uri.getRawQuery().equals(null)) {
+      if (noParams && uri.getRawQuery() != null) {
         return false;
       }
       if (params.size() > 0) {
