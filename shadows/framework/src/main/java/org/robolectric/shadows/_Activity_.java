@@ -298,6 +298,9 @@ public interface _Activity_ {
   @Accessor("mLastNonConfigurationInstances")
   void setLastNonConfigurationInstances(Object nonConfigInstance);
 
+  void setVoiceInteractor(
+      @WithType("com.android.internal.app.IVoiceInteractor") Object voiceInteractor);
+
   @Accessor("mWindow")
   void setWindow(Window window);
 }

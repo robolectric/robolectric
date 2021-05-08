@@ -35,6 +35,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import com.android.internal.app.IVoiceInteractor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -60,8 +61,7 @@ import org.robolectric.util.reflector.WithType;
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
-  @RealObject
-  protected Activity realActivity;
+  @RealObject protected Activity realActivity;
 
   private int resultCode;
   private Intent resultIntent;
@@ -184,7 +184,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     switch (mDefaultKeyMode) {
       case Activity.DEFAULT_KEYS_DISABLE:
       case Activity.DEFAULT_KEYS_SHORTCUT:
-        mDefaultKeySsb = null;      // not used in these modes
+        mDefaultKeySsb = null; // not used in these modes
         break;
       case Activity.DEFAULT_KEYS_DIALER:
       case Activity.DEFAULT_KEYS_SEARCH_LOCAL:
@@ -244,7 +244,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    *
    * @param parent Parent fragmentActivity to set on this fragmentActivity
    */
-  @HiddenApi @Implementation
+  @HiddenApi
+  @Implementation
   public void setParent(Activity parent) {
     this.parent = parent;
   }
@@ -371,57 +372,50 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     hasReportedFullyDrawn = true;
   }
 
-  /**
-   * @return whether {@code ReportFullyDrawn()} methods has been called.
-   */
+  /** @return whether {@code ReportFullyDrawn()} methods has been called. */
   public boolean getReportFullyDrawn() {
     return hasReportedFullyDrawn;
   }
 
-  /**
-   * @return the {@code contentView} set by one of the {@code setContentView()} methods
-   */
+  /** @return the {@code contentView} set by one of the {@code setContentView()} methods */
   public View getContentView() {
     return ((ViewGroup) getWindow().findViewById(android.R.id.content)).getChildAt(0);
   }
 
-  /**
-   * @return the {@code resultCode} set by one of the {@code setResult()} methods
-   */
+  /** @return the {@code resultCode} set by one of the {@code setResult()} methods */
   public int getResultCode() {
     return resultCode;
   }
 
-  /**
-   * @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)}
-   */
+  /** @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)} */
   public Intent getResultIntent() {
     return resultIntent;
   }
 
   /**
-   * Consumes and returns the next {@code Intent} on the
-   * started activities for results stack.
+   * Consumes and returns the next {@code Intent} on the started activities for results stack.
    *
-   * @return the next started {@code Intent} for an activity, wrapped in
-   *         an {@link ShadowActivity.IntentForResult} object
+   * @return the next started {@code Intent} for an activity, wrapped in an {@link
+   *     ShadowActivity.IntentForResult} object
    */
   public IntentForResult getNextStartedActivityForResult() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
     return shadowInstrumentation.getNextStartedActivityForResult();
   }
 
   /**
-   * Returns the most recent {@code Intent} started by
-   * {@link Activity#startActivityForResult(Intent, int)} without consuming it.
+   * Returns the most recent {@code Intent} started by {@link
+   * Activity#startActivityForResult(Intent, int)} without consuming it.
    *
-   * @return the most recently started {@code Intent}, wrapped in
-   *         an {@link ShadowActivity.IntentForResult} object
+   * @return the most recently started {@code Intent}, wrapped in an {@link
+   *     ShadowActivity.IntentForResult} object
    */
   public IntentForResult peekNextStartedActivityForResult() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
     return shadowInstrumentation.peekNextStartedActivityForResult();
   }
 
@@ -439,9 +433,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     this.lastNonConfigurationInstance = lastNonConfigurationInstance;
   }
 
-  /**
-   * @param view View to focus.
-   */
+  /** @param view View to focus. */
   public void setCurrentFocus(View view) {
     currentFocus = view;
   }
@@ -468,7 +460,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   /**
    * Return the options menu.
    *
-   * @return  Options menu.
+   * @return Options menu.
    */
   public Menu getOptionsMenu() {
     return optionsMenu;
@@ -525,8 +517,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * Container object to hold an Intent, together with the requestCode used
-   * in a call to {@code Activity.startActivityForResult(Intent, int)}
+   * Container object to hold an Intent, together with the requestCode used in a call to {@code
+   * Activity.startActivityForResult(Intent, int)}
    */
   public static class IntentForResult {
     public Intent intent;
@@ -625,8 +617,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
-   * @return the dialog resource id passed into
-   *         {@code Activity.showDialog(int, Bundle)} or {@code Activity.showDialog(int)}
+   * @return the dialog resource id passed into {@code Activity.showDialog(int, Bundle)} or {@code
+   *     Activity.showDialog(int)}
    */
   public Integer getLastShownDialogId() {
     return lastShownDialogId;
@@ -724,9 +716,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return (ActivityManager) realActivity.getSystemService(Context.ACTIVITY_SERVICE);
   }
 
-  /**
-   * Changes state of {@link #isInMultiWindowMode} method.
-   */
+  /** Changes state of {@link #isInMultiWindowMode} method. */
   public void setInMultiWindowMode(boolean value) {
     inMultiWindowMode = value;
   }
@@ -774,6 +764,19 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    */
   public PermissionsRequest getLastRequestedPermission() {
     return lastRequestedPermission;
+  }
+
+  /**
+   * Initializes the associated Activity with an {@link android.app.VoiceInteractor} instance.
+   * Subsequent {@link android.app.Activity#getVoiceInteractor()} calls on the associated activity
+   * will return a {@link android.app.VoiceInteractor} instance
+   */
+  public void initializeVoiceInteractor() {
+    if (RuntimeEnvironment.getApiLevel() < N) {
+      throw new IllegalStateException("initializeVoiceInteractor requires API " + N);
+    }
+    reflector(_Activity_.class, realActivity)
+        .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
   }
 
   private final class ActivityInvoker {
