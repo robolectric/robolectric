@@ -47,15 +47,15 @@ public class ShadowAudioManager {
   public static final int DEFAULT_VOLUME = 7;
   public static final int INVALID_VOLUME = 0;
   public static final int FLAG_NO_ACTION = 0;
-  public static final int[] ALL_STREAMS = {
-    AudioManager.STREAM_MUSIC,
-    AudioManager.STREAM_ALARM,
-    AudioManager.STREAM_NOTIFICATION,
-    AudioManager.STREAM_RING,
-    AudioManager.STREAM_SYSTEM,
-    AudioManager.STREAM_VOICE_CALL,
-    AudioManager.STREAM_DTMF
-  };
+  public static final ImmutableList<Integer> ALL_STREAMS =
+      ImmutableList.of(
+          AudioManager.STREAM_MUSIC,
+          AudioManager.STREAM_ALARM,
+          AudioManager.STREAM_NOTIFICATION,
+          AudioManager.STREAM_RING,
+          AudioManager.STREAM_SYSTEM,
+          AudioManager.STREAM_VOICE_CALL,
+          AudioManager.STREAM_DTMF);
 
   private static final int INVALID_PATCH_HANDLE = -1;
   private static final float MAX_VOLUME_DB = 0;
@@ -448,7 +448,7 @@ public class ShadowAudioManager {
     }
   }
 
-  private static AudioPlaybackConfiguration createAudioPlaybackConfiguration(
+  protected AudioPlaybackConfiguration createAudioPlaybackConfiguration(
       AudioAttributes audioAttributes) {
     // use reflection to call package private APIs
     PlayerBase.PlayerIdCard playerIdCard =
