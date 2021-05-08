@@ -110,7 +110,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     handler.postDelayed(stopVibratingRunnable, this.milliseconds);
   }
 
-  private void recordVibratePattern(long[] pattern, int repeat) {
+  protected void recordVibratePattern(long[] pattern, int repeat) {
     vibrating = true;
     this.pattern = pattern;
     this.repeat = repeat;
@@ -120,6 +120,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       for (long t : pattern) {
         endDelayMillis += t;
       }
+      this.milliseconds = endDelayMillis;
       handler.postDelayed(stopVibratingRunnable, endDelayMillis);
     }
   }
