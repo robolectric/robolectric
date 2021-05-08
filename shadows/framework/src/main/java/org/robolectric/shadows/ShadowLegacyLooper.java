@@ -49,6 +49,8 @@ public class ShadowLegacyLooper extends ShadowLooper {
 
   private static Looper mainLooper;
 
+  private static Scheduler backgroundScheduler;
+
   private @RealObject Looper realObject;
 
   boolean quit;
@@ -85,6 +87,18 @@ public class ShadowLegacyLooper extends ShadowLooper {
     if (mainLooper != null) {
       shadowOf(mainLooper).reset();
     }
+
+    backgroundScheduler = null;
+  }
+
+  static synchronized Scheduler getBackgroundThreadScheduler() {
+    if (backgroundScheduler == null) {
+      backgroundScheduler =
+          RoboSettings.isUseGlobalScheduler()
+              ? RuntimeEnvironment.getMasterScheduler()
+              : new Scheduler();
+    }
+    return backgroundScheduler;
   }
 
   @Implementation
