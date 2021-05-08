@@ -71,6 +71,7 @@ public class ShadowPendingIntent {
   private int flags;
   private String creatorPackage;
   private boolean canceled;
+  @Nullable private PendingIntent.OnFinished lastOnFinished;
 
   @Implementation
   protected static void __staticInitializer__() {
@@ -172,6 +173,15 @@ public class ShadowPendingIntent {
   @Implementation(minSdk = M)
   protected void send(Context context, int code, Intent intent, PendingIntent.OnFinished onFinished,
       Handler handler, String requiredPermission, Bundle options) throws CanceledException {
+    this.lastOnFinished =
+        handler == null
+            ? onFinished
+            : (pendingIntent, intent1, resultCode, resultData, resultExtras) ->
+                handler.post(
+                    () ->
+                        onFinished.onSendFinished(
+                            pendingIntent, intent1, resultCode, resultData, resultExtras));
+
     if (canceled) {
       throw new CanceledException();
     }
@@ -308,6 +318,27 @@ public class ShadowPendingIntent {
    */
   public int getFlags() {
     return flags;
+  }
+
+  /**
+   * Calls {@link PendingIntent.OnFinished#onSendFinished} on the last {@link
+   * PendingIntent.OnFinished} passed with {@link #send()}.
+   *
+   * <p>{@link PendingIntent.OnFinished#onSendFinished} is called on the {@link Handler} passed with
+   * {@link #send()} (if any). If no {@link Handler} was provided it's invoked on the calling
+   * thread.
+   *
+   * @return false if no {@link PendingIntent.OnFinished} callback was passed with the last {@link
+   *     #send()} call, true otherwise.
+   */
+  public boolean callLastOnFinished(
+      Intent intent, int resultCode, String resultData, Bundle resultExtras) {
+    if (lastOnFinished == null) {
+      return false;
+    }
+
+    lastOnFinished.onSendFinished(realPendingIntent, intent, resultCode, resultData, resultExtras);
+    return true;
   }
 
   @Implementation

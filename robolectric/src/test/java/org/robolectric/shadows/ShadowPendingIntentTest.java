@@ -20,10 +20,13 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Parcel;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
 import org.junit.Test;
@@ -596,6 +599,102 @@ public class ShadowPendingIntentTest {
     ShadowApplication shadowApplication = shadowOf((Application) context);
     Bundle sendOptions = shadowApplication.getBroadcastOptions(intent);
     assertThat(sendOptions.getBoolean(keyDontSendToRestrictedApps)).isTrue();
+  }
+
+  @Test
+  public void send_withOnFinishedCallback_callbackSavedForLaterInvocation()
+      throws CanceledException {
+    final AtomicBoolean onSendFinishedCalled = new AtomicBoolean(false);
+    PendingIntent.OnFinished onFinished =
+        new PendingIntent.OnFinished() {
+          @Override
+          public void onSendFinished(
+              PendingIntent pendingIntent,
+              Intent intent,
+              int resultCode,
+              String resultData,
+              Bundle resultExtras) {
+            onSendFinishedCalled.set(true);
+          }
+        };
+    Intent intent = new Intent();
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);
+
+    pendingIntent.send(context, /* code= */ 0, intent, onFinished, /* handler= */ null);
+
+    assertThat(
+            shadowOf(pendingIntent)
+                .callLastOnFinished(
+                    intent, /* resultCode= */ 0, /* resultData= */ null, /* resultExtras= */ null))
+        .isTrue();
+    assertThat(onSendFinishedCalled.get()).isTrue();
+  }
+
+  @Test
+  public void send_withOnFinishedCallbackAndHandler_callbackSavedForLaterInvocationOnHandler()
+      throws CanceledException {
+    HandlerThread handlerThread = new HandlerThread("test");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    final AtomicBoolean onSendFinishedCalled = new AtomicBoolean(false);
+    PendingIntent.OnFinished onFinished =
+        new PendingIntent.OnFinished() {
+          @Override
+          public void onSendFinished(
+              PendingIntent pendingIntent,
+              Intent intent,
+              int resultCode,
+              String resultData,
+              Bundle resultExtras) {
+            onSendFinishedCalled.set(true);
+          }
+        };
+    Intent intent = new Intent();
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);
+
+    pendingIntent.send(context, /* code= */ 0, intent, onFinished, handler);
+
+    assertThat(
+            shadowOf(pendingIntent)
+                .callLastOnFinished(
+                    intent, /* resultCode= */ 0, /* resultData= */ null, /* resultExtras= */ null))
+        .isTrue();
+    shadowOf(handlerThread.getLooper()).idle();
+    assertThat(onSendFinishedCalled.get()).isTrue();
+    handlerThread.quit();
+  }
+
+  @Test
+  public void send_withOutOnFinishedCallback_onFinishedCallbackReset() throws CanceledException {
+    final AtomicBoolean onSendFinishedCalled = new AtomicBoolean(false);
+    PendingIntent.OnFinished onFinished =
+        new PendingIntent.OnFinished() {
+          @Override
+          public void onSendFinished(
+              PendingIntent pendingIntent,
+              Intent intent,
+              int resultCode,
+              String resultData,
+              Bundle resultExtras) {
+            onSendFinishedCalled.set(true);
+          }
+        };
+    Intent intent = new Intent();
+    PendingIntent pendingIntent =
+        PendingIntent.getBroadcast(context, /* requestCode= */ 0, intent, /* flags= */ 0);
+
+    pendingIntent.send(context, /* code= */ 0, intent, onFinished, /* handler= */ null);
+    onSendFinishedCalled.set(false);
+    pendingIntent.send(context, /* code= */ 0, intent);
+
+    assertThat(
+            shadowOf(pendingIntent)
+                .callLastOnFinished(
+                    intent, /* resultCode= */ 0, /* resultData= */ null, /* resultExtras= */ null))
+        .isFalse();
+    assertThat(onSendFinishedCalled.get()).isFalse();
   }
 
   @Test
