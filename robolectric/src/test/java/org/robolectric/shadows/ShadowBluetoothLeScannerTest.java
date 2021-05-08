@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -18,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowBluetoothLeScanner}. */
@@ -32,6 +34,10 @@ public class ShadowBluetoothLeScannerTest {
   @Before
   public void setUp() throws Exception {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    if (RuntimeEnvironment.getApiLevel() < M) {
+      // On SDK < 23, bluetooth has to be in STATE_ON in order to get a BluetoothLeScanner.
+      shadowOf(adapter).setState(BluetoothAdapter.STATE_ON);
+    }
     bluetoothLeScanner = adapter.getBluetoothLeScanner();
 
     ParcelUuid serviceUuid =

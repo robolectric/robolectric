@@ -15,7 +15,6 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.BluetoothLeAdvertiser;
-import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.Build;
 import android.os.ParcelUuid;
@@ -47,7 +46,6 @@ public class ShadowBluetoothAdapter {
   private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED = 1650;
 
   private static boolean isBluetoothSupported = true;
-  private static BluetoothLeScanner bluetoothLeScanner = null;
   private static BluetoothLeAdvertiser bluetoothLeAdvertiser = null;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
@@ -68,7 +66,6 @@ public class ShadowBluetoothAdapter {
   @Resetter
   public static void reset() {
     setIsBluetoothSupported(true);
-    bluetoothLeScanner = null;
     bluetoothLeAdvertiser = null;
     reflector(BluetoothAdapterReflector.class, null).setAdapter(null);
   }
@@ -84,22 +81,6 @@ public class ShadowBluetoothAdapter {
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
   public static void setIsBluetoothSupported(boolean supported) {
     isBluetoothSupported = supported;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected BluetoothLeScanner getBluetoothLeScanner() {
-    // TODO: See if we can remove this implementation. By implementing {@link #getLeState}, it
-    // appears like the the AOSP {@link #getBluetoothLeScanner} method should "just work". However,
-    // it's still returning null without this implementation overriding it.
-    if (Build.VERSION.SDK_INT >= M && !realAdapter.isLeEnabled()) {
-      return null;
-    }
-
-    if (bluetoothLeScanner == null) {
-      bluetoothLeScanner = ShadowBluetoothLeScanner.getInstance();
-    }
-
-    return bluetoothLeScanner;
   }
 
   @Implementation(minSdk = LOLLIPOP)
