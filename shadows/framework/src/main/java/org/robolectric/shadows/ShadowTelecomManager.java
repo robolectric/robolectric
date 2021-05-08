@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Verify.verifyNotNull;
@@ -79,7 +80,7 @@ public class ShadowTelecomManager {
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
   private final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts = new ArrayMap<>();
-
+  private Intent manageBlockNumbersIntent;
   private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
   private PhoneAccountHandle simCallManager;
   private String defaultDialerPackageName;
@@ -595,6 +596,22 @@ public class ShadowTelecomManager {
   @Implementation(minSdk = M)
   @HiddenApi
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
+  }
+
+  /**
+   * Returns the intent set by {@link ShadowTelecomManager#setManageBlockNumbersIntent(Intent)} ()}
+   */
+  @Implementation(minSdk = N)
+  protected Intent createManageBlockedNumbersIntent() {
+    return this.manageBlockNumbersIntent;
+  }
+
+  /**
+   * Sets the BlockNumbersIntent to be returned by {@link
+   * ShadowTelecomManager#createManageBlockedNumbersIntent()}
+   */
+  public void setManageBlockNumbersIntent(Intent intent) {
+    this.manageBlockNumbersIntent = intent;
   }
 
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
