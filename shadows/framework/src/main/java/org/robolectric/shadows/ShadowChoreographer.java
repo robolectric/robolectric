@@ -1,12 +1,19 @@
 package org.robolectric.shadows;
 
 import static org.robolectric.shadows.ShadowLooper.looperMode;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /**
  * The shadow API for {@link android.view.Choreographer}.
@@ -16,6 +23,9 @@ import org.robolectric.annotation.LooperMode.Mode;
  */
 @Implements(value = Choreographer.class, shadowPicker = ShadowChoreographer.Picker.class)
 public abstract class ShadowChoreographer {
+
+  @RealObject Choreographer realObject;
+  private ChoreographerReflector reflector;
 
   public static class Picker extends LooperShadowPicker<ShadowChoreographer> {
 
@@ -70,5 +80,29 @@ public abstract class ShadowChoreographer {
    */
   public static void setFrameInterval(long frameInterval) {
     ShadowLegacyChoreographer.setFrameInterval(frameInterval);
+  }
+
+  @Implementation
+  protected void doFrame(long frameTimeNanos, int frame) {
+    if (reflector == null) {
+      reflector = reflector(ChoreographerReflector.class, realObject);
+    }
+    PerfStatsCollector.getInstance()
+        .measure(
+            "doFrame",
+            () ->
+                reflector.$$robo$$android_view_Choreographer$doFrame(frameTimeNanos, frame));
+  }
+
+  /** Accessor interface for {@link Choreographer}'s internals */
+  @ForType(Choreographer.class)
+  protected interface ChoreographerReflector {
+    @Accessor("sThreadInstance")
+    @Static
+    ThreadLocal<Choreographer> getThreadInstance();
+
+    // Using reflector() instead of directlyOn() to decrease overhead as this can be called
+    // thousands of times over the course of a single test
+    void $$robo$$android_view_Choreographer$doFrame(long frameTimeNanos, int frame);
   }
 }
