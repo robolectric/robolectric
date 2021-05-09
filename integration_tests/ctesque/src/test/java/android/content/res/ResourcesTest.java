@@ -45,6 +45,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import org.junit.Before;
@@ -55,6 +56,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 /**
  * Compatibility test for {@link Resources}
@@ -902,6 +904,18 @@ public class ResourcesTest {
     assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_DOCUMENT);
     assertThat(xmlResourceParser.next()).isEqualTo(XmlResourceParser.START_TAG);
     assertThat(xmlResourceParser.getName()).isEqualTo("PreferenceScreen");
+  }
+
+  @Test
+  public void getXml_shouldParseEmojiCorrectly() throws IOException, XmlPullParserException {
+    XmlResourceParser xmlResourceParser = resources.getXml(R.xml.has_emoji);
+    xmlResourceParser.next();
+    xmlResourceParser.next();
+    assertThat(xmlResourceParser.getName()).isEqualTo("EmojiRoot");
+    AttributeSet attributeSet = Xml.asAttributeSet(xmlResourceParser);
+    assertThat(attributeSet.getAttributeValue(null, "label1")).isEqualTo("no emoji");
+    assertThat(attributeSet.getAttributeValue(null, "label2")).isEqualTo("\uD83D\uDE00");
+    assertThat(attributeSet.getAttributeValue(null, "label3")).isEqualTo("\uD83D\uDE00");
   }
 
   @Test
