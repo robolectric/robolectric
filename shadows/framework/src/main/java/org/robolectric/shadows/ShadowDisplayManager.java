@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.extract;
@@ -9,10 +10,12 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.Build;
+import android.os.RemoteException;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -239,6 +242,11 @@ public class ShadowDisplayManager {
   /** Set the slider events the system has seen. */
   public static void setBrightnessEvents(List<BrightnessChangeEvent> events) {
     getShadowDisplayManagerGlobal().setBrightnessEvents(events);
+  }
+
+  @Implementation(minSdk = O_MR1)
+  protected Point getStableDisplaySize() throws RemoteException {
+    return getShadowDisplayManagerGlobal().getStableDisplaySize();
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {

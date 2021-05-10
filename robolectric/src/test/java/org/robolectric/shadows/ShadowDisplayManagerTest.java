@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -182,6 +183,21 @@ public class ShadowDisplayManagerTest {
     assertThat(events).containsExactly(
         "Added " + displayId,
         "Changed " + displayId);
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void getStableDisplaySize_defaultValue() throws Exception {
+    DisplayInfo displayInfo = getGlobal().getDisplayInfo(Display.DEFAULT_DISPLAY);
+    Point result = new Point(displayInfo.getNaturalWidth(), displayInfo.getNaturalHeight());
+    assertThat(shadowOf(instance).getStableDisplaySize()).isEqualTo(result);
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void getStableDisplaySize_setAValue() throws Exception {
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "+h201dp-land");
+    assertThat(shadowOf(instance).getStableDisplaySize()).isEqualTo(new Point(201, 320));
   }
 
   @Test

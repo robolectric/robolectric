@@ -4,6 +4,8 @@ import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
+import android.app.Application;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -12,23 +14,52 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.UserHandle;
-import androidx.test.runner.MonitoringInstrumentation;
+import android.util.Log;
+import androidx.test.internal.runner.intent.IntentMonitorImpl;
+import androidx.test.internal.runner.lifecycle.ActivityLifecycleMonitorImpl;
+import androidx.test.internal.runner.lifecycle.ApplicationLifecycleMonitorImpl;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.runner.intent.IntentMonitorRegistry;
+import androidx.test.runner.intent.IntentStubberRegistry;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.ApplicationLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.ApplicationStage;
+import androidx.test.runner.lifecycle.Stage;
+import java.util.Map;
+import java.util.Set;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
-public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
+/**
+ * A Robolectric instrumentation that acts like a slimmed down
+ * {@link androidx.test.runner.MonitoringInstrumentation} with only the parts needed for
+ * Robolectric.
+ */
+public class RoboMonitoringInstrumentation extends Instrumentation {
+
+  private static final String TAG = "RoboInstrumentation";
 
   private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+  private final ActivityLifecycleMonitorImpl lifecycleMonitor = new ActivityLifecycleMonitorImpl();
+  private final ApplicationLifecycleMonitorImpl applicationMonitor =
+      new ApplicationLifecycleMonitorImpl();
+  private final IntentMonitorImpl intentMonitor = new IntentMonitorImpl();
 
+  /**
+   * Sets up lifecycle monitoring, and argument registry.
+   *
+   * <p>Subclasses must call up to onCreate(). This onCreate method does not call start() it is the
+   * subclasses responsibility to call start if it desires.
+   */
   @Override
-  protected void specifyDexMakerCacheProperty() {
-    // ignore, unnecessary for robolectric
-  }
+  public void onCreate(Bundle arguments) {
+    InstrumentationRegistry.registerInstance(this, arguments);
+    ActivityLifecycleMonitorRegistry.registerInstance(lifecycleMonitor);
+    ApplicationLifecycleMonitorRegistry.registerInstance(applicationMonitor);
+    IntentMonitorRegistry.registerInstance(intentMonitor);
 
-  @Override
-  protected void installMultidex() {
-    // ignore, unnecessary for robolectric
+    super.onCreate(arguments);
   }
 
   @Override
@@ -77,27 +108,16 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
   }
 
   @Override
-  public void runOnMainSync(Runnable runner) {
-    shadowMainLooper().idle();
-    runner.run();
+  public void callApplicationOnCreate(Application app) {
+    applicationMonitor.signalLifecycleChange(app, ApplicationStage.PRE_ON_CREATE);
+    super.callApplicationOnCreate(app);
+    applicationMonitor.signalLifecycleChange(app, ApplicationStage.CREATED);
   }
 
   @Override
-  public ActivityResult execStartActivity(
-      Context who,
-      IBinder contextThread,
-      IBinder token,
-      Activity target,
-      Intent intent,
-      int requestCode) {
-
-    ActivityResult ar =
-        super.execStartActivity(who, contextThread, token, target, intent, requestCode);
-    if (ar != null && target != null) {
-      ShadowActivity shadowActivity = extract(target);
-      postDispatchActivityResult(shadowActivity, null, requestCode, ar);
-    }
-    return ar;
+  public void runOnMainSync(Runnable runner) {
+    shadowMainLooper().idle();
+    runner.run();
   }
 
   /** {@inheritDoc} */
@@ -110,8 +130,13 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       Intent intent,
       int requestCode,
       Bundle options) {
-    ActivityResult ar =
-        super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    intentMonitor.signalIntent(intent);
+    ActivityResult ar = stubResultFor(intent);
+    if (ar != null) {
+      Log.i(TAG, String.format("Stubbing intent %s", intent));
+    } else {
+      ar = super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    }
     if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
       postDispatchActivityResult(shadowActivity, null, requestCode, ar);
@@ -129,9 +154,13 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       Intent intent,
       int requestCode,
       Bundle options) {
-
-    ActivityResult ar =
-        super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    intentMonitor.signalIntent(intent);
+    ActivityResult ar = stubResultFor(intent);
+    if (ar != null) {
+      Log.i(TAG, String.format("Stubbing intent %s", intent));
+    } else {
+      ar = super.execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    }
     if (ar != null && who instanceof Activity) {
       ShadowActivity shadowActivity = extract(who);
       postDispatchActivityResult(shadowActivity, target, requestCode, ar);
@@ -145,14 +174,19 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
       Context who,
       IBinder contextThread,
       IBinder token,
-      Activity target,
+      String target,
       Intent intent,
       int requestCode,
       Bundle options,
       UserHandle user) {
-    ActivityResult ar =
-        super.execStartActivity(
-            who, contextThread, token, target, intent, requestCode, options, user);
+    ActivityResult ar = stubResultFor(intent);
+    if (ar != null) {
+      Log.i(TAG, String.format("Stubbing intent %s", intent));
+    } else {
+      ar =
+          super.execStartActivity(
+              who, contextThread, token, target, intent, requestCode, options, user);
+    }
     if (ar != null && target != null) {
       ShadowActivity shadowActivity = extract(target);
       postDispatchActivityResult(shadowActivity, null, requestCode, ar);
@@ -172,11 +206,103 @@ public class RoboMonitoringInstrumentation extends MonitoringInstrumentation {
         });
   }
 
-  @Override
-  public void finish(int resultCode, Bundle bundle) {
-    // intentionally don't call through to super here, to circumvent all the activity
-    // waiting/cleanup
-    // logic that is unnecessary on Robolectric
-    super.restoreUncaughtExceptionHandler();
+  private ActivityResult stubResultFor(Intent intent) {
+    if (IntentStubberRegistry.isLoaded()) {
+      return IntentStubberRegistry.getInstance().getActivityResultForIntent(intent);
+    }
+    return null;
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public void execStartActivities(
+      Context who,
+      IBinder contextThread,
+      IBinder token,
+      Activity target,
+      Intent[] intents,
+      Bundle options) {
+    Log.d(TAG, "execStartActivities(context, ibinder, ibinder, activity, intent[], bundle)");
+    // For requestCode < 0, the caller doesn't expect any result and
+    // in this case we are not expecting any result so selecting
+    // a value < 0.
+    int requestCode = -1;
+    for (Intent intent : intents) {
+      execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    }
+  }
+
+  @Override
+  public boolean onException(Object obj, Throwable e) {
+    String error =
+        String.format(
+            "Exception encountered by: %s. Dumping thread state to "
+                + "outputs and pining for the fjords.",
+            obj);
+    Log.e(TAG, error, e);
+    Log.e("THREAD_STATE", getThreadState());
+    Log.e(TAG, "Dying now...");
+    return super.onException(obj, e);
+  }
+
+  protected String getThreadState() {
+    Set<Map.Entry<Thread, StackTraceElement[]>> threads = Thread.getAllStackTraces().entrySet();
+    StringBuilder threadState = new StringBuilder();
+    for (Map.Entry<Thread, StackTraceElement[]> threadAndStack : threads) {
+      StringBuilder threadMessage = new StringBuilder("  ").append(threadAndStack.getKey());
+      threadMessage.append("\n");
+      for (StackTraceElement ste : threadAndStack.getValue()) {
+        threadMessage.append(String.format("    %s%n", ste));
+      }
+      threadMessage.append("\n");
+      threadState.append(threadMessage);
+    }
+    return threadState.toString();
+  }
+
+  @Override
+  public void callActivityOnDestroy(Activity activity) {
+    super.callActivityOnDestroy(activity);
+    lifecycleMonitor.signalLifecycleChange(Stage.DESTROYED, activity);
+  }
+
+  @Override
+  public void callActivityOnRestart(Activity activity) {
+    super.callActivityOnRestart(activity);
+    lifecycleMonitor.signalLifecycleChange(Stage.RESTARTED, activity);
+  }
+
+  @Override
+  public void callActivityOnCreate(Activity activity, Bundle bundle) {
+    lifecycleMonitor.signalLifecycleChange(Stage.PRE_ON_CREATE, activity);
+    super.callActivityOnCreate(activity, bundle);
+    lifecycleMonitor.signalLifecycleChange(Stage.CREATED, activity);
+  }
+
+  @Override
+  public void callActivityOnStart(Activity activity) {
+    super.callActivityOnStart(activity);
+    lifecycleMonitor.signalLifecycleChange(Stage.STARTED, activity);
+  }
+
+  @Override
+  public void callActivityOnStop(Activity activity) {
+    super.callActivityOnStop(activity);
+    lifecycleMonitor.signalLifecycleChange(Stage.STOPPED, activity);
+  }
+
+  @Override
+  public void callActivityOnResume(Activity activity) {
+    super.callActivityOnResume(activity);
+    lifecycleMonitor.signalLifecycleChange(Stage.RESUMED, activity);
+  }
+
+  @Override
+  public void callActivityOnPause(Activity activity) {
+    super.callActivityOnPause(activity);
+    lifecycleMonitor.signalLifecycleChange(Stage.PAUSED, activity);
+  }
+
+  @Override
+  public void finish(int resultCode, Bundle bundle) { }
 }
