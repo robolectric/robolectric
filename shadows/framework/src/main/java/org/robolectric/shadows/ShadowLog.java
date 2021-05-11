@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
 import android.util.Log;
+import com.google.common.base.Ascii;
+import com.google.common.collect.ImmutableList;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,11 +16,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
+/** Controls the behavior of {@link android.util.Log} and provides access to log messages. */
 @Implements(Log.class)
 public class ShadowLog {
   public static PrintStream stream;
 
-  private static final int extraLogLength = "l/: \n".length();
+  private static final int EXTRA_LOG_LENGTH = "l/: \n".length();
+
   private static final Map<String, Queue<LogItem>> logsByTag = Collections.synchronizedMap(new
       HashMap<String, Queue<LogItem>>());
   private static final Queue<LogItem> logs = new ConcurrentLinkedQueue<>();
@@ -131,7 +133,7 @@ public class ShadowLog {
     addLog(priority, tag, msg, null);
     int tagLength = tag == null ? 0 : tag.length();
     int msgLength = msg == null ? 0 : msg.length();
-    return extraLogLength + tagLength + msgLength;
+    return EXTRA_LOG_LENGTH + tagLength + msgLength;
   }
 
   /**
@@ -203,10 +205,11 @@ public class ShadowLog {
 
   /**
    * Returns ordered list of all log entries.
+   *
    * @return List of log items
    */
-  public static List<LogItem> getLogs() {
-    return new ArrayList<>(logs);
+  public static ImmutableList<LogItem> getLogs() {
+    return ImmutableList.copyOf(logs);
   }
 
   /**
@@ -215,9 +218,9 @@ public class ShadowLog {
    * @param tag The tag to get logs for
    * @return The list of log items for the tag or an empty list if no logs for that tag exist.
    */
-  public static List<LogItem> getLogsForTag(String tag) {
+  public static ImmutableList<LogItem> getLogsForTag(String tag) {
     Queue<LogItem> logs = logsByTag.get(tag);
-    return logs == null ? Collections.emptyList() : new ArrayList<>(logs);
+    return logs == null ? ImmutableList.of() : ImmutableList.copyOf(logs);
   }
 
   /** Clear all accumulated logs. */
@@ -238,22 +241,22 @@ public class ShadowLog {
     String logging = System.getProperty("robolectric.logging");
     if (logging != null && stream == null) {
       PrintStream stream = null;
-      if ("stdout".equalsIgnoreCase(logging)) {
+      if (Ascii.equalsIgnoreCase("stdout", logging)) {
         stream = System.out;
-      } else if ("stderr".equalsIgnoreCase(logging)) {
+      } else if (Ascii.equalsIgnoreCase("stderr", logging)) {
         stream = System.err;
       } else {
         try {
           final PrintStream file = new PrintStream(new FileOutputStream(logging), true);
           stream = file;
-          Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override public void run() {
-              try {
-                file.close();
-              } catch (Exception ignored) {
-              }
-            }
-          });
+          Runtime.getRuntime()
+              .addShutdownHook(
+                  new Thread() {
+                    @Override
+                    public void run() {
+                      file.close();
+                    }
+                  });
         } catch (IOException e) {
           e.printStackTrace();
         }
@@ -262,7 +265,8 @@ public class ShadowLog {
     }
   }
 
-  public static class LogItem {
+  /** A single log item. */
+  public static final class LogItem {
     public final String timeString;
     public final int type;
     public final String tag;
@@ -287,7 +291,9 @@ public class ShadowLog {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
+      if (this == o) {
+        return true;
+      }
       if (!(o instanceof LogItem)) {
         return false;
       }
@@ -314,12 +320,20 @@ public class ShadowLog {
     @Override
     public String toString() {
       return "LogItem{"
-          + "timeString='" + timeString + '\''
-          + ", type=" + type
-          + ", tag='" + tag + '\''
-          + ", msg='" + msg + '\''
-          + ", throwable=" + throwable
-          + '}';
+          + "\n  timeString='"
+          + timeString
+          + '\''
+          + "\n  type="
+          + type
+          + "\n  tag='"
+          + tag
+          + '\''
+          + "\n  msg='"
+          + msg
+          + '\''
+          + "\n  throwable="
+          + throwable
+          + "\n}";
     }
   }
 
@@ -328,8 +342,8 @@ public class ShadowLog {
    * implementation of framework's hidden API {@link android.util.Log#TerribleFailure}, to allow
    * tests to catch / expect these exceptions.
    */
-  public static class TerribleFailure extends RuntimeException {
-    public TerribleFailure(String msg, Throwable cause) {
+  public static final class TerribleFailure extends RuntimeException {
+    TerribleFailure(String msg, Throwable cause) {
       super(msg, cause);
     }
   }
