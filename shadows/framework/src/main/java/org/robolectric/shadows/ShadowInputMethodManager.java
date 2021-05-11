@@ -53,13 +53,13 @@ public class ShadowInputMethodManager {
     return showSoftInput(view, flags, null);
   }
 
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.R)
   protected boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(true);
     return true;
   }
 
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.R)
   protected boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
     return hideSoftInputFromWindow(windowToken, flags, null);
   }

@@ -13,6 +13,7 @@ import android.content.IntentSender.SendIntentException;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -263,4 +264,11 @@ public class ShadowShortcutManager {
   protected void pushDynamicShortcut(ShortcutInfo shortcut) {
     addDynamicShortcuts(Arrays.asList(shortcut));
   }
+
+  /**
+   * No-op on Robolectric. The real implementation calls out to a service, which will NPE on
+   * Robolectric.
+   */
+  @Implementation(minSdk = VERSION_CODES.R)
+  protected void removeLongLivedShortcuts(List<String> shortcutIds) {}
 }

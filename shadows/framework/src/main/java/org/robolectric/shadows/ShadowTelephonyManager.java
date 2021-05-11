@@ -56,7 +56,6 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = TelephonyManager.class, looseSignatures = true)
@@ -497,8 +496,7 @@ public class ShadowTelephonyManager {
   protected void requestCellInfoUpdate(Object cellInfoExecutor, Object cellInfoCallback) {
     Executor executor = (Executor) cellInfoExecutor;
     if (callbackCellInfos == null) {
-      Shadow.directlyOn(realTelephonyManager, TelephonyManager.class)
-          .requestCellInfoUpdate(executor, (CellInfoCallback) cellInfoCallback);
+      // ignore
     } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
       // perform the "failure" callback operation via the specified executor
       executor.execute(
