@@ -22,7 +22,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.primitives.UnsignedBytes;
-
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -76,6 +78,22 @@ public final class ResourceString {
     } else {
       length = characterCount * 2;
     }
+    if (type == Type.UTF8) {
+      // We should use DataInputStream to read UTF-8 and modified UTF-8 to avoid decoding
+      // problem. For example, the emoji/unicode is compressed with modified UTF-8, and
+      // normal String decoding will fail.
+      ByteBuffer bb = ByteBuffer.allocate(length + 2);
+      bb.putShort((short) length).put(buffer.array(), offset, length);
+      ByteArrayInputStream bis = new ByteArrayInputStream(bb.array());
+      DataInputStream dis = new DataInputStream(bis);
+      try {
+        return dis.readUTF();
+      } catch (IOException e) {
+        // It will fallback to normal String decoding if failed.
+        e.printStackTrace();
+      }
+    }
+    // Other occasion, fallback to normal String decoding.
     return new String(buffer.array(), offset, length, type.charset());
   }
 
