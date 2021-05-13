@@ -17,6 +17,7 @@ import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.content.Context;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.ParcelUuid;
 import android.provider.Settings;
 import java.io.IOException;
@@ -46,7 +47,6 @@ public class ShadowBluetoothAdapter {
   private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED = 1650;
 
   private static boolean isBluetoothSupported = true;
-  private static BluetoothLeAdvertiser bluetoothLeAdvertiser = null;
 
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
@@ -66,7 +66,10 @@ public class ShadowBluetoothAdapter {
   @Resetter
   public static void reset() {
     setIsBluetoothSupported(true);
-    bluetoothLeAdvertiser = null;
+    if ((RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP_MR1)
+        && (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1)) {
+      reflector(BluetoothAdapterReflector.class, null).setSBluetoothLeAdvertiser(null);
+    }
     reflector(BluetoothAdapterReflector.class, null).setAdapter(null);
   }
 
@@ -83,13 +86,21 @@ public class ShadowBluetoothAdapter {
     isBluetoothSupported = supported;
   }
 
+  /** @deprecated use real framework implementation instead */
+  @Deprecated
   @Implementation(minSdk = LOLLIPOP)
   protected BluetoothLeAdvertiser getBluetoothLeAdvertiser() {
-    return bluetoothLeAdvertiser;
+    return directlyOn(realAdapter, BluetoothAdapter.class, "getBluetoothLeAdvertiser");
   }
 
+  /** @deprecated use real BluetoothLeAdvertiser instead */
+  @Deprecated
   public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
-    bluetoothLeAdvertiser = advertiser;
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
+      reflector(BluetoothAdapterReflector.class, realAdapter).setSBluetoothLeAdvertiser(advertiser);
+    } else {
+      reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
+    }
   }
 
   @Implementation
@@ -463,5 +474,14 @@ public class ShadowBluetoothAdapter {
     @Accessor("sAdapter")
     @Static
     void setAdapter(BluetoothAdapter adapter);
+
+    @Accessor("mBluetoothLeAdvertiser")
+    @Deprecated
+    void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser);
+
+    @Accessor("sBluetoothLeAdvertiser")
+    @Static
+    @Deprecated
+    void setSBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser);
   }
 }
