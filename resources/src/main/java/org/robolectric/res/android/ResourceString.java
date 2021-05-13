@@ -22,11 +22,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.common.primitives.UnsignedBytes;
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 
 /** Provides utilities to decode/encode a String packed in an arsc resource file. */
 public final class ResourceString {
@@ -34,6 +33,7 @@ public final class ResourceString {
   /** Type of {@link ResourceString} to encode / decode. */
   public enum Type {
     UTF8(UTF_8),
+    CESU8(Charset.forName("CESU8")),
     UTF16(UTF_16LE);
 
     private final Charset charset;
@@ -44,6 +44,10 @@ public final class ResourceString {
 
     public Charset charset() {
       return charset;
+    }
+
+    public CharsetDecoder decoder() {
+      return charset.newDecoder();
     }
   }
 
@@ -78,23 +82,22 @@ public final class ResourceString {
     } else {
       length = characterCount * 2;
     }
-    if (type == Type.UTF8) {
-      // We should use DataInputStream to read UTF-8 and modified UTF-8 to avoid decoding
-      // problem. For example, the emoji/unicode is compressed with modified UTF-8, and
-      // normal String decoding will fail.
-      ByteBuffer bb = ByteBuffer.allocate(length + 2);
-      bb.putShort((short) length).put(buffer.array(), offset, length);
-      ByteArrayInputStream bis = new ByteArrayInputStream(bb.array());
-      DataInputStream dis = new DataInputStream(bis);
-      try {
-        return dis.readUTF();
-      } catch (IOException e) {
-        // It will fallback to normal String decoding if failed.
-        e.printStackTrace();
+    final ByteBuffer stringBuffer = ByteBuffer.wrap(buffer.array(), offset, length);
+    // Use normal UTF-8 and UTF-16 decoder to decode string
+    try {
+      return type.decoder().decode(stringBuffer).toString();
+    } catch (CharacterCodingException e) {
+      if (type == Type.UTF16) {
+        return null;
       }
     }
-    // Other occasion, fallback to normal String decoding.
-    return new String(buffer.array(), offset, length, type.charset());
+    // Use CESU8 decoder to try decode failed UTF-8 string, especially modified UTF-8.
+    // See https://en.wikipedia.org/wiki/CESU-8.
+    try {
+      return Type.CESU8.decoder().decode(stringBuffer).toString();
+    } catch (CharacterCodingException e) {
+      return null;
+    }
   }
 
   /**
