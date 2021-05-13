@@ -6,13 +6,14 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.speech.IRecognitionService;
 import android.speech.RecognitionListener;
-import android.speech.RecognitionService;
 import android.speech.SpeechRecognizer;
+import java.util.Queue;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -58,29 +59,21 @@ public class ShadowSpeechRecognizer {
 
   @Implementation
   protected void startListening(Intent recognizerIntent) {
-    // simulate the response to the real startListening's bindService call
-    SpeechRecognizerReflector reflector =
-        reflector(SpeechRecognizerReflector.class, realSpeechRecognizer);
-    Binder recognitionServiceBinder = new Binder();
-    recognitionServiceBinder.attachInterface(
-        ReflectionHelpers.createNullProxy(IRecognitionService.class),
-        IRecognitionService.class.getName());
-
-    Intent serviceIntent = new Intent(RecognitionService.SERVICE_INTERFACE);
-    ComponentName componentName = reflector.getServiceComponent();
-    if (componentName == null) {
-      componentName = new ComponentName("org.robolectric", "FakeSpeechRecognizerService");
-      ShadowSettings.ShadowSecure.putString(
-          reflector.getContext().getContentResolver(),
-          Settings.Secure.VOICE_RECOGNITION_SERVICE,
-          componentName.flattenToString());
-    }
-    serviceIntent.setComponent(componentName);
-
-    ShadowContextWrapper.getShadowInstrumentation()
-        .setComponentNameAndServiceForBindServiceForIntent(
-            serviceIntent, reflector.getServiceComponent(), recognitionServiceBinder);
-    directlyOn(realSpeechRecognizer, SpeechRecognizer.class).startListening(recognizerIntent);
+    // the real implementation connects to a service
+    // simulate the resulting behavior once the service is connected
+    Handler mainHandler = new Handler(Looper.getMainLooper());
+    // perform the onServiceConnected logic
+    mainHandler.post(
+        () -> {
+          SpeechRecognizerReflector recognizerReflector =
+              reflector(SpeechRecognizerReflector.class, realSpeechRecognizer);
+          recognizerReflector.setService(
+              ReflectionHelpers.createNullProxy(IRecognitionService.class));
+          Queue<Message> pendingTasks = recognizerReflector.getPendingTasks();
+          while (!pendingTasks.isEmpty()) {
+            recognizerReflector.getHandler().sendMessage(pendingTasks.poll());
+          }
+        });
   }
 
   /**
@@ -115,13 +108,13 @@ public class ShadowSpeechRecognizer {
   /** Accessor interface for {@link SpeechRecognizer}'s internals. */
   @ForType(SpeechRecognizer.class)
   interface SpeechRecognizerReflector {
-    @Accessor("mConnection")
-    Object getConnection();
+    @Accessor("mService")
+    void setService(IRecognitionService service);
 
-    @Accessor("mServiceComponent")
-    ComponentName getServiceComponent();
+    @Accessor("mPendingTasks")
+    Queue<Message> getPendingTasks();
 
-    @Accessor("mContext")
-    Context getContext();
+    @Accessor("mHandler")
+    Handler getHandler();
   }
 }
