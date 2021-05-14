@@ -56,10 +56,9 @@ public class JavadocJsonGeneratorTest {
                     "org/robolectric/annotation/processing/shadows/DocumentedObjectShadow.java")))
         .processedWith(new RobolectricProcessor(options))
         .compilesWithoutError();
-    JsonParser jsonParser = new JsonParser();
     String jsonDocsDir = options.get(JSON_DOCS_DIR);
     String jsonFile = jsonDocsDir + "/org.robolectric.DocumentedObjectOuter.DocumentedObject.json";
-    JsonElement json = jsonParser.parse(Files.newBufferedReader(Paths.get(jsonFile), UTF_8));
+    JsonElement json = JsonParser.parseReader(Files.newBufferedReader(Paths.get(jsonFile), UTF_8));
     assertThat(((JsonObject) json).get("documentation").getAsString())
         .isEqualTo("DocumentedObjectOuter Javadoc goes here! ");
 
