@@ -914,8 +914,12 @@ public class ResourcesTest {
     assertThat(xmlResourceParser.getName()).isEqualTo("EmojiRoot");
     AttributeSet attributeSet = Xml.asAttributeSet(xmlResourceParser);
     assertThat(attributeSet.getAttributeValue(null, "label1")).isEqualTo("no emoji");
-    assertThat(attributeSet.getAttributeValue(null, "label2")).isEqualTo("\uD83D\uDE00");
-    assertThat(attributeSet.getAttributeValue(null, "label3")).isEqualTo("\uD83D\uDE00");
+    String pureEmoji = "\uD83D\uDE00";
+    assertThat(attributeSet.getAttributeValue(null, "label2")).isEqualTo(pureEmoji);
+    assertThat(attributeSet.getAttributeValue(null, "label3")).isEqualTo(pureEmoji);
+    String mixEmojiAndText = "\uD83D\uDE00internal1\uD83D\uDE00internal2\uD83D\uDE00";
+    assertThat(attributeSet.getAttributeValue(null, "label4")).isEqualTo(mixEmojiAndText);
+    assertThat(attributeSet.getAttributeValue(null, "label5")).isEqualTo(mixEmojiAndText);
   }
 
   @Test
