@@ -82,7 +82,7 @@ public final class ResourceString {
     } else {
       length = characterCount * 2;
     }
-    final ByteBuffer stringBuffer = ByteBuffer.wrap(buffer.array(), offset, length);
+    ByteBuffer stringBuffer = ByteBuffer.wrap(buffer.array(), offset, length);
     // Use normal UTF-8 and UTF-16 decoder to decode string
     try {
       return type.decoder().decode(stringBuffer).toString();
@@ -91,6 +91,7 @@ public final class ResourceString {
         return null;
       }
     }
+    stringBuffer = ByteBuffer.wrap(buffer.array(), offset, length);
     // Use CESU8 decoder to try decode failed UTF-8 string, especially modified UTF-8.
     // See
     // https://source.android.com/devices/tech/dalvik/dex-format?hl=hr-HR&skip_cache=true#mutf-8.

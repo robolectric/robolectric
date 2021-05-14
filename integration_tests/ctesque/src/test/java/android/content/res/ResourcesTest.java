@@ -920,6 +920,8 @@ public class ResourcesTest {
     String mixEmojiAndText = "\uD83D\uDE00internal1\uD83D\uDE00internal2\uD83D\uDE00";
     assertThat(attributeSet.getAttributeValue(null, "label4")).isEqualTo(mixEmojiAndText);
     assertThat(attributeSet.getAttributeValue(null, "label5")).isEqualTo(mixEmojiAndText);
+    assertThat(attributeSet.getAttributeValue(null, "label6"))
+        .isEqualTo("don't worry be \uD83D\uDE00");
   }
 
   @Test
