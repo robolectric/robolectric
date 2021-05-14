@@ -87,7 +87,7 @@ public class RobolectricTestRunnerSelfTest {
   }
 
   @Test public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {
-    org.junit.Assert.assertThat(true, CoreMatchers.is(true));
+    org.hamcrest.MatcherAssert.assertThat(true, CoreMatchers.is(true));
   }
 
   @AfterClass
