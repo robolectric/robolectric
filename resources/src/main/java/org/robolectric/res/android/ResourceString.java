@@ -92,7 +92,8 @@ public final class ResourceString {
       }
     }
     // Use CESU8 decoder to try decode failed UTF-8 string, especially modified UTF-8.
-    // See https://en.wikipedia.org/wiki/CESU-8.
+    // See
+    // https://source.android.com/devices/tech/dalvik/dex-format?hl=hr-HR&skip_cache=true#mutf-8.
     try {
       return Type.CESU8.decoder().decode(stringBuffer).toString();
     } catch (CharacterCodingException e) {
