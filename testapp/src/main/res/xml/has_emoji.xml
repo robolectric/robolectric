@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- The emoji unicode is \uD83D\uDE00 -->
+<EmojiRoot
+    label1="no emoji"
+    label2="&#128512;"
+    label3="😀"
+    label4="😀internal1😀internal2😀"
+    label5="&#128512;internal1&#128512;internal2&#128512;"
+    label6="don't worry be 😀">
+</EmojiRoot>
