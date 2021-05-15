@@ -693,6 +693,17 @@ public class ResourcesTest {
   }
 
   @Test
+  public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() {
+    // android:id/mask was introduced in API 21, but it's still possible for apps built against API
+    // 21 to refer to it in older runtimes because referenced resource ids are compiled (by aapt)
+    // into the binary XML format.
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(android.R.attr.id, "@android:id/mask").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {android.R.attr.id});
+    assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
+  }
+
+  @Test
   public void obtainAttributes_shouldReturnValuesFromAttributeSet() {
     AttributeSet attributes =
         Robolectric.buildAttributeSet()
