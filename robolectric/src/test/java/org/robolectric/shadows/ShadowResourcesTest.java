@@ -152,22 +152,6 @@ public class ShadowResourcesTest {
     typedArray.recycle();
   }
 
-  // todo: port to ResourcesTest
-  @Test
-  public void obtainAttributes_shouldReturnValuesFromResources() throws Exception {
-    XmlPullParser parser = resources.getXml(R.xml.xml_attrs);
-    parser.next();
-    parser.next();
-    AttributeSet attributes = Xml.asAttributeSet(parser);
-
-    TypedArray typedArray = resources
-        .obtainAttributes(attributes, new int[]{android.R.attr.title, android.R.attr.scrollbarFadeDuration});
-
-    assertThat(typedArray.getString(0)).isEqualTo("Android Title");
-    assertThat(typedArray.getInt(1, 0)).isEqualTo(1111);
-    typedArray.recycle();
-  }
-
   @Test
   public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() {
 
