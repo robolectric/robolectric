@@ -124,24 +124,6 @@ public class ShadowResourcesTest {
     assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
   }
 
-  // todo: port to ResourcesTest
-  @Test
-  public void obtainAttributes_shouldReturnValuesFromAttributeSet() {
-    AttributeSet attributes = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.title, "A title!")
-        .addAttribute(android.R.attr.width, "12px")
-        .addAttribute(android.R.attr.height, "1in")
-        .build();
-    TypedArray typedArray = resources
-        .obtainAttributes(attributes, new int[]{android.R.attr.height,
-            android.R.attr.width, android.R.attr.title});
-
-    assertThat(typedArray.getDimension(0, 0)).isEqualTo(160f);
-    assertThat(typedArray.getDimension(1, 0)).isEqualTo(12f);
-    assertThat(typedArray.getString(2)).isEqualTo("A title!");
-    typedArray.recycle();
-  }
-
   @Test
   public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() {
 
