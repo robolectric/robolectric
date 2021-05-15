@@ -126,16 +126,6 @@ public class ShadowResourcesTest {
 
   // todo: port to ResourcesTest
   @Test
-  public void obtainAttributes() {
-    TypedArray typedArray = resources.obtainAttributes(Robolectric.buildAttributeSet()
-        .addAttribute(R.attr.styleReference, "@xml/shortcuts")
-        .build(), new int[]{R.attr.styleReference});
-    assertThat(typedArray).isNotNull();
-    assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
-  }
-
-  // todo: port to ResourcesTest
-  @Test
   public void obtainAttributes_shouldReturnValuesFromAttributeSet() {
     AttributeSet attributes = Robolectric.buildAttributeSet()
         .addAttribute(android.R.attr.title, "A title!")

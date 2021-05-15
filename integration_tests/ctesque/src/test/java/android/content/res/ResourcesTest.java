@@ -3,6 +3,7 @@ package android.content.res;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -52,6 +53,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.testapp.R;
@@ -678,6 +680,19 @@ public class ResourcesTest {
   }
 
   @Test
+  @Config(minSdk = N_MR1)
+  public void obtainAttributes() {
+    TypedArray typedArray =
+        resources.obtainAttributes(
+            Robolectric.buildAttributeSet()
+                .addAttribute(R.attr.styleReference, "@xml/shortcuts")
+                .build(),
+            new int[] {R.attr.styleReference});
+    assertThat(typedArray).isNotNull();
+    assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
+  }
+
+  @Test
   public void obtainAttributes_shouldReturnValuesFromResources() throws Exception {
     XmlPullParser parser = resources.getXml(R.xml.xml_attrs);
     parser.next();
@@ -701,15 +716,6 @@ public class ResourcesTest {
   //       .addAttribute(android.R.attr.id, "@android:id/mask").build();
   //   TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[]{android.R.attr.id});
   //   assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
-  // }
-  //
-  // @Test
-  // public void obtainAttributes() {
-  //   TypedArray typedArray = resources.obtainAttributes(Robolectric.buildAttributeSet()
-  //       .addAttribute(R.attr.styleReference, "@xml/shortcuts")
-  //       .build(), new int[]{R.attr.styleReference});
-  //   assertThat(typedArray).isNotNull();
-  //   assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
   // }
 
   @Test
