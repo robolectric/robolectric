@@ -139,35 +139,6 @@ public class ShadowResourcesTest {
     typedArray.recycle();
   }
 
-  // todo: port to ResourcesTest
-  @Test
-  public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() {
-    // TODO: investigate failure with binary resources
-    assumeTrue(useLegacy());
-
-    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
-    // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
-    // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
-    // resource ID values in the AttributeSet before checking the theme.
-
-    AttributeSet attributes = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.viewportWidth, "@dimen/dimen20px")
-        .addAttribute(android.R.attr.viewportHeight, "@dimen/dimen30px")
-        .build();
-
-    TypedArray typedArray =
-        ApplicationProvider.getApplicationContext()
-            .getTheme()
-            .obtainStyledAttributes(
-                attributes,
-                new int[] {android.R.attr.viewportWidth, android.R.attr.viewportHeight},
-                0,
-                0);
-    assertThat(typedArray.getDimension(0, 0)).isEqualTo(20f);
-    assertThat(typedArray.getDimension(1, 0)).isEqualTo(30f);
-    typedArray.recycle();
-  }
-
   @Test
   public void getXml_shouldHavePackageContextForReferenceResolution() {
     if (!useLegacy()) {

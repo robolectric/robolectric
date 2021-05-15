@@ -805,27 +805,31 @@ public class ResourcesTest {
     typedArray.recycle();
   }
 
-  // @Test
-  // public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() throws Exception {
-  //
-  //   // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
-  //   // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
-  //   // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
-  //   // resource ID values in the AttributeSet before checking the theme.
-  //
-  //   AttributeSet attributes = Robolectric.buildAttributeSet()
-  //       .addAttribute(android.R.attr.viewportWidth, "@integer/test_integer1")
-  //       .addAttribute(android.R.attr.viewportHeight, "@integer/test_integer2")
-  //       .build();
-  //
-  //   TypedArray typedArray = context.getTheme().obtainStyledAttributes(attributes, new int[] {
-  //       android.R.attr.viewportWidth,
-  //       android.R.attr.viewportHeight
-  //   }, 0, 0);
-  //   assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
-  //   assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
-  //   typedArray.recycle();
-  // }
+  @Test
+  public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() {
+    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were
+    // introduced in API 21 but the public ID values they are assigned clash with private
+    // com.android.internal.R values on older SDKs. This test ensures that even on older SDKs,
+    // on calls to obtainStyledAttributes() Robolectric will first check for matching
+    // resource ID values in the AttributeSet before checking the theme.
+    AttributeSet attributes =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.viewportWidth, "@integer/test_integer1")
+            .addAttribute(android.R.attr.viewportHeight, "@integer/test_integer2")
+            .build();
+
+    TypedArray typedArray =
+        context
+            .getTheme()
+            .obtainStyledAttributes(
+                attributes,
+                new int[] {android.R.attr.viewportWidth, android.R.attr.viewportHeight},
+                0,
+                0);
+    assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
+    assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
+    typedArray.recycle();
+  }
 
   @Test
   @SdkSuppress(minSdkVersion = LOLLIPOP)
