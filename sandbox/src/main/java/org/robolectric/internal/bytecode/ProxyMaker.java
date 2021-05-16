@@ -7,6 +7,10 @@ import static org.objectweb.asm.Opcodes.ACC_SYNTHETIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.V1_7;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.objectweb.asm.ClassWriter;
@@ -19,6 +23,7 @@ import sun.misc.Unsafe;
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
   private static final Unsafe UNSAFE;
+  private static final boolean DEBUG = false;
 
   static {
     try {
@@ -91,7 +96,19 @@ public class ProxyMaker {
 
     writer.visitEnd();
 
-    final Class<?> proxyClass = UNSAFE.defineAnonymousClass(targetClass, writer.toByteArray(), null);
+    byte[] bytecode = writer.toByteArray();
+
+    if (DEBUG) {
+      File file = new File("/tmp", targetClass.getCanonicalName() + "-DirectProxy.class");
+      System.out.println("Generated Direct Proxy: " + file.getAbsolutePath());
+      try (OutputStream out = new FileOutputStream(file)) {
+        out.write(bytecode);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    final Class<?> proxyClass = UNSAFE.defineAnonymousClass(targetClass, bytecode, null);
 
     try {
       final Field field = proxyClass.getDeclaredField(TARGET_FIELD);
