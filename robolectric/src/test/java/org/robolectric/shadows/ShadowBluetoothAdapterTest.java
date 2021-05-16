@@ -15,7 +15,6 @@ import static org.robolectric.Shadows.shadowOf;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.UUID;
@@ -24,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -96,17 +94,10 @@ public class ShadowBluetoothAdapterTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void canGetBluetoothLeAdvertiser() throws Exception {
-    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-    Class<?> iBluetoothManagerClass =
-        Shadow.class.getClassLoader().loadClass("android.bluetooth.IBluetoothManager");
-    shadowOf(adapter)
-        .setBluetoothLeAdvertiser(
-            Shadow.newInstance(
-                BluetoothLeAdvertiser.class,
-                new Class<?>[] {iBluetoothManagerClass},
-                new Object[] {null}));
-    BluetoothLeAdvertiser bluetoothLeAdvertiser = bluetoothAdapter.getBluetoothLeAdvertiser();
-    assertThat(bluetoothLeAdvertiser).isNotNull();
+    // bluetooth needs to be ON in APIS 21 and 22 for getBluetoothLeAdvertiser to return a
+    // non null value
+    bluetoothAdapter.enable();
+    assertThat(bluetoothAdapter.getBluetoothLeAdvertiser()).isNotNull();
   }
 
   @Test
