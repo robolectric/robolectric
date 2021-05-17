@@ -28,7 +28,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -38,14 +37,18 @@ public class ShadowActivityManagerTest {
   private static final String PROCESS_NAME = "com.google.android.apps.app";
 
   private ActivityManager activityManager;
+  private Application application;
   private Context context;
   private ShadowActivityManager shadowActivityManager;
+  private UserManager userManager;
 
   @Before
   public void setUp() {
-    context = ApplicationProvider.getApplicationContext();
+    application = ApplicationProvider.getApplicationContext();
+    context = application;
     activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
     shadowActivityManager = Shadow.extract(activityManager);
+    userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
   }
 
   @Test
@@ -55,7 +58,7 @@ public class ShadowActivityManagerTest {
     memoryInfo.lowMemory = true;
     memoryInfo.threshold = 10000;
     memoryInfo.totalMem = 55555;
-    shadowOf(activityManager).setMemoryInfo(memoryInfo);
+    shadowActivityManager.setMemoryInfo(memoryInfo);
     ActivityManager.MemoryInfo fetchedMemoryInfo = new ActivityManager.MemoryInfo();
     activityManager.getMemoryInfo(fetchedMemoryInfo);
     assertThat(fetchedMemoryInfo.availMem).isEqualTo(12345);
@@ -79,7 +82,7 @@ public class ShadowActivityManagerTest {
         buildTaskInfo(new ComponentName("org.robolectric", "Task 2"));
 
     assertThat(activityManager.getRunningTasks(Integer.MAX_VALUE)).isEmpty();
-    shadowOf(activityManager).setTasks(Lists.newArrayList(task1, task2));
+    shadowActivityManager.setTasks(Lists.newArrayList(task1, task2));
     assertThat(activityManager.getRunningTasks(Integer.MAX_VALUE)).containsExactly(task1, task2);
   }
 
@@ -90,7 +93,7 @@ public class ShadowActivityManagerTest {
     final AppTask task2 = ShadowAppTask.newInstance();
 
     assertThat(activityManager.getAppTasks()).isEmpty();
-    shadowOf(activityManager).setAppTasks(Lists.newArrayList(task1, task2));
+    shadowActivityManager.setAppTasks(Lists.newArrayList(task1, task2));
     assertThat(activityManager.getAppTasks()).containsExactly(task1, task2);
   }
 
@@ -105,12 +108,8 @@ public class ShadowActivityManagerTest {
     ActivityManager.RunningAppProcessInfo myInfo = activityManager.getRunningAppProcesses().get(0);
     assertThat(myInfo.pid).isEqualTo(android.os.Process.myPid());
     assertThat(myInfo.uid).isEqualTo(android.os.Process.myUid());
-    assertThat(myInfo.processName)
-        .isEqualTo(
-            ((Application) ApplicationProvider.getApplicationContext())
-                .getBaseContext()
-                .getPackageName());
-    shadowOf(activityManager).setProcesses(Lists.newArrayList(process1, process2));
+    assertThat(myInfo.processName).isEqualTo(application.getBaseContext().getPackageName());
+    shadowActivityManager.setProcesses(Lists.newArrayList(process1, process2));
     assertThat(activityManager.getRunningAppProcesses()).containsExactly(process1, process2);
   }
 
@@ -122,7 +121,7 @@ public class ShadowActivityManagerTest {
         buildServiceInfo(new ComponentName("org.robolectric", "Service 2"));
 
     assertThat(activityManager.getRunningServices(Integer.MAX_VALUE)).isEmpty();
-    shadowOf(activityManager).setServices(Lists.newArrayList(service1, service2));
+    shadowActivityManager.setServices(Lists.newArrayList(service1, service2));
     assertThat(activityManager.getRunningServices(Integer.MAX_VALUE))
         .containsExactly(service1, service2);
   }
@@ -131,16 +130,16 @@ public class ShadowActivityManagerTest {
   public void getMemoryClass_shouldWork() {
     assertThat(activityManager.getMemoryClass()).isEqualTo(16);
 
-    shadowOf(activityManager).setMemoryClass(42);
+    shadowActivityManager.setMemoryClass(42);
     assertThat(activityManager.getMemoryClass()).isEqualTo(42);
   }
 
   @Test
   public void killBackgroundProcesses_shouldWork() {
-    assertThat(shadowOf(activityManager).getBackgroundPackage()).isNull();
+    assertThat(shadowActivityManager.getBackgroundPackage()).isNull();
 
     activityManager.killBackgroundProcesses("org.robolectric");
-    assertThat(shadowOf(activityManager).getBackgroundPackage()).isEqualTo("org.robolectric");
+    assertThat(shadowActivityManager.getBackgroundPackage()).isEqualTo("org.robolectric");
   }
 
   @Test
@@ -156,7 +155,7 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = KITKAT)
   public void setIsLowRamDevice() {
-    shadowOf(activityManager).setIsLowRamDevice(true);
+    shadowActivityManager.setIsLowRamDevice(true);
     assertThat(activityManager.isLowRamDevice()).isTrue();
   }
 
@@ -166,7 +165,7 @@ public class ShadowActivityManagerTest {
     assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_NONE);
 
-    shadowOf(activityManager).setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
+    shadowActivityManager.setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
     assertThat(activityManager.getLockTaskModeState())
         .isEqualTo(ActivityManager.LOCK_TASK_MODE_LOCKED);
     assertThat(activityManager.isInLockTaskMode()).isTrue();
@@ -183,7 +182,7 @@ public class ShadowActivityManagerTest {
     setState.uid = Process.myUid();
     setState.pid = Process.myPid();
     setState.importanceReasonCode = ActivityManager.RunningAppProcessInfo.REASON_PROVIDER_IN_USE;
-    shadowOf(activityManager).setProcesses(ImmutableList.of(setState));
+    shadowActivityManager.setProcesses(ImmutableList.of(setState));
     inState = new ActivityManager.RunningAppProcessInfo();
     ActivityManager.getMyMemoryState(inState);
     assertThat(inState.importanceReasonCode)
@@ -193,11 +192,7 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void switchUser() {
-    UserManager userManager =
-        (UserManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
-    shadowOf((Application) ApplicationProvider.getApplicationContext())
-        .setSystemService(Context.USER_SERVICE, userManager);
+    shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     activityManager.switchUser(10);
     assertThat(UserHandle.myUserId()).isEqualTo(10);
@@ -206,10 +201,6 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = android.os.Build.VERSION_CODES.Q)
   public void switchUser_withUserHandle_shouldAbleToSwitchUser() {
-    UserManager userManager =
-        (UserManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
-
     UserHandle userHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
     activityManager.switchUser(userHandle);
     assertThat(UserHandle.myUserId()).isEqualTo(10);
@@ -224,11 +215,7 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void getCurrentUser_nonDefault_returnValueSet() {
-    UserManager userManager =
-        (UserManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.USER_SERVICE);
-    shadowOf((Application) ApplicationProvider.getApplicationContext())
-        .setSystemService(Context.USER_SERVICE, userManager);
+    shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
     activityManager.switchUser(10);
 
@@ -238,10 +225,7 @@ public class ShadowActivityManagerTest {
   @Test
   @Config(minSdk = P)
   public void isBackgroundRestricted_returnsValueSet() {
-    ActivityManager activityManager =
-        (ActivityManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-    shadowOf(activityManager).setBackgroundRestricted(true);
+    shadowActivityManager.setBackgroundRestricted(true);
 
     assertThat(activityManager.isBackgroundRestricted()).isTrue();
   }
@@ -350,11 +334,8 @@ public class ShadowActivityManagerTest {
 
   @Test
   public void getDeviceConfigurationInfo_returnsValueSet() {
-    ActivityManager activityManager =
-        (ActivityManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
     ConfigurationInfo configurationInfo = new ConfigurationInfo();
-    shadowOf(activityManager).setDeviceConfigurationInfo(configurationInfo);
+    shadowActivityManager.setDeviceConfigurationInfo(configurationInfo);
 
     assertThat(activityManager.getDeviceConfigurationInfo()).isEqualTo(configurationInfo);
   }
@@ -362,20 +343,14 @@ public class ShadowActivityManagerTest {
   @Config(minSdk = KITKAT)
   @Test
   public void isApplicationUserDataCleared_returnsDefaultFalse() {
-    ActivityManager activityManager =
-        (ActivityManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-    assertThat(Shadows.shadowOf(activityManager).isApplicationUserDataCleared()).isFalse();
+    assertThat(shadowActivityManager.isApplicationUserDataCleared()).isFalse();
   }
 
   @Config(minSdk = KITKAT)
   @Test
   public void isApplicationUserDataCleared_returnsTrue() {
-    ActivityManager activityManager =
-        (ActivityManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
     activityManager.clearApplicationUserData();
-    assertThat(Shadows.shadowOf(activityManager).isApplicationUserDataCleared()).isTrue();
+    assertThat(shadowActivityManager.isApplicationUserDataCleared()).isTrue();
   }
 
   private void addApplicationExitInfo(int pid) {
