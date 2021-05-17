@@ -106,14 +106,24 @@ public final class ExpectedLogMessagesRuleTest {
             return error
                     .getMessage()
                     .matches(
-                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{timeString='.+', type=6,"
-                            + " tag='Mytag', msg='message1', throwable=null\\}\\][\\s\\S]*")
+                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{"
+                            + "\\s+timeString='.+'"
+                            + "\\s+type=6"
+                            + "\\s+tag='Mytag'"
+                            + "\\s+msg='message1'"
+                            + "\\s+throwable=null"
+                            + "\\s+\\}\\]"
+                            + "[\\s\\S]*")
                 && error
                     .getMessage()
                     .matches(
-                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{timeString='.+',"
-                            + " type=6, tag='Mytag', msg='message2',"
-                            + " throwable=null\\}\\][\\s\\S]*")
+                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
+                            + "\\s+timeString='.+'"
+                            + "\\s+type=6"
+                            + "\\s+tag='Mytag'"
+                            + "\\s+msg='message2'"
+                            + "\\s+throwable=null"
+                            + "\\s+\\}\\][\\s\\S]*")
                 && error
                     .getMessage()
                     .matches(
@@ -147,14 +157,24 @@ public final class ExpectedLogMessagesRuleTest {
             return error
                     .getMessage()
                     .matches(
-                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{timeString='.+', type=6,"
-                            + " tag='Mytag', msg='message1', throwable=null\\}\\][\\s\\S]*")
+                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{"
+                            + "\\s+timeString='.+'"
+                            + "\\s+type=6"
+                            + "\\s+tag='Mytag'"
+                            + "\\s+msg='message1'"
+                            + "\\s+throwable=null"
+                            + "\\s+\\}\\]"
+                            + "[\\s\\S]*")
                 && error
                     .getMessage()
                     .matches(
-                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{timeString='.+',"
-                            + " type=6, tag='Mytag', msg='message2',"
-                            + " throwable=java.lang.IllegalArgumentException\\}\\][\\s\\S]*")
+                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
+                            + "\\s+timeString='.+'"
+                            + "\\s+type=6"
+                            + "\\s+tag='Mytag'"
+                            + "\\s+msg='message2'"
+                            + "\\s+throwable=java.lang.IllegalArgumentException"
+                            + "\\s+\\}\\][\\s\\S]*")
                 && error
                     .getMessage()
                     .matches(

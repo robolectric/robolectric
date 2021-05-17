@@ -284,6 +284,7 @@ public class ShadowLogTest {
 
   @Test
   public void getLogs_shouldReturnCopy() {
+    Log.d("tag1", "1");
     assertThat(ShadowLog.getLogs()).isNotSameInstanceAs(ShadowLog.getLogs());
     assertThat(ShadowLog.getLogs()).isEqualTo(ShadowLog.getLogs());
   }
