@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.ActivityThread;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
@@ -26,12 +25,5 @@ public class ShadowActivityThreadTest {
   public void getApplication() {
     ActivityThread activityThread = (ActivityThread) ShadowActivityThread.currentActivityThread();
     assertThat(activityThread.getApplication()).isEqualTo(RuntimeEnvironment.getApplication());
-  }
-
-  @Test
-  public void getInstrumentation() {
-    ActivityThread activityThread = (ActivityThread) ShadowActivityThread.currentActivityThread();
-    assertThat(activityThread.getInstrumentation())
-        .isEqualTo(InstrumentationRegistry.getInstrumentation());
   }
 }

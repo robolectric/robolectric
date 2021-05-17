@@ -9,7 +9,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
-import androidx.test.platform.app.InstrumentationRegistry;
+import com.google.common.base.Supplier;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
@@ -45,6 +45,8 @@ public class RuntimeEnvironment {
   public static Path compileTimeSystemResourcesFile;
 
   private static boolean useLegacyResources;
+  private static Supplier<Application> applicationSupplier;
+  private static final Object supplierLock = new Object();
 
   /**
    * Get a reference to the {@link Application} under test.
@@ -58,14 +60,26 @@ public class RuntimeEnvironment {
    * preferable if you desire cross platform tests that work on the JVM and real Android devices.
    */
   public static Application getApplication() {
+    // IMPORTANT NOTE: Given the order in which these are nulled out when cleaning up in
+    // AndroidTestEnvironment, the application null check must happen before the supplier null
+    // check. Otherwise the get() call can try to load an application that has already been
+    // loaded and cleaned up (as well as race with other threads trying to load the "correct"
+    // application)
     if (application == null) {
-      application =
-          (Application)
-              InstrumentationRegistry.getInstrumentation()
-                  .getTargetContext()
-                  .getApplicationContext();
+      synchronized (supplierLock) {
+        if (applicationSupplier != null) {
+          application = applicationSupplier.get();
+        }
+      }
     }
     return application;
+  }
+
+  /** internal use only */
+  public static void setApplicationSupplier(Supplier<Application> applicationSupplier) {
+    synchronized (supplierLock) {
+      RuntimeEnvironment.applicationSupplier = applicationSupplier;
+    }
   }
 
   private static Class<? extends Application> applicationClass;
