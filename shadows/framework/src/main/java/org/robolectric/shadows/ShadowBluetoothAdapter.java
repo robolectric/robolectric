@@ -86,13 +86,6 @@ public class ShadowBluetoothAdapter {
     isBluetoothSupported = supported;
   }
 
-  /** @deprecated use real framework implementation instead */
-  @Deprecated
-  @Implementation(minSdk = LOLLIPOP)
-  protected BluetoothLeAdvertiser getBluetoothLeAdvertiser() {
-    return directlyOn(realAdapter, BluetoothAdapter.class, "getBluetoothLeAdvertiser");
-  }
-
   /** @deprecated use real BluetoothLeAdvertiser instead */
   @Deprecated
   public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
