@@ -490,6 +490,26 @@ public class ShadowPausedLooperTest {
     assertThat(countDownLatch2.await(30, SECONDS)).isTrue();
   }
 
+  @Test
+  public void testIdleNotStuck_whenThreadCrashes() throws Exception {
+    HandlerThread thread = new HandlerThread("WillCrash");
+    thread.start();
+    Looper looper = thread.getLooper();
+    shadowOf(looper).pause();
+    new Handler(looper)
+        .post(
+            () -> {
+              Looper.myQueue()
+                  .addIdleHandler(
+                      () -> {
+                        throw new RuntimeException();
+                      });
+            });
+    shadowOf(looper).idle();
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
   private static class BlockingRunnable implements Runnable {
     CountDownLatch latch = new CountDownLatch(1);
 
