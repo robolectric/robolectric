@@ -3,8 +3,10 @@ package org.robolectric.shadows;
 import static android.media.RingtoneManager.TYPE_ALARM;
 import static android.media.RingtoneManager.TYPE_RINGTONE;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 
 import android.content.Context;
+import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
@@ -17,7 +19,7 @@ import org.junit.runner.RunWith;
 public final class ShadowRingtoneManagerTest {
 
   @Test
-  public void getRingtone_returnSetUri() {
+  public void getActualDefaultRingtoneUri_returnSetUri() {
     Context appContext = ApplicationProvider.getApplicationContext();
     Uri uri = Uri.parse("content://media/external/330");
     int type = TYPE_RINGTONE;
@@ -28,7 +30,7 @@ public final class ShadowRingtoneManagerTest {
   }
 
   @Test
-  public void getRingtone_noUriSet_returnNull() {
+  public void getActualDefaultRingtoneUri_noUriSet_returnNull() {
     Context appContext = ApplicationProvider.getApplicationContext();
     int type = TYPE_RINGTONE;
 
@@ -36,12 +38,31 @@ public final class ShadowRingtoneManagerTest {
   }
 
   @Test
-  public void getRingtone_uriSetForDifferentType() {
+  public void getActualDefaultRingtoneUri_uriSetForDifferentType() {
     Context appContext = ApplicationProvider.getApplicationContext();
     int type = TYPE_RINGTONE;
     Uri uri = Uri.parse("content://media/external/330");
     RingtoneManager.setActualDefaultRingtoneUri(appContext, type, uri);
 
     assertThat(RingtoneManager.getActualDefaultRingtoneUri(appContext, TYPE_ALARM)).isNull();
+  }
+
+  @Test
+  public void getRingtone_noUriSet_returnsNull() {
+    Context appContext = ApplicationProvider.getApplicationContext();
+    Uri uri = Uri.parse("content://media/external/330");
+
+    assertThat(RingtoneManager.getRingtone(appContext, uri)).isNull();
+  }
+
+  @Test
+  public void getRingtone_uriSet_returnsNotNull() {
+    Context appContext = ApplicationProvider.getApplicationContext();
+    Uri uri = Uri.parse("content://media/external/330");
+
+    Ringtone ringtone = mock(Ringtone.class);
+    ShadowRingtoneManager.addRingtone(uri, ringtone);
+
+    assertThat(RingtoneManager.getRingtone(appContext, uri)).isNotNull();
   }
 }
