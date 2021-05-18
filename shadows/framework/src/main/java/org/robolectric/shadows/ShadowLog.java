@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.util.Log;
 import com.google.common.base.Ascii;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -332,7 +333,7 @@ public class ShadowLog {
           + msg
           + '\''
           + "\n  throwable="
-          + throwable
+          + (throwable == null ? null : Throwables.getStackTraceAsString(throwable))
           + "\n}";
     }
   }
