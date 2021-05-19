@@ -334,6 +334,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       registerBroadcastReceivers(application, appManifest);
 
       appResources.updateConfiguration(androidConfiguration, displayMetrics);
+      // propagate any updates to configuration via RuntimeEnvironment.setQualifiers
+      Bootstrap.updateConfiguration(appResources);
 
       if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);
