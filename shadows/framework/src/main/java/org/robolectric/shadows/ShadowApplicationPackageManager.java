@@ -5,6 +5,7 @@ import static android.content.pm.ApplicationInfo.FLAG_INSTALLED;
 import static android.content.pm.ApplicationInfo.FLAG_SYSTEM;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
 import static android.content.pm.PackageManager.GET_ACTIVITIES;
 import static android.content.pm.PackageManager.GET_META_DATA;
@@ -1277,7 +1278,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
     appInfo.enabled =
         (appInfo.enabled && stateOverride == COMPONENT_ENABLED_STATE_DEFAULT)
-            || stateOverride == COMPONENT_ENABLED_STATE_ENABLED;
+            || stateOverride == COMPONENT_ENABLED_STATE_ENABLED
+            || stateOverride == COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED;
 
     if (deletedPackages.contains(packageName)) {
       appInfo.flags &= ~FLAG_INSTALLED;
