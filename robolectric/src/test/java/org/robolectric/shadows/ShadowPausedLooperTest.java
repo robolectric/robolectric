@@ -52,8 +52,9 @@ public class ShadowPausedLooperTest {
   }
 
   @After
-  public void quitHandlerThread() {
+  public void quitHandlerThread() throws Exception {
     handlerThread.quit();
+    handlerThread.join();
   }
 
   @Test
@@ -467,6 +468,39 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
+  public void quitFromSameThread_releasesLooperThread() throws Exception {
+    HandlerThread thread = new HandlerThread("WillBeQuit");
+    thread.start();
+    Looper looper = thread.getLooper();
+    new Handler(looper).post(looper::quit);
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void quitPausedFromSameThread_releasesLooperThread() throws Exception {
+    HandlerThread thread = new HandlerThread("WillBeQuit");
+    thread.start();
+    Looper looper = thread.getLooper();
+    shadowOf(looper).pause();
+    new Handler(looper).post(looper::quit);
+    shadowOf(looper).idle();
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void quitPausedFromDifferentThread_releasesLooperThread() throws Exception {
+    HandlerThread thread = new HandlerThread("WillBeQuit");
+    thread.start();
+    Looper looper = thread.getLooper();
+    shadowOf(looper).pause();
+    looper.quit();
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
   public void idle_failsIfThreadQuit() {
     ShadowLooper shadowLooper = shadowOf(handlerThread.getLooper());
     handlerThread.quit();
@@ -488,6 +522,26 @@ public class ShadowPausedLooperTest {
     CountDownLatch countDownLatch2 = new CountDownLatch(1);
     handler.post(countDownLatch2::countDown);
     assertThat(countDownLatch2.await(30, SECONDS)).isTrue();
+  }
+
+  @Test
+  public void testIdleNotStuck_whenThreadCrashes() throws Exception {
+    HandlerThread thread = new HandlerThread("WillCrash");
+    thread.start();
+    Looper looper = thread.getLooper();
+    shadowOf(looper).pause();
+    new Handler(looper)
+        .post(
+            () -> {
+              Looper.myQueue()
+                  .addIdleHandler(
+                      () -> {
+                        throw new RuntimeException();
+                      });
+            });
+    shadowOf(looper).idle();
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
   }
 
   private static class BlockingRunnable implements Runnable {

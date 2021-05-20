@@ -4,13 +4,13 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.content.Context;
-import android.os.Build;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -28,7 +28,21 @@ public class ShadowBluetoothGatt {
           Shadow.class.getClassLoader().loadClass("android.bluetooth.IBluetoothGatt");
 
       BluetoothGatt bluetoothGatt;
-      if (Build.VERSION.SDK_INT >= O_MR1) {
+      int apiLevel = RuntimeEnvironment.getApiLevel();
+      if (apiLevel > R) {
+        bluetoothGatt =
+            Shadow.newInstance(
+                BluetoothGatt.class,
+                new Class<?>[] {
+                  iBluetoothGattClass,
+                  BluetoothDevice.class,
+                  Integer.TYPE,
+                  Boolean.TYPE,
+                  Integer.TYPE,
+                  Class.forName("android.content.AttributionSource"),
+                },
+                new Object[] {null, device, 0, false, 0, null});
+      } else if (apiLevel >= O_MR1) {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,
@@ -40,7 +54,7 @@ public class ShadowBluetoothGatt {
                   Integer.TYPE
                 },
                 new Object[] {null, device, 0, false, 0});
-      } else if (Build.VERSION.SDK_INT >= O) {
+      } else if (apiLevel >= O) {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,
@@ -48,7 +62,7 @@ public class ShadowBluetoothGatt {
                   iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE, Integer.TYPE
                 },
                 new Object[] {null, device, 0, 0});
-      } else if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+      } else if (apiLevel >= LOLLIPOP) {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,

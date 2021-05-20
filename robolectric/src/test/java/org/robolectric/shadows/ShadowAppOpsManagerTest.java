@@ -131,6 +131,21 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(sdk = VERSION_CODES.Q)
+  public void noModeSet_q_noteProxyOpNoThrow_withproxiedUid_shouldReturnModeAllowed() {
+    int result = appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid());
+    assertThat(result).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void noModeSet_atLeastR_noteProxyOpNoThrow_shouldReturnModeAllowed() {
+    int result =
+        appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid(), null, null);
+    assertThat(result).isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.O_MR1, maxSdk = VERSION_CODES.Q)
   public void setMode_withModeDefault_atLeastO_noteProxyOpNoThrow_shouldReturnModeDefault() {
     ReflectionHelpers.callInstanceMethod(
@@ -150,11 +165,51 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(sdk = VERSION_CODES.Q)
+  public void
+      setMode_withModeDefault_q_noteProxyOpNoThrow_withProxiedUid_shouldReturnModeDefault() {
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid()))
+        .isEqualTo(MODE_DEFAULT);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void setMode_withModeDefault_atLeastR_noteProxyOpNoThrow_shouldReturnModeDefault() {
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_DEFAULT);
+    assertThat(
+            appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid(), null, null))
+        .isEqualTo(MODE_DEFAULT);
+  }
+
+  @Test
   @Config(minSdk = VERSION_CODES.P, maxSdk = VERSION_CODES.Q)
   public void setMode_noteProxyOpNoThrow_atLeastO() {
     assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
     assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1)).isEqualTo(MODE_ERRORED);
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.Q)
+  public void setMode_noteProxyOpNoThrow_withProxiedUid_q() {
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid()))
+        .isEqualTo(MODE_ALLOWED);
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
+    assertThat(appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid()))
+        .isEqualTo(MODE_ERRORED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void setMode_noteProxyOpNoThrow_atLeastR() {
+    assertThat(
+            appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid(), null, null))
+        .isEqualTo(MODE_ALLOWED);
+    appOps.setMode(OP_GPS, Binder.getCallingUid(), PACKAGE_NAME1, MODE_ERRORED);
+    assertThat(
+            appOps.noteProxyOpNoThrow(OPSTR_GPS, PACKAGE_NAME1, Binder.getCallingUid(), null, null))
+        .isEqualTo(MODE_ERRORED);
   }
 
   @Test
@@ -352,6 +407,41 @@ public class ShadowAppOpsManagerTest {
   @Config(minSdk = VERSION_CODES.R)
   public void startOp_anotherPackage_opNotActive() {
     appOps.startOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME2, null, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT, maxSdk = VERSION_CODES.Q)
+  public void startOpNoThrow_setModeAllowed() {
+    appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ALLOWED);
+
+    assertThat(appOps.startOpNoThrow(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1))
+        .isEqualTo(MODE_ALLOWED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT, maxSdk = VERSION_CODES.Q)
+  public void startOpNoThrow_setModeErrored() {
+    appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ERRORED);
+
+    assertThat(appOps.startOpNoThrow(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1))
+        .isEqualTo(MODE_ERRORED);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOpNoThrow_withAttr_opActive() {
+    appOps.startOpNoThrow(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, null, null);
+
+    assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void startOpNoThrow_finishOp_opNotActive() {
+    appOps.startOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, null, null);
+    appOps.finishOp(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1, null);
 
     assertThat(appOps.isOpActive(OPSTR_RECORD_AUDIO, UID_1, PACKAGE_NAME1)).isFalse();
   }

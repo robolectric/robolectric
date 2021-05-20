@@ -11,7 +11,12 @@ import java.util.List;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/** Builder for {@link GnssStatus} objects, since they have a hidden constructor. */
+/**
+ * Builder for {@link GnssStatus} objects, since they have a hidden constructor.
+ *
+ * @deprecated Use {@link GnssStatus.Builder} instead where possible.
+ */
+@Deprecated
 public final class GnssStatusBuilder {
   /** Information about a single satellite in a {@link GnssStatus}. */
   @AutoValue
