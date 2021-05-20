@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.view.inputmethod.InputMethodSubtype;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -55,6 +56,7 @@ public class ShadowInputMethodManager {
   private Optional<PrivateCommandListener> privateCommandListener = Optional.absent();
   private List<InputMethodInfo> inputMethodInfoList = ImmutableList.of();
   private List<InputMethodInfo> enabledInputMethodInfoList = ImmutableList.of();
+  private Optional<InputMethodSubtype> inputMethodSubtype = Optional.absent();
 
   @Implementation
   protected boolean showSoftInput(View view, int flags) {
@@ -131,6 +133,25 @@ public class ShadowInputMethodManager {
    */
   public void setInputMethodInfoList(List<InputMethodInfo> inputMethodInfoList) {
     this.inputMethodInfoList = inputMethodInfoList;
+  }
+
+  /**
+   * Returns the {@link InputMethodSubtype} that is installed.
+   *
+   * <p>This method differs from Android implementation by allowing the list to be set using {@link
+   * #setCurrentInputMethodSubtype(InputMethodSubtype)}.
+   */
+  @Implementation
+  protected InputMethodSubtype getCurrentInputMethodSubtype() {
+    return inputMethodSubtype.orNull();
+  }
+
+  /**
+   * Sets the current {@link InputMethodSubtype} that will be returned by {@link
+   * #getCurrentInputMethodSubtype()}.
+   */
+  public void setCurrentInputMethodSubtype(InputMethodSubtype inputMethodSubtype) {
+    this.inputMethodSubtype = Optional.of(inputMethodSubtype);
   }
 
   /**
