@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -361,7 +362,16 @@ static class Connections {
   private final Map<Long, SQLiteConnection> connectionsMap = new HashMap<>();
   private final Map<Long, List<Long>> statementPtrsForConnection = new HashMap<>();
 
-  private ExecutorService dbExecutor = Executors.newSingleThreadExecutor();
+  private ExecutorService dbExecutor = Executors.newSingleThreadExecutor(threadFactory());
+
+  static ThreadFactory threadFactory() {
+    ThreadFactory delegate = Executors.defaultThreadFactory();
+    return r -> {
+      Thread worker = delegate.newThread(r);
+      worker.setName(ShadowSQLiteConnection.class.getSimpleName() + " worker");
+      return worker;
+    };
+  }
 
   SQLiteConnection getConnection(final long connectionPtr) {
     synchronized (lock) {
@@ -473,7 +483,7 @@ static class Connections {
       oldDbExecutor = dbExecutor;
       openConnections = new ArrayList<>(connectionsMap.values());
 
-      dbExecutor = Executors.newSingleThreadExecutor();
+      dbExecutor = Executors.newSingleThreadExecutor(threadFactory());
       connectionsMap.clear();
       statementsMap.clear();
       statementPtrsForConnection.clear();

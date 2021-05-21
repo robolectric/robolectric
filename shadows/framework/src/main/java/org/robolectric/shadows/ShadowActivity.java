@@ -27,6 +27,7 @@ import android.database.Cursor;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.LayoutInflater;
@@ -119,7 +120,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     Instrumentation instrumentation = activityThread.getInstrumentation();
 
-    reflector(getActivityReflector(), realActivity)
+    reflector(_Activity_.class, realActivity)
         .callAttach(
             realActivity,
             baseContext,
@@ -135,10 +136,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (theme != 0) {
       realActivity.setTheme(theme);
     }
-  }
-
-  protected Class<? extends _Activity_> getActivityReflector() {
-    return _Activity_.class;
   }
 
   /**
@@ -636,6 +633,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   public Dialog getDialogById(int dialogId) {
     return dialogForId.get(dialogId);
+  }
+
+  // TODO(hoisie): consider moving this to ActivityController#makeActivityEligibleForGc
+  @Implementation
+  protected void onDestroy() {
+    directlyOn(realActivity, Activity.class, "onDestroy");
+    ShadowActivityThread activityThread = Shadow.extract(RuntimeEnvironment.getActivityThread());
+    IBinder token = reflector(_Activity_.class, realActivity).getToken();
+    activityThread.removeActivity(token);
   }
 
   @Implementation

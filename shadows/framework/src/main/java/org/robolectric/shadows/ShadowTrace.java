@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.base.Verify.verifyNotNull;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.Trace;
 import android.util.Log;
@@ -21,7 +20,6 @@ import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Shadow implementation for {@link Trace}, which stores the traces locally in arrays (unlike the
@@ -45,16 +43,17 @@ public class ShadowTrace {
 
   private static final boolean CRASH_ON_INCORRECT_USAGE_DEFAULT = true;
   private static boolean crashOnIncorrectUsage = CRASH_ON_INCORRECT_USAGE_DEFAULT;
-  private static boolean appTracingAllowed = true;
   private static boolean isEnabled = true;
 
   private static final long TRACE_TAG_APP = 1L << 12;
   private static final int MAX_SECTION_NAME_LEN = 127;
 
+  private static long tags = TRACE_TAG_APP;
+
   /** Starts a new trace section with given name. */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected static void beginSection(String sectionName) {
-    if (!Trace.isTagEnabled(TRACE_TAG_APP)) {
+    if (tags == 0) {
       return;
     }
     if (!checkValidSectionName(sectionName)) {
@@ -66,7 +65,7 @@ public class ShadowTrace {
   /** Ends the most recent active trace section. */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected static void endSection() {
-    if (!Trace.isTagEnabled(TRACE_TAG_APP)) {
+    if (tags == 0) {
       return;
     }
     if (currentSections.get().isEmpty()) {
@@ -79,7 +78,7 @@ public class ShadowTrace {
   /** Starts a new async trace section with given name. */
   @Implementation(minSdk = Q)
   protected static synchronized void beginAsyncSection(String sectionName, int cookie) {
-    if (!Trace.isTagEnabled(TRACE_TAG_APP)) {
+    if (tags == 0) {
       return;
     }
     if (!checkValidSectionName(sectionName)) {
@@ -100,7 +99,7 @@ public class ShadowTrace {
   /** Ends async trace trace section. */
   @Implementation(minSdk = Q)
   protected static synchronized void endAsyncSection(String sectionName, int cookie) {
-    if (!Trace.isTagEnabled(TRACE_TAG_APP)) {
+    if (tags == 0) {
       return;
     }
     AsyncTraceSection section =
@@ -114,17 +113,13 @@ public class ShadowTrace {
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected static boolean isTagEnabled(long traceTag) {
-    if (traceTag == TRACE_TAG_APP) {
-      return appTracingAllowed;
-    }
-
-    return directlyOn(Trace.class, "isTagEnabled", ClassParameter.from(long.class, traceTag));
+  protected static long nativeGetEnabledTags() {
+    return tags;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected static void setAppTracingAllowed(boolean appTracingAllowed) {
-    ShadowTrace.appTracingAllowed = appTracingAllowed;
+    tags = appTracingAllowed ? TRACE_TAG_APP : 0;
   }
 
   /** Returns whether systrace is enabled. */

@@ -183,6 +183,10 @@ public class ShadowLogTest {
     }
   }
 
+  private static RuntimeException specificMethodName() {
+    return new RuntimeException();
+  }
+
   @Test
   public void shouldLogAccordingToTag() throws Exception {
     ShadowLog.reset();
@@ -192,14 +196,17 @@ public class ShadowLogTest {
     Log.w("tag1", "4");
     Log.i("tag1", "5");
     Log.d("tag2", "6");
+    Log.d("throwable", "7", specificMethodName());
 
     List<LogItem> allItems = ShadowLog.getLogs();
-    assertThat(allItems.size()).isEqualTo(6);
+    assertThat(allItems.size()).isEqualTo(7);
     int i = 1;
     for (LogItem item : allItems) {
       assertThat(item.msg).isEqualTo(Integer.toString(i));
+      assertThat(item.toString()).contains(item.msg);
       i++;
     }
+    assertThat(allItems.get(6).toString()).contains("specificMethodName");
     assertUniformLogsForTag("tag1", 3);
     assertUniformLogsForTag("tag2", 2);
     assertUniformLogsForTag("tag3", 1);
