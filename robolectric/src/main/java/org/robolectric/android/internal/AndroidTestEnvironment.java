@@ -72,7 +72,6 @@ import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation;
-import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
 import org.robolectric.shadows.ShadowLegacyLooper;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.shadows.ShadowLog;
@@ -525,26 +524,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Application dummyInitialApplication = new Application();
     final ComponentName dummyInitialComponent =
         new ComponentName("", androidInstrumentation.getClass().getSimpleName());
-    // TODO Move the API check into a helper method inside ShadowInstrumentation
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
-      reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(
-              activityThread,
-              dummyInitialApplication,
-              dummyInitialApplication,
-              dummyInitialComponent,
-              null);
-    } else {
-      reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(
-              activityThread,
-              dummyInitialApplication,
-              dummyInitialApplication,
-              dummyInitialComponent,
-              null,
-              null);
-    }
-
+    ShadowInstrumentation.init(
+        androidInstrumentation,
+        activityThread,
+        dummyInitialApplication,
+        dummyInitialApplication,
+        dummyInitialComponent);
     androidInstrumentation.onCreate(new Bundle());
     return androidInstrumentation;
   }
@@ -578,17 +563,29 @@ public class AndroidTestEnvironment implements TestEnvironment {
     InstrumentationRegistry.registerInstance(null, new Bundle());
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.application = null;
-    Bootstrap.displaySet = false;
+    Bootstrap.resetDisplayConfiguration();
   }
 
   @Override
   public void checkStateAfterTestFailure(Throwable t) throws Throwable {
     if (hasUnexecutedRunnables()) {
-      throw new Exception(
-          "Main looper has queued unexecuted runnables. "
+      t.addSuppressed(new UnExecutedRunnablesException());
+    }
+    throw t;
+  }
+
+  private static final class UnExecutedRunnablesException extends Exception {
+
+    UnExecutedRunnablesException() {
+      super("Main looper has queued unexecuted runnables. "
               + "This might be the cause of the test failure. "
-              + "You might need a shadowOf(getMainLooper()).idle() call.",
-          t);
+              + "You might need a shadowOf(getMainLooper()).idle() call.");
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+      setStackTrace(new StackTraceElement[0]);
+      return this; // no stack trace, wouldn't be useful anyway
     }
   }
 

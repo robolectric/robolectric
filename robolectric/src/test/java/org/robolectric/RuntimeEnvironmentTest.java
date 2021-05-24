@@ -7,12 +7,14 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import android.app.Application;
 import android.content.res.Configuration;
+import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 
@@ -112,5 +114,12 @@ public class RuntimeEnvironmentTest {
     Application app = RuntimeEnvironment.getApplication();
     assertThat(app.getResources().getConfiguration().orientation)
         .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  @Test
+  public void testGetRotation() {
+    RuntimeEnvironment.setQualifiers("+land");
+    int screenRotation = ShadowDisplay.getDefaultDisplay().getRotation();
+    assertThat(screenRotation).isEqualTo(Surface.ROTATION_0);
   }
 }

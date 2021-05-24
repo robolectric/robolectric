@@ -16,6 +16,7 @@ public final class StorageVolumeBuilder {
   private final String id;
   private int storageId = 0;
   private final File path;
+  private File internalPath;
   private final String description;
   private boolean primary = true;
   private boolean removable = false;
@@ -24,7 +25,7 @@ public final class StorageVolumeBuilder {
   private boolean allowMassStorage = false;
   private long maxFileSize = 100L;
   private final UserHandle owner;
-  private final String fsUuid = UUID.randomUUID().toString();
+  private String fsUuid = UUID.randomUUID().toString();
   private final UUID uuid = UUID.randomUUID();
   private final String state;
 
@@ -32,37 +33,55 @@ public final class StorageVolumeBuilder {
       String id, File path, String description, UserHandle owner, String state) {
     this.id = id;
     this.path = path;
+    this.internalPath = path;
     this.description = description;
     this.owner = owner;
     this.state = state;
   }
 
-  public void setStorageId(int storageId) {
+  public StorageVolumeBuilder setStorageId(int storageId) {
     this.storageId = storageId;
+    return this;
   }
 
-  public void setIsPrimary(boolean isPrimary) {
+  public StorageVolumeBuilder setIsPrimary(boolean isPrimary) {
     this.primary = isPrimary;
+    return this;
   }
 
-  public void setIsRemovable(boolean isRemovable) {
+  public StorageVolumeBuilder setIsRemovable(boolean isRemovable) {
     this.removable = isRemovable;
+    return this;
   }
 
-  public void setIsEmulated(boolean isEmulated) {
+  public StorageVolumeBuilder setIsEmulated(boolean isEmulated) {
     this.emulated = isEmulated;
+    return this;
   }
 
-  public void setMtpReserveSize(long mtpReserveSize) {
+  public StorageVolumeBuilder setMtpReserveSize(long mtpReserveSize) {
     this.mtpReserveSize = mtpReserveSize;
+    return this;
   }
 
-  public void setAllowMassStorage(boolean allowMassStorage) {
+  public StorageVolumeBuilder setAllowMassStorage(boolean allowMassStorage) {
     this.allowMassStorage = allowMassStorage;
+    return this;
   }
 
-  public void setMaxFileSize(long maxFileSize) {
+  public StorageVolumeBuilder setMaxFileSize(long maxFileSize) {
     this.maxFileSize = maxFileSize;
+    return this;
+  }
+
+  public StorageVolumeBuilder setFsUuid(String fsUuid) {
+    this.fsUuid = fsUuid;
+    return this;
+  }
+
+  public StorageVolumeBuilder setInternalPath(File internalPath) {
+    this.internalPath = internalPath;
+    return this;
   }
 
   public StorageVolume build() throws IllegalStateException {
@@ -88,7 +107,7 @@ public final class StorageVolumeBuilder {
           StorageVolume.class,
           from(String.class, id), // String id,
           from(File.class, path), // File path,
-          from(File.class, path), // File internalPath
+          from(File.class, internalPath), // File internalPath
           from(String.class, description), // String description
           from(boolean.class, primary), // boolean primary,
           from(boolean.class, removable), // boolean removable,
@@ -103,7 +122,7 @@ public final class StorageVolumeBuilder {
           StorageVolume.class,
           from(String.class, id), // String id,
           from(File.class, path), // File path,
-          from(File.class, path), // File internalPath
+          from(File.class, internalPath), // File internalPath
           from(String.class, description), // String description
           from(boolean.class, primary), // boolean primary,
           from(boolean.class, removable), // boolean removable,

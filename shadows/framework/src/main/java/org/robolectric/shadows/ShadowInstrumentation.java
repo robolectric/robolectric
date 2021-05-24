@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
 import android.app.Activity;
@@ -30,6 +31,7 @@ import android.content.Intent;
 import android.content.Intent.FilterComparison;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -1005,6 +1007,40 @@ public class ShadowInstrumentation {
         ComponentName component,
         @WithType("android.app.IInstrumentationWatcher") Object watcher,
         @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
+  }
+
+  /** Convenience method around {@link Instrumentation}'s package-private init()
+   *
+   * @param instrumentation the Instrumentation being initialized
+   * @param thread {@link ActivityThread} to use for this instrumentation
+   * @param instrContext Context of this instrumentation's package
+   * @param appContext Context for the target application being instrumented
+   * @param component Complete component name for this instrumentation
+   */
+  public static void init(
+      Instrumentation instrumentation,
+      ActivityThread thread,
+      Context instrContext,
+      Context appContext,
+      ComponentName component) {
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
+      reflector(_Instrumentation_.class, instrumentation)
+          .init(
+              thread,
+              instrContext,
+              appContext,
+              component,
+              null);
+    } else {
+      reflector(_Instrumentation_.class, instrumentation)
+          .init(
+              thread,
+              instrContext,
+              appContext,
+              component,
+              null,
+              null);
+    }
   }
 
   private static final class BroadcastResultHolder {
