@@ -5,6 +5,8 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import android.app.Application;
+import android.content.res.Configuration;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -95,4 +97,21 @@ public class RuntimeEnvironmentTest {
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(RuntimeEnvironment.getMasterScheduler()).isSameInstanceAs(s);
   }
+
+  @Test
+  public void testSetQualifiersAddPropagateToApplicationResources() {
+    RuntimeEnvironment.setQualifiers("+land");
+    Application app = RuntimeEnvironment.getApplication();
+    assertThat(app.getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  @Test
+  public void testSetQualifiersReplacePropagateToApplicationResources() {
+    RuntimeEnvironment.setQualifiers("land");
+    Application app = RuntimeEnvironment.getApplication();
+    assertThat(app.getResources().getConfiguration().orientation)
+        .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
 }
