@@ -827,4 +827,17 @@ public class ShadowPendingIntentTest {
     PendingIntent result = parcel.readParcelable(PendingIntent.class.getClassLoader());
     assertThat(result).isEqualTo(pendingIntent);
   }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN)
+  public void toString_doesNotNPE() {
+    assertThat(
+            PendingIntent.getBroadcast(
+                    ApplicationProvider.getApplicationContext(),
+                    100,
+                    new Intent("action"),
+                    FLAG_ONE_SHOT)
+                .toString())
+        .startsWith("PendingIntent");
+  }
 }
