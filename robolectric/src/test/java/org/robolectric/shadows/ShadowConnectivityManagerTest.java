@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.spy;
@@ -22,6 +23,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
 import android.net.NetworkRequest;
 import android.net.ProxyInfo;
+import android.os.Handler;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -332,6 +334,33 @@ public class ShadowConnectivityManagerTest {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
     connectivityManager.registerNetworkCallback(builder.build(), callback);
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestNetwork_withTimeout_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.requestNetwork(builder.build(), callback, 0);
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestNetwork_withHandler_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.requestNetwork(builder.build(), callback, new Handler());
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestNetwork_withHandlerAndTimer_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.requestNetwork(builder.build(), callback, new Handler(), 0);
     assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
   }
 

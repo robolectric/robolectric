@@ -241,6 +241,33 @@ public class ShadowAppOpsManager {
     return mode;
   }
 
+  /** Stores a fake long-running operation. It does not throw if a wrong uid is passed. */
+  @Implementation(minSdk = KITKAT, maxSdk = Q)
+  protected int startOpNoThrow(int op, int uid, String packageName) {
+    int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
+    if (mode == AppOpsManager.MODE_ALLOWED) {
+      longRunningOp.add(Key.create(uid, packageName, op));
+    }
+    return mode;
+  }
+
+  /** Stores a fake long-running operation. It does not throw if a wrong uid is passed. */
+  @Implementation(minSdk = R)
+  protected int startOpNoThrow(
+      String op, int uid, String packageName, String attributionTag, String message) {
+    int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
+    if (mode == AppOpsManager.MODE_ALLOWED) {
+      longRunningOp.add(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
+    }
+    return mode;
+  }
+
+  /** Removes a fake long-running operation from the set. */
+  @Implementation(minSdk = KITKAT, maxSdk = Q)
+  protected void finishOp(int op, int uid, String packageName) {
+    longRunningOp.remove(Key.create(uid, packageName, op));
+  }
+
   /** Removes a fake long-running operation from the set. */
   @Implementation(minSdk = R)
   protected void finishOp(String op, int uid, String packageName, String attributionTag) {
@@ -325,6 +352,25 @@ public class ShadowAppOpsManager {
   protected int noteProxyOpNoThrow(int op, String proxiedPackageName) {
     storedOps.put(Key.create(Binder.getCallingUid(), proxiedPackageName, null), op);
     return checkOpNoThrow(op, Binder.getCallingUid(), proxiedPackageName);
+  }
+
+  @Implementation(minSdk = Q, maxSdk = Q)
+  @HiddenApi
+  protected int noteProxyOpNoThrow(int op, String proxiedPackageName, int proxiedUid) {
+    storedOps.put(Key.create(proxiedUid, proxiedPackageName, null), op);
+    return checkOpNoThrow(op, proxiedUid, proxiedPackageName);
+  }
+
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected int noteProxyOpNoThrow(
+      int op,
+      String proxiedPackageName,
+      int proxiedUid,
+      String proxiedAttributionTag,
+      String message) {
+    storedOps.put(Key.create(proxiedUid, proxiedPackageName, null), op);
+    return checkOpNoThrow(op, proxiedUid, proxiedPackageName);
   }
 
   @Implementation(minSdk = KITKAT)

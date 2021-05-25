@@ -3,21 +3,29 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Activity;
 import android.app.ActivityThread;
+import android.app.ActivityThread.ActivityClientRecord;
 import android.app.Application;
 import android.app.Instrumentation;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Binder;
+import android.os.IBinder;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
@@ -114,6 +122,24 @@ public class ShadowActivityThread {
         });
   }
 
+  /** Update's ActivityThread's list of active Activities */
+  IBinder registerActivityLaunch(Intent intent, ActivityInfo activityInfo, Activity activity) {
+    IBinder token = new Binder();
+    ActivityClientRecord record = new ActivityClientRecord();
+    ActivityClientRecordReflector recordReflector =
+        reflector(ActivityClientRecordReflector.class, record);
+    recordReflector.setToken(token);
+    recordReflector.setIntent(intent);
+    recordReflector.setActivityInfo(activityInfo);
+    recordReflector.setActivity(activity);
+    reflector(_ActivityThread_.class, realActivityThread).getActivities().put(token, record);
+    return token;
+  }
+
+  void removeActivity(IBinder token) {
+    reflector(_ActivityThread_.class, realActivityThread).getActivities().remove(token);
+  }
+
   /**
    * Internal use only.
    *
@@ -156,6 +182,9 @@ public class ShadowActivityThread {
 
     @Accessor("mInstrumentation")
     void setInstrumentation(Instrumentation instrumentation);
+
+    @Accessor("mActivities")
+    Map<IBinder, ActivityClientRecord> getActivities();
   }
 
   /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
@@ -167,5 +196,27 @@ public class ShadowActivityThread {
 
     @Accessor("processName")
     void setProcessName(String name);
+  }
+
+  @ForType(ActivityClientRecord.class)
+  private interface ActivityClientRecordReflector {
+    @Accessor("activity")
+    void setActivity(Activity activity);
+
+    @Accessor("token")
+    void setToken(IBinder token);
+
+    @Accessor("intent")
+    void setIntent(Intent intent);
+
+    @Accessor("activityInfo")
+    void setActivityInfo(ActivityInfo activityInfo);
+  }
+
+  @Resetter
+  public static void reset() {
+    reflector(_ActivityThread_.class, RuntimeEnvironment.getActivityThread())
+        .getActivities()
+        .clear();
   }
 }

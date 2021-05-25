@@ -299,14 +299,26 @@ public class ShadowActivityManager {
         .collect(toCollection(ArrayList::new));
   }
 
-  /** Adds an {@link ApplicationExitInfo} with the given information */
+  /**
+   * Adds an {@link ApplicationExitInfo} with the given information
+   *
+   * @deprecated Prefer using overload with {@link ApplicationExitInfoBuilder}
+   */
+  @Deprecated
   public void addApplicationExitInfo(String processName, int pid, int reason, int status) {
-    ApplicationExitInfo appExitInfo = new ApplicationExitInfo();
-    appExitInfo.setProcessName(processName);
-    appExitInfo.setPid(pid);
-    appExitInfo.setReason(reason);
-    appExitInfo.setStatus(status);
-    appExitInfoList.addFirst(appExitInfo);
+    ApplicationExitInfo info =
+        ApplicationExitInfoBuilder.newBuilder()
+            .setProcessName(processName)
+            .setPid(pid)
+            .setReason(reason)
+            .setStatus(status)
+            .build();
+    addApplicationExitInfo(info);
+  }
+
+  /** Adds given {@link ApplicationExitInfo}, see {@link ApplicationExitInfoBuilder} */
+  public void addApplicationExitInfo(ApplicationExitInfo info) {
+    appExitInfoList.addFirst(info);
   }
 
   @Implementation
@@ -326,5 +338,88 @@ public class ShadowActivityManager {
     return Shadow.<ShadowApplicationPackageManager>extract(packageManager)
         .getClearedApplicationUserDataPackages()
         .contains(RuntimeEnvironment.getApplication().getPackageName());
+  }
+
+  /** Builder class for {@link android.app.ApplicationExitInfo} */
+  public static class ApplicationExitInfoBuilder {
+
+    private final ApplicationExitInfo instance;
+
+    public static ApplicationExitInfoBuilder newBuilder() {
+      return new ApplicationExitInfoBuilder();
+    }
+
+    public ApplicationExitInfoBuilder setDefiningUid(int uid) {
+      instance.setDefiningUid(uid);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setDescription(String description) {
+      instance.setDescription(description);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setImportance(int importance) {
+      instance.setImportance(importance);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setPackageUid(int packageUid) {
+      instance.setPackageUid(packageUid);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setPid(int pid) {
+      instance.setPid(pid);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setProcessName(String processName) {
+      instance.setProcessName(processName);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setProcessStateSummary(byte[] processStateSummary) {
+      instance.setProcessStateSummary(processStateSummary);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setPss(long pss) {
+      instance.setPss(pss);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setRealUid(int realUid) {
+      instance.setRealUid(realUid);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setReason(int reason) {
+      instance.setReason(reason);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setRss(long rss) {
+      instance.setRss(rss);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setStatus(int status) {
+      instance.setStatus(status);
+      return this;
+    }
+
+    public ApplicationExitInfoBuilder setTimestamp(long timestamp) {
+      instance.setTimestamp(timestamp);
+      return this;
+    }
+
+    public ApplicationExitInfo build() {
+      return instance;
+    }
+
+    private ApplicationExitInfoBuilder() {
+      this.instance = new ApplicationExitInfo();
+    }
   }
 }

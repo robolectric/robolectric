@@ -22,12 +22,12 @@ public class ShadowUIModeManager {
   private static final int DEFAULT_PRIORITY = 0;
 
   @Implementation
-  public int getCurrentModeType() {
+  protected int getCurrentModeType() {
     return currentModeType;
   }
 
   @Implementation(maxSdk = VERSION_CODES.Q)
-  public void enableCarMode(int flags) {
+  protected void enableCarMode(int flags) {
     enableCarMode(DEFAULT_PRIORITY, flags);
   }
 
@@ -39,18 +39,18 @@ public class ShadowUIModeManager {
   }
 
   @Implementation
-  public void disableCarMode(int flags) {
+  protected void disableCarMode(int flags) {
     currentModeType = Configuration.UI_MODE_TYPE_NORMAL;
     lastFlags = flags;
   }
 
   @Implementation
-  public int getNightMode() {
+  protected int getNightMode() {
     return currentNightMode;
   }
 
   @Implementation
-  public void setNightMode(int mode) {
+  protected void setNightMode(int mode) {
     if (VALID_NIGHT_MODES.contains(mode)) {
       currentNightMode = mode;
     } else {

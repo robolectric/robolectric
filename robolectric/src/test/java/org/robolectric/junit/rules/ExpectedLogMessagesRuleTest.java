@@ -150,42 +150,49 @@ public final class ExpectedLogMessagesRuleTest {
         "message2",
         instanceOf(UnsupportedOperationException.class)); // Not logged
 
-    expectedException.expect(
-        new TypeSafeMatcher<AssertionError>() {
-          @Override
-          protected boolean matchesSafely(AssertionError error) {
-            return error
-                    .getMessage()
-                    .matches(
-                        "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{"
+    String expectedAndObservedPattern = "[\\s\\S]*Expected, and observed:\\s+\\[LogItem\\{"
                             + "\\s+timeString='.+'"
                             + "\\s+type=6"
                             + "\\s+tag='Mytag'"
                             + "\\s+msg='message1'"
                             + "\\s+throwable=null"
                             + "\\s+\\}\\]"
-                            + "[\\s\\S]*")
-                && error
-                    .getMessage()
-                    .matches(
-                        "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
+                            + "[\\s\\S]*";
+    String observedAndNotExpectedPattern = "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
                             + "\\s+timeString='.+'"
                             + "\\s+type=6"
                             + "\\s+tag='Mytag'"
                             + "\\s+msg='message2'"
                             + "\\s+throwable=java.lang.IllegalArgumentException"
-                            + "\\s+\\}\\][\\s\\S]*")
+                            + "(\\s+at .*\\)\\n)+"
+                            + "\\s+\\}\\][\\s\\S]*";
+    String expectedNotObservedPattern = "[\\s\\S]*Expected, but not observed:"
+                            + " \\[ExpectedLogItem\\{timeString='.+',"
+                            + " type=6, tag='Mytag', msg='message2', throwable="
+                            + ".*UnsupportedOperationException.*\\}\\][\\s\\S]*";
+    expectedException.expect(
+        new TypeSafeMatcher<AssertionError>() {
+          @Override
+          protected boolean matchesSafely(AssertionError error) {
+            return error
+                    .getMessage()
+                    .matches(expectedAndObservedPattern)
                 && error
                     .getMessage()
-                    .matches(
-                        "[\\s\\S]*Expected, but not observed: \\[ExpectedLogItem\\{timeString='.+',"
-                            + " type=6, tag='Mytag', msg='message2', throwable="
-                            + ".*UnsupportedOperationException.*\\}\\][\\s\\S]*");
+                    .matches(observedAndNotExpectedPattern)
+                && error
+                    .getMessage()
+                    .matches(expectedNotObservedPattern);
           }
 
           @Override
           public void describeTo(Description description) {
-            description.appendText("Matches ExpectedLogMessagesRule");
+            description.appendText("Matches ExpectedLogMessagesRule:\n"
+                + expectedAndObservedPattern
+                + "\n"
+                + observedAndNotExpectedPattern
+                + "\n"
+                + expectedNotObservedPattern);
           }
         });
   }

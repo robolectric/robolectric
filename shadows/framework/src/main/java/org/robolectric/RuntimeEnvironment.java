@@ -204,6 +204,10 @@ public class RuntimeEnvironment {
     systemResources.updateConfiguration(configuration, displayMetrics);
     if (RuntimeEnvironment.application != null) {
       getApplication().getResources().updateConfiguration(configuration, displayMetrics);
+    } else {
+      // if application is not yet loaded, update the configuration in Bootstrap so that the
+      // changes will be propagated once the application is finally loaded
+      Bootstrap.setDisplayConfiguration(configuration, displayMetrics);
     }
   }
 
