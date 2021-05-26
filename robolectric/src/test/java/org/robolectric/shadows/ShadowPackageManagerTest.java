@@ -1417,6 +1417,29 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void
+      queryIntentServices_withPackageEnabledSettings_componentEnabledStateDisabledUntilUsed()
+          throws Exception {
+    Intent i = new Intent();
+    i.setClassName(ApplicationProvider.getApplicationContext(), "com.foo.Service");
+    packageManager.setApplicationEnabledSetting(
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED,
+        0);
+
+    assertThat(packageManager.getApplicationEnabledSetting("org.robolectric"))
+        .isEqualTo(PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED);
+
+    List<ResolveInfo> matchingServices =
+        packageManager.queryIntentServices(i, PackageManager.GET_DISABLED_UNTIL_USED_COMPONENTS);
+
+    assertThat(matchingServices).isNotNull();
+    assertThat(matchingServices).hasSize(1);
+    assertThat(matchingServices.get(0).resolvePackageName).isEqualTo("org.robolectric");
+    assertThat(matchingServices.get(0).serviceInfo.name).isEqualTo("com.foo.Service");
+  }
+
+  @Test
   public void queryIntentServices_fromManifest() {
     Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
     i.addCategory(Intent.CATEGORY_LAUNCHER);
