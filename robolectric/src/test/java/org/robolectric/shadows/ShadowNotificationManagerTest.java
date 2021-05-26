@@ -84,6 +84,57 @@ public class ShadowNotificationManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannel_updateChannel() {
+    NotificationChannel channel = new NotificationChannel("id", "name", 1);
+    channel.setDescription("description");
+    channel.setGroup("channelGroupId");
+    channel.setLightColor(7);
+
+    NotificationChannel channelUpdate = new NotificationChannel("id", "newName", 2);
+    channelUpdate.setDescription("newDescription");
+    channelUpdate.setGroup("newChannelGroupId");
+    channelUpdate.setLightColor(15);
+
+    notificationManager.createNotificationChannel(channel);
+    notificationManager.createNotificationChannel(channelUpdate);
+
+    assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
+    NotificationChannel resultChannel =
+        (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
+    assertThat(resultChannel.getName().toString()).isEqualTo("newName");
+    assertThat(resultChannel.getDescription()).isEqualTo("newDescription");
+    // No importance upgrade.
+    assertThat(resultChannel.getImportance()).isEqualTo(1);
+    // No group resultChannel.
+    assertThat(resultChannel.getGroup()).isEqualTo("channelGroupId");
+    // Other settings are unchanged as well.
+    assertThat(resultChannel.getLightColor()).isEqualTo(7);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
+  public void createNotificationChannel_downGradeImportanceSetGroup() {
+    NotificationChannel channel = new NotificationChannel("id", "name", 1);
+    channel.setDescription("description");
+
+    NotificationChannel channelUpdate = new NotificationChannel("id", "newName", 0);
+    channelUpdate.setDescription("newDescription");
+    channelUpdate.setGroup("newChannelGroupId");
+
+    notificationManager.createNotificationChannel(channel);
+    notificationManager.createNotificationChannel(channelUpdate);
+
+    assertThat(shadowOf(notificationManager).getNotificationChannels()).hasSize(1);
+    NotificationChannel resultChannel =
+        (NotificationChannel) shadowOf(notificationManager).getNotificationChannel("id");
+    assertThat(resultChannel.getName().toString()).isEqualTo("newName");
+    assertThat(resultChannel.getDescription()).isEqualTo("newDescription");
+    assertThat(resultChannel.getImportance()).isEqualTo(0);
+    assertThat(resultChannel.getGroup()).isEqualTo("newChannelGroupId");
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.O)
   public void createNotificationChannelGroup() {
     notificationManager.createNotificationChannelGroup(new NotificationChannelGroup("id", "name"));
 
@@ -122,12 +173,15 @@ public class ShadowNotificationManagerTest {
     assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isTrue();
     assertThat(notificationManager.getNotificationChannel(channelId)).isNull();
     // Per documentation, recreating a deleted channel should have the same settings as the old
-    // deleted channel.
+    // deleted channel except of name, description, importance downgrade or setting a group if group
+    // was not previously set.
     notificationManager.createNotificationChannel(
         new NotificationChannel(channelId, "otherName", 2));
     assertThat(shadowOf(notificationManager).isChannelDeleted(channelId)).isFalse();
     NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
-    assertThat(channel.getName().toString()).isEqualTo("name");
+    // Name is changed.
+    assertThat(channel.getName().toString()).isEqualTo("otherName");
+    // Original importance.
     assertThat(channel.getImportance()).isEqualTo(1);
   }
 

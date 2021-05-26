@@ -28,6 +28,10 @@ public final class ExpectedLogMessagesRule implements TestRule {
   private static final ImmutableSet<String> UNPREVENTABLE_TAGS =
       ImmutableSet.of("Typeface", "RingtoneManager");
 
+  /** Overlength tags logged by the sdk or other common utilities. */
+  private static final ImmutableSet<String> OVERLENGTH_TAGS =
+      ImmutableSet.of("DefaultDatabaseErrorHandler", "AccessibilityInteractionClient");
+
   private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();
   private final Set<LogItem> unexpectedErrorLogs = new HashSet<>();
@@ -179,7 +183,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
   }
 
   private void checkTag(String tag) {
-    if (tag.length() > 23) {
+    if (!OVERLENGTH_TAGS.contains(tag) && tag.length() > 23) {
       throw new IllegalArgumentException("Tag length cannot exceed 23 characters: " + tag);
     }
   }

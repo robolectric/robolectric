@@ -176,6 +176,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
     RuntimeEnvironment.setActivityThread(ReflectionHelpers.newInstance(ActivityThread.class));
+    ReflectionHelpers.setStaticField(
+        ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Instrumentation instrumentation = createInstrumentation();
     InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
@@ -278,9 +280,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     shadowActivityThread.setCompatConfiguration(androidConfiguration);
 
-    ReflectionHelpers.setStaticField(
-        ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
-
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
 
@@ -335,6 +334,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
       registerBroadcastReceivers(application, appManifest);
 
       appResources.updateConfiguration(androidConfiguration, displayMetrics);
+      // propagate any updates to configuration via RuntimeEnvironment.setQualifiers
+      Bootstrap.updateConfiguration(appResources);
 
       if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);

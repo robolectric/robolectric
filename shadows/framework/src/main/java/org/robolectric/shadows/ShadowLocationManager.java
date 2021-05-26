@@ -22,6 +22,8 @@ import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Criteria;
+import android.location.GnssAntennaInfo;
+import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -152,10 +154,18 @@ public class ShadowLocationManager {
   private final HashSet<GpsStatus.Listener> gpsStatusListeners = new HashSet<>();
 
   @GuardedBy("gnssStatusCallbacks")
-  private final Map<GnssStatus.Callback, Handler> gnssStatusCallbacks = new LinkedHashMap<>();
+  private final Map<GnssStatus.Callback, Executor> gnssStatusCallbacks = new LinkedHashMap<>();
 
   @GuardedBy("nmeaMessageListeners")
-  private final Map<OnNmeaMessageListener, Handler> nmeaMessageListeners = new LinkedHashMap<>();
+  private final Map<OnNmeaMessageListener, Executor> nmeaMessageListeners = new LinkedHashMap<>();
+
+  @GuardedBy("gnssMeasurementListeners")
+  private final Map<GnssMeasurementsEvent.Callback, Executor> gnssMeasurementListeners =
+      new LinkedHashMap<>();
+
+  @GuardedBy("gnssAntennaInfoListeners")
+  private final Map<GnssAntennaInfo.Listener, Executor> gnssAntennaInfoListeners =
+      new LinkedHashMap<>();
 
   public ShadowLocationManager() {
     // create default providers
@@ -674,11 +684,19 @@ public class ShadowLocationManager {
   @Implementation(minSdk = N)
   protected boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
     if (handler == null) {
-      handler = new Handler(Looper.getMainLooper());
+      handler = new Handler();
     }
 
     synchronized (gnssStatusCallbacks) {
-      gnssStatusCallbacks.put(callback, handler);
+      gnssStatusCallbacks.put(callback, new HandlerExecutor(handler));
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean registerGnssStatusCallback(Executor executor, GnssStatus.Callback callback) {
+    synchronized (gnssStatusCallbacks) {
+      gnssStatusCallbacks.put(callback, executor);
     }
     return true;
   }
@@ -692,24 +710,32 @@ public class ShadowLocationManager {
 
   /** Sends a {@link GnssStatus} to all registered {@link GnssStatus.Callback}s. */
   public void sendGnssStatus(GnssStatus status) {
-    Map<GnssStatus.Callback, Handler> callbacks;
+    Map<GnssStatus.Callback, Executor> callbacks;
     synchronized (gnssStatusCallbacks) {
       callbacks = new LinkedHashMap<>(gnssStatusCallbacks);
     }
 
-    for (Map.Entry<GnssStatus.Callback, Handler> callback : callbacks.entrySet()) {
-      callback.getValue().post(() -> callback.getKey().onSatelliteStatusChanged(status));
+    for (Map.Entry<GnssStatus.Callback, Executor> callback : callbacks.entrySet()) {
+      callback.getValue().execute(() -> callback.getKey().onSatelliteStatusChanged(status));
     }
   }
 
   @Implementation(minSdk = N)
   protected boolean addNmeaListener(OnNmeaMessageListener listener, Handler handler) {
     if (handler == null) {
-      handler = new Handler(Looper.getMainLooper());
+      handler = new Handler();
     }
 
     synchronized (nmeaMessageListeners) {
-      nmeaMessageListeners.put(listener, handler);
+      nmeaMessageListeners.put(listener, new HandlerExecutor(handler));
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean addNmeaListener(Executor executor, OnNmeaMessageListener listener) {
+    synchronized (nmeaMessageListeners) {
+      nmeaMessageListeners.put(listener, executor);
     }
     return true;
   }
@@ -723,13 +749,82 @@ public class ShadowLocationManager {
 
   /** Sends a NMEA message to all registered {@link OnNmeaMessageListener}s. */
   public void sendNmeaMessage(String message, long timestamp) {
-    Map<OnNmeaMessageListener, Handler> listeners;
+    Map<OnNmeaMessageListener, Executor> listeners;
     synchronized (nmeaMessageListeners) {
       listeners = new LinkedHashMap<>(nmeaMessageListeners);
     }
 
-    for (Map.Entry<OnNmeaMessageListener, Handler> listener : listeners.entrySet()) {
-      listener.getValue().post(() -> listener.getKey().onNmeaMessage(message, timestamp));
+    for (Map.Entry<OnNmeaMessageListener, Executor> listener : listeners.entrySet()) {
+      listener.getValue().execute(() -> listener.getKey().onNmeaMessage(message, timestamp));
+    }
+  }
+
+  @Implementation(minSdk = N)
+  protected boolean registerGnssMeasurementsCallback(
+      GnssMeasurementsEvent.Callback callback, Handler handler) {
+    if (handler == null) {
+      handler = new Handler();
+    }
+
+    synchronized (gnssMeasurementListeners) {
+      gnssMeasurementListeners.put(callback, new HandlerExecutor(handler));
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean registerGnssMeasurementsCallback(
+      Executor executor, GnssMeasurementsEvent.Callback callback) {
+    synchronized (gnssMeasurementListeners) {
+      gnssMeasurementListeners.put(callback, executor);
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = N)
+  protected void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback callback) {
+    synchronized (gnssMeasurementListeners) {
+      gnssMeasurementListeners.remove(callback);
+    }
+  }
+
+  /** Sends a GNSS measurement event to all registered {@link GnssMeasurementsEvent.Callback}s. */
+  public void sendGnssMeasurementsEvent(GnssMeasurementsEvent event) {
+    Map<GnssMeasurementsEvent.Callback, Executor> listeners;
+    synchronized (gnssMeasurementListeners) {
+      listeners = new LinkedHashMap<>(gnssMeasurementListeners);
+    }
+
+    for (Map.Entry<GnssMeasurementsEvent.Callback, Executor> listener : listeners.entrySet()) {
+      listener.getValue().execute(() -> listener.getKey().onGnssMeasurementsReceived(event));
+    }
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean registerAntennaInfoListener(
+      Executor executor, GnssAntennaInfo.Listener listener) {
+    synchronized (gnssAntennaInfoListeners) {
+      gnssAntennaInfoListeners.put(listener, executor);
+    }
+    return true;
+  }
+
+  @Implementation(minSdk = R)
+  protected void unregisterAntennaInfoListener(GnssAntennaInfo.Listener listener) {
+    synchronized (gnssAntennaInfoListeners) {
+      gnssAntennaInfoListeners.remove(listener);
+    }
+  }
+
+  /** Sends a GNSS measurement event to all registered {@link GnssMeasurementsEvent.Callback}s. */
+  public void sendGnssAntennaInfo(List<GnssAntennaInfo> antennaInfos) {
+    Map<GnssAntennaInfo.Listener, Executor> listeners;
+    synchronized (gnssAntennaInfoListeners) {
+      listeners = new LinkedHashMap<>(gnssAntennaInfoListeners);
+    }
+
+    for (Map.Entry<GnssAntennaInfo.Listener, Executor> listener : listeners.entrySet()) {
+      listener.getValue().execute(() -> listener.getKey().onGnssAntennaInfoReceived(antennaInfos));
     }
   }
 

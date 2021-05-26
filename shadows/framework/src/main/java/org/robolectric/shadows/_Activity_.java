@@ -9,11 +9,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.view.Window;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -21,6 +23,9 @@ import org.robolectric.util.reflector.WithType;
 /** Accessor interface for {@link Activity}'s internals. */
 @ForType(Activity.class)
 public interface _Activity_ {
+
+  @Accessor("mToken")
+  IBinder getToken();
 
   // <= KITKAT:
   void attach(
@@ -117,7 +122,7 @@ public interface _Activity_ {
       Window window,
       @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback);
 
-  // >= Q
+  // <= R
   void attach(
       Context context,
       ActivityThread activityThread,
@@ -138,6 +143,29 @@ public interface _Activity_ {
       Window window,
       @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
       IBinder assistToken);
+
+  // >= S
+  void attach(
+      Context context,
+      ActivityThread activityThread,
+      Instrumentation instrumentation,
+      IBinder token,
+      int ident,
+      Application application,
+      Intent intent,
+      ActivityInfo activityInfo,
+      CharSequence title,
+      Activity parent,
+      String id,
+      @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances,
+      Configuration configuration,
+      String referer,
+      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
+      Window window,
+      @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
+      IBinder assistToken,
+      IBinder shareableActivityToken);
 
   default void callAttach(
       Activity realActivity,
@@ -236,7 +264,7 @@ public interface _Activity_ {
           null,
           null,
           null);
-    } else {
+    } else if (apiLevel <= VERSION_CODES.R) {
       attach(
           baseContext,
           activityThread,
@@ -252,6 +280,30 @@ public interface _Activity_ {
           lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           "referrer",
+          null,
+          null,
+          null,
+          null);
+    } else if (apiLevel > Build.VERSION_CODES.R) {
+      ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
+      IBinder token =
+          shadowActivityThread.registerActivityLaunch(intent, activityInfo, realActivity);
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          "id",
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          "referrer",
+          null,
           null,
           null,
           null,

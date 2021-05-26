@@ -72,6 +72,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     // This starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric
     // classloader.
     new SecureRandom();
+    System.setProperty("java.awt.headless", "true");
   }
 
   protected static Injector.Builder defaultInjector() {

@@ -10,14 +10,13 @@ import android.graphics.Paint;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPaintTest {
 
   @Test
   public void shouldGetIsDitherInfo() {
-    Paint paint = Shadow.newInstanceOf(Paint.class);
+    Paint paint = new Paint(0);
     assertFalse(paint.isAntiAlias());
     ShadowPaint shadowPaint = shadowOf(paint);
     shadowPaint.setAntiAlias(true);
@@ -26,7 +25,7 @@ public class ShadowPaintTest {
 
   @Test
   public void shouldGetIsAntiAlias() {
-    Paint paint = Shadow.newInstanceOf(Paint.class);
+    Paint paint = new Paint(0);
     assertFalse(paint.isAntiAlias());
     ShadowPaint shadowPaint = shadowOf(paint);
     shadowPaint.setAntiAlias(true);
@@ -56,7 +55,7 @@ public class ShadowPaintTest {
 
   @Test
   public void shouldGetAndSetTextAlignment() {
-    Paint paint = Shadow.newInstanceOf(Paint.class);
+    Paint paint = new Paint();
     assertThat(paint.getTextAlign()).isEqualTo(Paint.Align.LEFT);
     paint.setTextAlign(Paint.Align.CENTER);
     assertThat(paint.getTextAlign()).isEqualTo(Paint.Align.CENTER);
@@ -73,7 +72,7 @@ public class ShadowPaintTest {
 
   @Test
   public void measureTextActuallyMeasuresLength() {
-    Paint paint = Shadow.newInstanceOf(Paint.class);
+    Paint paint = new Paint();
     assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
     assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(2.0f);
     assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(3.0f);

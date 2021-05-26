@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -18,6 +19,7 @@ import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.app.PendingIntent.OnMarshaledListener;
 import android.content.Context;
+import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
@@ -40,6 +42,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(PendingIntent.class)
 @SuppressLint("NewApi")
@@ -481,6 +485,9 @@ public class ShadowPendingIntent {
       // Build the PendingIntent if it does not exist.
       if (pendingIntent == null) {
         pendingIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+        // Some methods (e.g. toString) may NPE if 'mTarget' is null.
+        reflector(PendingIntentReflector.class, pendingIntent)
+            .setTarget(ReflectionHelpers.createNullProxy(IIntentSender.class));
         ShadowPendingIntent shadowPendingIntent = Shadow.extract(pendingIntent);
         shadowPendingIntent.savedIntents = intents;
         shadowPendingIntent.type = type;
@@ -543,5 +550,11 @@ public class ShadowPendingIntent {
     synchronized (lock) {
       createdIntents.clear();
     }
+  }
+
+  @ForType(PendingIntent.class)
+  interface PendingIntentReflector {
+    @Accessor("mTarget")
+    void setTarget(IIntentSender target);
   }
 }

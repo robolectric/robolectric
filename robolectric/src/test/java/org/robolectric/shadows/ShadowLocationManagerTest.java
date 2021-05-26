@@ -6,19 +6,18 @@ import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
 import static android.location.LocationManager.PROVIDERS_CHANGED_ACTION;
 import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
 import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
 import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static android.provider.Settings.Secure.LOCATION_PROVIDERS_ALLOWED;
-import static com.google.common.truth.Truth.assertAbout;
+import static androidx.test.ext.truth.location.LocationCorrespondences.equality;
+import static androidx.test.ext.truth.location.LocationSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowLocationManagerTest.LocationCorrespondences.assertThatLocations;
-import static org.robolectric.shadows.ShadowLocationManagerTest.LocationSubject.assertThat;
 
 import android.app.Application;
 import android.app.PendingIntent;
@@ -27,6 +26,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Criteria;
+import android.location.GnssAntennaInfo;
+import android.location.GnssAntennaInfo.Listener;
+import android.location.GnssAntennaInfo.PhaseCenterOffset;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -39,22 +41,18 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings.Secure;
 import android.text.TextUtils;
+import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import com.google.common.truth.Correspondence;
-import com.google.common.truth.FailureMetadata;
-import com.google.common.truth.IterableSubject.UsingCorrespondence;
-import com.google.common.truth.Subject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -69,6 +67,7 @@ import org.robolectric.shadows.ShadowLocationManager.ProviderProperties;
 /** Tests for {@link ShadowLocationManager}. */
 @SuppressWarnings("deprecation")
 @RunWith(AndroidJUnit4.class)
+@LooperMode(Mode.PAUSED)
 public class ShadowLocationManagerTest {
 
   private static final String MY_PROVIDER = "myProvider";
@@ -302,7 +301,7 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testSetProviderEnabled_RPlus() {
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
     assertBroadcast(new Intent(PROVIDERS_CHANGED_ACTION));
@@ -527,7 +526,7 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testGetCurrentLocation() {
     Location loc = createLocation(MY_PROVIDER);
 
@@ -540,11 +539,14 @@ public class ShadowLocationManagerTest {
     shadowLocationManager.simulateLocation(loc);
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(consumer.locations).containsExactly(loc).inOrder();
+    assertThat(consumer.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc)
+        .inOrder();
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testGetCurrentLocation_ProviderDisabled() {
     TestLocationConsumer consumer1 = new TestLocationConsumer();
     TestLocationConsumer consumer2 = new TestLocationConsumer();
@@ -558,12 +560,18 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(consumer1.locations).containsExactly((Location) null).inOrder();
-    assertThatLocations(consumer2.locations).containsExactly((Location) null).inOrder();
+    assertThat(consumer1.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly((Location) null)
+        .inOrder();
+    assertThat(consumer2.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly((Location) null)
+        .inOrder();
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testGetCurrentLocation_Timeout() {
     TestLocationConsumer consumer = new TestLocationConsumer();
 
@@ -574,11 +582,14 @@ public class ShadowLocationManagerTest {
     shadowOf(Looper.getMainLooper())
         .idleFor(shadowOf(Looper.getMainLooper()).getLastScheduledTaskTime());
 
-    assertThatLocations(consumer.locations).containsExactly((Location) null).inOrder();
+    assertThat(consumer.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly((Location) null)
+        .inOrder();
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testGetCurrentLocation_Cancel() {
     Location loc = createLocation(MY_PROVIDER);
 
@@ -615,9 +626,18 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(gpsListener.locations).containsExactly(loc1).inOrder();
-    assertThatLocations(passiveListener.locations).containsExactly(loc1).inOrder();
-    assertThatLocations(myListener.locations).containsExactly(loc2).inOrder();
+    assertThat(gpsListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1)
+        .inOrder();
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc2)
+        .inOrder();
   }
 
   @Test
@@ -640,9 +660,18 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(gpsListener.locations).containsExactly(loc1).inOrder();
-    assertThatLocations(passiveListener.locations).containsExactly(loc1).inOrder();
-    assertThatLocations(myListener.locations).containsExactly(loc2).inOrder();
+    assertThat(gpsListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1)
+        .inOrder();
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc2)
+        .inOrder();
   }
 
   @Test
@@ -664,12 +693,18 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
-    assertThatLocations(passiveListener.locations).containsExactly(loc1, loc2, loc3).inOrder();
+    assertThat(networkListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2, loc3)
+        .inOrder();
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testRequestLocationUpdates_Provider_Listener_Executor() {
     Location loc1 = createLocation(NETWORK_PROVIDER);
     Location loc2 = createLocation(NETWORK_PROVIDER);
@@ -688,8 +723,14 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
-    assertThatLocations(passiveListener.locations).containsExactly(loc1, loc2, loc3).inOrder();
+    assertThat(networkListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2, loc3)
+        .inOrder();
   }
 
   @Test
@@ -711,8 +752,14 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
-    assertThatLocations(passiveListener.locations).containsExactly(loc1, loc2, loc3).inOrder();
+    assertThat(networkListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2, loc3)
+        .inOrder();
   }
 
   @Test
@@ -729,7 +776,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(gpsListener.locations).containsExactly(loc).inOrder();
+    assertThat(gpsListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc)
+        .inOrder();
   }
 
   @Test
@@ -746,7 +796,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(gpsReceiver.locations).containsExactly(loc).inOrder();
+    assertThat(gpsReceiver.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc)
+        .inOrder();
   }
 
   @Test
@@ -769,11 +822,14 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
+    assertThat(networkListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.R)
+  @Config(minSdk = R)
   public void testRequestLocationUpdates_LocationRequest_Executor() {
     Location loc1 = createLocation(NETWORK_PROVIDER);
     Location loc2 = createLocation(NETWORK_PROVIDER);
@@ -792,7 +848,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(networkListener.locations).containsExactly(loc1, loc2).inOrder();
+    assertThat(networkListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
   }
 
   @Test
@@ -817,8 +876,12 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(myListener.locations).containsExactly(loc1, loc2).inOrder();
-    assertThatLocations(passiveListener.locations)
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
         .containsExactly(loc1, loc2, loc3, loc1, loc2)
         .inOrder();
   }
@@ -845,8 +908,12 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(myListener.locations).containsExactly(loc1, loc2).inOrder();
-    assertThatLocations(passiveListener.locations)
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
         .containsExactly(loc1, loc2, loc3, loc1, loc2)
         .inOrder();
   }
@@ -875,8 +942,14 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(myListener1.locations).containsExactly(loc1, loc2).inOrder();
-    assertThatLocations(myListener2.locations).containsExactly(loc1, loc3, loc1, loc3).inOrder();
+    assertThat(myListener1.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(myListener2.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc3, loc1, loc3)
+        .inOrder();
   }
 
   @Test
@@ -890,7 +963,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(passiveListener.locations).containsExactly(loc).inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc)
+        .inOrder();
   }
 
   @Test
@@ -905,7 +981,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(passiveListener.locations).containsExactly(loc).inOrder();
+    assertThat(passiveListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc)
+        .inOrder();
   }
 
   @Test
@@ -922,7 +1001,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(listener.locations).containsExactly(loc).inOrder();
+    assertThat(listener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc)
+        .inOrder();
   }
 
   @Test
@@ -941,7 +1023,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(myListener.locations).containsExactly(loc1).inOrder();
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1)
+        .inOrder();
     assertThat(locationManager.getLastKnownLocation(MY_PROVIDER)).isEqualTo(loc2);
   }
 
@@ -959,7 +1044,10 @@ public class ShadowLocationManagerTest {
 
     shadowOf(Looper.getMainLooper()).idle();
 
-    assertThatLocations(myListener.locations).containsExactly(loc1).inOrder();
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1)
+        .inOrder();
     assertThat(locationManager.getLastKnownLocation(MY_PROVIDER)).isEqualTo(loc2);
   }
 
@@ -1099,94 +1187,132 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
-  @LooperMode(Mode.PAUSED)
-  public void testRegisterGnssStatusCallback_withMainHandler() {
+  @Config(minSdk = R)
+  public void testRegisterGnssStatusCallback() {
     TestGnssCallback callback = new TestGnssCallback();
-    GnssStatus status = GnssStatusBuilder.create().build();
+    GnssStatus status1 = new GnssStatus.Builder().build();
+    GnssStatus status2 = new GnssStatus.Builder().build();
 
-    shadowLocationManager.sendGnssStatus(status);
-    assertThat(callback.lastGnssStatus).isNull();
-
-    locationManager.registerGnssStatusCallback(callback);
-    shadowLocationManager.sendGnssStatus(status);
-    assertThat(callback.lastGnssStatus).isNull();
+    shadowLocationManager.sendGnssStatus(status1);
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.lastGnssStatus).isEqualTo(status);
+    assertThat(callback.gnssStatuses).isEmpty();
 
-    callback.lastGnssStatus = null;
+    locationManager.registerGnssStatusCallback(callback, new Handler(Looper.getMainLooper()));
+
+    shadowLocationManager.sendGnssStatus(status1);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.gnssStatuses).containsExactly(status1).inOrder();
+
+    shadowLocationManager.sendGnssStatus(status2);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
+
     locationManager.unregisterGnssStatusCallback(callback);
-    shadowLocationManager.sendGnssStatus(status);
-    assertThat(callback.lastGnssStatus).isNull();
+    shadowLocationManager.sendGnssStatus(status1);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
   }
 
   @Test
-  @Config(minSdk = N, maxSdk = Q)
-  @LooperMode(Mode.PAUSED)
-  public void testRegisterGnssStatusCallback_withNonMainHandler() throws Exception {
-    HandlerThread ht = new HandlerThread("BackgroundThread");
-    ht.start();
-    try {
-      TestGnssCallback callback = new TestGnssCallback();
-      GnssStatus status = GnssStatusBuilder.create().build();
-      Handler handler = new Handler(ht.getLooper());
+  @Config(minSdk = R)
+  public void testRegisterGnssStatusCallback_executor() {
+    TestGnssCallback callback = new TestGnssCallback();
+    GnssStatus status1 = new GnssStatus.Builder().build();
+    GnssStatus status2 = new GnssStatus.Builder().build();
 
-      locationManager.registerGnssStatusCallback(callback, handler);
-      shadowLocationManager.sendGnssStatus(status);
-      shadowOf(ht.getLooper()).idle();
-      assertThat(callback.lastGnssStatus).isEqualTo(status);
-    } finally {
-      ht.quit();
-      ht.join();
-    }
-  }
+    shadowLocationManager.sendGnssStatus(status1);
+    assertThat(callback.gnssStatuses).isEmpty();
 
-  @Test
-  @Config(minSdk = N, maxSdk = Q)
-  @LooperMode(Mode.PAUSED)
-  public void testAddNmeaListener_withMainHandler() {
-    TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
+    locationManager.registerGnssStatusCallback(Runnable::run, callback);
 
-    shadowLocationManager.sendNmeaMessage("message", 1000);
-    shadowOf(Looper.getMainLooper()).idle();
+    shadowLocationManager.sendGnssStatus(status1);
+    assertThat(callback.gnssStatuses).containsExactly(status1).inOrder();
 
-    assertThat(locationManager.addNmeaListener(callback)).isTrue();
-    shadowLocationManager.sendNmeaMessage("message2", 2000);
-    assertThat(callback.lastNmeaMessage).isNull();
-    shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.lastNmeaMessage).isEqualTo("message2");
-    assertThat(callback.lastNmeaTimestamp).isEqualTo(2000);
+    shadowLocationManager.sendGnssStatus(status2);
+    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
 
-    shadowLocationManager.sendNmeaMessage("message3", 3000);
-    shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.lastNmeaMessage).isEqualTo("message3");
-    assertThat(callback.lastNmeaTimestamp).isEqualTo(3000);
-
-    locationManager.removeNmeaListener(callback);
-    shadowLocationManager.sendNmeaMessage("message4", 4000);
-    shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.lastNmeaMessage).isEqualTo("message3");
-    assertThat(callback.lastNmeaTimestamp).isEqualTo(3000);
+    locationManager.unregisterGnssStatusCallback(callback);
+    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
   }
 
   @Test
   @Config(minSdk = N)
-  @LooperMode(Mode.PAUSED)
-  public void testAddNmeaListener_withNonMainHandler() throws Exception {
-    HandlerThread ht = new HandlerThread("BackgroundThread");
-    ht.start();
-    try {
-      TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
-      Handler handler = new Handler(ht.getLooper());
+  public void testAddNmeaListener() {
+    TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
 
-      assertThat(locationManager.addNmeaListener(callback, handler)).isTrue();
-      shadowLocationManager.sendNmeaMessage("message", 1000);
-      shadowOf(ht.getLooper()).idle();
-      assertThat(callback.lastNmeaMessage).isEqualTo("message");
-    } finally {
-      ht.quit();
-      ht.join();
-    }
+    shadowLocationManager.sendNmeaMessage("message", 0);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.nmeaMessages).isEmpty();
+
+    locationManager.addNmeaListener(callback, new Handler(Looper.getMainLooper()));
+
+    shadowLocationManager.sendNmeaMessage("message1", 0);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.nmeaMessages).containsExactly("message1").inOrder();
+
+    shadowLocationManager.sendNmeaMessage("message2", 0);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
+
+    locationManager.removeNmeaListener(callback);
+
+    shadowLocationManager.sendNmeaMessage("message1", 0);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void testAddNmeaListener_executor() {
+    TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
+
+    shadowLocationManager.sendNmeaMessage("message", 0);
+    assertThat(callback.nmeaMessages).isEmpty();
+
+    locationManager.addNmeaListener(Runnable::run, callback);
+
+    shadowLocationManager.sendNmeaMessage("message1", 0);
+    assertThat(callback.nmeaMessages).containsExactly("message1").inOrder();
+
+    shadowLocationManager.sendNmeaMessage("message2", 0);
+    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
+
+    locationManager.removeNmeaListener(callback);
+
+    shadowLocationManager.sendNmeaMessage("message1", 0);
+    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void testRegisterAntennaInfoListener() {
+    TestGnssAntennaInfoListener callback = new TestGnssAntennaInfoListener();
+    List<GnssAntennaInfo> events1 =
+        Collections.singletonList(
+            new GnssAntennaInfo.Builder()
+                .setPhaseCenterOffset(new PhaseCenterOffset(0, 0, 0, 0, 0, 0))
+                .build());
+    List<GnssAntennaInfo> events2 =
+        Collections.singletonList(
+            new GnssAntennaInfo.Builder()
+                .setPhaseCenterOffset(new PhaseCenterOffset(0, 0, 0, 0, 0, 0))
+                .build());
+
+    shadowLocationManager.sendGnssAntennaInfo(events1);
+    assertThat(callback.antennaInfos).isEmpty();
+
+    locationManager.registerAntennaInfoListener(Runnable::run, callback);
+
+    shadowLocationManager.sendGnssAntennaInfo(events1);
+    assertThat(callback.antennaInfos).containsExactly(events1).inOrder();
+
+    shadowLocationManager.sendGnssAntennaInfo(events2);
+    assertThat(callback.antennaInfos).containsExactly(events1, events2).inOrder();
+
+    locationManager.unregisterAntennaInfoListener(callback);
+
+    shadowLocationManager.sendGnssAntennaInfo(events1);
+    assertThat(callback.antennaInfos).containsExactly(events1, events2).inOrder();
   }
 
   private static final Random random = new Random(101);
@@ -1319,76 +1445,29 @@ public class ShadowLocationManagerTest {
   }
 
   private static class TestGnssCallback extends GnssStatus.Callback {
-    public GnssStatus lastGnssStatus = null;
+    final ArrayList<GnssStatus> gnssStatuses = new ArrayList<>();
 
     @Override
     public void onSatelliteStatusChanged(GnssStatus status) {
-      this.lastGnssStatus = status;
+      gnssStatuses.add(status);
     }
   }
 
   private static class TestOnNmeaMessageListener implements OnNmeaMessageListener {
-    public String lastNmeaMessage = null;
-    public long lastNmeaTimestamp = -1;
+    final ArrayList<String> nmeaMessages = new ArrayList<>();
 
     @Override
     public void onNmeaMessage(String message, long timestamp) {
-      this.lastNmeaMessage = message;
-      this.lastNmeaTimestamp = timestamp;
+      nmeaMessages.add(message);
     }
   }
 
-  // TODO: replace this with Truth once LocationSubject is present in androidx.test.ext
-  static class LocationSubject extends Subject {
+  private static class TestGnssAntennaInfoListener implements Listener {
+    final ArrayList<List<GnssAntennaInfo>> antennaInfos = new ArrayList<>();
 
-    public static LocationSubject assertThat(Location location) {
-      return assertAbout(locations()).that(location);
+    @Override
+    public void onGnssAntennaInfoReceived(@NonNull List<GnssAntennaInfo> gnssAntennaInfos) {
+      antennaInfos.add(gnssAntennaInfos);
     }
-
-    public static Subject.Factory<LocationSubject, Location> locations() {
-      return LocationSubject::new;
-    }
-
-    private final Location actual;
-
-    private LocationSubject(FailureMetadata failureMetadata, Location subject) {
-      super(failureMetadata, subject);
-      this.actual = subject;
-    }
-
-    public final void isEqualTo(Location other) {
-      check("provider").that(actual.getProvider()).isEqualTo(other.getProvider());
-      check("latitude").that(actual.getLatitude()).isEqualTo(other.getLatitude());
-      check("longitude").that(actual.getLongitude()).isEqualTo(other.getLongitude());
-      check("time").that(actual.getTime()).isEqualTo(other.getTime());
-    }
-  }
-
-  // TODO: replace this with Truth once LocationCorrespondences is present in androidx.test.ext
-  static class LocationCorrespondences {
-
-    public static UsingCorrespondence<Location, Location> assertThatLocations(
-        Iterable<Location> iterable) {
-      return assertThat(iterable).comparingElementsUsing(equality());
-    }
-
-    public static Correspondence<Location, Location> equality() {
-      return Correspondence.from(
-          (actual, expected) -> {
-            if (actual == expected) {
-              return true;
-            }
-            if (actual == null || expected == null) {
-              return false;
-            }
-            return Objects.equals(actual.getProvider(), expected.getProvider())
-                && actual.getLatitude() == expected.getLatitude()
-                && actual.getLongitude() == expected.getLongitude()
-                && actual.getTime() == expected.getTime();
-          },
-          "is equal to");
-    }
-
-    private LocationCorrespondences() {}
   }
 }
