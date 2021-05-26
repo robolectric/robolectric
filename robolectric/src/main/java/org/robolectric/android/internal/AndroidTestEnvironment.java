@@ -578,7 +578,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
     InstrumentationRegistry.registerInstance(null, new Bundle());
     RuntimeEnvironment.setActivityThread(null);
     RuntimeEnvironment.application = null;
-    Bootstrap.displaySet = false;
+    Bootstrap.resetDisplayConfiguration();
   }
 
   @Override
