@@ -108,7 +108,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * code cause log messages to be printed.
    */
   public void expectLogMessage(int level, String tag, String message) {
-    expectLogMessageInternal(tag, ExpectedLogItem.create(level, tag, message));
+    expectedLogs.add(ExpectedLogItem.create(level, tag, message));
   }
 
   /**
@@ -123,7 +123,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * code cause log messages to be printed.
    */
   public void expectLogMessagePattern(int level, String tag, Pattern messagePattern) {
-    expectLogMessageInternal(tag, ExpectedLogItem.create(level, tag, messagePattern));
+    expectedLogs.add(ExpectedLogItem.create(level, tag, messagePattern));
   }
 
   /**
@@ -143,7 +143,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
    */
   public void expectLogMessageWithThrowableMatcher(
       int level, String tag, String message, Matcher<Throwable> throwableMatcher) {
-    expectLogMessageInternal(tag, ExpectedLogItem.create(level, tag, message, throwableMatcher));
+    expectedLogs.add(ExpectedLogItem.create(level, tag, message, throwableMatcher));
   }
 
   /**
@@ -155,7 +155,6 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * message using {@link #expectLogMessage} in test cases that *intentionally* trigger an error.
    */
   public void expectErrorsForTag(String tag) {
-    checkTag(tag);
     if (UNPREVENTABLE_TAGS.contains(tag)) {
       throw new AssertionError("Tag `" + tag + "` is already suppressed.");
     }
@@ -171,17 +170,6 @@ public final class ExpectedLogMessagesRule implements TestRule {
    */
   public void ignoreMissingLoggedTags(boolean shouldIgnore) {
     shouldIgnoreMissingLoggedTags = shouldIgnore;
-  }
-
-  private void expectLogMessageInternal(String tag, ExpectedLogItem logItem) {
-    checkTag(tag);
-    expectedLogs.add(logItem);
-  }
-
-  private void checkTag(String tag) {
-    if (tag.length() > 23) {
-      throw new IllegalArgumentException("Tag length cannot exceed 23 characters: " + tag);
-    }
   }
 
   private static boolean updateExpected(
