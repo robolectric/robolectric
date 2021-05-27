@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
@@ -11,6 +12,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.NotificationManager.Policy;
+import android.content.ComponentName;
 import android.os.Build;
 import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
@@ -43,6 +45,7 @@ public class ShadowNotificationManager {
   private final Map<String, Object> notificationChannelGroups = new ConcurrentHashMap<>();
   private final Map<String, Object> deletedNotificationChannels = new ConcurrentHashMap<>();
   private final Map<String, AutomaticZenRule> automaticZenRules = new ConcurrentHashMap<>();
+  private final Map<String, Boolean> listenerAccessGrantedComponents = new ConcurrentHashMap<>();
   private final Set<String> canNotifyOnBehalfPackages = Sets.newConcurrentHashSet();
 
   private int currentInteruptionFilter = INTERRUPTION_FILTER_ALL;
@@ -264,6 +267,15 @@ public class ShadowNotificationManager {
   }
 
   /**
+   * @return the value specified for the given {@link ComponentName} via {@link
+   *     #setNotificationListenerAccessGranted(ComponentName, boolean)} or false if unset.
+   */
+  @Implementation(minSdk = O_MR1)
+  protected final boolean isNotificationListenerAccessGranted(ComponentName componentName) {
+    return listenerAccessGrantedComponents.getOrDefault(componentName.flattenToString(), false);
+  }
+
+  /**
    * Currently does not support checking for granted policy access.
    *
    * @see NotificationManager#getNotificationPolicy()
@@ -284,6 +296,15 @@ public class ShadowNotificationManager {
     if (!granted) {
       automaticZenRules.clear();
     }
+  }
+
+  /**
+   * Sets the value returned by {@link
+   * NotificationManager#isNotificationListenerAccessGranted(ComponentName)} for the provided {@link
+   * ComponentName}.
+   */
+  public void setNotificationListenerAccessGranted(ComponentName componentName, boolean granted) {
+    listenerAccessGrantedComponents.put(componentName.flattenToString(), granted);
   }
 
   @Implementation(minSdk = N)
