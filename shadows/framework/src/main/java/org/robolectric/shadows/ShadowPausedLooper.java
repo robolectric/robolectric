@@ -334,16 +334,19 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void run() {
-      while (true) {
-        Message msg = getNextExecutableMessage();
-        if (msg == null) {
-          break;
+      try {
+        while (true) {
+          Message msg = getNextExecutableMessage();
+          if (msg == null) {
+            break;
+          }
+          msg.getTarget().dispatchMessage(msg);
+          shadowMsg(msg).recycleUnchecked();
+          triggerIdleHandlersIfNeeded(msg);
         }
-        msg.getTarget().dispatchMessage(msg);
-        shadowMsg(msg).recycleUnchecked();
-        triggerIdleHandlersIfNeeded(msg);
+      } finally {
+        runLatch.countDown();
       }
-      runLatch.countDown();
     }
   }
 
@@ -351,13 +354,16 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void run() {
-      Message msg = shadowQueue().poll();
-      if (msg != null) {
-        SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
-        msg.getTarget().dispatchMessage(msg);
-        triggerIdleHandlersIfNeeded(msg);
+      try {
+        Message msg = shadowQueue().poll();
+        if (msg != null) {
+          SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
+          msg.getTarget().dispatchMessage(msg);
+          triggerIdleHandlersIfNeeded(msg);
+        }
+      } finally {
+        runLatch.countDown();
       }
-      runLatch.countDown();
     }
   }
 
