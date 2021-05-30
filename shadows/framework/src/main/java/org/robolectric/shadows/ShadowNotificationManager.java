@@ -16,6 +16,7 @@ import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
 import androidx.annotation.NonNull;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -168,9 +169,25 @@ public class ShadowNotificationManager {
     // for more info.
     if (deletedNotificationChannels.containsKey(id)) {
       notificationChannels.put(id, deletedNotificationChannels.remove(id));
-    } else {
-      notificationChannels.put(id, channel);
     }
+    NotificationChannel existingChannel = (NotificationChannel) notificationChannels.get(id);
+    // Per documentation, recreating a channel can change name and description, lower importance or
+    // set a group if no group set. Other settings remain unchanged. See
+    // https://developer.android.com/reference/android/app/NotificationManager#createNotificationChannel%28android.app.NotificationChannel@29
+    // for more info.
+    if (existingChannel != null) {
+      NotificationChannel newChannel = (NotificationChannel) channel;
+      existingChannel.setName(newChannel.getName());
+      existingChannel.setDescription(newChannel.getDescription());
+      if (newChannel.getImportance() < existingChannel.getImportance()) {
+        existingChannel.setImportance(newChannel.getImportance());
+      }
+      if (Strings.isNullOrEmpty(existingChannel.getGroup())) {
+        existingChannel.setGroup(newChannel.getGroup());
+      }
+      return;
+    }
+    notificationChannels.put(id, channel);
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.O)
