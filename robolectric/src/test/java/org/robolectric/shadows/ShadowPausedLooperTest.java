@@ -52,8 +52,9 @@ public class ShadowPausedLooperTest {
   }
 
   @After
-  public void quitHandlerThread() {
+  public void quitHandlerThread() throws Exception {
     handlerThread.quit();
+    handlerThread.join();
   }
 
   @Test
@@ -464,6 +465,39 @@ public class ShadowPausedLooperTest {
     assertThat(shadowLooper.isIdle()).isFalse();
     shadowOf(handlerThread.getLooper()).idle();
     assertThat(shadowLooper.isIdle()).isTrue();
+  }
+
+  @Test
+  public void quitFromSameThread_releasesLooperThread() throws Exception {
+    HandlerThread thread = new HandlerThread("WillBeQuit");
+    thread.start();
+    Looper looper = thread.getLooper();
+    new Handler(looper).post(looper::quit);
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void quitPausedFromSameThread_releasesLooperThread() throws Exception {
+    HandlerThread thread = new HandlerThread("WillBeQuit");
+    thread.start();
+    Looper looper = thread.getLooper();
+    shadowOf(looper).pause();
+    new Handler(looper).post(looper::quit);
+    shadowOf(looper).idle();
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void quitPausedFromDifferentThread_releasesLooperThread() throws Exception {
+    HandlerThread thread = new HandlerThread("WillBeQuit");
+    thread.start();
+    Looper looper = thread.getLooper();
+    shadowOf(looper).pause();
+    looper.quit();
+    thread.join(5_000);
+    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
   }
 
   @Test

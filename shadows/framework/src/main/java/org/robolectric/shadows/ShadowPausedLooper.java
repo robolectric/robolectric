@@ -265,20 +265,6 @@ public final class ShadowPausedLooper extends ShadowLooper {
     return Shadow.extract(realLooper.getQueue());
   }
 
-  /** Executes the given runnable on the loopers thread, and waits for it to complete. */
-  private void executeOnLooper(ControlRunnable runnable) {
-    if (Thread.currentThread() == realLooper.getThread()) {
-      runnable.run();
-    } else {
-      if (realLooper.equals(Looper.getMainLooper())) {
-        throw new UnsupportedOperationException(
-            "main looper can only be controlled from main thread");
-      }
-      looperExecutor.execute(runnable);
-      runnable.waitTillComplete();
-    }
-  }
-
   private void setLooperExecutor(Executor executor) {
     looperExecutor = executor;
   }
@@ -364,6 +350,25 @@ public final class ShadowPausedLooper extends ShadowLooper {
       } finally {
         runLatch.countDown();
       }
+    }
+  }
+
+  /** Executes the given runnable on the loopers thread, and waits for it to complete. */
+  private void executeOnLooper(ControlRunnable runnable) {
+    if (Thread.currentThread() == realLooper.getThread()) {
+      if (runnable instanceof UnPauseRunnable) {
+        // Need to trigger the unpause action in PausedLooperExecutor
+        looperExecutor.execute(runnable);
+      } else {
+        runnable.run();
+      }
+    } else {
+      if (realLooper.equals(Looper.getMainLooper())) {
+        throw new UnsupportedOperationException(
+            "main looper can only be controlled from main thread");
+      }
+      looperExecutor.execute(runnable);
+      runnable.waitTillComplete();
     }
   }
 
