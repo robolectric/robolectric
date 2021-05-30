@@ -1,66 +1,136 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiUsabilityStatsEntry;
+import android.os.Build.VERSION_CODES;
+import java.lang.reflect.Array;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Builder for {@link WifiUsabilityStatsEntry}. */
 public class WifiUsabilityStatsEntryBuilder {
-  protected long timeStampMillis;
-  protected int rssi;
-  protected int linkSpeedMbps;
-  protected long totalTxSuccess;
-  protected long totalTxRetries;
-  protected long totalTxBad;
-  protected long totalRxSuccess;
-  protected long totalRadioOnTimeMillis;
-  protected long totalRadioTxTimeMillis;
-  protected long totalRadioRxTimeMillis;
-  protected long totalScanTimeMillis;
-  protected long totalNanScanTimeMillis;
-  protected long totalBackgroundScanTimeMillis;
-  protected long totalRoamScanTimeMillis;
-  protected long totalPnoScanTimeMillis;
-  protected long totalHotspot2ScanTimeMillis;
-  protected long totalCcaBusyFreqTimeMillis;
-  protected long totalRadioOnFreqTimeMillis;
-  protected long totalBeaconRx;
-  protected int probeStatusSinceLastUpdate;
-  protected int probeElapsedTimeSinceLastUpdateMillis;
-  protected int probeMcsRateSinceLastUpdate;
-  protected int rxLinkSpeedMbps;
-  protected int cellularDataNetworkType;
-  protected int cellularSignalStrengthDbm;
-  protected int cellularSignalStrengthDb;
-  protected boolean isSameRegisteredCell;
+  private long timeStampMillis;
+  private int rssi;
+  private int linkSpeedMbps;
+  private long totalTxSuccess;
+  private long totalTxRetries;
+  private long totalTxBad;
+  private long totalRxSuccess;
+  private long totalRadioOnTimeMillis;
+  private long totalRadioTxTimeMillis;
+  private long totalRadioRxTimeMillis;
+  private long totalScanTimeMillis;
+  private long totalNanScanTimeMillis;
+  private long totalBackgroundScanTimeMillis;
+  private long totalRoamScanTimeMillis;
+  private long totalPnoScanTimeMillis;
+  private long totalHotspot2ScanTimeMillis;
+  private long totalCcaBusyFreqTimeMillis;
+  private long totalRadioOnFreqTimeMillis;
+  private long totalBeaconRx;
+  private int probeStatusSinceLastUpdate;
+  private int probeElapsedTimeSinceLastUpdateMillis;
+  private int probeMcsRateSinceLastUpdate;
+  private int rxLinkSpeedMbps;
+  private int timeSliceDutyCycleInPercent;
+  private static final int CHANNEL_UTILIZATION_RATIO = 0;
+  private boolean isThroughputSufficient = true;
+  private boolean isWifiScoringEnabled = true;
+  private boolean isCellularDataAvailable = true;
+  private int cellularDataNetworkType;
+  private int cellularSignalStrengthDbm;
+  private int cellularSignalStrengthDb;
+  private boolean isSameRegisteredCell;
 
   public WifiUsabilityStatsEntry build() {
-    return new WifiUsabilityStatsEntry(
-        timeStampMillis,
-        rssi,
-        linkSpeedMbps,
-        totalTxSuccess,
-        totalTxRetries,
-        totalTxBad,
-        totalRxSuccess,
-        totalRadioOnTimeMillis,
-        totalRadioTxTimeMillis,
-        totalRadioRxTimeMillis,
-        totalScanTimeMillis,
-        totalNanScanTimeMillis,
-        totalBackgroundScanTimeMillis,
-        totalRoamScanTimeMillis,
-        totalPnoScanTimeMillis,
-        totalHotspot2ScanTimeMillis,
-        totalCcaBusyFreqTimeMillis,
-        totalRadioOnFreqTimeMillis,
-        totalBeaconRx,
-        probeStatusSinceLastUpdate,
-        probeElapsedTimeSinceLastUpdateMillis,
-        probeMcsRateSinceLastUpdate,
-        rxLinkSpeedMbps,
-        cellularDataNetworkType,
-        cellularSignalStrengthDbm,
-        cellularSignalStrengthDb,
-        isSameRegisteredCell);
+    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.R) {
+      return new WifiUsabilityStatsEntry(
+          timeStampMillis,
+          rssi,
+          linkSpeedMbps,
+          totalTxSuccess,
+          totalTxRetries,
+          totalTxBad,
+          totalRxSuccess,
+          totalRadioOnTimeMillis,
+          totalRadioTxTimeMillis,
+          totalRadioRxTimeMillis,
+          totalScanTimeMillis,
+          totalNanScanTimeMillis,
+          totalBackgroundScanTimeMillis,
+          totalRoamScanTimeMillis,
+          totalPnoScanTimeMillis,
+          totalHotspot2ScanTimeMillis,
+          totalCcaBusyFreqTimeMillis,
+          totalRadioOnFreqTimeMillis,
+          totalBeaconRx,
+          probeStatusSinceLastUpdate,
+          probeElapsedTimeSinceLastUpdateMillis,
+          probeMcsRateSinceLastUpdate,
+          rxLinkSpeedMbps,
+          cellularDataNetworkType,
+          cellularSignalStrengthDbm,
+          cellularSignalStrengthDb,
+          isSameRegisteredCell);
+    } else {
+      Object[] contentionTimeStats = null;
+      Object[] rateStats = null;
+      Object[] radioStats = null;
+      try {
+        contentionTimeStats =
+            (Object[])
+                Array.newInstance(
+                    Class.forName("android.net.wifi.WifiUsabilityStatsEntry$ContentionTimeStats"),
+                    0);
+        rateStats =
+            (Object[])
+                Array.newInstance(
+                    Class.forName("android.net.wifi.WifiUsabilityStatsEntry$RateStats"), 0);
+        radioStats =
+            (Object[])
+                Array.newInstance(
+                    Class.forName("android.net.wifi.WifiUsabilityStatsEntry$RadioStats"), 0);
+      } catch (ClassNotFoundException e) {
+        throw new LinkageError(e.getLocalizedMessage());
+      }
+      return ReflectionHelpers.callConstructor(
+          WifiUsabilityStatsEntry.class,
+          ClassParameter.from(long.class, timeStampMillis),
+          ClassParameter.from(int.class, rssi),
+          ClassParameter.from(int.class, linkSpeedMbps),
+          ClassParameter.from(long.class, totalTxSuccess),
+          ClassParameter.from(long.class, totalTxRetries),
+          ClassParameter.from(long.class, totalTxBad),
+          ClassParameter.from(long.class, totalRxSuccess),
+          ClassParameter.from(long.class, totalRadioOnTimeMillis),
+          ClassParameter.from(long.class, totalRadioTxTimeMillis),
+          ClassParameter.from(long.class, totalRadioRxTimeMillis),
+          ClassParameter.from(long.class, totalScanTimeMillis),
+          ClassParameter.from(long.class, totalNanScanTimeMillis),
+          ClassParameter.from(long.class, totalBackgroundScanTimeMillis),
+          ClassParameter.from(long.class, totalRoamScanTimeMillis),
+          ClassParameter.from(long.class, totalPnoScanTimeMillis),
+          ClassParameter.from(long.class, totalHotspot2ScanTimeMillis),
+          ClassParameter.from(long.class, totalCcaBusyFreqTimeMillis),
+          ClassParameter.from(long.class, totalRadioOnFreqTimeMillis),
+          ClassParameter.from(long.class, totalBeaconRx),
+          ClassParameter.from(int.class, probeStatusSinceLastUpdate),
+          ClassParameter.from(int.class, probeElapsedTimeSinceLastUpdateMillis),
+          ClassParameter.from(int.class, probeMcsRateSinceLastUpdate),
+          ClassParameter.from(int.class, rxLinkSpeedMbps),
+          ClassParameter.from(int.class, timeSliceDutyCycleInPercent),
+          ClassParameter.from(contentionTimeStats.getClass(), contentionTimeStats),
+          ClassParameter.from(rateStats.getClass(), rateStats),
+          ClassParameter.from(radioStats.getClass(), radioStats),
+          ClassParameter.from(int.class, CHANNEL_UTILIZATION_RATIO),
+          ClassParameter.from(boolean.class, isThroughputSufficient),
+          ClassParameter.from(boolean.class, isWifiScoringEnabled),
+          ClassParameter.from(boolean.class, isCellularDataAvailable),
+          ClassParameter.from(int.class, cellularDataNetworkType),
+          ClassParameter.from(int.class, cellularSignalStrengthDbm),
+          ClassParameter.from(int.class, cellularSignalStrengthDb),
+          ClassParameter.from(boolean.class, isSameRegisteredCell));
+    }
   }
 
   public WifiUsabilityStatsEntryBuilder setTimeStampMillis(long timeStampMillis) {
@@ -203,6 +273,26 @@ public class WifiUsabilityStatsEntryBuilder {
 
   public WifiUsabilityStatsEntryBuilder setSameRegisteredCell(boolean sameRegisteredCell) {
     isSameRegisteredCell = sameRegisteredCell;
+    return this;
+  }
+
+  public WifiUsabilityStatsEntryBuilder setTimeSliceDutyCycleInPercent(int percent) {
+    this.timeSliceDutyCycleInPercent = percent;
+    return this;
+  }
+
+  public WifiUsabilityStatsEntryBuilder setIsCellularDataAvailable(boolean avail) {
+    this.isCellularDataAvailable = avail;
+    return this;
+  }
+
+  public WifiUsabilityStatsEntryBuilder setIsThroughputSufficient(boolean sufficient) {
+    this.isThroughputSufficient = sufficient;
+    return this;
+  }
+
+  public WifiUsabilityStatsEntryBuilder setIsWifiScoringEnabled(boolean enabled) {
+    this.isWifiScoringEnabled = enabled;
     return this;
   }
 }
