@@ -112,6 +112,29 @@ public class ShadowConnectivityManager {
     registerNetworkCallback(request, networkCallback);
   }
 
+  @Implementation(minSdk = O)
+  protected void requestNetwork(
+      NetworkRequest request, ConnectivityManager.NetworkCallback networkCallback, int timeoutMs) {
+    registerNetworkCallback(request, networkCallback);
+  }
+
+  @Implementation(minSdk = O)
+  protected void requestNetwork(
+      NetworkRequest request,
+      ConnectivityManager.NetworkCallback networkCallback,
+      Handler handler) {
+    registerNetworkCallback(request, networkCallback);
+  }
+
+  @Implementation(minSdk = O)
+  protected void requestNetwork(
+      NetworkRequest request,
+      ConnectivityManager.NetworkCallback networkCallback,
+      Handler handler,
+      int timeoutMs) {
+    registerNetworkCallback(request, networkCallback);
+  }
+
   @Implementation(minSdk = N)
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback) {
