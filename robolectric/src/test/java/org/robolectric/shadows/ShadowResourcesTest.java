@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.Resources;
@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.util.Xml;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Range;
@@ -23,7 +22,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
-import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowResourcesTest {
@@ -151,5 +149,74 @@ public class ShadowResourcesTest {
     xmlResourceParser =
         (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
+  }
+
+  @Test
+  @Config(minSdk = N_MR1)
+  public void obtainAttributes() {
+    TypedArray typedArray =
+        resources.obtainAttributes(
+            Robolectric.buildAttributeSet()
+                .addAttribute(R.attr.styleReference, "@xml/shortcuts")
+                .build(),
+            new int[] {R.attr.styleReference});
+    assertThat(typedArray).isNotNull();
+    assertThat(typedArray.peekValue(0).resourceId).isEqualTo(R.xml.shortcuts);
+  }
+
+  @Test
+  public void obtainAttributes_shouldUseReferencedIdFromAttributeSet() {
+    // android:id/mask was introduced in API 21, but it's still possible for apps built against API
+    // 21 to refer to it in older runtimes because referenced resource ids are compiled (by aapt)
+    // into the binary XML format.
+    AttributeSet attributeSet =
+        Robolectric.buildAttributeSet().addAttribute(android.R.attr.id, "@android:id/mask").build();
+    TypedArray typedArray = resources.obtainAttributes(attributeSet, new int[] {android.R.attr.id});
+    assertThat(typedArray.getResourceId(0, -9)).isEqualTo(android.R.id.mask);
+  }
+
+  @Test
+  public void obtainAttributes_shouldReturnValuesFromAttributeSet() {
+    AttributeSet attributes =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.title, "A title!")
+            .addAttribute(android.R.attr.width, "12px")
+            .addAttribute(android.R.attr.height, "1in")
+            .build();
+    TypedArray typedArray =
+        resources.obtainAttributes(
+            attributes,
+            new int[] {android.R.attr.height, android.R.attr.width, android.R.attr.title});
+
+    assertThat(typedArray.getDimension(0, 0)).isEqualTo(160f);
+    assertThat(typedArray.getDimension(1, 0)).isEqualTo(12f);
+    assertThat(typedArray.getString(2)).isEqualTo("A title!");
+    typedArray.recycle();
+  }
+
+  @Test
+  public void obtainStyledAttributesShouldCheckXmlFirst_andFollowReferences() {
+    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were
+    // introduced in API 21 but the public ID values they are assigned clash with private
+    // com.android.internal.R values on older SDKs. This test ensures that even on older SDKs,
+    // on calls to obtainStyledAttributes() Robolectric will first check for matching
+    // resource ID values in the AttributeSet before checking the theme.
+    AttributeSet attributes =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.viewportWidth, "@integer/test_integer1")
+            .addAttribute(android.R.attr.viewportHeight, "@integer/test_integer2")
+            .build();
+
+    TypedArray typedArray =
+        ApplicationProvider.getApplicationContext()
+            .getTheme()
+            .obtainStyledAttributes(
+                attributes,
+                new int[] {android.R.attr.viewportWidth, android.R.attr.viewportHeight},
+                0,
+                0);
+    assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
+    assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
+    typedArray.recycle();
   }
 }
