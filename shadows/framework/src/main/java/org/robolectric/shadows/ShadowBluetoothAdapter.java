@@ -15,6 +15,7 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.le.BluetoothLeAdvertiser;
+import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -66,11 +67,13 @@ public class ShadowBluetoothAdapter {
   @Resetter
   public static void reset() {
     setIsBluetoothSupported(true);
-    if ((RuntimeEnvironment.getApiLevel() >= VERSION_CODES.LOLLIPOP_MR1)
-        && (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1)) {
-      reflector(BluetoothAdapterReflector.class, null).setSBluetoothLeAdvertiser(null);
+    BluetoothAdapterReflector bluetoothReflector = reflector(BluetoothAdapterReflector.class);
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    if (apiLevel >= VERSION_CODES.LOLLIPOP && apiLevel <= VERSION_CODES.R) {
+      bluetoothReflector.setSBluetoothLeAdvertiser(null);
+      bluetoothReflector.setSBluetoothLeScanner(null);
     }
-    reflector(BluetoothAdapterReflector.class, null).setAdapter(null);
+    bluetoothReflector.setAdapter(null);
   }
 
   @Implementation
@@ -474,7 +477,10 @@ public class ShadowBluetoothAdapter {
 
     @Accessor("sBluetoothLeAdvertiser")
     @Static
-    @Deprecated
     void setSBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser);
+
+    @Accessor("sBluetoothLeScanner")
+    @Static
+    void setSBluetoothLeScanner(BluetoothLeScanner scanner);
   }
 }
