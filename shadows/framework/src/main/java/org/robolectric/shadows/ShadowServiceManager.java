@@ -49,6 +49,7 @@ import android.media.session.ISessionManager;
 import android.net.IConnectivityManager;
 import android.net.INetworkPolicyManager;
 import android.net.INetworkScoreService;
+import android.net.ITetheringConnector;
 import android.net.nsd.INsdManager;
 import android.net.wifi.IWifiManager;
 import android.net.wifi.aware.IWifiAwareManager;
@@ -165,6 +166,7 @@ public class ShadowServiceManager {
     if (RuntimeEnvironment.getApiLevel() >= R) {
       addBinderService(Context.APP_INTEGRITY_SERVICE, IAppIntegrityManager.class);
       addBinderService(Context.AUTH_SERVICE, IAuthService.class);
+      addBinderService(Context.TETHERING_SERVICE, ITetheringConnector.class);
     }
   }
 

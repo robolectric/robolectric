@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Arrays;
 import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
@@ -619,6 +620,17 @@ public class ShadowConnectivityManagerTest {
   @Config(minSdk = N)
   public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus4() throws Exception{
     shadowOf(connectivityManager).setRestrictBackgroundStatus(4);
+  }
+
+  @Test
+  public void checkPollingTetherThreadNotCreated() throws Exception {
+    for (StackTraceElement[] elements : Thread.getAllStackTraces().values()) {
+      for (StackTraceElement element : elements) {
+        if (element.toString().contains("android.net.TetheringManager")) {
+          throw new RuntimeException("Found polling thread " + Arrays.toString(elements));
+        }
+      }
+    }
   }
 
   @Test
