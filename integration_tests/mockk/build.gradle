@@ -3,6 +3,10 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 apply plugin: 'kotlin'
 
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
 dependencies {
     api project(":robolectric")
     compileOnly AndroidSdk.MAX_SDK.coordinates
