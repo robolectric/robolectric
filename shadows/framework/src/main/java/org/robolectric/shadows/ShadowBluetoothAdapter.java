@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -265,6 +266,13 @@ public class ShadowBluetoothAdapter {
   @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
+    return setScanMode(scanMode);
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean setScanMode(int scanMode, long durationMillis) {
+    int durationSeconds = Math.toIntExact(durationMillis / 1000);
+    setDiscoverableTimeout(durationSeconds);
     return setScanMode(scanMode);
   }
 
