@@ -7,11 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * A {@link org.robolectric.pluginapi.config.Configurer} annotation that dictates whether or not
- * Robolectric should lazily instantiate the Application under test (as well as the test
- * Instrumentation).
+ * Robolectric should lazily instantiate the Application under test.
  *
- * <p>In particular, any test with {@link LazyLoad.ON} that does not need either of the Application
- * or the Instrumentation will load neither (and recoup the associated cost)
+ * <p>In particular, any test with {@link LazyLoad.ON} that does not need the Application will not
+ * load it (and recoup the associated cost)
  *
  * <p>NOTE: This feature is currently still experimental, so any users of {@link LazyLoad.ON} do so
  * at their own risk
