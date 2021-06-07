@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -35,6 +36,12 @@ public class ShadowCameraManager {
   private final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
       new LinkedHashMap<>();
   private final Map<String, Boolean> cameraTorches = new HashMap<>();
+  // Most recent camera device opened with openCamera
+  private CameraDevice lastDevice;
+  // Most recent callback passed to openCamera
+  private CameraDevice.StateCallback lastCallback;
+  @Nullable private Executor lastCallbackExecutor;
+  @Nullable private Handler lastCallbackHandler;
 
   @Implementation
   @NonNull
@@ -74,6 +81,7 @@ public class ShadowCameraManager {
             characteristics,
             context.getApplicationInfo().targetSdkVersion);
 
+    updateCameraCallback(deviceImpl, callback, null, executor);
     executor.execute(() -> callback.onOpened(deviceImpl));
     return deviceImpl;
   }
@@ -105,6 +113,7 @@ public class ShadowCameraManager {
               ClassParameter.from(int.class, context.getApplicationInfo().targetSdkVersion));
     }
 
+    updateCameraCallback(deviceImpl, callback, handler, null);
     handler.post(() -> callback.onOpened(deviceImpl));
     return deviceImpl;
   }
@@ -135,6 +144,7 @@ public class ShadowCameraManager {
             ClassParameter.from(Handler.class, handler),
             ClassParameter.from(CameraCharacteristics.class, characteristics));
 
+    updateCameraCallback(deviceImpl, callback, handler, null);
     handler.post(() -> callback.onOpened(deviceImpl));
     return deviceImpl;
   }
@@ -172,6 +182,29 @@ public class ShadowCameraManager {
     Preconditions.checkArgument(cameraIdToCharacteristics.keySet().contains(cameraId));
     Boolean torchState = cameraTorches.get(cameraId);
     return torchState;
+  }
+
+  /**
+   * Triggers a disconnect event, where any open camera will be disconnected (simulating the case
+   * where another app takes control of the camera).
+   */
+  public void triggerDisconnect() {
+    if (lastCallbackHandler != null) {
+      lastCallbackHandler.post(() -> lastCallback.onDisconnected(lastDevice));
+    } else if (lastCallbackExecutor != null) {
+      lastCallbackExecutor.execute(() -> lastCallback.onDisconnected(lastDevice));
+    }
+  }
+
+  protected void updateCameraCallback(
+      CameraDevice device,
+      CameraDevice.StateCallback callback,
+      @Nullable Handler handler,
+      @Nullable Executor executor) {
+    lastDevice = device;
+    lastCallback = callback;
+    lastCallbackHandler = handler;
+    lastCallbackExecutor = executor;
   }
 
   /** Accessor interface for {@link CameraManager}'s internals. */
