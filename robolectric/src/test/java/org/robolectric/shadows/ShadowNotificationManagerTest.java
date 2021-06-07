@@ -20,6 +20,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.service.notification.StatusBarNotification;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -250,6 +251,16 @@ public class ShadowNotificationManagerTest {
 
     assertThat(notificationManager.getAutomaticZenRule(id)).isNull();
     assertThat(notificationManager.getAutomaticZenRules()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void isNotificationListenerAccessGranted() {
+    ComponentName componentName = new ComponentName("pkg", "cls");
+    shadowOf(notificationManager).setNotificationListenerAccessGranted(componentName, true);
+    assertThat(notificationManager.isNotificationListenerAccessGranted(componentName)).isTrue();
+    shadowOf(notificationManager).setNotificationListenerAccessGranted(componentName, false);
+    assertThat(notificationManager.isNotificationListenerAccessGranted(componentName)).isFalse();
   }
 
   @Test

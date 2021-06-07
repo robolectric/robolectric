@@ -1,8 +1,11 @@
 package org.robolectric.android.controller;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import android.content.Intent;
 import android.os.Looper;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.ReflectionHelpers;
@@ -50,12 +53,11 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   }
 
   protected C invokeWhilePaused(final String methodName, final ClassParameter<?>... classParameters) {
-    shadowMainLooper.runPaused(new Runnable() {
-      @Override
-      public void run() {
-        ReflectionHelpers.callInstanceMethod(component, methodName, classParameters);
-      }
-    });
+    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
+      checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
+    }
+    shadowMainLooper.runPaused(
+        () -> ReflectionHelpers.callInstanceMethod(component, methodName, classParameters));
     return myself;
   }
 }

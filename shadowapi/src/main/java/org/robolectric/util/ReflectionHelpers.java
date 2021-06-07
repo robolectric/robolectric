@@ -17,6 +17,7 @@ import java.util.Map;
 public class ReflectionHelpers {
 
   private static final Map<String, Object> PRIMITIVE_RETURN_VALUES;
+  private static final PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
 
   static {
     HashMap<String, Object> map = new HashMap<>();
@@ -240,7 +241,12 @@ public class ReflectionHelpers {
    * @param <R> The return type.
    * @return The return value of the method.
    */
-  public static <R> R callInstanceMethod(final Object instance, final String methodName, ClassParameter<?>... classParameters) {
+  public static <R> R callInstanceMethod(
+      final Object instance, final String methodName, ClassParameter<?>... classParameters) {
+    perfStatsCollector.incrementCount(
+        String.format(
+            "ReflectionHelpers.callInstanceMethod-%s_%s",
+            instance.getClass().getName(), methodName));
     try {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
@@ -277,7 +283,14 @@ public class ReflectionHelpers {
    * @param <R> The return type.
    * @return The return value of the method.
    */
-  public static <R> R callInstanceMethod(Class<?> cl, final Object instance, final String methodName, ClassParameter<?>... classParameters) {
+  public static <R> R callInstanceMethod(
+      Class<?> cl,
+      final Object instance,
+      final String methodName,
+      ClassParameter<?>... classParameters) {
+    perfStatsCollector.incrementCount(
+        String.format(
+            "ReflectionHelpers.callInstanceMethod-%s_%s", cl.getName(), methodName));
     try {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
@@ -330,7 +343,11 @@ public class ReflectionHelpers {
    * @return The return value of the method.
    */
   @SuppressWarnings("unchecked")
-  public static <R> R callStaticMethod(Class<?> clazz, String methodName, ClassParameter<?>... classParameters) {
+  public static <R> R callStaticMethod(
+      Class<?> clazz, String methodName, ClassParameter<?>... classParameters) {
+    perfStatsCollector.incrementCount(
+        String.format(
+            "ReflectionHelpers.callStaticMethod-%s_%s", clazz.getName(), methodName));
     try {
       Class<?>[] classes = ClassParameter.getClasses(classParameters);
       Object[] values = ClassParameter.getValues(classParameters);
@@ -395,7 +412,9 @@ public class ReflectionHelpers {
    * @param <R> The return type.
    * @return The return value of the method.
    */
-  public static <R> R callConstructor(Class<? extends R> clazz, ClassParameter<?>... classParameters) {
+  public static <R> R callConstructor(
+      Class<? extends R> clazz, ClassParameter<?>... classParameters) {
+    perfStatsCollector.incrementCount("ReflectionHelpers.callConstructor-" + clazz.getName());
     try {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
