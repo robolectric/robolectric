@@ -117,7 +117,7 @@ public class ShadowCookieManagerTest {
 
   @Test
   public void shouldHaveCookieWhenCookieIsSet() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     assertThat(cookieManager.hasCookies()).isEqualTo(true);
   }
 
@@ -157,8 +157,8 @@ public class ShadowCookieManagerTest {
 
   @Test
   public void shouldSetTwoCookies() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
-    cookieManager.setCookie(url, "name2=value2; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
+    cookieManager.setCookie(url, "name2=value2; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value; name2=value2");
   }
 
@@ -190,7 +190,7 @@ public class ShadowCookieManagerTest {
 
   @Test
   public void shouldRemoveAllCookie() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
     cookieManager.removeAllCookie();
     assertThat(cookieManager.getCookie(url)).isNull();
@@ -199,7 +199,7 @@ public class ShadowCookieManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void shouldRemoveAllCookiesWithCallback() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
 
     cookieManager.removeAllCookies(
@@ -220,7 +220,7 @@ public class ShadowCookieManagerTest {
 
   @Test
   public void shouldRemoveSessionCookie() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
     cookieManager.removeSessionCookie();
     assertThat(cookieManager.getCookie(url)).isEqualTo("name=value");
@@ -229,7 +229,7 @@ public class ShadowCookieManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void shouldRemoveSessionCookies() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
 
     cookieManager.removeSessionCookies(
@@ -243,7 +243,7 @@ public class ShadowCookieManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void shouldRemoveSessionCookiesWhenSessionCookieIsNoPresent() {
-    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2021 10:18:14 GMT");
+    cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
 
     cookieManager.removeSessionCookies(
         ok -> {
