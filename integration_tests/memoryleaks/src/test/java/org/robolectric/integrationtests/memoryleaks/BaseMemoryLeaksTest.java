@@ -2,8 +2,9 @@ package org.robolectric.integrationtests.memoryleaks;
 
 import android.app.Activity;
 import android.content.res.Configuration;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentContainerView;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
 import org.junit.Test;
@@ -60,11 +61,14 @@ public abstract class BaseMemoryLeaksTest {
         () -> {
           ActivityController<FragmentActivity> ac =
               Robolectric.buildActivity(FragmentActivity.class).setup();
+          FragmentContainerView contentView = new FragmentContainerView(ac.get());
+          contentView.setId(android.R.id.list_container);
+          ac.get().setContentView(contentView);
           Fragment f = new Fragment();
           ac.get()
               .getSupportFragmentManager()
               .beginTransaction()
-              .replace(android.R.id.content, f)
+              .replace(android.R.id.list_container, f)
               .commitNow();
           ac.pause().stop().destroy();
           return f;
@@ -77,16 +81,19 @@ public abstract class BaseMemoryLeaksTest {
         () -> {
           ActivityController<FragmentActivity> ac =
               Robolectric.buildActivity(FragmentActivity.class).setup();
+          FragmentContainerView contentView = new FragmentContainerView(ac.get());
+          contentView.setId(android.R.id.list_container);
+          ac.get().setContentView(contentView);
           Fragment f = new Fragment();
           ac.get()
               .getSupportFragmentManager()
               .beginTransaction()
-              .replace(android.R.id.content, f)
+              .replace(android.R.id.list_container, f)
               .commitNow();
           ac.get()
               .getSupportFragmentManager()
               .beginTransaction()
-              .replace(android.R.id.content, new Fragment())
+              .replace(android.R.id.list_container, new Fragment())
               .commitNow();
           return f;
         });

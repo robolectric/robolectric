@@ -381,14 +381,19 @@ public class BootstrapTest {
   public void testUpdateDisplayResourcesWithDifferentLocale() {
     Locale locale = new Locale("en", "IN");
     RuntimeEnvironment.setQualifiers("ar");
-    LocaleList.setDefault(new LocaleList(locale));
-    Application app = RuntimeEnvironment.getApplication();
-    String qualifiers =
-        RuntimeEnvironment.getQualifiers(
-            app.getResources().getConfiguration(), app.getResources().getDisplayMetrics());
-    // The idea here is that the application resources should be changed by the setQualifiers call,
-    // but should not be changed by the change to the default Locale.
-    assertThat(qualifiers).doesNotContain("en-rIN");
-    assertThat(qualifiers).contains("ar");
+    LocaleList originalDefault = LocaleList.getDefault();
+    try {
+      LocaleList.setDefault(new LocaleList(locale));
+      Application app = RuntimeEnvironment.getApplication();
+      String qualifiers =
+          RuntimeEnvironment.getQualifiers(
+              app.getResources().getConfiguration(), app.getResources().getDisplayMetrics());
+      // The idea here is that the application resources should be changed by the setQualifiers
+      // call, but should not be changed by the change to the default Locale.
+      assertThat(qualifiers).doesNotContain("en-rIN");
+      assertThat(qualifiers).contains("ar");
+    } finally {
+      LocaleList.setDefault(originalDefault);
+    }
   }
 }
