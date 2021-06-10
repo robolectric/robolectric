@@ -47,6 +47,7 @@ public class ShadowInputMethodManager {
   private boolean softInputVisible;
   private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
   private List<InputMethodInfo> inputMethodInfoList = ImmutableList.of();
+  private List<InputMethodInfo> enabledInputMethodInfoList = ImmutableList.of();
 
   @Implementation
   protected boolean showSoftInput(View view, int flags) {
@@ -107,6 +108,25 @@ public class ShadowInputMethodManager {
   }
 
   /**
+   * Returns the list of {@link InputMethodInfo} that are installed.
+   *
+   * <p>This method differs from Android implementation by allowing the list to be set using {@link
+   * #setInputMethodInfoList(List)}.
+   */
+  @Implementation
+  protected List<InputMethodInfo> getInputMethodList() {
+    return inputMethodInfoList;
+  }
+
+  /**
+   * Sets the list of {@link InputMethodInfo} that are marked as installed. See {@link
+   * #getInputMethodList()}.
+   */
+  public void setInputMethodInfoList(List<InputMethodInfo> inputMethodInfoList) {
+    this.inputMethodInfoList = inputMethodInfoList;
+  }
+
+  /**
    * Returns the list of {@link InputMethodInfo} that are enabled.
    *
    * <p>This method differs from Android implementation by allowing the list to be set using {@link
@@ -114,7 +134,7 @@ public class ShadowInputMethodManager {
    */
   @Implementation
   protected List<InputMethodInfo> getEnabledInputMethodList() {
-    return inputMethodInfoList;
+    return enabledInputMethodInfoList;
   }
 
   /**
@@ -122,7 +142,7 @@ public class ShadowInputMethodManager {
    * #getEnabledInputMethodList()}.
    */
   public void setEnabledInputMethodInfoList(List<InputMethodInfo> inputMethodInfoList) {
-    this.inputMethodInfoList = inputMethodInfoList;
+    this.enabledInputMethodInfoList = inputMethodInfoList;
   }
 
   @Implementation
