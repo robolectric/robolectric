@@ -232,7 +232,9 @@ public class ShadowUsageStatsManager {
   private static UsageEvents createUsageEvents(List<Event> results) {
     ArraySet<String> names = new ArraySet<>();
     for (Event result : results) {
-      names.add(result.mPackage);
+      if (result.mPackage != null) {
+        names.add(result.mPackage);
+      }
       if (result.mClass != null) {
         names.add(result.mClass);
       }
