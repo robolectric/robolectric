@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -201,6 +202,23 @@ public class ShadowBluetoothAdapterTest {
                     ClassParameter.from(
                         int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE),
                     ClassParameter.from(int.class, 42)))
+        .isTrue();
+    assertThat(bluetoothAdapter.getScanMode())
+        .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+  }
+
+  @Config(minSdk = R)
+  @Test
+  public void scanMode_withDiscoverableTimeout_R() {
+    assertThat(
+            (boolean)
+                ReflectionHelpers.callInstanceMethod(
+                    bluetoothAdapter,
+                    "setScanMode",
+                    ClassParameter.from(
+                        int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE),
+                    ClassParameter.from(long.class, 42_000L)))
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
