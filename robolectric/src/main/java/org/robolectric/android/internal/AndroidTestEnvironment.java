@@ -584,11 +584,24 @@ public class AndroidTestEnvironment implements TestEnvironment {
   @Override
   public void checkStateAfterTestFailure(Throwable t) throws Throwable {
     if (hasUnexecutedRunnables()) {
-      throw new Exception(
+      t.addSuppressed(new UnExecutedRunnablesException());
+    }
+    throw t;
+  }
+
+  private static final class UnExecutedRunnablesException extends Exception {
+
+    UnExecutedRunnablesException() {
+      super(
           "Main looper has queued unexecuted runnables. "
               + "This might be the cause of the test failure. "
-              + "You might need a shadowOf(getMainLooper()).idle() call.",
-          t);
+              + "You might need a shadowOf(getMainLooper()).idle() call.");
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+      setStackTrace(new StackTraceElement[0]);
+      return this; // no stack trace, wouldn't be useful anyway
     }
   }
 
