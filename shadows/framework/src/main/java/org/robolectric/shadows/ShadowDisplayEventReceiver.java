@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
@@ -9,10 +10,12 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static org.robolectric.shadow.api.Shadow.directlyOn;
 
 import android.os.MessageQueue;
 import android.os.SystemClock;
 import android.view.DisplayEventReceiver;
+import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
 import java.time.Duration;
 import org.robolectric.RuntimeEnvironment;
@@ -24,6 +27,9 @@ import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Reflector;
 
 @Implements(
     className = "android.view.DisplayEventReceiver",
@@ -97,6 +103,21 @@ public class ShadowDisplayEventReceiver {
   @Implementation(maxSdk = KITKAT)
   protected static void nativeScheduleVsync(int receiverPtr) {
     nativeObjRegistry.getNativeObject(receiverPtr).scheduleVsync();
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = R)
+  protected void dispose(boolean finalized) {
+    CloseGuard closeGuard =
+        Reflector.reflector(DisplayEventReceiverReflector.class, receiver).getCloseGuard();
+    // Suppresses noisy CloseGuard warning
+    if (closeGuard != null) {
+      closeGuard.close();
+    }
+    directlyOn(
+        receiver,
+        DisplayEventReceiver.class,
+        "dispose",
+        ClassParameter.from(boolean.class, finalized));
   }
 
   static void setAsyncVsync(int delayMillis) {
@@ -191,4 +212,11 @@ public class ShadowDisplayEventReceiver {
     }
   }
 
+  /** Accessor interface for {@link DisplayEventReceiver}'s internals. */
+  @ForType(DisplayEventReceiver.class)
+  interface DisplayEventReceiverReflector {
+
+    @Accessor("mCloseGuard")
+    CloseGuard getCloseGuard();
+  }
 }
