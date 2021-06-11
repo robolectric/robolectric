@@ -34,16 +34,19 @@ import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.view.Surface.ROTATION_0;
 import static android.view.Surface.ROTATION_90;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
+import android.os.LocaleList;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -149,8 +152,12 @@ public class BootstrapTest {
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers)
-        .isEqualTo("en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-" + optsForO + "port-notnight-mdpi" +
-            "-finger-keyssoft-nokeys-navhidden-nonav-v" + Build.VERSION.RESOURCES_SDK_INT);
+        .isEqualTo(
+            "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-"
+                + optsForO
+                + "port-notnight-mdpi"
+                + "-finger-keyssoft-nokeys-navhidden-nonav-v"
+                + Build.VERSION.RESOURCES_SDK_INT);
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
@@ -346,8 +353,11 @@ public class BootstrapTest {
 
   @Test
   public void whenPrefixedWithPlus_applyQualifiers_shouldOverlayQualifiers() throws Exception {
-    Bootstrap.applyQualifiers("+en ru-rRU-h123dp-large +fr-w321dp-small", RuntimeEnvironment.getApiLevel(),
-        configuration, displayMetrics);
+    Bootstrap.applyQualifiers(
+        "+en ru-rRU-h123dp-large +fr-w321dp-small",
+        RuntimeEnvironment.getApiLevel(),
+        configuration,
+        displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
@@ -355,11 +365,30 @@ public class BootstrapTest {
 
   @Test
   public void whenAllPrefixedWithPlus_applyQualifiers_shouldOverlayQualifiers() throws Exception {
-    Bootstrap.applyQualifiers("+xxhdpi +ru-rRU-h123dp-large +fr-w321dp-small", RuntimeEnvironment.getApiLevel(),
-        configuration, displayMetrics);
+    Bootstrap.applyQualifiers(
+        "+xxhdpi +ru-rRU-h123dp-large +fr-w321dp-small",
+        RuntimeEnvironment.getApiLevel(),
+        configuration,
+        displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
 
     assertThat(outQualifiers).startsWith("fr-ldltr-sw321dp-w321dp-h426dp-small");
     assertThat(outQualifiers).contains("-xxhdpi-");
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void testUpdateDisplayResourcesWithDifferentLocale() {
+    Locale locale = new Locale("en", "IN");
+    RuntimeEnvironment.setQualifiers("ar");
+    LocaleList.setDefault(new LocaleList(locale));
+    Application app = RuntimeEnvironment.getApplication();
+    String qualifiers =
+        RuntimeEnvironment.getQualifiers(
+            app.getResources().getConfiguration(), app.getResources().getDisplayMetrics());
+    // The idea here is that the application resources should be changed by the setQualifiers call,
+    // but should not be changed by the change to the default Locale.
+    assertThat(qualifiers).doesNotContain("en-rIN");
+    assertThat(qualifiers).contains("ar");
   }
 }

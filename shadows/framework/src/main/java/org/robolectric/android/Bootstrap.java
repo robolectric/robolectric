@@ -1,5 +1,6 @@
 package org.robolectric.android;
 
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
@@ -12,8 +13,9 @@ import org.robolectric.shadows.ShadowWindowManagerImpl;
 
 public class Bootstrap {
 
-  private static Configuration configuration;
-  private static DisplayMetrics displayMetrics;
+  private static Configuration configuration = new Configuration();
+  private static DisplayMetrics displayMetrics = new DisplayMetrics();
+  private static Resources displayResources;
   /** internal only */
   public static boolean displaySet = false;
 
@@ -25,8 +27,32 @@ public class Bootstrap {
   }
 
   /** internal only */
+  public static void resetDisplayConfiguration() {
+    configuration = new Configuration();
+    displayMetrics = new DisplayMetrics();
+    displayResources = null;
+    displaySet = false;
+  }
+
+  /** internal only */
+  public static void updateDisplayResources(
+      Configuration configuration, DisplayMetrics displayMetrics) {
+    if (displayResources == null) {
+      displayResources =
+          new Resources(
+              AssetManager.getSystem(), Bootstrap.displayMetrics, Bootstrap.configuration);
+    }
+    displayResources.updateConfiguration(configuration, displayMetrics);
+  }
+
+  /** internal only */
   public static void updateConfiguration(Resources resources) {
-    resources.updateConfiguration(configuration, displayMetrics);
+    if (displayResources == null) {
+      resources.updateConfiguration(Bootstrap.configuration, Bootstrap.displayMetrics);
+    } else {
+      resources.updateConfiguration(
+          displayResources.getConfiguration(), displayResources.getDisplayMetrics());
+    }
   }
 
   /** internal only */
