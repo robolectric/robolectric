@@ -20,7 +20,7 @@ public class PreciseDataConnectionStateBuilderTest {
   public void build_preciseDataConnectionState() {
     ApnSetting apnSetting = new ApnSetting.Builder().setApnName("apnName").build();
     PreciseDataConnectionState state =
-        new PreciseDataConnectionStateBuilder()
+        PreciseDataConnectionStateBuilder.newBuilder()
             .setDataState(TelephonyManager.DATA_DISCONNECTED)
             .setNetworkType(TelephonyManager.NETWORK_TYPE_LTE)
             .setApnSetting(apnSetting)
@@ -37,7 +37,7 @@ public class PreciseDataConnectionStateBuilderTest {
   @Test
   public void build_preciseDataConnectionState_nullApnSetting() {
     PreciseDataConnectionState state =
-        new PreciseDataConnectionStateBuilder()
+        PreciseDataConnectionStateBuilder.newBuilder()
             .setDataState(TelephonyManager.DATA_DISCONNECTED)
             .setNetworkType(TelephonyManager.NETWORK_TYPE_LTE)
             .setDataFailCause(DataFailCause.IMEI_NOT_ACCEPTED)
