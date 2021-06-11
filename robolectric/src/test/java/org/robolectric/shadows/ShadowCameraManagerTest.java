@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -19,6 +20,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCameraManager}. */
@@ -176,10 +178,35 @@ public class ShadowCameraManagerTest {
   public void openCamera() throws CameraAccessException {
     shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
 
-    CameraStateCallback mockCallback = mock(CameraStateCallback.class);
+    CameraDevice.StateCallback mockCallback = mock(CameraDevice.StateCallback.class);
     cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler());
     shadowOf(Looper.myLooper()).idle();
     verify(mockCallback).onOpened(any(CameraDevice.class));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void triggerDisconnect() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    CameraDevice.StateCallback mockCallback = mock(CameraDevice.StateCallback.class);
+    cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler());
+    shadowOf(Looper.myLooper()).idle();
+    ArgumentCaptor<CameraDevice> deviceCaptor = ArgumentCaptor.forClass(CameraDevice.class);
+    verify(mockCallback).onOpened(deviceCaptor.capture());
+    verify(mockCallback, never()).onDisconnected(any(CameraDevice.class));
+
+    shadowOf(cameraManager).triggerDisconnect();
+    shadowOf(Looper.myLooper()).idle();
+    verify(mockCallback).onDisconnected(deviceCaptor.getValue());
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void triggerDisconnect_noCameraOpen() throws CameraAccessException {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).triggerDisconnect();
+    // Nothing should happen - just make sure we don't crash.
   }
 
   @Test
@@ -221,23 +248,5 @@ public class ShadowCameraManagerTest {
 
     assertThat(cameraManager.getCameraIdList()).hasLength(1);
     assertThat(cameraManager.getCameraIdList()[0]).isEqualTo(CAMERA_ID_1);
-  }
-
-  private static class CameraStateCallback extends CameraDevice.StateCallback {
-
-    @Override
-    public void onOpened(CameraDevice camera) {
-      assertThat(camera.getId()).isEqualTo(CAMERA_ID_0);
-    }
-
-    @Override
-    public void onDisconnected(CameraDevice camera) {
-      fail();
-    }
-
-    @Override
-    public void onError(CameraDevice camera, int error) {
-      fail();
-    }
   }
 }
