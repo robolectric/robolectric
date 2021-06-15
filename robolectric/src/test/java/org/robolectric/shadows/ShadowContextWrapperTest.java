@@ -5,13 +5,13 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowLooper.looperMode;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
@@ -205,9 +205,8 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided_legacy() {
-    assume().that(looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
-
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
 
@@ -227,10 +226,9 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
+  @LooperMode(PAUSED)
   public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided()
       throws InterruptedException {
-    assume().that(looperMode()).isEqualTo(LooperMode.Mode.PAUSED);
-
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
 

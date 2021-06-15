@@ -1,12 +1,11 @@
 package org.robolectric.android.util.concurrent;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.Before;
@@ -15,10 +14,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.util.Scheduler;
 
 @RunWith(AndroidJUnit4.class)
+@LooperMode(LEGACY)
 public class RoboExecutorServiceTest {
   private List<String> transcript;
   private RoboExecutorService executorService;
@@ -27,20 +26,13 @@ public class RoboExecutorServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
-
     transcript = new ArrayList<>();
     executorService = new RoboExecutorService();
 
     backgroundScheduler = Robolectric.getBackgroundThreadScheduler();
 
     backgroundScheduler.pause();
-    runnable = new Runnable() {
-      @Override
-      public void run() {
-        transcript.add("background event ran");
-      }
-    };
+    runnable = () -> transcript.add("background event ran");
   }
 
   @Test
@@ -69,13 +61,12 @@ public class RoboExecutorServiceTest {
 
   @Test
   public void submitCallable_shouldRunStuffOnBackgroundThread() throws Exception {
-    Future<String> future = executorService.submit(new Callable<String>() {
-      @Override
-      public String call() throws Exception {
-        runnable.run();
-        return "foo";
-      }
-    });
+    Future<String> future =
+        executorService.submit(
+            () -> {
+              runnable.run();
+              return "foo";
+            });
 
     assertThat(transcript).isEmpty();
     assertThat(future.isDone()).isFalse();

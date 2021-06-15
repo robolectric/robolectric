@@ -1,12 +1,12 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Activity;
 import android.app.Application;
@@ -44,28 +44,23 @@ public class RobolectricTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Robolectric.getBackgroundThreadScheduler().isPaused()).isFalse();
     Robolectric.getBackgroundThreadScheduler().pause();
   }
 
   @Test
   public void idleMainLooper_executesScheduledTasks() {
-    final boolean[] wasRun = new boolean[]{false};
-    new Handler().postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        wasRun[0] = true;
-      }
-    }, 2000);
+    final boolean[] wasRun = new boolean[] {false};
+    new Handler().postDelayed(() -> wasRun[0] = true, 2000);
 
     assertFalse(wasRun[0]);
     ShadowLooper.idleMainLooper(1999);
@@ -92,7 +87,8 @@ public class RobolectricTest {
         new Intent("i.dont.exist.activity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
   }
 
-  @Test @Config(sdk = 16)
+  @Test
+  @Config(sdk = 16)
   public void setupActivity_returnsAVisibleActivity() throws Exception {
     LifeCycleActivity activity = Robolectric.setupActivity(LifeCycleActivity.class);
 
@@ -138,5 +134,4 @@ public class RobolectricTest {
       return getWindow().getDecorView().getWindowToken() != null;
     }
   }
-
 }
