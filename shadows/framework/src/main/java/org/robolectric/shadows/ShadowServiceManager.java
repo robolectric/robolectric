@@ -67,6 +67,7 @@ import android.os.IUserManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
+import android.view.IWindowManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
@@ -115,6 +116,7 @@ public class ShadowServiceManager {
     addBinderService(Context.NOTIFICATION_SERVICE, INotificationManager.class);
     addBinderService(Context.WALLPAPER_SERVICE, IWallpaperManager.class);
     addBinderService(Context.BLUETOOTH_SERVICE, IBluetooth.class);
+    addBinderService(Context.WINDOW_SERVICE, IWindowManager.class);
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       addBinderService(Context.USER_SERVICE, IUserManager.class);
