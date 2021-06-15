@@ -20,10 +20,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewParent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -38,28 +34,7 @@ import org.robolectric.util.ReflectionHelpers;
 @RunWith(AndroidJUnit4.class)
 public class RobolectricTest {
 
-  private PrintStream originalSystemOut;
-  private ByteArrayOutputStream buff;
-  private String defaultLineSeparator;
-  private Application context;
-
-  @Before
-  public void setUp() {
-    originalSystemOut = System.out;
-    defaultLineSeparator = System.getProperty("line.separator");
-
-    System.setProperty("line.separator", "\n");
-    buff = new ByteArrayOutputStream();
-    PrintStream testOut = new PrintStream(buff);
-    System.setOut(testOut);
-    context = ApplicationProvider.getApplicationContext();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    System.setProperty("line.separator", defaultLineSeparator);
-    System.setOut(originalSystemOut);
-  }
+  private Application context = ApplicationProvider.getApplicationContext();
 
   @Test(expected = RuntimeException.class)
   public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
