@@ -83,6 +83,7 @@ class ReflectorClassWriter extends ClassWriter {
   private final Type iType;
   private final Type reflectorType;
   private final Type targetType;
+  private final boolean directModifier;
 
   private int nextMethodNumber = 0;
   private final Set<String> fieldRefs = new HashSet<>();
@@ -94,6 +95,9 @@ class ReflectorClassWriter extends ClassWriter {
     iType = Type.getType(iClass);
     reflectorType = asType(reflectorName);
     targetType = Type.getType(targetClass);
+
+    ForType forType = iClass.getAnnotation(ForType.class);
+    directModifier = forType != null && forType.direct();
   }
 
   void write() {
@@ -347,7 +351,7 @@ class ReflectorClassWriter extends ClassWriter {
       // pseudocode:
       //   targetClass.getDeclaredMethod(name, paramTypes);
       push(targetType);
-      push(iMethod.getName());
+      push(getMethodName());
       Type[] paramTypes = targetParamTypes;
       push(paramTypes.length);
       newArray(CLASS_TYPE);
@@ -469,6 +473,18 @@ class ReflectorClassWriter extends ClassWriter {
       } else {
         checkCast(Type.getType(returnType));
       }
+    }
+
+    String getMethodName() {
+      String methodName = iMethod.getName();
+      if (iMethod.isAnnotationPresent(Direct.class) || directModifier) {
+        methodName =
+            "$$robo$$"
+                + targetType.getClassName().replace('.', '_').replace('$', '_')
+                + "$"
+                + methodName;
+      }
+      return methodName;
     }
 
     boolean isAnnotatedStatic() {

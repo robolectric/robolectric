@@ -85,6 +85,22 @@ public class ShadowInputMethodManagerTest {
     verify(mockHandler).handleSoftInputVisibilityChange(true);
   }
 
+
+  @Test
+  public void shouldUpdateInputMethodList() {
+    InputMethodInfo inputMethodInfo =
+        new InputMethodInfo("pkg", "ClassName", "customIME", "customImeSettingsActivity");
+
+    shadow.setInputMethodInfoList(ImmutableList.of(inputMethodInfo));
+
+    assertThat(shadow.getInputMethodList()).containsExactly(inputMethodInfo);
+  }
+
+  @Test
+  public void getInputMethodListReturnsEmptyListByDefault() {
+    assertThat(shadow.getInputMethodList()).isEmpty();
+  }
+
   @Test
   public void shouldUpdateEnabledInputMethodList() {
     InputMethodInfo inputMethodInfo =
