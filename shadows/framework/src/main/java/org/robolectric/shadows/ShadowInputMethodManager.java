@@ -6,6 +6,7 @@ import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build.VERSION_CODES;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.ResultReceiver;
@@ -44,8 +45,14 @@ public class ShadowInputMethodManager {
     void handleSoftInputVisibilityChange(boolean softInputVisible);
   }
 
+  /** Handler for receiving PrivateCommands. */
+  public interface PrivateCommandListener {
+    void onPrivateCommand(View view, String action, Bundle data);
+  }
+
   private boolean softInputVisible;
   private Optional<SoftInputVisibilityChangeHandler> visibilityChangeHandler = Optional.absent();
+  private Optional<PrivateCommandListener> privateCommandListener = Optional.absent();
   private List<InputMethodInfo> inputMethodInfoList = ImmutableList.of();
   private List<InputMethodInfo> enabledInputMethodInfoList = ImmutableList.of();
 
@@ -196,6 +203,17 @@ public class ShadowInputMethodManager {
       int softInputMode,
       int windowFlags) {
     return true;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.M)
+  protected void sendAppPrivateCommand(View view, String action, Bundle data) {
+    if (privateCommandListener.isPresent()) {
+      privateCommandListener.get().onPrivateCommand(view, action, data);
+    }
+  }
+
+  public void setAppPrivateCommandListener(PrivateCommandListener listener) {
+    privateCommandListener = Optional.of(listener);
   }
 
   @Resetter
