@@ -17,6 +17,7 @@ import android.media.Rating;
 import android.media.session.ISessionController;
 import android.media.session.MediaController;
 import android.media.session.MediaController.Callback;
+import android.media.session.MediaController.PlaybackInfo;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import androidx.test.core.app.ApplicationProvider;
@@ -73,6 +74,21 @@ public final class ShadowMediaControllerTest {
     MediaMetadata metadata = createMetadata("test");
     shadowMediaController.setMetadata(metadata);
     assertEquals(metadata, mediaController.getMetadata());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setAndGetPlaybackInfo() {
+    PlaybackInfo playbackInfo =
+        PlaybackInfoBuilder.newBuilder()
+            .setVolumeType(PlaybackInfo.PLAYBACK_TYPE_LOCAL)
+            .setVolumeControl(0)
+            .setMaxVolume(0)
+            .setCurrentVolume(0)
+            .setAudioAttributes(null)
+            .build();
+    shadowMediaController.setPlaybackInfo(playbackInfo);
+    assertEquals(playbackInfo, mediaController.getPlaybackInfo());
   }
 
   @Test
