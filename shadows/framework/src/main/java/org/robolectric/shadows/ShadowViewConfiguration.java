@@ -20,15 +20,17 @@
 
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
@@ -53,8 +55,6 @@ public class ShadowViewConfiguration {
   private static final int MINIMUM_FLING_VELOCITY = 50;
   private static final int MAXIMUM_FLING_VELOCITY = 4000;
   private static final int MAXIMUM_DRAWING_CACHE_SIZE = 320 * 480 * 4;
-  private static final int OVERSCROLL_DISTANCE = 0;
-  private static final int OVERFLING_DISTANCE = 4;
   private static final float SCROLL_FRICTION = 0.015f;
 
   private int edgeSlop;
@@ -67,9 +67,6 @@ public class ShadowViewConfiguration {
   private int doubleTapSlop;
   private int windowTouchSlop;
   private static boolean hasPermanentMenuKey = true;
-
-  @RealObject
-  private ViewConfiguration realViewConfiguration;
 
   private void setup(Context context) {
     DisplayMetrics metrics = context.getResources().getDisplayMetrics();
@@ -88,12 +85,13 @@ public class ShadowViewConfiguration {
 
   @Implementation
   protected static ViewConfiguration get(Context context) {
-    ViewConfiguration viewConfiguration = Shadow.newInstanceOf(ViewConfiguration.class);
+    ViewConfiguration viewConfiguration = new ViewConfiguration();
     ShadowViewConfiguration shadowViewConfiguration = Shadow.extract(viewConfiguration);
     shadowViewConfiguration.setup(context);
 
     if (RuntimeEnvironment.getApiLevel() >= android.os.Build.VERSION_CODES.Q) {
-      ReflectionHelpers.setField(viewConfiguration, "mConstructedWithContext", true);
+      reflector(ViewConfigurationReflector.class, viewConfiguration)
+          .setConstructedWithContext(true);
     }
 
     return viewConfiguration;
@@ -241,5 +239,11 @@ public class ShadowViewConfiguration {
 
   public static void setHasPermanentMenuKey(boolean value) {
     hasPermanentMenuKey = value;
+  }
+
+  @ForType(ViewConfiguration.class)
+  interface ViewConfigurationReflector {
+    @Accessor("mConstructedWithContext")
+    void setConstructedWithContext(boolean value);
   }
 }
