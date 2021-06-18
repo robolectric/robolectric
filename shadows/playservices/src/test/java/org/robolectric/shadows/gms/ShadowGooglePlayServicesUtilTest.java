@@ -107,13 +107,6 @@ public class ShadowGooglePlayServicesUtilTest {
   }
 
   @Test
-  public void getOpenSourceSoftwareLicenseInfo_defaultNotNull() {
-    assertNotNull(
-        GooglePlayServicesUtil.getOpenSourceSoftwareLicenseInfo(
-            RuntimeEnvironment.getApplication()));
-  }
-
-  @Test
   public void isGooglePlayServicesAvailable_defaultServiceMissing() {
     assertEquals(
         ConnectionResult.SERVICE_MISSING,
