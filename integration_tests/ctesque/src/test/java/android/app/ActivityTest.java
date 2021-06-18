@@ -11,6 +11,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
+import org.robolectric.testapp.ActivityWithAnotherTheme;
+import org.robolectric.testapp.ActivityWithoutTheme;
 import org.robolectric.testapp.R;
 
 @DoNotInstrument
