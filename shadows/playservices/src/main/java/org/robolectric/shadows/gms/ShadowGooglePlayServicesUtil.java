@@ -93,11 +93,6 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   @Implementation
-  public static synchronized String getOpenSourceSoftwareLicenseInfo(Context context) {
-    return googlePlayServicesUtilImpl.getOpenSourceSoftwareLicenseInfo(context);
-  }
-
-  @Implementation
   public static synchronized int isGooglePlayServicesAvailable(Context context) {
     return googlePlayServicesUtilImpl.isGooglePlayServicesAvailable(context);
   }
@@ -131,10 +126,6 @@ public class ShadowGooglePlayServicesUtil {
       }
       return PendingIntent.getActivity(
           context, requestCode, new Intent(), PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
-    public String getOpenSourceSoftwareLicenseInfo(Context context) {
-      return "license";
     }
 
     public Context getRemoteContext(Context context) {

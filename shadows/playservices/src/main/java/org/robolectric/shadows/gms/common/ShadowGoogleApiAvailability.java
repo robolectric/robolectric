@@ -45,10 +45,6 @@ public class ShadowGoogleApiAvailability {
         return openSourceSoftwareLicenseInfo;
     }
 
-    public void setOpenSourceSoftwareLicenseInfo(final String openSourceSoftwareLicenseInfo){
-        this.openSourceSoftwareLicenseInfo = openSourceSoftwareLicenseInfo;
-    }
-
     @Implementation
     public Dialog getErrorDialog(Activity activity, int errorCode, int requestCode) {
         return errorDialog;
