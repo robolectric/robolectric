@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -16,6 +15,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
@@ -845,8 +845,8 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void getBackgroundThreadScheduler_shouldMatchRobolectricValue() {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
         .isSameInstanceAs(Robolectric.getBackgroundThreadScheduler());
   }
@@ -859,8 +859,8 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_byDefault() {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler())
@@ -868,9 +868,9 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void
       getBackgroundThreadScheduler_shouldDifferFromRuntimeEnvironment_withAdvancedScheduling() {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     Scheduler s = new Scheduler();
     RuntimeEnvironment.setMasterScheduler(s);
     assertThat(Shadows.shadowOf(context).getBackgroundThreadScheduler()).isNotSameInstanceAs(s);

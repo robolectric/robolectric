@@ -1,8 +1,8 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.IntentService;
@@ -24,8 +24,10 @@ import org.robolectric.shadows.ShadowLooper;
 @RunWith(AndroidJUnit4.class)
 public class IntentServiceControllerTest {
   private static final List<String> transcript = new ArrayList<>();
-  private final ComponentName componentName = new ComponentName("org.robolectric", MyService.class.getName());
-  private final IntentServiceController<MyService> controller = Robolectric.buildIntentService(MyService.class, new Intent());
+  private final ComponentName componentName =
+      new ComponentName("org.robolectric", MyService.class.getName());
+  private final IntentServiceController<MyService> controller =
+      Robolectric.buildIntentService(MyService.class, new Intent());
 
   @Before
   public void setUp() throws Exception {
@@ -48,7 +50,10 @@ public class IntentServiceControllerTest {
 
   @Test
   public void onBindShouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
-    MyService myService = Robolectric.buildIntentService(MyService.class, new Intent(Intent.ACTION_VIEW)).bind().get();
+    MyService myService =
+        Robolectric.buildIntentService(MyService.class, new Intent(Intent.ACTION_VIEW))
+            .bind()
+            .get();
     assertThat(myService.boundIntent.getAction()).isEqualTo(Intent.ACTION_VIEW);
     assertThat(myService.boundIntent.getComponent()).isEqualTo(componentName);
   }
@@ -61,8 +66,8 @@ public class IntentServiceControllerTest {
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -168,11 +173,7 @@ public class IntentServiceControllerTest {
     }
 
     private void transcribeWhilePaused(final String event) {
-      runOnUiThread(new Runnable() {
-        @Override public void run() {
-          transcript.add(event);
-        }
-      });
+      runOnUiThread(() -> transcript.add(event));
     }
 
     private void runOnUiThread(Runnable action) {

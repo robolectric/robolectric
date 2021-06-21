@@ -1,8 +1,8 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Service;
@@ -24,7 +24,8 @@ import org.robolectric.shadows.ShadowLooper;
 @RunWith(AndroidJUnit4.class)
 public class ServiceControllerTest {
   private static final List<String> transcript = new ArrayList<>();
-  private final ComponentName componentName = new ComponentName("org.robolectric", MyService.class.getName());
+  private final ComponentName componentName =
+      new ComponentName("org.robolectric", MyService.class.getName());
   private final ServiceController<MyService> controller = Robolectric.buildService(MyService.class);
 
   @Before
@@ -50,20 +51,22 @@ public class ServiceControllerTest {
 
   @Test
   public void onBindShouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
-    MyService myService = Robolectric.buildService(MyService.class, new Intent(Intent.ACTION_VIEW)).bind().get();
+    MyService myService =
+        Robolectric.buildService(MyService.class, new Intent(Intent.ACTION_VIEW)).bind().get();
     assertThat(myService.boundIntent.getAction()).isEqualTo(Intent.ACTION_VIEW);
     assertThat(myService.boundIntent.getComponent()).isEqualTo(componentName);
   }
 
   @Test
   public void shouldSetIntentForGivenServiceInstance() throws Exception {
-    ServiceController<MyService> serviceController = ServiceController.of(new MyService(), null).bind();
+    ServiceController<MyService> serviceController =
+        ServiceController.of(new MyService(), null).bind();
     assertThat(serviceController.get().boundIntent).isNotNull();
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void whenLooperIsNotPaused_shouldCreateWithMainLooperPaused() throws Exception {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     ShadowLooper.unPauseMainLooper();
     controller.create();
     assertThat(shadowOf(Looper.getMainLooper()).isPaused()).isFalse();
@@ -115,14 +118,14 @@ public class ServiceControllerTest {
     private Handler handler = new Handler(Looper.getMainLooper());
 
     public Intent boundIntent;
-    
+
     public Intent reboundIntent;
     public Intent startIntent;
     public int startFlags;
     public int startId;
-    
+
     public Intent unboundIntent;
-    
+
     @Override
     public IBinder onBind(Intent intent) {
       boundIntent = intent;
@@ -171,11 +174,7 @@ public class ServiceControllerTest {
     }
 
     private void transcribeWhilePaused(final String event) {
-      runOnUiThread(new Runnable() {
-        @Override public void run() {
-          transcript.add(event);
-        }
-      });
+      runOnUiThread(() -> transcript.add(event));
     }
 
     private void runOnUiThread(Runnable action) {

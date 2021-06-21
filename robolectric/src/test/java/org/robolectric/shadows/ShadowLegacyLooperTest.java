@@ -2,10 +2,8 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
-import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Application;
@@ -24,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -80,11 +77,6 @@ public class ShadowLegacyLooperTest {
     qt.start();
     qt.started.await();
     return qt;
-  }
-
-  @Before
-  public void skipIfDisabled() {
-    assume().that(looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
   }
 
   @Test

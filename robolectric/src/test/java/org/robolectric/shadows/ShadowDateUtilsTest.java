@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
+import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
 import android.os.SystemClock;
@@ -72,17 +72,17 @@ public class ShadowDateUtilsTest {
   public void formatDateTime_withPastYear() {
     String actual =
         DateUtils.formatDateTime(context, 1420099200000L, DateUtils.FORMAT_NUMERIC_DATE);
-      assertThat(actual).isEqualTo("1/1/2015");
+    assertThat(actual).isEqualTo("1/1/2015");
   }
 
   @Test
+  @LooperMode(LEGACY)
   public void isToday_shouldReturnFalseForNotToday() {
-    assume().that(ShadowLooper.looperMode()).isEqualTo(LooperMode.Mode.LEGACY);
     long today = java.util.Calendar.getInstance().getTimeInMillis();
     SystemClock.setCurrentTimeMillis(today);
 
     assertThat(DateUtils.isToday(today)).isTrue();
-    assertThat(DateUtils.isToday(today + (86400 * 1000)  /* 24 hours */)).isFalse();
+    assertThat(DateUtils.isToday(today + (86400 * 1000) /* 24 hours */)).isFalse();
     assertThat(DateUtils.isToday(today + (86400 * 10000) /* 240 hours */)).isFalse();
   }
 
