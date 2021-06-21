@@ -18,38 +18,25 @@ import org.robolectric.RuntimeEnvironment;
 /**
  * Describes the characteristics of a particular logical display.
  *
- * Robolectric internal (for now), do not use.
+ * <p>Robolectric internal (for now), do not use.
  */
 public final class DisplayConfig {
-  /**
-   * The surface flinger layer stack associated with this logical display.
-   */
+  /** The surface flinger layer stack associated with this logical display. */
   public int layerStack;
 
-  /**
-   * Display flags.
-   */
+  /** Display flags. */
   public int flags;
 
-  /**
-   * Display type.
-   */
+  /** Display type. */
   public int type;
 
-  /**
-   * Display address, or null if none.
-   * Interpretation varies by display type.
-   */
+  /** Display address, or null if none. Interpretation varies by display type. */
   // public String address;
 
-  /**
-   * The human-readable name of the display.
-   */
+  /** The human-readable name of the display. */
   public String name;
 
-  /**
-   * Unique identifier for the display. Shouldn't be displayed to the user.
-   */
+  /** Unique identifier for the display. Shouldn't be displayed to the user. */
   public String uniqueId;
 
   /**
@@ -65,155 +52,132 @@ public final class DisplayConfig {
   public int appHeight;
 
   /**
-   * The smallest value of {@link #appWidth} that an application is likely to encounter,
-   * in pixels, excepting cases where the width may be even smaller due to the presence
-   * of a soft keyboard, for example.
+   * The smallest value of {@link #appWidth} that an application is likely to encounter, in pixels,
+   * excepting cases where the width may be even smaller due to the presence of a soft keyboard, for
+   * example.
    */
   public int smallestNominalAppWidth;
 
   /**
-   * The smallest value of {@link #appHeight} that an application is likely to encounter,
-   * in pixels, excepting cases where the height may be even smaller due to the presence
-   * of a soft keyboard, for example.
+   * The smallest value of {@link #appHeight} that an application is likely to encounter, in pixels,
+   * excepting cases where the height may be even smaller due to the presence of a soft keyboard,
+   * for example.
    */
   public int smallestNominalAppHeight;
 
   /**
-   * The largest value of {@link #appWidth} that an application is likely to encounter,
-   * in pixels, excepting cases where the width may be even larger due to system decorations
-   * such as the status bar being hidden, for example.
+   * The largest value of {@link #appWidth} that an application is likely to encounter, in pixels,
+   * excepting cases where the width may be even larger due to system decorations such as the status
+   * bar being hidden, for example.
    */
   public int largestNominalAppWidth;
 
   /**
-   * The largest value of {@link #appHeight} that an application is likely to encounter,
-   * in pixels, excepting cases where the height may be even larger due to system decorations
-   * such as the status bar being hidden, for example.
+   * The largest value of {@link #appHeight} that an application is likely to encounter, in pixels,
+   * excepting cases where the height may be even larger due to system decorations such as the
+   * status bar being hidden, for example.
    */
   public int largestNominalAppHeight;
 
   /**
-   * The logical width of the display, in pixels.
-   * Represents the usable size of the display which may be smaller than the
-   * physical size when the system is emulating a smaller display.
+   * The logical width of the display, in pixels. Represents the usable size of the display which
+   * may be smaller than the physical size when the system is emulating a smaller display.
    */
   public int logicalWidth;
 
   /**
-   * The logical height of the display, in pixels.
-   * Represents the usable size of the display which may be smaller than the
-   * physical size when the system is emulating a smaller display.
+   * The logical height of the display, in pixels. Represents the usable size of the display which
+   * may be smaller than the physical size when the system is emulating a smaller display.
    */
   public int logicalHeight;
 
   /**
-   * The rotation of the display relative to its natural orientation.
-   * May be one of {@link Surface#ROTATION_0},
-   * {@link Surface#ROTATION_90}, {@link Surface#ROTATION_180},
-   * {@link Surface#ROTATION_270}.
-   * <p>
-   * The value of this field is indeterminate if the logical display is presented on
-   * more than one physical display.
-   * </p>
+   * The rotation of the display relative to its natural orientation. May be one of {@link
+   * Surface#ROTATION_0}, {@link Surface#ROTATION_90}, {@link Surface#ROTATION_180}, {@link
+   * Surface#ROTATION_270}.
+   *
+   * <p>The value of this field is indeterminate if the logical display is presented on more than
+   * one physical display.
    */
-  @Surface.Rotation
-  public int rotation;
+  @Surface.Rotation public int rotation;
 
-  /**
-   * The active display mode.
-   */
+  /** The active display mode. */
   public int modeId;
 
-  /**
-   * The default display mode.
-   */
+  /** The default display mode. */
   public int defaultModeId;
 
-  /**
-   * The supported modes of this display.
-   */
+  /** The supported modes of this display. */
   public Display.Mode[] supportedModes = new Display.Mode[0];
 
   /** The active color mode. */
   public int colorMode;
 
   /** The list of supported color modes */
-  public int[] supportedColorModes = { Display.COLOR_MODE_DEFAULT };
+  public int[] supportedColorModes = {Display.COLOR_MODE_DEFAULT};
 
   /** The display's HDR capabilities */
   public Display.HdrCapabilities hdrCapabilities;
 
-  /**
-   * The logical display density which is the basis for density-independent
-   * pixels.
-   */
+  /** The logical display density which is the basis for density-independent pixels. */
   public int logicalDensityDpi;
 
   /**
    * The exact physical pixels per inch of the screen in the X dimension.
-   * <p>
-   * The value of this field is indeterminate if the logical display is presented on
-   * more than one physical display.
-   * </p>
+   *
+   * <p>The value of this field is indeterminate if the logical display is presented on more than
+   * one physical display.
    */
   public float physicalXDpi;
 
   /**
    * The exact physical pixels per inch of the screen in the Y dimension.
-   * <p>
-   * The value of this field is indeterminate if the logical display is presented on
-   * more than one physical display.
-   * </p>
+   *
+   * <p>The value of this field is indeterminate if the logical display is presented on more than
+   * one physical display.
    */
   public float physicalYDpi;
 
   /**
    * This is a positive value indicating the phase offset of the VSYNC events provided by
-   * Choreographer relative to the display refresh.  For example, if Choreographer reports
-   * that the refresh occurred at time N, it actually occurred at (N - appVsyncOffsetNanos).
+   * Choreographer relative to the display refresh. For example, if Choreographer reports that the
+   * refresh occurred at time N, it actually occurred at (N - appVsyncOffsetNanos).
    */
   public long appVsyncOffsetNanos;
 
   /**
-   * This is how far in advance a buffer must be queued for presentation at
-   * a given time.  If you want a buffer to appear on the screen at
-   * time N, you must submit the buffer before (N - bufferDeadlineNanos).
+   * This is how far in advance a buffer must be queued for presentation at a given time. If you
+   * want a buffer to appear on the screen at time N, you must submit the buffer before (N -
+   * bufferDeadlineNanos).
    */
   public long presentationDeadlineNanos;
 
-  /**
-   * The state of the display, such as {@link Display#STATE_ON}.
-   */
+  /** The state of the display, such as {@link Display#STATE_ON}. */
   public int state;
 
   /**
    * The UID of the application that owns this display, or zero if it is owned by the system.
-   * <p>
-   * If the display is private, then only the owner can use it.
-   * </p>
+   *
+   * <p>If the display is private, then only the owner can use it.
    */
   public int ownerUid;
 
   /**
-   * The package name of the application that owns this display, or null if it is
-   * owned by the system.
-   * <p>
-   * If the display is private, then only the owner can use it.
-   * </p>
+   * The package name of the application that owns this display, or null if it is owned by the
+   * system.
+   *
+   * <p>If the display is private, then only the owner can use it.
    */
   public String ownerPackageName;
 
   /**
-   * @hide
-   * Get current remove mode of the display - what actions should be performed with the display's
-   * content when it is removed.
-   *
+   * @hide Get current remove mode of the display - what actions should be performed with the
+   *     display's content when it is removed.
    * @see Display#getRemoveMode()
    */
   public int removeMode = Display.REMOVE_MODE_MOVE_CONTENT_TO_PRIMARY;
 
-  public DisplayConfig() {
-  }
+  public DisplayConfig() {}
 
   public DisplayConfig(DisplayConfig other) {
     copyFrom(other);
@@ -244,8 +208,8 @@ public final class DisplayConfig {
     }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       colorMode = other.colorMode;
-      supportedColorModes = Arrays.copyOf(
-          other.supportedColorModes, other.supportedColorModes.length);
+      supportedColorModes =
+          Arrays.copyOf(other.supportedColorModes, other.supportedColorModes.length);
     }
     if (RuntimeEnvironment.getApiLevel() >= N) {
       hdrCapabilities = other.hdrCapabilities;
@@ -269,7 +233,7 @@ public final class DisplayConfig {
 
   @Override
   public boolean equals(Object o) {
-    return o instanceof DisplayConfig && equals((DisplayConfig)o);
+    return o instanceof DisplayConfig && equals((DisplayConfig) o);
   }
 
   @SuppressWarnings("NonOverridingEquals")
@@ -330,8 +294,8 @@ public final class DisplayConfig {
     defaultModeId = other.defaultModeId;
     supportedModes = Arrays.copyOf(other.supportedModes, other.supportedModes.length);
     colorMode = other.colorMode;
-    supportedColorModes = Arrays.copyOf(
-        other.supportedColorModes, other.supportedColorModes.length);
+    supportedColorModes =
+        Arrays.copyOf(other.supportedColorModes, other.supportedColorModes.length);
     hdrCapabilities = other.hdrCapabilities;
     logicalDensityDpi = other.logicalDensityDpi;
     physicalXDpi = other.physicalXDpi;
@@ -369,8 +333,7 @@ public final class DisplayConfig {
     }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       other.colorMode = colorMode;
-      other.supportedColorModes = Arrays.copyOf(
-          supportedColorModes, supportedColorModes.length);
+      other.supportedColorModes = Arrays.copyOf(supportedColorModes, supportedColorModes.length);
     }
     if (RuntimeEnvironment.getApiLevel() >= N) {
       other.hdrCapabilities = hdrCapabilities;

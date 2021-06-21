@@ -114,9 +114,7 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected int getDisplayId() {
-    return displayId == null
-        ? directlyOn(realObject, Display.class).getDisplayId()
-        : displayId;
+    return displayId == null ? directlyOn(realObject, Display.class).getDisplayId() : displayId;
   }
 
   /**
@@ -173,7 +171,7 @@ public class ShadowDisplay {
   /**
    * Changes the density for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setDensity(float density) {
@@ -183,45 +181,43 @@ public class ShadowDisplay {
   /**
    * Changes the density for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setDensityDpi(int densityDpi) {
     if (isJB()) {
       this.densityDpi = densityDpi;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.logicalDensityDpi = densityDpi);
+      ShadowDisplayManager.changeDisplay(
+          realObject.getDisplayId(), di -> di.logicalDensityDpi = densityDpi);
     }
   }
 
   /**
    * Changes the horizontal DPI for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setXdpi(float xdpi) {
     if (isJB()) {
       this.xdpi = xdpi;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.physicalXDpi = xdpi);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.physicalXDpi = xdpi);
     }
   }
 
   /**
    * Changes the vertical DPI for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setYdpi(float ydpi) {
     if (isJB()) {
       this.ydpi = ydpi;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.physicalYDpi = ydpi);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.physicalYDpi = ydpi);
     }
   }
 
@@ -238,7 +234,7 @@ public class ShadowDisplay {
   /**
    * Changes the ID for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
    * @deprecated This method is deprecated and will be removed in Robolectric 3.7.
@@ -251,37 +247,35 @@ public class ShadowDisplay {
   /**
    * Changes the name for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setName(String name) {
     if (isJB()) {
       this.name = name;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.name = name);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.name = name);
     }
   }
 
   /**
    * Changes the flags for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setFlags(int flags) {
     reflector(_Display_.class, realObject).setFlags(flags);
 
     if (!isJB()) {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.flags = flags);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.flags = flags);
     }
   }
 
   /**
    * Changes the width available to the application for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
    * @param width the new width in pixels
@@ -290,15 +284,14 @@ public class ShadowDisplay {
     if (isJB()) {
       this.width = width;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.appWidth = width);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.appWidth = width);
     }
   }
 
   /**
    * Changes the height available to the application for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
    * @param height new height in pixels
@@ -307,15 +300,14 @@ public class ShadowDisplay {
     if (isJB()) {
       this.height = height;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.appHeight = height);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.appHeight = height);
     }
   }
 
   /**
    * Changes the simulated physical width for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
    * @param width the new width in pixels
@@ -324,15 +316,14 @@ public class ShadowDisplay {
     if (isJB()) {
       this.realWidth = width;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.logicalWidth = width);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.logicalWidth = width);
     }
   }
 
   /**
    * Changes the simulated physical height for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
    * @param height the new height in pixels
@@ -341,15 +332,15 @@ public class ShadowDisplay {
     if (isJB()) {
       this.realHeight = height;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.logicalHeight = height);
+      ShadowDisplayManager.changeDisplay(
+          realObject.getDisplayId(), di -> di.logicalHeight = height);
     }
   }
 
   /**
    * Changes the refresh rate for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    */
   public void setRefreshRate(float refreshRate) {
@@ -359,19 +350,17 @@ public class ShadowDisplay {
   /**
    * Changes the rotation for this display.
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
-   * @param rotation one of {@link Surface#ROTATION_0}, {@link Surface#ROTATION_90},
-   *                 {@link Surface#ROTATION_180}, {@link Surface#ROTATION_270}
-
+   * @param rotation one of {@link Surface#ROTATION_0}, {@link Surface#ROTATION_90}, {@link
+   *     Surface#ROTATION_180}, {@link Surface#ROTATION_270}
    */
   public void setRotation(int rotation) {
     if (isJB()) {
       this.rotation = rotation;
     } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.rotation = rotation);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.rotation = rotation);
     }
   }
 
@@ -388,17 +377,15 @@ public class ShadowDisplay {
   /**
    * Changes the simulated state for this display, such as whether it is on or off
    *
-   * Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
+   * <p>Any registered {@link android.hardware.display.DisplayManager.DisplayListener}s will be
    * notified of the change.
    *
-   * @param state the new state: one of {@link Display#STATE_OFF}, {@link Display#STATE_ON},
-   *        {@link Display#STATE_DOZE}, {@link Display#STATE_DOZE_SUSPEND}, or
-   *        {@link Display#STATE_UNKNOWN}.
+   * @param state the new state: one of {@link Display#STATE_OFF}, {@link Display#STATE_ON}, {@link
+   *     Display#STATE_DOZE}, {@link Display#STATE_DOZE_SUSPEND}, or {@link Display#STATE_UNKNOWN}.
    */
   public void setState(int state) {
     if (!isJB()) {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(),
-          di -> di.state = state);
+      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.state = state);
     }
   }
 
@@ -445,9 +432,10 @@ public class ShadowDisplay {
     xdpi = (float) displayMetrics.densityDpi;
     ydpi = (float) displayMetrics.densityDpi;
     scaledDensity = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-    rotation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-        ? Surface.ROTATION_0
-        : Surface.ROTATION_90;
+    rotation =
+        configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            ? Surface.ROTATION_0
+            : Surface.ROTATION_90;
   }
 
   /** Accessor interface for {@link Display}'s internals. */
