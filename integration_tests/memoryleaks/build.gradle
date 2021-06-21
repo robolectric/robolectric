@@ -30,5 +30,5 @@ dependencies {
     testImplementation project(":robolectric")
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.guava:guava-testlib:29.0-jre"
-    testImplementation "com.android.support:support-v4:28.0.0"
+    testImplementation("androidx.fragment:fragment:1.3.4")
 }
