@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.ResultReceiver;
+import android.view.View;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -113,6 +114,27 @@ public class ShadowInputMethodManagerTest {
   @Test
   public void getEnabledInputMethodListReturnsEmptyListByDefault() {
     assertThat(shadow.getEnabledInputMethodList()).isEmpty();
+  }
+
+  @Test
+  public void sendAppPrivateCommandListenerIsNotified() {
+    View expectedView = new View(ApplicationProvider.getApplicationContext());
+    String expectedAction = "action";
+    Bundle expectedBundle = new Bundle();
+
+    ShadowInputMethodManager.PrivateCommandListener listener =
+        new ShadowInputMethodManager.PrivateCommandListener() {
+          @Override
+          public void onPrivateCommand(View view, String action, Bundle data) {
+            assertThat(view).isEqualTo(expectedView);
+            assertThat(action).isEqualTo(expectedAction);
+            assertThat(data).isEqualTo(expectedBundle);
+          }
+        };
+
+    shadow.setAppPrivateCommandListener(listener);
+
+    shadow.sendAppPrivateCommand(expectedView, expectedAction, expectedBundle);
   }
 
   private static class CapturingResultReceiver extends ResultReceiver {
