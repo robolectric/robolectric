@@ -19,7 +19,11 @@ public class PreciseDataConnectionStateBuilder {
   private ApnSetting apnSetting;
   private int dataFailCause;
 
-  public PreciseDataConnectionStateBuilder() {}
+  private PreciseDataConnectionStateBuilder() {}
+
+  public static PreciseDataConnectionStateBuilder newBuilder() {
+    return new PreciseDataConnectionStateBuilder();
+  }
 
   public PreciseDataConnectionStateBuilder setDataState(int dataState) {
     this.dataState = dataState;
