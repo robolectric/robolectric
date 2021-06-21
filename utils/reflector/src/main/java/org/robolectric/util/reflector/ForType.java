@@ -15,4 +15,6 @@ public @interface ForType {
   Class<?> value() default void.class;
 
   String className() default "";
+
+  boolean direct() default false;
 }
