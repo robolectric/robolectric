@@ -16,6 +16,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Message;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -49,6 +50,18 @@ public class ShadowPausedLooperTest {
   public void createHandlerThread() {
     handlerThread = new HandlerThread(testName.getMethodName());
     handlerThread.start();
+  }
+
+  @Before
+  public void assertMainLooperEmpty() {
+    ShadowPausedMessageQueue queue = Shadow.extract(getMainLooper().getQueue());
+    Message msg = queue.peekNextExecutableMessage();
+    if (msg != null) {
+      System.err.println("Main Looper contains callback " + msg.getCallback());
+      ShadowPausedMessage shadowMsg = Shadow.extract(msg);
+      shadowMsg.createdThrowable.printStackTrace(System.err);
+    }
+    assertThat(msg).isNull();
   }
 
   @After
@@ -404,12 +417,6 @@ public class ShadowPausedLooperTest {
     mainHandler.postDelayed(() -> {}, 100);
     assertThat(shadowMainLooper().getLastScheduledTaskTime().toMillis())
         .isEqualTo(SystemClock.uptimeMillis() + 200);
-  }
-
-  @Before
-  public void assertMainLooperEmpty() {
-    ShadowPausedMessageQueue queue = Shadow.extract(getMainLooper().getQueue());
-    assertThat(queue.isIdle()).isTrue();
   }
 
   @Test

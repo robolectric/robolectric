@@ -24,6 +24,8 @@ public class ShadowPausedMessage extends ShadowMessage {
 
   private @RealObject Message realObject;
 
+  public Throwable createdThrowable = new Throwable();
+
   long getWhen() {
     return reflector(ReflectorMessage.class, realObject).getWhen();
   }

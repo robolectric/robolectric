@@ -295,7 +295,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
             ImmutableMap.of("ro.build.version.sdk", "" + sdk.getApiLevel()),
             roboMethod.resourcesMode.name()));
 
-    Logger.lifecycle(
+    System.err.println(
         roboMethod.getDeclaringClass().getName()
             + "."
             + roboMethod.getMethod().getName()
