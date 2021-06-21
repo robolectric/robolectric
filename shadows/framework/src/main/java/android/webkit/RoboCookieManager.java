@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Nullable;
 
 /**
  * Robolectric implementation of {@link android.webkit.CookieManager}.
@@ -26,8 +27,8 @@ public class RoboCookieManager extends CookieManager {
 
   @Override
   public void setCookie(String url, String value) {
-    List<Cookie> cookies = parseCookies(url, value);
-    for (Cookie cookie : cookies) {
+    Cookie cookie = parseCookie(url, value);
+    if (cookie != null) {
       store.add(cookie);
     }
   }
@@ -191,37 +192,32 @@ public class RoboCookieManager extends CookieManager {
     return store.size() < length;
   }
 
-  private List<Cookie> parseCookies(String url, String cookieHeader) {
-    String[] fields = cookieHeader.split(";", 0);
-
-    List<String> parsedFields = new ArrayList<>();
+  @Nullable
+  private static Cookie parseCookie(String url, String cookieHeader) {
     Date expiration = null;
     boolean isSecure = false;
 
-    for (String field : fields) {
-      field = field.trim();
+    String[] fields = cookieHeader.split(";", 0);
+    String cookieValue = fields[0].trim();
+
+    for (int i = 1; i < fields.length; i++) {
+      String field = fields[i].trim();
       if (field.startsWith(EXPIRATION_FIELD_NAME)) {
         expiration = getExpiration(field);
       } else if (field.toUpperCase().equals(SECURE_ATTR_NAME)) {
         isSecure = true;
-      } else {
-        parsedFields.add(field);
       }
     }
 
     String hostname = getCookieHost(url);
-    List<Cookie> cookies = new ArrayList<>();
-
-    for (String cookie : parsedFields) {
-      if (expiration == null || expiration.compareTo(new Date()) >= 0) {
-        cookies.add(new Cookie(hostname, isSecure, cookie, expiration));
-      }
+    if (expiration == null || expiration.compareTo(new Date()) >= 0) {
+      return new Cookie(hostname, isSecure, cookieValue, expiration);
     }
 
-    return cookies;
+    return null;
   }
 
-  private String getCookieHost(String url) {
+  private static String getCookieHost(String url) {
     if (!(url.startsWith(HTTP) || url.startsWith(HTTPS))) {
       url = HTTP + url;
     }
@@ -233,7 +229,7 @@ public class RoboCookieManager extends CookieManager {
     }
   }
 
-  private Date getExpiration(String field) {
+  private static Date getExpiration(String field) {
     int equalsIndex = field.indexOf("=");
 
     if (equalsIndex < 0) {
