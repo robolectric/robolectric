@@ -9,19 +9,23 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraDevice.StateCallback;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.impl.CameraDeviceImpl;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import com.google.common.base.Preconditions;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -42,6 +46,10 @@ public class ShadowCameraManager {
   private CameraDevice.StateCallback lastCallback;
   @Nullable private Executor lastCallbackExecutor;
   @Nullable private Handler lastCallbackHandler;
+
+  // Keep references to cameras so they can be closed after each test
+  protected static final Set<CameraDeviceImpl> createdCameras =
+      Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
   @Implementation
   @NonNull
@@ -73,14 +81,15 @@ public class ShadowCameraManager {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
     Context context = reflector(ReflectorCameraManager.class, realObject).getContext();
 
-    android.hardware.camera2.impl.CameraDeviceImpl deviceImpl =
-        new android.hardware.camera2.impl.CameraDeviceImpl(
+    CameraDeviceImpl deviceImpl =
+        new CameraDeviceImpl(
             cameraId,
             callback,
             executor,
             characteristics,
             context.getApplicationInfo().targetSdkVersion);
 
+    createdCameras.add(deviceImpl);
     updateCameraCallback(deviceImpl, callback, null, executor);
     executor.execute(() -> callback.onOpened(deviceImpl));
     return deviceImpl;
@@ -93,11 +102,11 @@ public class ShadowCameraManager {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
     Context context = reflector(ReflectorCameraManager.class, realObject).getContext();
 
-    android.hardware.camera2.impl.CameraDeviceImpl deviceImpl;
+    CameraDeviceImpl deviceImpl;
     if (Build.VERSION.SDK_INT == VERSION_CODES.N_MR1) {
       deviceImpl =
           ReflectionHelpers.callConstructor(
-              android.hardware.camera2.impl.CameraDeviceImpl.class,
+              CameraDeviceImpl.class,
               ClassParameter.from(String.class, cameraId),
               ClassParameter.from(CameraDevice.StateCallback.class, callback),
               ClassParameter.from(Handler.class, handler),
@@ -105,14 +114,14 @@ public class ShadowCameraManager {
     } else {
       deviceImpl =
           ReflectionHelpers.callConstructor(
-              android.hardware.camera2.impl.CameraDeviceImpl.class,
+              CameraDeviceImpl.class,
               ClassParameter.from(String.class, cameraId),
               ClassParameter.from(CameraDevice.StateCallback.class, callback),
               ClassParameter.from(Handler.class, handler),
               ClassParameter.from(CameraCharacteristics.class, characteristics),
               ClassParameter.from(int.class, context.getApplicationInfo().targetSdkVersion));
     }
-
+    createdCameras.add(deviceImpl);
     updateCameraCallback(deviceImpl, callback, handler, null);
     handler.post(() -> callback.onOpened(deviceImpl));
     return deviceImpl;
@@ -136,14 +145,15 @@ public class ShadowCameraManager {
       throws CameraAccessException {
     CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
 
-    android.hardware.camera2.impl.CameraDeviceImpl deviceImpl =
+    CameraDeviceImpl deviceImpl =
         ReflectionHelpers.callConstructor(
-            android.hardware.camera2.impl.CameraDeviceImpl.class,
+            CameraDeviceImpl.class,
             ClassParameter.from(String.class, cameraId),
             ClassParameter.from(CameraDevice.StateCallback.class, callback),
             ClassParameter.from(Handler.class, handler),
             ClassParameter.from(CameraCharacteristics.class, characteristics));
 
+    createdCameras.add(deviceImpl);
     updateCameraCallback(deviceImpl, callback, handler, null);
     handler.post(() -> callback.onOpened(deviceImpl));
     return deviceImpl;
@@ -207,6 +217,14 @@ public class ShadowCameraManager {
     lastCallbackExecutor = executor;
   }
 
+  @Resetter
+  public static void reset() {
+    for (CameraDeviceImpl cameraDevice : createdCameras) {
+      cameraDevice.close();
+    }
+    createdCameras.clear();
+  }
+
   /** Accessor interface for {@link CameraManager}'s internals. */
   @ForType(CameraManager.class)
   private interface ReflectorCameraManager {
@@ -220,6 +238,7 @@ public class ShadowCameraManager {
       className = "android.hardware.camera2.CameraManager$CameraManagerGlobal",
       minSdk = VERSION_CODES.LOLLIPOP)
   public static class ShadowCameraManagerGlobal {
+
     /**
      * Cannot create a CameraService connection within Robolectric. Avoid endless reconnect loop.
      */
