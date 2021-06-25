@@ -33,6 +33,11 @@ android {
     aaptOptions {
         noCompress 'txt'
     }
+
+    sourceSets {
+        androidTest.resources.srcDirs += 'src/test/resources'
+        androidTest.java.srcDirs += 'src/test/java'
+    }
 }
 
 dependencies {
@@ -57,6 +62,7 @@ dependencies {
     androidTestImplementation("androidx.test:runner:$axtVersion")
     androidTestImplementation("androidx.test:rules:$axtVersion")
     androidTestImplementation("androidx.test.ext:junit:$axtJunitVersion")
+    androidTestImplementation("androidx.test.ext:truth:$axtVersion")
     androidTestImplementation("com.google.truth:truth:${truthVersion}")
     androidTestImplementation("com.google.guava:guava:27.0.1-jre")
 }
