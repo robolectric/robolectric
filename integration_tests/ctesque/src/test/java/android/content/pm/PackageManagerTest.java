@@ -17,8 +17,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import androidx.test.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
-import androidx.test.runner.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.After;
@@ -79,7 +79,7 @@ public final class PackageManagerTest {
             // For Robolectric, it might be either "org.robolectric.ctesque" (bazel),
             // or "org.robolectric.ctesque.test" (gradle)
             ? context.getPackageName()
-            : "org.robolectric.testapp";
+            : "org.robolectric.ctesque.test";
 
     assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
     assertThat(activities[0].applicationInfo.packageName).isEqualTo(expectedPackage);
