@@ -249,4 +249,17 @@ public class ShadowCameraManagerTest {
     assertThat(cameraManager.getCameraIdList()).hasLength(1);
     assertThat(cameraManager.getCameraIdList()[0]).isEqualTo(CAMERA_ID_1);
   }
+
+  @Test
+  public void resetter_closesCameras() throws Exception {
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    CameraDevice.StateCallback mockCallback = mock(CameraDevice.StateCallback.class);
+    cameraManager.openCamera(CAMERA_ID_0, mockCallback, new Handler());
+    shadowOf(Looper.myLooper()).idle();
+    ArgumentCaptor<CameraDevice> cameraDeviceCaptor = ArgumentCaptor.forClass(CameraDevice.class);
+    verify(mockCallback).onOpened(cameraDeviceCaptor.capture());
+    ShadowCameraManager.reset();
+    shadowOf(Looper.myLooper()).idle();
+    verify(mockCallback).onClosed(cameraDeviceCaptor.getValue());
+  }
 }
