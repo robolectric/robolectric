@@ -8,6 +8,7 @@ import android.media.MediaMetadata;
 import android.media.Rating;
 import android.media.session.MediaController;
 import android.media.session.MediaController.Callback;
+import android.media.session.MediaController.PlaybackInfo;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class ShadowMediaController {
   @RealObject
   private MediaController realMediaController;
   private PlaybackState playbackState;
+  private PlaybackInfo playbackInfo;
   private MediaMetadata mediaMetadata;
   /**
    * A value of RATING_NONE for ratingType indicates that rating media is not supported by the media
@@ -52,6 +54,22 @@ public class ShadowMediaController {
   @Implementation
   protected PlaybackState getPlaybackState() {
     return playbackState;
+  }
+
+  /**
+   * Saves the playbackInfo to control the return value of {@link
+   * MediaController#getPlaybackInfo()}.
+   *
+   * <p>{@link PlaybackInfoBuilder} can be used to create PlaybackInfo instances.
+   */
+  public void setPlaybackInfo(PlaybackInfo playbackInfo) {
+    this.playbackInfo = playbackInfo;
+  }
+
+  /** Gets the playbackInfo set via {@link #setPlaybackInfo}. */
+  @Implementation
+  protected PlaybackInfo getPlaybackInfo() {
+    return playbackInfo;
   }
 
   /**
