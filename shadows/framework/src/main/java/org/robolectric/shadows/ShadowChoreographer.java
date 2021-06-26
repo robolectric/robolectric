@@ -12,6 +12,7 @@ import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -88,10 +89,7 @@ public abstract class ShadowChoreographer {
       reflector = reflector(ChoreographerReflector.class, realObject);
     }
     PerfStatsCollector.getInstance()
-        .measure(
-            "doFrame",
-            () ->
-                reflector.$$robo$$android_view_Choreographer$doFrame(frameTimeNanos, frame));
+        .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame));
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
@@ -101,8 +99,7 @@ public abstract class ShadowChoreographer {
     @Static
     ThreadLocal<Choreographer> getThreadInstance();
 
-    // Using reflector() instead of directlyOn() to decrease overhead as this can be called
-    // thousands of times over the course of a single test
-    void $$robo$$android_view_Choreographer$doFrame(long frameTimeNanos, int frame);
+    @Direct
+    void doFrame(long frameTimeNanos, int frame);
   }
 }
