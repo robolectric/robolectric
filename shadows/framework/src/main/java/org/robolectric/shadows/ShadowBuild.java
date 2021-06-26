@@ -201,7 +201,4 @@ public class ShadowBuild {
     @Static
     void __staticInitializer__();
   }
-
-  /** @deprecated use Build.VERSION_CODES.Q */
-  @Deprecated public static final int Q = Build.VERSION_CODES.Q;
 }
