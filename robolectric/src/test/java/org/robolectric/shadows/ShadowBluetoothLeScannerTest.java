@@ -103,80 +103,60 @@ public class ShadowBluetoothLeScannerTest {
   @Config(minSdk = O)
   public void startScanning_forPendingIntent() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, pendingIntent);
-    assertThat(shadowOf(bluetoothLeScanner).getPendingIntents()).containsExactly(pendingIntent);
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).pendingIntent())
+        .isEqualTo(pendingIntent);
   }
 
   @Test
   @Config(minSdk = O)
   public void startScanning_forPendingIntent_withNullParameters() {
     bluetoothLeScanner.startScan(null, null, pendingIntent);
-    assertThat(shadowOf(bluetoothLeScanner).getPendingIntents()).containsExactly(pendingIntent);
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).pendingIntent())
+        .isEqualTo(pendingIntent);
   }
 
   @Test
   @Config(minSdk = O)
   public void stopScanning_forPendingIntent() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, pendingIntent);
-    assertThat(shadowOf(bluetoothLeScanner).getPendingIntents()).containsExactly(pendingIntent);
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).pendingIntent())
+        .isEqualTo(pendingIntent);
     bluetoothLeScanner.stopScan(pendingIntent);
-    assertThat(shadowOf(bluetoothLeScanner).getPendingIntents()).isEmpty();
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans()).isEmpty();
   }
 
   @Test
   public void getScanFilters_forScanCallback_isPresent() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, scanCallback);
-    assertThat(
-            shadowOf(bluetoothLeScanner)
-                .getScanFilters(scanCallback)
-                .orElse(Collections.emptyList()))
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).scanFilters())
         .containsExactlyElementsIn(scanFilters);
   }
 
   @Test
-  public void getScanFilters_forScanCallback_isAbsent() {
-    assertThat(shadowOf(bluetoothLeScanner).getScanFilters(scanCallback).isPresent()).isFalse();
+  public void getActiveScans_noScans_isEmpty() {
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans()).isEmpty();
   }
 
   @Test
   @Config(minSdk = O)
   public void getScanFilters_forPendingIntent_isPresent() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, pendingIntent);
-    assertThat(
-            shadowOf(bluetoothLeScanner)
-                .getScanFilters(pendingIntent)
-                .orElse(Collections.emptyList()))
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).scanFilters())
         .containsExactlyElementsIn(scanFilters);
-  }
-
-  @Test
-  @Config(minSdk = O)
-  public void getScanFilters_forPendingIntent_isAbsent() {
-    assertThat(shadowOf(bluetoothLeScanner).getScanFilters(pendingIntent).isPresent()).isFalse();
   }
 
   @Test
   public void getScanSettings_forScanCallback_isPresent() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, scanCallback);
-    assertThat(shadowOf(bluetoothLeScanner).getScanSettings(scanCallback).orElse(null))
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).scanSettings())
         .isEqualTo(scanSettings);
-  }
-
-  @Test
-  public void getScanSettings_forScanCallback_isAbsent() {
-    assertThat(shadowOf(bluetoothLeScanner).getScanSettings(scanCallback).isPresent()).isFalse();
   }
 
   @Test
   @Config(minSdk = O)
   public void getScanSettings_forPendingIntent_isPresent() {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, pendingIntent);
-    assertThat(shadowOf(bluetoothLeScanner).getScanSettings(pendingIntent).orElse(null))
+    assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).scanSettings())
         .isEqualTo(scanSettings);
-  }
-
-  @Test
-  @Config(minSdk = O)
-  public void getScanSettings_forPendingIntent_isAbsent() {
-    assertThat(shadowOf(bluetoothLeScanner).getScanSettings(pendingIntent).isPresent()).isFalse();
   }
 }
