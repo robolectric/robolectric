@@ -45,6 +45,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -261,7 +262,6 @@ public class ShadowContextImpl {
         initialExtras);
   }
 
-
   @Implementation
   protected void sendStickyBroadcast(Intent intent) {
     getShadowInstrumentation().sendStickyBroadcast(intent, realContextImpl);
@@ -349,7 +349,8 @@ public class ShadowContextImpl {
   }
 
   /**
-   * Behaves as {@link #startActivity}. The user parameter is ignored.
+   * Behaves as {@link android.app.ContextImpl#startActivity(Intent, Bundle)}. The user parameter is
+   * ignored.
    */
   @Implementation(minSdk = LOLLIPOP)
   protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
@@ -360,8 +361,7 @@ public class ShadowContextImpl {
         ShadowContextImpl.CLASS_NAME,
         "startActivity",
         ClassParameter.from(Intent.class, intent),
-        ClassParameter.from(Bundle.class, options)
-    );
+        ClassParameter.from(Bundle.class, options));
   }
 
   /* Set the user id returned by {@link #getUserId()}. */
@@ -439,7 +439,10 @@ public class ShadowContextImpl {
       }
       return f;
     } else {
-      return directlyOn(realContextImpl, ShadowContextImpl.CLASS_NAME, "getDatabasePath",
+      return directlyOn(
+          realContextImpl,
+          ShadowContextImpl.CLASS_NAME,
+          "getDatabasePath",
           ClassParameter.from(String.class, name));
     }
   }
@@ -469,5 +472,8 @@ public class ShadowContextImpl {
     Context createAppContext(ActivityThread activityThread, LoadedApk loadedApk);
 
     void setOuterContext(Context context);
+
+    @Accessor("mClassLoader")
+    void setClassLoader(ClassLoader classLoader);
   }
 }

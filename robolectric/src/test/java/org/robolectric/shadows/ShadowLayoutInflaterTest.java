@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.view.Display.DEFAULT_DISPLAY;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertEquals;
@@ -16,12 +17,15 @@ import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.display.DisplayManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.WindowManager.LayoutParams;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -29,6 +33,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
@@ -454,6 +459,21 @@ public class ShadowLayoutInflaterTest {
     assertThat(view).isInstanceOf(RelativeLayout.class);
     ListView listView = view.findViewById(R.id.list_view_with_enum_scrollbar);
     assertThat(listView).isInstanceOf(ListView.class);
+  }
+
+  @Test
+  @Config(sdk = Build.VERSION_CODES.R)
+  public void layoutInflater_fromWindowContext() {
+    Context windowContext =
+        context
+            .createDisplayContext(
+                context.getSystemService(DisplayManager.class).getDisplay(DEFAULT_DISPLAY))
+            .createWindowContext(LayoutParams.TYPE_APPLICATION_OVERLAY, /* options= */ null);
+
+    ViewGroup viewGroup =
+        (ViewGroup) LayoutInflater.from(windowContext).inflate(layout.progress_bar, null);
+    ProgressBar progressBar = viewGroup.findViewById(R.id.progress_bar);
+    assertThat(progressBar).isInstanceOf(ProgressBar.class);
   }
 
   /////////////////////////

@@ -323,6 +323,10 @@ public class AndroidTestEnvironment implements TestEnvironment {
       ShadowApplication shadowApplication = Shadow.extract(application);
       shadowApplication.callAttach(contextImpl);
       reflector(_ContextImpl_.class, contextImpl).setOuterContext(application);
+      if (apiLevel >= VERSION_CODES.O) {
+        reflector(_ContextImpl_.class, contextImpl)
+            .setClassLoader(this.getClass().getClassLoader());
+      }
 
       Resources appResources = application.getResources();
       _loadedApk_.setResources(appResources);
@@ -548,7 +552,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     androidInstrumentation.onCreate(new Bundle());
     return androidInstrumentation;
   }
-
 
   /** Create a file system safe directory path name for the current test. */
   private String createTestDataDirRootPath(Method method) {
