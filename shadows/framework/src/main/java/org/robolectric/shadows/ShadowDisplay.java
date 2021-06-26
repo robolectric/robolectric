@@ -414,6 +414,20 @@ public class ShadowDisplay {
         });
   }
 
+  /**
+   * Changes the display cutout for this display.
+   *
+   * @throws UnsupportedOperationException if the method is called below Android version Q.
+   */
+  public void setDisplayCutout(Object displayCutout) {
+    if (Build.VERSION.SDK_INT < VERSION_CODES.Q) {
+      throw new UnsupportedOperationException("Display cutouts are not supported below Android Q");
+    }
+
+    ShadowDisplayManager.changeDisplay(
+        realObject.getDisplayId(), displayConfig -> displayConfig.displayCutout = displayCutout);
+  }
+
   private boolean isJB() {
     return RuntimeEnvironment.getApiLevel() == JELLY_BEAN;
   }

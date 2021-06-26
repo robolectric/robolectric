@@ -4,16 +4,19 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Display.HdrCapabilities;
+import android.view.DisplayCutout;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -203,5 +206,14 @@ public class ShadowDisplayTest {
         /* maxAverageLuminance= */ 100f,
         /* minLuminance= */ 100f,
         hdrCapabilities);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setDisplayCutout_returnsCutout() {
+    DisplayCutout cutout = new DisplayCutout(Insets.of(0, 100, 0, 100), null, null, null, null);
+    shadow.setDisplayCutout(cutout);
+
+    assertEquals(cutout, display.getCutout());
   }
 }

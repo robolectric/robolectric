@@ -7,8 +7,10 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.view.Display;
+import android.view.DisplayCutout;
 import android.view.DisplayInfo;
 import android.view.Surface;
 import java.util.Arrays;
@@ -177,6 +179,9 @@ public final class DisplayConfig {
    */
   public int removeMode = Display.REMOVE_MODE_MOVE_CONTENT_TO_PRIMARY;
 
+  /** The area of the display that is not functional for displaying content */
+  public Object displayCutout;
+
   public DisplayConfig() {}
 
   public DisplayConfig(DisplayConfig other) {
@@ -229,6 +234,9 @@ public final class DisplayConfig {
     if (RuntimeEnvironment.getApiLevel() >= O) {
       removeMode = other.removeMode;
     }
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      displayCutout = other.displayCutout;
+    }
   }
 
   @Override
@@ -266,7 +274,8 @@ public final class DisplayConfig {
         && state == other.state
         && ownerUid == other.ownerUid
         && Objects.equals(ownerPackageName, other.ownerPackageName)
-        && removeMode == other.removeMode;
+        && removeMode == other.removeMode
+        && Objects.equals(displayCutout, other.displayCutout);
   }
 
   @Override
@@ -306,6 +315,7 @@ public final class DisplayConfig {
     ownerUid = other.ownerUid;
     ownerPackageName = other.ownerPackageName;
     removeMode = other.removeMode;
+    displayCutout = other.displayCutout;
   }
 
   public void copyTo(DisplayInfo other) {
@@ -352,6 +362,9 @@ public final class DisplayConfig {
     }
     if (RuntimeEnvironment.getApiLevel() >= O) {
       other.removeMode = removeMode;
+    }
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      other.displayCutout = (DisplayCutout) displayCutout;
     }
   }
 
@@ -419,6 +432,8 @@ public final class DisplayConfig {
     sb.append(flagsToString(flags));
     sb.append(", removeMode ");
     sb.append(removeMode);
+    sb.append(", displayCutout ");
+    sb.append(displayCutout);
     sb.append("}");
     return sb.toString();
   }
