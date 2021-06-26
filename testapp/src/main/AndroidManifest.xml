@@ -15,5 +15,11 @@
       </activity>
       <activity android:name=".DisabledTestActivity" android:enabled="false" android:exported="true"/>
       <service android:name=".TestService" android:exported="true"/>
+
+      <activity
+          android:name=".ActivityWithAnotherTheme"
+          android:theme="@style/Theme.AnotherTheme" android:exported="true"/>
+      <activity android:name=".ActivityWithoutTheme" android:exported="true"/>
+
     </application>
 </manifest>

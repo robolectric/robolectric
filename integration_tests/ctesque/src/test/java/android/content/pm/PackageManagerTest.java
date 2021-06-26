@@ -70,7 +70,7 @@ public final class PackageManagerTest {
             context.getPackageName(), MATCH_DISABLED_COMPONENTS | GET_ACTIVITIES | GET_SERVICES);
     ActivityInfo[] activities = filterExtraneous(info.activities);
 
-    assertThat(activities).hasLength(2);
+    assertThat(activities).hasLength(4);
     assertThat(info.services).hasLength(1);
 
     // todo: these should be reconciled:
@@ -105,7 +105,7 @@ public final class PackageManagerTest {
     PackageInfo info = pm.getPackageInfo(context.getPackageName(), GET_ACTIVITIES);
     ActivityInfo[] activities = filterExtraneous(info.activities);
 
-    assertThat(activities).hasLength(1);
+    assertThat(activities).hasLength(3);
     assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
   }
 
@@ -231,7 +231,7 @@ public final class PackageManagerTest {
 
     // Seems that although disabled app makes everything disabled it is still returned with its
     // manifest state below API 23
-    assertThat(activities).hasLength(1);
+    assertThat(activities).hasLength(3);
     assertThat(packageInfo.services).hasLength(1);
 
     assertThat(activities[0].enabled).isTrue();
@@ -272,7 +272,7 @@ public final class PackageManagerTest {
 
     assertThat(packageInfo.applicationInfo.enabled).isFalse();
     assertThat(packageInfo.packageName).isEqualTo(context.getPackageName());
-    assertThat(activities).hasLength(2);
+    assertThat(activities).hasLength(4);
     assertThat(packageInfo.services).hasLength(1);
     assertThat(activities[0].enabled).isTrue(); // default enabled flag
   }

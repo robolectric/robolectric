@@ -1,9 +1,9 @@
-package android.app;
+package org.robolectric.testapp;
 
+import android.app.Activity;
 import android.os.Bundle;
-import org.robolectric.annotation.internal.DoNotInstrument;
 
-@DoNotInstrument
+/** A test activity that can customize the theme. */
 public class ActivityWithAnotherTheme extends Activity {
 
   public static Integer setThemeBeforeContentView = null;
@@ -16,6 +16,6 @@ public class ActivityWithAnotherTheme extends Activity {
       setTheme(setThemeBeforeContentView);
     }
 
-    setContentView(org.robolectric.testapp.R.layout.styles_button_layout);
+    setContentView(R.layout.styles_button_layout);
   }
 }

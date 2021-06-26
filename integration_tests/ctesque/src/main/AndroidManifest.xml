@@ -7,10 +7,5 @@
 
   <uses-sdk android:targetSdkVersion="27"/>
 
-  <application android:theme="@style/Theme.Robolectric">
-    <activity
-        android:name="android.app.ActivityWithAnotherTheme"
-        android:theme="@style/Theme.AnotherTheme"/>
-    <activity android:name="android.app.ActivityWithoutTheme"/>
-  </application>
+  <application />
 </manifest>
