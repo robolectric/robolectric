@@ -121,7 +121,8 @@ public final class PackageRollbackInfoBuilder {
     checkNotNull(packageRolledBackTo, "Mandatory field 'packageRolledBackTo' missing.");
     checkState(RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q);
 
-    if (RuntimeEnvironment.getApiLevel() == VERSION_CODES.Q) {
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    if (apiLevel == VERSION_CODES.Q) {
       return ReflectionHelpers.callConstructor(
           PackageRollbackInfo.class,
           ReflectionHelpers.ClassParameter.from(VersionedPackage.class, packageRolledBackFrom),
@@ -131,8 +132,7 @@ public final class PackageRollbackInfoBuilder {
           ReflectionHelpers.ClassParameter.from(Boolean.TYPE, isApex),
           ReflectionHelpers.ClassParameter.from(IntArray.class, installedUsers),
           ReflectionHelpers.ClassParameter.from(SparseLongArray.class, ceSnapshotInodes));
-    } else {
-      try {
+    } else if (apiLevel == VERSION_CODES.R) {
         // We only have access to constructor on R. For all other SDKs, we will need
         // ReflectionHelper.
         return new PackageRollbackInfo(
@@ -144,11 +144,7 @@ public final class PackageRollbackInfoBuilder {
             isApkInApex,
             snapshottedUsers,
             ceSnapshotInodes);
-      } catch (NoSuchMethodError e) {
-        // Ignore.
-      }
-
-      // Some non-finalized S builds have a different constructor but is still consider Build.R.
+    } else if (apiLevel > VERSION_CODES.R) {
       return ReflectionHelpers.callConstructor(
           PackageRollbackInfo.class,
           ReflectionHelpers.ClassParameter.from(VersionedPackage.class, packageRolledBackFrom),
@@ -158,6 +154,8 @@ public final class PackageRollbackInfoBuilder {
           ReflectionHelpers.ClassParameter.from(Boolean.TYPE, isApex),
           ReflectionHelpers.ClassParameter.from(Boolean.TYPE, isApkInApex),
           ReflectionHelpers.ClassParameter.from(List.class, getSnapshottedUsersList()));
+    } else {
+      throw new UnsupportedOperationException("PackageRollbacakInfoBuilder requires SDK >= Q");
     }
   }
 }
