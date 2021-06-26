@@ -5,6 +5,7 @@ import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodHandles.foldArguments;
 import static java.lang.invoke.MethodHandles.identity;
 import static java.lang.invoke.MethodType.methodType;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import com.google.auto.service.AutoService;
 import java.lang.invoke.MethodHandle;
@@ -24,6 +25,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
 import org.robolectric.util.PerfStatsCollector;
@@ -82,6 +84,7 @@ public class ShadowWrangler implements ClassHandler {
   private final ShadowMap shadowMap;
   private final Interceptors interceptors;
   private final ShadowMatcher shadowMatcher;
+  private final MethodHandle reflectorHandle;
   private final Map<String, Plan> planCache =
       Collections.synchronizedMap(new LinkedHashMap<String, Plan>() {
         @Override
@@ -110,6 +113,18 @@ public class ShadowWrangler implements ClassHandler {
     this.shadowMap = shadowMap;
     this.shadowMatcher = shadowMatcher;
     this.interceptors = interceptors;
+    try {
+      this.reflectorHandle =
+          LOOKUP
+              .findVirtual(
+                  ShadowWrangler.class,
+                  "injectReflectorObjectOn",
+                  methodType(void.class, Object.class, Object.class))
+              .bindTo(this);
+    } catch (IllegalAccessException | NoSuchMethodException e) {
+      throw new RuntimeException(
+          "Could not instantiate MethodHandle for ReflectorObject injection.", e);
+    }
   }
 
   public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
@@ -392,6 +407,7 @@ public class ShadowWrangler implements ClassHandler {
     Class<?> theClass = instance.getClass();
     Object shadow = createShadowFor(theClass);
     injectRealObjectOn(shadow, instance);
+    injectReflectorObjectOn(shadow, instance);
     return shadow;
   }
 
@@ -431,6 +447,15 @@ public class ShadowWrangler implements ClassHandler {
         MethodType setterType = mh.type().changeReturnType(void.class);
         mh = foldArguments(mh, setter.asType(setterType));
       }
+
+      MethodHandle classHandle =
+          reflectorHandle.asType(
+              reflectorHandle
+                  .type()
+                  .changeParameterType(0, shadowClass)
+                  .changeParameterType(1, theClass));
+      mh = foldArguments(mh, classHandle);
+
       mh = foldArguments(mh, LOOKUP.unreflectConstructor(shadowMetadata.constructor));  // (shadow, instance)
 
       return mh; // (instance)
@@ -444,6 +469,13 @@ public class ShadowWrangler implements ClassHandler {
     ShadowMetadata shadowMetadata = getShadowMetadata(shadow.getClass());
     for (Field realObjectField : shadowMetadata.realObjectFields) {
       setField(shadow, instance, realObjectField);
+    }
+  }
+
+  private void injectReflectorObjectOn(Object shadow, Object instance) {
+    ShadowMetadata shadowMetadata = getShadowMetadata(shadow.getClass());
+    for (Field reflectorObjectField : shadowMetadata.reflectorObjectFields) {
+      setField(shadow, reflector(reflectorObjectField.getType(), instance), reflectorObjectField);
     }
   }
 
@@ -518,6 +550,7 @@ public class ShadowWrangler implements ClassHandler {
   private static class ShadowMetadata {
     final Constructor<?> constructor;
     final List<Field> realObjectFields = new ArrayList<>();
+    final List<Field> reflectorObjectFields = new ArrayList<>();
 
     public ShadowMetadata(Class<?> shadowClass) {
       try {
@@ -536,6 +569,15 @@ public class ShadowWrangler implements ClassHandler {
             }
             field.setAccessible(true);
             realObjectFields.add(field);
+          }
+          if (field.isAnnotationPresent(ReflectorObject.class)) {
+            if (Modifier.isStatic(field.getModifiers())) {
+              String message = "@ReflectorObject must be on a non-static field, " + shadowClass;
+              System.err.println(message);
+              throw new IllegalArgumentException(message);
+            }
+            field.setAccessible(true);
+            reflectorObjectFields.add(field);
           }
         }
         shadowClass = shadowClass.getSuperclass();
