@@ -41,9 +41,9 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
-import androidx.test.runner.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,49 +68,49 @@ public class ResourcesTest {
   private Context context;
 
   @Before
-  public void setup() throws Exception {
-    context = InstrumentationRegistry.getTargetContext();
+  public void setup() {
+    context = ApplicationProvider.getApplicationContext();
     resources = context.getResources();
   }
 
   @Test
-  public void getString() throws Exception {
+  public void getString() {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Hello");
     assertThat(resources.getString(R.string.say_it_with_item)).isEqualTo("flowers");
   }
 
   @Test
-  public void getString_withReference() throws Exception {
+  public void getString_withReference() {
     assertThat(resources.getString(R.string.greeting)).isEqualTo("Howdy");
   }
 
   @Test
-  public void getString_withInterpolation() throws Exception {
+  public void getString_withInterpolation() {
     assertThat(resources.getString(R.string.interpolate, "value")).isEqualTo("Here is a value!");
   }
 
   @Test
-  public void getString_withHtml() throws Exception {
+  public void getString_withHtml() {
     assertThat(resources.getString(R.string.some_html, "value")).isEqualTo("Hello, world");
   }
 
   @Test
-  public void getString_withSurroundingQuotes() throws Exception {
+  public void getString_withSurroundingQuotes() {
     assertThat(resources.getString(R.string.surrounding_quotes, "value")).isEqualTo("This'll work");
   }
 
   @Test
-  public void getStringWithEscapedApostrophes() throws Exception {
+  public void getStringWithEscapedApostrophes() {
     assertThat(resources.getString(R.string.escaped_apostrophe)).isEqualTo("This'll also work");
   }
 
   @Test
-  public void getStringWithEscapedQuotes() throws Exception {
+  public void getStringWithEscapedQuotes() {
     assertThat(resources.getString(R.string.escaped_quotes)).isEqualTo("Click \"OK\"");
   }
 
   @Test
-  public void getString_StringWithInlinedQuotesAreStripped() throws Exception {
+  public void getString_StringWithInlinedQuotesAreStripped() {
     assertThat(resources.getString(R.string.bad_example)).isEqualTo("This is a bad string.");
   }
 
@@ -142,7 +142,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getText_withHtml() throws Exception {
+  public void getText_withHtml() {
     assertThat(resources.getText(R.string.some_html, "value").toString()).isEqualTo("Hello, world");
     // TODO: Raw resources have lost the tags early, but the following call should return a
     // SpannedString
@@ -150,22 +150,28 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getText_plainString() throws Exception {
+  public void getText_plainString() {
     assertThat(resources.getText(R.string.hello, "value").toString()).isEqualTo("Hello");
     assertThat(resources.getText(R.string.hello)).isInstanceOf(String.class);
   }
 
   @Test
-  public void getText_withLayoutId() throws Exception {
-    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a String resource type
-    // but the actual platform behaviour is to return a string that equals "res/layout/layout_file.xml" so the current
-    // Robolectric behaviour deviates from the platform as we append the full file path from the current working directory.
-    assertThat(resources.getText(R.layout.different_screen_sizes, "value").toString())
-        .containsMatch("layout/different_screen_sizes.xml$");
+  public void getText_withLayoutId() {
+    // This isn't _really_ supported by the platform (gives a lint warning that getText() expects a
+    // String resource type
+    // but the actual platform behaviour is to return a string that equals
+    // "res/layout/layout_file.xml" so the current
+    // Robolectric behaviour deviates from the platform as we append the full file path from the
+    // current working directory.
+    String textString = resources.getText(R.layout.different_screen_sizes, "value").toString();
+    assertThat(textString).containsMatch("/different_screen_sizes.xml$");
+    // If we run tests on devices with different config, the resource system will select different
+    // layout directories.
+    assertThat(textString).containsMatch("^res/layout");
   }
 
   @Test
-  public void getStringArray() throws Exception {
+  public void getStringArray() {
     assertThat(resources.getStringArray(R.array.items)).isEqualTo(new String[]{"foo", "bar"});
     assertThat(resources.getStringArray(R.array.greetings))
         .isEqualTo(new String[] {"hola", "Hello"});
@@ -181,7 +187,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void obtainTypedArray() throws Exception {
+  public void obtainTypedArray() {
     final TypedArray valuesTypedArray = resources.obtainTypedArray(R.array.typed_array_values);
     assertThat(valuesTypedArray.getString(0)).isEqualTo("abcdefg");
     assertThat(valuesTypedArray.getInt(1, 0)).isEqualTo(3875);
@@ -231,7 +237,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getInt() throws Exception {
+  public void getInt() {
     assertThat(resources.getInteger(R.integer.meaning_of_life)).isEqualTo(42);
     assertThat(resources.getInteger(R.integer.test_integer1)).isEqualTo(2000);
     assertThat(resources.getInteger(R.integer.test_integer2)).isEqualTo(9);
@@ -241,12 +247,12 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getInt_withReference() throws Exception {
+  public void getInt_withReference() {
     assertThat(resources.getInteger(R.integer.reference_to_meaning_of_life)).isEqualTo(42);
   }
 
   @Test
-  public void getIntArray() throws Exception {
+  public void getIntArray() {
     assertThat(resources.getIntArray(R.array.empty_int_array)).isEqualTo(new int[]{});
     assertThat(resources.getIntArray(R.array.zero_to_four_int_array)).isEqualTo(new int[]{0, 1, 2, 3, 4});
     assertThat(resources.getIntArray(R.array.with_references_int_array)).isEqualTo(new int[]{0, 2000, 1});
@@ -254,18 +260,18 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getBoolean() throws Exception {
+  public void getBoolean() {
     assertThat(resources.getBoolean(R.bool.false_bool_value)).isEqualTo(false);
     assertThat(resources.getBoolean(R.bool.true_as_item)).isEqualTo(true);
   }
 
   @Test
-  public void getBoolean_withReference() throws Exception {
+  public void getBoolean_withReference() {
     assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
   }
 
   @Test
-  public void getDimension() throws Exception {
+  public void getDimension() {
     assertThat(resources.getDimension(R.dimen.test_dip_dimen))
         .isEqualTo(applyDimension(COMPLEX_UNIT_DIP, 20, resources.getDisplayMetrics()));
     assertThat(resources.getDimension(R.dimen.test_dp_dimen))
@@ -283,7 +289,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getDimensionPixelSize() throws Exception {
+  public void getDimensionPixelSize() {
     assertThat(resources.getDimensionPixelSize(R.dimen.test_dip_dimen))
         .isIn(onePixelOf(convertDimension(COMPLEX_UNIT_DIP, 20)));
     assertThat(resources.getDimensionPixelSize(R.dimen.test_dp_dimen))
@@ -450,7 +456,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void testGetIdentifier() throws Exception {
+  public void testGetIdentifier() {
 
     final String resourceType = "string";
     final String packageName = context.getPackageName();
@@ -488,17 +494,22 @@ public class ResourcesTest {
   }
 
   /**
-   * Public framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml
-   * Private framework symbols are defined here: https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/symbols.xml
+   * Public framework symbols are defined here:
+   * https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml
+   * Private framework symbols are defined here:
+   * https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/symbols.xml
    *
-   * These generate android.R and com.android.internal.R respectively, when Framework Java code does not need to reference a framework resource
-   * it will not have an R value generated. Robolectric is then missing an identifier for this resource so we must generate a placeholder ourselves.
+   * <p>These generate android.R and com.android.internal.R respectively, when Framework Java code
+   * does not need to reference a framework resource it will not have an R value generated.
+   * Robolectric is then missing an identifier for this resource so we must generate a placeholder
+   * ourselves.
    */
   @Test
-  // @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was added in API 21
+  // @Config(sdk = Build.VERSION_CODES.LOLLIPOP) // android:color/secondary_text_material_dark was
+  // added in API 21
   @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Config(minSdk = LOLLIPOP)
-  public void shouldGenerateIdsForResourcesThatAreMissingRValues() throws Exception {
+  public void shouldGenerateIdsForResourcesThatAreMissingRValues() {
     int identifierMissingFromRFile =
         resources.getIdentifier("secondary_text_material_dark", "color", "android");
 
@@ -512,29 +523,29 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getSystemShouldReturnSystemResources() throws Exception {
+  public void getSystemShouldReturnSystemResources() {
     assertThat(Resources.getSystem()).isInstanceOf(Resources.class);
   }
 
   @Test
-  public void multipleCallsToGetSystemShouldReturnSameInstance() throws Exception {
+  public void multipleCallsToGetSystemShouldReturnSameInstance() {
     assertThat(Resources.getSystem()).isEqualTo(Resources.getSystem());
   }
 
   @Test
-  public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
+  public void applicationResourcesShouldHaveBothSystemAndLocalValues() {
     assertThat(context.getResources().getString(android.R.string.copy)).isEqualTo("Copy");
     assertThat(context.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
   }
 
   @Test
-  public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
+  public void systemResourcesShouldReturnCorrectSystemId() {
     assertThat(Resources.getSystem().getIdentifier("copy", "string", "android"))
         .isEqualTo(android.R.string.copy);
   }
 
   @Test
-  public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
+  public void systemResourcesShouldReturnZeroForLocalId() {
     assertThat(Resources.getSystem().getIdentifier("copy", "string", context.getPackageName()))
         .isEqualTo(0);
   }
@@ -587,14 +598,14 @@ public class ResourcesTest {
   }
 
   @Test
-  public void openRawResource_shouldLoadRawResources() throws Exception {
+  public void openRawResource_shouldLoadRawResources() {
     InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
     assertThat(resourceStream).isNotNull();
     // assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
   }
 
   @Test
-  public void openRawResource_shouldLoadDrawables() throws Exception {
+  public void openRawResource_shouldLoadDrawables() {
     InputStream resourceStream = resources.openRawResource(R.drawable.an_image);
     Bitmap bitmap = BitmapFactory.decodeStream(resourceStream);
     assertThat(bitmap.getHeight()).isEqualTo(53);
@@ -602,7 +613,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void openRawResource_withNonFile_throwsNotFoundException() throws Exception {
+  public void openRawResource_withNonFile_throwsNotFoundException() {
     try {
       resources.openRawResource(R.string.hello);
       fail("should throw");
@@ -627,12 +638,12 @@ public class ResourcesTest {
 
   @Test
   @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
+  public void openRawResourceFd_returnsNull_todo_FIX() {
     assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
   }
 
   @Test
-  public void openRawResourceFd_withNonFile_throwsNotFoundException() throws Exception {
+  public void openRawResourceFd_withNonFile_throwsNotFoundException() {
     try {
       resources.openRawResourceFd(R.string.hello);
       fail("should throw");
@@ -649,7 +660,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getXml_withNonFile_throwsNotFoundException() throws Exception {
+  public void getXml_withNonFile_throwsNotFoundException() {
     try {
       resources.getXml(R.string.hello);
       fail("should throw");
@@ -855,7 +866,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getValueShouldClearTypedArrayBetweenCalls() throws Exception {
+  public void getValueShouldClearTypedArrayBetweenCalls() {
     TypedValue outValue = new TypedValue();
 
     resources.getValue(R.string.hello, outValue, true);
@@ -910,7 +921,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void whenMissingXml_throwNotFoundException() throws Exception {
+  public void whenMissingXml_throwNotFoundException() {
     try {
       resources.getXml(0x3038);
       fail();
@@ -920,27 +931,27 @@ public class ResourcesTest {
   }
 
   @Test
-  public void stringWithSpaces() throws Exception {
+  public void stringWithSpaces() {
     // this differs from actual Android behavior, which collapses whitespace as "Up to 25 USD"
     assertThat(resources.getString(R.string.string_with_spaces, "25", "USD"))
         .isEqualTo("Up to 25 USD");
   }
 
   @Test
-  public void internalWhiteSpaceShouldBeCollapsed() throws Exception {
+  public void internalWhiteSpaceShouldBeCollapsed() {
     assertThat(resources.getString(R.string.internal_whitespace_blocks))
         .isEqualTo("Whitespace in" + " the middle");
     assertThat(resources.getString(R.string.internal_newlines)).isEqualTo("Some Newlines");
   }
 
   @Test
-  public void fontTagWithAttributesShouldBeRead() throws Exception {
+  public void fontTagWithAttributesShouldBeRead() {
     assertThat(resources.getString(R.string.font_tag_with_attribute))
         .isEqualTo("This string has a font tag");
   }
 
   @Test
-  public void linkTagWithAttributesShouldBeRead() throws Exception {
+  public void linkTagWithAttributesShouldBeRead() {
     assertThat(resources.getString(R.string.link_tag_with_attribute))
         .isEqualTo("This string has a link tag");
   }
@@ -972,14 +983,14 @@ public class ResourcesTest {
   }
 
   @Test
-  public void forUntouchedThemes_copyTheme_shouldCopyNothing() throws Exception {
+  public void forUntouchedThemes_copyTheme_shouldCopyNothing() {
     Resources.Theme theme1 = resources.newTheme();
     Resources.Theme theme2 = resources.newTheme();
     theme2.setTo(theme1);
   }
 
   @Test
-  public void getResourceIdentifier_shouldReturnValueFromRClass() throws Exception {
+  public void getResourceIdentifier_shouldReturnValueFromRClass() {
     assertThat(
         resources.getIdentifier("id_declared_in_item_tag", "id", context.getPackageName()))
         .isEqualTo(R.id.id_declared_in_item_tag);
@@ -996,7 +1007,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() throws Exception {
+  public void whenPackageIsUnknown_getResourceIdentifier_shouldReturnZero() {
     assertThat(
         resources.getIdentifier("whatever", "id", "some.unknown.package"))
         .isEqualTo(0);
@@ -1046,28 +1057,28 @@ public class ResourcesTest {
   }
 
   @Test
-  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() throws Exception {
+  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturn0() {
     assertThat(
         resources.getIdentifier("fictitiousDrawable", "drawable", context.getPackageName()))
         .isEqualTo(0);
   }
 
   @Test
-  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() throws Exception {
+  public void whenResourceIsAbsentInXml_getResourceIdentifier_shouldReturnId() {
     assertThat(
         resources.getIdentifier("an_image", "drawable", context.getPackageName()))
         .isEqualTo(R.drawable.an_image);
   }
 
   @Test
-  public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() throws Exception {
+  public void whenResourceIsXml_getResourceIdentifier_shouldReturnId() {
     assertThat(
         resources.getIdentifier("preferences", "xml", context.getPackageName()))
         .isEqualTo(R.xml.preferences);
   }
 
   @Test
-  public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() throws Exception {
+  public void whenResourceIsRaw_getResourceIdentifier_shouldReturnId() {
     assertThat(
         resources.getIdentifier("raw_resource", "raw", context.getPackageName()))
         .isEqualTo(R.raw.raw_resource);
@@ -1090,7 +1101,7 @@ public class ResourcesTest {
   }
 
   @Test
-  public void getResourceEntryName_forStyle() throws Exception {
+  public void getResourceEntryName_forStyle() {
     assertThat(resources.getResourceEntryName(android.R.style.TextAppearance_Small))
         .isEqualTo("TextAppearance.Small");
   }
