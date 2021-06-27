@@ -15,9 +15,7 @@ import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Shadow of {@link BluetoothManager} that makes the testing possible.
- */
+/** Shadow of {@link BluetoothManager} that makes the testing possible. */
 @Implements(value = BluetoothManager.class, minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothManager {
   private static final ImmutableIntArray VALID_STATES =
@@ -29,24 +27,18 @@ public class ShadowBluetoothManager {
 
   private final ArrayList<BleDevice> bleDevices = new ArrayList<>();
 
-  /**
-   * Used for storing registered {@link BluetoothDevice} with the specified profile and state.
-   */
+  /** Used for storing registered {@link BluetoothDevice} with the specified profile and state. */
   @AutoValue
   abstract static class BleDevice {
-    /**
-     * {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}.
-     */
+    /** {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}. */
     abstract int profile();
     /**
-     * State of the profile connection. One of {@link BluetoothProfile#STATE_CONNECTED},
-     * {@link BluetoothProfile#STATE_CONNECTING}, {@link BluetoothProfile#STATE_DISCONNECTED} and
-     * {@link BluetoothProfile#STATE_DISCONNECTING}.
+     * State of the profile connection. One of {@link BluetoothProfile#STATE_CONNECTED}, {@link
+     * BluetoothProfile#STATE_CONNECTING}, {@link BluetoothProfile#STATE_DISCONNECTED} and {@link
+     * BluetoothProfile#STATE_DISCONNECTING}.
      */
     abstract int state();
-    /**
-     * The remote bluetooth device.
-     */
+    /** The remote bluetooth device. */
     abstract BluetoothDevice device();
 
     static Builder builder() {
@@ -56,8 +48,11 @@ public class ShadowBluetoothManager {
     @AutoValue.Builder
     abstract static class Builder {
       abstract Builder setProfile(int profile);
+
       abstract Builder setState(int state);
+
       abstract Builder setDevice(BluetoothDevice device);
+
       abstract BleDevice build();
     }
   }
@@ -92,8 +87,8 @@ public class ShadowBluetoothManager {
    *
    * @param profile {@link BluetoothProfile#GATT} or {@link BluetoothProfile#GATT_SERVER}.
    * @param state State of the profile connection. One of {@link BluetoothProfile#STATE_CONNECTED},
-   *        {@link BluetoothProfile#STATE_CONNECTING}, {@link BluetoothProfile#STATE_DISCONNECTED}
-   *        and {@link BluetoothProfile#STATE_DISCONNECTING}.
+   *     {@link BluetoothProfile#STATE_CONNECTING}, {@link BluetoothProfile#STATE_DISCONNECTED} and
+   *     {@link BluetoothProfile#STATE_DISCONNECTING}.
    * @param device The remote bluetooth device.
    */
   public void addDevice(int profile, int state, BluetoothDevice device) {

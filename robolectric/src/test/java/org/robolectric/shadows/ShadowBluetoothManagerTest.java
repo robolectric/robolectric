@@ -30,7 +30,7 @@ public class ShadowBluetoothManagerTest {
   private static final int PROFILE_GATT_SERVER = BluetoothProfile.GATT_SERVER;
   private static final int PROFILE_STATE_CONNECTED = BluetoothProfile.STATE_CONNECTED;
   private static final int PROFILE_STATE_CONNECTING = BluetoothProfile.STATE_CONNECTING;
-  private static final int[] CONNECTED_STATES = new int[] { PROFILE_STATE_CONNECTED };
+  private static final int[] CONNECTED_STATES = new int[] {PROFILE_STATE_CONNECTED};
 
   private BluetoothManager manager;
   private BluetoothAdapter adapter;
@@ -52,8 +52,8 @@ public class ShadowBluetoothManagerTest {
   @Test
   public void getDevicesMatchingConnectionStates_invalidProfile_throwsIllegalArgumentException() {
     assertThrows(
-        IllegalArgumentException.class, () ->
-            manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, CONNECTED_STATES));
+        IllegalArgumentException.class,
+        () -> manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, CONNECTED_STATES));
   }
 
   @Test
@@ -72,7 +72,7 @@ public class ShadowBluetoothManagerTest {
     shadowManager.addDevice(PROFILE_GATT, INVALID_STATE, createBluetoothDevice(DEVICE_ADDRESS_1));
 
     List<BluetoothDevice> result =
-        manager.getDevicesMatchingConnectionStates(PROFILE_GATT, new int[] { INVALID_STATE });
+        manager.getDevicesMatchingConnectionStates(PROFILE_GATT, new int[] {INVALID_STATE});
 
     assertThat(result).isEmpty();
   }
@@ -83,8 +83,8 @@ public class ShadowBluetoothManagerTest {
         INVALID_PROFILE, PROFILE_STATE_CONNECTED, createBluetoothDevice(DEVICE_ADDRESS_1));
 
     assertThrows(
-        IllegalArgumentException.class, () ->
-            manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, CONNECTED_STATES));
+        IllegalArgumentException.class,
+        () -> manager.getDevicesMatchingConnectionStates(INVALID_PROFILE, CONNECTED_STATES));
   }
 
   @Test
@@ -113,7 +113,7 @@ public class ShadowBluetoothManagerTest {
 
     List<BluetoothDevice> result =
         manager.getDevicesMatchingConnectionStates(
-            PROFILE_GATT, new int[] { PROFILE_STATE_CONNECTED, PROFILE_STATE_CONNECTING });
+            PROFILE_GATT, new int[] {PROFILE_STATE_CONNECTED, PROFILE_STATE_CONNECTING});
 
     assertThat(result).containsExactlyElementsIn(expected);
   }
