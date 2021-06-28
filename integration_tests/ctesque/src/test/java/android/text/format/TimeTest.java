@@ -1,14 +1,12 @@
 package android.text.format;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import android.os.SystemClock;
 import android.util.TimeFormatException;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
@@ -17,7 +15,6 @@ import java.util.TimeZone;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument
@@ -76,13 +73,13 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveNoArgsConstructor() throws Exception {
+  public void shouldHaveNoArgsConstructor() {
     Time t = new Time();
     assertNotNull(t.timezone);
   }
 
   @Test
-  public void shouldHaveCopyConstructor() throws Exception {
+  public void shouldHaveCopyConstructor() {
     Time t = new Time();
     t.setToNow();
     Time t2 = new Time(t);
@@ -96,7 +93,7 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveSetTime() throws Exception {
+  public void shouldHaveSetTime() {
     Time t = new Time();
     t.setToNow();
     Time t2 = new Time();
@@ -111,7 +108,7 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveSet3Args() throws Exception {
+  public void shouldHaveSet3Args() {
     Time t = new Time();
     t.set(1, 1, 2000);
     assertEquals(t.year, 2000);
@@ -120,7 +117,7 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveSet6Args() throws Exception {
+  public void shouldHaveSet6Args() {
     Time t = new Time();
     t.set(1, 1, 1, 1, 1, 2000);
     assertEquals(t.year, 2000);
@@ -132,13 +129,13 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveTimeZoneConstructor() throws Exception {
+  public void shouldHaveTimeZoneConstructor() {
     Time t = new Time("UTC");
     assertEquals(t.timezone, "UTC");
   }
 
   @Test
-  public void shouldClear() throws Exception {
+  public void shouldClear() {
     Time t = new Time();
     t.setToNow();
     t.clear("UTC");
@@ -156,19 +153,19 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveToMillis() throws Exception {
+  public void shouldHaveToMillis() {
     Time t = new Time();
     t.set(86400 * 1000);
     assertEquals(86400 * 1000, t.toMillis(false));
   }
 
   @Test
-  public void shouldHaveCurrentTimeZone() throws Exception {
+  public void shouldHaveCurrentTimeZone() {
     assertNotNull(Time.getCurrentTimezone());
   }
 
   @Test
-  public void shouldSwitchTimeZones() throws Exception {
+  public void shouldSwitchTimeZones() {
     Time t = new Time("UTC");
 
     t.set(1414213562373L);
@@ -184,7 +181,7 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveCompareAndBeforeAfter() throws Exception {
+  public void shouldHaveCompareAndBeforeAfter() {
     Time a = new Time();
     Time b = new Time();
 
@@ -204,7 +201,7 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldHaveParse() throws Exception {
+  public void shouldHaveParse() {
     Time t = new Time("Europe/Berlin");
     assertFalse(t.parse("20081013T160000"));
     assertEquals(2008, t.year);
@@ -223,17 +220,14 @@ public class TimeTest {
     assertEquals(0, t.second);
   }
 
-
-
-
   @Test(expected = TimeFormatException.class)
-  public void shouldThrowTimeFormatException() throws Exception {
+  public void shouldThrowTimeFormatException() {
     Time t = new Time();
     t.parse("BLARGH");
   }
 
   @Test
-  public void shouldHaveParseShort() throws Exception {
+  public void shouldHaveParseShort() {
     Time t = new Time();
     t.parse("20081013");
     assertEquals(2008, t.year);
@@ -246,7 +240,7 @@ public class TimeTest {
 
   @Test
   @SdkSuppress(minSdkVersion = JELLY_BEAN_MR1)
-  public void shouldFormat() throws Exception {
+  public void shouldFormat() {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
 
@@ -256,7 +250,7 @@ public class TimeTest {
 
   @Test
   @SdkSuppress(minSdkVersion = JELLY_BEAN_MR1)
-  public void shouldFormatAndroidStrings() throws Exception {
+  public void shouldFormatAndroidStrings() {
     Time t = new Time("UTC");
     // NOTE: month is zero-based.
     t.set(12, 13, 14, 8, 8, 1987);
@@ -282,7 +276,7 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldFormat2445() throws Exception {
+  public void shouldFormat2445() {
     Time t = new Time();
     t.timezone = "PST";
     assertEquals("19700101T000000", t.format2445());
@@ -293,21 +287,20 @@ public class TimeTest {
   }
 
   @Test
-  public void shouldFormat3339() throws Exception {
+  public void shouldFormat3339() {
     Time t = new Time("Europe/Berlin");
     assertEquals("1970-01-01T00:00:00.000+00:00", t.format3339(false));
     assertEquals("1970-01-01", t.format3339(true));
   }
 
   @Test
-  public void testIsEpoch() throws Exception {
-    Time t = new Time();
-    boolean isEpoch = Time.isEpoch(t);
-    assertEquals(true, isEpoch);
+  public void testIsEpoch() {
+    Time t = new Time(Time.TIMEZONE_UTC);
+    assertThat(Time.isEpoch(t)).isTrue();
   }
 
   @Test
-  public void testGetJulianDay() throws Exception {
+  public void testGetJulianDay() {
     Time time = new Time();
 
     time.set(0, 0, 0, 12, 5, 2008);
@@ -331,7 +324,7 @@ public class TimeTest {
   }
 
   @Test
-  public void testSetJulianDay() throws Exception {
+  public void testSetJulianDay() {
     Time time = new Time();
     time.set(0, 0, 0, 12, 5, 2008);
     time.timezone = "Australia/Sydney";
