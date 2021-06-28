@@ -99,6 +99,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private PackageResourceTable systemResourceTable;
   private final ShadowProvider[] shadowProviders;
   private final TestEnvironmentLifecyclePlugin[] testEnvironmentLifecyclePlugins;
+  private final Locale initialLocale = Locale.getDefault();
 
   public AndroidTestEnvironment(
       @Named("runtimeSdk") Sdk runtimeSdk,
@@ -616,6 +617,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   @Override
   public void resetState() {
+    Locale.setDefault(initialLocale);
     for (ShadowProvider provider : shadowProviders) {
       provider.reset();
     }
