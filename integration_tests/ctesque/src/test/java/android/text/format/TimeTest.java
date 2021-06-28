@@ -298,7 +298,7 @@ public class TimeTest {
 
   @Test
   public void testIsEpoch() {
-    Time t = new Time("Etc/UTC");
+    Time t = new Time(Time.TIMEZONE_UTC);
     assertThat(Time.isEpoch(t)).isTrue();
   }
 
