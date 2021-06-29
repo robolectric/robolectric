@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ImageUtil.getImageFromStream;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
@@ -38,6 +38,9 @@ import org.robolectric.util.Logger;
 import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapFactory.class)
@@ -52,12 +55,8 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeResourceStream(
       Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts) {
-    Bitmap bitmap = directlyOn(BitmapFactory.class, "decodeResourceStream",
-        ClassParameter.from(Resources.class, res),
-        ClassParameter.from(TypedValue.class, value),
-        ClassParameter.from(InputStream.class, is),
-        ClassParameter.from(Rect.class, pad),
-        ClassParameter.from(BitmapFactory.Options.class, opts));
+    Bitmap bitmap =
+        reflector(BitmapFactoryReflector.class).decodeResourceStream(res, value, is, pad, opts);
 
     if (value != null && value.string != null && value.string.toString().contains(".9.")) {
       // todo: better support for nine-patches
@@ -400,5 +399,14 @@ public class ShadowBitmapFactory {
    */
   public static void setAllowInvalidImageData(boolean allowInvalidImageData) {
     ShadowBitmapFactory.allowInvalidImageData = allowInvalidImageData;
+  }
+
+  @ForType(BitmapFactory.class)
+  interface BitmapFactoryReflector {
+
+    @Static
+    @Direct
+    Bitmap decodeResourceStream(
+        Resources res, TypedValue value, InputStream is, Rect pad, BitmapFactory.Options opts);
   }
 }

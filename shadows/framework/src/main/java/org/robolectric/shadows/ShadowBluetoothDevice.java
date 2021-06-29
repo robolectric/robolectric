@@ -5,7 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -26,6 +26,9 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
@@ -66,7 +69,7 @@ public class ShadowBluetoothDevice {
     // to easily create BluetoothDevices for testing purposes without having any actual Bluetooth
     // capability.
     try {
-      return directlyOn(BluetoothDevice.class, "getService");
+      return reflector(BluetoothDeviceReflector.class).getService();
     } catch (Exception e) {
       // No-op.
     }
@@ -314,5 +317,13 @@ public class ShadowBluetoothDevice {
   /** Sets the return value for {@link BluetoothDevice#getBluetoothClass}. */
   public void setBluetoothClass(BluetoothClass bluetoothClass) {
     this.bluetoothClass = bluetoothClass;
+  }
+
+  @ForType(BluetoothDevice.class)
+  interface BluetoothDeviceReflector {
+
+    @Static
+    @Direct
+    IBluetooth getService();
   }
 }

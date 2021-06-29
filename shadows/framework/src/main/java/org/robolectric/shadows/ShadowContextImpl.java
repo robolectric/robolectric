@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -44,8 +45,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -74,11 +75,7 @@ public class ShadowContextImpl {
       return null;
     }
     if (!systemServices.containsKey(name)) {
-      return directlyOn(
-          realContextImpl,
-          ShadowContextImpl.CLASS_NAME,
-          "getSystemService",
-          ClassParameter.from(String.class, name));
+      return reflector(_ContextImpl_.class, realContextImpl).getSystemService(name);
     }
     return systemServices.get(name);
   }
@@ -356,12 +353,7 @@ public class ShadowContextImpl {
   protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
     // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
     // properly shadowed.
-    directlyOn(
-        realContextImpl,
-        ShadowContextImpl.CLASS_NAME,
-        "startActivity",
-        ClassParameter.from(Intent.class, intent),
-        ClassParameter.from(Bundle.class, options));
+    reflector(_ContextImpl_.class, realContextImpl).startActivity(intent, options);
   }
 
   /* Set the user id returned by {@link #getUserId()}. */
@@ -439,11 +431,7 @@ public class ShadowContextImpl {
       }
       return f;
     } else {
-      return directlyOn(
-          realContextImpl,
-          ShadowContextImpl.CLASS_NAME,
-          "getDatabasePath",
-          ClassParameter.from(String.class, name));
+      return reflector(_ContextImpl_.class, realContextImpl).getDatabasePath(name);
     }
   }
 
@@ -454,15 +442,10 @@ public class ShadowContextImpl {
     if (!Strings.isNullOrEmpty(name) && File.separatorChar == '\\') {
       name = name.replace(":", "%3A");
     }
-    return directlyOn(
-        realContextImpl,
-        ShadowContextImpl.CLASS_NAME,
-        "getSharedPreferences",
-        ClassParameter.from(String.class, name),
-        ClassParameter.from(int.class, mode));
+    return reflector(_ContextImpl_.class, realContextImpl).getSharedPreferences(name, mode);
   }
 
-  /** Accessor interface for {@link android.app.ContextImpl}'s internals. */
+  /** Reflector interface for {@link android.app.ContextImpl}'s internals. */
   @ForType(className = CLASS_NAME)
   public interface _ContextImpl_ {
     @Static
@@ -472,6 +455,18 @@ public class ShadowContextImpl {
     Context createAppContext(ActivityThread activityThread, LoadedApk loadedApk);
 
     void setOuterContext(Context context);
+
+    @Direct
+    Object getSystemService(String name);
+
+    @Direct
+    void startActivity(Intent intent, Bundle options);
+
+    @Direct
+    File getDatabasePath(String name);
+
+    @Direct
+    SharedPreferences getSharedPreferences(String name, int mode);
 
     @Accessor("mClassLoader")
     void setClassLoader(ClassLoader classLoader);

@@ -79,6 +79,7 @@ public class ShadowTelecomManager {
   private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
+  private final Map<PhoneAccountHandle, String> line1Numbers = new ArrayMap<>();
   private final Map<String, PhoneAccountHandle> defaultOutgoingPhoneAccounts = new ArrayMap<>();
   private Intent manageBlockNumbersIntent;
   private CallRequestMode callRequestMode = CallRequestMode.MANUAL;
@@ -305,7 +306,11 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected String getLine1Number(PhoneAccountHandle accountHandle) {
-    return null;
+    return line1Numbers.get(accountHandle);
+  }
+
+  public void setLine1Number(PhoneAccountHandle phoneAccountHandle, String number) {
+    line1Numbers.put(phoneAccountHandle, number);
   }
 
   /** Sets the return value for {@link TelecomManager#isInCall}. */
