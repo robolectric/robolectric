@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import android.content.Intent;
 import android.os.Looper;
+import android.os.Parcel;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
@@ -23,7 +24,7 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   @SuppressWarnings("unchecked")
   public ComponentController(T component, Intent intent) {
     this(component);
-    this.intent = intent;
+    this.intent = parcelIntent(intent);
   }
 
   @SuppressWarnings("unchecked")
@@ -40,6 +41,18 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   public abstract C create();
 
   public abstract C destroy();
+
+  protected Intent parcelIntent(Intent intent) {
+    if (intent == null) {
+      return null;
+    }
+    Parcel obtain = Parcel.obtain();
+    obtain.writeParcelable(intent, 0);
+    obtain.setDataPosition(0);
+    intent = obtain.readParcelable(Intent.class.getClassLoader());
+    obtain.recycle();
+    return intent;
+  }
 
   public Intent getIntent() {
     Intent intent =

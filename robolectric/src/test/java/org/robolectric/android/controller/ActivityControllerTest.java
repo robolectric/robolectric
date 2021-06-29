@@ -105,6 +105,13 @@ public class ActivityControllerTest {
   }
 
   @Test
+  public void shouldParcelIntent() {
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    MyActivity myActivity = Robolectric.buildActivity(MyActivity.class, intent).create().get();
+    assertThat(myActivity.getIntent() == intent).isFalse();
+  }
+
+  @Test
   public void shouldSetIntentComponentWithCustomIntentWithoutComponentSet() throws Exception {
     MyActivity myActivity =
         Robolectric.buildActivity(MyActivity.class, new Intent(Intent.ACTION_VIEW)).create().get();
