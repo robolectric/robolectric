@@ -51,7 +51,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
     testImplementation "androidx.test:core:$axtVersion"
-    testImplementation "androidx.test.ext:junit:1.1.3-alpha04"
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
     testImplementation "androidx.test.ext:truth:$axtVersion"
     testImplementation "androidx.test:runner:$axtVersion"
     testImplementation("com.google.guava:guava:27.0.1-jre")
