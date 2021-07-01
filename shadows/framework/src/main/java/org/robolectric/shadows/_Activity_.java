@@ -317,6 +317,10 @@ public interface _Activity_ {
 
   void performPause();
 
+  void performRestart();
+
+  void performRestart(boolean start, String reason);
+
   void performRestoreInstanceState(Bundle savedInstanceState);
 
   void performResume();
@@ -339,6 +343,10 @@ public interface _Activity_ {
 
   void onPostResume();
 
+  void makeVisible();
+
+  void onNewIntent(Intent intent);
+
   Object retainNonConfigurationInstances();
 
   @Accessor("mApplication")
@@ -353,6 +361,15 @@ public interface _Activity_ {
   void setVoiceInteractor(
       @WithType("com.android.internal.app.IVoiceInteractor") Object voiceInteractor);
 
+  @Accessor("mWindowAdded")
+  boolean getWindowAdded();
+
   @Accessor("mWindow")
   void setWindow(Window window);
+
+  @Accessor("mChangingConfigurations")
+  void setChangingConfigurations(boolean value);
+
+  @Accessor("mConfigChangeFlags")
+  void setConfigChangeFlags(int value);
 }

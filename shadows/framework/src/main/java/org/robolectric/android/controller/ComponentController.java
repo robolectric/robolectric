@@ -53,11 +53,15 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
   }
 
   protected C invokeWhilePaused(final String methodName, final ClassParameter<?>... classParameters) {
+    return invokeWhilePaused(
+        () -> ReflectionHelpers.callInstanceMethod(component, methodName, classParameters));
+  }
+
+  protected C invokeWhilePaused(Runnable runnable) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     }
-    shadowMainLooper.runPaused(
-        () -> ReflectionHelpers.callInstanceMethod(component, methodName, classParameters));
+    shadowMainLooper.runPaused(runnable);
     return myself;
   }
 }
