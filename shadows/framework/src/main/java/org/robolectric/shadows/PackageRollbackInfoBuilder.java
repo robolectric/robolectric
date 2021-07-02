@@ -133,17 +133,17 @@ public final class PackageRollbackInfoBuilder {
           ReflectionHelpers.ClassParameter.from(IntArray.class, installedUsers),
           ReflectionHelpers.ClassParameter.from(SparseLongArray.class, ceSnapshotInodes));
     } else if (apiLevel == VERSION_CODES.R) {
-        // We only have access to constructor on R. For all other SDKs, we will need
-        // ReflectionHelper.
-        return new PackageRollbackInfo(
-            packageRolledBackFrom,
-            packageRolledBackTo,
-            pendingBackups,
-            pendingRestores,
-            isApex,
-            isApkInApex,
-            snapshottedUsers,
-            ceSnapshotInodes);
+      // We only have access to constructor on R. For all other SDKs, we will need
+      // ReflectionHelper.
+      return new PackageRollbackInfo(
+          packageRolledBackFrom,
+          packageRolledBackTo,
+          pendingBackups,
+          pendingRestores,
+          isApex,
+          isApkInApex,
+          snapshottedUsers,
+          ceSnapshotInodes);
     } else if (apiLevel > VERSION_CODES.R) {
       return ReflectionHelpers.callConstructor(
           PackageRollbackInfo.class,
