@@ -54,7 +54,7 @@ dependencies {
     testImplementation("androidx.test.ext:truth:$axtVersion")
     testImplementation("androidx.test:core:$axtVersion")
     testImplementation("com.google.truth:truth:${truthVersion}")
-    testImplementation("com.google.guava:guava:27.0.1-jre")
+    testImplementation("com.google.guava:guava:$guavaJREVersion")
 
     // Testing dependencies
     // temporarily use a newer monitor version for HardwareRendererCompat
@@ -64,5 +64,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:$axtJunitVersion")
     androidTestImplementation("androidx.test.ext:truth:$axtVersion")
     androidTestImplementation("com.google.truth:truth:${truthVersion}")
-    androidTestImplementation("com.google.guava:guava:27.0.1-jre")
+    androidTestImplementation("com.google.guava:guava:$guavaJREVersion")
 }
