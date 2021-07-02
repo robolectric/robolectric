@@ -885,6 +885,7 @@ public class ShadowContentResolverTest {
 
   @Test
   @Config(manifest = NONE)
+  @SuppressWarnings("RobolectricSystemContext") // preexisting when check was enabled
   public void getProvider_shouldNotReturnAnyProviderWhenManifestIsNull() {
     Application application = new Application();
     shadowOf(application).callAttach(RuntimeEnvironment.systemContext);

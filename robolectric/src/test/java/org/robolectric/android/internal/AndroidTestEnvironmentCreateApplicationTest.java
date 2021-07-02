@@ -65,6 +65,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
   }
 
   @Test
+  @SuppressWarnings("RobolectricSystemContext") // preexisting when check was enabled
   public void shouldRegisterReceiversFromTheManifest() throws Exception {
     // gross:
     shadowOf((Application) ApplicationProvider.getApplicationContext()).clearRegisteredReceivers();

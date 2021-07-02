@@ -78,6 +78,7 @@ import org.robolectric.util.TestRunnable;
 
 /** Test of ShadowActivity. */
 @RunWith(AndroidJUnit4.class)
+@SuppressWarnings("RobolectricSystemContext") // preexisting when check was enabled
 public class ShadowActivityTest {
   private Activity activity;
 
