@@ -6,6 +6,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +23,11 @@ public class CookieManagerTest {
     if (VERSION.SDK_INT < VERSION_CODES.KITKAT) {
       CookieSyncManager.createInstance(ApplicationProvider.getApplicationContext());
     }
+  }
+
+  @After
+  public void tearDown() {
+    CookieManager.getInstance().removeAllCookie();
   }
 
   @Test
