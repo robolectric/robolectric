@@ -47,6 +47,7 @@ import android.media.IAudioService;
 import android.media.IMediaRouterService;
 import android.media.session.ISessionManager;
 import android.net.IConnectivityManager;
+import android.net.IIpSecService;
 import android.net.INetworkPolicyManager;
 import android.net.INetworkScoreService;
 import android.net.ITetheringConnector;
@@ -157,6 +158,7 @@ public class ShadowServiceManager {
       addBinderService(Context.SLICE_SERVICE, ISliceManager.class);
       addBinderService(Context.CROSS_PROFILE_APPS_SERVICE, ICrossProfileApps.class);
       addBinderService(Context.WIFI_RTT_RANGING_SERVICE, IWifiRttManager.class);
+      addBinderService(Context.IPSEC_SERVICE, IIpSecService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       addBinderService(Context.BIOMETRIC_SERVICE, IBiometricService.class);
