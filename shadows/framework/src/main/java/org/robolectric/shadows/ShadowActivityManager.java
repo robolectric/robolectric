@@ -21,6 +21,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
+import androidx.annotation.RequiresApi;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -305,6 +306,7 @@ public class ShadowActivityManager {
    * @deprecated Prefer using overload with {@link ApplicationExitInfoBuilder}
    */
   @Deprecated
+  @RequiresApi(api = R)
   public void addApplicationExitInfo(String processName, int pid, int reason, int status) {
     ApplicationExitInfo info =
         ApplicationExitInfoBuilder.newBuilder()
@@ -317,8 +319,11 @@ public class ShadowActivityManager {
   }
 
   /** Adds given {@link ApplicationExitInfo}, see {@link ApplicationExitInfoBuilder} */
-  public void addApplicationExitInfo(ApplicationExitInfo info) {
-    appExitInfoList.addFirst(info);
+  @RequiresApi(api = R)
+  public void addApplicationExitInfo(Object info) {
+    if (info instanceof ApplicationExitInfo) {
+      appExitInfoList.addFirst(info);
+    }
   }
 
   @Implementation
@@ -340,7 +345,8 @@ public class ShadowActivityManager {
         .contains(RuntimeEnvironment.getApplication().getPackageName());
   }
 
-  /** Builder class for {@link android.app.ApplicationExitInfo} */
+  /** Builder class for {@link ApplicationExitInfo} */
+  @RequiresApi(api = R)
   public static class ApplicationExitInfoBuilder {
 
     private final ApplicationExitInfo instance;
