@@ -22,6 +22,7 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
 import androidx.annotation.RequiresApi;
+import com.google.common.base.Preconditions;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -321,9 +322,8 @@ public class ShadowActivityManager {
   /** Adds given {@link ApplicationExitInfo}, see {@link ApplicationExitInfoBuilder} */
   @RequiresApi(api = R)
   public void addApplicationExitInfo(Object info) {
-    if (info instanceof ApplicationExitInfo) {
-      appExitInfoList.addFirst(info);
-    }
+    Preconditions.checkArgument(info instanceof ApplicationExitInfo);
+    appExitInfoList.addFirst(info);
   }
 
   @Implementation
