@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -69,5 +70,20 @@ public class ShadowUIModeManagerTest {
 
     uiModeManager.setNightMode(INVALID_NIGHT_MODE);
     assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testApplicationNightMode() {
+    assertThat(uiModeManager.getApplicationNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+
+    uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_YES);
+    assertThat(uiModeManager.getApplicationNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_YES);
+
+    uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_NO);
+    assertThat(uiModeManager.getApplicationNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_NO);
+
+    uiModeManager.setApplicationNightMode(INVALID_NIGHT_MODE);
+    assertThat(uiModeManager.getApplicationNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
   }
 }
