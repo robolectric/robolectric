@@ -497,9 +497,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
 
   @Implementation
   protected static MediaPlayer create(Context context, Uri uri) {
+    DataSource ds = DataSource.toDataSource(String.valueOf(uri.getPath()));
+    addMediaInfo(ds, new ShadowMediaPlayer.MediaInfo());
     MediaPlayer mp = new MediaPlayer();
+    ShadowMediaPlayer shadow = Shadow.extract(mp);
     try {
-      mp.setDataSource(context, uri);
+      shadow.setDataSource(ds);
+      shadow.setState(ShadowMediaPlayer.State.INITIALIZED);
       mp.prepare();
     } catch (Exception e) {
       return null;
