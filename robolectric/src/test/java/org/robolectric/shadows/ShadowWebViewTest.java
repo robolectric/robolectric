@@ -700,4 +700,10 @@ public class ShadowWebViewTest {
 
     assertThat(shadowOf(webView).getDownloadListener()).isEqualTo(lastListener);
   }
+
+  @Test
+  public void restoreAndSaveState() {
+    webView.restoreState(new Bundle());
+    webView.saveState(new Bundle());
+  }
 }
