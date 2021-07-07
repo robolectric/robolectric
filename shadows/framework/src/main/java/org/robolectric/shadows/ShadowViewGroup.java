@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,7 +12,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
@@ -24,12 +25,10 @@ public class ShadowViewGroup extends ShadowView {
 
   @Implementation
   protected void addView(final View child, final int index, final ViewGroup.LayoutParams params) {
-    Runnable addViewRunnable = () -> {
-      directlyOn(realViewGroup, ViewGroup.class, "addView",
-          ClassParameter.from(View.class, child),
-          ClassParameter.from(int.class, index),
-          ClassParameter.from(ViewGroup.LayoutParams.class, params));
-    };
+    Runnable addViewRunnable =
+        () -> {
+          reflector(ViewGroupReflector.class, realViewGroup).addView(child, index, params);
+        };
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
       addViewRunnable.run();
     } else {
@@ -107,5 +106,12 @@ public class ShadowViewGroup extends ShadowView {
   protected boolean onInterceptTouchEvent(MotionEvent ev) {
     interceptedTouchEvent = ev;
     return false;
+  }
+
+  @ForType(ViewGroup.class)
+  interface ViewGroupReflector {
+
+    @Direct
+    void addView(View child, int index, ViewGroup.LayoutParams params);
   }
 }
