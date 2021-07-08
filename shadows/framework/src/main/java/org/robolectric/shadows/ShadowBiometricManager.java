@@ -6,7 +6,7 @@ import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
 import static android.hardware.biometrics.BiometricPrompt.BIOMETRIC_ERROR_HW_UNAVAILABLE;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresPermission;
 import android.content.Context;
@@ -17,6 +17,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Provides testing APIs for {@link BiometricManager} */
 @Implements(
@@ -34,7 +36,7 @@ public class ShadowBiometricManager {
   @Implementation(maxSdk = Q)
   protected int canAuthenticate() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
-      return directlyOn(realBiometricManager, BiometricManager.class, "canAuthenticate");
+      return reflector(BiometricManagerReflector.class, realBiometricManager).canAuthenticate();
     } else if (biometricServiceConnected) {
       return BIOMETRIC_SUCCESS;
     } else {
@@ -66,5 +68,12 @@ public class ShadowBiometricManager {
   @Implementation(minSdk = R)
   protected int canAuthenticate(int userId, int authenticators) {
     return biometricServiceConnected ? BIOMETRIC_SUCCESS : BIOMETRIC_ERROR_NO_HARDWARE;
+  }
+
+  @ForType(BiometricManager.class)
+  interface BiometricManagerReflector {
+
+    @Direct
+    int canAuthenticate();
   }
 }

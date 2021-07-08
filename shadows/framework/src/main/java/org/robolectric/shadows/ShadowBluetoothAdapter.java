@@ -36,6 +36,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -82,7 +83,7 @@ public class ShadowBluetoothAdapter {
     if (!isBluetoothSupported) {
       return null;
     }
-    return directlyOn(BluetoothAdapter.class, "getDefaultAdapter");
+    return reflector(BluetoothAdapterReflector.class).getDefaultAdapter();
   }
 
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
@@ -410,7 +411,7 @@ public class ShadowBluetoothAdapter {
    * Overrides behavior of {@link getProfileProxy} if {@link ShadowBluetoothAdapter#setProfileProxy}
    * has been previously called.
    *
-   * If active (non-null) proxy has been set by {@link setProfileProxy} for the given {@code
+   * <p>If active (non-null) proxy has been set by {@link setProfileProxy} for the given {@code
    * profile}, {@link getProfileProxy} will immediately call {@code onServiceConnected} of the given
    * BluetoothProfile.ServiceListener {@code listener}.
    *
@@ -475,6 +476,11 @@ public class ShadowBluetoothAdapter {
 
   @ForType(BluetoothAdapter.class)
   interface BluetoothAdapterReflector {
+
+    @Static
+    @Direct
+    BluetoothAdapter getDefaultAdapter();
+
     @Accessor("sAdapter")
     @Static
     void setAdapter(BluetoothAdapter adapter);

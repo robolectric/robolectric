@@ -10,7 +10,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -88,8 +87,7 @@ public abstract class ShadowChoreographer {
     if (reflector == null) {
       reflector = reflector(ChoreographerReflector.class, realObject);
     }
-    PerfStatsCollector.getInstance()
-        .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame));
+    reflector.doFrame(frameTimeNanos, frame);
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */

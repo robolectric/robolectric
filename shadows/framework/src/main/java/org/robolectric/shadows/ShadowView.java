@@ -47,14 +47,14 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(View.class)
 @SuppressLint("NewApi")
 public class ShadowView {
 
-  @RealObject
-  protected View realView;
+  @RealObject protected View realView;
   private static final List<View.OnClickListener> globalClickListeners =
       new CopyOnWriteArrayList<>();
   private static final List<View.OnLongClickListener> globalLongClickListeners =
@@ -135,7 +135,9 @@ public class ShadowView {
   protected void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     if (context == null) throw new NullPointerException("no context");
     this.attributeSet = attributeSet;
-    invokeConstructor(View.class, realView,
+    invokeConstructor(
+        View.class,
+        realView,
         ClassParameter.from(Context.class, context),
         ClassParameter.from(AttributeSet.class, attributeSet),
         ClassParameter.from(int.class, defStyle));
@@ -214,12 +216,7 @@ public class ShadowView {
   @Implementation
   protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
     onLayoutWasCalled = true;
-    directlyOn(realView, View.class, "onLayout",
-        ClassParameter.from(boolean.class, changed),
-        ClassParameter.from(int.class, left),
-        ClassParameter.from(int.class, top),
-        ClassParameter.from(int.class, right),
-        ClassParameter.from(int.class, bottom));
+    reflector(_View_.class, realView).onLayout(changed, left, top, right, bottom);
   }
 
   public boolean onLayoutWasCalled() {
@@ -658,9 +655,16 @@ public class ShadowView {
     return reflector(_View_.class, realView).getAttachInfo();
   }
 
-  /** Accessor interface for {@link View}'s internals. */
+  /** Reflector interface for {@link View}'s internals. */
   @ForType(View.class)
   private interface _View_ {
+
+    @Direct
+    void onLayout(boolean changed, int left, int top, int right, int bottom);
+
+    @Direct
+    void assignParent(ViewParent viewParent);
+
     @Accessor("mAttachInfo")
     Object getAttachInfo();
 
@@ -719,8 +723,7 @@ public class ShadowView {
   }
 
   public void setMyParent(ViewParent viewParent) {
-    directlyOn(
-        realView, View.class, "assignParent", ClassParameter.from(ViewParent.class, viewParent));
+    reflector(_View_.class, realView).assignParent(viewParent);
   }
 
   @Implementation
@@ -775,7 +778,7 @@ public class ShadowView {
     }
   }
 
-  /** Accessor interface for android.view.View.AttachInfo's internals. */
+  /** Reflector interface for android.view.View.AttachInfo's internals. */
   @ForType(className = "android.view.View$AttachInfo")
   interface _AttachInfo_ {
 

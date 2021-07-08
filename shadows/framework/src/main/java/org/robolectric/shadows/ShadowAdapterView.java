@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.View;
 import android.widget.Adapter;
@@ -10,15 +10,15 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   private static int ignoreRowsAtEndOfList = 0;
 
-  @RealObject
-  private AdapterView<T> realAdapterView;
+  @RealObject private AdapterView<T> realAdapterView;
 
   private AdapterView.OnItemSelectedListener itemSelectedListener;
 
@@ -26,7 +26,8 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   protected void setOnItemSelectedListener(
       AdapterView.OnItemSelectedListener itemSelectedListener) {
     this.itemSelectedListener = itemSelectedListener;
-    directlyOn(realAdapterView, AdapterView.class, "setOnItemSelectedListener", ClassParameter.from(AdapterView.OnItemSelectedListener.class, itemSelectedListener));
+    reflector(AdapterViewReflector.class, realAdapterView)
+        .setOnItemSelectedListener(itemSelectedListener);
   }
 
   public AdapterView.OnItemSelectedListener getItemSelectedListener() {
@@ -34,8 +35,10 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   }
 
   public boolean performItemClick(int position) {
-    return realAdapterView.performItemClick(realAdapterView.getChildAt(position),
-        position, realAdapterView.getItemIdAtPosition(position));
+    return realAdapterView.performItemClick(
+        realAdapterView.getChildAt(position),
+        position,
+        realAdapterView.getItemIdAtPosition(position));
   }
 
   public int findIndexOfItemContainingText(String targetText) {
@@ -74,5 +77,12 @@ public class ShadowAdapterView<T extends Adapter> extends ShadowViewGroup {
   public void selectItemWithText(String s) {
     int itemIndex = findIndexOfItemContainingText(s);
     realAdapterView.setSelection(itemIndex);
+  }
+
+  @ForType(AdapterView.class)
+  interface AdapterViewReflector {
+
+    @Direct
+    void setOnItemSelectedListener(AdapterView.OnItemSelectedListener itemSelectedListener);
   }
 }

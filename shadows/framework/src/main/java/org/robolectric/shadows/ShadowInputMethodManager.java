@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build.VERSION_CODES;
@@ -26,6 +25,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -213,7 +213,7 @@ public class ShadowInputMethodManager {
     } else if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
       return InputMethodManager.getInstance();
     }
-    return directlyOn(InputMethodManager.class, "peekInstance");
+    return reflector(_InputMethodManager_.class).peekInstance();
   }
 
   @Implementation(minSdk = VERSION_CODES.N)
@@ -252,6 +252,11 @@ public class ShadowInputMethodManager {
 
   @ForType(InputMethodManager.class)
   interface _InputMethodManager_ {
+
+    @Static
+    @Direct
+    InputMethodManager peekInstance();
+
     @Static
     @Accessor("mInstance")
     void setMInstance(InputMethodManager instance);
