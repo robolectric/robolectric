@@ -7,7 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static java.util.stream.Collectors.toCollection;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
@@ -37,6 +37,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.app.ActivityManager} */
 @Implements(value = ActivityManager.class, looseSignatures = true)
@@ -242,7 +244,7 @@ public class ShadowActivityManager {
     if (isLowRamDeviceOverride != null) {
       return isLowRamDeviceOverride;
     }
-    return directlyOn(realObject, ActivityManager.class, "isLowRamDevice");
+    return reflector(ActivityManagerReflector.class, realObject).isLowRamDevice();
   }
 
   /** Override the return value of isLowRamDevice(). */
@@ -427,5 +429,12 @@ public class ShadowActivityManager {
     private ApplicationExitInfoBuilder() {
       this.instance = new ApplicationExitInfo();
     }
+  }
+
+  @ForType(ActivityManager.class)
+  interface ActivityManagerReflector {
+
+    @Direct
+    boolean isLowRamDevice();
   }
 }
