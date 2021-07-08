@@ -11,8 +11,9 @@ import java.util.Map;
 
 /**
  * Opaque class for uniquely identifying a media data source, as used by {@link
- * org.robolectric.shadows.ShadowMediaPlayer} and {@link
- * org.robolectric.shadows.ShadowMediaMetadataRetriever}.
+ * org.robolectric.shadows.ShadowMediaPlayer}, {@link
+ * org.robolectric.shadows.ShadowMediaMetadataRetriever}, and {@link
+ * org.robolectric.shadows.ShadowMediaExtractor}
  *
  * @author Fr Jeremy Krieg
  */
