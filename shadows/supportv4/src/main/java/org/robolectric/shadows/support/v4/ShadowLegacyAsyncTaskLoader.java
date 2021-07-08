@@ -21,6 +21,7 @@ import org.robolectric.annotation.RealObject;
     shadowPicker = ShadowAsyncTaskLoader.Picker.class,
     // TODO: turn off shadowOf generation. Figure out why this is needed
     isInAndroidSdk = false)
+@Deprecated
 public class ShadowLegacyAsyncTaskLoader<D> extends ShadowAsyncTaskLoader {
   @RealObject private AsyncTaskLoader<D> realLoader;
   private BackgroundWorker worker;

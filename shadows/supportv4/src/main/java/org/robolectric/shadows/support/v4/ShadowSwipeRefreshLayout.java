@@ -9,6 +9,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewGroup;
 
 @Implements(SwipeRefreshLayout.class)
+@Deprecated
 public class ShadowSwipeRefreshLayout extends ShadowViewGroup {
   @RealObject SwipeRefreshLayout realObject;
   private OnRefreshListener listener;

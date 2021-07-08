@@ -19,6 +19,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(LocalBroadcastManager.class)
+@Deprecated
 public class ShadowLocalBroadcastManager {
   private final List<Intent> sentBroadcastIntents = new ArrayList<>();
   private final List<Wrapper> registeredReceivers = new ArrayList<>();
