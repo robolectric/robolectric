@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Manifest for instrumentation tests
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.robolectric.integration_tests.androidx_shadows">
+  <uses-sdk
+      android:minSdkVersion="16"
+      android:targetSdkVersion="27" />
+
+  <application />
+</manifest>

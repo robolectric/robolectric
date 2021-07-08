@@ -1,0 +1,36 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 28
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+}
+
+dependencies {
+    implementation project(":robolectric")
+    implementation project(":shadows:supportv4")
+    implementation "androidx.loader:loader:1.0.0"
+    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.0.0"
+    implementation "androidx.media2:media2:1.0.0-alpha03"
+    implementation "androidx.drawerlayout:drawerlayout:1.0.0"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
+    implementation "junit:junit:4.12"
+
+    // Testing dependencies
+    testImplementation("com.google.truth:truth:0.42")
+}

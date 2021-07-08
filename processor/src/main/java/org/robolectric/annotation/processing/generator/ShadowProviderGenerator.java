@@ -172,11 +172,11 @@ public class ShadowProviderGenerator extends Generator {
 
     writer.println("  @Override");
     writer.println("  public String[] getProvidedPackageNames() {");
-    writer.println("    return new String[] {");
+    writer.println("    return new LinkedHashSet<>(Arrays.asList(");
     if (shouldInstrumentPackages) {
       writer.println("      " + Joiner.on(",\n      ").join(model.getShadowedPackages()));
     }
-    writer.println("    };");
+    writer.println("    )).toArray(new String[0]);");
     writer.println("  }");
     writer.println();
 
