@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ComponentName;
@@ -19,9 +18,10 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Robolectric shadow for SpeechRecognizer. */
 @Implements(SpeechRecognizer.class)
@@ -48,11 +48,8 @@ public class ShadowSpeechRecognizer {
   protected static SpeechRecognizer createSpeechRecognizer(
       final Context context, final ComponentName serviceComponent) {
     SpeechRecognizer result =
-        directlyOn(
-            SpeechRecognizer.class,
-            "createSpeechRecognizer",
-            ClassParameter.from(Context.class, context),
-            ClassParameter.from(ComponentName.class, serviceComponent));
+        reflector(SpeechRecognizerReflector.class)
+            .createSpeechRecognizer(context, serviceComponent);
     latestSpeechRecognizer = result;
     return result;
   }
@@ -105,9 +102,14 @@ public class ShadowSpeechRecognizer {
     recognitionListener.onRmsChanged(rmsdB);
   }
 
-  /** Accessor interface for {@link SpeechRecognizer}'s internals. */
+  /** Reflector interface for {@link SpeechRecognizer}'s internals. */
   @ForType(SpeechRecognizer.class)
   interface SpeechRecognizerReflector {
+
+    @Static
+    @Direct
+    SpeechRecognizer createSpeechRecognizer(Context context, ComponentName serviceComponent);
+
     @Accessor("mService")
     void setService(IRecognitionService service);
 

@@ -305,7 +305,11 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected String getLine1Number(PhoneAccountHandle accountHandle) {
-    return null;
+    return realObject.getLine1Number(accountHandle);
+  }
+
+  public void setLine1Number(PhoneAccountHandle phoneAccountHandle, String number) {
+    realObject.setLine1Number(phoneAccountHandle, number);
   }
 
   /** Sets the return value for {@link TelecomManager#isInCall}. */

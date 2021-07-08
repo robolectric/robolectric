@@ -10,7 +10,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -28,8 +28,10 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
+import org.robolectric.util.reflector.WithType;
 
 @Implements(
     className = "android.view.DisplayEventReceiver",
@@ -41,7 +43,7 @@ public class ShadowDisplayEventReceiver {
       new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
   private static int asyncVsyncDelay;
 
-  protected @RealObject DisplayEventReceiver receiver;
+  @RealObject protected DisplayEventReceiver realReceiver;
 
   private static final Duration VSYNC_DELAY = Duration.ofMillis(1);
 
@@ -108,16 +110,12 @@ public class ShadowDisplayEventReceiver {
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = R)
   protected void dispose(boolean finalized) {
     CloseGuard closeGuard =
-        Reflector.reflector(DisplayEventReceiverReflector.class, receiver).getCloseGuard();
+        Reflector.reflector(DisplayEventReceiverReflector.class, realReceiver).getCloseGuard();
     // Suppresses noisy CloseGuard warning
     if (closeGuard != null) {
       closeGuard.close();
     }
-    directlyOn(
-        receiver,
-        DisplayEventReceiver.class,
-        "dispose",
-        ClassParameter.from(boolean.class, finalized));
+    reflector(DisplayEventReceiverReflector.class, realReceiver).dispose(finalized);
   }
 
   static void setAsyncVsync(int delayMillis) {
@@ -131,23 +129,34 @@ public class ShadowDisplayEventReceiver {
 
   protected void onVsync() {
     if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN) {
-      ReflectionHelpers.callInstanceMethod(
-          DisplayEventReceiver.class,
-          receiver,
-          "onVsync",
-          ClassParameter.from(long.class, ShadowSystem.nanoTime()),
-          ClassParameter.from(int.class, 1));
+      reflector(DisplayEventReceiverReflector.class, realReceiver)
+          .onVsync(ShadowSystem.nanoTime(), 1);
     } else if (RuntimeEnvironment.getApiLevel() < Q) {
-      ReflectionHelpers.callInstanceMethod(
-          DisplayEventReceiver.class,
-          receiver,
-          "onVsync",
-          ClassParameter.from(long.class, ShadowSystem.nanoTime()),
-          ClassParameter.from(int.class, 0), /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */
-          ClassParameter.from(int.class, 1)
-      );
+      reflector(DisplayEventReceiverReflector.class, realReceiver)
+          .onVsync(ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
+    } else if (RuntimeEnvironment.getApiLevel() <= R) {
+      realReceiver.onVsync(
+          ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
     } else {
-      receiver.onVsync(ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
+      try {
+        // onVsync takes a package-private VSyncData class as a parameter, thus reflection
+        // needs to be used
+        Object vsyncData =
+            ReflectionHelpers.callConstructor(
+                Class.forName("android.view.DisplayEventReceiver$VsyncEventData"),
+                ClassParameter.from(long.class, 1), /* id */
+                ClassParameter.from(long.class, 10), /* frameDeadline */
+                ClassParameter.from(long.class, 1)); /* frameInterval */
+
+        reflector(DisplayEventReceiverReflector.class, realReceiver)
+            .onVsync(
+                ShadowSystem.nanoTime(),
+                0L, /* physicalDisplayId currently ignored */
+                1, /* frame */
+                vsyncData /* VsyncEventData */);
+      } catch (ClassNotFoundException e) {
+        throw new LinkageError("Unable to construct VsyncEventData", e);
+      }
     }
   }
 
@@ -212,9 +221,22 @@ public class ShadowDisplayEventReceiver {
     }
   }
 
-  /** Accessor interface for {@link DisplayEventReceiver}'s internals. */
+  /** Reflector interface for {@link DisplayEventReceiver}'s internals. */
   @ForType(DisplayEventReceiver.class)
-  interface DisplayEventReceiverReflector {
+  protected interface DisplayEventReceiverReflector {
+
+    @Direct
+    void dispose(boolean finalized);
+
+    void onVsync(long timestampNanos, int frame);
+
+    void onVsync(long timestampNanos, int physicalDisplayId, int frame);
+
+    void onVsync(
+        long timestampNanos,
+        long physicalDisplayId,
+        int frame,
+        @WithType("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData);
 
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();

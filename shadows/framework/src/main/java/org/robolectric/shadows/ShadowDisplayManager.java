@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -28,6 +28,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.util.Consumer;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * For tests, display properties may be changed and devices may be added or removed
@@ -44,8 +46,8 @@ public class ShadowDisplayManager {
   protected void __constructor__(Context context) {
     this.context = context;
 
-    invokeConstructor(DisplayManager.class, realDisplayManager,
-        ClassParameter.from(Context.class, context));
+    invokeConstructor(
+        DisplayManager.class, realDisplayManager, ClassParameter.from(Context.class, context));
   }
 
   /**
@@ -140,8 +142,8 @@ public class ShadowDisplayManager {
           baseDisplayInfo.logicalDensityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
     }
 
-    Bootstrap.applyQualifiers(qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration,
-        displayMetrics);
+    Bootstrap.applyQualifiers(
+        qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
 
     return createDisplayInfo(configuration, displayMetrics);
   }
@@ -216,7 +218,7 @@ public class ShadowDisplayManager {
    * {@link android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
   public void setSaturationLevel(float level) {
-    directlyOn(realDisplayManager, DisplayManager.class).setSaturationLevel(level);
+    reflector(DisplayManagerReflector.class, realDisplayManager).setSaturationLevel(level);
   }
 
   @Implementation(minSdk = P)
@@ -247,5 +249,12 @@ public class ShadowDisplayManager {
     }
 
     return extract(DisplayManagerGlobal.getInstance());
+  }
+
+  @ForType(DisplayManager.class)
+  interface DisplayManagerReflector {
+
+    @Direct
+    void setSaturationLevel(float level);
   }
 }
