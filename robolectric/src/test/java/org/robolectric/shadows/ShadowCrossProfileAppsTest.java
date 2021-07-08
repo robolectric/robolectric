@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.Manifest.permission;
+import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.Application;
 import android.content.BroadcastReceiver;
@@ -19,6 +20,7 @@ import android.content.IntentFilter;
 import android.content.pm.CrossProfileApps;
 import android.content.pm.PackageInfo;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Looper;
 import android.os.Process;
 import android.os.UserHandle;
@@ -287,6 +289,53 @@ public class ShadowCrossProfileAppsTest {
     ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
 
     assertThrowsSecurityException(() -> crossProfileApps.startActivity(component, userHandle1));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void startActivityWithIntent_noComponent_throws() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    setPermissions(INTERACT_ACROSS_PROFILES);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> crossProfileApps.startActivity(new Intent(), userHandle1, /* activity= */ null));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void startActivityWithIntent_startActivityContainsIntent() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    setPermissions(INTERACT_ACROSS_PROFILES);
+    ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
+    Intent intent = new Intent().setComponent(component);
+
+    crossProfileApps.startActivity(intent, userHandle1, /* activity */ null);
+    StartedActivity startedActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+    assertThat(startedActivity.getIntent()).isSameInstanceAs(intent);
+    assertThat(startedActivity.getActivity()).isNull();
+    assertThat(startedActivity.getOptions()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void startActivityWithIntentAndOptions_startActivityContainsIntentAndOptions() {
+    shadowOf(crossProfileApps).addTargetUserProfile(userHandle1);
+    setPermissions(INTERACT_ACROSS_PROFILES);
+    ComponentName component = ComponentName.createRelative(application, ".shadows.TestActivity");
+    Intent intent = new Intent().setComponent(component);
+    Activity activity = new Activity();
+    Bundle options = new Bundle();
+
+    crossProfileApps.startActivity(intent, userHandle1, activity, options);
+    StartedActivity startedActivity = shadowOf(crossProfileApps).peekNextStartedActivity();
+
+    assertThat(startedActivity).isEqualTo(new StartedActivity(component, userHandle1));
+    assertThat(startedActivity.getIntent()).isSameInstanceAs(intent);
+    assertThat(startedActivity.getActivity()).isSameInstanceAs(activity);
+    assertThat(startedActivity.getOptions()).isSameInstanceAs(options);
   }
 
   @Test
