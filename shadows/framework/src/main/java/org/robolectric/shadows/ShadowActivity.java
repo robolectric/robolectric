@@ -55,7 +55,7 @@ import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
@@ -313,11 +313,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void runOnUiThread(Runnable action) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      directlyOn(
-          realActivity,
-          Activity.class,
-          "runOnUiThread",
-          ClassParameter.from(Runnable.class, action));
+      reflector(DirectActivityReflector.class, realActivity).runOnUiThread(action);
     } else {
       ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
     }
@@ -638,7 +634,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   // TODO(hoisie): consider moving this to ActivityController#makeActivityEligibleForGc
   @Implementation
   protected void onDestroy() {
-    directlyOn(realActivity, Activity.class, "onDestroy");
+    reflector(DirectActivityReflector.class, realActivity).onDestroy();
     ShadowActivityThread activityThread = Shadow.extract(RuntimeEnvironment.getActivityThread());
     IBinder token = reflector(_Activity_.class, realActivity).getToken();
     activityThread.removeActivity(token);
@@ -852,5 +848,13 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   private ShadowPackageManager shadowOf(PackageManager packageManager) {
     return Shadow.extract(packageManager);
+  }
+
+  @ForType(value = Activity.class, direct = true)
+  interface DirectActivityReflector {
+
+    void runOnUiThread(Runnable action);
+
+    void onDestroy();
   }
 }

@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -48,7 +49,8 @@ import org.robolectric.res.TypedResource;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(Resources.class)
 public class ShadowResources {
@@ -119,9 +121,12 @@ public class ShadowResources {
           return null;
         }
 
-        TypedResource<?> resolvedTypedResource = shadowAssetManager.resolve(
-            new TypedResource<>(plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-            shadowAssetManager.config, resId);
+        TypedResource<?> resolvedTypedResource =
+            shadowAssetManager.resolve(
+                new TypedResource<>(
+                    plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
+                shadowAssetManager.config,
+                resId);
         return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
       } else {
         return null;
@@ -163,8 +168,8 @@ public class ShadowResources {
 
       FileInputStream fis = (FileInputStream) inputStream;
       try {
-        return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0,
-            fis.getChannel().size());
+        return new AssetFileDescriptor(
+            ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
       } catch (IOException e) {
         throw newNotFoundException(id);
       }
@@ -206,9 +211,7 @@ public class ShadowResources {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       return shadowAssetManager.loadXmlResourceParser(resId, type);
     } else {
-      return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
-          ClassParameter.from(int.class, resId),
-          ClassParameter.from(String.class, type));
+      return reflector(ResourcesReflector.class, realResources).loadXmlResourceParser(resId, type);
     }
   }
 
@@ -219,20 +222,15 @@ public class ShadowResources {
     if (isLegacyAssetManager()) {
       return loadXmlResourceParser(id, type);
     } else {
-      return directlyOn(realResources, Resources.class, "loadXmlResourceParser",
-          ClassParameter.from(String.class, file),
-          ClassParameter.from(int.class, id),
-          ClassParameter.from(int.class, assetCookie),
-          ClassParameter.from(String.class, type));
+      return reflector(ResourcesReflector.class, realResources)
+          .loadXmlResourceParser(file, id, assetCookie, type);
     }
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   protected Drawable loadDrawable(TypedValue value, int id) {
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
-        ClassParameter.from(TypedValue.class, value),
-        ClassParameter.from(int.class, id));
+    Drawable drawable = reflector(ResourcesReflector.class, realResources).loadDrawable(value, id);
     setCreatedFromResId(realResources, id, drawable);
     return drawable;
   }
@@ -240,8 +238,8 @@ public class ShadowResources {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme)
       throws Resources.NotFoundException {
-    Drawable drawable = directlyOn(realResources, Resources.class, "loadDrawable",
-        ClassParameter.from(TypedValue.class, value), ClassParameter.from(int.class, id), ClassParameter.from(Resources.Theme.class, theme));
+    Drawable drawable =
+        reflector(ResourcesReflector.class, realResources).loadDrawable(value, id, theme);
     setCreatedFromResId(realResources, id, drawable);
     return drawable;
   }
@@ -360,5 +358,21 @@ public class ShadowResources {
     public String toString() {
       return realObject.getClass().getName() + ": " + message;
     }
+  }
+
+  @ForType(Resources.class)
+  interface ResourcesReflector {
+
+    @Direct
+    XmlResourceParser loadXmlResourceParser(int resId, String type);
+
+    @Direct
+    XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type);
+
+    @Direct
+    Drawable loadDrawable(TypedValue value, int id);
+
+    @Direct
+    Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme);
   }
 }

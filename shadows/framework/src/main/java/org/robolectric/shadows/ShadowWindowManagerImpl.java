@@ -37,6 +37,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(value = WindowManagerImpl.class, isInAndroidSdk = false)
@@ -50,12 +51,13 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   /** internal only */
   public static void configureDefaultDisplayForJBOnly(
       Configuration configuration, DisplayMetrics displayMetrics) {
-    Class<?> arg2Type = ReflectionHelpers.loadClass(ShadowWindowManagerImpl.class.getClassLoader(),
-        "android.view.CompatibilityInfoHolder");
+    Class<?> arg2Type =
+        ReflectionHelpers.loadClass(
+            ShadowWindowManagerImpl.class.getClassLoader(), "android.view.CompatibilityInfoHolder");
 
-    defaultDisplayJB = ReflectionHelpers.callConstructor(Display.class,
-        ClassParameter.from(int.class, 0),
-        ClassParameter.from(arg2Type, null));
+    defaultDisplayJB =
+        ReflectionHelpers.callConstructor(
+            Display.class, ClassParameter.from(int.class, 0), ClassParameter.from(arg2Type, null));
     ShadowDisplay shadowDisplay = Shadow.extract(defaultDisplayJB);
     shadowDisplay.configureForJBOnly(configuration, displayMetrics);
   }
@@ -64,29 +66,19 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   public void addView(View view, android.view.ViewGroup.LayoutParams layoutParams) {
     views.put(realObject.getDefaultDisplay().getDisplayId(), view);
     // views.add(view);
-    directlyOn(
-        realObject,
-        WindowManagerImpl.class,
-        "addView",
-        ClassParameter.from(View.class, view),
-        ClassParameter.from(ViewGroup.LayoutParams.class, layoutParams));
+    reflector(ReflectorWindowManagerImpl.class, realObject).addView(view, layoutParams);
   }
 
   @Implementation
   public void removeView(View view) {
     views.remove(realObject.getDefaultDisplay().getDisplayId(), view);
-    directlyOn(realObject, WindowManagerImpl.class, "removeView",
-        ClassParameter.from(View.class, view));
+    reflector(ReflectorWindowManagerImpl.class, realObject).removeView(view);
   }
 
   @Implementation
   protected void removeViewImmediate(View view) {
     views.remove(realObject.getDefaultDisplay().getDisplayId(), view);
-    directlyOn(
-        realObject,
-        WindowManagerImpl.class,
-        "removeViewImmediate",
-        ClassParameter.from(View.class, view));
+    reflector(ReflectorWindowManagerImpl.class, realObject).removeViewImmediate(view);
   }
 
   public List<View> getViews() {
@@ -145,6 +137,16 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   @ForType(WindowManagerImpl.class)
   interface ReflectorWindowManagerImpl {
+
+    @Direct
+    void addView(View view, ViewGroup.LayoutParams layoutParams);
+
+    @Direct
+    void removeView(View view);
+
+    @Direct
+    void removeViewImmediate(View view);
+
     @Accessor("mContext")
     Context getContext();
   }

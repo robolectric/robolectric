@@ -1,15 +1,15 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.InputEventReceiver;
 import dalvik.system.CloseGuard;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
 
@@ -34,16 +34,15 @@ public class ShadowInputEventReceiver {
     if (closeGuard != null) {
       closeGuard.close();
     }
-    directlyOn(
-        receiver,
-        InputEventReceiver.class,
-        "dispose",
-        ClassParameter.from(boolean.class, finalized));
+    reflector(InputEventReceiverReflector.class, receiver).dispose(finalized);
   }
 
-  /** Accessor interface for {@link InputEventReceiver}'s internals. */
+  /** Reflector interface for {@link InputEventReceiver}'s internals. */
   @ForType(InputEventReceiver.class)
   interface InputEventReceiverReflector {
+
+    @Direct
+    void dispose(boolean finalized);
 
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();

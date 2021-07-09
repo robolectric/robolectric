@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.AsyncTask;
 import androidx.test.annotation.Beta;
@@ -10,6 +10,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * A {@link AsyncTask} shadow for {@link LooperMode.Mode.PAUSED}
@@ -36,12 +38,7 @@ public class ShadowPausedAsyncTask<Params, Progress, Result> extends ShadowAsync
   @Implementation
   protected AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params) {
     Executor executorToUse = executorOverride == null ? exec : executorOverride;
-    return directlyOn(
-        realObject,
-        AsyncTask.class,
-        "executeOnExecutor",
-        ClassParameter.from(Executor.class, executorToUse),
-        ClassParameter.from(Object[].class, params));
+    return reflector(AsyncTaskReflector.class, realObject).executeOnExecutor(executorToUse, params);
   }
 
   private ClassParameter[] buildClassParams(Params... params) {
@@ -69,4 +66,10 @@ public class ShadowPausedAsyncTask<Params, Progress, Result> extends ShadowAsync
     executorOverride = executor;
   }
 
+  @ForType(AsyncTask.class)
+  interface AsyncTaskReflector {
+
+    @Direct
+    AsyncTask executeOnExecutor(Executor executorToUse, Object[] params);
+  }
 }
