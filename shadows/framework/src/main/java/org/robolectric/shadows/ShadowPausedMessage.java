@@ -12,6 +12,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -22,7 +23,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = Message.class, isInAndroidSdk = false)
 public class ShadowPausedMessage extends ShadowMessage {
 
-  private @RealObject Message realObject;
+  @RealObject private Message realObject;
 
   long getWhen() {
     return reflector(ReflectorMessage.class, realObject).getWhen();
@@ -37,7 +38,7 @@ public class ShadowPausedMessage extends ShadowMessage {
   @Implementation(minSdk = LOLLIPOP)
   public void recycleUnchecked() {
     if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-      directlyOn(realObject, Message.class, "recycleUnchecked");
+      reflector(ReflectorMessage.class, realObject).recycleUnchecked();
     } else {
       directlyOn(realObject, Message.class).recycle();
     }
@@ -65,9 +66,12 @@ public class ShadowPausedMessage extends ShadowMessage {
     return reflector(ReflectorMessage.class, realObject).getTarget();
   }
 
-  /** Accessor interface for {@link Message}'s internals. */
+  /** Reflector interface for {@link Message}'s internals. */
   @ForType(Message.class)
   private interface ReflectorMessage {
+
+    @Direct
+    void recycleUnchecked();
 
     @Accessor("when")
     long getWhen();

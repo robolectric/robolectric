@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -23,7 +23,9 @@ import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /**
  * Supports IMS by default. IMS unregistered by default.
@@ -183,10 +185,7 @@ public class ShadowImsMmTelManager {
       return existingInstances.get(subId);
     }
     ImsMmTelManager imsMmTelManager =
-        directlyOn(
-            ImsMmTelManager.class,
-            "createForSubscriptionId",
-            ClassParameter.from(int.class, subId));
+        reflector(ImsMmTelManagerReflector.class).createForSubscriptionId(subId);
     existingInstances.put(subId, imsMmTelManager);
     return imsMmTelManager;
   }
@@ -194,5 +193,13 @@ public class ShadowImsMmTelManager {
   @Resetter
   public static void clearExistingInstances() {
     existingInstances.clear();
+  }
+
+  @ForType(ImsMmTelManager.class)
+  interface ImsMmTelManagerReflector {
+
+    @Static
+    @Direct
+    ImsMmTelManager createForSubscriptionId(int subId);
   }
 }
