@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
@@ -29,9 +28,10 @@ import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_content_res_ApkAssets.cpp
@@ -79,9 +79,30 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     return reflector(_ApkAssets_.class, realApkAssets).getNativePtr();
   }
 
-  /** Accessor interface for {@link ApkAssets}'s internals. */
+  /** Reflector interface for {@link ApkAssets}'s internals. */
   @ForType(ApkAssets.class)
   interface _ApkAssets_ {
+
+    @Static
+    @Direct
+    ApkAssets loadFromPath(String path);
+
+    @Static
+    @Direct
+    ApkAssets loadFromPath(String finalPath, boolean system);
+
+    @Static
+    @Direct
+    ApkAssets loadFromPath(String path, boolean system, boolean forceSharedLibrary);
+
+    @Static
+    @Direct
+    ApkAssets loadFromPath(String finalPath, int flags);
+
+    @Static
+    @Direct
+    ApkAssets loadFromPath(
+        FileDescriptor fd, String friendlyName, boolean system, boolean forceSharedLibrary);
 
     @Accessor("mNativePtr")
     long getNativePtr();
@@ -98,7 +119,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     private final boolean load_as_shared_library;
     private final boolean overlay;
 
-    public Key(FileDescriptor fd, String path, boolean system, boolean load_as_shared_library,
+    public Key(
+        FileDescriptor fd,
+        String path,
+        boolean system,
+        boolean load_as_shared_library,
         boolean overlay) {
       this.fd = fd;
       this.path = path;
@@ -161,7 +186,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   protected static ApkAssets loadFromPath(@NonNull String path) throws IOException {
     return getFromCacheOrLoad(
         new Key(null, path, false, false, false),
-        () -> directlyOn(ApkAssets.class, "loadFromPath", ClassParameter.from(String.class, path)));
+        () -> reflector(_ApkAssets_.class).loadFromPath(path));
   }
 
   /**
@@ -187,12 +212,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     String finalPath = path;
     return getFromCacheOrLoad(
         new Key(null, path, system, false, false),
-        () ->
-            directlyOn(
-                ApkAssets.class,
-                "loadFromPath",
-                ClassParameter.from(String.class, finalPath),
-                ClassParameter.from(boolean.class, system)));
+        () -> reflector(_ApkAssets_.class).loadFromPath(finalPath, system));
   }
 
   @Implementation(maxSdk = Q)
@@ -201,13 +221,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       @NonNull String path, boolean system, boolean forceSharedLibrary) throws IOException {
     return getFromCacheOrLoad(
         new Key(null, path, system, forceSharedLibrary, false),
-        () ->
-            directlyOn(
-                ApkAssets.class,
-                "loadFromPath",
-                ClassParameter.from(String.class, path),
-                ClassParameter.from(boolean.class, system),
-                ClassParameter.from(boolean.class, forceSharedLibrary)));
+        () -> reflector(_ApkAssets_.class).loadFromPath(path, system, forceSharedLibrary));
   }
 
   @Implementation(minSdk = R)
@@ -221,12 +235,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     String finalPath = path;
     return getFromCacheOrLoad(
         new Key(null, path, system, false, false),
-        () ->
-            directlyOn(
-                ApkAssets.class,
-                "loadFromPath",
-                ClassParameter.from(String.class, finalPath),
-                ClassParameter.from(int.class, flags)));
+        () -> reflector(_ApkAssets_.class).loadFromPath(finalPath, flags));
   }
 
   @Implementation(maxSdk = Q)
@@ -235,11 +244,9 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       throws IOException {
     return getFromCacheOrLoad(
         new Key(fd, friendlyName, system, forceSharedLibrary, false),
-        () -> directlyOn(ApkAssets.class, "loadFromPath",
-            ClassParameter.from(FileDescriptor.class, fd),
-            ClassParameter.from(String.class, friendlyName),
-            ClassParameter.from(boolean.class, system),
-            ClassParameter.from(boolean.class, forceSharedLibrary)));
+        () ->
+            reflector(_ApkAssets_.class)
+                .loadFromPath(fd, friendlyName, system, forceSharedLibrary));
   }
 
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
@@ -356,8 +363,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
 
     CppApkAssets apk_assets =
         Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
-    Asset asset = apk_assets.Open(path_utf8,
-        Asset.AccessMode.ACCESS_RANDOM);
+    Asset asset = apk_assets.Open(path_utf8, Asset.AccessMode.ACCESS_RANDOM);
     if (asset == null) {
       throw new FileNotFoundException(path_utf8);
     }

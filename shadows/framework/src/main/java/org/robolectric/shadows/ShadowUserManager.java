@@ -13,9 +13,9 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
 import android.annotation.UserIdInt;
@@ -48,6 +48,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link android.os.UserManager}. */
 @Implements(value = UserManager.class, minSdk = JELLY_BEAN_MR1)
@@ -207,7 +209,7 @@ public class ShadowUserManager {
       }
       return infos;
     }
-    return directlyOn(realObject, UserManager.class, "getProfiles", from(int.class, userHandle));
+    return reflector(UserManagerReflector.class, realObject).getProfiles(userHandle);
   }
 
   @Implementation(minSdk = R)
@@ -663,7 +665,7 @@ public class ShadowUserManager {
     if (isSystemUser == false) {
       return false;
     } else {
-      return directlyOn(realObject, UserManager.class, "isSystemUser");
+      return reflector(UserManagerReflector.class, realObject).isSystemUser();
     }
   }
 
@@ -1125,5 +1127,15 @@ public class ShadowUserManager {
   public static void reset() {
     maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
     isMultiUserSupported = false;
+  }
+
+  @ForType(UserManager.class)
+  interface UserManagerReflector {
+
+    @Direct
+    List getProfiles(int userHandle);
+
+    @Direct
+    boolean isSystemUser();
   }
 }

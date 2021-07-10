@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
@@ -13,7 +14,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
@@ -22,18 +25,13 @@ public class ShadowWifiInfo {
     return ReflectionHelpers.callConstructor(WifiInfo.class);
   }
 
-  @RealObject
-  WifiInfo realObject;
+  @RealObject WifiInfo realObject;
 
   public void setInetAddress(InetAddress address) {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setInetAddress(address);
     } else {
-      directlyOn(
-          realObject,
-          WifiInfo.class,
-          "setInetAddress",
-          ClassParameter.from(InetAddress.class, address));
+      reflector(WifiInfoReflector.class, realObject).setInetAddress(address);
     }
   }
 
@@ -41,19 +39,16 @@ public class ShadowWifiInfo {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setMacAddress(newMacAddress);
     } else {
-      directlyOn(realObject, WifiInfo.class,
-          "setMacAddress", ClassParameter.from(String.class, newMacAddress));
+      reflector(WifiInfoReflector.class, realObject).setMacAddress(newMacAddress);
     }
   }
 
   public void setSSID(String ssid) {
     if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN) {
-      directlyOn(realObject, WifiInfo.class,
-          "setSSID", ClassParameter.from(String.class, ssid));
+      reflector(WifiInfoReflector.class, realObject).setSSID(ssid);
     } else if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
 
-      directlyOn(realObject, WifiInfo.class,
-          "setSSID", ClassParameter.from(WifiSsid.class, getWifiSsid(ssid)));
+      reflector(WifiInfoReflector.class, realObject).setSSID(getWifiSsid(ssid));
     } else {
       directlyOn(realObject, WifiInfo.class).setSSID((WifiSsid) getWifiSsid(ssid));
     }
@@ -73,8 +68,7 @@ public class ShadowWifiInfo {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setBSSID(bssid);
     } else {
-      directlyOn(realObject, WifiInfo.class,
-          "setBSSID", ClassParameter.from(String.class, bssid));
+      reflector(WifiInfoReflector.class, realObject).setBSSID(bssid);
     }
   }
 
@@ -82,11 +76,7 @@ public class ShadowWifiInfo {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setSupplicantState(state);
     } else {
-      directlyOn(
-          realObject,
-          WifiInfo.class,
-          "setSupplicantState",
-          ClassParameter.from(SupplicantState.class, state));
+      reflector(WifiInfoReflector.class, realObject).setSupplicantState(state);
     }
   }
 
@@ -94,8 +84,7 @@ public class ShadowWifiInfo {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setRssi(rssi);
     } else {
-      directlyOn(realObject, WifiInfo.class,
-          "setRssi", ClassParameter.from(int.class, rssi));
+      reflector(WifiInfoReflector.class, realObject).setRssi(rssi);
     }
   }
 
@@ -103,8 +92,7 @@ public class ShadowWifiInfo {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setLinkSpeed(linkSpeed);
     } else {
-      directlyOn(realObject, WifiInfo.class,
-          "setLinkSpeed", ClassParameter.from(int.class, linkSpeed));
+      reflector(WifiInfoReflector.class, realObject).setLinkSpeed(linkSpeed);
     }
   }
 
@@ -116,8 +104,38 @@ public class ShadowWifiInfo {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       directlyOn(realObject, WifiInfo.class).setNetworkId(id);
     } else {
-      directlyOn(realObject, WifiInfo.class,
-          "setNetworkId", ClassParameter.from(int.class, id));
+      reflector(WifiInfoReflector.class, realObject).setNetworkId(id);
     }
+  }
+
+  @ForType(WifiInfo.class)
+  interface WifiInfoReflector {
+
+    @Direct
+    void setInetAddress(InetAddress address);
+
+    @Direct
+    void setMacAddress(String newMacAddress);
+
+    @Direct
+    void setSSID(String ssid);
+
+    @Direct
+    void setSSID(@WithType("android.net.wifi.WifiSsid") Object ssid);
+
+    @Direct
+    void setBSSID(String bssid);
+
+    @Direct
+    void setSupplicantState(SupplicantState state);
+
+    @Direct
+    void setRssi(int rssi);
+
+    @Direct
+    void setLinkSpeed(int linkSpeed);
+
+    @Direct
+    void setNetworkId(int id);
   }
 }
