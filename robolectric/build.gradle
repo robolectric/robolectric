@@ -54,7 +54,7 @@ dependencies {
     testImplementation "androidx.test.ext:junit:$axtJunitVersion"
     testImplementation "androidx.test.ext:truth:$axtVersion"
     testImplementation "androidx.test:runner:$axtVersion"
-    testImplementation("com.google.guava:guava:27.0.1-jre")
+    testImplementation("com.google.guava:guava:$guavaJREVersion")
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntime AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }

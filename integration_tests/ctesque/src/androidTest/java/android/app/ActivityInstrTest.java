@@ -4,8 +4,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.drawable.ColorDrawable;
 import android.widget.Button;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
-import androidx.test.runner.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,13 +28,12 @@ public class ActivityInstrTest {
       new ActivityTestRule<>(ActivityWithoutTheme.class, false, false);
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     ActivityWithAnotherTheme.setThemeBeforeContentView = null;
   }
 
   @Test
-  public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest()
-      throws Exception {
+  public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() {
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
     Button theButton = activity.findViewById(R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
@@ -42,8 +41,8 @@ public class ActivityInstrTest {
   }
 
   @Test
-  public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest()
-      throws Exception {
+  public void
+      whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() {
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
     activity.setTheme(R.style.Theme_Robolectric);
     Button theButton = activity.findViewById(R.id.button);
@@ -52,8 +51,7 @@ public class ActivityInstrTest {
   }
 
   @Test
-  public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme()
-      throws Exception {
+  public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() {
     ActivityWithAnotherTheme.setThemeBeforeContentView = R.style.Theme_Robolectric;
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
     Button theButton = activity.findViewById(R.id.button);
@@ -62,8 +60,7 @@ public class ActivityInstrTest {
   }
 
   @Test
-  public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest()
-      throws Exception {
+  public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() {
     Activity activity = activityWithoutThemeRule.launchActivity(null);
     Button theButton = activity.findViewById(R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();

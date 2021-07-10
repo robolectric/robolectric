@@ -31,7 +31,7 @@ jobs:
       - name: Build
         run: SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
 
-  tests:
+  unit-tests:
     runs-on: ubuntu-18.04
     needs: build
     strategy:
@@ -56,7 +56,7 @@ jobs:
         with:
           java-version: 11.0.8
 
-      - name: Run tests
+      - name: Run unit tests
         run: |
           ./gradlew test --info --stacktrace --continue \
           --parallel \
@@ -70,3 +70,67 @@ jobs:
         with:
           name: test_results_${{ matrix.api-versions }}
           path: '**/build/test-results/**/TEST-*.xml'
+
+  instrumetation-tests:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest]
+        api-level: [16, 23, 29]
+        target: [default]
+        include:
+          - os: macos-11.0
+            api-level: 30
+            target: google_apis
+          - os: macos-latest
+            api-level: 24
+            target: playstore
+          - os: macos-latest
+            api-level: 28
+            target: google_apis
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle
+            ~/.m2
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Set up JDK 11.0.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11.0.8
+
+      - name: AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+
+      - name: Run instrumentation tests
+        uses: reactivecircus/android-emulator-runner@v2.19.0
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: ./gradlew connectedCheck --stacktrace
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test_results_${{ matrix.android }}
+          path: '**/build/reports/androidTests/connected/flavors/debugAndroidTest/*.xml'
