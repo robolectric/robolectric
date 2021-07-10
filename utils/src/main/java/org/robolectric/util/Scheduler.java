@@ -4,6 +4,7 @@ import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
+import com.google.errorprone.annotations.InlineMe;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.PriorityQueue;
@@ -225,12 +226,15 @@ public class Scheduler {
   /**
    * Run all runnables that are scheduled to run in the next time interval.
    *
-   * @param   interval  Time interval (in millis).
-   * @return  True if a runnable was executed.
+   * @param interval Time interval (in millis).
+   * @return True if a runnable was executed.
    * @deprecated Use {@link #advanceBy(long, TimeUnit)}.
    */
+  @InlineMe(
+      replacement = "this.advanceBy(interval, TimeUnit.MILLISECONDS)",
+      imports = {"java.util.concurrent.TimeUnit"})
   @Deprecated
-  public synchronized boolean advanceBy(long interval) {
+  public final synchronized boolean advanceBy(long interval) {
     return advanceBy(interval, TimeUnit.MILLISECONDS);
   }
 
@@ -370,7 +374,7 @@ public class Scheduler {
         advanceToLastPostedRunnable();
         break;
       case UNPAUSED:
-        advanceBy(0);
+        advanceBy(0, TimeUnit.MILLISECONDS);
         break;
       default:
     }
