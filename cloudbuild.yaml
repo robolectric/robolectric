@@ -1,0 +1,26 @@
+steps:
+
+# fetch the runtime SDK jars
+# TODO: look into moving this step to docker image
+- name: gcr.io/$PROJECT_ID/android:28
+  args: ['./gradlew', 'prefetchDependencies',  'prefetchSdks']
+  env:
+      - 'TERM=dumb'
+      - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
+      - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
+# build robolectric and its tests
+# TODO: run tests too
+- name: gcr.io/$PROJECT_ID/android:28
+  args: ['./gradlew', 'compileTest']
+  env:
+      - 'TERM=dumb'
+      - 'JAVA_TOOL_OPTIONS="-Xmx4g"'
+      - 'GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.workers.max=8 -Dkotlin.incremental=false -s -d"'
+
+
+timeout: '1200s'
+
+# use a 32 vCPU 28.8GB memory machine.
+options:
+  machineType: "N1_HIGHCPU_32"
+
