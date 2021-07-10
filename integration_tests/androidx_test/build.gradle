@@ -16,14 +16,11 @@ android {
         targetCompatibility = '1.8'
     }
 
-    android {
-        testOptions {
-            unitTests {
-                includeAndroidResources = true
-            }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
         }
     }
-
 }
 
 dependencies {
