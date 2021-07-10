@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -22,6 +23,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
@@ -67,7 +70,8 @@ public class ShadowDrawable {
     if (bm != null) {
       boolean isNinePatch = srcName != null && srcName.contains(".9.");
       if (isNinePatch) {
-        ReflectionHelpers.callInstanceMethod(bm, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
+        ReflectionHelpers.callInstanceMethod(
+            bm, "setNinePatchChunk", ClassParameter.from(byte[].class, new byte[0]));
       }
       byte[] np = bm.getNinePatchChunk();
       if (np == null || !NinePatch.isNinePatchChunk(np)) {
@@ -153,7 +157,7 @@ public class ShadowDrawable {
   @Implementation
   protected void invalidateSelf() {
     wasInvalidated = true;
-    Shadow.directlyOn(realDrawable, Drawable.class, "invalidateSelf");
+    reflector(DrawableReflector.class, realDrawable).invalidateSelf();
   }
 
   @Implementation(minSdk = KITKAT)
@@ -171,5 +175,12 @@ public class ShadowDrawable {
 
   public void validate() {
     wasInvalidated = false;
+  }
+
+  @ForType(Drawable.class)
+  interface DrawableReflector {
+
+    @Direct
+    void invalidateSelf();
   }
 }
