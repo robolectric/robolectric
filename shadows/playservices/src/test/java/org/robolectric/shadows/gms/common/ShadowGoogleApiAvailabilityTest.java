@@ -89,23 +89,6 @@ public class ShadowGoogleApiAvailabilityTest {
     }
 
     @Test
-    public void setOpenSourceSoftwareLicenseInfo() {
-        //Given mock open source license info
-        final String expected = "Mock open source license info";
-        final ShadowGoogleApiAvailability shadowGoogleApiAvailability
-                = Shadows.shadowOf(GoogleApiAvailability.getInstance());
-        shadowGoogleApiAvailability.setOpenSourceSoftwareLicenseInfo(expected);
-
-        //When getting the actual value
-        final String actual = GoogleApiAvailability.getInstance()
-                .getOpenSourceSoftwareLicenseInfo(roboContext);
-
-        //Then verify that its not null, not empty, and equal to the expected value
-        assertThat(actual)
-                .isEqualTo(expected);
-    }
-
-    @Test
     public void setErrorDialog(){
         final ShadowGoogleApiAvailability shadowGoogleApiAvailability
                 = Shadows.shadowOf(GoogleApiAvailability.getInstance());

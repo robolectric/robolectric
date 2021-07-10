@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.common.base.Preconditions;
@@ -93,11 +93,6 @@ public class ShadowGooglePlayServicesUtil {
   }
 
   @Implementation
-  public static synchronized String getOpenSourceSoftwareLicenseInfo(Context context) {
-    return googlePlayServicesUtilImpl.getOpenSourceSoftwareLicenseInfo(context);
-  }
-
-  @Implementation
   public static synchronized int isGooglePlayServicesAvailable(Context context) {
     return googlePlayServicesUtilImpl.isGooglePlayServicesAvailable(context);
   }
@@ -131,10 +126,6 @@ public class ShadowGooglePlayServicesUtil {
       }
       return PendingIntent.getActivity(
           context, requestCode, new Intent(), PendingIntent.FLAG_CANCEL_CURRENT);
-    }
-
-    public String getOpenSourceSoftwareLicenseInfo(Context context) {
-      return "license";
     }
 
     public Context getRemoteContext(Context context) {

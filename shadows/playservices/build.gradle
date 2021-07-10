@@ -16,23 +16,26 @@ dependencies {
     api project(":annotations")
     api "com.google.guava:guava:27.0.1-jre"
 
-    compileOnly "com.android.support:support-fragment:28.0.0"
-    compileOnly "com.google.android.gms:play-services-base:8.4.0"
-    compileOnly "com.google.android.gms:play-services-basement:8.4.0"
+    compileOnly "androidx.fragment:fragment:1.1.0"
+    compileOnly "com.google.android.gms:play-services-auth:17.0.0"
+    compileOnly "com.google.android.gms:play-services-base:17.0.0"
+    compileOnly "com.google.android.gms:play-services-basement:17.0.0"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
-    testCompileOnly "com.google.android.gms:play-services-base:8.4.0"
-    testCompileOnly "com.google.android.gms:play-services-basement:8.4.0"
+    testCompileOnly "com.google.android.gms:play-services-auth:17.0.0"
+    testCompileOnly "com.google.android.gms:play-services-base:17.0.0"
+    testCompileOnly "com.google.android.gms:play-services-basement:17.0.0"
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:4.13.1"
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation "org.mockito:mockito-core:2.5.4"
-    testRuntime "com.android.support:support-fragment:28.0.0"
-    testRuntime "com.google.android.gms:play-services-base:8.4.0"
-    testRuntime "com.google.android.gms:play-services-basement:8.4.0"
+    testRuntime "androidx.fragment:fragment:1.1.0"
+    testRuntime "com.google.android.gms:play-services-auth:17.0.0"
+    testRuntime "com.google.android.gms:play-services-base:17.0.0"
+    testRuntime "com.google.android.gms:play-services-basement:17.0.0"
 
     testRuntime AndroidSdk.MAX_SDK.coordinates
 }
