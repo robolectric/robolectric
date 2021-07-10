@@ -119,9 +119,9 @@ public class InstrumentationConfiguration {
       return true;
     }
 
-    // Hack. Fixes https://github.com/robolectric/robolectric/issues/1864
+    // Hack. Fixes issue #1864, #2960 and #4146
     if (name.equals("javax.net.ssl.DistinguishedNameParser")
-        || name.equals("javax.microedition.khronos.opengles.GL")) {
+        || name.matches("javax.microedition.khronos.*")) {
       return true;
     }
 
