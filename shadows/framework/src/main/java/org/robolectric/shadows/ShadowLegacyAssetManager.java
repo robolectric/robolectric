@@ -112,6 +112,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
+  private static TempDirectory tempDirectory;
 
   @RealObject
   protected AssetManager realObject;
@@ -416,7 +417,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   private static Path getFileFromZip(Path path) {
     byte[] buffer = new byte[1024];
     try {
-      Path outputDir = new TempDirectory("robolectric_assets").create("fromzip");
+      Path outputDir = getTempDirectory().create("fromzip");
       try (InputStream zis = Fs.getInputStream(path)) {
         Path fileFromZip = outputDir.resolve(path.getFileName().toString());
 
@@ -431,6 +432,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static synchronized TempDirectory getTempDirectory() {
+    if (tempDirectory == null) {
+      tempDirectory = new TempDirectory("robolectric_assets");
+    }
+    return tempDirectory;
   }
 
   @Implementation
@@ -1398,6 +1406,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       }
       reflector(_AssetManager_.class).setSystem(null);
     }
+
+    tempDirectory = null;
   }
 
 }

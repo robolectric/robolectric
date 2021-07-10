@@ -110,6 +110,13 @@ public class TempDirectory {
     }
   }
 
+  @Override
+  protected void finalize() throws Throwable {
+    super.finalize();
+
+    destroy();
+  }
+
   private void clearDirectory(final Path directory) throws IOException {
     Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
       @Override
