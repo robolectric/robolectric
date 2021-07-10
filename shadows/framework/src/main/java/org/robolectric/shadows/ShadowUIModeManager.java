@@ -57,4 +57,17 @@ public class ShadowUIModeManager {
       currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
     }
   }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected static void setApplicationNightMode(int mode) {
+    if (VALID_NIGHT_MODES.contains(mode)) {
+      currentApplicationNightMode = mode;
+    } else {
+      currentApplicationNightMode = UiModeManager.MODE_NIGHT_AUTO;
+    }
+  }
+
+  public static int getApplicationNightMode() {
+    return currentApplicationNightMode;
+  }
 }
