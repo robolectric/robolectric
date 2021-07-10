@@ -85,8 +85,8 @@ public class ShadowTextUtilsTest {
         .isEqualTo("");
     assertThat(TextUtils.ellipsize("apples", p, -1, TextUtils.TruncateAt.END).toString())
         .isEqualTo("");
-    assertThat(TextUtils.ellipsize("apples", p, 3, TextUtils.TruncateAt.END).toString())
-        .isEqualTo("app");
+    assertThat(TextUtils.ellipsize("apples", p, 4, TextUtils.TruncateAt.END).toString())
+        .isEqualTo("app…");
     assertThat(TextUtils.ellipsize("apples", p, 100, TextUtils.TruncateAt.END).toString())
         .isEqualTo("apples");
     assertThat(TextUtils.ellipsize("", p, 100, TextUtils.TruncateAt.END).toString()).isEqualTo("");
