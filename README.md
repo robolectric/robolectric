@@ -7,7 +7,9 @@ Robolectric is the industry-standard unit testing framework for Android. With Ro
 
 ## Usage
 
-Here's an example of a simple test written using Robolectric:
+Here's an example of a si
+
+ddhdhdmple test written using Robolectric:
 
 ```java
 @RunWith(AndroidJUnit4.class)
