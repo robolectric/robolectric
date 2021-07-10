@@ -183,7 +183,7 @@ public class ShadowPowerManager {
         thermalStatus >= PowerManager.THERMAL_STATUS_NONE,
         "Thermal status must be at least " + PowerManager.THERMAL_STATUS_NONE);
     checkState(
-        locationMode <= PowerManager.THERMAL_STATUS_SHUTDOWN,
+        thermalStatus <= PowerManager.THERMAL_STATUS_SHUTDOWN,
         "Thermal status must be no more than " + PowerManager.THERMAL_STATUS_SHUTDOWN);
     this.thermalStatus = thermalStatus;
     for (Object listener : thermalListeners) {
