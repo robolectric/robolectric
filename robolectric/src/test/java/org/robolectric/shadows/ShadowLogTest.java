@@ -238,19 +238,6 @@ public class ShadowLogTest {
     ShadowLog.stream = old;
   }
 
-  @Test
-  public void shouldAlwaysBeLoggableIfStreamIsSpecified() throws Exception {
-    PrintStream old = ShadowLog.stream;
-    ShadowLog.stream = new PrintStream(new ByteArrayOutputStream());
-    assertTrue(Log.isLoggable("FOO", Log.VERBOSE));
-    assertTrue(Log.isLoggable("FOO", Log.DEBUG));
-    assertTrue(Log.isLoggable("FOO", Log.INFO));
-    assertTrue(Log.isLoggable("FOO", Log.WARN));
-    assertTrue(Log.isLoggable("FOO", Log.ERROR));
-    assertTrue(Log.isLoggable("FOO", Log.ASSERT));
-    ShadowLog.stream = old;
-  }
-
   private static void assertLogged(int type, String tag, String msg, Throwable throwable) {
     LogItem lastLog = Iterables.getLast(ShadowLog.getLogsForTag(tag));
     assertEquals(type, lastLog.type);

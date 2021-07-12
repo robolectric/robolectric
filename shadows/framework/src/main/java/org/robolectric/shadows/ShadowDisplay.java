@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -19,6 +18,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -78,7 +78,7 @@ public class ShadowDisplay {
       outMetrics.xdpi = xdpi;
       outMetrics.ydpi = ydpi;
     } else {
-      directlyOn(realObject, Display.class).getMetrics(outMetrics);
+      reflector(_Display_.class, realObject).getMetrics(outMetrics);
       if (scaledDensity != null) {
         outMetrics.scaledDensity = scaledDensity;
       }
@@ -99,7 +99,7 @@ public class ShadowDisplay {
       outMetrics.widthPixels = realWidth;
       outMetrics.heightPixels = realHeight;
     } else {
-      directlyOn(realObject, Display.class).getRealMetrics(outMetrics);
+      reflector(_Display_.class, realObject).getRealMetrics(outMetrics);
       if (scaledDensity != null) {
         outMetrics.scaledDensity = scaledDensity;
       }
@@ -114,7 +114,7 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected int getDisplayId() {
-    return displayId == null ? directlyOn(realObject, Display.class).getDisplayId() : displayId;
+    return displayId == null ? reflector(_Display_.class, realObject).getDisplayId() : displayId;
   }
 
   /**
@@ -128,7 +128,7 @@ public class ShadowDisplay {
     if (refreshRate != null) {
       return refreshRate;
     }
-    float realRefreshRate = directlyOn(realObject, Display.class).getRefreshRate();
+    float realRefreshRate = reflector(_Display_.class, realObject).getRefreshRate();
     // refresh rate may be set by native code. if its 0, set to 60fps
     if (realRefreshRate < 0.1) {
       realRefreshRate = 60;
@@ -145,7 +145,7 @@ public class ShadowDisplay {
   @Implementation
   protected int getPixelFormat() {
     return pixelFormat == null
-        ? directlyOn(realObject, Display.class).getPixelFormat()
+        ? reflector(_Display_.class, realObject).getPixelFormat()
         : pixelFormat;
   }
 
@@ -452,9 +452,24 @@ public class ShadowDisplay {
             : Surface.ROTATION_90;
   }
 
-  /** Accessor interface for {@link Display}'s internals. */
+  /** Reflector interface for {@link Display}'s internals. */
   @ForType(Display.class)
   interface _Display_ {
+
+    @Direct
+    void getMetrics(DisplayMetrics outMetrics);
+
+    @Direct
+    void getRealMetrics(DisplayMetrics outMetrics);
+
+    @Direct
+    int getDisplayId();
+
+    @Direct
+    float getRefreshRate();
+
+    @Direct
+    int getPixelFormat();
 
     @Accessor("mFlags")
     void setFlags(int flags);
