@@ -25,7 +25,7 @@ public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
 
-  @Implementation(maxSdk = VERSION_CODES.Q)
+  @Implementation
   protected CaptureRequest.Builder createCaptureRequest(int templateType) {
     checkIfCameraClosedOrInError();
     CameraMetadataNative templatedRequest = new CameraMetadataNative();
