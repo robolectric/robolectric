@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -20,6 +19,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric test for {@link android.telecom.Call}. */
@@ -35,7 +35,7 @@ public class ShadowCall {
     if (getInCallAdapter() == null) {
       return;
     }
-    directlyOn(realObject, Call.class, "sendRttRequest");
+    reflector(ReflectorCall.class, realObject).sendRttRequest();
   }
 
   /**
@@ -58,12 +58,7 @@ public class ShadowCall {
     if (getInCallAdapter() == null) {
       return;
     }
-    directlyOn(
-        realObject,
-        Call.class,
-        "respondToRttRequest",
-        ClassParameter.from(int.class, id),
-        ClassParameter.from(boolean.class, accept));
+    reflector(ReflectorCall.class, realObject).respondToRttRequest(id, accept);
   }
 
   /**
@@ -129,6 +124,13 @@ public class ShadowCall {
 
   @ForType(Call.class)
   interface ReflectorCall {
+
+    @Direct
+    void sendRttRequest();
+
+    @Direct
+    void respondToRttRequest(int id, boolean accept);
+
     @Accessor("mTelecomCallId")
     String getId();
 
