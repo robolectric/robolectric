@@ -38,20 +38,29 @@ public class SandboxClassLoader extends URLClassLoader {
 
   /** Constructor for use by tests. */
   SandboxClassLoader(InstrumentationConfiguration config) {
-    this(config, new UrlResourceProvider(), new OldClassInstrumentor(new ShadowDecorator()));
+    this(
+        config,
+        new UrlResourceProvider(),
+        new InvokeDynamicClassInstrumentor(new ShadowDecorator()));
   }
 
   @Inject
   public SandboxClassLoader(
-      InstrumentationConfiguration config, ResourceProvider resourceProvider,
+      InstrumentationConfiguration config,
+      ResourceProvider resourceProvider,
       ClassInstrumentor classInstrumentor) {
-    this(Thread.currentThread().getContextClassLoader(), config, resourceProvider,
+    this(
+        Thread.currentThread().getContextClassLoader(),
+        config,
+        resourceProvider,
         classInstrumentor);
   }
 
   public SandboxClassLoader(
-      ClassLoader erstwhileClassLoader, InstrumentationConfiguration config,
-      ResourceProvider resourceProvider, ClassInstrumentor classInstrumentor) {
+      ClassLoader erstwhileClassLoader,
+      InstrumentationConfiguration config,
+      ResourceProvider resourceProvider,
+      ClassInstrumentor classInstrumentor) {
     super(getClassPathUrls(erstwhileClassLoader), erstwhileClassLoader);
 
     this.config = config;
@@ -59,12 +68,13 @@ public class SandboxClassLoader extends URLClassLoader {
 
     this.classInstrumentor = classInstrumentor;
 
-    classNodeProvider = new ClassNodeProvider() {
-      @Override
-      protected byte[] getClassBytes(String internalClassName) throws ClassNotFoundException {
-        return getByteCode(internalClassName);
-      }
-    };
+    classNodeProvider =
+        new ClassNodeProvider() {
+          @Override
+          protected byte[] getClassBytes(String internalClassName) throws ClassNotFoundException {
+            return getByteCode(internalClassName);
+          }
+        };
     this.dumpClassesDirectory = System.getProperty(DUMP_CLASSES_PROPERTY, "");
   }
 
@@ -198,5 +208,4 @@ public class SandboxClassLoader extends URLClassLoader {
       }
     }
   }
-
 }
