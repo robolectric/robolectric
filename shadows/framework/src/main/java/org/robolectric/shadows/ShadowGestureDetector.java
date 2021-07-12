@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.view.GestureDetector.OnDoubleTapListener;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.os.Handler;
@@ -12,12 +12,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GestureDetector.class)
 public class ShadowGestureDetector {
-  @RealObject
-  private GestureDetector realObject;
+  @RealObject private GestureDetector realObject;
 
   private static GestureDetector lastActiveGestureDetector;
 
@@ -28,7 +29,9 @@ public class ShadowGestureDetector {
   @Implementation
   protected void __constructor__(
       Context context, GestureDetector.OnGestureListener listener, Handler handler) {
-    Shadow.invokeConstructor(GestureDetector.class, realObject,
+    Shadow.invokeConstructor(
+        GestureDetector.class,
+        realObject,
         from(Context.class, context),
         from(GestureDetector.OnGestureListener.class, listener),
         from(Handler.class, handler));
@@ -40,12 +43,13 @@ public class ShadowGestureDetector {
     lastActiveGestureDetector = realObject;
     onTouchEventMotionEvent = ev;
 
-    return directlyOn(realObject, GestureDetector.class).onTouchEvent(ev);
+    return reflector(GestureDetectorReflector.class, realObject).onTouchEvent(ev);
   }
 
   @Implementation
   protected void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener) {
-    directlyOn(realObject, GestureDetector.class).setOnDoubleTapListener(onDoubleTapListener);
+    reflector(GestureDetectorReflector.class, realObject)
+        .setOnDoubleTapListener(onDoubleTapListener);
     this.onDoubleTapListener = onDoubleTapListener;
   }
 
@@ -67,5 +71,15 @@ public class ShadowGestureDetector {
 
   public OnDoubleTapListener getOnDoubleTapListener() {
     return onDoubleTapListener;
+  }
+
+  @ForType(GestureDetector.class)
+  interface GestureDetectorReflector {
+
+    @Direct
+    boolean onTouchEvent(MotionEvent ev);
+
+    @Direct
+    void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener);
   }
 }

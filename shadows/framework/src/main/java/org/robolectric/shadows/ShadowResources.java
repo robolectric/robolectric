@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -91,7 +90,7 @@ public class ShadowResources {
       return legacyShadowOf(realResources.getAssets())
           .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
     } else {
-      return directlyOn(realResources, Resources.class).obtainAttributes(set, attrs);
+      return reflector(ResourcesReflector.class, realResources).obtainAttributes(set, attrs);
     }
   }
 
@@ -102,7 +101,8 @@ public class ShadowResources {
       String raw = getQuantityString(id, quantity);
       return String.format(Locale.ENGLISH, raw, formatArgs);
     } else {
-      return directlyOn(realResources, Resources.class).getQuantityString(id, quantity, formatArgs);
+      return reflector(ResourcesReflector.class, realResources)
+          .getQuantityString(id, quantity, formatArgs);
     }
   }
 
@@ -132,7 +132,7 @@ public class ShadowResources {
         return null;
       }
     } else {
-      return directlyOn(realResources, Resources.class).getQuantityString(resId, quantity);
+      return reflector(ResourcesReflector.class, realResources).getQuantityString(resId, quantity);
     }
   }
 
@@ -148,7 +148,7 @@ public class ShadowResources {
         return inputStream;
       }
     } else {
-      return directlyOn(realResources, Resources.class).openRawResource(id);
+      return reflector(ResourcesReflector.class, realResources).openRawResource(id);
     }
   }
 
@@ -174,7 +174,7 @@ public class ShadowResources {
         throw newNotFoundException(id);
       }
     } else {
-      return directlyOn(realResources, Resources.class).openRawResourceFd(id);
+      return reflector(ResourcesReflector.class, realResources).openRawResourceFd(id);
     }
   }
 
@@ -199,7 +199,7 @@ public class ShadowResources {
         throw newNotFoundException(id);
       }
     } else {
-      return directlyOn(realResources, Resources.class).obtainTypedArray(id);
+      return reflector(ResourcesReflector.class, realResources).obtainTypedArray(id);
     }
   }
 
@@ -374,5 +374,23 @@ public class ShadowResources {
 
     @Direct
     Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme);
+
+    @Direct
+    TypedArray obtainAttributes(AttributeSet set, int[] attrs);
+
+    @Direct
+    String getQuantityString(int id, int quantity, Object... formatArgs);
+
+    @Direct
+    String getQuantityString(int resId, int quantity);
+
+    @Direct
+    InputStream openRawResource(int id);
+
+    @Direct
+    AssetFileDescriptor openRawResourceFd(int id);
+
+    @Direct
+    TypedArray obtainTypedArray(int id);
   }
 }

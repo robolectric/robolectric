@@ -10,7 +10,6 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -80,6 +79,8 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
 import org.robolectric.util.Logger;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressLint("NewApi")
 @Implements(value = AssetManager.class, /* this one works for P too... maxSdk = VERSION_CODES.O_MR1,*/
@@ -113,8 +114,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   private static long nextInternalThemeId = 1000;
   private static final Map<Long, NativeTheme> nativeThemes = new HashMap<>();
 
-  @RealObject
-  protected AssetManager realObject;
+  @RealObject protected AssetManager realObject;
 
   private ResourceTable resourceTable;
 
@@ -640,7 +640,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     for (ApkAssets apkAsset : apkAssets) {
       assetDirs.add(Fs.fromUrl(apkAsset.getAssetPath()));
     }
-    directlyOn(realObject, AssetManager.class).setApkAssets(apkAssets, invalidateCaches);
+    reflector(AssetManagerReflector.class, realObject).setApkAssets(apkAssets, invalidateCaches);
   }
 
   @HiddenApi @Implementation
@@ -657,25 +657,68 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return new String[0]; // todo
   }
 
-  @HiddenApi @Implementation(maxSdk = N_MR1)
-  final public void setConfiguration(int mcc, int mnc, String locale,
-      int orientation, int touchscreen, int density, int keyboard,
-      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
-      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      int screenLayout, int uiMode, int sdkVersion) {
-    setConfiguration(mcc, mnc, locale,
-        orientation, touchscreen, density, keyboard,
-        keyboardHidden, navigation, screenWidth, screenHeight,
-        smallestScreenWidthDp, screenWidthDp, screenHeightDp,
-        screenLayout, uiMode, 0, sdkVersion);
+  @HiddenApi
+  @Implementation(maxSdk = N_MR1)
+  public final void setConfiguration(
+      int mcc,
+      int mnc,
+      String locale,
+      int orientation,
+      int touchscreen,
+      int density,
+      int keyboard,
+      int keyboardHidden,
+      int navigation,
+      int screenWidth,
+      int screenHeight,
+      int smallestScreenWidthDp,
+      int screenWidthDp,
+      int screenHeightDp,
+      int screenLayout,
+      int uiMode,
+      int sdkVersion) {
+    setConfiguration(
+        mcc,
+        mnc,
+        locale,
+        orientation,
+        touchscreen,
+        density,
+        keyboard,
+        keyboardHidden,
+        navigation,
+        screenWidth,
+        screenHeight,
+        smallestScreenWidthDp,
+        screenWidthDp,
+        screenHeightDp,
+        screenLayout,
+        uiMode,
+        0,
+        sdkVersion);
   }
 
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.O)
-  public void setConfiguration(int mcc, int mnc, String locale,
-      int orientation, int touchscreen, int density, int keyboard,
-      int keyboardHidden, int navigation, int screenWidth, int screenHeight,
-      int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
-      int screenLayout, int uiMode, int colorMode, int majorVersion) {
+  @HiddenApi
+  @Implementation(minSdk = VERSION_CODES.O)
+  public void setConfiguration(
+      int mcc,
+      int mnc,
+      String locale,
+      int orientation,
+      int touchscreen,
+      int density,
+      int keyboard,
+      int keyboardHidden,
+      int navigation,
+      int screenWidth,
+      int screenHeight,
+      int smallestScreenWidthDp,
+      int screenWidthDp,
+      int screenHeightDp,
+      int screenLayout,
+      int uiMode,
+      int colorMode,
+      int majorVersion) {
     // AssetManager* am = assetManagerForJavaObject(env, clazz);
 
     ResTable_config config = new ResTable_config();
@@ -779,8 +822,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
       if (type == TypedValue.TYPE_REFERENCE) {
         final String reference = typedResource.asString();
-        ResName refResName = AttributeResource.getResourceReference(reference,
-            typedResource.getXmlContext().getPackageName(), null);
+        ResName refResName =
+            AttributeResource.getResourceReference(
+                reference, typedResource.getXmlContext().getPackageName(), null);
         typedValue.resourceId = resourceTable.getResourceId(refResName);
         typedValue.data = typedValue.resourceId;
         typedResource = resolve(typedResource, config, typedValue.resourceId);
@@ -799,8 +843,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
       if (type == TypedValue.TYPE_ATTRIBUTE) {
         final String reference = typedResource.asString();
-        final ResName attrResName = AttributeResource.getStyleReference(reference,
-            typedResource.getXmlContext().getPackageName(), "attr");
+        final ResName attrResName =
+            AttributeResource.getStyleReference(
+                reference, typedResource.getXmlContext().getPackageName(), "attr");
         typedValue.data = resourceTable.getResourceId(attrResName);
       }
 
@@ -929,28 +974,49 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     copyTheme(destPtr, sourcePtr);
   }
 
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.Q)
-  protected static void nativeThemeCopy(long dstAssetManagerPtr, long dstThemePtr,
-      long srcAssetManagerPtr, long srcThemePtr) {
+  @HiddenApi
+  @Implementation(minSdk = VERSION_CODES.Q)
+  protected static void nativeThemeCopy(
+      long dstAssetManagerPtr, long dstThemePtr, long srcAssetManagerPtr, long srcThemePtr) {
     copyTheme(dstThemePtr, srcThemePtr);
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static boolean applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
-      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
-        outValues, outIndices);
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static boolean applyStyle(
+      int themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      int xmlParserToken,
+      int[] attrs,
+      int[] outValues,
+      int[] outIndices) {
+    return applyStyle(
+        (long) themeToken,
+        defStyleAttr,
+        defStyleRes,
+        (long) xmlParserToken,
+        attrs,
+        outValues,
+        outIndices);
   }
 
-  @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
-  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
-      long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
+  @HiddenApi
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static void applyStyle(
+      long themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      long xmlParserToken,
+      int[] inAttrs,
+      int length,
+      long outValuesAddress,
       long outIndicesAddress) {
     ShadowVMRuntime shadowVMRuntime = Shadow.extract(VMRuntime.getRuntime());
     int[] outValues = (int[])shadowVMRuntime.getObjectForAddress(outValuesAddress);
     int[] outIndices = (int[])shadowVMRuntime.getObjectForAddress(outIndicesAddress);
-    applyStyle(themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs,
-        outValues, outIndices);
+    applyStyle(
+        themeToken, defStyleAttr, defStyleRes, xmlParserToken, inAttrs, outValues, outIndices);
   }
 
   @HiddenApi @Implementation(minSdk = P)
@@ -958,42 +1024,58 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     applyThemeStyle(themePtr, resId, force);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static boolean applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
-      long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  protected static boolean applyStyle(
+      long themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      long xmlParserToken,
+      int[] attrs,
+      int[] outValues,
+      int[] outIndices) {
     // no-op
     return false;
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected static boolean resolveAttrs(long themeToken,
-      int defStyleAttr, int defStyleRes, int[] inValues,
-      int[] attrs, int[] outValues, int[] outIndices) {
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  protected static boolean resolveAttrs(
+      long themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      int[] inValues,
+      int[] attrs,
+      int[] outValues,
+      int[] outIndices) {
     // no-op
     return false;
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
   protected boolean retrieveAttributes(
       int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     return retrieveAttributes((long)xmlParserToken, attrs, outValues, outIndices);
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected boolean retrieveAttributes(long xmlParserToken, int[] attrs, int[] outValues,
-      int[] outIndices) {
+  protected boolean retrieveAttributes(
+      long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     return false;
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int loadThemeAttributeValue(int themeHandle, int ident,
-      TypedValue outValue, boolean resolve) {
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int loadThemeAttributeValue(
+      int themeHandle, int ident, TypedValue outValue, boolean resolve) {
     return loadThemeAttributeValue((long) themeHandle, ident, outValue, resolve);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected static int loadThemeAttributeValue(long themeHandle, int ident,
-      TypedValue outValue, boolean resolve) {
+  @HiddenApi
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  protected static int loadThemeAttributeValue(
+      long themeHandle, int ident, TypedValue outValue, boolean resolve) {
     // no-op
     return 0;
   }
@@ -1011,8 +1093,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
-    return new StyleResolver(resourceTable, legacyShadowOf(AssetManager.getSystem()).getResourceTable(),
-        themeStyleData, themeStyleSet, themeStyleName, config);
+    return new StyleResolver(
+        resourceTable,
+        legacyShadowOf(AssetManager.getSystem()).getResourceTable(),
+        themeStyleData,
+        themeStyleSet,
+        themeStyleName,
+        config);
   }
 
   private TypedResource getAndResolve(int resId, ResTable_config config, boolean resolveRefs) {
@@ -1109,8 +1196,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         AttributeResource attrValue = themeStyleSet.getAttrValue(styleAttributeResName);
         if (attrValue == null) {
           throw new RuntimeException(
-              "no value for " + styleAttributeResName.getFullyQualifiedName()
-                  + " in " + themeStyleSet);
+              "no value for "
+                  + styleAttributeResName.getFullyQualifiedName()
+                  + " in "
+                  + themeStyleSet);
         }
         if (attrValue.isResourceReference()) {
           styleAttributeResName = attrValue.getResourceReference();
@@ -1400,4 +1489,10 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
+  @ForType(AssetManager.class)
+  interface AssetManagerReflector {
+
+    @Direct
+    void setApkAssets(Object apkAssetsObject, Object invalidateCachesObject);
+  }
 }

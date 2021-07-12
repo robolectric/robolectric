@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -55,6 +54,7 @@ import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -281,7 +281,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    */
   @Deprecated
   public boolean isFinishing() {
-    return directlyOn(realActivity, Activity.class).isFinishing();
+    return reflector(DirectActivityReflector.class, realActivity).isFinishing();
   }
 
   /**
@@ -292,7 +292,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    */
   @Implementation
   protected Window getWindow() {
-    Window window = directlyOn(realActivity, Activity.class).getWindow();
+    Window window = reflector(DirectActivityReflector.class, realActivity).getWindow();
 
     if (window == null) {
       try {
@@ -417,7 +417,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     if (lastNonConfigurationInstance != null) {
       return lastNonConfigurationInstance;
     }
-    return directlyOn(realActivity, Activity.class).getLastNonConfigurationInstance();
+    return reflector(DirectActivityReflector.class, realActivity).getLastNonConfigurationInstance();
   }
 
   /** @deprecated use {@link ActivityController#recreate()}. */
@@ -447,7 +447,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected boolean onCreateOptionsMenu(Menu menu) {
     optionsMenu = menu;
-    return directlyOn(realActivity, Activity.class).onCreateOptionsMenu(menu);
+    return reflector(DirectActivityReflector.class, realActivity).onCreateOptionsMenu(menu);
   }
 
   /**
@@ -677,7 +677,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation(minSdk = M)
   protected final void requestPermissions(String[] permissions, int requestCode) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
-    directlyOn(realActivity, Activity.class).requestPermissions(permissions, requestCode);
+    reflector(DirectActivityReflector.class, realActivity)
+        .requestPermissions(permissions, requestCode);
   }
 
   /**
@@ -856,5 +857,20 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void runOnUiThread(Runnable action);
 
     void onDestroy();
+
+    @Direct
+    boolean isFinishing();
+
+    @Direct
+    Window getWindow();
+
+    @Direct
+    Object getLastNonConfigurationInstance();
+
+    @Direct
+    boolean onCreateOptionsMenu(Menu menu);
+
+    @Direct
+    void requestPermissions(String[] permissions, int requestCode);
   }
 }

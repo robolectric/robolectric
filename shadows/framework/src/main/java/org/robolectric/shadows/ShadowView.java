@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -151,47 +150,49 @@ public class ShadowView {
   @Implementation
   protected void setOnFocusChangeListener(View.OnFocusChangeListener l) {
     onFocusChangeListener = l;
-    directly().setOnFocusChangeListener(l);
+    reflector(_View_.class, realView).setOnFocusChangeListener(l);
   }
 
   @Implementation
   protected void setOnClickListener(View.OnClickListener onClickListener) {
     this.onClickListener = onClickListener;
-    directly().setOnClickListener(onClickListener);
+    reflector(_View_.class, realView).setOnClickListener(onClickListener);
   }
 
   @Implementation
   protected void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
     this.onLongClickListener = onLongClickListener;
-    directly().setOnLongClickListener(onLongClickListener);
+    reflector(_View_.class, realView).setOnLongClickListener(onLongClickListener);
   }
 
   @Implementation
   protected void setOnSystemUiVisibilityChangeListener(
       View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener) {
     this.onSystemUiVisibilityChangeListener = onSystemUiVisibilityChangeListener;
-    directly().setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
+    reflector(_View_.class, realView)
+        .setOnSystemUiVisibilityChangeListener(onSystemUiVisibilityChangeListener);
   }
 
   @Implementation
   protected void setOnCreateContextMenuListener(
       View.OnCreateContextMenuListener onCreateContextMenuListener) {
     this.onCreateContextMenuListener = onCreateContextMenuListener;
-    directly().setOnCreateContextMenuListener(onCreateContextMenuListener);
+    reflector(_View_.class, realView).setOnCreateContextMenuListener(onCreateContextMenuListener);
   }
 
   @Implementation
   protected void addOnAttachStateChangeListener(
       View.OnAttachStateChangeListener onAttachStateChangeListener) {
     onAttachStateChangeListeners.add(onAttachStateChangeListener);
-    directly().addOnAttachStateChangeListener(onAttachStateChangeListener);
+    reflector(_View_.class, realView).addOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
   @Implementation
   protected void removeOnAttachStateChangeListener(
       View.OnAttachStateChangeListener onAttachStateChangeListener) {
     onAttachStateChangeListeners.remove(onAttachStateChangeListener);
-    directly().removeOnAttachStateChangeListener(onAttachStateChangeListener);
+    reflector(_View_.class, realView)
+        .removeOnAttachStateChangeListener(onAttachStateChangeListener);
   }
 
   @Implementation
@@ -226,7 +227,7 @@ public class ShadowView {
   @Implementation
   protected void requestLayout() {
     didRequestLayout = true;
-    directly().requestLayout();
+    reflector(_View_.class, realView).requestLayout();
   }
 
   @Implementation
@@ -234,7 +235,7 @@ public class ShadowView {
     for (View.OnClickListener listener : globalClickListeners) {
       listener.onClick(realView);
     }
-    return directlyOn(realView, View.class).performClick();
+    return reflector(_View_.class, realView).performClick();
   }
 
   /**
@@ -260,7 +261,7 @@ public class ShadowView {
     for (View.OnLongClickListener listener : globalLongClickListeners) {
       listener.onLongClick(realView);
     }
-    return directlyOn(realView, View.class).performLongClick();
+    return reflector(_View_.class, realView).performLongClick();
   }
 
   /**
@@ -304,19 +305,19 @@ public class ShadowView {
   @Implementation
   protected void invalidate() {
     wasInvalidated = true;
-    directly().invalidate();
+    reflector(_View_.class, realView).invalidate();
   }
 
   @Implementation
   protected boolean onTouchEvent(MotionEvent event) {
     lastTouchEvent = event;
-    return directly().onTouchEvent(event);
+    return reflector(_View_.class, realView).onTouchEvent(event);
   }
 
   @Implementation
   protected void setOnTouchListener(View.OnTouchListener onTouchListener) {
     this.onTouchListener = onTouchListener;
-    directly().setOnTouchListener(onTouchListener);
+    reflector(_View_.class, realView).setOnTouchListener(onTouchListener);
   }
 
   public MotionEvent getLastTouchEvent() {
@@ -475,7 +476,7 @@ public class ShadowView {
   @Implementation
   protected boolean post(Runnable action) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return directly().post(action);
+      return reflector(_View_.class, realView).post(action);
     } else {
       ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
       return true;
@@ -485,7 +486,7 @@ public class ShadowView {
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return directly().postDelayed(action, delayMills);
+      return reflector(_View_.class, realView).postDelayed(action, delayMills);
     } else {
       ShadowApplication.getInstance()
           .getForegroundThreadScheduler()
@@ -497,7 +498,7 @@ public class ShadowView {
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      directly().postInvalidateDelayed(delayMilliseconds);
+      reflector(_View_.class, realView).postInvalidateDelayed(delayMilliseconds);
     } else {
       ShadowApplication.getInstance()
           .getForegroundThreadScheduler()
@@ -515,7 +516,7 @@ public class ShadowView {
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
     if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return directlyOn(realView, View.class).removeCallbacks(callback);
+      return reflector(_View_.class, realView).removeCallbacks(callback);
     } else {
       ShadowLegacyLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
       shadowLooper.getScheduler().remove(callback);
@@ -571,7 +572,7 @@ public class ShadowView {
 
   @Implementation
   protected void setAnimation(final Animation animation) {
-    directly().setAnimation(animation);
+    reflector(_View_.class, realView).setAnimation(animation);
 
     if (animation != null) {
       new AnimationRunner(animation);
@@ -580,7 +581,7 @@ public class ShadowView {
 
   @Implementation
   protected void clearAnimation() {
-    directly().clearAnimation();
+    reflector(_View_.class, realView).clearAnimation();
 
     if (animationRunner != null) {
       animationRunner.cancel();
@@ -665,6 +666,73 @@ public class ShadowView {
     @Direct
     void assignParent(ViewParent viewParent);
 
+    @Direct
+    void setOnFocusChangeListener(View.OnFocusChangeListener l);
+
+    @Direct
+    void setOnClickListener(View.OnClickListener onClickListener);
+
+    @Direct
+    void setOnLongClickListener(View.OnLongClickListener onLongClickListener);
+
+    @Direct
+    void setOnSystemUiVisibilityChangeListener(
+        View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener);
+
+    @Direct
+    void setOnCreateContextMenuListener(
+        View.OnCreateContextMenuListener onCreateContextMenuListener);
+
+    @Direct
+    void addOnAttachStateChangeListener(
+        View.OnAttachStateChangeListener onAttachStateChangeListener);
+
+    @Direct
+    void removeOnAttachStateChangeListener(
+        View.OnAttachStateChangeListener onAttachStateChangeListener);
+
+    @Direct
+    void requestLayout();
+
+    @Direct
+    boolean performClick();
+
+    @Direct
+    boolean performLongClick();
+
+    @Direct
+    void invalidate();
+
+    @Direct
+    boolean onTouchEvent(MotionEvent event);
+
+    @Direct
+    void setOnTouchListener(View.OnTouchListener onTouchListener);
+
+    @Direct
+    boolean post(Runnable action);
+
+    @Direct
+    boolean postDelayed(Runnable action, long delayMills);
+
+    @Direct
+    void postInvalidateDelayed(long delayMilliseconds);
+
+    @Direct
+    boolean removeCallbacks(Runnable callback);
+
+    @Direct
+    void setAnimation(final Animation animation);
+
+    @Direct
+    void clearAnimation();
+
+    @Direct
+    boolean getGlobalVisibleRect(Rect rect, Point globalOffset);
+
+    @Direct
+    WindowId getWindowId();
+
     @Accessor("mAttachInfo")
     Object getAttachInfo();
 
@@ -695,7 +763,7 @@ public class ShadowView {
   @Implementation
   protected boolean getGlobalVisibleRect(Rect rect, Point globalOffset) {
     if (globalVisibleRect == null) {
-      return directly().getGlobalVisibleRect(rect, globalOffset);
+      return reflector(_View_.class, realView).getGlobalVisibleRect(rect, globalOffset);
     }
 
     if (!globalVisibleRect.isEmpty()) {
@@ -744,10 +812,6 @@ public class ShadowView {
     ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
   }
 
-  private View directly() {
-    return directlyOn(realView, View.class);
-  }
-
   public static class WindowIdHelper {
     public static WindowId getWindowId(ShadowView shadowView) {
       if (shadowView.isAttachedToWindow()) {
@@ -759,7 +823,7 @@ public class ShadowView {
         }
       }
 
-      return shadowView.directly().getWindowId();
+      return reflector(_View_.class, shadowView.realView).getWindowId();
     }
 
     private static class MyIWindowIdStub extends IWindowId.Stub {
