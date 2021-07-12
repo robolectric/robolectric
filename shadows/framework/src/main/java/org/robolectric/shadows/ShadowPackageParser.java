@@ -44,7 +44,16 @@ public class ShadowPackageParser {
         if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
           QHelper.setCallback(packageParser);
         }
-        thePackage = packageParser.parsePackage(apkFile.toFile(), 0);
+        // thePackage = packageParser.parsePackage(apkFile.toFile(), flags);
+        thePackage = packageParser.parsePackage(apkFile.toFile().getParentFile(), 0);
+        System.out.println("Package : " + thePackage.toString());
+        System.out.println("   code : " + thePackage.baseCodePath);
+        for (int i = 0; i < thePackage.splitNames.length; i++) {
+          String splits = thePackage.splitNames[i];
+          String codepath = thePackage.splitCodePaths[i];
+          System.out.println("Split Package : " + splits);
+          System.out.println("Split    code : " + codepath);
+        }
       } else { // JB -> KK
         thePackage =
             reflector(_PackageParser_.class, packageParser)
