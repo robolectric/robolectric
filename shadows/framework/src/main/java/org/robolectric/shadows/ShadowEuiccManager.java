@@ -1,16 +1,30 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.telephony.euicc.EuiccManager;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(value = EuiccManager.class, minSdk = P)
 public class ShadowEuiccManager {
 
+  private final Map<Integer, EuiccManager> cardIdsToEuiccManagers = new HashMap<>();
   private boolean enabled;
   private String eid;
+
+  @Implementation(minSdk = Q)
+  protected EuiccManager createForCardId(int cardId) {
+    return cardIdsToEuiccManagers.get(cardId);
+  }
+
+  /** Sets the value returned by {@link EuiccManager#createForCardId(int)}. */
+  public void setEuiccManagerForCardId(int cardId, EuiccManager euiccManager) {
+    cardIdsToEuiccManagers.put(cardId, euiccManager);
+  }
 
   /** Returns {@code false}, or the value specified by calling {@link #setIsEnabled}. */
   @Implementation

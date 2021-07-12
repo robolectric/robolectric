@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
@@ -17,10 +19,13 @@ import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
+import android.util.ArrayMap;
+import android.util.SparseIntArray;
 import androidx.annotation.RequiresApi;
 import com.google.common.base.Preconditions;
 import java.util.ArrayDeque;
@@ -49,8 +54,10 @@ public class ShadowActivityManager {
   private final List<ActivityManager.AppTask> appTasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningTaskInfo> tasks = new CopyOnWriteArrayList<>();
   private final List<ActivityManager.RunningServiceInfo> services = new CopyOnWriteArrayList<>();
-  private static List<ActivityManager.RunningAppProcessInfo> processes =
+  private static final List<ActivityManager.RunningAppProcessInfo> processes =
       new CopyOnWriteArrayList<>();
+  private final List<ImportanceListener> importanceListeners = new CopyOnWriteArrayList<>();
+  private final SparseIntArray uidImportances = new SparseIntArray();
   @RealObject private ActivityManager realObject;
   private Boolean isLowRamDeviceOverride = null;
   private int lockTaskModeState = ActivityManager.LOCK_TASK_MODE_NONE;
@@ -252,6 +259,38 @@ public class ShadowActivityManager {
     isLowRamDeviceOverride = isLowRamDevice;
   }
 
+  @Implementation(minSdk = O)
+  protected void addOnUidImportanceListener(Object listener, Object importanceCutpoint) {
+    importanceListeners.add(new ImportanceListener(listener, (Integer) importanceCutpoint));
+  }
+
+  @Implementation(minSdk = O)
+  protected void removeOnUidImportanceListener(Object listener) {
+    importanceListeners.remove(new ImportanceListener(listener));
+  }
+
+  @Implementation(minSdk = M)
+  protected int getPackageImportance(String packageName) {
+    try {
+      return uidImportances.get(
+          context.getPackageManager().getPackageUid(packageName, 0), IMPORTANCE_GONE);
+    } catch (NameNotFoundException e) {
+      return IMPORTANCE_GONE;
+    }
+  }
+
+  @Implementation(minSdk = O)
+  protected int getUidImportance(int uid) {
+    return uidImportances.get(uid, IMPORTANCE_GONE);
+  }
+
+  public void setUidImportance(int uid, int importance) {
+    uidImportances.put(uid, importance);
+    for (ImportanceListener listener : importanceListeners) {
+      listener.onUidImportanceChanged(uid, importance);
+    }
+  }
+
   @Implementation(minSdk = VERSION_CODES.M)
   protected int getLockTaskModeState() {
     return lockTaskModeState;
@@ -436,5 +475,55 @@ public class ShadowActivityManager {
 
     @Direct
     boolean isLowRamDevice();
+  }
+
+  /**
+   * Helper class mimicing the package-private UidObserver class inside {@link ActivityManager}.
+   *
+   * <p>This class is responsible for maintaining the cutpoint of the corresponding {@link
+   * ActivityManager.OnUidImportanceListener} and invoking the listener only when the importance of
+   * a given UID crosses the cutpoint.
+   */
+  private static class ImportanceListener {
+
+    private final ActivityManager.OnUidImportanceListener listener;
+    private final int importanceCutpoint;
+
+    private final ArrayMap<Integer, Boolean> lastAboveCuts = new ArrayMap<>();
+
+    ImportanceListener(Object listener) {
+      this(listener, 0);
+    }
+
+    ImportanceListener(Object listener, int importanceCutpoint) {
+      this.listener = (ActivityManager.OnUidImportanceListener) listener;
+      this.importanceCutpoint = importanceCutpoint;
+    }
+
+    void onUidImportanceChanged(int uid, int importance) {
+      Boolean isAboveCut = importance > importanceCutpoint;
+      if (!isAboveCut.equals(lastAboveCuts.get(uid))) {
+        lastAboveCuts.put(uid, isAboveCut);
+        listener.onUidImportance(uid, importance);
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof ImportanceListener)) {
+        return false;
+      }
+
+      ImportanceListener that = (ImportanceListener) o;
+      return listener.equals(that.listener);
+    }
+
+    @Override
+    public int hashCode() {
+      return listener.hashCode();
+    }
   }
 }

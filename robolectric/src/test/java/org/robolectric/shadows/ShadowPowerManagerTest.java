@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.content.Intent.ACTION_SCREEN_OFF;
+import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -10,11 +12,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.os.PowerManager;
 import android.os.WorkSource;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.truth.Correspondence;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,13 +28,14 @@ import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPowerManagerTest {
+
+  private Application context;
   private PowerManager powerManager;
 
   @Before
   public void before() {
-    powerManager =
-        (PowerManager)
-            ApplicationProvider.getApplicationContext().getSystemService(Context.POWER_SERVICE);
+    context = ApplicationProvider.getApplicationContext();
+    powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
   }
 
   @Test
@@ -125,8 +131,12 @@ public class ShadowPowerManagerTest {
   @Test
   public void isScreenOn_shouldGetAndSet() {
     assertThat(powerManager.isScreenOn()).isTrue();
-    shadowOf(powerManager).setIsScreenOn(false);
+    shadowOf(powerManager).turnScreenOn(false);
     assertThat(powerManager.isScreenOn()).isFalse();
+    assertThat(shadowOf(context).getBroadcastIntents())
+        .comparingElementsUsing(Correspondence.from(Intent::filterEquals, "is filterEqual to"))
+        .contains(new Intent(ACTION_SCREEN_OFF));
+    shadowOf(context).clearBroadcastIntents();
   }
 
   @Test
@@ -142,10 +152,19 @@ public class ShadowPowerManagerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void isInteractive_shouldGetAndSet() {
-    shadowOf(powerManager).setIsInteractive(true);
-    assertThat(powerManager.isInteractive()).isTrue();
-    shadowOf(powerManager).setIsInteractive(false);
+    shadowOf(powerManager).turnScreenOn(false);
     assertThat(powerManager.isInteractive()).isFalse();
+    assertThat(shadowOf(context).getBroadcastIntents())
+        .comparingElementsUsing(Correspondence.from(Intent::filterEquals, "is filterEqual to"))
+        .contains(new Intent(ACTION_SCREEN_OFF));
+    shadowOf(context).clearBroadcastIntents();
+
+    shadowOf(powerManager).turnScreenOn(true);
+    assertThat(powerManager.isInteractive()).isTrue();
+    assertThat(shadowOf(context).getBroadcastIntents())
+        .comparingElementsUsing(Correspondence.from(Intent::filterEquals, "is filterEqual to"))
+        .contains(new Intent(ACTION_SCREEN_ON));
+    shadowOf(context).clearBroadcastIntents();
   }
 
   @Test

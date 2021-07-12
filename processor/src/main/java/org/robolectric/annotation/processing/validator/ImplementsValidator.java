@@ -2,6 +2,7 @@ package org.robolectric.annotation.processing.validator;
 
 import static org.robolectric.annotation.processing.validator.ImplementationValidator.METHODS_ALLOWED_TO_BE_PUBLIC;
 
+import com.google.auto.common.AnnotationValues;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
@@ -112,7 +113,7 @@ public class ImplementsValidator extends Validator {
 
       if (actualType == null
           && !suppressWarnings(shadowType, "robolectric.internal.IgnoreMissingClass")) {
-        error("@Implements: could not resolve class <" + cv + '>', cv);
+        error("@Implements: could not resolve class <" + AnnotationValues.toString(cv) + '>', cv);
         return null;
       }
     } else {
@@ -141,7 +142,8 @@ public class ImplementsValidator extends Validator {
       } else if (typeTP.isEmpty()) {
         message.append("Shadow type has type parameters but real type does not");
       } else {
-        message.append("Shadow type must have same type parameters as its real counterpart: expected <");
+        message.append(
+            "Shadow type must have same type parameters as its real counterpart: expected <");
         helpers.appendParameterList(message, actualType.getTypeParameters());
         message.append(">, was <");
         helpers.appendParameterList(message, shadowType.getTypeParameters());

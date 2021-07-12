@@ -23,6 +23,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
@@ -38,6 +39,7 @@ import org.robolectric.util.reflector.WithType;
 public class ShadowViewRootImpl {
 
   @RealObject protected ViewRootImpl realObject;
+  @ReflectorObject protected ViewRootImplReflector objectReflector;
 
   @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
   public static IWindowSession getWindowSession(Looper mainLooper) {
@@ -84,13 +86,13 @@ public class ShadowViewRootImpl {
       Display display = getDisplay();
       Rect frame = new Rect();
       display.getRectSize(frame);
-      reflector(ViewRootImplReflector.class, realObject).dispatchResized(frame);
+      objectReflector.dispatchResized(frame);
     }
   }
 
   protected Display getDisplay() {
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN_MR1) {
-      return reflector(ViewRootImplReflector.class, realObject).getDisplay();
+      return objectReflector.getDisplay();
     } else {
       WindowManager windowManager = (WindowManager) realObject.getView().getContext()
           .getSystemService(Context.WINDOW_SERVICE);
@@ -100,23 +102,22 @@ public class ShadowViewRootImpl {
 
   @Implementation
   protected void setView(View view, WindowManager.LayoutParams attrs, View panelParentView) {
-    reflector(ViewRootImplReflector.class, realObject).setView(view, attrs, panelParentView);
+    objectReflector.setView(view, attrs, panelParentView);
     if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
       Rect winFrame = new Rect();
       getDisplay().getRectSize(winFrame);
-      reflector(ViewRootImplReflector.class, realObject).setWinFrame(winFrame);
+      objectReflector.setWinFrame(winFrame);
     }
   }
 
   @Implementation(minSdk = R)
   protected void setView(
       View view, WindowManager.LayoutParams attrs, View panelParentView, int userId) {
-    reflector(ViewRootImplReflector.class, realObject)
-        .setView(view, attrs, panelParentView, userId);
+    objectReflector.setView(view, attrs, panelParentView, userId);
     if (ConfigurationRegistry.get(TextLayoutMode.Mode.class) == REALISTIC) {
       Rect winFrame = new Rect();
       getDisplay().getRectSize(winFrame);
-      reflector(ViewRootImplReflector.class, realObject).setWinFrame(winFrame);
+      objectReflector.setWinFrame(winFrame);
     }
   }
 

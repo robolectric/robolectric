@@ -10,6 +10,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -26,6 +27,7 @@ import org.robolectric.util.reflector.Static;
 public abstract class ShadowChoreographer {
 
   @RealObject Choreographer realObject;
+  @ReflectorObject ChoreographerReflector objectReflector;
   private ChoreographerReflector reflector;
 
   public static class Picker extends LooperShadowPicker<ShadowChoreographer> {
@@ -86,13 +88,13 @@ public abstract class ShadowChoreographer {
   @Implementation
   protected void doFrame(long frameTimeNanos, int frame) {
     if (reflector == null) {
-      reflector = reflector(ChoreographerReflector.class, realObject);
+      reflector = objectReflector;
     }
     PerfStatsCollector.getInstance()
         .measure("doFrame", () -> reflector.doFrame(frameTimeNanos, frame));
   }
 
-  /** Accessor interface for {@link Choreographer}'s internals */
+  /** Reflector interface for {@link Choreographer}'s internals */
   @ForType(Choreographer.class)
   protected interface ChoreographerReflector {
     @Accessor("sThreadInstance")
