@@ -99,8 +99,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowPackageParser._PackageParser_;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings("NewApi")
 @Implements(PackageManager.class)
@@ -1056,7 +1057,7 @@ public class ShadowPackageManager {
     if (shadowPackageInfo != null) {
       return shadowPackageInfo;
     } else {
-      return Shadow.directlyOn(realPackageManager, PackageManager.class)
+      return reflector(PackageManagerReflector.class, realPackageManager)
           .getPackageArchiveInfo(archiveFilePath, flags);
     }
   }
@@ -1510,7 +1511,7 @@ public class ShadowPackageManager {
    * Method to retrieve persistent preferred activities as set by {@link
    * android.app.admin.DevicePolicyManager#addPersistentPreferredActivity}.
    *
-   * Works the same way as analogous {@link PackageManager#getPreferredActivities} for regular
+   * <p>Works the same way as analogous {@link PackageManager#getPreferredActivities} for regular
    * preferred activities.
    */
   public int getPersistentPreferredActivities(
@@ -1673,5 +1674,12 @@ public class ShadowPackageManager {
       packageSettings.clear();
       safeMode = false;
     }
+  }
+
+  @ForType(PackageManager.class)
+  interface PackageManagerReflector {
+
+    @Direct
+    PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags);
   }
 }
