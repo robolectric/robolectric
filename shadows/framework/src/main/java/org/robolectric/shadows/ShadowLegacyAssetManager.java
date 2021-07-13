@@ -1493,6 +1493,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   interface AssetManagerReflector {
 
     @Direct
-    void setApkAssets(Object apkAssetsObject, Object invalidateCachesObject);
+    void setApkAssets(ApkAssets[] apkAssetsObject, boolean invalidateCachesObject);
   }
 }
