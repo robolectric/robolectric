@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -14,6 +14,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
@@ -53,7 +55,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   @Implementation
   protected void setColorFilter(ColorFilter colorFilter) {
     this.colorFilter = colorFilter;
-    directlyOn(realBitmapDrawable, BitmapDrawable.class).setColorFilter(colorFilter);
+    reflector(BitmapDrawableReflector.class, realBitmapDrawable).setColorFilter(colorFilter);
   }
 
   /**
@@ -76,5 +78,12 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
   public String getPath() {
     return drawableCreateFromPath;
+  }
+
+  @ForType(BitmapDrawable.class)
+  interface BitmapDrawableReflector {
+
+    @Direct
+    void setColorFilter(ColorFilter colorFilter);
   }
 }
