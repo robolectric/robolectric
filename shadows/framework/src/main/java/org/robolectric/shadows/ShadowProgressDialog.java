@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.ProgressDialog;
 import android.widget.TextView;
@@ -8,6 +8,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ProgressDialog.class)
@@ -32,7 +34,7 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
   @Implementation
   protected void setProgressStyle(int style) {
     mProgressStyle = style;
-    directlyOn(realProgressDialog, ProgressDialog.class).setProgressStyle(style);
+    reflector(ProgressDialogReflector.class, realProgressDialog).setProgressStyle(style);
   }
 
   /**
@@ -40,5 +42,12 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
    */
   public int getProgressStyle() {
     return mProgressStyle;
+  }
+
+  @ForType(ProgressDialog.class)
+  interface ProgressDialogReflector {
+
+    @Direct
+    void setProgressStyle(int style);
   }
 }

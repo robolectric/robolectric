@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.os.ParcelFileDescriptor;
@@ -19,6 +20,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(ParcelFileDescriptor.class)
 @SuppressLint("NewApi")
@@ -140,6 +143,13 @@ public class ShadowParcelFileDescriptor {
   @Implementation
   protected void close() throws IOException {
     file.close();
-    Shadow.directlyOn(realObject, ParcelFileDescriptor.class).close();
+    reflector(ParcelFileDescriptorReflector.class, realParcelFd).close();
+  }
+
+  @ForType(ParcelFileDescriptor.class)
+  interface ParcelFileDescriptorReflector {
+
+    @Direct
+    void close();
   }
 }
