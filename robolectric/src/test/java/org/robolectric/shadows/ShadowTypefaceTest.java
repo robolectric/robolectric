@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -146,7 +146,7 @@ public class ShadowTypefaceTest {
 
   /** Check that there is no spurious error message about /system/etc/fonts.xml */
   @Test
-  @Config(minSdk = LOLLIPOP, maxSdk = O)
+  @Config(minSdk = LOLLIPOP, maxSdk = O_MR1)
   public void init_shouldNotComplainAboutSystemFonts() {
     ShadowLog.clear();
     ReflectionHelpers.callStaticMethod(Typeface.class, "init");
