@@ -1,9 +1,5 @@
 package org.robolectric.shadows;
 
-// TODO: update path to released version.
-// transliterated from
-// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_rXX/core/jni/android_util_AssetManager.cpp
-
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -23,7 +19,6 @@ import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.Util.JNI_FALSE;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.res.android.Util.isTruthy;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -80,6 +75,12 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+// TODO: update path to released version.
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_rXX/core/jni/android_util_AssetManager.cpp
 
 @Implements(
     value = AssetManager.class,
@@ -108,8 +109,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
   @RealObject AssetManager realAssetManager;
 
-  //  @RealObject
-  //  protected AssetManager realObject;
+  //  @RealObject  //  protected AssetManager realObject;
 
   // #define ATRACE_TAG ATRACE_TAG_RESOURCES
   // #define LOG_TAG "asset"
@@ -219,7 +219,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     if (systemCppAssetManager2 == null) {
       // first time! let the framework create a CppAssetManager2 and an AssetManager, which we'll
       // hang on to.
-      directlyOn(AssetManager.class, "createSystemAssetsInZygoteLocked");
+      reflector(AssetManagerReflector.class).createSystemAssetsInZygoteLocked();
       cachedSystemApkAssets = _assetManagerStatic_.getSystemApkAssets();
       cachedSystemApkAssetsSet = _assetManagerStatic_.getSystemApkAssetsSet();
     } else {
@@ -1905,5 +1905,12 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //   NELEM(gAssetManagerMethods));
   //   }
 
+  @ForType(AssetManager.class)
+  interface AssetManagerReflector {
+
+    @Static
+    @Direct
+    void createSystemAssetsInZygoteLocked();
+  }
 }
 ; // namespace android

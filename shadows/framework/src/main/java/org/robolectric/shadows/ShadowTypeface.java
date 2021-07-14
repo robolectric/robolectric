@@ -186,7 +186,7 @@ public class ShadowTypeface {
   }
 
   /** Avoid spurious error message about /system/etc/fonts.xml */
-  @Implementation(minSdk = LOLLIPOP, maxSdk = O)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
   protected static void init() {}
 
   @HiddenApi

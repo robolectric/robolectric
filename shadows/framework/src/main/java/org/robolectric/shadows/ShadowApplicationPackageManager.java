@@ -108,8 +108,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(value = ApplicationPackageManager.class, isInAndroidSdk = false, looseSignatures = true)
@@ -891,7 +891,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
       try {
         resources =
-            Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+            reflector(ReflectorApplicationPackageManager.class, realObject)
                 .getResourcesForApplication(applicationInfo);
       } catch (Exception ex) {
         // handled below
@@ -1508,7 +1508,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (result != null) {
       return result;
     }
-    return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+    return reflector(ReflectorApplicationPackageManager.class, realObject)
         .getDrawable(packageName, resId, appInfo);
   }
 
@@ -1518,7 +1518,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (result != null) {
       return result;
     }
-    return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+    return reflector(ReflectorApplicationPackageManager.class, realObject)
         .getActivityIcon(activityName);
   }
 
@@ -1809,7 +1809,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     if (result != null) {
       return result;
     }
-    return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+    return reflector(ReflectorApplicationPackageManager.class, realObject)
         .loadUnbadgedItemIcon(itemInfo, appInfo);
   }
 
@@ -2055,9 +2055,23 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return reflector(ReflectorApplicationPackageManager.class, realObject).getContext();
   }
 
-  /** Accessor interface for {@link ApplicationPackageManager}'s internals. */
+  /** Reflector interface for {@link ApplicationPackageManager}'s internals. */
   @ForType(ApplicationPackageManager.class)
   private interface ReflectorApplicationPackageManager {
+
+    @Direct
+    Resources getResourcesForApplication(@NonNull ApplicationInfo applicationInfo);
+
+    @Direct
+    Drawable getDrawable(
+        String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo);
+
+    @Direct
+    Drawable getActivityIcon(ComponentName activityName);
+
+    @Direct
+    Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo);
+
     @Accessor("mContext")
     Context getContext();
   }

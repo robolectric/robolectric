@@ -13,7 +13,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
 import android.app.Activity;
@@ -63,6 +63,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
 import org.robolectric.util.Logger;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -155,7 +156,7 @@ public class ShadowInstrumentation {
     if (who == null) {
       return null;
     }
-    return directlyOn(realObject, Instrumentation.class)
+    return reflector(_Instrumentation_.class, realObject)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
@@ -185,7 +186,7 @@ public class ShadowInstrumentation {
     verifyActivityInManifest(intent);
     logStartedActivity(intent, target, requestCode, options);
 
-    return directlyOn(realObject, Instrumentation.class)
+    return reflector(_Instrumentation_.class, realObject)
         .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
   }
 
@@ -241,7 +242,7 @@ public class ShadowInstrumentation {
       throw new ActivityNotFoundException(intent.getAction());
     }
   }
-  
+
   void sendOrderedBroadcastAsUser(
       Intent intent,
       UserHandle userHandle,
@@ -986,7 +987,7 @@ public class ShadowInstrumentation {
     return mainHandler;
   }
 
-  /** Accessor interface for {@link Instrumentation}'s internals. */
+  /** Reflector interface for {@link Instrumentation}'s internals. */
   @ForType(Instrumentation.class)
   public interface _Instrumentation_ {
     // <= JELLY_BEAN_MR1:
@@ -1005,6 +1006,26 @@ public class ShadowInstrumentation {
         ComponentName component,
         @WithType("android.app.IInstrumentationWatcher") Object watcher,
         @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
+
+    @Direct
+    ActivityResult execStartActivity(
+        Context who,
+        IBinder contextThread,
+        IBinder token,
+        Activity target,
+        Intent intent,
+        int requestCode,
+        Bundle options);
+
+    @Direct
+    ActivityResult execStartActivity(
+        Context who,
+        IBinder contextThread,
+        IBinder token,
+        String target,
+        Intent intent,
+        int requestCode,
+        Bundle options);
   }
 
   private static final class BroadcastResultHolder {

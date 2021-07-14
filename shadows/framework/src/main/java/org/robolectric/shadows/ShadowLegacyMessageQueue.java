@@ -6,8 +6,6 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -26,6 +24,7 @@ import org.robolectric.shadows.ShadowLegacyMessage._Message_;
 import org.robolectric.util.Logger;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -41,8 +40,7 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = MessageQueue.class, isInAndroidSdk = false)
 public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
 
-  @RealObject
-  private MessageQueue realQueue;
+  @RealObject private MessageQueue realQueue;
 
   private Scheduler scheduler;
 
@@ -106,7 +104,7 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
   @Implementation
   @SuppressWarnings("SynchronizeOnNonFinalField")
   protected boolean enqueueMessage(final Message msg, long when) {
-    final boolean retval = directlyOn(realQueue, MessageQueue.class, "enqueueMessage", from(Message.class, msg), from(long.class, when));
+    final boolean retval = reflector(_MessageQueue_.class, realQueue).enqueueMessage(msg, when);
     if (retval) {
       final Runnable callback = new Runnable() {
         @Override
@@ -169,7 +167,7 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
   protected void removeSyncBarrier(int token) {
     // TODO(b/74402484): workaround scheduler corruption of message queue
     try {
-      directlyOn(realQueue, MessageQueue.class, "removeSyncBarrier", from(int.class, token));
+      reflector(_MessageQueue_.class, realQueue).removeSyncBarrier(token);
     } catch (IllegalStateException e) {
       Logger.warn("removeSyncBarrier failed! Could not find token %d", token);
     }
@@ -179,9 +177,15 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
     return (ShadowLegacyMessage) Shadow.extract(actual);
   }
 
-  /** Accessor interface for {@link MessageQueue}'s internals. */
+  /** Reflector interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
   interface _MessageQueue_ {
+
+    @Direct
+    boolean enqueueMessage(Message msg, long when);
+
+    @Direct
+    void removeSyncBarrier(int token);
 
     @Accessor("mMessages")
     void setMessages(Message msg);
