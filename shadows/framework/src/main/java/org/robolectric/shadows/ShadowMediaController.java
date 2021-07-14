@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.media.MediaMetadata;
@@ -18,14 +18,15 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Implementation of {@link android.media.session.MediaController}.
  */
 @Implements(value = MediaController.class, minSdk = LOLLIPOP)
 public class ShadowMediaController {
-  @RealObject
-  private MediaController realMediaController;
+  @RealObject private MediaController realMediaController;
   private PlaybackState playbackState;
   private PlaybackInfo playbackInfo;
   private MediaMetadata mediaMetadata;
@@ -113,7 +114,7 @@ public class ShadowMediaController {
   @Implementation
   protected void registerCallback(@NonNull Callback callback) {
     callbacks.add(callback);
-    directlyOn(realMediaController, MediaController.class).registerCallback(callback);
+    reflector(MediaControllerReflector.class, realMediaController).registerCallback(callback);
   }
 
   /**
@@ -123,7 +124,7 @@ public class ShadowMediaController {
   @Implementation
   protected void unregisterCallback(@NonNull Callback callback) {
     callbacks.remove(callback);
-    directlyOn(realMediaController, MediaController.class).unregisterCallback(callback);
+    reflector(MediaControllerReflector.class, realMediaController).unregisterCallback(callback);
   }
 
   /** Gets the callbacks registered to MediaController. */
@@ -135,12 +136,15 @@ public class ShadowMediaController {
   public void executeOnPlaybackStateChanged(PlaybackState playbackState) {
     setPlaybackState(playbackState);
 
-    int messageId = ReflectionHelpers.getStaticField(MediaController.class,
-        "MSG_UPDATE_PLAYBACK_STATE");
-    ReflectionHelpers.callInstanceMethod(MediaController.class, realMediaController, "postMessage",
-          ClassParameter.from(int.class, messageId),
-          ClassParameter.from(Object.class, playbackState),
-          ClassParameter.from(Bundle.class, new Bundle()));
+    int messageId =
+        ReflectionHelpers.getStaticField(MediaController.class, "MSG_UPDATE_PLAYBACK_STATE");
+    ReflectionHelpers.callInstanceMethod(
+        MediaController.class,
+        realMediaController,
+        "postMessage",
+        ClassParameter.from(int.class, messageId),
+        ClassParameter.from(Object.class, playbackState),
+        ClassParameter.from(Bundle.class, new Bundle()));
   }
 
   /** Executes all registered onMetadataChanged callbacks. */
@@ -155,5 +159,15 @@ public class ShadowMediaController {
         ClassParameter.from(int.class, messageId),
         ClassParameter.from(Object.class, metadata),
         ClassParameter.from(Bundle.class, new Bundle()));
+  }
+
+  @ForType(MediaController.class)
+  interface MediaControllerReflector {
+
+    @Direct
+    void registerCallback(@NonNull Callback callback);
+
+    @Direct
+    void unregisterCallback(@NonNull Callback callback);
   }
 }
