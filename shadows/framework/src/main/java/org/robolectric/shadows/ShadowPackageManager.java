@@ -91,6 +91,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -121,6 +122,8 @@ public class ShadowPackageManager {
   @GuardedBy("lock")
   static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
 
+  static final Set<Object> permissionListeners = new CopyOnWriteArraySet<>();
+
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
   static final SortedMap<ComponentName, List<IntentFilter>> activityFilters = new TreeMap<>();
@@ -147,6 +150,11 @@ public class ShadowPackageManager {
   static final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
       new TreeMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  /**
+   * Map of package names to an inner map where the key is the resource id which fetches its
+   * corresponding text.
+   */
+  static final Map<String, Map<Integer, String>> stringResources = new HashMap<>();
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   static Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
@@ -842,6 +850,7 @@ public class ShadowPackageManager {
       applicationEnabledSettingMap.put(
           packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
       if (packageInfo.applicationInfo != null) {
+        uidForPackage.put(packageInfo.packageName, packageInfo.applicationInfo.uid);
         namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
       }
     }
@@ -1632,6 +1641,14 @@ public class ShadowPackageManager {
     return distractingPackageRestrictions.getOrDefault(pkg, PackageManager.RESTRICTION_NONE);
   }
 
+  public void addStringResource(String packageName, int resId, String text) {
+    if (!stringResources.containsKey(packageName)) {
+      stringResources.put(packageName, new HashMap<>());
+    }
+
+    stringResources.get(packageName).put(resId, text);
+  }
+
   @Resetter
   public static void reset() {
     synchronized (lock) {
@@ -1657,6 +1674,7 @@ public class ShadowPackageManager {
       preferredActivities.clear();
       persistentPreferredActivities.clear();
       drawables.clear();
+      stringResources.clear();
       applicationEnabledSettingMap.clear();
       extraPermissions.clear();
       permissionGroups.clear();

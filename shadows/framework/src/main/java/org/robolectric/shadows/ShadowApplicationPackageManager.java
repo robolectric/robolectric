@@ -39,6 +39,7 @@ import android.annotation.DrawableRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.StringRes;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
 import android.app.admin.DevicePolicyManager;
@@ -62,6 +63,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
@@ -1339,6 +1341,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = M)
   protected void grantRuntimePermission(
       String packageName, String permissionName, UserHandle user) {
+    Integer uid;
     synchronized (lock) {
       if (!packageInfos.containsKey(packageName)) {
         throw new SecurityException("Package not found: " + packageName);
@@ -1353,12 +1356,21 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       packageInfo.requestedPermissionsFlags[permissionIndex] |= REQUESTED_PERMISSION_GRANTED;
+
+      uid = uidForPackage.get(packageName);
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.M && uid != null) {
+      for (Object listener : permissionListeners) {
+        ((OnPermissionsChangedListener) listener).onPermissionsChanged(uid);
+      }
     }
   }
 
   @Implementation(minSdk = M)
   protected void revokeRuntimePermission(
       String packageName, String permissionName, UserHandle user) {
+    Integer uid;
     synchronized (lock) {
       if (!packageInfos.containsKey(packageName)) {
         throw new SecurityException("Package not found: " + packageName);
@@ -1373,6 +1385,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       packageInfo.requestedPermissionsFlags[permissionIndex] &= ~REQUESTED_PERMISSION_GRANTED;
+
+      uid = uidForPackage.get(packageName);
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.M && uid != null) {
+      for (Object listener : permissionListeners) {
+        ((OnPermissionsChangedListener) listener).onPermissionsChanged(uid);
+      }
     }
   }
 
@@ -1513,6 +1533,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
+  @Nullable
+  protected CharSequence getText(String packageName, int resId, ApplicationInfo appInfo) {
+    if (stringResources.containsKey(packageName)
+        && stringResources.get(packageName).containsKey(resId)) {
+      return stringResources.get(packageName).get(resId);
+    }
+    return reflector(ReflectorApplicationPackageManager.class, realObject)
+        .getText(packageName, resId, appInfo);
+  }
+
+  @Implementation
   protected Drawable getActivityIcon(ComponentName activityName) throws NameNotFoundException {
     Drawable result = drawableList.get(activityName);
     if (result != null) {
@@ -1558,10 +1589,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected void addOnPermissionsChangeListener(Object listener) {}
+  protected void addOnPermissionsChangeListener(Object listener) {
+    permissionListeners.add(listener);
+  }
 
   @Implementation(minSdk = M)
-  protected void removeOnPermissionsChangeListener(Object listener) {}
+  protected void removeOnPermissionsChangeListener(Object listener) {
+    permissionListeners.remove(listener);
+  }
 
   @Implementation(maxSdk = O_MR1)
   protected void installPackage(
@@ -2065,6 +2100,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     @Direct
     Drawable getDrawable(
         String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo);
+
+    @Direct
+    CharSequence getText(
+        String packageName, @StringRes int resId, ApplicationInfo appInfo);
 
     @Direct
     Drawable getActivityIcon(ComponentName activityName);
