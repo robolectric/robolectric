@@ -1,17 +1,18 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.drawable.GradientDrawable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(GradientDrawable.class)
 public class ShadowGradientDrawable extends ShadowDrawable {
 
-  @RealObject
-  private GradientDrawable realGradientDrawable;
+  @RealObject private GradientDrawable realGradientDrawable;
 
   private int color;
   private int strokeColor;
@@ -20,14 +21,14 @@ public class ShadowGradientDrawable extends ShadowDrawable {
   @Implementation
   protected void setColor(int color) {
     this.color = color;
-    directlyOn(realGradientDrawable, GradientDrawable.class).setColor(color);
+    reflector(GradientDrawableReflector.class, realGradientDrawable).setColor(color);
   }
 
   @Implementation
   protected void setStroke(int width, int color) {
     this.strokeWidth = width;
     this.strokeColor = color;
-    directlyOn(realGradientDrawable, GradientDrawable.class).setStroke(width, color);
+    reflector(GradientDrawableReflector.class, realGradientDrawable).setStroke(width, color);
   }
 
 
@@ -47,5 +48,15 @@ public class ShadowGradientDrawable extends ShadowDrawable {
 
   public int getStrokeColor() {
     return strokeColor;
+  }
+
+  @ForType(GradientDrawable.class)
+  interface GradientDrawableReflector {
+
+    @Direct
+    void setColor(int color);
+
+    @Direct
+    void setStroke(int width, int color);
   }
 }

@@ -16,11 +16,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.FrameMetrics;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -73,35 +71,6 @@ public class ShadowWindowTest {
     window.setSoftInputMode(7);
 
     assertThat(shadowWindow.getSoftInputMode()).isEqualTo(7);
-  }
-
-  @Test
-  public void getProgressBar_returnsTheProgressBar() {
-    Activity activity = Robolectric.buildActivity(TestActivity.class).create().get();
-
-    ProgressBar progress = shadowOf(activity.getWindow()).getProgressBar();
-
-    assertThat(progress.getVisibility()).isEqualTo(View.INVISIBLE);
-    activity.setProgressBarVisibility(true);
-    assertThat(progress.getVisibility()).isEqualTo(View.VISIBLE);
-    activity.setProgressBarVisibility(false);
-    assertThat(progress.getVisibility()).isEqualTo(View.GONE);
-  }
-
-  @Test
-  public void getIndeterminateProgressBar_returnsTheIndeterminateProgressBar() {
-    ActivityController<TestActivity> testActivityActivityController = Robolectric.buildActivity(TestActivity.class);
-    TestActivity activity = testActivityActivityController.get();
-    activity.requestFeature = Window.FEATURE_INDETERMINATE_PROGRESS;
-    testActivityActivityController.create();
-
-    ProgressBar indeterminate = shadowOf(activity.getWindow()).getIndeterminateProgressBar();
-
-    assertThat(indeterminate.getVisibility()).isEqualTo(View.INVISIBLE);
-    activity.setProgressBarIndeterminateVisibility(true);
-    assertThat(indeterminate.getVisibility()).isEqualTo(View.VISIBLE);
-    activity.setProgressBarIndeterminateVisibility(false);
-    assertThat(indeterminate.getVisibility()).isEqualTo(View.GONE);
   }
 
   @Test @Config(maxSdk = LOLLIPOP_MR1)

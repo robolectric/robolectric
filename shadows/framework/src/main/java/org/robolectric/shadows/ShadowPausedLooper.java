@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
 import android.os.Handler;
@@ -30,6 +30,9 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /**
  * The shadow Looper for {@link LooperMode.Mode.PAUSED}.
@@ -230,7 +233,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Implementation
   protected static void prepareMainLooper() {
-    directlyOn(Looper.class, "prepareMainLooper");
+    reflector(LooperReflector.class).prepareMainLooper();
     ShadowPausedLooper pausedLooper = Shadow.extract(Looper.getMainLooper());
     pausedLooper.isPaused = true;
   }
@@ -240,7 +243,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     if (isPaused()) {
       executeOnLooper(new UnPauseRunnable());
     }
-    directlyOn(realLooper, Looper.class, "quit");
+    reflector(LooperReflector.class, realLooper).quit();
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -248,7 +251,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     if (isPaused()) {
       executeOnLooper(new UnPauseRunnable());
     }
-    directlyOn(realLooper, Looper.class, "quitSafely");
+    reflector(LooperReflector.class, realLooper).quitSafely();
   }
 
   @Override
@@ -428,5 +431,19 @@ public final class ShadowPausedLooper extends ShadowLooper {
             String.format("post to %s failed. Is handler thread dead?", handler));
       }
     }
+  }
+
+  @ForType(Looper.class)
+  interface LooperReflector {
+
+    @Static
+    @Direct
+    void prepareMainLooper();
+
+    @Direct
+    void quit();
+
+    @Direct
+    void quitSafely();
   }
 }
