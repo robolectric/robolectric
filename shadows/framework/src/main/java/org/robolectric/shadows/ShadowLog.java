@@ -126,7 +126,7 @@ public class ShadowLog {
         return level >= tagToLevel.get(tag);
       }
     }
-    return stream != null || level >= Log.INFO;
+    return level >= Log.INFO;
   }
 
   @Implementation
