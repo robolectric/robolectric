@@ -7,7 +7,7 @@ import static org.robolectric.res.android.AttributeResolution.STYLE_DENSITY;
 import static org.robolectric.res.android.AttributeResolution.STYLE_NUM_ENTRIES;
 import static org.robolectric.res.android.AttributeResolution.STYLE_RESOURCE_ID;
 import static org.robolectric.res.android.AttributeResolution.STYLE_TYPE;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.StyleableRes;
 import android.content.res.Resources;
@@ -24,6 +24,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = TypedArray.class, shadowPicker = ShadowTypedArray.Picker.class)
@@ -41,26 +43,25 @@ public class ShadowTypedArray {
   public static TypedArray create(Resources realResources, int[] attrs, int[] data, int[] indices, int len, CharSequence[] stringData) {
     TypedArray typedArray;
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.O) {
-      typedArray = ReflectionHelpers.callConstructor(TypedArray.class,
-          ClassParameter.from(Resources.class, realResources));
+      typedArray =
+          ReflectionHelpers.callConstructor(
+              TypedArray.class, ClassParameter.from(Resources.class, realResources));
       ReflectionHelpers.setField(typedArray, "mData", data);
       ReflectionHelpers.setField(typedArray, "mLength", len);
       ReflectionHelpers.setField(typedArray, "mIndices", indices);
     } else {
-      typedArray = ReflectionHelpers.callConstructor(TypedArray.class,
-          ClassParameter.from(Resources.class, realResources),
-          ClassParameter.from(int[].class, data),
-          ClassParameter.from(int[].class, indices),
-          ClassParameter.from(int.class, len));
+      typedArray =
+          ReflectionHelpers.callConstructor(
+              TypedArray.class,
+              ClassParameter.from(Resources.class, realResources),
+              ClassParameter.from(int[].class, data),
+              ClassParameter.from(int[].class, indices),
+              ClassParameter.from(int.class, len));
     }
 
     ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
     shadowTypedArray.stringData = stringData;
     return typedArray;
-  }
-
-  private TypedArray directly() {
-    return directlyOn(realTypedArray, TypedArray.class);
   }
 
   @HiddenApi @Implementation
@@ -70,12 +71,12 @@ public class ShadowTypedArray {
 
   @Implementation
   protected String getNonResourceString(@StyleableRes int index) {
-    return directly().getString(index);
+    return reflector(TypedArrayReflector.class, realTypedArray).getString(index);
   }
 
   @Implementation
   protected String getNonConfigurationString(@StyleableRes int index, int allowedChangingConfigs) {
-    return directly().getString(index);
+    return reflector(TypedArrayReflector.class, realTypedArray).getString(index);
   }
 
   @Implementation
@@ -91,16 +92,37 @@ public class ShadowTypedArray {
     for (int index = 0; index < data.length; index+= STYLE_NUM_ENTRIES) {
       final int type = data[index+STYLE_TYPE];
       result.append("Index: ").append(index / STYLE_NUM_ENTRIES).append(System.lineSeparator());
-      result.append(Strings.padEnd("Type: ", 25, ' ')).append(TYPE_MAP.get(type)).append(System.lineSeparator());
+      result
+          .append(Strings.padEnd("Type: ", 25, ' '))
+          .append(TYPE_MAP.get(type))
+          .append(System.lineSeparator());
       if (type != TypedValue.TYPE_NULL) {
-        result.append(Strings.padEnd("Style data: ", 25, ' ')).append(data[index+ STYLE_DATA]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Asset cookie ", 25, ' ')).append(data[index+STYLE_ASSET_COOKIE]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Style resourceId: ", 25, ' ')).append(data[index+ STYLE_RESOURCE_ID]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Changing configurations ", 25, ' ')).append(data[index+STYLE_CHANGING_CONFIGURATIONS]).append(System.lineSeparator());
-        result.append(Strings.padEnd("Style density: ", 25, ' ')).append(data[index+STYLE_DENSITY]).append(System.lineSeparator());
+        result
+            .append(Strings.padEnd("Style data: ", 25, ' '))
+            .append(data[index + STYLE_DATA])
+            .append(System.lineSeparator());
+        result
+            .append(Strings.padEnd("Asset cookie ", 25, ' '))
+            .append(data[index + STYLE_ASSET_COOKIE])
+            .append(System.lineSeparator());
+        result
+            .append(Strings.padEnd("Style resourceId: ", 25, ' '))
+            .append(data[index + STYLE_RESOURCE_ID])
+            .append(System.lineSeparator());
+        result
+            .append(Strings.padEnd("Changing configurations ", 25, ' '))
+            .append(data[index + STYLE_CHANGING_CONFIGURATIONS])
+            .append(System.lineSeparator());
+        result
+            .append(Strings.padEnd("Style density: ", 25, ' '))
+            .append(data[index + STYLE_DENSITY])
+            .append(System.lineSeparator());
         if (type == TypedValue.TYPE_STRING) {
           ShadowTypedArray shadowTypedArray = Shadow.extract(typedArray);
-          result.append(Strings.padEnd("Style value: ", 25, ' ')).append(shadowTypedArray.loadStringValueAt(index)).append(System.lineSeparator());
+          result
+              .append(Strings.padEnd("Style value: ", 25, ' '))
+              .append(shadowTypedArray.loadStringValueAt(index))
+              .append(System.lineSeparator());
         }
       }
       result.append(System.lineSeparator());
@@ -125,4 +147,10 @@ public class ShadowTypedArray {
           .put(TypedValue.TYPE_INT_COLOR_RGB4, "TYPE_INT_COLOR_RGB4")
           .build();
 
+  @ForType(TypedArray.class)
+  interface TypedArrayReflector {
+
+    @Direct
+    String getString(int index);
+  }
 }

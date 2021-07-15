@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Context;
@@ -26,6 +27,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(AccessibilityManager.class)
 public class ShadowAccessibilityManager {
@@ -63,15 +66,28 @@ public class ShadowAccessibilityManager {
 
   private static AccessibilityManager createInstance(Context context) throws Exception {
     if (getApiLevel() >= KITKAT) {
-      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class,
-          new Class[]{Context.class, IAccessibilityManager.class, int.class},
-          new Object[]{context, ReflectionHelpers.createNullProxy(IAccessibilityManager.class), 0});
-      ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
+      AccessibilityManager accessibilityManager =
+          Shadow.newInstance(
+              AccessibilityManager.class,
+              new Class[] {Context.class, IAccessibilityManager.class, int.class},
+              new Object[] {
+                context, ReflectionHelpers.createNullProxy(IAccessibilityManager.class), 0
+              });
+      ReflectionHelpers.setField(
+          accessibilityManager,
+          "mHandler",
+          new MyHandler(context.getMainLooper(), accessibilityManager));
       return accessibilityManager;
     } else {
       AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
-      ReflectionHelpers.setField(accessibilityManager, "mHandler", new MyHandler(context.getMainLooper(), accessibilityManager));
-      ReflectionHelpers.setField(accessibilityManager, "mService", ReflectionHelpers.createNullProxy(IAccessibilityManager.class));
+      ReflectionHelpers.setField(
+          accessibilityManager,
+          "mHandler",
+          new MyHandler(context.getMainLooper(), accessibilityManager));
+      ReflectionHelpers.setField(
+          accessibilityManager,
+          "mService",
+          ReflectionHelpers.createNullProxy(IAccessibilityManager.class));
       return accessibilityManager;
     }
   }
@@ -123,7 +139,7 @@ public class ShadowAccessibilityManager {
   @Implementation
   protected void sendAccessibilityEvent(AccessibilityEvent event) {
     sentAccessibilityEvents.add(event);
-    Shadow.directlyOn(realAccessibilityManager, AccessibilityManager.class)
+    reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
         .sendAccessibilityEvent(event);
   }
 
@@ -191,11 +207,19 @@ public class ShadowAccessibilityManager {
     public void handleMessage(Message message) {
       switch (message.what) {
         case DO_SET_STATE:
-          ReflectionHelpers.callInstanceMethod(accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
+          ReflectionHelpers.callInstanceMethod(
+              accessibilityManager, "setState", ClassParameter.from(int.class, message.arg1));
           return;
         default:
           Log.w("AccessibilityManager", "Unknown message type: " + message.what);
       }
     }
+  }
+
+  @ForType(AccessibilityManager.class)
+  interface AccessibilityManagerReflector {
+
+    @Direct
+    void sendAccessibilityEvent(AccessibilityEvent event);
   }
 }

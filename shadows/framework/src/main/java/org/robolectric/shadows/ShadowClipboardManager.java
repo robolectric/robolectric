@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -15,6 +15,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings("UnusedDeclaration")
 @Implements(ClipboardManager.class)
@@ -74,7 +76,14 @@ public class ShadowClipboardManager {
 
   @Implementation
   protected boolean hasText() {
-    CharSequence text = directlyOn(realClipboardManager, ClipboardManager.class).getText();
+    CharSequence text = reflector(ClipboardManagerReflector.class, realClipboardManager).getText();
     return text != null && text.length() > 0;
+  }
+
+  @ForType(ClipboardManager.class)
+  interface ClipboardManagerReflector {
+
+    @Direct
+    CharSequence getText();
   }
 }
