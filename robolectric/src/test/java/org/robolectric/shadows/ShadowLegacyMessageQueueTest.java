@@ -26,7 +26,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowLegacyMessage._Message_;
+import org.robolectric.shadows.ShadowMessage.MessageReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
@@ -166,7 +166,7 @@ public class ShadowLegacyMessageQueueTest {
           public void handleMessage(Message msg) {
             boolean inUse = callInstanceMethod(msg, "isInUse");
             assertWithMessage(msg.what + ":inUse").that(inUse).isTrue();
-            Message next = reflector(_Message_.class, msg).getNext();
+            Message next = reflector(MessageReflector.class, msg).getNext();
             assertWithMessage(msg.what + ":next").that(next).isNull();
           }
         };

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
@@ -11,8 +10,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
 
 /**
  * The shadow {@link Message} for {@link LooperMode.Mode.PAUSED}.
@@ -22,14 +19,14 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = Message.class, isInAndroidSdk = false)
 public class ShadowPausedMessage extends ShadowMessage {
 
-  private @RealObject Message realObject;
+  @RealObject private Message realObject;
 
   long getWhen() {
-    return reflector(ReflectorMessage.class, realObject).getWhen();
+    return reflector(MessageReflector.class, realObject).getWhen();
   }
 
   Message internalGetNext() {
-    return reflector(ReflectorMessage.class, realObject).getNext();
+    return reflector(MessageReflector.class, realObject).getNext();
   }
 
   // TODO: reconsider this being exposed as a public method
@@ -37,9 +34,9 @@ public class ShadowPausedMessage extends ShadowMessage {
   @Implementation(minSdk = LOLLIPOP)
   public void recycleUnchecked() {
     if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-      directlyOn(realObject, Message.class, "recycleUnchecked");
+      reflector(MessageReflector.class, realObject).recycleUnchecked();
     } else {
-      directlyOn(realObject, Message.class).recycle();
+      reflector(MessageReflector.class, realObject).recycle();
     }
   }
 
@@ -62,20 +59,6 @@ public class ShadowPausedMessage extends ShadowMessage {
   }
 
   Handler getTarget() {
-    return reflector(ReflectorMessage.class, realObject).getTarget();
-  }
-
-  /** Accessor interface for {@link Message}'s internals. */
-  @ForType(Message.class)
-  private interface ReflectorMessage {
-
-    @Accessor("when")
-    long getWhen();
-
-    @Accessor("next")
-    Message getNext();
-
-    @Accessor("target")
-    Handler getTarget();
+    return reflector(MessageReflector.class, realObject).getTarget();
   }
 }

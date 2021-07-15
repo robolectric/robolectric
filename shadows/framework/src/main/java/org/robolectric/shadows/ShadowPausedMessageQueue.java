@@ -49,7 +49,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   protected void __constructor__(boolean quitAllowed) {
     invokeConstructor(MessageQueue.class, realQueue, from(boolean.class, quitAllowed));
     int ptr = (int) nativeQueueRegistry.register(this);
-    reflector(ReflectorMessageQueue.class, realQueue).setPtr(ptr);
+    reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener =
         newCurrentTimeMillis -> nativeWake(ptr);
     ShadowPausedSystemClock.addListener(clockListener);
@@ -57,7 +57,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
   protected void nativeDestroy() {
-    nativeDestroy(reflector(ReflectorMessageQueue.class, realQueue).getPtr());
+    nativeDestroy(reflector(MessageQueueReflector.class, realQueue).getPtr());
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
@@ -151,7 +151,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   }
 
   Message peekNextExecutableMessage() {
-    ReflectorMessageQueue internalQueue = reflector(ReflectorMessageQueue.class, realQueue);
+    MessageQueueReflector internalQueue = reflector(MessageQueueReflector.class, realQueue);
     Message msg = internalQueue.getMessages();
 
     if (msg != null && shadowOfMsg(msg).getTarget() == null) {
@@ -165,19 +165,19 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   }
 
   Message getNext() {
-    return reflector(ReflectorMessageQueue.class, realQueue).next();
+    return reflector(MessageQueueReflector.class, realQueue).next();
   }
 
   boolean isQuitAllowed() {
-    return reflector(ReflectorMessageQueue.class, realQueue).getQuitAllowed();
+    return reflector(MessageQueueReflector.class, realQueue).getQuitAllowed();
   }
 
   void doEnqueueMessage(Message msg, long when) {
-    reflector(ReflectorMessageQueue.class, realQueue).enqueueMessage(msg, when);
+    reflector(MessageQueueReflector.class, realQueue).enqueueMessage(msg, when);
   }
 
   Message getMessages() {
-    return reflector(ReflectorMessageQueue.class, realQueue).getMessages();
+    return reflector(MessageQueueReflector.class, realQueue).getMessages();
   }
 
   boolean isPolling() {
@@ -188,17 +188,17 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   void quit() {
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
-      reflector(ReflectorMessageQueue.class, realQueue).quit(false);
+      reflector(MessageQueueReflector.class, realQueue).quit(false);
     } else {
-      reflector(ReflectorMessageQueue.class, realQueue).quit();
+      reflector(MessageQueueReflector.class, realQueue).quit();
     }
   }
 
   private boolean isQuitting() {
     if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-      return reflector(ReflectorMessageQueue.class, realQueue).getQuitting();
+      return reflector(MessageQueueReflector.class, realQueue).getQuitting();
     } else {
-      return reflector(ReflectorMessageQueue.class, realQueue).getQuiting();
+      return reflector(MessageQueueReflector.class, realQueue).getQuiting();
     }
   }
 
@@ -275,7 +275,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       Message head = getMessages();
       if (head != null) {
         Message next = shadowOfMsg(head).internalGetNext();
-        reflector(ReflectorMessageQueue.class, realQueue).setMessages(next);
+        reflector(MessageQueueReflector.class, realQueue).setMessages(next);
       }
       return head;
     }
@@ -285,7 +285,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   // so it should be package private
   @Override
   public void reset() {
-    ReflectorMessageQueue msgQueue = reflector(ReflectorMessageQueue.class, realQueue);
+    MessageQueueReflector msgQueue = reflector(MessageQueueReflector.class, realQueue);
     msgQueue.setMessages(null);
     msgQueue.setIdleHandlers(new ArrayList<>());
     msgQueue.setNextBarrierToken(0);
@@ -323,13 +323,13 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    */
   ArrayList<IdleHandler> getIdleHandlersCopy() {
     synchronized (realQueue) {
-      return new ArrayList<>(reflector(ReflectorMessageQueue.class, realQueue).getIdleHandlers());
+      return new ArrayList<>(reflector(MessageQueueReflector.class, realQueue).getIdleHandlers());
     }
   }
 
   /** Accessor interface for {@link MessageQueue}'s internals. */
   @ForType(MessageQueue.class)
-  private interface ReflectorMessageQueue {
+  private interface MessageQueueReflector {
 
     void enqueueMessage(Message msg, long when);
 

@@ -16,7 +16,6 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
-import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -53,7 +52,7 @@ public class ShadowLegacyMessage extends ShadowMessage {
   public void recycleUnchecked() {
     if (getApiLevel() >= LOLLIPOP) {
       unschedule();
-      directlyOn(realMessage, Message.class, "recycleUnchecked");
+      reflector(MessageReflector.class, realMessage).recycleUnchecked();
     } else {
       // provide forward compatibility with SDK 21.
       recycle();
@@ -93,12 +92,12 @@ public class ShadowLegacyMessage extends ShadowMessage {
 
   @Override
   public Message getNext() {
-    return reflector(_Message_.class, realMessage).getNext();
+    return reflector(MessageReflector.class, realMessage).getNext();
   }
 
   @Override
   public void setNext(Message next) {
-    reflector(_Message_.class, realMessage).setNext(next);
+    reflector(MessageReflector.class, realMessage).setNext(next);
   }
 
   private static ShadowLooper shadowOf(Looper looper) {
@@ -107,18 +106,12 @@ public class ShadowLegacyMessage extends ShadowMessage {
 
   /** Accessor interface for {@link Message}'s internals. */
   @ForType(Message.class)
-  interface _Message_ {
+  interface NonDirectMessageReflector {
 
     void markInUse();
 
-    void recycleUnchecked();
-
     void recycle();
 
-    @Accessor("next")
-    Message getNext();
-
-    @Accessor("next")
-    void setNext(Message next);
+    void recycleUnchecked();
   }
 }
