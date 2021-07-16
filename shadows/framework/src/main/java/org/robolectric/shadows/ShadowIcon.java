@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
@@ -10,53 +10,79 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Icon.class, minSdk = M)
 public class ShadowIcon {
 
-  @RealObject
-  private Icon realIcon;
+  @RealObject private Icon realIcon;
 
   @HiddenApi
   @Implementation
   public int getType() {
-    return directlyOn(realIcon, Icon.class).getType();
+    return reflector(IconReflector.class, realIcon).getType();
   }
 
   @HiddenApi
   @Implementation
   public int getResId() {
-    return directlyOn(realIcon, Icon.class).getResId();
+    return reflector(IconReflector.class, realIcon).getResId();
   }
 
   @HiddenApi
   @Implementation
   public Bitmap getBitmap() {
-    return directlyOn(realIcon, Icon.class).getBitmap();
+    return reflector(IconReflector.class, realIcon).getBitmap();
   }
 
   @HiddenApi
   @Implementation
   public Uri getUri() {
-    return directlyOn(realIcon, Icon.class).getUri();
+    return reflector(IconReflector.class, realIcon).getUri();
   }
 
   @HiddenApi
   @Implementation
   public int getDataLength() {
-    return directlyOn(realIcon, Icon.class).getDataLength();
+    return reflector(IconReflector.class, realIcon).getDataLength();
   }
 
   @HiddenApi
   @Implementation
   public int getDataOffset() {
-    return directlyOn(realIcon, Icon.class).getDataOffset();
+    return reflector(IconReflector.class, realIcon).getDataOffset();
   }
 
   @HiddenApi
   @Implementation
   public byte[] getDataBytes() {
-    return directlyOn(realIcon, Icon.class).getDataBytes();
+    return reflector(IconReflector.class, realIcon).getDataBytes();
+  }
+
+  @ForType(Icon.class)
+  interface IconReflector {
+
+    @Direct
+    int getType();
+
+    @Direct
+    int getResId();
+
+    @Direct
+    Bitmap getBitmap();
+
+    @Direct
+    Uri getUri();
+
+    @Direct
+    int getDataLength();
+
+    @Direct
+    int getDataOffset();
+
+    @Direct
+    byte[] getDataBytes();
   }
 }

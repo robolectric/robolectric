@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.robolectric.util.PerfStatsCollector;
 
 /**
  * Provides accessor objects for efficiently calling otherwise inaccessible (non-public) methods.
@@ -62,7 +63,11 @@ public class Reflector {
     Constructor<? extends T> ctor = (Constructor<? extends T>) CACHE.get(iClass);
     try {
       if (ctor == null) {
-        Class<? extends T> reflectorClass = createReflectorClass(iClass, targetClass);
+        Class<? extends T> reflectorClass =
+            PerfStatsCollector.getInstance()
+                .measure(
+                    "createReflectorClass",
+                    () -> Reflector.<T>createReflectorClass(iClass, targetClass));
         ctor = reflectorClass.getConstructor(targetClass);
         ctor.setAccessible(true);
       }
