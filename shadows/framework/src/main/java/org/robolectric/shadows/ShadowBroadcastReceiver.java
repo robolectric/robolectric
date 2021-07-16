@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.content.BroadcastReceiver;
 import android.content.BroadcastReceiver.PendingResult;
 import android.content.Context;
@@ -8,7 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(BroadcastReceiver.class)
 public class ShadowBroadcastReceiver {
@@ -47,7 +50,7 @@ public class ShadowBroadcastReceiver {
     // Save the PendingResult before goAsync() clears it.
     originalPendingResult = receiver.getPendingResult();
     wentAsync = true;
-    return Shadow.directlyOn(receiver, BroadcastReceiver.class).goAsync();
+    return reflector(BroadcastReceiverReflector.class, receiver).goAsync();
   }
 
   public boolean wentAsync() {
@@ -60,5 +63,12 @@ public class ShadowBroadcastReceiver {
     } else {
       return receiver.getPendingResult();
     }
+  }
+
+  @ForType(BroadcastReceiver.class)
+  interface BroadcastReceiverReflector {
+
+    @Direct
+    PendingResult goAsync();
   }
 }
