@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -16,6 +16,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Shadow of {@link android.view.accessibility.AccessibilityWindowInfo} that allows a test to set
@@ -47,8 +49,7 @@ public class ShadowAccessibilityWindowInfo {
 
   private boolean isFocused = false;
 
-  @RealObject
-  private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
+  @RealObject private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
 
   @Implementation
   protected void __constructor__() {}
@@ -204,7 +205,7 @@ public class ShadowAccessibilityWindowInfo {
 
   @Implementation
   protected int getId() {
-    return directlyOn(mRealAccessibilityWindowInfo, AccessibilityWindowInfo.class).getId();
+    return reflector(AccessibilityWindowInfoReflector.class, mRealAccessibilityWindowInfo).getId();
   }
 
   @Implementation
@@ -263,7 +264,7 @@ public class ShadowAccessibilityWindowInfo {
   }
 
   public void setId(int value) {
-    directlyOn(mRealAccessibilityWindowInfo, AccessibilityWindowInfo.class).setId(value);
+    reflector(AccessibilityWindowInfoReflector.class, mRealAccessibilityWindowInfo).setId(value);
   }
 
   public void setLayer(int value) {
@@ -334,5 +335,15 @@ public class ShadowAccessibilityWindowInfo {
         + ", title:"
         + title
         + "}";
+  }
+
+  @ForType(AccessibilityWindowInfo.class)
+  interface AccessibilityWindowInfoReflector {
+
+    @Direct
+    int getId();
+
+    @Direct
+    void setId(int value);
   }
 }

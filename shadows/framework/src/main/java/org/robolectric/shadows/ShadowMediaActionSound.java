@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.media.MediaActionSound;
 import android.os.Build;
 import java.util.HashMap;
@@ -9,7 +11,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** A shadow implementation of {@link android.media.MediaActionSound}. */
 @Implements(value = MediaActionSound.class, minSdk = Build.VERSION_CODES.JELLY_BEAN)
@@ -54,8 +57,15 @@ public class ShadowMediaActionSound {
   /** Instrumented call to {@link android.media.MediaActionSound#play} */
   @Implementation
   protected void play(int soundName) {
-    Shadow.directlyOn(realObject, MediaActionSound.class).play(soundName);
+    reflector(MediaActionSoundReflector.class, realObject).play(soundName);
 
     playCount.get(soundName).incrementAndGet();
+  }
+
+  @ForType(MediaActionSound.class)
+  interface MediaActionSoundReflector {
+
+    @Direct
+    void play(int soundName);
   }
 }

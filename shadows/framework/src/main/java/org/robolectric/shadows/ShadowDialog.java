@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -20,6 +20,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)
@@ -61,12 +63,12 @@ public class ShadowDialog {
   protected void show() {
     setLatestDialog(this);
     shownDialogs.add(realDialog);
-    directlyOn(realDialog, Dialog.class).show();
+    reflector(DialogReflector.class, realDialog).show();
   }
 
   @Implementation
   protected void dismiss() {
-    directlyOn(realDialog, Dialog.class).dismiss();
+    reflector(DialogReflector.class, realDialog).dismiss();
     hasBeenDismissed = true;
   }
 
@@ -77,7 +79,7 @@ public class ShadowDialog {
   @Implementation
   protected void setCanceledOnTouchOutside(boolean flag) {
     isCancelableOnTouchOutside = flag;
-    directlyOn(realDialog, Dialog.class).setCanceledOnTouchOutside(flag);
+    reflector(DialogReflector.class, realDialog).setCanceledOnTouchOutside(flag);
   }
 
   public boolean isCancelable() {
@@ -95,7 +97,7 @@ public class ShadowDialog {
   @Implementation
   protected void setOnCancelListener(DialogInterface.OnCancelListener listener) {
     this.onCancelListener = listener;
-    directlyOn(realDialog, Dialog.class).setOnCancelListener(listener);
+    reflector(DialogReflector.class, realDialog).setOnCancelListener(listener);
   }
 
   public boolean hasBeenDismissed() {
@@ -148,5 +150,21 @@ public class ShadowDialog {
   public void callOnCreate(Bundle bundle) {
     ReflectionHelpers.callInstanceMethod(
         realDialog, "onCreate", ClassParameter.from(Bundle.class, bundle));
+  }
+
+  @ForType(Dialog.class)
+  interface DialogReflector {
+
+    @Direct
+    void show();
+
+    @Direct
+    void dismiss();
+
+    @Direct
+    void setCanceledOnTouchOutside(boolean flag);
+
+    @Direct
+    void setOnCancelListener(DialogInterface.OnCancelListener listener);
   }
 }

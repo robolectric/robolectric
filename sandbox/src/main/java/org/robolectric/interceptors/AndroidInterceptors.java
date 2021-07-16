@@ -11,6 +11,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -37,7 +38,8 @@ public class AndroidInterceptors {
                 new LocaleAdjustLanguageCodeInterceptor(),
                 new SystemLogInterceptor(),
                 new FileDescriptorInterceptor(),
-                new NoOpInterceptor()));
+                new NoOpInterceptor(),
+                new SocketInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
       interceptors.add(new CleanerInterceptor());
@@ -366,6 +368,35 @@ public class AndroidInterceptors {
       } else {
         return nothing;
       }
+    }
+  }
+
+  /** Intercepts calls to methods in {@link Socket} not present in the OpenJDK. */
+  public static class SocketInterceptor extends Interceptor {
+    public SocketInterceptor() {
+      super(new MethodRef(Socket.class, "getFileDescriptor$"));
+    }
+
+    @Nullable
+    static FileDescriptor getFileDescriptor(Socket socket) {
+      return null;
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return new Function<Object, Object>() {
+        @Override
+        public Object call(Class<?> theClass, Object value, Object[] params) {
+          return getFileDescriptor((Socket) value);
+        }
+      };
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(
+          getClass(), "getFileDescriptor", methodType(FileDescriptor.class, Socket.class));
     }
   }
 }
