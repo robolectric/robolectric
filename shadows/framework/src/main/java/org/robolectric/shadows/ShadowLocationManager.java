@@ -42,6 +42,7 @@ import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
+import com.google.common.base.Preconditions;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,8 +165,7 @@ public class ShadowLocationManager {
       new LinkedHashMap<>();
 
   @GuardedBy("gnssAntennaInfoListeners")
-  private final Map<GnssAntennaInfo.Listener, Executor> gnssAntennaInfoListeners =
-      new LinkedHashMap<>();
+  private final Map<Object, Executor> gnssAntennaInfoListeners = new LinkedHashMap<>();
 
   public ShadowLocationManager() {
     // create default providers
@@ -801,30 +801,60 @@ public class ShadowLocationManager {
   }
 
   @Implementation(minSdk = R)
-  protected boolean registerAntennaInfoListener(
-      Executor executor, GnssAntennaInfo.Listener listener) {
+  protected boolean registerAntennaInfoListener(Object executor, Object listener) {
+    // We should use Object for all input parameter, although we only want to use Object
+    // to replace one input parameter to avoid NoClassDefFoundError, otherwise this method
+    // will not tagged as shadow method for
+    // registerAntennaInfoListener(Executor executor, GnssAntennaInfo.Listener listener).
+    Preconditions.checkArgument(listener instanceof GnssAntennaInfo.Listener);
+    Preconditions.checkArgument(executor instanceof Executor);
     synchronized (gnssAntennaInfoListeners) {
-      gnssAntennaInfoListeners.put(listener, executor);
+      gnssAntennaInfoListeners.put((GnssAntennaInfo.Listener) listener, (Executor) executor);
     }
     return true;
   }
 
   @Implementation(minSdk = R)
-  protected void unregisterAntennaInfoListener(GnssAntennaInfo.Listener listener) {
+  protected void unregisterAntennaInfoListener(Object listener) {
+    Preconditions.checkArgument(listener instanceof GnssAntennaInfo.Listener);
     synchronized (gnssAntennaInfoListeners) {
-      gnssAntennaInfoListeners.remove(listener);
+      gnssAntennaInfoListeners.remove((GnssAntennaInfo.Listener) listener);
     }
   }
 
-  /** Sends a GNSS measurement event to all registered {@link GnssMeasurementsEvent.Callback}s. */
-  public void sendGnssAntennaInfo(List<GnssAntennaInfo> antennaInfos) {
-    Map<GnssAntennaInfo.Listener, Executor> listeners;
+  /** Sends a GNSS antenna info to all registered {@link GnssAntennaInfo.Listener}s. */
+  public void sendGnssAntennaInfo(List<?> antennaInfos) {
+    if (RuntimeEnvironment.getApiLevel() < R) {
+      // The GnssAntennaInfo is added from R, we don't need to support this method
+      // for lower API.
+      return;
+    }
+    if (antennaInfos == null || antennaInfos.size() == 0) {
+      return;
+    }
+    Map<Object, Executor> listeners;
     synchronized (gnssAntennaInfoListeners) {
       listeners = new LinkedHashMap<>(gnssAntennaInfoListeners);
     }
 
-    for (Map.Entry<GnssAntennaInfo.Listener, Executor> listener : listeners.entrySet()) {
-      listener.getValue().execute(() -> listener.getKey().onGnssAntennaInfoReceived(antennaInfos));
+    List<GnssAntennaInfo> castedAntennaInfos = new ArrayList<>(antennaInfos.size());
+    for (Object antennaInfo : antennaInfos) {
+      castedAntennaInfos.add((GnssAntennaInfo) antennaInfo);
+    }
+
+    for (Map.Entry<Object, Executor> listenerEntry : listeners.entrySet()) {
+      // Note that if we use
+      // final GnssAntennaInfo.Listener castedListener =
+      //     (GnssAntennaInfo.Listener) listener.getKey();
+      // to extract key as local field, the JVM will parse GnssAntennaInfo.Listener
+      // on lower target SDK. If we get key when running, the class loader process
+      // will not been broken by NoClassDefFoundError on lower target SDK.
+      listenerEntry
+          .getValue()
+          .execute(
+              () ->
+                  ((GnssAntennaInfo.Listener) listenerEntry.getKey())
+                      .onGnssAntennaInfoReceived(castedAntennaInfos));
     }
   }
 
