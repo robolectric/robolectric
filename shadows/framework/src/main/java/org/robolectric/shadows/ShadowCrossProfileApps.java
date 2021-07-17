@@ -10,6 +10,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import android.Manifest.permission;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
+import android.app.Activity;
 import android.app.AppOpsManager;
 import android.app.AppOpsManager.Mode;
 import android.content.ComponentName;
@@ -21,6 +22,7 @@ import android.content.pm.ICrossProfileApps;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -94,8 +96,7 @@ public class ShadowCrossProfileApps {
    * Simulates starting the main activity specified in the specified profile, performing the same
    * security checks done by the real {@link CrossProfileApps}.
    *
-   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}
-   * ()}.
+   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}.
    */
   @Implementation
   protected void startMainActivity(ComponentName componentName, UserHandle targetUser) {
@@ -109,8 +110,7 @@ public class ShadowCrossProfileApps {
    * Simulates starting the activity specified in the specified profile, performing the same
    * security checks done by the real {@link CrossProfileApps}.
    *
-   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}
-   * ()}.
+   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}.
    */
   @Implementation(minSdk = Q)
   @SystemApi
@@ -120,6 +120,40 @@ public class ShadowCrossProfileApps {
     verifyActivityInManifest(componentName, /* requireMainActivity= */ false);
     verifyHasInteractAcrossProfilesPermission();
     startedActivities.add(new StartedActivity(componentName, targetUser));
+  }
+
+  /**
+   * Simulates starting the activity specified in the specified profile, performing the same
+   * security checks done by the real {@link CrossProfileApps}.
+   *
+   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}.
+   */
+  @Implementation(minSdk = R)
+  @SystemApi
+  @RequiresPermission(permission.INTERACT_ACROSS_PROFILES)
+  protected void startActivity(Intent intent, UserHandle targetUser, @Nullable Activity activity) {
+    startActivity(intent, targetUser, activity, /* options= */ null);
+  }
+
+  /**
+   * Simulates starting the activity specified in the specified profile, performing the same
+   * security checks done by the real {@link CrossProfileApps}.
+   *
+   * <p>The most recent main activity started can be queried by {@link #peekNextStartedActivity()}.
+   */
+  @Implementation(minSdk = R)
+  @SystemApi
+  @RequiresPermission(permission.INTERACT_ACROSS_PROFILES)
+  protected void startActivity(
+      Intent intent, UserHandle targetUser, @Nullable Activity activity, @Nullable Bundle options) {
+    ComponentName componentName = intent.getComponent();
+    if (componentName == null) {
+      throw new IllegalArgumentException("Must set ComponentName on Intent");
+    }
+    verifyCanAccessUser(targetUser);
+    verifyHasInteractAcrossProfilesPermission();
+    startedActivities.add(
+        new StartedActivity(componentName, targetUser, intent, activity, options));
   }
 
   /** Adds {@code userHandle} to the list of accessible handles. */
@@ -163,7 +197,9 @@ public class ShadowCrossProfileApps {
   /**
    * Returns the most recent {@link ComponentName}, {@link UserHandle} pair started by {@link
    * CrossProfileApps#startMainActivity(ComponentName, UserHandle)} or {@link
-   * CrossProfileApps#startActivity(ComponentName, UserHandle)}, wrapped in {@link StartedActivity}.
+   * CrossProfileApps#startActivity(ComponentName, UserHandle)}, {@link #startActivity(Intent,
+   * UserHandle, Activity)}, {@link #startActivity(Intent, UserHandle, Activity, Bundle)}, wrapped
+   * in {@link StartedActivity}.
    */
   @Nullable
   public StartedActivity peekNextStartedActivity() {
@@ -177,8 +213,9 @@ public class ShadowCrossProfileApps {
   /**
    * Consumes the most recent {@link ComponentName}, {@link UserHandle} pair started by {@link
    * CrossProfileApps#startMainActivity(ComponentName, UserHandle)} or {@link
-   * CrossProfileApps#startActivity(ComponentName, UserHandle)}, and returns it wrapped in {@link
-   * StartedActivity}.
+   * CrossProfileApps#startActivity(ComponentName, UserHandle)}, {@link #startActivity(Intent,
+   * UserHandle, Activity)}, {@link #startActivity(Intent, UserHandle, Activity, Bundle)}, and
+   * returns it wrapped in {@link StartedActivity}.
    */
   @Nullable
   public StartedActivity getNextStartedActivity() {
@@ -192,7 +229,8 @@ public class ShadowCrossProfileApps {
   /**
    * Clears all records of {@link StartedActivity}s from calls to {@link
    * CrossProfileApps#startActivity(ComponentName, UserHandle)} or {@link
-   * CrossProfileApps#startMainActivity(ComponentName, UserHandle)}.
+   * CrossProfileApps#startMainActivity(ComponentName, UserHandle)}, {@link #startActivity(Intent,
+   * UserHandle, Activity)}, {@link #startActivity(Intent, UserHandle, Activity, Bundle)}.
    */
   public void clearNextStartedActivities() {
     startedActivities.clear();
@@ -434,16 +472,37 @@ public class ShadowCrossProfileApps {
 
   /**
    * Container object to hold parameters passed to {@link #startMainActivity(ComponentName,
-   * UserHandle)} or {@link #startActivity(ComponentName, UserHandle)}.
+   * UserHandle)} or {@link #startActivity(ComponentName, UserHandle)}, {@link
+   * #startActivity(Intent, UserHandle, Activity)}, {@link #startActivity(Intent, UserHandle,
+   * Activity, Bundle)}.
+   *
+   * <p>Note: {@link #equals} and {@link #hashCode} are only defined for the {@link ComponentName}
+   * and {@link UserHandle}.
    */
   public static final class StartedActivity {
 
     private final ComponentName componentName;
     private final UserHandle userHandle;
+    @Nullable private final Intent intent;
+    @Nullable private final Activity activity;
+    @Nullable private final Bundle options;
 
     public StartedActivity(ComponentName componentName, UserHandle userHandle) {
+      this(
+          componentName, userHandle, /* intent= */ null, /* activity= */ null, /* options= */ null);
+    }
+
+    public StartedActivity(
+        ComponentName componentName,
+        UserHandle userHandle,
+        @Nullable Intent intent,
+        @Nullable Activity activity,
+        @Nullable Bundle options) {
       this.componentName = checkNotNull(componentName);
       this.userHandle = checkNotNull(userHandle);
+      this.intent = intent;
+      this.activity = activity;
+      this.options = options;
     }
 
     public ComponentName getComponentName() {
@@ -452,6 +511,21 @@ public class ShadowCrossProfileApps {
 
     public UserHandle getUserHandle() {
       return userHandle;
+    }
+
+    @Nullable
+    public Intent getIntent() {
+      return intent;
+    }
+
+    @Nullable
+    public Bundle getOptions() {
+      return options;
+    }
+
+    @Nullable
+    public Activity getActivity() {
+      return activity;
     }
 
     @Override
