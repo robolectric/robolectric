@@ -73,6 +73,7 @@ import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
+import com.android.internal.telephony.ITelephonyRegistry;
 import com.android.internal.view.IInputMethodManager;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -171,6 +172,7 @@ public class ShadowServiceManager {
       addBinderService(Context.APP_INTEGRITY_SERVICE, IAppIntegrityManager.class);
       addBinderService(Context.AUTH_SERVICE, IAuthService.class);
       addBinderService(Context.TETHERING_SERVICE, ITetheringConnector.class);
+      addBinderService("telephony.registry", ITelephonyRegistry.class);
     }
   }
 
