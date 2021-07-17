@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.view.FrameMetrics;
 import android.view.Window;
 import android.view.Window.OnFrameMetricsAvailableListener;
-import android.widget.ProgressBar;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
@@ -19,11 +18,13 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Window.class)
 public class ShadowWindow {
-  private @RealObject Window realWindow;
+  @RealObject private Window realWindow;
 
   protected CharSequence title = "";
   protected Drawable backgroundDrawable;
@@ -44,22 +45,13 @@ public class ShadowWindow {
   @Implementation
   protected void setFlags(int flags, int mask) {
     this.flags = (this.flags & ~mask) | (flags & mask);
-    directlyOn(
-        realWindow,
-        Window.class,
-        "setFlags",
-        ClassParameter.from(int.class, flags),
-        ClassParameter.from(int.class, mask));
+    reflector(WindowReflector.class, realWindow).setFlags(flags, mask);
   }
 
   @Implementation
   protected void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
-    directlyOn(
-        realWindow,
-        Window.class,
-        "setSoftInputMode",
-        ClassParameter.from(int.class, softInputMode));
+    reflector(WindowReflector.class, realWindow).setSoftInputMode(softInputMode);
   }
 
   public boolean getFlag(int flag) {
@@ -76,24 +68,6 @@ public class ShadowWindow {
 
   public Drawable getBackgroundDrawable() {
     return backgroundDrawable;
-  }
-
-  public ProgressBar getProgressBar() {
-    return (ProgressBar)
-        directlyOn(
-            realWindow,
-            realWindow.getClass().getName(),
-            "getHorizontalProgressBar",
-            ClassParameter.from(boolean.class, false));
-  }
-
-  public ProgressBar getIndeterminateProgressBar() {
-    return (ProgressBar)
-        directlyOn(
-            realWindow,
-            realWindow.getClass().getName(),
-            "getCircularProgressBar",
-            ClassParameter.from(boolean.class, false));
   }
 
   @Implementation(minSdk = N)
@@ -132,5 +106,15 @@ public class ShadowWindow {
     for (OnFrameMetricsAvailableListener listener : onFrameMetricsAvailableListeners) {
       listener.onFrameMetricsAvailable(realWindow, frameMetrics, dropCountSinceLastInvocation);
     }
+  }
+
+  @ForType(Window.class)
+  interface WindowReflector {
+
+    @Direct
+    void setFlags(int flags, int mask);
+
+    @Direct
+    void setSoftInputMode(int softInputMode);
   }
 }
