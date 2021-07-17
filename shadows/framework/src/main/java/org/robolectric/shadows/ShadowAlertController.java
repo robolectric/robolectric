@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +14,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(value = AlertController.class, isInAndroidSdk = false)
 public class ShadowAlertController {
@@ -29,7 +31,7 @@ public class ShadowAlertController {
   @Implementation
   public void setTitle(CharSequence title) throws InvocationTargetException, IllegalAccessException {
     this.title = title;
-    directlyOn(realAlertController, AlertController.class).setTitle(title);
+    reflector(AlertControllerReflector.class, realAlertController).setTitle(title);
   }
 
   public CharSequence getTitle() {
@@ -39,7 +41,7 @@ public class ShadowAlertController {
   @Implementation
   public void setCustomTitle(View customTitleView) {
     this.customTitleView = customTitleView;
-    directlyOn(realAlertController, AlertController.class).setCustomTitle(customTitleView);
+    reflector(AlertControllerReflector.class, realAlertController).setCustomTitle(customTitleView);
   }
 
   public View getCustomTitleView() {
@@ -49,7 +51,7 @@ public class ShadowAlertController {
   @Implementation
   public void setMessage(CharSequence message) {
     this.message = message;
-    directlyOn(realAlertController, AlertController.class).setMessage(message);
+    reflector(AlertControllerReflector.class, realAlertController).setMessage(message);
   }
 
   public CharSequence getMessage() {
@@ -59,7 +61,7 @@ public class ShadowAlertController {
   @Implementation
   public void setView(View view) {
     this.view = view;
-    directlyOn(realAlertController, AlertController.class).setView(view);
+    reflector(AlertControllerReflector.class, realAlertController).setView(view);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -70,7 +72,7 @@ public class ShadowAlertController {
   @Implementation
   public void setIcon(int iconId) {
     this.iconId = iconId;
-    directlyOn(realAlertController, AlertController.class).setIcon(iconId);
+    reflector(AlertControllerReflector.class, realAlertController).setIcon(iconId);
   }
 
   public int getIconId() {
@@ -84,5 +86,24 @@ public class ShadowAlertController {
   public Adapter getAdapter() {
     return ReflectionHelpers.<ListView>callInstanceMethod(realAlertController, "getListView")
         .getAdapter();
+  }
+
+  @ForType(AlertController.class)
+  interface AlertControllerReflector {
+
+    @Direct
+    void setTitle(CharSequence title);
+
+    @Direct
+    void setCustomTitle(View customTitleView);
+
+    @Direct
+    void setMessage(CharSequence message);
+
+    @Direct
+    void setView(View view);
+
+    @Direct
+    void setIcon(int iconId);
   }
 }

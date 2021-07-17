@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
@@ -22,6 +23,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlarmManager.class)
@@ -41,7 +44,7 @@ public class ShadowAlarmManager {
   @Implementation
   protected void setTimeZone(String timeZone) {
     // Do the real check first
-    Shadow.directlyOn(realObject, AlarmManager.class).setTimeZone(timeZone);
+    reflector(AlarmManagerReflector.class, realObject).setTimeZone(timeZone);
     // Then do the right side effect
     TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
   }
@@ -123,7 +126,11 @@ public class ShadowAlarmManager {
     return null;
   }
 
-  private void internalSet(int type, long triggerAtTime, long interval, PendingIntent operation,
+  private void internalSet(
+      int type,
+      long triggerAtTime,
+      long interval,
+      PendingIntent operation,
       PendingIntent showIntent) {
     cancel(operation);
     synchronized (scheduledAlarms) {
@@ -216,12 +223,16 @@ public class ShadowAlarmManager {
     public final OnAlarmListener onAlarmListener;
     public final Handler handler;
 
-    public ScheduledAlarm(int type, long triggerAtTime, PendingIntent operation,
-        PendingIntent showIntent) {
+    public ScheduledAlarm(
+        int type, long triggerAtTime, PendingIntent operation, PendingIntent showIntent) {
       this(type, triggerAtTime, 0, operation, showIntent);
     }
 
-    public ScheduledAlarm(int type, long triggerAtTime, long interval, PendingIntent operation,
+    public ScheduledAlarm(
+        int type,
+        long triggerAtTime,
+        long interval,
+        PendingIntent operation,
         PendingIntent showIntent) {
       this(type, triggerAtTime, interval, operation, showIntent, null, null);
     }
@@ -261,5 +272,12 @@ public class ShadowAlarmManager {
     public int compareTo(ScheduledAlarm scheduledAlarm) {
       return Long.compare(triggerAtTime, scheduledAlarm.triggerAtTime);
     }
+  }
+
+  @ForType(AlarmManager.class)
+  interface AlarmManagerReflector {
+
+    @Direct
+    void setTimeZone(String timeZone);
   }
 }
