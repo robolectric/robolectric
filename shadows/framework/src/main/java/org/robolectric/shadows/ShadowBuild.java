@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.TargetApi;
@@ -12,6 +11,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -171,7 +171,7 @@ public class ShadowBuild {
     if (radioVersionOverride != null) {
       return radioVersionOverride;
     }
-    return directlyOn(Build.class, "getRadioVersion");
+    return reflector(_Build_.class).getRadioVersion();
   }
 
   @Implementation(minSdk = O)
@@ -186,15 +186,19 @@ public class ShadowBuild {
     reflector(_VERSION_.class).__staticInitializer__();
   }
 
-  /** Accessor interface for {@link Build}. */
+  /** Reflector interface for {@link Build}. */
   @ForType(Build.class)
   private interface _Build_ {
 
     @Static
     void __staticInitializer__();
+
+    @Static
+    @Direct
+    String getRadioVersion();
   }
 
-  /** Accessor interface for {@link Build.VERSION}. */
+  /** Reflector interface for {@link Build.VERSION}. */
   @ForType(Build.VERSION.class)
   private interface _VERSION_ {
 

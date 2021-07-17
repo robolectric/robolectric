@@ -10,7 +10,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -28,6 +28,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
 
@@ -41,7 +42,7 @@ public class ShadowDisplayEventReceiver {
       new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
   private static int asyncVsyncDelay;
 
-  protected @RealObject DisplayEventReceiver receiver;
+  @RealObject protected DisplayEventReceiver receiver;
 
   private static final Duration VSYNC_DELAY = Duration.ofMillis(1);
 
@@ -113,11 +114,7 @@ public class ShadowDisplayEventReceiver {
     if (closeGuard != null) {
       closeGuard.close();
     }
-    directlyOn(
-        receiver,
-        DisplayEventReceiver.class,
-        "dispose",
-        ClassParameter.from(boolean.class, finalized));
+    reflector(DisplayEventReceiverReflector.class, receiver).dispose(finalized);
   }
 
   static void setAsyncVsync(int delayMillis) {
@@ -144,8 +141,7 @@ public class ShadowDisplayEventReceiver {
           "onVsync",
           ClassParameter.from(long.class, ShadowSystem.nanoTime()),
           ClassParameter.from(int.class, 0), /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */
-          ClassParameter.from(int.class, 1)
-      );
+          ClassParameter.from(int.class, 1));
     } else {
       receiver.onVsync(ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
     }
@@ -212,9 +208,12 @@ public class ShadowDisplayEventReceiver {
     }
   }
 
-  /** Accessor interface for {@link DisplayEventReceiver}'s internals. */
+  /** Reflector interface for {@link DisplayEventReceiver}'s internals. */
   @ForType(DisplayEventReceiver.class)
   interface DisplayEventReceiverReflector {
+
+    @Direct
+    void dispose(boolean finalized);
 
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();
