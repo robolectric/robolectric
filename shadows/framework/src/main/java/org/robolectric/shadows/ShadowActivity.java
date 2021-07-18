@@ -54,7 +54,6 @@ import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
@@ -858,19 +857,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     void onDestroy();
 
-    @Direct
     boolean isFinishing();
 
-    @Direct
     Window getWindow();
 
-    @Direct
     Object getLastNonConfigurationInstance();
 
-    @Direct
     boolean onCreateOptionsMenu(Menu menu);
 
-    @Direct
     void requestPermissions(String[] permissions, int requestCode);
   }
 }
