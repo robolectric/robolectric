@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -21,6 +21,8 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)
@@ -64,21 +66,21 @@ public class ShadowTextView extends ShadowView {
   @Implementation
   protected void setTextAppearance(Context context, int resid) {
     textAppearanceId = resid;
-    directlyOn(realTextView, TextView.class).setTextAppearance(context, resid);
+    reflector(TextViewReflector.class, realTextView).setTextAppearance(context, resid);
   }
 
   @Implementation
   protected boolean onKeyDown(int keyCode, KeyEvent event) {
     previousKeyCodes.add(keyCode);
     previousKeyEvents.add(event);
-    return directlyOn(realTextView, TextView.class).onKeyDown(keyCode, event);
+    return reflector(TextViewReflector.class, realTextView).onKeyDown(keyCode, event);
   }
 
   @Implementation
   protected boolean onKeyUp(int keyCode, KeyEvent event) {
     previousKeyCodes.add(keyCode);
     previousKeyEvents.add(event);
-    return directlyOn(realTextView, TextView.class).onKeyUp(keyCode, event);
+    return reflector(TextViewReflector.class, realTextView).onKeyUp(keyCode, event);
   }
 
   public int getPreviousKeyCode(int index) {
@@ -107,13 +109,13 @@ public class ShadowTextView extends ShadowView {
   @Implementation
   protected void addTextChangedListener(TextWatcher watcher) {
     this.watchers.add(watcher);
-    directlyOn(realTextView, TextView.class).addTextChangedListener(watcher);
+    reflector(TextViewReflector.class, realTextView).addTextChangedListener(watcher);
   }
 
   @Implementation
   protected void removeTextChangedListener(TextWatcher watcher) {
     this.watchers.remove(watcher);
-    directlyOn(realTextView, TextView.class).removeTextChangedListener(watcher);
+    reflector(TextViewReflector.class, realTextView).removeTextChangedListener(watcher);
   }
 
   /**
@@ -150,7 +152,7 @@ public class ShadowTextView extends ShadowView {
   @Implementation
   protected void setOnEditorActionListener(TextView.OnEditorActionListener l) {
     this.onEditorActionListener = l;
-    directlyOn(realTextView, TextView.class).setOnEditorActionListener(l);
+    reflector(TextViewReflector.class, realTextView).setOnEditorActionListener(l);
   }
 
   public TextView.OnEditorActionListener getOnEditorActionListener() {
@@ -163,7 +165,8 @@ public class ShadowTextView extends ShadowView {
     this.compoundDrawablesWithIntrinsicBoundsTop = top;
     this.compoundDrawablesWithIntrinsicBoundsRight = right;
     this.compoundDrawablesWithIntrinsicBoundsBottom = bottom;
-    directlyOn(realTextView, TextView.class).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
+    reflector(TextViewReflector.class, realTextView)
+        .setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
   }
 
   public int getCompoundDrawablesWithIntrinsicBoundsLeft() {
@@ -180,5 +183,30 @@ public class ShadowTextView extends ShadowView {
 
   public int getCompoundDrawablesWithIntrinsicBoundsBottom() {
     return compoundDrawablesWithIntrinsicBoundsBottom;
+  }
+
+  @ForType(TextView.class)
+  interface TextViewReflector {
+
+    @Direct
+    void setTextAppearance(Context context, int resid);
+
+    @Direct
+    boolean onKeyDown(int keyCode, KeyEvent event);
+
+    @Direct
+    boolean onKeyUp(int keyCode, KeyEvent event);
+
+    @Direct
+    void addTextChangedListener(TextWatcher watcher);
+
+    @Direct
+    void removeTextChangedListener(TextWatcher watcher);
+
+    @Direct
+    void setOnEditorActionListener(TextView.OnEditorActionListener l);
+
+    @Direct
+    void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom);
   }
 }

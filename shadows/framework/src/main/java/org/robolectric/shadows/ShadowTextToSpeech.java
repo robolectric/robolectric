@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -27,6 +28,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(TextToSpeech.class)
 public class ShadowTextToSpeech {
@@ -86,7 +89,7 @@ public class ShadowTextToSpeech {
   protected int speak(
       final String text, final int queueMode, final HashMap<String, String> params) {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      return Shadow.directlyOn(tts, TextToSpeech.class).speak(text, queueMode, params);
+      return reflector(TextToSpeechReflector.class, tts).speak(text, queueMode, params);
     }
     return speak(
         text, queueMode, null, params == null ? null : params.get(Engine.KEY_PARAM_UTTERANCE_ID));
@@ -266,5 +269,12 @@ public class ShadowTextToSpeech {
     languageAvailabilities.clear();
     voices.clear();
     lastTextToSpeechInstance = null;
+  }
+
+  @ForType(TextToSpeech.class)
+  interface TextToSpeechReflector {
+
+    @Direct
+    int speak(final String text, final int queueMode, final HashMap params);
   }
 }

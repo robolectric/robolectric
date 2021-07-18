@@ -6,7 +6,6 @@ import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
 import static android.view.ViewRootImpl.NEW_INSETS_MODE_FULL;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -88,7 +87,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   @Implementation(maxSdk = JELLY_BEAN)
   public Display getDefaultDisplay() {
     if (getApiLevel() > JELLY_BEAN) {
-      return directlyOn(realObject, WindowManagerImpl.class).getDefaultDisplay();
+      return reflector(ReflectorWindowManagerImpl.class, realObject).getDefaultDisplay();
     } else {
       return defaultDisplayJB;
     }
@@ -146,6 +145,9 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
     @Direct
     void removeViewImmediate(View view);
+
+    @Direct
+    Display getDefaultDisplay();
 
     @Accessor("mContext")
     Context getContext();

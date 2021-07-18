@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.animation.AnimationHandler;
@@ -13,14 +12,14 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator {
 
-  @RealObject
-  private ValueAnimator realObject;
+  @RealObject private ValueAnimator realObject;
 
   private int actualRepeatCount;
 
@@ -54,7 +53,7 @@ public class ShadowValueAnimator {
     if (count == ValueAnimator.INFINITE) {
       count = 1;
     }
-    directlyOn(realObject, ValueAnimator.class).setRepeatCount(count);
+    reflector(ValueAnimatorReflector.class, realObject).setRepeatCount(count);
   }
 
   /**
@@ -77,6 +76,10 @@ public class ShadowValueAnimator {
 
   @ForType(ValueAnimator.class)
   interface ValueAnimatorReflector {
+
+    @Direct
+    void setRepeatCount(int count);
+
     @Static
     @Accessor("sDurationScale")
     void setDurationScale(float duration);

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
@@ -40,7 +39,7 @@ public class ShadowPausedMessage extends ShadowMessage {
     if (Build.VERSION.SDK_INT >= LOLLIPOP) {
       reflector(ReflectorMessage.class, realObject).recycleUnchecked();
     } else {
-      directlyOn(realObject, Message.class).recycle();
+      reflector(ReflectorMessage.class, realObject).recycle();
     }
   }
 
@@ -72,6 +71,9 @@ public class ShadowPausedMessage extends ShadowMessage {
 
     @Direct
     void recycleUnchecked();
+
+    @Direct
+    void recycle();
 
     @Accessor("when")
     long getWhen();

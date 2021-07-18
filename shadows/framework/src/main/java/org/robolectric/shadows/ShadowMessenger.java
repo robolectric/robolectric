@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Message;
 import android.os.Messenger;
@@ -9,6 +9,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(Messenger.class)
 public class ShadowMessenger {
@@ -24,11 +26,18 @@ public class ShadowMessenger {
   @Implementation
   protected void send(Message message) throws RemoteException {
     lastMessageSent = Message.obtain(message);
-    directlyOn(messenger, Messenger.class).send(message);
+    reflector(MessengerReflector.class, messenger).send(message);
   }
 
   @Resetter
   public static void reset() {
     lastMessageSent = null;
+  }
+
+  @ForType(Messenger.class)
+  interface MessengerReflector {
+
+    @Direct
+    void send(Message message);
   }
 }

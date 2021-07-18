@@ -151,7 +151,7 @@ public class ShadowDrawable {
   @Implementation
   protected void setAlpha(int alpha) {
     this.alpha = alpha;
-    Shadow.directlyOn(realDrawable, Drawable.class).setAlpha(alpha);
+    reflector(DrawableReflector.class, realDrawable).setAlpha(alpha);
   }
 
   @Implementation
@@ -182,5 +182,8 @@ public class ShadowDrawable {
 
     @Direct
     void invalidateSelf();
+
+    @Direct
+    void setAlpha(int alpha);
   }
 }

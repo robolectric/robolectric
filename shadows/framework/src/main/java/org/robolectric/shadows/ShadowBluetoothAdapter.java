@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothAdapter;
@@ -422,7 +421,7 @@ public class ShadowBluetoothAdapter {
   protected boolean getProfileProxy(
       Context context, BluetoothProfile.ServiceListener listener, int profile) {
     if (!isOverridingProxyBehavior) {
-      return directlyOn(realAdapter, BluetoothAdapter.class)
+      return reflector(BluetoothAdapterReflector.class, realAdapter)
           .getProfileProxy(context, listener, profile);
     }
 
@@ -445,7 +444,7 @@ public class ShadowBluetoothAdapter {
   @Implementation
   protected void closeProfileProxy(int profile, BluetoothProfile proxy) {
     if (!isOverridingProxyBehavior) {
-      directlyOn(realAdapter, BluetoothAdapter.class).closeProfileProxy(profile, proxy);
+      reflector(BluetoothAdapterReflector.class, realAdapter).closeProfileProxy(profile, proxy);
       return;
     }
 
@@ -480,6 +479,13 @@ public class ShadowBluetoothAdapter {
     @Static
     @Direct
     BluetoothAdapter getDefaultAdapter();
+
+    @Direct
+    boolean getProfileProxy(
+        Context context, BluetoothProfile.ServiceListener listener, int profile);
+
+    @Direct
+    void closeProfileProxy(int profile, BluetoothProfile proxy);
 
     @Accessor("sAdapter")
     @Static
