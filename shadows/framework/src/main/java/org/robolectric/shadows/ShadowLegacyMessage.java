@@ -53,7 +53,7 @@ public class ShadowLegacyMessage extends ShadowMessage {
   public void recycleUnchecked() {
     if (getApiLevel() >= LOLLIPOP) {
       unschedule();
-      directlyOn(realMessage, Message.class, "recycleUnchecked");
+      reflector(DirectMessageReflector.class, realMessage).recycleUnchecked();
     } else {
       // provide forward compatibility with SDK 21.
       recycle();
@@ -120,5 +120,12 @@ public class ShadowLegacyMessage extends ShadowMessage {
 
     @Accessor("next")
     void setNext(Message next);
+  }
+
+  /** Reflector interface for {@link Message}'s internals. */
+  @ForType(value = Message.class, direct = true)
+  interface DirectMessageReflector {
+
+    void recycleUnchecked();
   }
 }
