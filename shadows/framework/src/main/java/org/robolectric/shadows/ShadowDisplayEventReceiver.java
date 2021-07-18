@@ -25,6 +25,8 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -132,9 +134,29 @@ public class ShadowDisplayEventReceiver {
     } else if (RuntimeEnvironment.getApiLevel() < Q) {
       reflector(DisplayEventReceiverReflector.class, realReceiver)
           .onVsync(ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() <= R) {
       realReceiver.onVsync(
           ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
+    } else {
+      try {
+        // onVsync takes a package-private VSyncData class as a parameter, thus reflection
+        // needs to be used
+        Object vsyncData =
+            ReflectionHelpers.callConstructor(
+                Class.forName("android.view.DisplayEventReceiver$VsyncEventData"),
+                ClassParameter.from(long.class, 1), /* id */
+                ClassParameter.from(long.class, 10), /* frameDeadline */
+                ClassParameter.from(long.class, 1)); /* frameInterval */
+
+        reflector(DisplayEventReceiverReflector.class, realReceiver)
+            .onVsync(
+                ShadowSystem.nanoTime(),
+                0L, /* physicalDisplayId currently ignored */
+                1, /* frame */
+                vsyncData /* VsyncEventData */);
+      } catch (ClassNotFoundException e) {
+        throw new LinkageError("Unable to construct VsyncEventData", e);
+      }
     }
   }
 
