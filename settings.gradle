@@ -33,3 +33,4 @@ include ':integration_tests:ctesque'
 include ':integration_tests:security-providers'
 include ':testapp'
 include ":integration_tests:mockk"
+include ':integration_tests:compat-target29'
