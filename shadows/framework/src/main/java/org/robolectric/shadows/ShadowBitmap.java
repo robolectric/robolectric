@@ -636,19 +636,28 @@ public class ShadowBitmap {
       throw new RuntimeException("Not implemented: only Bitmaps with " + INTERNAL_BYTES_PER_PIXEL
               + " bytes per pixel are supported");
     }
-    if (!(dst instanceof ByteBuffer)) {
+    if (!(dst instanceof ByteBuffer) && !(dst instanceof IntBuffer)) {
       throw new RuntimeException("Not implemented: unsupported Buffer subclass");
     }
 
-    ByteBuffer byteBuffer = (ByteBuffer) dst;
-    if (byteBuffer.remaining() < (width * height) * INTERNAL_BYTES_PER_PIXEL) {
+    ByteBuffer byteBuffer = null;
+    IntBuffer intBuffer;
+    if (dst instanceof IntBuffer) {
+      intBuffer = (IntBuffer) dst;
+    } else {
+      byteBuffer = (ByteBuffer) dst;
+      intBuffer = byteBuffer.asIntBuffer();
+    }
+
+    if (intBuffer.remaining() < (width * height)) {
       throw new RuntimeException("Buffer not large enough for pixels");
     }
 
-    IntBuffer intBuffer = byteBuffer.asIntBuffer();
     int[] colors = new int[width * height];
     intBuffer.get(colors);
-    byteBuffer.position(byteBuffer.position() + intBuffer.position() * INTERNAL_BYTES_PER_PIXEL);
+    if (byteBuffer != null) {
+      byteBuffer.position(byteBuffer.position() + intBuffer.position() * INTERNAL_BYTES_PER_PIXEL);
+    }
     bufferedImage.setRGB(0, 0, width, height, colors, 0, width);
   }
 
@@ -663,15 +672,23 @@ public class ShadowBitmap {
               + " bytes per pixel are supported");
     }
 
-    if (!(dst instanceof ByteBuffer)) {
+    if (!(dst instanceof ByteBuffer) && !(dst instanceof IntBuffer)) {
       throw new RuntimeException("Not implemented: unsupported Buffer subclass");
     }
 
     int[] pixels = new int[width * height];
     getPixels(pixels, 0, width, 0, 0, width, height);
-    ByteBuffer byteBuffer = (ByteBuffer) dst;
-    for (int color : pixels) {
-      byteBuffer.putInt(color);
+
+    if (dst instanceof ByteBuffer) {
+      ByteBuffer byteBuffer = (ByteBuffer) dst;
+      for (int color : pixels) {
+        byteBuffer.putInt(color);
+      }
+    } else if (dst instanceof IntBuffer) {
+      IntBuffer intBuffer = (IntBuffer) dst;
+      for (int color : pixels) {
+        intBuffer.put(color);
+      }
     }
   }
 

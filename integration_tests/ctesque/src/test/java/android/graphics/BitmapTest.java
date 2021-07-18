@@ -19,6 +19,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -379,5 +381,48 @@ public class BitmapTest {
     Bitmap copy = cropped.copy(Bitmap.Config.ARGB_8888, true);
     assertThat(copy.isMutable()).isTrue();
     assertThat(copy.getPixel(0, 0)).isEqualTo(Color.BLUE);
+  }
+
+  @Test
+  public void copyPixelsFromBuffer_intBuffer() {
+    Bitmap bitmap = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888);
+    IntBuffer input = IntBuffer.allocate(bitmap.getWidth() * bitmap.getHeight());
+    for (int i = 0; i < input.capacity(); i++) {
+      // IntBuffer is interpreted as ABGR. Use A=255 to avoid premultiplication.
+      input.put((0xFF << 24) | (i + 2) << 16 | (i + 1) << 8 | i);
+    }
+    input.rewind();
+    bitmap.copyPixelsFromBuffer(input);
+
+    IntBuffer output = IntBuffer.allocate(input.capacity());
+    bitmap.copyPixelsToBuffer(output);
+
+    input.rewind();
+    output.rewind();
+
+    assertThat(output).isEqualTo(input);
+  }
+
+  @Test
+  public void copyPixelsFromBuffer_byteBuffer() {
+    Bitmap bitmap = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888);
+    ByteBuffer input = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight() * 4);
+    for (int i = 0; i < bitmap.getWidth() * bitmap.getHeight(); i++) {
+      // ByteBuffer is interpreted as RGBA. Use A=255 to avoid premultiplication.
+      input.put((byte) i);
+      input.put((byte) (i + 1));
+      input.put((byte) (i + 2));
+      input.put((byte) 0xFF);
+    }
+    input.rewind();
+    bitmap.copyPixelsFromBuffer(input);
+
+    ByteBuffer output = ByteBuffer.allocate(input.capacity());
+    bitmap.copyPixelsToBuffer(output);
+
+    input.rewind();
+    output.rewind();
+
+    assertThat(output).isEqualTo(input);
   }
 }

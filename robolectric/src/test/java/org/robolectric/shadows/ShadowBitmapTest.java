@@ -508,8 +508,8 @@ public class ShadowBitmapTest {
     buffer.rewind();
     Bitmap bitmapReconstructed = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     // Set some random pixels to ensure that they're properly overwritten.
-    bitmapReconstructed.setPixel(1,1, 999);
-    bitmapReconstructed.setPixel(4,4, 999);
+    bitmapReconstructed.setPixel(1, 1, 999);
+    bitmapReconstructed.setPixel(4, 4, 999);
     bitmapReconstructed.copyPixelsFromBuffer(buffer);
     assertThat(buffer.position()).isEqualTo(bitmapOriginal.getByteCount());
 
@@ -563,13 +563,6 @@ public class ShadowBitmapTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void throwsExceptionCopyPixelsToIntBuffer() {
-    Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
-    IntBuffer buffer = IntBuffer.allocate(bitmapOriginal.getByteCount());
-    bitmapOriginal.copyPixelsToBuffer(buffer);
-  }
-
-  @Test(expected = RuntimeException.class)
   public void throwsExceptionCopyPixelsToLongBuffer() {
     Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     LongBuffer buffer = LongBuffer.allocate(bitmapOriginal.getByteCount());
@@ -598,9 +591,10 @@ public class ShadowBitmapTest {
   }
 
   @Test(expected = RuntimeException.class)
-  public void throwsExceptionCopyPixelsFromIntBuffer() {
+  public void throwsExceptionCopyPixelsFromIntBufferTooSmall() {
     Bitmap bitmapOriginal = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
-    IntBuffer buffer = IntBuffer.allocate(bitmapOriginal.getByteCount());
+    IntBuffer buffer =
+        IntBuffer.allocate(bitmapOriginal.getWidth() * bitmapOriginal.getHeight() - 1);
     bitmapOriginal.copyPixelsFromBuffer(buffer);
   }
 
