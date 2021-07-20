@@ -27,7 +27,6 @@ import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.InvokeDynamicClassInstrumentor;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
@@ -49,8 +48,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
 
   protected static Injector.Builder defaultInjector() {
-    return new Injector.Builder()
-        .bindDefault(ClassInstrumentor.class, InvokeDynamicClassInstrumentor.class);
+    return new Injector.Builder();
   }
 
   private final ClassInstrumentor classInstrumentor;

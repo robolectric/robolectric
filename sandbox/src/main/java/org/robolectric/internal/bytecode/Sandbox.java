@@ -69,10 +69,8 @@ public class Sandbox {
 
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();
     Class<?> robolectricInternalsClass = bootstrappedClass(RobolectricInternals.class);
-    if (InvokeDynamic.ENABLED) {
-      ShadowInvalidator invalidator = getShadowInvalidator();
-      setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
-    }
+    ShadowInvalidator invalidator = getShadowInvalidator();
+    setStaticField(robolectricInternalsClass, "shadowInvalidator", invalidator);
 
     setStaticField(robolectricInternalsClass, "classHandler", classHandler);
     setStaticField(robolectricInternalsClass, "classLoader", robolectricClassLoader);
