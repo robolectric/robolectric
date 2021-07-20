@@ -91,6 +91,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -120,6 +121,8 @@ public class ShadowPackageManager {
 
   @GuardedBy("lock")
   static final Map<String, ModuleInfo> moduleInfos = new LinkedHashMap<>();
+
+  static final Set<Object> permissionListeners = new CopyOnWriteArraySet<>();
 
   // Those maps contain filter for components. If component exists but doesn't have filters,
   // it will have an entry in the map with an empty list.
@@ -842,6 +845,7 @@ public class ShadowPackageManager {
       applicationEnabledSettingMap.put(
           packageInfo.packageName, PackageManager.COMPONENT_ENABLED_STATE_DEFAULT);
       if (packageInfo.applicationInfo != null) {
+        uidForPackage.put(packageInfo.packageName, packageInfo.applicationInfo.uid);
         namesForUid.put(packageInfo.applicationInfo.uid, packageInfo.packageName);
       }
     }

@@ -62,6 +62,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
@@ -1339,6 +1340,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = M)
   protected void grantRuntimePermission(
       String packageName, String permissionName, UserHandle user) {
+    Integer uid;
     synchronized (lock) {
       if (!packageInfos.containsKey(packageName)) {
         throw new SecurityException("Package not found: " + packageName);
@@ -1353,12 +1355,21 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       packageInfo.requestedPermissionsFlags[permissionIndex] |= REQUESTED_PERMISSION_GRANTED;
+
+      uid = uidForPackage.get(packageName);
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.M && uid != null) {
+      for (Object listener : permissionListeners) {
+        ((OnPermissionsChangedListener) listener).onPermissionsChanged(uid);
+      }
     }
   }
 
   @Implementation(minSdk = M)
   protected void revokeRuntimePermission(
       String packageName, String permissionName, UserHandle user) {
+    Integer uid;
     synchronized (lock) {
       if (!packageInfos.containsKey(packageName)) {
         throw new SecurityException("Package not found: " + packageName);
@@ -1373,6 +1384,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
 
       packageInfo.requestedPermissionsFlags[permissionIndex] &= ~REQUESTED_PERMISSION_GRANTED;
+
+      uid = uidForPackage.get(packageName);
+    }
+
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.M && uid != null) {
+      for (Object listener : permissionListeners) {
+        ((OnPermissionsChangedListener) listener).onPermissionsChanged(uid);
+      }
     }
   }
 
@@ -1558,10 +1577,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = M)
-  protected void addOnPermissionsChangeListener(Object listener) {}
+  protected void addOnPermissionsChangeListener(Object listener) {
+    permissionListeners.add(listener);
+  }
 
   @Implementation(minSdk = M)
-  protected void removeOnPermissionsChangeListener(Object listener) {}
+  protected void removeOnPermissionsChangeListener(Object listener) {
+    permissionListeners.remove(listener);
+  }
 
   @Implementation(maxSdk = O_MR1)
   protected void installPackage(
