@@ -143,11 +143,6 @@ public class ClassInstrumentor {
 
   public void instrument(MutableClass mutableClass) {
     try {
-      // no need to do anything to interfaces
-      if (mutableClass.isInterface()) {
-        return;
-      }
-
       makeClassPublic(mutableClass.classNode);
       if ((mutableClass.classNode.access & Opcodes.ACC_FINAL) == Opcodes.ACC_FINAL) {
         mutableClass
@@ -165,32 +160,42 @@ public class ClassInstrumentor {
 
       instrumentMethods(mutableClass);
 
-      // If there is no constructor, adds one
-      addNoArgsConstructor(mutableClass);
+      if (mutableClass.isInterface()) {
+        mutableClass.addInterface(Type.getInternalName(InstrumentedInterface.class));
+      } else {
+        // If there is no constructor, adds one
+        addNoArgsConstructor(mutableClass);
 
-      addDirectCallConstructor(mutableClass);
+        addDirectCallConstructor(mutableClass);
 
-      addRoboInitMethod(mutableClass);
+        addRoboInitMethod(mutableClass);
 
-      decorator.decorate(mutableClass);
+        removeFinalFromFields(mutableClass);
 
-      removeFinalFromFields(mutableClass);
+        decorator.decorate(mutableClass);
+      }
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
-    for (MethodNode method : mutableClass.getMethods()) {
-      rewriteMethodBody(mutableClass, method);
+    if (mutableClass.isInterface()) {
+      for (MethodNode method : mutableClass.getMethods()) {
+        rewriteMethodBody(mutableClass, method);
+      }
+    } else {
+      for (MethodNode method : mutableClass.getMethods()) {
+        rewriteMethodBody(mutableClass, method);
 
-      if (method.name.equals("<clinit>")) {
-        method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
-        mutableClass.addMethod(generateStaticInitializerNotifierMethod(mutableClass));
-      } else if (method.name.equals("<init>")) {
-        instrumentConstructor(mutableClass, method);
-      } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
-        instrumentNormalMethod(mutableClass, method);
+        if (method.name.equals("<clinit>")) {
+          method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
+          mutableClass.addMethod(generateStaticInitializerNotifierMethod(mutableClass));
+        } else if (method.name.equals("<init>")) {
+          instrumentConstructor(mutableClass, method);
+        } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
+          instrumentNormalMethod(mutableClass, method);
+        }
       }
     }
   }

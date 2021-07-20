@@ -83,8 +83,7 @@ public class InstrumentationConfiguration {
    * @return True if the class should be instrumented.
    */
   public boolean shouldInstrument(ClassDetails classDetails) {
-    return !classDetails.isInterface()
-        && !classDetails.isAnnotation()
+    return !classDetails.isAnnotation()
         && !classesToNotInstrument.contains(classDetails.getName())
         && !isInPackagesToNotInstrument(classDetails.getName())
         && !classMatchesExclusionRegex(classDetails.getName())
