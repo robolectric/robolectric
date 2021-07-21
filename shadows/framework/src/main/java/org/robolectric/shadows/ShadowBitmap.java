@@ -658,7 +658,8 @@ public class ShadowBitmap {
     if (byteBuffer != null) {
       byteBuffer.position(byteBuffer.position() + intBuffer.position() * INTERNAL_BYTES_PER_PIXEL);
     }
-    bufferedImage.setRGB(0, 0, width, height, colors, 0, width);
+    int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
+    System.arraycopy(colors, 0, pixels, 0, pixels.length);
   }
 
   @Implementation
@@ -675,20 +676,13 @@ public class ShadowBitmap {
     if (!(dst instanceof ByteBuffer) && !(dst instanceof IntBuffer)) {
       throw new RuntimeException("Not implemented: unsupported Buffer subclass");
     }
-
-    int[] pixels = new int[width * height];
-    getPixels(pixels, 0, width, 0, 0, width, height);
-
+    int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
     if (dst instanceof ByteBuffer) {
-      ByteBuffer byteBuffer = (ByteBuffer) dst;
-      for (int color : pixels) {
-        byteBuffer.putInt(color);
-      }
+      IntBuffer intBuffer = ((ByteBuffer) dst).asIntBuffer();
+      intBuffer.put(pixels);
+      dst.position(intBuffer.position() * 4);
     } else if (dst instanceof IntBuffer) {
-      IntBuffer intBuffer = (IntBuffer) dst;
-      for (int color : pixels) {
-        intBuffer.put(color);
-      }
+      ((IntBuffer) dst).put(pixels);
     }
   }
 

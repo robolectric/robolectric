@@ -21,7 +21,9 @@ public class Sandbox {
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
-  public Sandbox(InstrumentationConfiguration config, ResourceProvider resourceProvider,
+  public Sandbox(
+      InstrumentationConfiguration config,
+      ResourceProvider resourceProvider,
       ClassInstrumentor classInstrumentor) {
     this(new SandboxClassLoader(config, resourceProvider, classInstrumentor));
   }
@@ -56,12 +58,10 @@ public class Sandbox {
   }
 
   public void replaceShadowMap(ShadowMap shadowMap) {
-    if (InvokeDynamic.ENABLED) {
-      ShadowMap oldShadowMap = this.shadowMap;
-      this.shadowMap = shadowMap;
-      Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
-      getShadowInvalidator().invalidateClasses(invalidatedClasses);
-    }
+    ShadowMap oldShadowMap = this.shadowMap;
+    this.shadowMap = shadowMap;
+    Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
+    getShadowInvalidator().invalidateClasses(invalidatedClasses);
   }
 
   public void configure(ClassHandler classHandler, Interceptors interceptors) {
@@ -85,10 +85,11 @@ public class Sandbox {
   }
 
   public void runOnMainThread(Runnable runnable) {
-    runOnMainThread(() -> {
-      runnable.run();
-      return null;
-    });
+    runOnMainThread(
+        () -> {
+          runnable.run();
+          return null;
+        });
   }
 
   public <T> T runOnMainThread(Callable<T> callable) {
