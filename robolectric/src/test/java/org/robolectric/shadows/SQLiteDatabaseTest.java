@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.database.sqlite.SQLiteDatabase.OPEN_READWRITE;
 import static com.google.common.truth.Truth.assertThat;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -1001,21 +1000,6 @@ public class SQLiteDatabaseTest {
     }
     assertThat(nullValuesCursor.getBlob(3)).isNull();
   }
-
-  @Test
-  public void shouldGetBlobFromString() {
-    ContentValues values = new ContentValues();
-    values.put("first_column", "this is a string");
-    database.insert("table_name", null, values);
-
-    Cursor data =
-        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null);
-    assertThat(data.getCount()).isEqualTo(1);
-    data.moveToFirst();
-    assertThat(data.getBlob(0)).isEqualTo(values.getAsString("first_column").getBytes(UTF_8));
-  }
-
-  /////////////////////
 
   private SQLiteDatabase openOrCreateDatabase(String name) {
     return openOrCreateDatabase(ApplicationProvider.getApplicationContext().getDatabasePath(name));
