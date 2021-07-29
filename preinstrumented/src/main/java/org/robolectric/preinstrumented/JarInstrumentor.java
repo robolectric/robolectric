@@ -21,7 +21,6 @@ import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.ClassNodeProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.InvokeDynamicClassInstrumentor;
 import org.robolectric.util.inject.Injector;
 
 /** Runs Robolectric invokedynamic instrumentation on an android-all jar. */
@@ -30,10 +29,7 @@ public class JarInstrumentor {
   private static final int ONE_MB = 1024 * 1024;
   private static final boolean PRINT_FAILED_CLASSES = false;
 
-  private static final Injector INJECTOR =
-      new Injector.Builder()
-          .bindDefault(ClassInstrumentor.class, InvokeDynamicClassInstrumentor.class)
-          .build();
+  private static final Injector INJECTOR = new Injector.Builder().build();
 
   private final ClassInstrumentor classInstrumentor;
   private final InstrumentationConfiguration instrumentationConfiguration;

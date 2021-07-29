@@ -44,8 +44,10 @@ import org.robolectric.util.reflector.ForType;
 @Implements(value = LauncherApps.class, minSdk = LOLLIPOP)
 public class ShadowLauncherApps {
   private List<ShortcutInfo> shortcuts = new ArrayList<>();
-  private Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
-  private Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
+  private final Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
+  private final Multimap<UserHandle, LauncherActivityInfo> shortcutActivityList =
+      HashMultimap.create();
+  private final Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
 
@@ -92,7 +94,19 @@ public class ShadowLauncherApps {
   }
 
   /**
-   * Add an {@link LauncherActivityInfo} to be got by {@link #getActivityList(String, UserHandle)}.
+   * Adds a {@link LauncherActivityInfo} to be retrieved by {@link
+   * #getShortcutConfigActivityList(String, UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param activityInfo the {@link LauncherActivityInfo} to be added.
+   */
+  public void addShortcutConfigActivity(UserHandle userHandle, LauncherActivityInfo activityInfo) {
+    shortcutActivityList.put(userHandle, activityInfo);
+  }
+
+  /**
+   * Adds a {@link LauncherActivityInfo} to be retrieved by {@link #getActivityList(String,
+   * UserHandle)}.
    *
    * @param userHandle the user handle to be added.
    * @param activityInfo the {@link LauncherActivityInfo} to be added.
@@ -131,8 +145,9 @@ public class ShadowLauncherApps {
   @Implementation(minSdk = O)
   protected List<LauncherActivityInfo> getShortcutConfigActivityList(
       @Nullable String packageName, @NonNull UserHandle user) {
-    throw new UnsupportedOperationException(
-        "This method is not currently supported in Robolectric.");
+    return shortcutActivityList.get(user).stream()
+        .filter(matchesPackage(packageName))
+        .collect(Collectors.toList());
   }
 
   @Implementation(minSdk = O)
@@ -149,12 +164,9 @@ public class ShadowLauncherApps {
 
   @Implementation(minSdk = L)
   protected List<LauncherActivityInfo> getActivityList(String packageName, UserHandle user) {
-    final Predicate<LauncherActivityInfo> predicatePackage =
-        info ->
-            info.getComponentName() != null
-                && packageName != null
-                && packageName.equals(info.getComponentName().getPackageName());
-    return activityList.get(user).stream().filter(predicatePackage).collect(Collectors.toList());
+    return activityList.get(user).stream()
+        .filter(matchesPackage(packageName))
+        .collect(Collectors.toList());
   }
 
   @Implementation(minSdk = P)
@@ -292,6 +304,13 @@ public class ShadowLauncherApps {
   protected List<SessionInfo> getAllPackageInstallerSessions() {
     throw new UnsupportedOperationException(
         "This method is not currently supported in Robolectric.");
+  }
+
+  private Predicate<LauncherActivityInfo> matchesPackage(@Nullable String packageName) {
+    return info ->
+        packageName == null
+            || (info.getComponentName() != null
+            && packageName.equals(info.getComponentName().getPackageName()));
   }
 
   @ForType(ShortcutQuery.class)

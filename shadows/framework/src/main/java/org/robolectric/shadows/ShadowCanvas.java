@@ -227,6 +227,13 @@ public class ShadowCanvas {
   }
 
   @Implementation
+  protected void drawRoundRect(
+      float left, float top, float right, float bottom, float rx, float ry, Paint paint) {
+    roundRectPaintEvents.add(
+        new RoundRectPaintHistoryEvent(left, top, right, bottom, rx, ry, paint));
+  }
+
+  @Implementation
   protected void drawLine(float startX, float startY, float stopX, float stopY, Paint paint) {
     linePaintEvents.add(new LinePaintHistoryEvent(startX, startY, stopX, stopY, paint));
   }

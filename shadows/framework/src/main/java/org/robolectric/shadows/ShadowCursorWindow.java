@@ -11,6 +11,7 @@ import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,9 +55,12 @@ public class ShadowCursorWindow {
         byte[] blob = (byte[])value.value;
         return blob == null ? new byte[]{} : blob;
       case Cursor.FIELD_TYPE_STRING:
-        return ((String)value.value).getBytes(UTF_8);
+        // Matches the Android behavior to contain a zero-byte at the end
+        byte[] stringBytes = ((String) value.value).getBytes(UTF_8);
+        return Arrays.copyOf(stringBytes, stringBytes.length + 1);
       default:
-        throw new android.database.sqlite.SQLiteException("Getting blob when column is non-blob. Row " + row + ", col " + column);
+        throw new android.database.sqlite.SQLiteException(
+            "Getting blob when column is non-blob. Row " + row + ", col " + column);
     }
   }
 
@@ -69,7 +73,8 @@ public class ShadowCursorWindow {
   protected static String nativeGetString(long windowPtr, int row, int column) {
     Value val = WINDOW_DATA.get(windowPtr).value(row, column);
     if (val.type == Cursor.FIELD_TYPE_BLOB) {
-      throw new android.database.sqlite.SQLiteException("Getting string when column is blob. Row " + row + ", col " + column);
+      throw new android.database.sqlite.SQLiteException(
+          "Getting string when column is blob. Row " + row + ", col " + column);
     }
     Object value = val.value;
     return value == null ? null : String.valueOf(value);
@@ -274,7 +279,8 @@ public class ShadowCursorWindow {
         case SQLiteConstants.SQLITE_TEXT:    return Cursor.FIELD_TYPE_STRING;
         case SQLiteConstants.SQLITE_BLOB:    return Cursor.FIELD_TYPE_BLOB;
         default:
-          throw new IllegalArgumentException("Bad SQLite type " + sqliteType + ". See possible values in SQLiteConstants.");
+          throw new IllegalArgumentException(
+              "Bad SQLite type " + sqliteType + ". See possible values in SQLiteConstants.");
       }
     }
 
@@ -343,7 +349,8 @@ public class ShadowCursorWindow {
     public Data get(long ptr) {
       Data data = dataMap.get(ptr);
       if (data == null) {
-        throw new IllegalArgumentException("Invalid window pointer: " + ptr + "; current pointers: " + dataMap.keySet());
+        throw new IllegalArgumentException(
+            "Invalid window pointer: " + ptr + "; current pointers: " + dataMap.keySet());
       }
       return data;
     }
@@ -357,7 +364,8 @@ public class ShadowCursorWindow {
     public void close(final long ptr) {
       Data removed = dataMap.remove(ptr);
       if (removed == null) {
-        throw new IllegalArgumentException("Bad cursor window pointer " + ptr + ". Valid pointers: " + dataMap.keySet());
+        throw new IllegalArgumentException(
+            "Bad cursor window pointer " + ptr + ". Valid pointers: " + dataMap.keySet());
       }
     }
 
