@@ -7,6 +7,8 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -19,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+/** Unit tests for {@link ShadowBluetoothManager} */
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothManagerTest {
@@ -130,6 +133,17 @@ public class ShadowBluetoothManagerTest {
         manager.getDevicesMatchingConnectionStates(PROFILE_GATT_SERVER, CONNECTED_STATES);
 
     assertThat(result).containsExactlyElementsIn(expected);
+  }
+
+  @Test
+  public void openGattServer_returnsBluetoothGattServer() {
+    BluetoothGattServerCallback callback = new BluetoothGattServerCallback() {};
+
+    BluetoothGattServer bluetoothGattServer =
+        manager.openGattServer(ApplicationProvider.getApplicationContext(), callback);
+
+    assertThat(bluetoothGattServer).isNotNull();
+    assertThat(shadowOf(bluetoothGattServer).getGattServerCallback()).isEqualTo(callback);
   }
 
   private BluetoothDevice createBluetoothDevice(String address) {

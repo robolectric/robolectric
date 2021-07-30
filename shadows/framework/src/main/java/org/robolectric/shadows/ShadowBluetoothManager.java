@@ -5,8 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.ImmutableIntArray;
@@ -14,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /** Shadow of {@link BluetoothManager} that makes the testing possible. */
 @Implements(value = BluetoothManager.class, minSdk = JELLY_BEAN_MR2)
@@ -78,6 +82,15 @@ public class ShadowBluetoothManager {
       }
     }
     return result.build();
+  }
+
+  @Implementation
+  protected BluetoothGattServer openGattServer(
+      Context context, BluetoothGattServerCallback callback) {
+    BluetoothGattServer bluetoothGattServer = ShadowBluetoothGattServer.newInstance();
+    ShadowBluetoothGattServer shadowBluetoothGattServer = Shadow.extract(bluetoothGattServer);
+    shadowBluetoothGattServer.setGattServerCallback(callback);
+    return bluetoothGattServer;
   }
 
   /**

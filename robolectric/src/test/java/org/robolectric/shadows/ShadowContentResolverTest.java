@@ -58,6 +58,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -396,6 +397,19 @@ public class ShadowContentResolverTest {
     inputStream2.close();
     assertThat(new String(data1, UTF_8)).isEqualTo("ourStream");
     assertThat(new String(data2, UTF_8)).isEqualTo("ourStream");
+  }
+
+  @Test
+  public void openInputStream_returnsResourceUriStream() throws Exception {
+    InputStream inputStream =
+        contentResolver.openInputStream(
+            new Uri.Builder()
+                .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                .authority(ApplicationProvider.getApplicationContext().getPackageName())
+                .appendPath(String.valueOf(R.drawable.an_image))
+                .build());
+    assertThat(inputStream).isNotNull();
+    inputStream.read();
   }
 
   @Test
