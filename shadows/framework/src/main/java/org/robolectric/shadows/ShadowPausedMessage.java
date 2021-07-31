@@ -10,9 +10,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 /**
  * The shadow {@link Message} for {@link LooperMode.Mode.PAUSED}.
@@ -25,11 +22,11 @@ public class ShadowPausedMessage extends ShadowMessage {
   @RealObject private Message realObject;
 
   long getWhen() {
-    return reflector(ReflectorMessage.class, realObject).getWhen();
+    return reflector(MessageReflector.class, realObject).getWhen();
   }
 
   Message internalGetNext() {
-    return reflector(ReflectorMessage.class, realObject).getNext();
+    return reflector(MessageReflector.class, realObject).getNext();
   }
 
   // TODO: reconsider this being exposed as a public method
@@ -37,9 +34,9 @@ public class ShadowPausedMessage extends ShadowMessage {
   @Implementation(minSdk = LOLLIPOP)
   public void recycleUnchecked() {
     if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-      reflector(ReflectorMessage.class, realObject).recycleUnchecked();
+      reflector(MessageReflector.class, realObject).recycleUnchecked();
     } else {
-      reflector(ReflectorMessage.class, realObject).recycle();
+      reflector(MessageReflector.class, realObject).recycle();
     }
   }
 
@@ -62,26 +59,6 @@ public class ShadowPausedMessage extends ShadowMessage {
   }
 
   Handler getTarget() {
-    return reflector(ReflectorMessage.class, realObject).getTarget();
-  }
-
-  /** Reflector interface for {@link Message}'s internals. */
-  @ForType(Message.class)
-  private interface ReflectorMessage {
-
-    @Direct
-    void recycleUnchecked();
-
-    @Direct
-    void recycle();
-
-    @Accessor("when")
-    long getWhen();
-
-    @Accessor("next")
-    Message getNext();
-
-    @Accessor("target")
-    Handler getTarget();
+    return reflector(MessageReflector.class, realObject).getTarget();
   }
 }

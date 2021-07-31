@@ -11,6 +11,7 @@ import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -150,6 +151,17 @@ public class AndroidInterceptorsIntegrationTest {
     Field accessor = FileDescriptor.class.getDeclaredField("fd");
     accessor.setAccessible(true);
     assertThat(accessor.get(copy)).isEqualTo(42);
+  }
+
+  @Test
+  public void socketFileDescriptor_returnsNullFileDescriptor() throws Throwable {
+    FileDescriptor fd =
+        invokeDynamic(
+            Socket.class,
+            "getFileDescriptor$",
+            void.class,
+            ClassParameter.from(Socket.class, new Socket()));
+    assertThat(fd).isNull();
   }
 
   @SuppressWarnings({"unchecked", "TypeParameterUnusedInFormals"})
