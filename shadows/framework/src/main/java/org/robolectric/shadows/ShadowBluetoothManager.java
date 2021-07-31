@@ -5,8 +5,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
+import android.util.Log;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.ImmutableIntArray;
@@ -79,6 +83,14 @@ public class ShadowBluetoothManager {
     }
     return result.build();
   }
+
+  @Implementation
+  protected BluetoothGattServer openGattServer(
+      Context context, BluetoothGattServerCallback callback) {
+    Log.d("ShadowBluetoothManager", "openGattServer() is called!");
+    return null;
+  }
+
 
   /**
    * Add a remote bluetooth device that will be served by {@link

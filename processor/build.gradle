@@ -40,6 +40,7 @@ dependencies {
     api "org.ow2.asm:asm-commons:9.0"
     api "com.google.guava:guava:27.0.1-jre"
     api "com.google.code.gson:gson:2.8.6"
+    implementation 'com.google.auto:auto-common:1.1.2'
 
     def toolsJar = Jvm.current().getToolsJar()
     if (toolsJar != null) {

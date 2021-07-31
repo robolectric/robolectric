@@ -17,6 +17,8 @@ import org.objectweb.asm.Opcodes;
 public class ClassDetails {
   private static final String SHADOWED_OBJECT_INTERNAL_NAME =
       ShadowedObject.class.getName().replace('.', '/');
+  private static final String INSTRUMENTED_INTERFACE_INTERNAL_NAME =
+      InstrumentedInterface.class.getName().replace('.', '/');
 
   private final ClassReader classReader;
   private final String className;
@@ -57,7 +59,8 @@ public class ClassDetails {
     if (this.interfaces == null) {
       this.interfaces = new HashSet<>(Arrays.asList(classReader.getInterfaces()));
     }
-    return this.interfaces.contains(SHADOWED_OBJECT_INTERNAL_NAME);
+    return (isInterface() && this.interfaces.contains(INSTRUMENTED_INTERFACE_INTERNAL_NAME))
+        || this.interfaces.contains(SHADOWED_OBJECT_INTERNAL_NAME);
   }
 
   public byte[] getClassBytes() {
