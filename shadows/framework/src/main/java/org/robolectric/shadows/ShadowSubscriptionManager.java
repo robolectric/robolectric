@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
@@ -35,6 +36,7 @@ public class ShadowSubscriptionManager {
   private static int defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+  private static int activeDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
 
   /** Returns value set with {@link #setDefaultSubscriptionId(int)}. */
   @Implementation(minSdk = N)
@@ -58,6 +60,12 @@ public class ShadowSubscriptionManager {
   @Implementation(minSdk = N)
   protected static int getDefaultVoiceSubscriptionId() {
     return defaultVoiceSubscriptionId;
+  }
+
+  /** Returns value set with {@link #setActiveDataSubscriptionId(int)}. */
+  @Implementation(minSdk = R)
+  protected static int getActiveDataSubscriptionId() {
+    return activeDataSubscriptionId;
   }
 
   @Implementation(maxSdk = M)
@@ -100,7 +108,11 @@ public class ShadowSubscriptionManager {
   public static void setDefaultVoiceSubscriptionId(int defaultVoiceSubscriptionId) {
     ShadowSubscriptionManager.defaultVoiceSubscriptionId = defaultVoiceSubscriptionId;
   }
-
+  
+  @Implementation(minSdk = R)
+  public static void setActiveDataSubscriptionId(int activeDataSubscriptionId) {
+    ShadowSubscriptionManager.activeDataSubscriptionId = activeDataSubscriptionId;
+  }
   /**
    * Cache of phone IDs used by {@link getPhoneId}. Managed by {@link putPhoneId} and {@link
    * removePhoneId}.

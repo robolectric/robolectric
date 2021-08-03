@@ -9,6 +9,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteGlobal;
 import android.os.CancellationSignal;
 import android.os.OperationCanceledException;
 import androidx.test.core.app.ApplicationProvider;
@@ -985,6 +986,13 @@ public class SQLiteDatabaseTest {
       assertThat(nullValuesCursor.getString(i)).isNull();
     }
     assertThat(nullValuesCursor.getBlob(3)).isNull();
+  }
+
+  @Test
+  public void sqliteGlobal_defaults() {
+    assertThat(SQLiteGlobal.getDefaultSyncMode()).isEqualTo("OFF");
+    assertThat(SQLiteGlobal.getWALSyncMode()).isEqualTo("OFF");
+    assertThat(SQLiteGlobal.getDefaultJournalMode()).isEqualTo("MEMORY");
   }
 
   private SQLiteDatabase openOrCreateDatabase(String name) {

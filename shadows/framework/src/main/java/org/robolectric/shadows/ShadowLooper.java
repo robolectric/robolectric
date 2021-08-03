@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Looper.getMainLooper;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.os.Looper;
+import com.google.errorprone.annotations.InlineMe;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.time.Duration;
 import java.util.Collection;
@@ -146,13 +148,17 @@ public abstract class ShadowLooper {
   }
 
   /** @deprecated Use {@link #idleMainLooper(long, TimeUnit)}. */
+  @InlineMe(
+      replacement = "ShadowLooper.idleMainLooper(interval, MILLISECONDS)",
+      imports = "org.robolectric.shadows.ShadowLooper",
+      staticImports = "java.util.concurrent.TimeUnit.MILLISECONDS")
   @Deprecated
   public static void idleMainLooper(long interval) {
-    idleMainLooper(interval, TimeUnit.MILLISECONDS);
+    idleMainLooper(interval, MILLISECONDS);
   }
 
   public static void idleMainLooper(long amount, TimeUnit unit) {
-    getShadowMainLooper().idle(amount, unit);
+    getShadowMainLooper().idleFor(amount, unit);
   }
 
   public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
@@ -265,10 +271,13 @@ public abstract class ShadowLooper {
    * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis}
    * milliseconds to run while advancing the scheduler's clock.
    *
-   * @deprecated Use {@link #idle(long, TimeUnit)}.
+   * @deprecated Use {@link #idleFor(Duration)}.
    */
   @Deprecated
-  public void idle(long intervalMillis) {
+  @InlineMe(
+      replacement = "this.idleFor(Duration.ofMillis(intervalMillis))",
+      imports = "java.time.Duration")
+  public final void idle(long intervalMillis) {
     idleFor(Duration.ofMillis(intervalMillis));
   }
 
@@ -276,10 +285,11 @@ public abstract class ShadowLooper {
    * Causes {@link Runnable}s that have been scheduled to run within the next specified amount of
    * time to run while advancing the clock.
    *
-   * @deprecated use {@link idleFor(amount, unit)}
+   * @deprecated use {@link #idleFor(long, TimeUnit)}
    */
   @Deprecated
-  public void idle(long amount, TimeUnit unit) {
+  @InlineMe(replacement = "this.idleFor(amount, unit)")
+  public final void idle(long amount, TimeUnit unit) {
     idleFor(amount, unit);
   }
 

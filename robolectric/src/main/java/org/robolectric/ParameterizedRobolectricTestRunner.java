@@ -254,6 +254,11 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
           }
 
           @Override
+          protected String testName(FrameworkMethod method) {
+            return TestClassRunnerForParameters.this.testName(method);
+          }
+
+          @Override
           public String toString() {
             return "HelperTestRunner for " + TestClassRunnerForParameters.this.toString();
           }

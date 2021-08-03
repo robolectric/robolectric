@@ -103,11 +103,6 @@ public class LooperDelegatingScheduler extends Scheduler {
   }
 
   @Override
-  public boolean advanceBy(long interval) {
-    return advanceBy(interval, TimeUnit.MILLISECONDS);
-  }
-
-  @Override
   public boolean advanceBy(long amount, TimeUnit unit) {
     return advanceTo(SystemClock.uptimeMillis() + unit.toMillis(amount));
   }

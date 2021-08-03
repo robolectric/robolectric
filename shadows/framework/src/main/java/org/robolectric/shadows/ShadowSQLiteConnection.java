@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteOutOfMemoryException;
 import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.database.sqlite.SQLiteTableLockedException;
 import android.os.OperationCanceledException;
+import android.os.SystemProperties;
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
@@ -51,8 +52,10 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
+import org.robolectric.util.PerfStatsCollector;
 
-@Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
+/** Shadow for {@link android.database.sqlite.SQLiteConnection} that is backed by sqlite4java. */
+@Implements(className = "android.database.sqlite.SQLiteConnection", isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
 
   private static final String IN_MEMORY_PATH = ":memory:";
@@ -69,25 +72,71 @@ public class ShadowSQLiteConnection {
     useInMemoryDatabase.set(value);
   }
 
+  /**
+   * Sets the default sync mode for SQLite databases. Robolectric uses "OFF" by default in order to
+   * improve SQLite performance. The Android default is "FULL" in order to be more resilient to
+   * process crashes. However, this is not a requirement for Robolectric processes, where all
+   * database files are temporary and get deleted after each test.
+   *
+   * <p>If your test expects SQLite files being synced to disk, such as having multiple processes
+   * interact with the database, or deleting SQLite files while connections are open and having this
+   * reflected in the open connection, use "FULL" mode.
+   */
+  public static void setDefaultSyncMode(String value) {
+    SystemProperties.set("debug.sqlite.syncmode", value);
+  }
+
+  /**
+   * Sets the default sync mode for SQLite databases when SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
+   * is used. Robolectric uses "OFF" by default in order to improve SQLite performance. The Android
+   * default is "FULL" for SDKs < 28 and "NORMAL" for SDKs >= 28.
+   *
+   * <p>If your test expects SQLite files being synced to disk, such as having multiple processes
+   * interact with the database, or deleting SQLite files while connections are open and having this
+   * reflected in the open connection, use "FULL" mode.
+   */
+  public static void setDefaultWALSyncMode(String value) {
+    SystemProperties.set("debug.sqlite.wal.syncmode", value);
+  }
+
+  /**
+   * Sets the default journal mode for SQLite databases. Robolectric uses "MEMORY" by default in
+   * order to improve SQLite performance. The Android default is <code>PERSIST</code> in SDKs <= 25
+   * and <code>TRUNCATE</code> in SDKs > 25.
+   *
+   * <p>Similarly to {@link setDefaultSyncMode}, if your test expects SQLite rollback journal to be
+   * synced to disk, use <code>PERSIST</code> or <code>TRUNCATE</code>.
+   */
+  public static void setDefaultJournalMode(String value) {
+    SystemProperties.set("debug.sqlite.journalmode", value);
+  }
+
   @Implementation(maxSdk = O)
-  public static Number nativeOpen(String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
+  protected static Number nativeOpen(
+      String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     SQLiteLibraryLoader.load();
     return castNativePtr(CONNECTIONS.open(path));
   }
 
   @Implementation(minSdk = O_MR1)
-  public static long nativeOpen(String path, int openFlags, String label, boolean enableTrace,
-                                boolean enableProfile, int lookasideSlotSize, int lookasideSlotCount) {
+  protected static long nativeOpen(
+      String path,
+      int openFlags,
+      String label,
+      boolean enableTrace,
+      boolean enableProfile,
+      int lookasideSlotSize,
+      int lookasideSlotCount) {
     return nativeOpen(path, openFlags, label, enableTrace, enableProfile).longValue();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativePrepareStatement(int connectionPtr, String sql) {
+  protected static int nativePrepareStatement(int connectionPtr, String sql) {
     return (int) nativePrepareStatement((long) connectionPtr, sql);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativePrepareStatement(long connectionPtr, String sql) {
+  protected static long nativePrepareStatement(long connectionPtr, String sql) {
     final String newSql = convertSQLWithLocalizedUnicodeCollator(sql);
     return CONNECTIONS.prepareStatement(connectionPtr, newSql);
   }
@@ -107,249 +156,273 @@ public class ShadowSQLiteConnection {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeClose(int connectionPtr) {
+  protected static void nativeClose(int connectionPtr) {
     nativeClose((long) connectionPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeClose(long connectionPtr) {
+  protected static void nativeClose(long connectionPtr) {
     CONNECTIONS.close(connectionPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeFinalizeStatement(int connectionPtr, int statementPtr) {
+  protected static void nativeFinalizeStatement(int connectionPtr, int statementPtr) {
     nativeFinalizeStatement((long) connectionPtr, statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeFinalizeStatement(long connectionPtr, long statementPtr) {
+  protected static void nativeFinalizeStatement(long connectionPtr, long statementPtr) {
     CONNECTIONS.finalizeStmt(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeGetParameterCount(int connectionPtr, int statementPtr) {
+  protected static int nativeGetParameterCount(int connectionPtr, int statementPtr) {
     return nativeGetParameterCount((long) connectionPtr, statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeGetParameterCount(final long connectionPtr, final long statementPtr) {
+  protected static int nativeGetParameterCount(final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.getParameterCount(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static boolean nativeIsReadOnly(int connectionPtr, int statementPtr) {
+  protected static boolean nativeIsReadOnly(int connectionPtr, int statementPtr) {
     return nativeIsReadOnly((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static boolean nativeIsReadOnly(final long connectionPtr, final long statementPtr) {
+  protected static boolean nativeIsReadOnly(final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.isReadOnly(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static long nativeExecuteForLong(int connectionPtr, int statementPtr) {
+  protected static long nativeExecuteForLong(int connectionPtr, int statementPtr) {
     return nativeExecuteForLong((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativeExecuteForLong(final long connectionPtr, final long statementPtr) {
+  protected static long nativeExecuteForLong(final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.executeForLong(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeExecute(int connectionPtr, int statementPtr) {
+  protected static void nativeExecute(int connectionPtr, int statementPtr) {
     nativeExecute((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeExecute(final long connectionPtr, final long statementPtr) {
+  protected static void nativeExecute(final long connectionPtr, final long statementPtr) {
     CONNECTIONS.executeStatement(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String nativeExecuteForString(int connectionPtr, int statementPtr) {
+  protected static String nativeExecuteForString(int connectionPtr, int statementPtr) {
     return nativeExecuteForString((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeExecuteForString(final long connectionPtr, final long statementPtr) {
+  protected static String nativeExecuteForString(
+      final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.executeForString(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeGetColumnCount(int connectionPtr, int statementPtr) {
+  protected static int nativeGetColumnCount(int connectionPtr, int statementPtr) {
     return nativeGetColumnCount((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeGetColumnCount(final long connectionPtr, final long statementPtr) {
+  protected static int nativeGetColumnCount(final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.getColumnCount(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static String nativeGetColumnName(int connectionPtr, int statementPtr, int index) {
+  protected static String nativeGetColumnName(int connectionPtr, int statementPtr, int index) {
     return nativeGetColumnName((long) connectionPtr, (long) statementPtr, index);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static String nativeGetColumnName(final long connectionPtr, final long statementPtr, final int index) {
+  protected static String nativeGetColumnName(
+      final long connectionPtr, final long statementPtr, final int index) {
     return CONNECTIONS.getColumnName(connectionPtr, statementPtr, index);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeBindNull(int connectionPtr, int statementPtr, int index) {
+  protected static void nativeBindNull(int connectionPtr, int statementPtr, int index) {
     nativeBindNull((long) connectionPtr, (long) statementPtr, index);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeBindNull(final long connectionPtr, final long statementPtr, final int index) {
+  protected static void nativeBindNull(
+      final long connectionPtr, final long statementPtr, final int index) {
     CONNECTIONS.bindNull(connectionPtr, statementPtr, index);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeBindLong(int connectionPtr, int statementPtr, int index, long value) {
+  protected static void nativeBindLong(int connectionPtr, int statementPtr, int index, long value) {
     nativeBindLong((long) connectionPtr, (long) statementPtr, index, value);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeBindLong(final long connectionPtr, final long statementPtr, final int index, final long value) {
+  protected static void nativeBindLong(
+      final long connectionPtr, final long statementPtr, final int index, final long value) {
     CONNECTIONS.bindLong(connectionPtr, statementPtr, index, value);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeBindDouble(int connectionPtr, int statementPtr, int index, double value) {
+  protected static void nativeBindDouble(
+      int connectionPtr, int statementPtr, int index, double value) {
     nativeBindDouble((long) connectionPtr, (long) statementPtr, index, value);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeBindDouble(final long connectionPtr, final long statementPtr, final int index, final double value) {
+  protected static void nativeBindDouble(
+      final long connectionPtr, final long statementPtr, final int index, final double value) {
     CONNECTIONS.bindDouble(connectionPtr, statementPtr, index, value);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeBindString(int connectionPtr, int statementPtr, int index, String value) {
+  protected static void nativeBindString(
+      int connectionPtr, int statementPtr, int index, String value) {
     nativeBindString((long) connectionPtr, (long) statementPtr, index, value);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeBindString(final long connectionPtr, final long statementPtr, final int index, final String value) {
+  protected static void nativeBindString(
+      final long connectionPtr, final long statementPtr, final int index, final String value) {
     CONNECTIONS.bindString(connectionPtr, statementPtr, index, value);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeBindBlob(int connectionPtr, int statementPtr, int index, byte[] value) {
+  protected static void nativeBindBlob(
+      int connectionPtr, int statementPtr, int index, byte[] value) {
     nativeBindBlob((long) connectionPtr, (long) statementPtr, index, value);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeBindBlob(final long connectionPtr, final long statementPtr, final int index, final byte[] value) {
+  protected static void nativeBindBlob(
+      final long connectionPtr, final long statementPtr, final int index, final byte[] value) {
     CONNECTIONS.bindBlob(connectionPtr, statementPtr, index, value);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeRegisterLocalizedCollators(int connectionPtr, String locale) {
+  protected static void nativeRegisterLocalizedCollators(int connectionPtr, String locale) {
     nativeRegisterLocalizedCollators((long) connectionPtr, locale);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeRegisterLocalizedCollators(long connectionPtr, String locale) {
+  protected static void nativeRegisterLocalizedCollators(long connectionPtr, String locale) {
     // TODO: find a way to create a collator
     // http://www.sqlite.org/c3ref/create_collation.html
     // xerial jdbc driver does not have a Java method for sqlite3_create_collation
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeExecuteForChangedRowCount(int connectionPtr, int statementPtr) {
+  protected static int nativeExecuteForChangedRowCount(int connectionPtr, int statementPtr) {
     return nativeExecuteForChangedRowCount((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeExecuteForChangedRowCount(final long connectionPtr, final long statementPtr) {
+  protected static int nativeExecuteForChangedRowCount(
+      final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.executeForChangedRowCount(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static long nativeExecuteForLastInsertedRowId(int connectionPtr, int statementPtr) {
+  protected static long nativeExecuteForLastInsertedRowId(int connectionPtr, int statementPtr) {
     return nativeExecuteForLastInsertedRowId((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativeExecuteForLastInsertedRowId(final long connectionPtr, final long statementPtr) {
+  protected static long nativeExecuteForLastInsertedRowId(
+      final long connectionPtr, final long statementPtr) {
     return CONNECTIONS.executeForLastInsertedRowId(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static long nativeExecuteForCursorWindow(int connectionPtr, int statementPtr, int windowPtr,
-                                                  int startPos, int requiredPos, boolean countAllRows) {
+  protected static long nativeExecuteForCursorWindow(
+      int connectionPtr,
+      int statementPtr,
+      int windowPtr,
+      int startPos,
+      int requiredPos,
+      boolean countAllRows) {
     return nativeExecuteForCursorWindow((long) connectionPtr, (long) statementPtr, (long) windowPtr,
         startPos, requiredPos, countAllRows);
 }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static long nativeExecuteForCursorWindow(final long connectionPtr, final long statementPtr, final long windowPtr,
-                                                  final int startPos, final int requiredPos, final boolean countAllRows) {
+  protected static long nativeExecuteForCursorWindow(
+      final long connectionPtr,
+      final long statementPtr,
+      final long windowPtr,
+      final int startPos,
+      final int requiredPos,
+      final boolean countAllRows) {
     return CONNECTIONS.executeForCursorWindow(connectionPtr, statementPtr, windowPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeResetStatementAndClearBindings(int connectionPtr, int statementPtr) {
+  protected static void nativeResetStatementAndClearBindings(int connectionPtr, int statementPtr) {
     nativeResetStatementAndClearBindings((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeResetStatementAndClearBindings(final long connectionPtr, final long statementPtr) {
+  protected static void nativeResetStatementAndClearBindings(
+      final long connectionPtr, final long statementPtr) {
     CONNECTIONS.resetStatementAndClearBindings(connectionPtr, statementPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeCancel(int connectionPtr) {
+  protected static void nativeCancel(int connectionPtr) {
     nativeCancel((long) connectionPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeCancel(long connectionPtr) {
+  protected static void nativeCancel(long connectionPtr) {
     CONNECTIONS.cancel(connectionPtr);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeResetCancel(int connectionPtr, boolean cancelable) {
+  protected static void nativeResetCancel(int connectionPtr, boolean cancelable) {
     nativeResetCancel((long) connectionPtr, cancelable);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static void nativeResetCancel(long connectionPtr, boolean cancelable) {
+  protected static void nativeResetCancel(long connectionPtr, boolean cancelable) {
     // handled in com.almworks.sqlite4java.SQLiteConnection#exec
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static void nativeRegisterCustomFunction(int connectionPtr, SQLiteCustomFunction function) {
+  protected static void nativeRegisterCustomFunction(
+      int connectionPtr, SQLiteCustomFunction function) {
     nativeRegisterCustomFunction((long) connectionPtr, function);
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
-  public static void nativeRegisterCustomFunction(
+  protected static void nativeRegisterCustomFunction(
       long connectionPtr, SQLiteCustomFunction function) {
     // not supported
   }
 
-  @Implementation (maxSdk = KITKAT_WATCH)
-  public static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int nativeExecuteForBlobFileDescriptor(int connectionPtr, int statementPtr) {
     return nativeExecuteForBlobFileDescriptor((long) connectionPtr, (long) statementPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeExecuteForBlobFileDescriptor(long connectionPtr, long statementPtr) {
+  protected static int nativeExecuteForBlobFileDescriptor(long connectionPtr, long statementPtr) {
     // impossible to support without native code?
     return -1;
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
-  public static int nativeGetDbLookaside(int connectionPtr) {
+  protected static int nativeGetDbLookaside(int connectionPtr) {
     return nativeGetDbLookaside((long) connectionPtr);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  public static int nativeGetDbLookaside(long connectionPtr) {
+  protected static int nativeGetDbLookaside(long connectionPtr) {
     // not supported by sqlite4java
     return 0;
   }
@@ -736,13 +809,19 @@ static class Connections {
       final SQLiteConnection connection = getConnection(connectionPtr);
       final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-      return execute("execute for changed row count", new Callable<Integer>() {
-        @Override
-        public Integer call() throws Exception {
-          statement.stepThrough();
-          return connection.getChanges();
-        }
-      });
+        return execute(
+            "execute for changed row count",
+            new Callable<Integer>() {
+              @Override
+              public Integer call() throws Exception {
+                if (statement.step()) {
+                  throw new android.database.sqlite.SQLiteException(
+                      "Queries can be performed using SQLiteDatabase query or rawQuery methods"
+                          + " only.");
+                }
+                return connection.getChanges();
+              }
+            });
     }
   }
 
@@ -814,7 +893,8 @@ static class Connections {
    */
   private <T> T execute(final String comment, final Callable<T> work) {
     synchronized (lock) {
-      return getFuture(comment, dbExecutor.submit(work));
+        return PerfStatsCollector.getInstance()
+            .measure("sqlite", () -> getFuture(comment, dbExecutor.submit(work)));
     }
   }
 
@@ -829,6 +909,8 @@ static class Connections {
               getSqliteException("Cannot " + comment, ((SQLiteException) t).getBaseErrorCode());
         sqlException.initCause(e);
         throw sqlException;
+        } else if (t instanceof android.database.sqlite.SQLiteException) {
+          throw (android.database.sqlite.SQLiteException) t;
       } else {
         throw new RuntimeException(e);
       }

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -56,6 +57,14 @@ public class ShadowSubscriptionManagerTest {
     int testId = 42;
     ShadowSubscriptionManager.setDefaultVoiceSubscriptionId(testId);
     assertThat(SubscriptionManager.getDefaultVoiceSubscriptionId()).isEqualTo(testId);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void shouldGiveActiveDataSubscriptionId() {
+    int testId = 42;
+    ShadowSubscriptionManager.setActiveDataSubscriptionId(testId);
+    assertThat(SubscriptionManager.getActiveDataSubscriptionId()).isEqualTo(testId);
   }
 
   @Test

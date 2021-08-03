@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
 import android.app.PendingIntent;
@@ -15,10 +16,11 @@ import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.UserHandle;
-import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.google.common.collect.HashMultimap;
@@ -29,12 +31,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
@@ -79,13 +82,36 @@ public class ShadowAppWidgetManager {
   @Implementation
   protected void updateAppWidget(int appWidgetId, RemoteViews views) {
     WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
-    int layoutId = views.getLayoutId();
-    if (widgetInfo.layoutId != layoutId || alwaysRecreateViewsDuringUpdate) {
-      widgetInfo.view = createWidgetView(layoutId);
-      widgetInfo.layoutId = layoutId;
+    if (canReapplyRemoteViews(widgetInfo, views)) {
+      views.reapply(context, widgetInfo.view);
+    } else {
+      widgetInfo.view = views.apply(context, new FrameLayout(context));
+      widgetInfo.layoutId = getRemoteViewsToApply(views).getLayoutId();
     }
     widgetInfo.lastRemoteViews = views;
-    views.reapply(context, widgetInfo.view);
+  }
+
+  private boolean canReapplyRemoteViews(WidgetInfo widgetInfo, RemoteViews views) {
+    if (alwaysRecreateViewsDuringUpdate) {
+      return false;
+    }
+    if (VERSION.SDK_INT < 25 && !hasLandscapeAndPortraitLayouts(views)) {
+      return widgetInfo.layoutId == views.getLayoutId();
+    }
+    RemoteViews remoteViewsToApply = getRemoteViewsToApply(views);
+    if (VERSION.SDK_INT >= 25) {
+      return widgetInfo.layoutId == remoteViewsToApply.getLayoutId();
+    } else {
+      return widgetInfo.view != null && widgetInfo.view.getId() == remoteViewsToApply.getLayoutId();
+    }
+  }
+
+  private RemoteViews getRemoteViewsToApply(RemoteViews views) {
+    return reflector(RemoteViewsReflector.class, views).getRemoteViewsToApply(context);
+  }
+
+  private static boolean hasLandscapeAndPortraitLayouts(RemoteViews views) {
+    return reflector(RemoteViewsReflector.class, views).hasLandscapeAndPortraitLayouts();
   }
 
   @Implementation
@@ -127,6 +153,10 @@ public class ShadowAppWidgetManager {
 
   public void addInstalledProvider(AppWidgetProviderInfo appWidgetProviderInfo) {
     installedProviders.add(appWidgetProviderInfo);
+  }
+
+  public boolean removeInstalledProvider(AppWidgetProviderInfo appWidgetProviderInfo) {
+    return installedProviders.remove(appWidgetProviderInfo);
   }
 
   public void addInstalledProvidersForProfile(
@@ -275,8 +305,7 @@ public class ShadowAppWidgetManager {
    */
   public void reconstructWidgetViewAsIfPhoneWasRotated(int appWidgetId) {
     WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
-    widgetInfo.view = createWidgetView(widgetInfo.layoutId);
-    widgetInfo.lastRemoteViews.reapply(context, widgetInfo.view);
+    widgetInfo.view = widgetInfo.lastRemoteViews.apply(context, new FrameLayout(context));
   }
 
   /**
@@ -307,20 +336,18 @@ public class ShadowAppWidgetManager {
 
     int[] newWidgetIds = new int[howManyToCreate];
     for (int i = 0; i < howManyToCreate; i++) {
-      View widgetView = createWidgetView(widgetLayoutId);
-
       int myWidgetId = nextWidgetId++;
-      widgetInfos.put(
-          myWidgetId, new WidgetInfo(widgetView, widgetLayoutId, context, appWidgetProvider));
+      RemoteViews remoteViews = new RemoteViews(context.getPackageName(), widgetLayoutId);
+      View widgetView = remoteViews.apply(context, new FrameLayout(context));
+      WidgetInfo widgetInfo =
+          new WidgetInfo(widgetView, widgetLayoutId, context, appWidgetProvider);
+      widgetInfo.lastRemoteViews = remoteViews;
+      widgetInfos.put(myWidgetId, widgetInfo);
       newWidgetIds[i] = myWidgetId;
     }
 
     appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
     return newWidgetIds;
-  }
-
-  private View createWidgetView(int widgetLayoutId) {
-    return LayoutInflater.from(RuntimeEnvironment.getApplication()).inflate(widgetLayoutId, null);
   }
 
   /**
@@ -388,5 +415,15 @@ public class ShadowAppWidgetManager {
       this.providerComponent = providerComponent;
       this.appWidgetProvider = null;
     }
+  }
+
+  @ForType(RemoteViews.class)
+  interface RemoteViewsReflector {
+
+    @Direct
+    RemoteViews getRemoteViewsToApply(Context context);
+
+    @Direct
+    boolean hasLandscapeAndPortraitLayouts();
   }
 }

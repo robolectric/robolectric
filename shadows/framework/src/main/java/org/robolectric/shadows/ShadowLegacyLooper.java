@@ -201,23 +201,6 @@ public class ShadowLegacyLooper extends ShadowLooper {
     // ignore
   }
 
-  /**
-   * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis}
-   * milliseconds to run while advancing the scheduler's clock.
-   *
-   * @deprecated Use {@link #idle(long, TimeUnit)}.
-   */
-  @Override
-  @Deprecated
-  public void idle(long intervalMillis) {
-    idle(intervalMillis, TimeUnit.MILLISECONDS);
-  }
-
-  @Override
-  public void idle(long amount, TimeUnit unit) {
-    idleFor(amount, unit);
-  }
-
   @Override
   public void idleConstantly(boolean shouldIdleConstantly) {
     getScheduler().idleConstantly(shouldIdleConstantly);

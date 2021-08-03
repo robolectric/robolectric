@@ -29,6 +29,7 @@ public class ShadowSpeechRecognizer {
 
   @RealObject SpeechRecognizer realSpeechRecognizer;
   private static SpeechRecognizer latestSpeechRecognizer;
+  private Intent recognizerIntent;
   private RecognitionListener recognitionListener;
 
   /**
@@ -37,6 +38,11 @@ public class ShadowSpeechRecognizer {
    */
   public static SpeechRecognizer getLatestSpeechRecognizer() {
     return latestSpeechRecognizer;
+  }
+
+  /** Returns the argument passed to the last call to {@link SpeechRecognizer#startListening}. */
+  public Intent getLastRecognizerIntent() {
+    return recognizerIntent;
   }
 
   @Resetter
@@ -56,6 +62,7 @@ public class ShadowSpeechRecognizer {
 
   @Implementation
   protected void startListening(Intent recognizerIntent) {
+    this.recognizerIntent = recognizerIntent;
     // the real implementation connects to a service
     // simulate the resulting behavior once the service is connected
     Handler mainHandler = new Handler(Looper.getMainLooper());

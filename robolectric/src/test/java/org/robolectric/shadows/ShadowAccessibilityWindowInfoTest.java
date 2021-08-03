@@ -39,6 +39,13 @@ public class ShadowAccessibilityWindowInfoTest {
   }
 
   @Test
+  public void testSetAnchor() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    shadow.setAnchor(node);
+    assertThat(shadow.getAnchor()).isEqualTo(node);
+  }
+
+  @Test
   public void testSetTitle() {
     assertThat(shadow.getTitle()).isNull();
     CharSequence title = "Title";
