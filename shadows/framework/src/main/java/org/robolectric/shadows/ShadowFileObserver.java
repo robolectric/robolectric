@@ -160,7 +160,7 @@ public class ShadowFileObserver {
 
     watcherRunnable =
         new WatcherRunnable(realFileObserver, watchedDirectories, watchedKeys, watchService);
-    Thread thread = new Thread(watcherRunnable);
+    Thread thread = new Thread(watcherRunnable, "ShadowFileObserver");
     thread.start();
   }
 

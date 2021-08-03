@@ -27,9 +27,6 @@ import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.InvokeDynamic;
-import org.robolectric.internal.bytecode.InvokeDynamicClassInstrumentor;
-import org.robolectric.internal.bytecode.OldClassInstrumentor;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxConfig;
 import org.robolectric.internal.bytecode.ShadowInfo;
@@ -51,11 +48,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
 
   protected static Injector.Builder defaultInjector() {
-    return new Injector.Builder()
-        .bindDefault(ClassInstrumentor.class,
-            InvokeDynamic.ENABLED
-                ? InvokeDynamicClassInstrumentor.class
-                : OldClassInstrumentor.class);
+    return new Injector.Builder();
   }
 
   private final ClassInstrumentor classInstrumentor;
@@ -142,8 +135,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  protected void afterClass() {
-  }
+  protected void afterClass() {}
 
   @Nonnull
   protected Sandbox getSandbox(FrameworkMethod method) {
@@ -152,9 +144,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   /**
-   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link FrameworkMethod}.
+   * Create an {@link InstrumentationConfiguration} suitable for the provided {@link
+   * FrameworkMethod}.
    *
-   * Custom TestRunner subclasses may wish to override this method to provide alternate configuration.
+   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
+   * configuration.
    *
    * @param method the test method that's about to run
    * @return an {@link InstrumentationConfiguration}
@@ -195,7 +189,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     return builder.build();
   }
 
-  private void addInstrumentedPackages(FrameworkMethod method, InstrumentationConfiguration.Builder builder) {
+  private void addInstrumentedPackages(
+      FrameworkMethod method, InstrumentationConfiguration.Builder builder) {
     SandboxConfig classConfig = getTestClass().getJavaClass().getAnnotation(SandboxConfig.class);
     if (classConfig != null) {
       for (String pkgName : classConfig.instrumentedPackages()) {
@@ -227,7 +222,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     sandbox.configure(createClassHandler(shadowMap, sandbox), getInterceptors());
   }
 
-  @Override protected Statement methodBlock(final FrameworkMethod method) {
+  @Override
+  protected Statement methodBlock(final FrameworkMethod method) {
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
@@ -314,14 +310,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     }
   }
 
-  protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod) throws Throwable {
-  }
+  protected void beforeTest(Sandbox sandbox, FrameworkMethod method, Method bootstrappedMethod)
+      throws Throwable {}
 
-  protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {
-  }
+  protected void afterTest(FrameworkMethod method, Method bootstrappedMethod) {}
 
-  protected void finallyAfterTest(FrameworkMethod method) {
-  }
+  protected void finallyAfterTest(FrameworkMethod method) {}
 
   protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
     try {
@@ -380,7 +374,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       }
       return annotation.timeout();
     }
-
   }
 
   @Nonnull
