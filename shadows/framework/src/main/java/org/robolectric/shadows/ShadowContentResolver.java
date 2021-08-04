@@ -33,6 +33,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import com.google.common.base.Splitter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,6 +59,7 @@ import org.robolectric.util.NamedStream;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(ContentResolver.class)
@@ -166,13 +168,16 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final InputStream openInputStream(final Uri uri) {
+  protected final InputStream openInputStream(final Uri uri) throws FileNotFoundException {
     Supplier<InputStream> supplier = inputStreamMap.get(uri);
     if (supplier != null) {
       InputStream inputStream = supplier.get();
       if (inputStream != null) {
         return inputStream;
       }
+    }
+    if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())) {
+      return reflector(ContentResolverReflector.class, realContentResolver).openInputStream(uri);
     }
     return new UnregisteredInputStream(uri);
   }
@@ -1115,5 +1120,8 @@ public class ShadowContentResolver {
   interface ContentResolverReflector {
     @Accessor("mContext")
     Context getContext();
+
+    @Direct
+    InputStream openInputStream(Uri uri) throws FileNotFoundException;
   }
 }
