@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.telephony.euicc.EuiccManager;
@@ -43,5 +45,16 @@ public class ShadowEuiccManagerTest {
     shadowOf(euiccManager).setEid(eid);
 
     assertThat(euiccManager.getEid()).isEqualTo(eid);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void createForCardId() {
+    int cardId = 1;
+    EuiccManager mockEuiccManager = mock(EuiccManager.class);
+
+    shadowOf(euiccManager).setEuiccManagerForCardId(cardId, mockEuiccManager);
+
+    assertThat(euiccManager.createForCardId(cardId)).isEqualTo(mockEuiccManager);
   }
 }

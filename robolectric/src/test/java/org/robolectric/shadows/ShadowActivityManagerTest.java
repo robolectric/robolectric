@@ -1,12 +1,19 @@
 package org.robolectric.shadows;
 
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.ActivityManager;
@@ -28,6 +35,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -220,6 +228,65 @@ public class ShadowActivityManagerTest {
     activityManager.switchUser(10);
 
     assertThat(ActivityManager.getCurrentUser()).isEqualTo(10);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void onUidImportanceListener() {
+    ActivityManager.OnUidImportanceListener listener =
+        mock(ActivityManager.OnUidImportanceListener.class);
+    InOrder inOrder = inOrder(listener);
+
+    activityManager.addOnUidImportanceListener(listener, IMPORTANCE_FOREGROUND_SERVICE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND);
+    inOrder.verify(listener).onUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+    inOrder.verify(listener).onUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND_SERVICE);
+    inOrder.verify(listener).onUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND_SERVICE);
+
+    activityManager.removeOnUidImportanceListener(listener);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+    inOrder.verifyNoMoreInteractions();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getUidImportance() {
+    assertThat(activityManager.getUidImportance(Process.myUid())).isEqualTo(IMPORTANCE_GONE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND);
+    assertThat(activityManager.getUidImportance(Process.myUid())).isEqualTo(IMPORTANCE_FOREGROUND);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+    assertThat(activityManager.getUidImportance(Process.myUid())).isEqualTo(IMPORTANCE_VISIBLE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND_SERVICE);
+    assertThat(activityManager.getUidImportance(Process.myUid()))
+        .isEqualTo(IMPORTANCE_FOREGROUND_SERVICE);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPackageImportance() {
+    assertThat(activityManager.getPackageImportance(context.getPackageName()))
+        .isEqualTo(IMPORTANCE_GONE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND);
+    assertThat(activityManager.getPackageImportance(context.getPackageName()))
+        .isEqualTo(IMPORTANCE_FOREGROUND);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_VISIBLE);
+    assertThat(activityManager.getPackageImportance(context.getPackageName()))
+        .isEqualTo(IMPORTANCE_VISIBLE);
+
+    shadowOf(activityManager).setUidImportance(Process.myUid(), IMPORTANCE_FOREGROUND_SERVICE);
+    assertThat(activityManager.getPackageImportance(context.getPackageName()))
+        .isEqualTo(IMPORTANCE_FOREGROUND_SERVICE);
   }
 
   @Test

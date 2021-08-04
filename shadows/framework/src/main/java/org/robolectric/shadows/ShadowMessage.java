@@ -2,11 +2,13 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.os.Handler;
 import android.os.Message;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -68,16 +70,23 @@ public abstract class ShadowMessage {
    */
   @Resetter
   public static void reset() {
-    Object lock = reflector(ReflectorMessage.class).getPoolSync();
+    Object lock = reflector(MessageReflector.class).getPoolSync();
     synchronized (lock) {
-      reflector(ReflectorMessage.class).setPoolSize(0);
-      reflector(ReflectorMessage.class).setPool(null);
+      reflector(MessageReflector.class).setPoolSize(0);
+      reflector(MessageReflector.class).setPool(null);
     }
   }
 
   /** Accessor interface for {@link Message}'s internals. */
   @ForType(Message.class)
-  private interface ReflectorMessage {
+  interface MessageReflector {
+
+    @Direct
+    void recycle();
+
+    @Direct
+    void recycleUnchecked();
+
     @Static
     @Accessor("sPool")
     void setPool(Message o);
@@ -89,5 +98,17 @@ public abstract class ShadowMessage {
     @Static
     @Accessor("sPoolSync")
     Object getPoolSync();
+
+    @Accessor("when")
+    long getWhen();
+
+    @Accessor("next")
+    Message getNext();
+
+    @Accessor("next")
+    void setNext(Message next);
+
+    @Accessor("target")
+    Handler getTarget();
   }
 }
