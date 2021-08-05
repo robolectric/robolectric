@@ -146,7 +146,12 @@ public class MavenDependencyResolver implements DependencyResolver {
 
       if (nodeList.getLength() != 0) {
         Node node = nodeList.item(0);
-        return node.getTextContent().trim();
+        String repository = node.getTextContent();
+
+        if (repository == null) {
+          return null;
+        }
+        return repository.trim();
       }
     } catch (ParserConfigurationException | IOException | SAXException e) {
       Logger.error("Error reading settings.xml", e);
