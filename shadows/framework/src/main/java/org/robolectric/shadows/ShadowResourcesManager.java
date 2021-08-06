@@ -8,6 +8,7 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
@@ -16,22 +17,21 @@ import org.robolectric.util.reflector.Static;
 @Implements(value = ResourcesManager.class, isInAndroidSdk = false, minSdk = KITKAT)
 public class ShadowResourcesManager {
   @RealObject ResourcesManager realResourcesManager;
+  @ReflectorObject _ResourcesManager_ resourcesManagerReflector;
 
   @Resetter
   public static void reset() {
     reflector(_ResourcesManager_.class).setResourcesManager(null);
   }
 
-  /**
-   * Exposes {@link ResourcesManager#applyCompatConfigurationLocked(int, Configuration)}.
-   */
-  public boolean callApplyConfigurationToResourcesLocked(Configuration configuration,
-      CompatibilityInfo compatibilityInfo) {
-    return reflector(_ResourcesManager_.class, realResourcesManager)
-        .applyConfigurationToResourcesLocked(configuration, compatibilityInfo);
+  /** Exposes {@link ResourcesManager#applyCompatConfigurationLocked(int, Configuration)}. */
+  public boolean callApplyConfigurationToResourcesLocked(
+      Configuration configuration, CompatibilityInfo compatibilityInfo) {
+    return resourcesManagerReflector.applyConfigurationToResourcesLocked(
+        configuration, compatibilityInfo);
   }
 
-  /** Accessor interface for {@link ResourcesManager}'s internals. */
+  /** Reflector interface for {@link ResourcesManager}'s internals. */
   @ForType(ResourcesManager.class)
   private interface _ResourcesManager_ {
     boolean applyConfigurationToResourcesLocked(Configuration config, CompatibilityInfo compat);

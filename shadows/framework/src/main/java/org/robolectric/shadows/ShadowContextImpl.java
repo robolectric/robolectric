@@ -8,7 +8,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -42,6 +41,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -58,6 +58,7 @@ public class ShadowContextImpl {
   private ContentResolver contentResolver;
 
   @RealObject private Context realContextImpl;
+  @ReflectorObject private _ContextImpl_ contextImplReflector;
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
@@ -75,7 +76,7 @@ public class ShadowContextImpl {
       return null;
     }
     if (!systemServices.containsKey(name)) {
-      return reflector(_ContextImpl_.class, realContextImpl).getSystemService(name);
+      return contextImplReflector.getSystemService(name);
     }
     return systemServices.get(name);
   }
@@ -353,7 +354,7 @@ public class ShadowContextImpl {
   protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
     // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
     // properly shadowed.
-    reflector(_ContextImpl_.class, realContextImpl).startActivity(intent, options);
+    contextImplReflector.startActivity(intent, options);
   }
 
   /* Set the user id returned by {@link #getUserId()}. */
@@ -431,7 +432,7 @@ public class ShadowContextImpl {
       }
       return f;
     } else {
-      return reflector(_ContextImpl_.class, realContextImpl).getDatabasePath(name);
+      return contextImplReflector.getDatabasePath(name);
     }
   }
 
@@ -442,7 +443,7 @@ public class ShadowContextImpl {
     if (!Strings.isNullOrEmpty(name) && File.separatorChar == '\\') {
       name = name.replace(":", "%3A");
     }
-    return reflector(_ContextImpl_.class, realContextImpl).getSharedPreferences(name, mode);
+    return contextImplReflector.getSharedPreferences(name, mode);
   }
 
   /** Reflector interface for {@link android.app.ContextImpl}'s internals. */

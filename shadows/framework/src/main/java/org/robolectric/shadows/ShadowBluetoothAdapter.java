@@ -33,6 +33,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -43,6 +44,7 @@ import org.robolectric.util.reflector.Static;
 @Implements(BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
+  @ReflectorObject private BluetoothAdapterReflector adapterReflector;
 
   private static final int ADDRESS_LENGTH = 17;
   private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH = 31;
@@ -94,9 +96,9 @@ public class ShadowBluetoothAdapter {
   @Deprecated
   public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
-      reflector(BluetoothAdapterReflector.class, realAdapter).setSBluetoothLeAdvertiser(advertiser);
+      adapterReflector.setSBluetoothLeAdvertiser(advertiser);
     } else {
-      reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
+      adapterReflector.setBluetoothLeAdvertiser(advertiser);
     }
   }
 
@@ -421,8 +423,7 @@ public class ShadowBluetoothAdapter {
   protected boolean getProfileProxy(
       Context context, BluetoothProfile.ServiceListener listener, int profile) {
     if (!isOverridingProxyBehavior) {
-      return reflector(BluetoothAdapterReflector.class, realAdapter)
-          .getProfileProxy(context, listener, profile);
+      return adapterReflector.getProfileProxy(context, listener, profile);
     }
 
     BluetoothProfile proxy = profileProxies.get(profile);
@@ -444,7 +445,7 @@ public class ShadowBluetoothAdapter {
   @Implementation
   protected void closeProfileProxy(int profile, BluetoothProfile proxy) {
     if (!isOverridingProxyBehavior) {
-      reflector(BluetoothAdapterReflector.class, realAdapter).closeProfileProxy(profile, proxy);
+      adapterReflector.closeProfileProxy(profile, proxy);
       return;
     }
 

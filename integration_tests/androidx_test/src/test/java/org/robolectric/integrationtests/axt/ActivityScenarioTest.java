@@ -3,13 +3,13 @@ package org.robolectric.integrationtests.axt;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
-import androidx.lifecycle.Lifecycle.State;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.R;
+import androidx.lifecycle.Lifecycle.State;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;

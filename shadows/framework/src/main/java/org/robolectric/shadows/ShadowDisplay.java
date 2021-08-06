@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -17,6 +16,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -43,6 +43,7 @@ public class ShadowDisplay {
   }
 
   @RealObject Display realObject;
+  @ReflectorObject _Display_ objectReflector;
 
   private Float refreshRate;
 
@@ -78,7 +79,7 @@ public class ShadowDisplay {
       outMetrics.xdpi = xdpi;
       outMetrics.ydpi = ydpi;
     } else {
-      reflector(_Display_.class, realObject).getMetrics(outMetrics);
+      objectReflector.getMetrics(outMetrics);
       if (scaledDensity != null) {
         outMetrics.scaledDensity = scaledDensity;
       }
@@ -99,7 +100,7 @@ public class ShadowDisplay {
       outMetrics.widthPixels = realWidth;
       outMetrics.heightPixels = realHeight;
     } else {
-      reflector(_Display_.class, realObject).getRealMetrics(outMetrics);
+      objectReflector.getRealMetrics(outMetrics);
       if (scaledDensity != null) {
         outMetrics.scaledDensity = scaledDensity;
       }
@@ -114,7 +115,7 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected int getDisplayId() {
-    return displayId == null ? reflector(_Display_.class, realObject).getDisplayId() : displayId;
+    return displayId == null ? objectReflector.getDisplayId() : displayId;
   }
 
   /**
@@ -128,7 +129,7 @@ public class ShadowDisplay {
     if (refreshRate != null) {
       return refreshRate;
     }
-    float realRefreshRate = reflector(_Display_.class, realObject).getRefreshRate();
+    float realRefreshRate = objectReflector.getRefreshRate();
     // refresh rate may be set by native code. if its 0, set to 60fps
     if (realRefreshRate < 0.1) {
       realRefreshRate = 60;
@@ -144,9 +145,7 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected int getPixelFormat() {
-    return pixelFormat == null
-        ? reflector(_Display_.class, realObject).getPixelFormat()
-        : pixelFormat;
+    return pixelFormat == null ? objectReflector.getPixelFormat() : pixelFormat;
   }
 
   @Implementation(maxSdk = JELLY_BEAN)
@@ -265,7 +264,7 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setFlags(int flags) {
-    reflector(_Display_.class, realObject).setFlags(flags);
+    objectReflector.setFlags(flags);
 
     if (!isJB()) {
       ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.flags = flags);

@@ -182,19 +182,7 @@ public class ShadowLegacyMessageTest {
     sMsg.setNext(msg2);
     assertThat(sMsg.getNext()).isSameInstanceAs(msg2);
   }
-  
-  @Test
-  @Config(minSdk = LOLLIPOP)
-  public void testIsInUse() {
-    ShadowLooper.pauseMainLooper();
-    Handler h = new Handler();
-    Message msg = Message.obtain(h, 123);
-    ShadowLegacyMessage sMsg = Shadow.extract(msg);
-    assertThat(sMsg.isInUse()).isFalse();
-    msg.sendToTarget();
-    assertThat(sMsg.isInUse()).isTrue();
-  }
-  
+
   @Test
   @Config(maxSdk = KITKAT_WATCH)
   public void recycle_shouldInvokeRealObject19() {

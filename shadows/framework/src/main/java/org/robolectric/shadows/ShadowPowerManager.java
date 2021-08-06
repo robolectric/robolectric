@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.content.Intent.ACTION_SCREEN_OFF;
+import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -8,11 +10,15 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkState;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Binder;
+import android.os.Build.VERSION_CODES;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.WorkSource;
@@ -28,13 +34,18 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow of PowerManager */
 @Implements(value = PowerManager.class, looseSignatures = true)
 public class ShadowPowerManager {
-  private boolean isScreenOn = true;
+
+  @RealObject private PowerManager realPowerManager;
+
   private boolean isInteractive = true;
   private boolean isPowerSaveMode = false;
   private boolean isDeviceIdleMode = false;
@@ -69,11 +80,13 @@ public class ShadowPowerManager {
 
   @Implementation
   protected boolean isScreenOn() {
-    return isScreenOn;
+    return isInteractive;
   }
 
+  /** @deprecated Use {@link #setIsInteractive(boolean)} instead. */
+  @Deprecated
   public void setIsScreenOn(boolean screenOn) {
-    isScreenOn = screenOn;
+    setIsInteractive(screenOn);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -81,8 +94,18 @@ public class ShadowPowerManager {
     return isInteractive;
   }
 
+  /** @deprecated Prefer {@link #turnScreenOn(boolean)} instead. */
+  @Deprecated
   public void setIsInteractive(boolean interactive) {
     isInteractive = interactive;
+  }
+
+  /** Emulates turning the screen on/off if the screen is not already on/off. */
+  public void turnScreenOn(boolean screenOn) {
+    if (isInteractive != screenOn) {
+      isInteractive = screenOn;
+      getContext().sendBroadcast(new Intent(screenOn ? ACTION_SCREEN_ON : ACTION_SCREEN_OFF));
+    }
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -414,5 +437,21 @@ public class ShadowPowerManager {
     private void setTag(String tag) {
       this.tag = tag;
     }
+  }
+
+  private Context getContext() {
+    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.JELLY_BEAN_MR1) {
+      return RuntimeEnvironment.getApplication();
+    } else {
+      return reflector(ReflectorPowerManager.class, realPowerManager).getContext();
+    }
+  }
+
+  /** Reflector interface for {@link PowerManager}'s internals. */
+  @ForType(PowerManager.class)
+  private interface ReflectorPowerManager {
+
+    @Accessor("mContext")
+    Context getContext();
   }
 }

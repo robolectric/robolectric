@@ -18,7 +18,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SwitchPoint;
 import java.lang.invoke.WrongMethodTypeException;
-import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 public class InvokeDynamicSupport {
@@ -53,64 +52,44 @@ public class InvokeDynamicSupport {
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapInit(MethodHandles.Lookup caller, String name, MethodType type) {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "invokedynamic bootstrap init",
-            () -> {
               RoboCallSite site = new RoboCallSite(type, caller.lookupClass());
 
               bindInitCallSite(site);
 
               return site;
-            });
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrap(MethodHandles.Lookup caller, String name, MethodType type,
       MethodHandle original) throws IllegalAccessException {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "invokedynamic bootstrap",
-            () -> {
               MethodCallSite site =
                   new MethodCallSite(caller.lookupClass(), type, name, original, REGULAR);
 
               bindCallSite(site);
 
               return site;
-            });
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapStatic(MethodHandles.Lookup caller, String name, MethodType type,
       MethodHandle original) throws IllegalAccessException {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "invokedynamic bootstrap static",
-            () -> {
               MethodCallSite site =
                   new MethodCallSite(caller.lookupClass(), type, name, original, STATIC);
 
               bindCallSite(site);
 
               return site;
-            });
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapIntrinsic(MethodHandles.Lookup caller, String name,
       MethodType type, String callee) throws IllegalAccessException {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "invokedynamic bootstrap intrinsic",
-            () -> {
               MethodHandle mh = getMethodHandle(callee, name, type);
               if (mh == null) {
                 throw new IllegalArgumentException(
                     "Could not find intrinsic for " + callee + ":" + name);
               }
               return new ConstantCallSite(mh.asType(type));
-            });
   }
 
   private static final MethodHandle NOTHING = constant(Void.class, null).asType(methodType(void.class));

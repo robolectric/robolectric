@@ -13,7 +13,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
 import android.app.Activity;
@@ -59,6 +58,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
@@ -71,6 +71,7 @@ import org.robolectric.util.reflector.WithType;
 public class ShadowInstrumentation {
 
   @RealObject private Instrumentation realObject;
+  @ReflectorObject private _Instrumentation_ objectReflector;
 
   private final List<Intent> startedActivities = Collections.synchronizedList(new ArrayList<>());
   private final List<IntentForResult> startedActivitiesForResults =
@@ -156,8 +157,8 @@ public class ShadowInstrumentation {
     if (who == null) {
       return null;
     }
-    return reflector(_Instrumentation_.class, realObject)
-        .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    return objectReflector.execStartActivity(
+        who, contextThread, token, target, intent, requestCode, options);
   }
 
   @Implementation(maxSdk = LOLLIPOP_MR1)
@@ -186,8 +187,8 @@ public class ShadowInstrumentation {
     verifyActivityInManifest(intent);
     logStartedActivity(intent, target, requestCode, options);
 
-    return reflector(_Instrumentation_.class, realObject)
-        .execStartActivity(who, contextThread, token, target, intent, requestCode, options);
+    return objectReflector.execStartActivity(
+        who, contextThread, token, target, intent, requestCode, options);
   }
 
   /**

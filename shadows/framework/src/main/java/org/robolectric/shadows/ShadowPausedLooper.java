@@ -26,6 +26,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
@@ -58,6 +59,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
       Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<Looper, Boolean>()));
 
   @RealObject private Looper realLooper;
+  @ReflectorObject private LooperReflector looperReflector;
   private boolean isPaused = false;
   // the Executor that executes looper messages. Must be written to on looper thread
   private Executor looperExecutor;
@@ -243,7 +245,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     if (isPaused()) {
       executeOnLooper(new UnPauseRunnable());
     }
-    reflector(LooperReflector.class, realLooper).quit();
+    looperReflector.quit();
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -251,7 +253,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     if (isPaused()) {
       executeOnLooper(new UnPauseRunnable());
     }
-    reflector(LooperReflector.class, realLooper).quitSafely();
+    looperReflector.quitSafely();
   }
 
   @Override

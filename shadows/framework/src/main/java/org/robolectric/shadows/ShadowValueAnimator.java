@@ -9,6 +9,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
@@ -20,6 +21,7 @@ import org.robolectric.util.reflector.Static;
 public class ShadowValueAnimator {
 
   @RealObject private ValueAnimator realObject;
+  @ReflectorObject private ValueAnimatorReflector objectReflector;
 
   private int actualRepeatCount;
 
@@ -53,7 +55,7 @@ public class ShadowValueAnimator {
     if (count == ValueAnimator.INFINITE) {
       count = 1;
     }
-    reflector(ValueAnimatorReflector.class, realObject).setRepeatCount(count);
+    objectReflector.setRepeatCount(count);
   }
 
   /**

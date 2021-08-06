@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
@@ -38,6 +37,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralRules;
@@ -58,6 +58,7 @@ public class ShadowResources {
   private static List<LongSparseArray<?>> resettableArrays;
 
   @RealObject Resources realResources;
+  @ReflectorObject ResourcesReflector resourcesReflector;
 
   @Resetter
   public static void reset() {
@@ -90,7 +91,7 @@ public class ShadowResources {
       return legacyShadowOf(realResources.getAssets())
           .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
     } else {
-      return reflector(ResourcesReflector.class, realResources).obtainAttributes(set, attrs);
+      return resourcesReflector.obtainAttributes(set, attrs);
     }
   }
 
@@ -101,8 +102,7 @@ public class ShadowResources {
       String raw = getQuantityString(id, quantity);
       return String.format(Locale.ENGLISH, raw, formatArgs);
     } else {
-      return reflector(ResourcesReflector.class, realResources)
-          .getQuantityString(id, quantity, formatArgs);
+      return resourcesReflector.getQuantityString(id, quantity, formatArgs);
     }
   }
 
@@ -132,7 +132,7 @@ public class ShadowResources {
         return null;
       }
     } else {
-      return reflector(ResourcesReflector.class, realResources).getQuantityString(resId, quantity);
+      return resourcesReflector.getQuantityString(resId, quantity);
     }
   }
 
@@ -148,7 +148,7 @@ public class ShadowResources {
         return inputStream;
       }
     } else {
-      return reflector(ResourcesReflector.class, realResources).openRawResource(id);
+      return resourcesReflector.openRawResource(id);
     }
   }
 
@@ -174,7 +174,7 @@ public class ShadowResources {
         throw newNotFoundException(id);
       }
     } else {
-      return reflector(ResourcesReflector.class, realResources).openRawResourceFd(id);
+      return resourcesReflector.openRawResourceFd(id);
     }
   }
 
@@ -199,7 +199,7 @@ public class ShadowResources {
         throw newNotFoundException(id);
       }
     } else {
-      return reflector(ResourcesReflector.class, realResources).obtainTypedArray(id);
+      return resourcesReflector.obtainTypedArray(id);
     }
   }
 
@@ -211,7 +211,7 @@ public class ShadowResources {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
       return shadowAssetManager.loadXmlResourceParser(resId, type);
     } else {
-      return reflector(ResourcesReflector.class, realResources).loadXmlResourceParser(resId, type);
+      return resourcesReflector.loadXmlResourceParser(resId, type);
     }
   }
 
@@ -222,15 +222,14 @@ public class ShadowResources {
     if (isLegacyAssetManager()) {
       return loadXmlResourceParser(id, type);
     } else {
-      return reflector(ResourcesReflector.class, realResources)
-          .loadXmlResourceParser(file, id, assetCookie, type);
+      return resourcesReflector.loadXmlResourceParser(file, id, assetCookie, type);
     }
   }
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
   protected Drawable loadDrawable(TypedValue value, int id) {
-    Drawable drawable = reflector(ResourcesReflector.class, realResources).loadDrawable(value, id);
+    Drawable drawable = resourcesReflector.loadDrawable(value, id);
     setCreatedFromResId(realResources, id, drawable);
     return drawable;
   }
@@ -238,8 +237,7 @@ public class ShadowResources {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme)
       throws Resources.NotFoundException {
-    Drawable drawable =
-        reflector(ResourcesReflector.class, realResources).loadDrawable(value, id, theme);
+    Drawable drawable = resourcesReflector.loadDrawable(value, id, theme);
     setCreatedFromResId(realResources, id, drawable);
     return drawable;
   }

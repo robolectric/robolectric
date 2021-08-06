@@ -21,6 +21,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Registries;
@@ -74,9 +75,10 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   private static final HashMap<Key, Long> cachedNativePtrs = new HashMap<>();
 
   @RealObject private ApkAssets realApkAssets;
+  @ReflectorObject private _ApkAssets_ apkAssetsReflector;
 
   long getNativePtr() {
-    return reflector(_ApkAssets_.class, realApkAssets).getNativePtr();
+    return apkAssetsReflector.getNativePtr();
   }
 
   /** Reflector interface for {@link ApkAssets}'s internals. */

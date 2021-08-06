@@ -25,15 +25,16 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Reflector;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowActivityThread {
   private static ApplicationInfo applicationInfo;
   @RealObject protected ActivityThread realActivityThread;
+  @ReflectorObject protected _ActivityThread_ activityThreadReflector;
 
   @Implementation
   public static Object getPackageManager() {
@@ -89,8 +90,7 @@ public class ShadowActivityThread {
   @Implementation
   protected Application getApplication() {
     // Prefer the stored application from the real Activity Thread.
-    Application currentApplication =
-        Reflector.reflector(_ActivityThread_.class, realActivityThread).getInitialApplication();
+    Application currentApplication = activityThreadReflector.getInitialApplication();
     if (currentApplication == null) {
       return RuntimeEnvironment.getApplication();
     } else {
@@ -132,12 +132,12 @@ public class ShadowActivityThread {
     recordReflector.setIntent(intent);
     recordReflector.setActivityInfo(activityInfo);
     recordReflector.setActivity(activity);
-    reflector(_ActivityThread_.class, realActivityThread).getActivities().put(token, record);
+    activityThreadReflector.getActivities().put(token, record);
     return token;
   }
 
   void removeActivity(IBinder token) {
-    reflector(_ActivityThread_.class, realActivityThread).getActivities().remove(token);
+    activityThreadReflector.getActivities().remove(token);
   }
 
   /**
@@ -156,11 +156,10 @@ public class ShadowActivityThread {
    * @param androidConfiguration
    */
   public void setCompatConfiguration(Configuration androidConfiguration) {
-    reflector(_ActivityThread_.class, realActivityThread)
-        .setCompatConfiguration(androidConfiguration);
+    activityThreadReflector.setCompatConfiguration(androidConfiguration);
   }
 
-  /** Accessor interface for {@link ActivityThread}'s internals. */
+  /** Reflector interface for {@link ActivityThread}'s internals. */
   @ForType(ActivityThread.class)
   public interface _ActivityThread_ {
 
@@ -187,7 +186,7 @@ public class ShadowActivityThread {
     Map<IBinder, ActivityClientRecord> getActivities();
   }
 
-  /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */
+  /** Reflector interface for {@link ActivityThread.AppBindData}'s internals. */
   @ForType(className = "android.app.ActivityThread$AppBindData")
   public interface _AppBindData_ {
 
