@@ -310,7 +310,7 @@ public class ShadowLauncherApps {
     return info ->
         packageName == null
             || (info.getComponentName() != null
-            && packageName.equals(info.getComponentName().getPackageName()));
+                && packageName.equals(info.getComponentName().getPackageName()));
   }
 
   @ForType(ShortcutQuery.class)
