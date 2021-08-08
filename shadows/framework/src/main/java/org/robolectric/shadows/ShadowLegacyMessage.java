@@ -74,22 +74,6 @@ public class ShadowLegacyMessage extends ShadowMessage {
     scheduledRunnable = r;
   }
 
-  /**
-   * Convenience method to provide access to the private {@code Message.isInUse()} method. Note that
-   * the definition of "in use" changed with API 21:
-   *
-   * <p>In API 19, a message was only considered "in use" during its dispatch. In API 21, the
-   * message is considered "in use" from the time it is enqueued until the time that it is freshly
-   * obtained via a call to {@link Message#obtain()}. This means that in API 21 messages that are in
-   * the recycled pool will still be marked as "in use".
-   *
-   * @return {@code true} if the message is currently "in use", {@code false} otherwise.
-   */
-  @Implementation
-  protected boolean isInUse() {
-    return directlyOn(realMessage, Message.class, "isInUse");
-  }
-
   @Override
   public Message getNext() {
     return reflector(MessageReflector.class, realMessage).getNext();
