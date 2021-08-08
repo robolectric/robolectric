@@ -46,6 +46,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Robolectric.setupActivity;
@@ -72,6 +73,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
@@ -310,17 +312,24 @@ public class ShadowPackageManagerTest {
     packageInfo.requestedPermissions =
         new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
     packageInfo.requestedPermissionsFlags = new int[] {0, 0}; // Not granted by default
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.uid = 12345;
     shadowOf(packageManager).installPackage(packageInfo);
+
+    OnPermissionsChangedListener listener = mock(OnPermissionsChangedListener.class);
+    packageManager.addOnPermissionsChangeListener(listener);
 
     packageManager.grantRuntimePermission(
         TEST_PACKAGE_NAME, "android.permission.SEND_SMS", Process.myUserHandle());
 
+    verify(listener, times(1)).onPermissionsChanged(12345);
     assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
     assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
 
     packageManager.grantRuntimePermission(
         TEST_PACKAGE_NAME, "android.permission.READ_SMS", Process.myUserHandle());
 
+    verify(listener, times(2)).onPermissionsChanged(12345);
     assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
     assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
   }
@@ -364,17 +373,24 @@ public class ShadowPackageManagerTest {
         new String[] {"android.permission.SEND_SMS", "android.permission.READ_SMS"};
     packageInfo.requestedPermissionsFlags =
         new int[] {REQUESTED_PERMISSION_GRANTED, REQUESTED_PERMISSION_GRANTED};
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.uid = 12345;
     shadowOf(packageManager).installPackage(packageInfo);
+
+    OnPermissionsChangedListener listener = mock(OnPermissionsChangedListener.class);
+    packageManager.addOnPermissionsChangeListener(listener);
 
     packageManager.revokeRuntimePermission(
         TEST_PACKAGE_NAME, "android.permission.SEND_SMS", Process.myUserHandle());
 
+    verify(listener, times(1)).onPermissionsChanged(12345);
     assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
     assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(REQUESTED_PERMISSION_GRANTED);
 
     packageManager.revokeRuntimePermission(
         TEST_PACKAGE_NAME, "android.permission.READ_SMS", Process.myUserHandle());
 
+    verify(listener, times(2)).onPermissionsChanged(12345);
     assertThat(packageInfo.requestedPermissionsFlags[0]).isEqualTo(0);
     assertThat(packageInfo.requestedPermissionsFlags[1]).isEqualTo(0);
   }
