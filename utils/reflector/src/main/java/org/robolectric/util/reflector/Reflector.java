@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.util.PerfStatsCollector;
 
@@ -37,9 +37,7 @@ public class Reflector {
 
   private static final boolean DEBUG = false;
   private static final AtomicInteger COUNTER = new AtomicInteger();
-  private static final Map<Class<?>, Constructor<?>> CACHE =
-      Collections.synchronizedMap(new WeakerHashMap<>());
-
+  private static final Map<Class<?>, Constructor<?>> cache = new ConcurrentHashMap<>();
   /**
    * Returns an object which provides accessors for invoking otherwise inaccessible static methods
    * and fields.
@@ -60,7 +58,7 @@ public class Reflector {
   public static <T> T reflector(Class<T> iClass, Object target) {
     Class<?> targetClass = determineTargetClass(iClass);
 
-    Constructor<? extends T> ctor = (Constructor<? extends T>) CACHE.get(iClass);
+    Constructor<? extends T> ctor = (Constructor<? extends T>) cache.get(iClass);
     try {
       if (ctor == null) {
         Class<? extends T> reflectorClass =
@@ -72,7 +70,7 @@ public class Reflector {
         ctor.setAccessible(true);
       }
 
-      CACHE.put(iClass, ctor);
+      cache.put(iClass, ctor);
 
       return ctor.newInstance(target);
     } catch (NoSuchMethodException
