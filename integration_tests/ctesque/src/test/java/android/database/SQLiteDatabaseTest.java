@@ -1,11 +1,15 @@
 package android.database;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.base.Ascii;
+import com.google.common.base.Throwables;
 import java.io.File;
 import java.util.Arrays;
 import org.junit.After;
@@ -85,5 +89,30 @@ public class SQLiteDatabaseTest {
     assertThat(data.getCount()).isEqualTo(1);
     data.moveToFirst();
     assertThat(data.getBlob(0)).isEqualTo(new byte[] {0});
+  }
+
+  @Test
+  public void shouldThrowWhenForeignKeysConstraintIsViolated() {
+    database.execSQL(
+        "CREATE TABLE artist(\n"
+            + "  artistid    INTEGER PRIMARY KEY, \n"
+            + "  artistname  TEXT\n"
+            + ");\n");
+
+    database.execSQL(
+        "CREATE TABLE track(\n"
+            + "  trackid     INTEGER, \n"
+            + "  trackname   TEXT, \n"
+            + "  trackartist INTEGER,\n"
+            + "  FOREIGN KEY(trackartist) REFERENCES artist(artistid)\n"
+            + ");");
+
+    database.execSQL("PRAGMA foreign_keys=ON");
+    database.execSQL("INSERT into artist (artistid, artistname) VALUES (1, 'Kanye')");
+    database.execSQL(
+        "INSERT into track (trackid, trackname, trackartist) VALUES (1, 'Good Life', 1)");
+    SQLiteConstraintException ex =
+        assertThrows(SQLiteConstraintException.class, () -> database.execSQL("delete from artist"));
+    assertThat(Ascii.toLowerCase(Throwables.getStackTraceAsString(ex))).contains("foreign key");
   }
 }
