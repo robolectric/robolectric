@@ -38,10 +38,7 @@ public class SandboxClassLoader extends URLClassLoader {
 
   /** Constructor for use by tests. */
   SandboxClassLoader(InstrumentationConfiguration config) {
-    this(
-        config,
-        new UrlResourceProvider(),
-        new InvokeDynamicClassInstrumentor(new ShadowDecorator()));
+    this(config, new UrlResourceProvider(), new ClassInstrumentor(new ShadowDecorator()));
   }
 
   @Inject

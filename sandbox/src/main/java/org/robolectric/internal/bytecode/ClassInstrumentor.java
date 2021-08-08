@@ -1,11 +1,17 @@
 package org.robolectric.internal.bytecode;
 
+import static java.lang.invoke.MethodType.methodType;
+
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -21,17 +27,55 @@ import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.InvokeDynamicInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.PerfStatsCollector;
 
-public abstract class ClassInstrumentor {
+/**
+ * Instruments (i.e. modifies the bytecode) of classes to place the scaffolding necessary to use
+ * Robolectric's shadows.
+ */
+public class ClassInstrumentor {
+  private static final Handle BOOTSTRAP_INIT;
+  private static final Handle BOOTSTRAP;
+  private static final Handle BOOTSTRAP_STATIC;
+  private static final Handle BOOTSTRAP_INTRINSIC;
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
   static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
   final Decorator decorator;
+
+  static {
+    String className = Type.getInternalName(InvokeDynamicSupport.class);
+
+    MethodType bootstrap =
+        methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+    String bootstrapMethod =
+        bootstrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
+    String bootstrapIntrinsic =
+        bootstrap.appendParameterTypes(String.class).toMethodDescriptorString();
+
+    BOOTSTRAP_INIT =
+        new Handle(
+            Opcodes.H_INVOKESTATIC,
+            className,
+            "bootstrapInit",
+            bootstrap.toMethodDescriptorString(),
+            false);
+    BOOTSTRAP = new Handle(Opcodes.H_INVOKESTATIC, className, "bootstrap", bootstrapMethod, false);
+    BOOTSTRAP_STATIC =
+        new Handle(Opcodes.H_INVOKESTATIC, className, "bootstrapStatic", bootstrapMethod, false);
+    BOOTSTRAP_INTRINSIC =
+        new Handle(
+            Opcodes.H_INVOKESTATIC, className, "bootstrapIntrinsic", bootstrapIntrinsic, false);
+  }
+
+  public ClassInstrumentor() {
+    this(new ShadowDecorator());
+  }
 
   protected ClassInstrumentor(Decorator decorator) {
     this.decorator = decorator;
@@ -166,7 +210,7 @@ public abstract class ClassInstrumentor {
     }
   }
 
-  protected abstract void addDirectCallConstructor(MutableClass mutableClass);
+  protected void addDirectCallConstructor(MutableClass mutableClass) {}
 
   /**
    * Generates code like this:
@@ -206,8 +250,13 @@ public abstract class ClassInstrumentor {
     mutableClass.addMethod(initMethodNode);
   }
 
-  protected abstract void writeCallToInitializing(
-      MutableClass mutableClass, RobolectricGeneratorAdapter generator);
+  protected void writeCallToInitializing(
+      MutableClass mutableClass, RobolectricGeneratorAdapter generator) {
+    generator.invokeDynamic(
+        "initializing",
+        Type.getMethodDescriptor(OBJECT_TYPE, mutableClass.classType),
+        BOOTSTRAP_INIT);
+  }
 
   private static void removeFinalFromFields(MutableClass mutableClass) {
     for (FieldNode fieldNode : mutableClass.getFields()) {
@@ -518,10 +567,24 @@ public abstract class ClassInstrumentor {
    * Decides to call through the appropriate method to intercept the method with an INVOKEVIRTUAL
    * Opcode, depending if the invokedynamic bytecode instruction is available (Java 7+).
    */
-  protected abstract void interceptInvokeVirtualMethod(
+  protected void interceptInvokeVirtualMethod(
       MutableClass mutableClass,
       ListIterator<AbstractInsnNode> instructions,
-      MethodInsnNode targetMethod);
+      MethodInsnNode targetMethod) {
+    instructions.remove(); // remove the method invocation
+
+    Type type = Type.getObjectType(targetMethod.owner);
+    String description = targetMethod.desc;
+    String owner = type.getClassName();
+
+    if (targetMethod.getOpcode() != Opcodes.INVOKESTATIC) {
+      String thisType = type.getDescriptor();
+      description = "(" + thisType + description.substring(1);
+    }
+
+    instructions.add(
+        new InvokeDynamicInsnNode(targetMethod.name, description, BOOTSTRAP_INTRINSIC, owner));
+  }
 
   /** Replaces protected and private class modifiers with public. */
   private static void makeClassPublic(ClassNode clazz) {
@@ -554,11 +617,31 @@ public abstract class ClassInstrumentor {
   }
 
   // todo javadocs
-  protected abstract void generateClassHandlerCall(
+  protected void generateClassHandlerCall(
       MutableClass mutableClass,
       MethodNode originalMethod,
       String originalMethodName,
-      RobolectricGeneratorAdapter generator);
+      RobolectricGeneratorAdapter generator) {
+    Handle original =
+        new Handle(
+            getTag(originalMethod),
+            mutableClass.classType.getInternalName(),
+            originalMethod.name,
+            originalMethod.desc,
+            getTag(originalMethod) == Opcodes.H_INVOKEINTERFACE);
+
+    if (generator.isStatic()) {
+      generator.loadArgs();
+      generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
+    } else {
+      String desc = "(" + mutableClass.classType.getDescriptor() + originalMethod.desc.substring(1);
+      generator.loadThis();
+      generator.loadArgs();
+      generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
+    }
+
+    generator.returnValue();
+  }
 
   int getTag(MethodNode m) {
     return Modifier.isStatic(m.access) ? Opcodes.H_INVOKESTATIC : Opcodes.H_INVOKESPECIAL;
