@@ -150,6 +150,12 @@ public class ShadowPackageManager {
   static final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
       new TreeMap<>();
   static final Map<Pair<String, Integer>, Drawable> drawables = new LinkedHashMap<>();
+  /**
+   * Map of package names to an inner map where the key is the resource id which fetches its
+   * corresponding text.
+   */
+  static final Map<String, Map<Integer, String>> stringResources = new HashMap<>();
+
   static final Map<String, Integer> applicationEnabledSettingMap = new HashMap<>();
   static Map<String, PermissionInfo> extraPermissions = new HashMap<>();
   static Map<String, PermissionGroupInfo> permissionGroups = new HashMap<>();
@@ -1636,6 +1642,19 @@ public class ShadowPackageManager {
     return distractingPackageRestrictions.getOrDefault(pkg, PackageManager.RESTRICTION_NONE);
   }
 
+  /**
+   * Adds a String resource with {@code resId} corresponding to {@code packageName}. This is
+   * retrieved in shadow implementation of {@link PackageManager#getText(String, int,
+   * ApplicationInfo)}.
+   */
+  public void addStringResource(String packageName, int resId, String text) {
+    if (!stringResources.containsKey(packageName)) {
+      stringResources.put(packageName, new HashMap<>());
+    }
+
+    stringResources.get(packageName).put(resId, text);
+  }
+
   @Resetter
   public static void reset() {
     synchronized (lock) {
@@ -1661,6 +1680,7 @@ public class ShadowPackageManager {
       preferredActivities.clear();
       persistentPreferredActivities.clear();
       drawables.clear();
+      stringResources.clear();
       applicationEnabledSettingMap.clear();
       extraPermissions.clear();
       permissionGroups.clear();

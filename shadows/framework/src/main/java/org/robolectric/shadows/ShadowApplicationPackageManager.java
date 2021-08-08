@@ -39,6 +39,7 @@ import android.annotation.DrawableRes;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.StringRes;
 import android.annotation.UserIdInt;
 import android.app.ApplicationPackageManager;
 import android.app.admin.DevicePolicyManager;
@@ -1531,6 +1532,24 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         .getDrawable(packageName, resId, appInfo);
   }
 
+  /**
+   * Returns a user stored String resource with {@code resId} corresponding to {@code packageName}.
+   * User can store this String via {@link #addStringResource(String, int, String)}.
+   *
+   * <p>Real method is called if the user has not stored a String corresponding to {@code resId} and
+   * {@code packageName}.
+   */
+  @Nullable
+  @Implementation
+  protected CharSequence getText(String packageName, int resId, ApplicationInfo appInfo) {
+    if (stringResources.containsKey(packageName)
+        && stringResources.get(packageName).containsKey(resId)) {
+      return stringResources.get(packageName).get(resId);
+    }
+    return reflector(ReflectorApplicationPackageManager.class, realObject)
+        .getText(packageName, resId, appInfo);
+  }
+
   @Implementation
   protected Drawable getActivityIcon(ComponentName activityName) throws NameNotFoundException {
     Drawable result = drawableList.get(activityName);
@@ -2088,6 +2107,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     @Direct
     Drawable getDrawable(
         String packageName, @DrawableRes int resId, @Nullable ApplicationInfo appInfo);
+
+    @Direct
+    CharSequence getText(String packageName, @StringRes int resId, ApplicationInfo appInfo);
 
     @Direct
     Drawable getActivityIcon(ComponentName activityName);
