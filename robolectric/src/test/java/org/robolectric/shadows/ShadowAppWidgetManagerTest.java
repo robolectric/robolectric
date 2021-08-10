@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -23,6 +24,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources.NotFoundException;
+import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.View;
@@ -42,19 +45,22 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAppWidgetManagerTest {
+  private Context context;
   private AppWidgetManager appWidgetManager;
   private ShadowAppWidgetManager shadowAppWidgetManager;
 
   @Before
   public void setUp() throws Exception {
-    appWidgetManager = AppWidgetManager.getInstance(ApplicationProvider.getApplicationContext());
+    context = ApplicationProvider.getApplicationContext();
+    appWidgetManager = AppWidgetManager.getInstance(context);
     shadowAppWidgetManager = shadowOf(appWidgetManager);
   }
 
   @Test
   public void createWidget_shouldInflateViewAndAssignId() {
     int widgetId =
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
     assertEquals("Hola", ((TextView) widgetView.findViewById(R.id.subtitle)).getText().toString());
@@ -63,7 +69,8 @@ public class ShadowAppWidgetManagerTest {
   @Test
   public void getViewFor_shouldReturnSameViewEveryTimeForGivenWidgetId() {
     int widgetId =
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
     assertNotNull(widgetView);
@@ -73,46 +80,51 @@ public class ShadowAppWidgetManagerTest {
   @Test
   public void createWidget_shouldAllowForMultipleInstancesOfWidgets() {
     int widgetId =
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views);
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
     assertNotSame(
         widgetId,
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main));
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views));
     assertNotSame(
         widgetView,
         shadowAppWidgetManager.getViewFor(
             shadowAppWidgetManager.createWidget(
-                SpanishTestAppWidgetProvider.class, R.layout.main)));
+                SpanishTestAppWidgetProvider.class, R.layout.remote_views)));
   }
 
   @Test
   public void shouldReplaceLayoutIfAndOnlyIfLayoutIdIsDifferent() {
     int widgetId =
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views);
     View originalWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
-    assertContains("Main Layout", originalWidgetView);
+    assertViewId(R.id.remote_views_root, originalWidgetView);
 
     appWidgetManager.updateAppWidget(
         widgetId,
         new RemoteViews(
-            ApplicationProvider.getApplicationContext().getPackageName(), R.layout.main));
+            ApplicationProvider.getApplicationContext().getPackageName(), R.layout.remote_views));
     assertSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
     appWidgetManager.updateAppWidget(
         widgetId,
         new RemoteViews(
-            ApplicationProvider.getApplicationContext().getPackageName(), R.layout.media));
+            ApplicationProvider.getApplicationContext().getPackageName(),
+            R.layout.remote_views_alt));
     assertNotSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
-    View mediaWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
-    assertContains("Media Layout", mediaWidgetView);
+    View altWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
+    assertViewId(R.id.remote_views_alt_root, altWidgetView);
   }
 
   @Test
   public void getAppWidgetIds() {
     int expectedWidgetId =
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views);
 
     int[] appWidgetIds =
         appWidgetManager.getAppWidgetIds(
@@ -241,6 +253,72 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
+  public void updateAppWidget_landscapeAndPortrait() {
+    ComponentName provider = new ComponentName(context, SpanishTestAppWidgetProvider.class);
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+
+    RemoteViews landscape = new RemoteViews(provider.getPackageName(), R.layout.remote_views);
+    RemoteViews portrait = new RemoteViews(provider.getPackageName(), R.layout.remote_views_alt);
+    RemoteViews combined = new RemoteViews(landscape, portrait);
+    appWidgetManager.updateAppWidget(789, combined);
+
+    assertViewId(R.id.remote_views_alt_root, shadowAppWidgetManager.getViewFor(789));
+  }
+
+  @Test
+  public void updateAppWidget_landscapeAndPortrait_canReapplySameView() {
+    ComponentName provider = new ComponentName(context, SpanishTestAppWidgetProvider.class);
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+
+    RemoteViews landscape = new RemoteViews(provider.getPackageName(), R.layout.remote_views);
+    RemoteViews portrait = new RemoteViews(provider.getPackageName(), R.layout.remote_views_alt);
+    RemoteViews combined = new RemoteViews(landscape, portrait);
+    appWidgetManager.updateAppWidget(789, combined);
+    View originalView = shadowAppWidgetManager.getViewFor(789);
+
+    RemoteViews landscape2 = new RemoteViews(provider.getPackageName(), R.layout.remote_views);
+    RemoteViews portrait2 = new RemoteViews(provider.getPackageName(), R.layout.remote_views_alt);
+    RemoteViews combined2 = new RemoteViews(landscape2, portrait2);
+    appWidgetManager.updateAppWidget(789, combined2);
+
+    // A bug around reapplying RemoteViews with landscape and portrait layouts was fixed in API 25.
+    if (VERSION.SDK_INT >= 25) {
+      assertSame(originalView, shadowAppWidgetManager.getViewFor(789));
+    } else {
+      assertNotSame(originalView, shadowAppWidgetManager.getViewFor(789));
+    }
+  }
+
+  @Test
+  public void updateAppWidget_landscapeAndPortrait_doesntReapplyDifferntViews() {
+    ComponentName provider = new ComponentName(context, SpanishTestAppWidgetProvider.class);
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+
+    RemoteViews landscape = new RemoteViews(provider.getPackageName(), R.layout.remote_views);
+    RemoteViews portrait = new RemoteViews(provider.getPackageName(), R.layout.remote_views_alt);
+    RemoteViews combined = new RemoteViews(landscape, portrait);
+    appWidgetManager.updateAppWidget(789, combined);
+    View originalView = shadowAppWidgetManager.getViewFor(789);
+
+    RemoteViews landscape2 = new RemoteViews(provider.getPackageName(), R.layout.remote_views_alt);
+    RemoteViews portrait2 = new RemoteViews(provider.getPackageName(), R.layout.remote_views);
+    RemoteViews combined2 = new RemoteViews(landscape2, portrait2);
+    appWidgetManager.updateAppWidget(789, combined2);
+
+    assertNotSame(originalView, shadowAppWidgetManager.getViewFor(789));
+  }
+
+  @Test
+  public void updateAppWidget_invalidViewsInLayout_shouldThrow() {
+    ComponentName provider = new ComponentName(context, SpanishTestAppWidgetProvider.class);
+    appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+
+    RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.remote_views_bad);
+
+    assertThrows(RuntimeException.class, () -> appWidgetManager.updateAppWidget(789, remoteViews));
+  }
+
+  @Test
   public void updateAppWidgetOptions_shouldSetOptionsBundle() {
     ComponentName provider = new ComponentName("A", "B");
     appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
@@ -273,7 +351,8 @@ public class ShadowAppWidgetManagerTest {
   @Test
   public void updateAppWidgetOptions_triggersOnAppWidgetOptionsUpdated() {
     int widgetId =
-        shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        shadowAppWidgetManager.createWidget(
+            SpanishTestAppWidgetProvider.class, R.layout.remote_views);
 
     appWidgetManager.updateAppWidgetOptions(widgetId, new Bundle());
     View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
@@ -413,17 +492,26 @@ public class ShadowAppWidgetManagerTest {
     assertEquals(2, callbackAppWidgetId.get());
   }
 
-  private void assertContains(String expectedText, View view) {
-    String actualText = shadowOf(view).innerText();
-    assertTrue(
-        "Expected <" + actualText + "> to contain <" + expectedText + ">",
-        actualText.contains(expectedText));
+  /**
+   * Asserts that the id of {@code view} matches {@code id}. Asserts on the string name, which
+   * provides a more useful error message than the int value.
+   */
+  private void assertViewId(int id, View view) {
+    assertEquals(getResourceName(id), getResourceName(view.getId()));
+  }
+
+  private String getResourceName(int id) {
+    try {
+      return context.getResources().getResourceName(id);
+    } catch (NotFoundException e) {
+      return String.valueOf(id);
+    }
   }
 
   public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-      RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
+      RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.remote_views);
       remoteViews.setTextViewText(R.id.subtitle, "Hola");
       appWidgetManager.updateAppWidget(appWidgetIds, remoteViews);
     }
@@ -431,7 +519,7 @@ public class ShadowAppWidgetManagerTest {
     @Override
     public void onAppWidgetOptionsChanged(
         Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
-      RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
+      RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.remote_views);
       remoteViews.setTextViewText(R.id.subtitle, "Actualizar");
       appWidgetManager.updateAppWidget(appWidgetId, remoteViews);
     }
