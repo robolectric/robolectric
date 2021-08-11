@@ -7,7 +7,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric">
-  <uses-sdk android:targetSdkVersion="27"/>
+  <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="27"/>
 
   <!-- For SettingsTest -->
   <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />

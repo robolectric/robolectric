@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.UiModeManager;
@@ -69,5 +70,36 @@ public class ShadowUIModeManagerTest {
 
     uiModeManager.setNightMode(INVALID_NIGHT_MODE);
     assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void testRequestReleaseProjection() {
+    assertThat(shadowOf(uiModeManager).activeProjectionTypes).isEmpty();
+
+    assertThrows(
+        SecurityException.class,
+        () -> uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE));
+    assertThrows(
+        SecurityException.class,
+        () -> uiModeManager.releaseProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE));
+
+    grantPermissions(Permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+    assertThat(uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE)).isTrue();
+    assertThat(shadowOf(uiModeManager).activeProjectionTypes)
+        .containsExactly(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+    assertThat(uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE)).isTrue();
+    assertThat(shadowOf(uiModeManager).activeProjectionTypes)
+        .containsExactly(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+    assertThat(uiModeManager.releaseProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE)).isTrue();
+    assertThat(shadowOf(uiModeManager).activeProjectionTypes).isEmpty();
+    assertThat(uiModeManager.releaseProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE)).isFalse();
+    assertThat(shadowOf(uiModeManager).activeProjectionTypes).isEmpty();
+  }
+
+  private void grantPermissions(String... permissions) {
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .grantPermissions(permissions);
   }
 }
