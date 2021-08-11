@@ -289,7 +289,7 @@ public class ShadowAppOpsManager {
    * String, String, String)} without {@link #finishOp(String, int, String, String)} yet.
    */
   @Implementation(minSdk = R)
-  protected boolean isOpActive(String op, int uid, String packageName) {
+  public boolean isOpActive(String op, int uid, String packageName) {
     return longRunningOp.contains(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
   }
 
