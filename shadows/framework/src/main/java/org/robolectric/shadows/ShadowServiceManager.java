@@ -56,6 +56,7 @@ import android.net.wifi.IWifiManager;
 import android.net.wifi.aware.IWifiAwareManager;
 import android.net.wifi.p2p.IWifiP2pManager;
 import android.net.wifi.rtt.IWifiRttManager;
+import android.nfc.INfcAdapter;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.IBatteryPropertiesRegistrar;
@@ -119,6 +120,7 @@ public class ShadowServiceManager {
     addBinderService(Context.WALLPAPER_SERVICE, IWallpaperManager.class);
     addBinderService(Context.BLUETOOTH_SERVICE, IBluetooth.class);
     addBinderService(Context.WINDOW_SERVICE, IWindowManager.class);
+    addBinderService(Context.NFC_SERVICE, INfcAdapter.class, true);
 
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
       addBinderService(Context.USER_SERVICE, IUserManager.class);

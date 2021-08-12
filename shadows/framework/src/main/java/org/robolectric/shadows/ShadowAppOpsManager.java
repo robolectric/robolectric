@@ -25,12 +25,11 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioAttributes.AttributeUsage;
 import android.os.Binder;
 import android.os.Build;
+import android.util.ArrayMap;
 import android.util.LongSparseArray;
 import android.util.LongSparseLongArray;
 import com.android.internal.app.IAppOpsService;
 import com.google.auto.value.AutoValue;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -78,8 +77,7 @@ public class ShadowAppOpsManager {
   // (uid, packageName, opCode)
   private final Set<Key> longRunningOp = new HashSet<>();
 
-  // (packageName, opCode) => listener
-  private final BiMap<Key, OnOpChangedListener> appOpListeners = HashBiMap.create();
+  private final Map<OnOpChangedListener, Key> appOpListeners = new ArrayMap<>();
 
   // op | (usage << 8) => ModeAndExcpetion
   private final Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
@@ -132,13 +130,19 @@ public class ShadowAppOpsManager {
    */
   @Implementation(minSdk = KITKAT)
   @HiddenApi
-  @RequiresPermission(android.Manifest.permission.MANAGE_APP_OPS_MODES)
   public void setMode(int op, int uid, String packageName, int mode) {
     Integer oldMode = appModeMap.put(Key.create(uid, packageName, op), mode);
-    OnOpChangedListener listener = appOpListeners.get(Key.create(null, packageName, op));
-    if (listener != null && !Objects.equals(oldMode, mode)) {
-      String[] sOpToString = ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
-      listener.onOpChanged(sOpToString[op], packageName);
+    if (Objects.equals(oldMode, mode)) {
+      return;
+    }
+
+    for (Map.Entry<OnOpChangedListener, Key> entry : appOpListeners.entrySet()) {
+      if (op == entry.getValue().getOpCode()
+          && (entry.getValue().getPackageName() == null
+              || entry.getValue().getPackageName().equals(packageName))) {
+        String[] sOpToString = ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
+        entry.getKey().onOpChanged(sOpToString[op], packageName);
+      }
     }
   }
 
@@ -285,7 +289,7 @@ public class ShadowAppOpsManager {
    * String, String, String)} without {@link #finishOp(String, int, String, String)} yet.
    */
   @Implementation(minSdk = R)
-  protected boolean isOpActive(String op, int uid, String packageName) {
+  public boolean isOpActive(String op, int uid, String packageName) {
     return longRunningOp.contains(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
   }
 
@@ -451,16 +455,19 @@ public class ShadowAppOpsManager {
   }
 
   @Implementation(minSdk = KITKAT)
-  @HiddenApi
-  @RequiresPermission(value = android.Manifest.permission.WATCH_APPOPS)
   protected void startWatchingMode(int op, String packageName, OnOpChangedListener callback) {
-    appOpListeners.put(Key.create(null, packageName, op), callback);
+    appOpListeners.put(callback, Key.create(null, packageName, op));
+  }
+
+  @Implementation(minSdk = Q)
+  protected void startWatchingMode(
+      int op, String packageName, int flags, OnOpChangedListener callback) {
+    appOpListeners.put(callback, Key.create(null, packageName, op));
   }
 
   @Implementation(minSdk = KITKAT)
-  @RequiresPermission(value = android.Manifest.permission.WATCH_APPOPS)
   protected void stopWatchingMode(OnOpChangedListener callback) {
-    appOpListeners.inverse().remove(callback);
+    appOpListeners.remove(callback);
   }
 
   protected OpEntry toOpEntry(Integer op, int mode) {

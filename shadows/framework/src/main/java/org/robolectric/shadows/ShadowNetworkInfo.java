@@ -1,9 +1,14 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.net.NetworkInfo;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
@@ -12,6 +17,14 @@ public class ShadowNetworkInfo {
   private int connectionType;
   private int connectionSubType;
   private NetworkInfo.DetailedState detailedState;
+
+  @RealObject private NetworkInfo realNetworkInfo;
+
+  @ForType(NetworkInfo.class)
+  interface NetworkInfoReflector {
+    @Direct
+    void setExtraInfo(String extraInfo);
+  }
 
   @Implementation
   protected static void __staticInitializer__() {}
@@ -134,5 +147,9 @@ public class ShadowNetworkInfo {
 
   public void setDetailedState(NetworkInfo.DetailedState detailedState) {
     this.detailedState = detailedState;
+  }
+
+  public void setExtraInfo(String extraInfo) {
+    reflector(NetworkInfoReflector.class, realNetworkInfo).setExtraInfo(extraInfo);
   }
 }
