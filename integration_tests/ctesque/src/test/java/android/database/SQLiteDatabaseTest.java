@@ -115,4 +115,17 @@ public class SQLiteDatabaseTest {
         assertThrows(SQLiteConstraintException.class, () -> database.execSQL("delete from artist"));
     assertThat(Ascii.toLowerCase(Throwables.getStackTraceAsString(ex))).contains("foreign key");
   }
+
+  @Test
+  public void shouldDeleteWithLikeEscape() {
+    ContentValues values = new ContentValues();
+    values.put("first_column", "test");
+    database.insert("table_name", null, values);
+    String select = "first_column LIKE ? ESCAPE ?";
+    String[] selectArgs = {
+        "test",
+        Character.toString('\\'),
+    };
+    assertThat(database.delete("table_name", select, selectArgs)).isEqualTo(1);
+  }
 }
