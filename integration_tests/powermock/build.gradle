@@ -6,7 +6,7 @@ dependencies {
     api project(":robolectric")
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
-    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
 

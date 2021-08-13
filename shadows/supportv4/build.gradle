@@ -51,13 +51,13 @@ dependencies {
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
 
     earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testRuntime AndroidSdk.MAX_SDK.coordinates
-    testRuntime "com.android.support:support-v4:${supportLibraryVersions}"
-    testRuntime "com.android.support:support-compat:${supportLibraryVersions}"
-    testRuntime "com.android.support:support-core-ui:${supportLibraryVersions}"
-    testRuntime "com.android.support:support-core-utils:${supportLibraryVersions}"
-    testRuntime "com.android.support:support-fragment:${supportLibraryVersions}"
-    testRuntime "com.android.support:support-media-compat:${supportLibraryVersions}"
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly "com.android.support:support-v4:${supportLibraryVersions}"
+    testRuntimeOnly "com.android.support:support-compat:${supportLibraryVersions}"
+    testRuntimeOnly "com.android.support:support-core-ui:${supportLibraryVersions}"
+    testRuntimeOnly "com.android.support:support-core-utils:${supportLibraryVersions}"
+    testRuntimeOnly "com.android.support:support-fragment:${supportLibraryVersions}"
+    testRuntimeOnly "com.android.support:support-media-compat:${supportLibraryVersions}"
 }
 
 // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin

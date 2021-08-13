@@ -28,7 +28,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.2.0")
 
     // Testing dependencies
-    testImplementation project(path: ':testapp', configuration: 'default')
+    testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
     testImplementation "junit:junit:${junitVersion}"
     testImplementation("androidx.test:core:$axtVersion")
