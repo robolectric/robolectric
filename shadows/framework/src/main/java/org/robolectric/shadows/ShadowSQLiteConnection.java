@@ -51,6 +51,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
+import org.robolectric.util.PerfStatsCollector;
 
 @Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
@@ -736,13 +737,19 @@ static class Connections {
       final SQLiteConnection connection = getConnection(connectionPtr);
       final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-      return execute("execute for changed row count", new Callable<Integer>() {
-        @Override
-        public Integer call() throws Exception {
-          statement.stepThrough();
-          return connection.getChanges();
-        }
-      });
+        return execute(
+            "execute for changed row count",
+            new Callable<Integer>() {
+              @Override
+              public Integer call() throws Exception {
+                if (statement.step()) {
+                  throw new android.database.SQLException(
+                      "Queries can be performed using SQLiteDatabase query or rawQuery methods"
+                          + " only.");
+                }
+                return connection.getChanges();
+              }
+            });
     }
   }
 
@@ -814,7 +821,8 @@ static class Connections {
    */
   private <T> T execute(final String comment, final Callable<T> work) {
     synchronized (lock) {
-      return getFuture(comment, dbExecutor.submit(work));
+        return PerfStatsCollector.getInstance()
+            .measure("sqlite", () -> getFuture(comment, dbExecutor.submit(work)));
     }
   }
 
