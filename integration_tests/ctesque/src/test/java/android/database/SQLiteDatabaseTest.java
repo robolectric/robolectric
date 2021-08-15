@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThrows;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Ascii;
@@ -126,5 +127,13 @@ public class SQLiteDatabaseTest {
       "test", Character.toString('\\'),
     };
     assertThat(database.delete("table_name", select, selectArgs)).isEqualTo(1);
+  }
+
+  @Test
+  public void query_using_execSQL_throwsException() {
+    SQLiteException e = assertThrows(SQLiteException.class, () -> database.execSQL("select 1"));
+    assertThat(e)
+        .hasMessageThat()
+        .contains("Queries can be performed using SQLiteDatabase query or rawQuery methods only.");
   }
 }
