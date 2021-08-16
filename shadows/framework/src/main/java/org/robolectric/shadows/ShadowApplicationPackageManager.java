@@ -30,6 +30,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -1912,6 +1913,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         (PersistableBundle) launcherExtras,
         /* dialogMessage= */ null,
         dialogInfo);
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean isAutoRevokeWhitelisted() {
+    return whitelisted;
   }
 
   /**

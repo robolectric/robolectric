@@ -90,6 +90,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -4005,6 +4006,15 @@ public class ShadowPackageManagerTest {
   public void getText_stringNotAdded_originalStringDoesNotExists_returnsNull() {
     assertThat(packageManager.getText(context.getPackageName(), 1, context.getApplicationInfo()))
         .isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void setAutoRevokeWhitelisted() {
+    assertThat(packageManager.isAutoRevokeWhitelisted()).isFalse();
+
+    shadowOf(packageManager).setAutoRevokeWhitelisted(true);
+    assertThat(packageManager.isAutoRevokeWhitelisted()).isTrue();
   }
 
   public String[] setPackagesSuspended(
