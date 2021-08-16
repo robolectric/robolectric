@@ -10,6 +10,7 @@ import android.database.CursorWindow;
 import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
 import com.almworks.sqlite4java.SQLiteStatement;
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -137,6 +138,8 @@ public class ShadowCursorWindow {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
+    // Real Android will crash in native code if putString is called with a null value.
+    Preconditions.checkNotNull(value);
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_BLOB), row, column);
   }
 
@@ -147,6 +150,8 @@ public class ShadowCursorWindow {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
+    // Real Android will crash in native code if putString is called with a null value.
+    Preconditions.checkNotNull(value);
     return WINDOW_DATA.get(windowPtr).putValue(new Value(value, Cursor.FIELD_TYPE_STRING), row, column);
   }
 
