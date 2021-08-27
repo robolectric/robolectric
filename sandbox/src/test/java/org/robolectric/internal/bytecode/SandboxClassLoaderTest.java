@@ -413,6 +413,7 @@ public class SandboxClassLoaderTest {
   }
 
   @Test
+  @SuppressWarnings("CheckReturnValue")
   public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
     Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
     Object instance = theClass.getDeclaredConstructor().newInstance();

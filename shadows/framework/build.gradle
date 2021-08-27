@@ -16,6 +16,7 @@ configurations {
 }
 
 def sqlite4javaVersion = '1.0.392'
+def errorproneVersion = '2.9.0'
 
 task copySqliteNatives(type: Copy) {
     from project.configurations.sqlite4java {
@@ -49,6 +50,7 @@ dependencies {
     api project(":utils:reflector")
     api "androidx.test:monitor:$axtVersion@aar"
 
+    implementation "com.google.errorprone:error_prone_annotations:$errorproneVersion"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     api "com.almworks.sqlite4java:sqlite4java:$sqlite4javaVersion"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
