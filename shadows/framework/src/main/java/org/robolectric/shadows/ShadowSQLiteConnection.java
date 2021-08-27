@@ -74,16 +74,38 @@ public class ShadowSQLiteConnection {
 
   /**
    * Sets the default sync mode for SQLite databases. Robolectric uses "OFF" by default in order to
-   * improve SQLite performance. The Android default is "FULL".
+   * improve SQLite performance. The Android default is "FULL" in order to be more resilient to
+   * process crashes. However, this is not a requirement for Robolectric processes, where all
+   * database files are temporary and get deleted after each test.
+   *
+   * <p>If your test expects SQLite files being synced to disk, such as having multiple processes
+   * interact with the database, or deleting SQLite files while connections are open and having this
+   * reflected in the open connection, use "FULL" mode.
    */
   public static void setDefaultSyncMode(String value) {
     SystemProperties.set("debug.sqlite.syncmode", value);
   }
 
   /**
+   * Sets the default sync mode for SQLite databases when SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
+   * is used. Robolectric uses "OFF" by default in order to improve SQLite performance. The Android
+   * default is "FULL" for SDKs < 28 and "NORMAL" for SDKs >= 28.
+   *
+   * <p>If your test expects SQLite files being synced to disk, such as having multiple processes
+   * interact with the database, or deleting SQLite files while connections are open and having this
+   * reflected in the open connection, use "FULL" mode.
+   */
+  public static void setDefaultWALSyncMode(String value) {
+    SystemProperties.set("debug.sqlite.wal.syncmode", value);
+  }
+
+  /**
    * Sets the default journal mode for SQLite databases. Robolectric uses "MEMORY" by default in
    * order to improve SQLite performance. The Android default is <code>PERSIST</code> in SDKs <= 25
    * and <code>TRUNCATE</code> in SDKs > 25.
+   *
+   * <p>Similarly to {@link setDefaultSyncMode}, if your test expects SQLite rollback journal to be
+   * synced to disk, use <code>PERSIST</code> or <code>TRUNCATE</code>.
    */
   public static void setDefaultJournalMode(String value) {
     SystemProperties.set("debug.sqlite.journalmode", value);

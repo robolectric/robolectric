@@ -106,7 +106,10 @@ public class ShadowSystemProperties {
     buildProperties.setProperty("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
     buildProperties.setProperty("ro.product.cpu.abilist64", "armeabi-v7a,armeabi");
 
+    // Update SQLite sync mode and journal mode defaults for faster SQLite operations due to less
+    // file I/O.
     buildProperties.setProperty("debug.sqlite.syncmode", "OFF");
+    buildProperties.setProperty("debug.sqlite.wal.syncmode", "OFF");
     buildProperties.setProperty("debug.sqlite.journalmode", "MEMORY");
   }
 
