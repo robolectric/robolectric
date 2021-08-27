@@ -35,8 +35,13 @@ android {
     }
 
     sourceSets {
-        androidTest.resources.srcDirs += 'src/test/resources'
-        androidTest.java.srcDirs += 'src/test/java'
+        String sharedTestDir = 'src/sharedTest/'
+        String sharedTestSourceDir = sharedTestDir + 'java'
+        String sharedTestResourceDir = sharedTestDir + 'resources'
+        test.resources.srcDirs += sharedTestResourceDir
+        test.java.srcDirs += sharedTestSourceDir
+        androidTest.resources.srcDirs += sharedTestResourceDir
+        androidTest.java.srcDirs += sharedTestSourceDir
     }
 }
 
