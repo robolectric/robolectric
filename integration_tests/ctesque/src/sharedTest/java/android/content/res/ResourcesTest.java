@@ -452,7 +452,9 @@ public class ResourcesTest {
     float density = resources.getDisplayMetrics().density;
     NinePatchDrawable ninePatchDrawable =
         (NinePatchDrawable) resources.getDrawable(R.drawable.nine_patch_drawable);
-    assertThat((float) ninePatchDrawable.getIntrinsicWidth()).isEqualTo(98.0f * density);
+    // Use Math.round to convert calculated float width to int,
+    // see NinePatchDrawable#scaleFromDensity.
+    assertThat(ninePatchDrawable.getIntrinsicWidth()).isEqualTo(Math.round(98.0f * density));
   }
 
   @Test
