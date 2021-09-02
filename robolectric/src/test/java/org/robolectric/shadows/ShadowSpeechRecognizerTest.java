@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 import androidx.test.core.app.ApplicationProvider;
@@ -121,6 +122,19 @@ public class ShadowSpeechRecognizerTest {
     shadowOf(getMainLooper()).idle();
     assertThat(ShadowSpeechRecognizer.getLatestSpeechRecognizer())
         .isSameInstanceAs(newSpeechRecognizer);
+  }
+
+  @Test
+  public void getLastRecognizerIntent() {
+    Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+    intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, "com.android.test.package");
+    intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-US");
+    SpeechRecognizer newSpeechRecognizer =
+        SpeechRecognizer.createSpeechRecognizer(ApplicationProvider.getApplicationContext());
+    newSpeechRecognizer.setRecognitionListener(listener);
+    newSpeechRecognizer.startListening(intent);
+    shadowOf(getMainLooper()).idle();
+    assertThat(shadowOf(newSpeechRecognizer).getLastRecognizerIntent()).isEqualTo(intent);
   }
 
   private void startListening() {
