@@ -51,13 +51,20 @@ public class ActivityController<T extends Activity>
 
   private _Activity_ _component_;
 
+  public static <T extends Activity> ActivityController<T> of(
+      T activity, Intent intent, @Nullable Bundle activityOptions) {
+    return new ActivityController<>(activity, intent)
+        .attach(activityOptions, /* lastNonConfigurationInstances= */ null);
+  }
+
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
     return new ActivityController<>(activity, intent)
-        .attach(/*lastNonConfigurationInstances=*/ null);
+        .attach(/* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<>(activity, null).attach(/*lastNonConfigurationInstances=*/ null);
+    return new ActivityController<>(activity, null)
+        .attach(/* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
   }
 
   private ActivityController(T activity, Intent intent) {
@@ -67,6 +74,7 @@ public class ActivityController<T extends Activity>
   }
 
   private ActivityController<T> attach(
+      @Nullable Bundle activityOptions,
       @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     if (attached) {
@@ -84,7 +92,7 @@ public class ActivityController<T extends Activity>
             PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
             0);
     ShadowActivity shadowActivity = Shadow.extract(component);
-    shadowActivity.callAttach(getIntent(), lastNonConfigurationInstances);
+    shadowActivity.callAttach(getIntent(), activityOptions, lastNonConfigurationInstances);
     shadowActivity.attachController(this);
     attached = true;
     return this;
@@ -381,7 +389,7 @@ public class ActivityController<T extends Activity>
             // mLastNonConfigurationInstances directly below. This field must be set before
             // attach. Since current implementation sets it after attach(), initialization is not
             // done correctly. For instance, fragment marked as retained is not retained.
-            attach(/*lastNonConfigurationInstances=*/ null);
+            attach(/* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
 
             if (theme != 0) {
               recreatedActivity.setTheme(theme);
@@ -469,7 +477,7 @@ public class ActivityController<T extends Activity>
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
     _component_ = reflector(_Activity_.class, component);
     attached = false;
-    attach(lastNonConfigurationInstances);
+    attach(/* activityOptions= */ null, lastNonConfigurationInstances);
     create(outState);
     start();
     restoreInstanceState(outState);
