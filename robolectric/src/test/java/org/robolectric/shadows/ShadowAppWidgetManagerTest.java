@@ -210,6 +210,45 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
+  public void removeInstalledProviders_returnsWidgetList() {
+    AppWidgetProviderInfo info1 = new AppWidgetProviderInfo();
+    info1.label = "abc";
+    AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
+    info2.label = "def";
+    shadowAppWidgetManager.addInstalledProvider(info1);
+    shadowAppWidgetManager.addInstalledProvider(info2);
+    List<AppWidgetProviderInfo> installedProviders = appWidgetManager.getInstalledProviders();
+    assertEquals(2, installedProviders.size());
+    assertEquals(info1, installedProviders.get(0));
+    assertEquals(info2, installedProviders.get(1));
+    assertTrue(shadowAppWidgetManager.removeInstalledProvider(info1));
+    installedProviders = appWidgetManager.getInstalledProviders();
+    assertEquals(1, installedProviders.size());
+    assertEquals(info2, installedProviders.get(0));
+  }
+
+  @Test
+  public void tryRemoveNotInstalledProviders_noChange() {
+    AppWidgetProviderInfo info1 = new AppWidgetProviderInfo();
+    info1.label = "abc";
+    AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
+    info2.label = "def";
+    AppWidgetProviderInfo info3 = new AppWidgetProviderInfo();
+    info2.label = "efa";
+    shadowAppWidgetManager.addInstalledProvider(info1);
+    shadowAppWidgetManager.addInstalledProvider(info2);
+    List<AppWidgetProviderInfo> installedProviders = appWidgetManager.getInstalledProviders();
+    assertEquals(2, installedProviders.size());
+    assertEquals(info1, installedProviders.get(0));
+    assertEquals(info2, installedProviders.get(1));
+    assertFalse(shadowAppWidgetManager.removeInstalledProvider(info3));
+    installedProviders = appWidgetManager.getInstalledProviders();
+    assertEquals(2, installedProviders.size());
+    assertEquals(info1, installedProviders.get(0));
+    assertEquals(info2, installedProviders.get(1));
+  }
+
+  @Test
   @Config(minSdk = L)
   public void getInstalledProvidersForProfile_returnsWidgetList() {
     UserHandle userHandle = UserHandle.CURRENT;
