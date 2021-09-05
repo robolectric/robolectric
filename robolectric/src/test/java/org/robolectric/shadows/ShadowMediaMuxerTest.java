@@ -7,11 +7,13 @@ import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.UUID;
+import org.bouncycastle.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +24,7 @@ import org.robolectric.util.TempDirectory;
 /** Tests for {@link ShadowMediaMuxer}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowMediaMuxerTest {
-
+  private static final int INPUT_SIZE = 512;
   private TempDirectory tempDirectory;
 
   @Before
@@ -37,10 +39,31 @@ public final class ShadowMediaMuxerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void basicMuxingFlow() throws IOException {
-    int inputSize = 512;
-    String tempFilePath = tempDirectory.create("dir")
-        .resolve(UUID.randomUUID().toString()).toString();
+  public void basicMuxingFlow_sameZeroOffset() throws IOException {
+    basicMuxingFlow(0, 0, INPUT_SIZE);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void basicMuxingFlow_sameNonZeroOffset() throws IOException {
+    basicMuxingFlow(10, 10, INPUT_SIZE);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void basicMuxingFlow_nonSameButSmallerOffset() throws IOException {
+    basicMuxingFlow(0, 10, INPUT_SIZE);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void basicMuxingFlow_nonSameButLargerOffset() throws IOException {
+    basicMuxingFlow(10, 0, INPUT_SIZE);
+  }
+
+  private void basicMuxingFlow(int bufInfoOffset, int bufOffset, int inputSize) throws IOException {
+    String tempFilePath =
+        tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
     MediaMuxer muxer = new MediaMuxer(tempFilePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
 
     MediaFormat format = new MediaFormat();
@@ -52,23 +75,27 @@ public final class ShadowMediaMuxerTest {
     byte[] inputBytes = new byte[inputSize];
     new Random().nextBytes(inputBytes);
     ByteBuffer inputBuffer = ByteBuffer.wrap(inputBytes);
+    inputBuffer.position(bufOffset);
     MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-    bufferInfo.set(0, inputSize, 0, 0);
+    int outputSize = inputSize - bufInfoOffset;
+    bufferInfo.set(bufInfoOffset, outputSize, 0, 0);
 
     muxer.writeSampleData(trackIndex, inputBuffer, bufferInfo);
     muxer.stop();
 
     // Read in what was muxed.
-    byte[] outputBytes = new byte[inputSize];
+    byte[] outputBytes = new byte[outputSize];
     FileInputStream tempFile = new FileInputStream(tempFilePath);
 
     int offset = 0;
     int bytesRead = 0;
-    while (inputSize - offset > 0
-        && (bytesRead = tempFile.read(outputBytes, offset, inputSize - offset)) != -1) {
+    while (outputSize - offset > 0
+        && (bytesRead = tempFile.read(outputBytes, offset, outputSize - offset)) != -1) {
       offset += bytesRead;
     }
 
-    assertThat(outputBytes).isEqualTo(inputBytes);
+    assertThat(outputBytes)
+        .isEqualTo(Arrays.copyOfRange(inputBytes, bufInfoOffset, inputBytes.length));
+    new File(tempFilePath).deleteOnExit();
   }
 }
