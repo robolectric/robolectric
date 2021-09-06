@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -303,7 +304,12 @@ public final class ParameterizedRobolectricTestRunner extends Suite {
   @SuppressWarnings("unchecked")
   private static List<Object> getParametersList(TestClass testClass, ClassLoader classLoader)
       throws Throwable {
-    return (List<Object>) getParametersMethod(testClass, classLoader).invokeExplosively(null);
+    Object parameters = getParametersMethod(testClass, classLoader).invokeExplosively(null);
+    if (parameters != null && parameters.getClass().isArray()) {
+      return Arrays.asList((Object[]) parameters);
+    } else {
+      return (List<Object>) parameters;
+    }
   }
 
   private static FrameworkMethod getParametersMethod(TestClass testClass, ClassLoader classLoader)
