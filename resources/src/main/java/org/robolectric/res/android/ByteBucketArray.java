@@ -1,10 +1,12 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ByteBucketArray.h
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/libs/androidfw/include/androidfw/ByteBucketArray.h
 /**
- * Stores a sparsely populated array. Has a fixed size of 256
- * (number of entries that a byte can represent).
+ * Stores a sparsely populated array. Has a fixed size of 256 (number of entries that a byte can
+ * represent).
  */
+@SuppressWarnings("AndroidJdkLibsChecker")
 public abstract class ByteBucketArray<T> {
   public ByteBucketArray(T mDefault) {
     this.mDefault = mDefault;
@@ -23,8 +25,8 @@ public abstract class ByteBucketArray<T> {
       return mDefault;
     }
 
-//    byte bucketIndex = static_cast<byte>(index) >> 4;
-    byte bucketIndex = (byte) (index >> 4);
+    //    byte bucketIndex = static_cast<byte>(index) >> 4;
+    byte bucketIndex = (byte) (Byte.toUnsignedInt((byte) index) >> 4);
     T[] bucket = (T[]) mBuckets[bucketIndex];
     if (bucket == null) {
       return mDefault;
@@ -34,11 +36,11 @@ public abstract class ByteBucketArray<T> {
   }
 
   T editItemAt(int index) {
-//    ALOG_ASSERT(index < size(), "ByteBucketArray.getOrCreate(index=%u) with size=%u",
-//        (uint32_t) index, (uint32_t) size());
+    //    ALOG_ASSERT(index < size(), "ByteBucketArray.getOrCreate(index=%u) with size=%u",
+    //        (uint32_t) index, (uint32_t) size());
 
-//    uint8_t bucketIndex = static_cast<uint8_t>(index) >> 4;
-    byte bucketIndex = (byte) (((byte) index) >> 4);
+    //    uint8_t bucketIndex = static_cast<uint8_t>(index) >> 4;
+    byte bucketIndex = (byte) (Byte.toUnsignedInt((byte) index) >> 4);
     Object[] bucket = mBuckets[bucketIndex];
     if (bucket == null) {
       bucket = mBuckets[bucketIndex] = new Object[BUCKET_SIZE];
@@ -59,8 +61,8 @@ public abstract class ByteBucketArray<T> {
       return false;
     }
 
-//    editItemAt(index) = value;
-    byte bucketIndex = (byte) (((byte) index) >> 4);
+    //    editItemAt(index) = value;
+    byte bucketIndex = (byte) (Byte.toUnsignedInt((byte) index) >> 4);
     Object[] bucket = mBuckets[bucketIndex];
     if (bucket == null) {
       bucket = mBuckets[bucketIndex] = new Object[BUCKET_SIZE];
