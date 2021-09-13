@@ -33,14 +33,15 @@ public class ShadowSQLiteConnectionTest {
   private File databasePath;
   private long ptr;
   private SQLiteConnection conn;
-  private ShadowSQLiteConnection.Connections CONNECTIONS;
-  
+  private ShadowSQLiteConnection.Connections connections;
+
   @Before
   public void setUp() throws Exception {
     database = createDatabase("database.db");
-    SQLiteStatement createStatement = database.compileStatement(
-        "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR ,"
-            + " `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
+    SQLiteStatement createStatement =
+        database.compileStatement(
+            "CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR ,"
+                + " `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ;");
     createStatement.execute();
     conn = getSQLiteConnection();
   }
@@ -55,18 +56,21 @@ public class ShadowSQLiteConnectionTest {
     assertThat(convertSQLWithLocalizedUnicodeCollator("select * from `routine`"))
         .isEqualTo("select * from `routine`");
 
-    assertThat(convertSQLWithLocalizedUnicodeCollator(
-        "select * from `routine` order by name \n\r \f collate\f\n\tunicode"
-        + "\n, id \n\n\t collate\n\t \n\flocalized"))
-        .isEqualTo("select * from `routine` order by name COLLATE NOCASE\n"
-            + ", id COLLATE NOCASE");
+    assertThat(
+            convertSQLWithLocalizedUnicodeCollator(
+                "select * from `routine` order by name \n\r \f collate\f\n\tunicode"
+                    + "\n, id \n\n\t collate\n\t \n\flocalized"))
+        .isEqualTo(
+            "select * from `routine` order by name COLLATE NOCASE\n" + ", id COLLATE NOCASE");
 
-    assertThat(convertSQLWithLocalizedUnicodeCollator("select * from `routine` order by name"
-                                                          + " collate localized"))
+    assertThat(
+            convertSQLWithLocalizedUnicodeCollator(
+                "select * from `routine` order by name" + " collate localized"))
         .isEqualTo("select * from `routine` order by name COLLATE NOCASE");
 
-    assertThat(convertSQLWithLocalizedUnicodeCollator("select * from `routine` order by name"
-                                                          + " collate unicode"))
+    assertThat(
+            convertSQLWithLocalizedUnicodeCollator(
+                "select * from `routine` order by name" + " collate unicode"))
         .isEqualTo("select * from `routine` order by name COLLATE NOCASE");
   }
 
@@ -102,13 +106,13 @@ public class ShadowSQLiteConnectionTest {
     assertThat(conn).isNotNull();
     assertWithMessage("open").that(conn.isOpen()).isTrue();
   }
-    
+
   @Test
   public void nativeClose_closesConnection() {
     ShadowSQLiteConnection.nativeClose(ptr);
     assertWithMessage("open").that(conn.isOpen()).isFalse();
   }
-    
+
   @Test
   public void reset_closesConnection() {
     ShadowSQLiteConnection.reset();
@@ -118,18 +122,18 @@ public class ShadowSQLiteConnectionTest {
   @Test
   public void reset_clearsConnectionCache() {
     final Map<Long, SQLiteConnection> connectionsMap =
-        ReflectionHelpers.getField(CONNECTIONS, "connectionsMap");
+        ReflectionHelpers.getField(connections, "connectionsMap");
 
     assertWithMessage("connections before").that(connectionsMap).isNotEmpty();
     ShadowSQLiteConnection.reset();
 
     assertWithMessage("connections after").that(connectionsMap).isEmpty();
   }
-  
+
   @Test
   public void reset_clearsStatementCache() {
     final Map<Long, SQLiteStatement> statementsMap =
-        ReflectionHelpers.getField(CONNECTIONS, "statementsMap");
+        ReflectionHelpers.getField(connections, "statementsMap");
 
     assertWithMessage("statements before").that(statementsMap).isNotEmpty();
     ShadowSQLiteConnection.reset();
@@ -198,7 +202,7 @@ public class ShadowSQLiteConnectionTest {
         ShadowSQLiteConnection.nativeOpen(
                 databasePath.getPath(), 0, "test connection", false, false)
             .longValue();
-    CONNECTIONS = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
-    return CONNECTIONS.getConnection(ptr);
+    connections = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
+    return connections.getConnection(ptr);
   }
 }
