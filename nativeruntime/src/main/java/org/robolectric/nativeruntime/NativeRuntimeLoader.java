@@ -6,8 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.robolectric.util.Logger;
 
-/** Loads the Roboelctric native runtime. */
+/** Loads the Robolectric native runtime. */
 public final class NativeRuntimeLoader {
   private static final AtomicBoolean loaded = new AtomicBoolean(false);
 
@@ -20,6 +21,7 @@ public final class NativeRuntimeLoader {
   static void ensureLoaded() {
     if (loaded.compareAndSet(false, true)) {
       try {
+        Logger.info("Loading the native runtime");
         File tmpLibraryFile =
             java.nio.file.Files.createTempFile("", "robolectric-nativeruntime.so").toFile();
         tmpLibraryFile.deleteOnExit();
