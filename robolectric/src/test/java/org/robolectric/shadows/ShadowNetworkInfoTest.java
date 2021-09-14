@@ -18,4 +18,11 @@ public class ShadowNetworkInfoTest {
     shadowOf(networkInfo).setDetailedState(NetworkInfo.DetailedState.SCANNING);
     assertThat(networkInfo.getDetailedState()).isEqualTo(NetworkInfo.DetailedState.SCANNING);
   }
+
+  @Test
+  public void getExtraInfo_shouldReturnTheSetValue() {
+    NetworkInfo networkInfo = Shadow.newInstanceOf(NetworkInfo.class);
+    shadowOf(networkInfo).setExtraInfo("some_extra_info");
+    assertThat(networkInfo.getExtraInfo()).isEqualTo("some_extra_info");
+  }
 }
