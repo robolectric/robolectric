@@ -1,0 +1,10 @@
+import org.robolectric.gradle.DeployedRoboJavaModulePlugin
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
+apply plugin: DeployedRoboJavaModulePlugin
+
+dependencies {
+  api "com.google.guava:guava:27.0.1-jre"
+  compileOnly AndroidSdk.MAX_SDK.coordinates
+}

@@ -1,4 +1,4 @@
-package org.robolectric.nativeruntime.shadows;
+package org.robolectric.shadows;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

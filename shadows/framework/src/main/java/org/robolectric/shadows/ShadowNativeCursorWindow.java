@@ -1,4 +1,4 @@
-package org.robolectric.nativeruntime.shadows;
+package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -12,8 +12,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CursorWindowNatives;
 
 /** Shadow for {@link CursorWindow} that is backed by native code */
-@Implements(CursorWindow.class)
-public class ShadowCursorWindow {
+@Implements(value = CursorWindow.class, isInAndroidSdk = false)
+public class ShadowNativeCursorWindow extends ShadowCursorWindow {
 
   @Implementation
   protected static Number nativeCreate(String name, int cursorWindowSize) {

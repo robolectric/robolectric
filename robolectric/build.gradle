@@ -64,6 +64,9 @@ test {
         maxParallelForks = project.maxParallelForks as int
     if (project.hasProperty('forkEvery'))
         forkEvery = project.forkEvery as int
+
+    // Skip native SQLite tests until build system is set up.
+    exclude 'org/robolectric/plugins/SQLiteModeConfigurer*'
 }
 
 project.apply plugin: CheckApiChangesPlugin

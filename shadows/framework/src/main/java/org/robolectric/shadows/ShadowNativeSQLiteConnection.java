@@ -1,4 +1,4 @@
-package org.robolectric.nativeruntime.shadows;
+package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -16,8 +16,8 @@ import org.robolectric.nativeruntime.SQLiteConnectionNatives;
 import org.robolectric.util.PerfStatsCollector;
 
 /** Shadow for {@link SQLiteConnection} that is backed by native code */
-@Implements(value = SQLiteConnection.class, isInAndroidSdk = false)
-public class ShadowSQLiteConnection {
+@Implements(className = "android.database.sqlite.SQLiteConnection", isInAndroidSdk = false)
+public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
 
   @Implementation(maxSdk = O)
   protected static Number nativeOpen(

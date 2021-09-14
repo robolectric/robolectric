@@ -43,6 +43,7 @@ jar {
 
 dependencies {
     api project(":annotations")
+    api project(":nativeruntime")
     api project(":resources")
     api project(":pluginapi")
     api project(":shadowapi")

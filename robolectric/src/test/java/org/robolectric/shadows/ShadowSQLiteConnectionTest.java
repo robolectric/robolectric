@@ -4,7 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
-import static org.robolectric.shadows.ShadowSQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
+import static org.robolectric.shadows.ShadowLegacySQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -33,7 +33,7 @@ public class ShadowSQLiteConnectionTest {
   private File databasePath;
   private long ptr;
   private SQLiteConnection conn;
-  private ShadowSQLiteConnection.Connections connections;
+  private ShadowLegacySQLiteConnection.Connections connections;
 
   @Before
   public void setUp() throws Exception {
@@ -109,13 +109,13 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void nativeClose_closesConnection() {
-    ShadowSQLiteConnection.nativeClose(ptr);
+    ShadowLegacySQLiteConnection.nativeClose(ptr);
     assertWithMessage("open").that(conn.isOpen()).isFalse();
   }
 
   @Test
   public void reset_closesConnection() {
-    ShadowSQLiteConnection.reset();
+    ShadowLegacySQLiteConnection.reset();
     assertWithMessage("open").that(conn.isOpen()).isFalse();
   }
 
@@ -125,7 +125,7 @@ public class ShadowSQLiteConnectionTest {
         ReflectionHelpers.getField(connections, "connectionsMap");
 
     assertWithMessage("connections before").that(connectionsMap).isNotEmpty();
-    ShadowSQLiteConnection.reset();
+    ShadowLegacySQLiteConnection.reset();
 
     assertWithMessage("connections after").that(connectionsMap).isEmpty();
   }
@@ -136,7 +136,7 @@ public class ShadowSQLiteConnectionTest {
         ReflectionHelpers.getField(connections, "statementsMap");
 
     assertWithMessage("statements before").that(statementsMap).isNotEmpty();
-    ShadowSQLiteConnection.reset();
+    ShadowLegacySQLiteConnection.reset();
 
     assertWithMessage("statements after").that(statementsMap).isEmpty();
   }
@@ -165,7 +165,7 @@ public class ShadowSQLiteConnectionTest {
     } finally {
       Thread.interrupted();
     }
-    ShadowSQLiteConnection.reset();
+    ShadowLegacySQLiteConnection.reset();
   }
 
   @Test
@@ -184,7 +184,7 @@ public class ShadowSQLiteConnectionTest {
         database.compileStatement("insert into routine(name) values ('Hand press 1')");
     SQLiteStatement statement2 =
         database.compileStatement("insert into routine(name) values ('Hand press 2')");
-    ShadowSQLiteConnection.nativeCancel(ptr);
+    ShadowLegacySQLiteConnection.nativeCancel(ptr);
     // An attempt to execute a statement after a cancellation should be a no-op, unless the
     // statement hasn't been cancelled, in which case it will throw a SQLiteInterruptedException.
     statement1.execute();
@@ -199,10 +199,11 @@ public class ShadowSQLiteConnectionTest {
 
   private SQLiteConnection getSQLiteConnection() {
     ptr =
-        ShadowSQLiteConnection.nativeOpen(
+        ShadowLegacySQLiteConnection.nativeOpen(
                 databasePath.getPath(), 0, "test connection", false, false)
             .longValue();
-    connections = ReflectionHelpers.getStaticField(ShadowSQLiteConnection.class, "CONNECTIONS");
+    connections =
+        ReflectionHelpers.getStaticField(ShadowLegacySQLiteConnection.class, "CONNECTIONS");
     return connections.getConnection(ptr);
   }
 }
