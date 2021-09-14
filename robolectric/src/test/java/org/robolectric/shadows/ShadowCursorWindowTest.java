@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.database.CursorWindow;
 import android.database.DatabaseUtils;
@@ -44,5 +45,21 @@ public class ShadowCursorWindowTest {
     assertThat(window.getBlob(1, 3)).isEqualTo(null);
 
     assertThat(window.getBlob(2, 3)).isEqualTo(new byte[]{});
+  }
+
+  /** Real Android will crash in native code if putBlob is called with a null value. */
+  @Test
+  public void putBlobNullValueThrowsNPE() {
+    CursorWindow cursorWindow = new CursorWindow("test");
+    cursorWindow.allocRow();
+    assertThrows(NullPointerException.class, () -> cursorWindow.putBlob(null, 0, 0));
+  }
+
+  /** Real Android will crash in native code if putString is called with a null value. */
+  @Test
+  public void putStringNullValueThrowsNPE() {
+    CursorWindow cursorWindow = new CursorWindow("test");
+    cursorWindow.allocRow();
+    assertThrows(NullPointerException.class, () -> cursorWindow.putString(null, 0, 0));
   }
 }

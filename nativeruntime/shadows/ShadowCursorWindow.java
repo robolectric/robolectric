@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.database.CharArrayBuffer;
 import android.database.CursorWindow;
+import com.google.common.base.Preconditions;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -77,6 +78,8 @@ public class ShadowCursorWindow {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
+    // Real Android will crash in native code if putBlob is called with a null value.
+    Preconditions.checkNotNull(value);
     return CursorWindowNatives.nativePutBlob(windowPtr, value, row, column);
   }
 
@@ -87,6 +90,8 @@ public class ShadowCursorWindow {
 
   @Implementation(minSdk = LOLLIPOP)
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
+    // Real Android will crash in native code if putString is called with a null value.
+    Preconditions.checkNotNull(value);
     return CursorWindowNatives.nativePutString(windowPtr, value, row, column);
   }
 
