@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteOutOfMemoryException;
 import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.database.sqlite.SQLiteTableLockedException;
 import android.os.OperationCanceledException;
+import android.os.SystemProperties;
 import com.almworks.sqlite4java.SQLiteConnection;
 import com.almworks.sqlite4java.SQLiteConstants;
 import com.almworks.sqlite4java.SQLiteException;
@@ -69,6 +70,23 @@ public class ShadowSQLiteConnection {
 
   public static void setUseInMemoryDatabase(boolean value) {
     useInMemoryDatabase.set(value);
+  }
+
+  /**
+   * Sets the default sync mode for SQLite databases. Robolectric uses "OFF" by default in order to
+   * improve SQLite performance. The Android default is "FULL".
+   */
+  public static void setDefaultSyncMode(String value) {
+    SystemProperties.set("debug.sqlite.syncmode", value);
+  }
+
+  /**
+   * Sets the default journal mode for SQLite databases. Robolectric uses "MEMORY" by default in
+   * order to improve SQLite performance. The Android default is <code>PERSIST</code> in SDKs <= 25
+   * and <code>TRUNCATE</code> in SDKs > 25.
+   */
+  public static void setDefaultJournalMode(String value) {
+    SystemProperties.set("debug.sqlite.journalmode", value);
   }
 
   @Implementation(maxSdk = O)

@@ -4,7 +4,6 @@ import android.os.SystemProperties;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Properties;
 import org.robolectric.annotation.Implementation;
@@ -77,7 +76,6 @@ public class ShadowSystemProperties {
     if (buildProperties == null) {
       // load the prop from classpath
       ClassLoader cl = SystemProperties.class.getClassLoader();
-      URL urlFromCl = cl.getResource("build.prop");
       try (InputStream is = cl.getResourceAsStream("build.prop")) {
         Preconditions.checkNotNull(is, "could not find build.prop");
         buildProperties = new Properties();
@@ -107,6 +105,9 @@ public class ShadowSystemProperties {
     buildProperties.setProperty("ro.product.cpu.abilist", "armeabi-v7a");
     buildProperties.setProperty("ro.product.cpu.abilist32", "armeabi-v7a,armeabi");
     buildProperties.setProperty("ro.product.cpu.abilist64", "armeabi-v7a,armeabi");
+
+    buildProperties.setProperty("debug.sqlite.syncmode", "OFF");
+    buildProperties.setProperty("debug.sqlite.journalmode", "MEMORY");
   }
 
   @Resetter
