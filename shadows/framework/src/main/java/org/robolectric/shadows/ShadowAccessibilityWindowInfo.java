@@ -35,6 +35,8 @@ public class ShadowAccessibilityWindowInfo {
 
   private AccessibilityNodeInfo rootNode = null;
 
+  private AccessibilityNodeInfo anchorNode = null;
+
   private Rect boundsInScreen = new Rect();
 
   private int type = AccessibilityWindowInfo.TYPE_APPLICATION;
@@ -80,6 +82,7 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.boundsInScreen = new Rect(boundsInScreen);
     newShadow.parent = parent;
     newShadow.rootNode = rootNode;
+    newShadow.anchorNode = anchorNode;
     newShadow.type = type;
     newShadow.layer = layer;
     newShadow.setId(getId());
@@ -144,6 +147,10 @@ public class ShadowAccessibilityWindowInfo {
         (rootNode == null)
             ? (otherShadow.getRoot() == null)
             : rootNode.equals(otherShadow.getRoot());
+    areEqual &=
+        (anchorNode == null)
+            ? (otherShadow.getAnchor() == null)
+            : anchorNode.equals(otherShadow.getAnchor());
     areEqual &= (layer == otherShadow.getLayer());
     areEqual &= (getId() == otherShadow.getId());
     areEqual &= (title == otherShadow.getTitle());
@@ -198,6 +205,11 @@ public class ShadowAccessibilityWindowInfo {
     return (rootNode == null) ? null : AccessibilityNodeInfo.obtain(rootNode);
   }
 
+  @Implementation(minSdk = N)
+  protected AccessibilityNodeInfo getAnchor() {
+    return (anchorNode == null) ? null : AccessibilityNodeInfo.obtain(anchorNode);
+  }
+
   @Implementation
   protected boolean isActive() {
     return isActive;
@@ -245,6 +257,10 @@ public class ShadowAccessibilityWindowInfo {
 
   public void setRoot(AccessibilityNodeInfo root) {
     rootNode = root;
+  }
+
+  public void setAnchor(AccessibilityNodeInfo anchor) {
+    anchorNode = anchor;
   }
 
   public void setType(int value) {
