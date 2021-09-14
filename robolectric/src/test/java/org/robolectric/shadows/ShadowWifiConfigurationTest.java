@@ -118,6 +118,7 @@ public class ShadowWifiConfigurationTest {
     assertThat(copy.creatorUid).isEqualTo(888);
   }
 
+  @SuppressWarnings("CheckReturnValue")
   @Test
   public void toStringDoesntCrash() {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
