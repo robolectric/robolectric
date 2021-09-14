@@ -1,9 +1,11 @@
 package org.robolectric.util;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.robolectric.util.Scheduler.IdleState.CONSTANT_IDLE;
 import static org.robolectric.util.Scheduler.IdleState.PAUSED;
 import static org.robolectric.util.Scheduler.IdleState.UNPAUSED;
 
+import com.google.errorprone.annotations.InlineMe;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.PriorityQueue;
@@ -139,7 +141,7 @@ public class Scheduler {
    * @param runnable    Runnable to add.
    */
   public synchronized void post(Runnable runnable) {
-    postDelayed(runnable, 0, TimeUnit.MILLISECONDS);
+    postDelayed(runnable, 0, MILLISECONDS);
   }
 
   /**
@@ -149,7 +151,7 @@ public class Scheduler {
    * @param delayMillis Delay in millis.
    */
   public synchronized void postDelayed(Runnable runnable, long delayMillis) {
-    postDelayed(runnable, delayMillis, TimeUnit.MILLISECONDS);
+    postDelayed(runnable, delayMillis, MILLISECONDS);
   }
 
   /**
@@ -225,13 +227,16 @@ public class Scheduler {
   /**
    * Run all runnables that are scheduled to run in the next time interval.
    *
-   * @param   interval  Time interval (in millis).
-   * @return  True if a runnable was executed.
+   * @param interval Time interval (in millis).
+   * @return True if a runnable was executed.
    * @deprecated Use {@link #advanceBy(long, TimeUnit)}.
    */
+  @InlineMe(
+      replacement = "this.advanceBy(interval, MILLISECONDS)",
+      staticImports = "java.util.concurrent.TimeUnit.MILLISECONDS")
   @Deprecated
-  public synchronized boolean advanceBy(long interval) {
-    return advanceBy(interval, TimeUnit.MILLISECONDS);
+  public final synchronized boolean advanceBy(long interval) {
+    return advanceBy(interval, MILLISECONDS);
   }
 
   /**
@@ -370,7 +375,7 @@ public class Scheduler {
         advanceToLastPostedRunnable();
         break;
       case UNPAUSED:
-        advanceBy(0);
+        advanceBy(0, MILLISECONDS);
         break;
       default:
     }
