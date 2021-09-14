@@ -129,6 +129,18 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  public void canCreateAndRemoveBonds() {
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.createBond()).isFalse();
+
+    shadowOf(device).setCreatedBond(true);
+    assertThat(shadowOf(device).removeBond()).isTrue();
+    assertThat(device.createBond()).isFalse();
+    assertThat(shadowOf(device).removeBond()).isFalse();
+  }
+
+  @Test
   public void getCorrectFetchUuidsWithSdpCount() {
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(shadowOf(device).getFetchUuidsWithSdpCount()).isEqualTo(0);

@@ -191,6 +191,13 @@ public class ShadowBluetoothDevice {
   }
 
   @Implementation
+  protected boolean removeBond() {
+    boolean result = createdBond;
+    createdBond = false;
+    return result;
+  }
+
+  @Implementation
   protected boolean setPin(byte[] pin) {
     this.pin = pin;
     return true;
