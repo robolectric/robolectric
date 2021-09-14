@@ -4,6 +4,35 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
+task cmakeNativeRuntime(type:Exec) {
+  workingDir "$buildDir/cpp"
+  commandLine 'cmake', "$projectDir/cpp/"
+  doFirst {
+    mkdir "$buildDir/cpp"
+  }
+}
+
+task makeNativeRuntime(type:Exec) {
+  dependsOn cmakeNativeRuntime
+  workingDir "$buildDir/cpp"
+  commandLine 'make'
+}
+
+task copyNativeRuntime(type: Copy) {
+  dependsOn makeNativeRuntime
+  from ("$buildDir/cpp") {
+    include 'libnativeruntime.so'
+  }
+  rename { String fileName ->
+    fileName.replace("libnativeruntime", "robolectric-nativeruntime")
+  }
+  into project.file("$buildDir/resources/main/native/linux/64/")
+}
+
+jar {
+  dependsOn copyNativeRuntime
+}
+
 dependencies {
   api "com.google.guava:guava:27.0.1-jre"
   compileOnly AndroidSdk.MAX_SDK.coordinates

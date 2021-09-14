@@ -13,12 +13,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+        with:
+          submodules: recursive
       - uses: actions/cache@v2
         with:
           path: |
             ~/.gradle
             ~/.m2
+            ~/sqlite
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -41,12 +43,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+        with:
+          submodules: recursive
       - uses: actions/cache@v2
         with:
           path: |
             ~/.gradle
             ~/.m2
+            ~/sqlite
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -55,7 +59,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11.0.8
-
       - name: Run tests
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test --info --stacktrace --continue \
