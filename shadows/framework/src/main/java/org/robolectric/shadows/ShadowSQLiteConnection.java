@@ -53,7 +53,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.util.SQLiteLibraryLoader;
 import org.robolectric.util.PerfStatsCollector;
 
-@Implements(value = android.database.sqlite.SQLiteConnection.class, isInAndroidSdk = false)
+/** Shadow for {@link android.database.sqlite.SQLiteConnection} that is backed by sqlite4java. */
+@Implements(className = "android.database.sqlite.SQLiteConnection", isInAndroidSdk = false)
 public class ShadowSQLiteConnection {
 
   private static final String IN_MEMORY_PATH = ":memory:";
