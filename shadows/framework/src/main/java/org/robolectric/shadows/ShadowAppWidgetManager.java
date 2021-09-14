@@ -155,6 +155,10 @@ public class ShadowAppWidgetManager {
     installedProviders.add(appWidgetProviderInfo);
   }
 
+  public boolean removeInstalledProvider(AppWidgetProviderInfo appWidgetProviderInfo) {
+    return installedProviders.remove(appWidgetProviderInfo);
+  }
+
   public void addInstalledProvidersForProfile(
       UserHandle userHandle, AppWidgetProviderInfo appWidgetProviderInfo) {
     installedProvidersForProfile.put(userHandle, appWidgetProviderInfo);
