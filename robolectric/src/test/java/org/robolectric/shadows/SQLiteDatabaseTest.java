@@ -991,6 +991,7 @@ public class SQLiteDatabaseTest {
   @Test
   public void sqliteGlobal_defaults() {
     assertThat(SQLiteGlobal.getDefaultSyncMode()).isEqualTo("OFF");
+    assertThat(SQLiteGlobal.getWALSyncMode()).isEqualTo("OFF");
     assertThat(SQLiteGlobal.getDefaultJournalMode()).isEqualTo("MEMORY");
   }
 
