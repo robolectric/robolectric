@@ -174,6 +174,7 @@ public class ShadowPackageManager {
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
   static boolean canRequestPackageInstalls = false;
   static boolean safeMode = false;
+  static boolean whitelisted = false;
   boolean shouldShowActivityChooser = false;
   static final Map<String, Integer> distractingPackageRestrictions = new ConcurrentHashMap<>();
 
@@ -1655,6 +1656,11 @@ public class ShadowPackageManager {
     stringResources.get(packageName).put(resId, text);
   }
 
+  /** Set value to be returned by {@link PackageManager#isAutoRevokeWhitelisted}. */
+  public void setAutoRevokeWhitelisted(boolean whitelisted) {
+    ShadowPackageManager.whitelisted = whitelisted;
+  }
+
   @Resetter
   public static void reset() {
     synchronized (lock) {
@@ -1697,6 +1703,7 @@ public class ShadowPackageManager {
       receiverFilters.clear();
       packageSettings.clear();
       safeMode = false;
+      whitelisted = false;
     }
   }
 
