@@ -737,13 +737,19 @@ static class Connections {
       final SQLiteConnection connection = getConnection(connectionPtr);
       final SQLiteStatement statement = getStatement(connectionPtr, statementPtr);
 
-      return execute("execute for changed row count", new Callable<Integer>() {
-        @Override
-        public Integer call() throws Exception {
-          statement.stepThrough();
-          return connection.getChanges();
-        }
-      });
+        return execute(
+            "execute for changed row count",
+            new Callable<Integer>() {
+              @Override
+              public Integer call() throws Exception {
+                if (statement.step()) {
+                  throw new android.database.sqlite.SQLiteException(
+                      "Queries can be performed using SQLiteDatabase query or rawQuery methods"
+                          + " only.");
+                }
+                return connection.getChanges();
+              }
+            });
     }
   }
 
@@ -831,6 +837,8 @@ static class Connections {
               getSqliteException("Cannot " + comment, ((SQLiteException) t).getBaseErrorCode());
         sqlException.initCause(e);
         throw sqlException;
+        } else if (t instanceof android.database.sqlite.SQLiteException) {
+          throw (android.database.sqlite.SQLiteException) t;
       } else {
         throw new RuntimeException(e);
       }
