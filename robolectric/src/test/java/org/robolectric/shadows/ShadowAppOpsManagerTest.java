@@ -226,6 +226,19 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void startStopWatchingModeFlags() {
+    OnOpChangedListener callback = mock(OnOpChangedListener.class);
+    appOps.startWatchingMode(OPSTR_FINE_LOCATION, PACKAGE_NAME1, 0, callback);
+    appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ERRORED);
+    verify(callback).onOpChanged(OPSTR_FINE_LOCATION, PACKAGE_NAME1);
+
+    appOps.stopWatchingMode(callback);
+    appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ALLOWED);
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
   public void noteOp() {
     assertThat(appOps.noteOp(OP_GPS, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
     // Use same op more than once
