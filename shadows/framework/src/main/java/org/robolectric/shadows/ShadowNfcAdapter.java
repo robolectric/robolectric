@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -15,8 +17,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
+/** Shadow implementation of {@link NfcAdapter}. */
 @Implements(NfcAdapter.class)
 public class ShadowNfcAdapter {
   @RealObject NfcAdapter nfcAdapter;
@@ -38,7 +43,7 @@ public class ShadowNfcAdapter {
     if (!hardwareExists) {
       return null;
     }
-    return ReflectionHelpers.callConstructor(NfcAdapter.class);
+    return reflector(NfcAdapterReflector.class).getNfcAdapter(context);
   }
 
   @Implementation
@@ -141,8 +146,20 @@ public class ShadowNfcAdapter {
     return enabled;
   }
 
+  @Implementation
+  protected boolean enable() {
+    enabled = true;
+    return true;
+  }
+
+  @Implementation
+  protected boolean disable() {
+    enabled = false;
+    return true;
+  }
+
   /**
-   * Modifies behavior of {@link #getNfcAdapter(Context)} to return {@code null}, to simulate
+   * Modifies the behavior of {@link #getNfcAdapter(Context)} to return {@code null}, to simulate
    * absence of NFC hardware.
    */
   public static void setNfcHardwareExists(boolean hardwareExists) {
@@ -193,5 +210,12 @@ public class ShadowNfcAdapter {
   @Resetter
   public static synchronized void reset() {
     hardwareExists = true;
+  }
+
+  @ForType(NfcAdapter.class)
+  interface NfcAdapterReflector {
+    @Direct
+    @Static
+    NfcAdapter getNfcAdapter(Context context);
   }
 }

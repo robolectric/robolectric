@@ -70,6 +70,11 @@ public class ShadowActivityThread {
               return null;
             } else if (method.getName().equals("getPackageInstaller")) {
               return null;
+            } else if (method.getName().equals("hasSystemFeature")) {
+              String featureName = (String) args[0];
+              return RuntimeEnvironment.getApplication()
+                  .getPackageManager()
+                  .hasSystemFeature(featureName);
             }
             throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
           }
