@@ -244,7 +244,7 @@ public class ShadowCursorWindow {
 
     public Data(String name, int cursorWindowSize) {
       this.name = name;
-      this.rows = new ArrayList<Row>(cursorWindowSize);
+      this.rows = new ArrayList<Row>();
     }
 
     public Value value(int rowN, int colN) {
