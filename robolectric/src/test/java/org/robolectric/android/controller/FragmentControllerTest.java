@@ -1,8 +1,6 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
@@ -97,7 +95,7 @@ public class FragmentControllerTest {
 
   @Test
   public void isPaused() {
-    final LoginFragment fragment = spy(new LoginFragment());
+    final LoginFragment fragment = new LoginFragment();
     FragmentController.of(fragment, LoginActivity.class).create().start().resume().pause();
 
     assertThat(fragment.getView()).isNotNull();
@@ -105,13 +103,13 @@ public class FragmentControllerTest {
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isFalse();
 
-    verify(fragment).onResume();
-    verify(fragment).onPause();
+    assertThat(fragment.resumeCalled).isTrue();
+    assertThat(fragment.pauseCalled).isTrue();
   }
 
   @Test
   public void isStopped() {
-    final LoginFragment fragment = spy(new LoginFragment());
+    final LoginFragment fragment = new LoginFragment();
     FragmentController.of(fragment, LoginActivity.class).create().start().resume().pause().stop();
 
     assertThat(fragment.getView()).isNotNull();
@@ -119,10 +117,10 @@ public class FragmentControllerTest {
     assertThat(fragment.isAdded()).isTrue();
     assertThat(fragment.isResumed()).isFalse();
 
-    verify(fragment).onStart();
-    verify(fragment).onResume();
-    verify(fragment).onPause();
-    verify(fragment).onStop();
+    assertThat(fragment.startCalled).isTrue();
+    assertThat(fragment.resumeCalled).isTrue();
+    assertThat(fragment.pauseCalled).isTrue();
+    assertThat(fragment.stopCalled).isTrue();
   }
 
   @Test
@@ -167,9 +165,39 @@ public class FragmentControllerTest {
   }
 
   public static class LoginFragment extends Fragment {
+
+    boolean resumeCalled = false;
+    boolean pauseCalled = false;
+    boolean startCalled = false;
+    boolean stopCalled = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
       return inflater.inflate(R.layout.fragment_contents, container, false);
+    }
+
+    @Override
+    public void onResume() {
+      super.onResume();
+      resumeCalled = true;
+    }
+
+    @Override
+    public void onPause() {
+      super.onPause();
+      pauseCalled = true;
+    }
+
+    @Override
+    public void onStart() {
+      super.onStart();
+      startCalled = true;
+    }
+
+    @Override
+    public void onStop() {
+      super.onStop();
+      stopCalled = true;
     }
   }
 
