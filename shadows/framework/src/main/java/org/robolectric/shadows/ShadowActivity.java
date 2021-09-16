@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -298,32 +297,35 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void finish() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
+    reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected void finishAndRemoveTask() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
+    reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
-  @Implementation(minSdk = JELLY_BEAN)
+  @Implementation
   protected void finishAffinity() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
+    reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
   public void resetIsFinishing() {
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", false);
+    reflector(_Activity_.class, realActivity).setFinished(false);
   }
 
   /**
    * Returns whether {@link #finish()} was called.
    *
-   * @deprecated Use {@link Activity#isFinishing()} instead.
+   * <p>Note: this method seems redundant, but removing it will cause problems for Mockito spies of
+   * Activities that call {@link Activity#finish()} followed by {@link Activity#isFinishing()}. This
+   * is because `finish` modifies the members of {@link ShadowActivity#realActivity}, so
+   * `isFinishing` should refer to those same members.
    */
-  @Deprecated
-  public boolean isFinishing() {
+  @Implementation
+  protected boolean isFinishing() {
     return reflector(DirectActivityReflector.class, realActivity).isFinishing();
   }
 
