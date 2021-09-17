@@ -90,6 +90,11 @@ public class ShadowAccessibilityWindowInfo {
     newShadow.isAccessibilityFocused = isAccessibilityFocused;
     newShadow.isActive = isActive;
     newShadow.isFocused = isFocused;
+    if (children != null) {
+      newShadow.children = new ArrayList<>(children);
+    } else {
+      newShadow.children = null;
+    }
 
     return newInfo;
   }
