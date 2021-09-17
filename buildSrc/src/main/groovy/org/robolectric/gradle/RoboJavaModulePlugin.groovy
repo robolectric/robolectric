@@ -8,17 +8,17 @@ import org.gradle.api.tasks.compile.JavaCompile
 class RoboJavaModulePlugin implements Plugin<Project> {
     Closure doApply = {
         apply plugin: "java-library"
-        apply plugin: "net.ltgt.errorprone"
+        // apply plugin: "net.ltgt.errorprone"
 
         apply plugin: AarDepsPlugin
 
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
 
-        project.dependencies {
-            errorprone("com.google.errorprone:error_prone_core:$errorproneVersion")
-            errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
-        }
+        // project.dependencies {
+        //    errorprone("com.google.errorprone:error_prone_core:$errorproneVersion")
+        //    errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+        //}
 
         tasks.withType(JavaCompile) { task ->
             sourceCompatibility = JavaVersion.VERSION_1_8
