@@ -27,7 +27,8 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
             def forwardedSystemProperties = System.properties
                     .findAll { k,v -> k.startsWith("robolectric.") }
                     .collect { k,v -> "-D$k=$v" }
-            jvmArgs = forwardedSystemProperties
+            def c1JitArgs = ["-XX:+TieredCompilation", "-XX:TieredStopAtLevel=1"]
+            jvmArgs = c1JitArgs + forwardedSystemProperties
 
             doFirst {
                 if (!forwardedSystemProperties.isEmpty()) {
