@@ -125,9 +125,14 @@ public class ShadowMediaMuxer {
       int size,
       long presentationTimeUs,
       @MediaCodec.BufferFlag int flags) {
-    int toWrite = size - offset;
-    byte[] bytes = new byte[toWrite];
-    byteBuf.get(bytes, 0, toWrite);
+    byte[] bytes = new byte[size];
+    int oldPosition = byteBuf.position();
+    // The offset is the start-offset of the data in the buffer. We should use input offset for
+    // byteBuf to read bytes, instead of byteBuf current offset.
+    // See https://developer.android.com/reference/android/media/MediaCodec.BufferInfo#offset.
+    byteBuf.position(offset);
+    byteBuf.get(bytes, 0, size);
+    byteBuf.position(oldPosition);
 
     try {
       getStream(nativeObject).write(bytes);
