@@ -58,7 +58,7 @@ jobs:
 
       - name: Run tests
         run: |
-          ./gradlew test --info --stacktrace --continue \
+          NO_REBUILD=true ./gradlew test --info --stacktrace --continue \
           --parallel \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
