@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -88,7 +88,7 @@ public final class ShadowCaptioningManagerTest {
     captioningManager.removeCaptioningChangeListener(captioningChangeListener);
 
     shadowOf(captioningManager).setFontScale(1.5f);
-    verifyZeroInteractions(captioningChangeListener);
+    verifyNoMoreInteractions(captioningChangeListener);
   }
 
   @Test

@@ -11,7 +11,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
@@ -85,7 +84,7 @@ public final class ShadowBugreportManagerTest {
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
-    verifyZeroInteractions(callback);
+    verifyNoMoreInteractions(callback);
   }
 
   @Test
@@ -167,7 +166,7 @@ public final class ShadowBugreportManagerTest {
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
-    verifyZeroInteractions(callback);
+    verifyNoMoreInteractions(callback);
   }
 
   @Test

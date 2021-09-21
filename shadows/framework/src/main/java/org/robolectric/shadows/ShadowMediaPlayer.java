@@ -854,7 +854,13 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     if (info.preparationDelay > 0) {
       SystemClock.sleep(info.preparationDelay);
     }
-    invokePreparedListener();
+    state = PREPARED;
+    postEvent(
+        (mp, smp) -> {
+          if (preparedListener != null) {
+            preparedListener.onPrepared(mp);
+          }
+        });
   }
 
   /**

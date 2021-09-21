@@ -5,7 +5,7 @@ import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
@@ -58,8 +58,8 @@ public class ShadowWebViewTest {
     webView.loadUrl(url);
     shadowOf(getMainLooper()).idle();
 
-    verifyZeroInteractions(mockWebChromeClient);
-    verifyZeroInteractions(mockWebViewClient);
+    verifyNoMoreInteractions(mockWebChromeClient);
+    verifyNoMoreInteractions(mockWebViewClient);
 
     shadowOf(webView).performSuccessfulPageLoadClientCallbacks();
     webView.loadUrl(url);

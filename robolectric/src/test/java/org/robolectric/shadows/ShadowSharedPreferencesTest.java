@@ -4,7 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -180,7 +180,7 @@ public class ShadowSharedPreferencesTest {
     anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(mockListener);
 
     anotherSharedPreferences.edit().putString("key", "value");
-    verifyZeroInteractions(mockListener);
+    verifyNoMoreInteractions(mockListener);
   }
 
   @Test
