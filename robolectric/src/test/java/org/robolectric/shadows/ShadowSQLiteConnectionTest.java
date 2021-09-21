@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
+import static org.robolectric.annotation.SQLiteMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLegacySQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
 import android.content.ContentValues;
@@ -24,10 +25,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
+@SQLiteMode(LEGACY) // This test relies on legacy SQLite behavior in Robolectric.
 public class ShadowSQLiteConnectionTest {
   private SQLiteDatabase database;
   private File databasePath;
