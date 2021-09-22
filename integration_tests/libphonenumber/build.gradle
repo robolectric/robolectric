@@ -7,7 +7,7 @@ dependencies {
     api "junit:junit:${junitVersion}"
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
-    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
 }

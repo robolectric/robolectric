@@ -11,7 +11,7 @@ dependencies {
     testImplementation files("${System.getenv("ANDROID_HOME")}/platforms/android-29/android.jar")
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
-    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"

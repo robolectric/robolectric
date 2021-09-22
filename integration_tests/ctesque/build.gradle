@@ -29,10 +29,14 @@ android {
     defaultConfig {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    aaptOptions {
+        noCompress 'txt'
+    }
 }
 
 dependencies {
-    implementation project(path: ':testapp', configuration: 'default')
+    implementation project(path: ':testapp')
     implementation project(path: ':shadowapi', configuration: 'default')
 
     testImplementation project(":robolectric")

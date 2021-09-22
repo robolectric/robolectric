@@ -21,7 +21,7 @@ android {
 
 dependencies {
     // Testing dependencies
-    testImplementation project(path: ':testapp', configuration: 'default')
+    testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
     testImplementation project(":integration_tests:agp:testsupport")
 

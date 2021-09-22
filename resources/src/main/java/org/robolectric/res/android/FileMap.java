@@ -247,10 +247,6 @@ public class FileMap {
 
         int bitFlag = readShort(buffer, offset + 8);
         int fileNameLength = readShort(buffer, offset + 28);
-        // There are two extra field lengths stored in the zip - one in the central directory,
-        // one in the local header
-        // TODO: the correct way to do this is to read from local header, but that is expensive,
-        // so just read from central directory for now
         int extraLength = readShort(buffer, offset + 30);
         int fieldCommentLength = readShort(buffer, offset + 32);
         int relativeOffsetOfLocalFileHeader = readInt(buffer, offset + 42);
@@ -258,8 +254,16 @@ public class FileMap {
         byte[] nameBytes = copyBytes(buffer, offset + 46, fileNameLength);
         Charset encoding = getEncoding(bitFlag);
         String fileName = new String(nameBytes, encoding);
-        result.put(
-            fileName, (long) (relativeOffsetOfLocalFileHeader + 30 + fileNameLength + extraLength));
+        byte[] localHeaderBuffer = new byte[30];
+        randomAccessFile.seek(relativeOffsetOfLocalFileHeader);
+        randomAccessFile.readFully(localHeaderBuffer);
+        // There are two extra field lengths stored in the zip - one in the central directory,
+        // one in the local header. And we should use one in local header to calculate the
+        // correct file content offset, because they are different some times.
+        int localHeaderExtraLength = readShort(localHeaderBuffer, 28);
+        int fileOffset =
+            relativeOffsetOfLocalFileHeader + 30 + fileNameLength + localHeaderExtraLength;
+        result.put(fileName, (long) fileOffset);
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
 
