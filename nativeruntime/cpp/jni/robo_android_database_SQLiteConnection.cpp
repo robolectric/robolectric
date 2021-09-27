@@ -1032,7 +1032,6 @@ int register_android_database_SQLiteConnection(JNIEnv* env) {
     return JNI_ERR;
   }
 
-  printf("found SQLiteConnectionNatives!\n");
   jclass unaryClazz = env->FindClass("java/util/function/UnaryOperator");
   gUnaryOperator.apply = env->GetMethodID(
       unaryClazz, "apply", "(Ljava/lang/Object;)Ljava/lang/Object;");

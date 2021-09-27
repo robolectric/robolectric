@@ -290,8 +290,9 @@ public class RobolectricTestRunnerTest {
             "finished: failWithNoRunnables",
             "started: failWithUnexecutedRunnables",
             "failure: failing with unexecuted runnable\n"
-                + "Suppressed: Main looper has queued unexecuted runnables. This might be the cause"
-                + " of the test failure. You might need a shadowOf(getMainLooper()).idle() call.",
+                + "Suppressed: Main looper has queued unexecuted runnables. "
+                + "This might be the cause of the test failure. "
+                + "You might need a shadowOf(Looper.getMainLooper()).idle() call.",
             "finished: failWithUnexecutedRunnables",
             "started: assumptionViolationWithNoRunnables",
             "ignored: assumptionViolationWithNoRunnables: assumption violated",

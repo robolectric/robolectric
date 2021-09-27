@@ -34,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
@@ -670,7 +670,7 @@ public class ShadowTelephonyManagerTest {
 
     telephonyManager.listen(listener, LISTEN_DISPLAY_INFO_CHANGED);
 
-    verifyZeroInteractions(listener);
+    verifyNoMoreInteractions(listener);
   }
 
   @Test

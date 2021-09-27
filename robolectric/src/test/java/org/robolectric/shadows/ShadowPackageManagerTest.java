@@ -48,7 +48,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -2401,7 +2401,7 @@ public class ShadowPackageManagerTest {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("nonexistant.package", packageStatsObserver);
 
-    verifyZeroInteractions(packageStatsObserver);
+    verifyNoMoreInteractions(packageStatsObserver);
 
     shadowMainLooper().idle();
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(false));
@@ -2464,7 +2464,7 @@ public class ShadowPackageManagerTest {
     IPackageStatsObserver packageStatsObserver = mock(IPackageStatsObserver.class);
     packageManager.getPackageSizeInfo("org.robolectric", packageStatsObserver);
 
-    verifyZeroInteractions(packageStatsObserver);
+    verifyNoMoreInteractions(packageStatsObserver);
 
     shadowMainLooper().idle();
     verify(packageStatsObserver).onGetStatsCompleted(packageStatsCaptor.capture(), eq(true));
