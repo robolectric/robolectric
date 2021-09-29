@@ -11,7 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -431,7 +431,7 @@ public class ShadowAudioManagerTest {
     List<AudioAttributes> audioAttributes = new ArrayList<>();
     shadowOf(audioManager).setActivePlaybackConfigurationsFor(audioAttributes, true);
 
-    verifyZeroInteractions(callback);
+    verifyNoMoreInteractions(callback);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -602,7 +602,7 @@ public class ShadowAudioManagerTest {
                 0, AudioSource.VOICE_RECOGNITION, "com.example.android.application"));
     shadowOf(audioManager).setActiveRecordingConfigurations(configurations, true);
 
-    verifyZeroInteractions(callback);
+    verifyNoMoreInteractions(callback);
   }
 
   @Test

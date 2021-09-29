@@ -78,9 +78,8 @@ public class PluginFinderTest {
   @Priority(1)
   private static class ImplOne implements Iface {}
 
-  @Supercedes(ImplZeroA.class)
-  private static class ImplZeroXSupercedesA implements Iface {
-  }
+  @Supersedes(ImplZeroA.class)
+  private static class ImplZeroXSupercedesA implements Iface {}
 
   private interface Iface {}
 

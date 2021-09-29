@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,19 +37,27 @@ public class AndroidInterceptorsIntegrationTest {
     try {
       for (String methodName : new String[] {"logE", "logW"}) {
         stream.reset();
+        // One parameter: [message]
         invokeDynamic(
             System.class, methodName, void.class, ClassParameter.from(String.class, "hello"));
+        String expected1 = String.format("System\\.%s: hello", methodName);
+        // Two parameters: [message, throwable]
+        // We verify that the stack trace is dumped by looking for the name of this method.
         invokeDynamic(
             System.class,
             methodName,
             void.class,
             ClassParameter.from(String.class, "world"),
-            ClassParameter.from(Throwable.class, new Throwable("throw")));
+            ClassParameter.from(Throwable.class, new Throwable("message")));
+        String expected2 =
+            String.format(
+                "System.%s: world.*java\\.lang\\.Throwable: message.*"
+                    + "at .*AndroidInterceptorsIntegrationTest\\.systemLog_shouldWriteToStderr",
+                methodName);
         // Due to the possibility of running tests in Parallel, assertions checking stderr contents
         // should not assert equality.
-        assertThat(stream.toString().split("\\r?\\n")).asList().containsAtLeast(String.format(
-            "System.%s: hello", methodName), String.format(
-            "System.%s: worldjava.lang.Throwable: throw", methodName)).inOrder();
+        assertThat(stream.toString())
+            .matches(Pattern.compile(".*" + expected1 + ".*" + expected2 + ".*", Pattern.DOTALL));
       }
     } finally {
       System.setErr(stderr);

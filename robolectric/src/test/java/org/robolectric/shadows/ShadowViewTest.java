@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Robolectric.setupActivity;
 import static org.robolectric.Shadows.shadowOf;
@@ -513,7 +513,7 @@ public class ShadowViewTest {
     animation.setStartTime(1000);
     view.setAnimation(animation);
 
-    verifyZeroInteractions(listener);
+    verifyNoMoreInteractions(listener);
 
     SystemClock.setCurrentTimeMillis(1000);
     shadowMainLooper().idle();

@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
+import android.content.pm.ServiceInfo.ForegroundServiceType;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -24,6 +26,7 @@ public class ShadowService extends ShadowContextWrapper {
   private boolean notificationShouldRemoved;
   private int stopSelfId;
   private int stopSelfResultId;
+  private int foregroundServiceType;
 
   @Implementation
   protected void onDestroy() {
@@ -62,6 +65,14 @@ public class ShadowService extends ShadowContextWrapper {
         (NotificationManager)
             RuntimeEnvironment.getApplication().getSystemService(Context.NOTIFICATION_SERVICE);
     nm.notify(id, notification);
+    this.foregroundServiceType = 0;
+  }
+
+  @Implementation(minSdk = Q)
+  protected final void startForeground(
+      int id, Notification notification, @ForegroundServiceType int foregroundServiceType) {
+    startForeground(id, notification);
+    this.foregroundServiceType = foregroundServiceType;
   }
 
   protected void stopForeground(boolean removeNotification) {
@@ -70,6 +81,12 @@ public class ShadowService extends ShadowContextWrapper {
     if (removeNotification) {
       removeForegroundNotification();
     }
+  }
+
+  @Implementation(minSdk = Q)
+  @ForegroundServiceType
+  protected final int getForegroundServiceType() {
+    return foregroundServiceType;
   }
 
   @Implementation(minSdk = N)

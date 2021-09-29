@@ -272,7 +272,7 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.prepareAsync();
 
       assertThat(shadowMediaPlayer.getState()).isEqualTo(PREPARING);
-      Mockito.verifyZeroInteractions(preparedListener);
+      Mockito.verifyNoMoreInteractions(preparedListener);
       shadowMainLooper().idleFor(Duration.ofMillis(delay));
       assertThat(SystemClock.uptimeMillis()).isEqualTo(startTime + delay);
       assertThat(shadowMediaPlayer.getState()).isEqualTo(PREPARED);
@@ -293,7 +293,7 @@ public class ShadowMediaPlayerTest {
 
     assertThat(SystemClock.uptimeMillis()).isEqualTo(startTime);
     assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(PREPARING);
-    Mockito.verifyZeroInteractions(preparedListener);
+    Mockito.verifyNoMoreInteractions(preparedListener);
     shadowMediaPlayer.invokePreparedListener();
     assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(PREPARED);
     Mockito.verify(preparedListener).onPrepared(mediaPlayer);
@@ -350,7 +350,7 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(Duration.ofMillis(499));
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(999);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(STARTED);
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(1000);
@@ -361,7 +361,7 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertThat(shadowMediaPlayer.getCurrentPosition()).isEqualTo(1000);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
   }
 
   @Test
@@ -385,18 +385,18 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.pause();
     shadowMainLooper().idleFor(Duration.ofMillis(800));
 
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
 
     mediaPlayer.start();
     shadowMainLooper().idleFor(Duration.ofMillis(799));
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(completionListener);
 
     assertNoPostedTasks();
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
   }
 
   @Test
@@ -426,14 +426,14 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(Duration.ofMillis(300));
     mediaPlayer.seekTo(400);
     shadowMainLooper().idleFor(Duration.ofMillis(599));
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
     shadowMainLooper().idleFor(Duration.ofMinutes(1));
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
     Mockito.verifyNoMoreInteractions(completionListener);
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
 
     assertNoPostedTasks();
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
   }
 
   @Test
@@ -497,7 +497,7 @@ public class ShadowMediaPlayerTest {
     // We should have a pending completion callback.
 
     shadowMediaPlayer.invokeErrorListener(2, 3);
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
   }
 
   @Test
@@ -809,7 +809,7 @@ public class ShadowMediaPlayerTest {
             + "> to call onError rather than throw <" + e.getTargetException()
             + "> when called from <" + state + ">", e);
       }
-      Mockito.verifyZeroInteractions(errorListener);
+      Mockito.verifyNoMoreInteractions(errorListener);
       final State finalState = shadowMediaPlayer.getState();
       assertThat(finalState).isSameInstanceAs(ERROR);
       shadowMainLooper().idle();
@@ -930,7 +930,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.invokeCompletionListener();
 
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PLAYBACK_COMPLETED);
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
   }
 
   @Test
@@ -945,7 +945,7 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.setOnSeekCompleteListener(null);
     shadowMediaPlayer.invokeSeekCompleteListener();
 
-    Mockito.verifyZeroInteractions(seekListener);
+    Mockito.verifyNoMoreInteractions(seekListener);
   }
 
   @Test
@@ -965,7 +965,7 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(Duration.ofMillis(99));
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(200);
-    Mockito.verifyZeroInteractions(seekListener);
+    Mockito.verifyNoMoreInteractions(seekListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
 
@@ -985,7 +985,7 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(Duration.ofMillis(99));
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(0);
-    Mockito.verifyZeroInteractions(seekListener);
+    Mockito.verifyNoMoreInteractions(seekListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
 
@@ -1008,7 +1008,7 @@ public class ShadowMediaPlayerTest {
     shadowMainLooper().idleFor(Duration.ofMillis(99));
 
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(0);
-    Mockito.verifyZeroInteractions(seekListener);
+    Mockito.verifyNoMoreInteractions(seekListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
 
@@ -1041,7 +1041,7 @@ public class ShadowMediaPlayerTest {
     // implementations should depend on any of these particular behaviors
     // and consider the behavior indeterminate.
     assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(200);
-    Mockito.verifyZeroInteractions(seekListener);
+    Mockito.verifyNoMoreInteractions(seekListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
 
@@ -1136,7 +1136,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.invokePreparedListener();
 
     assertThat(shadowMediaPlayer.getState()).isEqualTo(PREPARED);
-    Mockito.verifyZeroInteractions(preparedListener);
+    Mockito.verifyNoMoreInteractions(preparedListener);
   }
 
   @Test
@@ -1150,7 +1150,7 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.setOnInfoListener(null);
     shadowMediaPlayer.invokeInfoListener(3, 44);
 
-    Mockito.verifyZeroInteractions(infoListener);
+    Mockito.verifyNoMoreInteractions(infoListener);
   }
 
   @Test
@@ -1161,7 +1161,7 @@ public class ShadowMediaPlayerTest {
 
     assertThat(shadowMediaPlayer.getState()).isEqualTo(ERROR);
     Mockito.verify(errorListener).onError(mediaPlayer, 112, 221);
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
   }
 
   @Test
@@ -1180,7 +1180,7 @@ public class ShadowMediaPlayerTest {
 
     shadowMediaPlayer.invokeErrorListener(321, 21);
 
-    Mockito.verifyZeroInteractions(errorListener);
+    Mockito.verifyNoMoreInteractions(errorListener);
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
   }
 
@@ -1231,7 +1231,7 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.start();
 
     shadowMainLooper().idleFor(Duration.ofMillis(499));
-    Mockito.verifyZeroInteractions(errorListener);
+    Mockito.verifyNoMoreInteractions(errorListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     Mockito.verify(errorListener).onError(mediaPlayer, 1, 3);
@@ -1246,7 +1246,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.setCurrentPosition(400);
     shadowMediaPlayer.setState(PAUSED);
     mediaPlayer.start();
-    Mockito.verifyZeroInteractions(errorListener);
+    Mockito.verifyNoMoreInteractions(errorListener);
   }
 
   @Test
@@ -1258,7 +1258,7 @@ public class ShadowMediaPlayerTest {
 
     shadowMainLooper().idleFor(Duration.ofMillis(99));
 
-    Mockito.verifyZeroInteractions(infoListener);
+    Mockito.verifyNoMoreInteractions(infoListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     Mockito.verify(infoListener).onInfo(mediaPlayer,
@@ -1267,7 +1267,7 @@ public class ShadowMediaPlayerTest {
     assertThat(shadowMediaPlayer.isReallyPlaying()).isFalse();
 
     shadowMainLooper().idleFor(Duration.ofMillis(49));
-    Mockito.verifyZeroInteractions(infoListener);
+    Mockito.verifyNoMoreInteractions(infoListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(100);
@@ -1290,7 +1290,7 @@ public class ShadowMediaPlayerTest {
 
     shadowMainLooper().idleFor(Duration.ofMillis(299));
     info.removeEventAtOffset(500, e);
-    Mockito.verifyZeroInteractions(infoListener);
+    Mockito.verifyNoMoreInteractions(infoListener);
   }
 
   @Test
@@ -1306,7 +1306,7 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.doStop();
     info.removeEvent(e);
     shadowMediaPlayer.doStart();
-    Mockito.verifyZeroInteractions(infoListener);
+    Mockito.verifyNoMoreInteractions(infoListener);
   }
 
   @Test
@@ -1329,14 +1329,14 @@ public class ShadowMediaPlayerTest {
     shadowMediaPlayer.doStart();
 
     shadowMainLooper().idleFor(Duration.ofMillis(49));
-    Mockito.verifyZeroInteractions(infoListener);
+    Mockito.verifyNoMoreInteractions(infoListener);
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     Mockito.verify(infoListener).onInfo(mediaPlayer, 2, 4);
     shadowMainLooper().idleFor(Duration.ofMillis(149));
     shadowMediaPlayer.doStop();
     info.scheduleErrorAtOffset(675, 32, 22);
     shadowMediaPlayer.doStart();
-    Mockito.verifyZeroInteractions(e1);
+    Mockito.verifyNoMoreInteractions(e1);
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     Mockito.verify(e1).run(mediaPlayer, shadowMediaPlayer);
 
@@ -1347,14 +1347,14 @@ public class ShadowMediaPlayerTest {
     info.scheduleEventAtOffset(680, e2);
     mediaPlayer.start();
     shadowMainLooper().idleFor(Duration.ofMillis(274));
-    Mockito.verifyZeroInteractions(errorListener);
+    Mockito.verifyNoMoreInteractions(errorListener);
 
     shadowMainLooper().idleFor(Duration.ofMillis(1));
     Mockito.verify(errorListener).onError(mediaPlayer, 32, 22);
     assertNoPostedTasks();
     assertThat(shadowMediaPlayer.getCurrentPositionRaw()).isEqualTo(675);
     assertThat(shadowMediaPlayer.getState()).isSameInstanceAs(ERROR);
-    Mockito.verifyZeroInteractions(e2);
+    Mockito.verifyNoMoreInteractions(e2);
   }
 
   @Test
@@ -1414,11 +1414,11 @@ public class ShadowMediaPlayerTest {
     mediaPlayer.setLooping(true);
     shadowMainLooper().idleFor(Duration.ofMillis(1100));
 
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
 
     mediaPlayer.setLooping(false);
     shadowMainLooper().idleFor(Duration.ofMillis(699));
-    Mockito.verifyZeroInteractions(completionListener);
+    Mockito.verifyNoMoreInteractions(completionListener);
 
     shadowMainLooper().idleFor(Duration.ofMinutes(1));
     Mockito.verify(completionListener).onCompletion(mediaPlayer);
@@ -1435,7 +1435,7 @@ public class ShadowMediaPlayerTest {
       mediaPlayer.start();
 
       shadowMainLooper().idleFor(Duration.ofMillis(700));
-      Mockito.verifyZeroInteractions(completionListener);
+      Mockito.verifyNoMoreInteractions(completionListener);
     }
   }
 

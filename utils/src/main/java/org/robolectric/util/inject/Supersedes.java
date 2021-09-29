@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface Supercedes {
+public @interface Supersedes {
 
   /** The type that is superceded by the annotated type. */
   Class<?> value();

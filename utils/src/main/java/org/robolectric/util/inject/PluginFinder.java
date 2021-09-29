@@ -69,17 +69,17 @@ class PluginFinder {
   }
 
   private <T> Iterable<Class<? extends T>> filter(Iterable<Class<? extends T>> classes) {
-    Set<Class<?>> superceded = new HashSet<>();
+    Set<Class<?>> superseded = new HashSet<>();
     for (Class<? extends T> clazz : classes) {
-      Supercedes supercedes = clazz.getAnnotation(Supercedes.class);
-      if (supercedes != null) {
-        superceded.add(supercedes.value());
+      Supersedes supersedes = clazz.getAnnotation(Supersedes.class);
+      if (supersedes != null) {
+        superseded.add(supersedes.value());
       }
     }
-    if (superceded.isEmpty()) {
+    if (superseded.isEmpty()) {
       return classes;
     } else {
-      return () -> new Filterator<>(classes.iterator(), o -> !superceded.contains(o));
+      return () -> new Filterator<>(classes.iterator(), o -> !superseded.contains(o));
     }
   }
 
