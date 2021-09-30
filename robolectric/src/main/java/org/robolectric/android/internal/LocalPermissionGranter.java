@@ -9,6 +9,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApplication;
 
 /** A {@link PermissionGranter} that runs on a local JVM with Robolectric. */
+@SuppressWarnings("RestrictTo")
 public class LocalPermissionGranter implements PermissionGranter {
 
   private String[] permissions;

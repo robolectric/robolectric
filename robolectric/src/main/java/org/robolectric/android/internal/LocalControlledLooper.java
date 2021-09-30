@@ -8,6 +8,10 @@ import android.view.ViewRootImpl;
 import androidx.test.internal.platform.os.ControlledLooper;
 import org.robolectric.util.ReflectionHelpers;
 
+/**
+ * A Robolectric implementation for {@link ControlledLooper}.
+ */
+@SuppressWarnings("RestrictTo")
 public class LocalControlledLooper implements ControlledLooper {
 
   @Override
