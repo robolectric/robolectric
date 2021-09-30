@@ -6,6 +6,8 @@ import static org.robolectric.Shadows.shadowOf;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import dalvik.system.CloseGuard;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,5 +29,27 @@ public class ShadowSurfaceTest {
   @Test
   public void toString_returnsNotEmptyString() {
     assertThat(surface.toString()).isNotEmpty();
+  }
+
+  @Test
+  public void newSurface_doesNotResultInCloseGuardError() throws Throwable {
+    final AtomicBoolean closeGuardWarned = new AtomicBoolean(false);
+    CloseGuard.Reporter originalReporter = CloseGuard.getReporter();
+    try {
+      CloseGuard.setReporter((s, throwable) -> closeGuardWarned.set(true));
+      MySurface surface = new MySurface();
+      surface.finalize();
+      assertThat(closeGuardWarned.get()).isFalse();
+    } finally {
+      CloseGuard.setReporter(originalReporter);
+    }
+  }
+
+  /** Used to expose the finalize method for testing purposes. */
+  static class MySurface extends Surface {
+    @Override
+    protected void finalize() throws Throwable {
+      super.finalize();
+    }
   }
 }

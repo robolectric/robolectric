@@ -52,4 +52,11 @@ public class ShadowAccessibilityWindowInfoTest {
     shadow.setTitle(title);
     assertThat(shadow.getTitle().toString()).isEqualTo(title.toString());
   }
+
+  @Test
+  public void testSetChild() {
+    AccessibilityWindowInfo window = AccessibilityWindowInfo.obtain();
+    shadow.addChild(window);
+    assertThat(shadow.getChild(0)).isEqualTo(window);
+  }
 }

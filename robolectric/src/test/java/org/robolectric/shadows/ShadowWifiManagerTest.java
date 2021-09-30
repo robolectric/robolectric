@@ -11,7 +11,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
@@ -647,7 +646,7 @@ public class ShadowWifiManagerTest {
         .postUsabilityStats(/* seqNum= */ 10, /* isSameBssidAndFreq= */ true, builder);
 
     // THEN
-    verifyZeroInteractions(mockListener);
+    verifyNoMoreInteractions(mockListener);
   }
 
   @Test

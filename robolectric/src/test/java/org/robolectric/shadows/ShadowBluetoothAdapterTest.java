@@ -10,7 +10,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
@@ -348,7 +348,7 @@ public class ShadowBluetoothAdapterTest {
             RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
 
     assertThat(result).isFalse();
-    verifyZeroInteractions(mockServiceListener);
+    verifyNoMoreInteractions(mockServiceListener);
   }
 
   @Test
@@ -402,7 +402,7 @@ public class ShadowBluetoothAdapterTest {
             RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
 
     assertThat(result).isFalse();
-    verifyZeroInteractions(mockServiceListener);
+    verifyNoMoreInteractions(mockServiceListener);
     assertThat(shadowOf(bluetoothAdapter).hasActiveProfileProxy(MOCK_PROFILE1)).isFalse();
   }
 

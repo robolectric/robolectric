@@ -1,11 +1,13 @@
 package org.robolectric.interceptors;
 
+import static java.lang.Math.min;
 import static java.lang.invoke.MethodHandles.constant;
 import static java.lang.invoke.MethodHandles.dropArguments;
 import static java.lang.invoke.MethodType.methodType;
 import static java.util.Arrays.asList;
 import static org.robolectric.util.ReflectionHelpers.callStaticMethod;
 
+import com.google.common.base.Throwables;
 import java.io.FileDescriptor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -262,11 +264,26 @@ public class AndroidInterceptors {
       log("System.logW: ", params);
     }
 
+    /**
+     * Write logs to {@code System#err}.
+     *
+     * @param prefix A non-null prefix to write.
+     * @param params Optional parameters. Expected parameters are [String message] or
+     *    [String message, Throwable tr] in which case the throwable's stack trace is written
+     *    to the output.
+     */
     static void log(String prefix, Object... params) {
       StringBuilder message = new StringBuilder(prefix);
-      for (Object param : params) {
-        message.append(param.toString());
+
+      for (int i = 0; i < min(2, params.length); i++) {
+        Object param = params[i];
+        if (i > 0 && param instanceof Throwable) {
+          message.append('\n').append(Throwables.getStackTraceAsString((Throwable) param));
+        } else {
+          message.append(param);
+        }
       }
+
       System.err.println(message);
     }
 
