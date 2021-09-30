@@ -1,0 +1,30 @@
+name: Check aggregateDocs
+
+on:
+  push:
+    branches: [ master ]
+
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  check_aggregateDocs:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        java: [ '13', '14', '15'] # OpenJDK fixed broken javadoc from 13
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu' # zulu suports complete JDK list
+          java-version: ${{ matrix.java }}
+          cache: 'gradle'
+
+      - name: Run aggregateDocs
+        run: ./gradlew clean aggregateDocs
