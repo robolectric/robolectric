@@ -12,11 +12,13 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -210,10 +212,36 @@ public class ShadowNfcAdapter {
   @Resetter
   public static synchronized void reset() {
     hardwareExists = true;
+    NfcAdapterReflector nfcAdapterReflector = reflector(NfcAdapterReflector.class);
+    nfcAdapterReflector.setIsInitialized(false);
+    Map<Context, NfcAdapter> adapters = nfcAdapterReflector.getNfcAdapters();
+    if (adapters != null) {
+      adapters.clear();
+    }
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      nfcAdapterReflector.setHasNfcFeature(false);
+      nfcAdapterReflector.setHasBeamFeature(false);
+    }
   }
 
   @ForType(NfcAdapter.class)
   interface NfcAdapterReflector {
+    @Static
+    @Accessor("sIsInitialized")
+    void setIsInitialized(boolean isInitialized);
+
+    @Static
+    @Accessor("sHasNfcFeature")
+    void setHasNfcFeature(boolean hasNfcFeature);
+
+    @Static
+    @Accessor("sHasBeamFeature")
+    void setHasBeamFeature(boolean hasBeamFeature);
+
+    @Static
+    @Accessor("sNfcAdapters")
+    Map<Context, NfcAdapter> getNfcAdapters();
+
     @Direct
     @Static
     NfcAdapter getNfcAdapter(Context context);
