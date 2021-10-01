@@ -29,7 +29,7 @@ jobs:
           java-version: 11.0.8
 
       - name: Build
-        run: SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
+        run: SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace --build-cache
 
   tests:
     runs-on: ubuntu-18.04
@@ -58,7 +58,7 @@ jobs:
 
       - name: Run tests
         run: |
-          ./gradlew test --info --stacktrace --continue \
+          ./gradlew test --info --stacktrace --continue --build-cache \
           --parallel \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
