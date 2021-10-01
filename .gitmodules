@@ -1,0 +1,4 @@
+[submodule "nativeruntime/external/sqlite"]
+	path = nativeruntime/external/sqlite
+	url = https://android.googlesource.com/platform/external/sqlite
+	branch = android11-release
