@@ -79,12 +79,14 @@ public class ShadowCardEmulation {
   public static void reset() {
     defaultServiceForCategoryMap = new HashMap<>();
     preferredService = null;
-    CardEmulationReflector reflector = reflector(CardEmulationReflector.class);
-    reflector.setIsInitialized(false);
-    reflector.setService(null);
-    Map<Context, CardEmulation> cardEmus = reflector.getCardEmus();
-    if (cardEmus != null) {
-      cardEmus.clear();
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
+      CardEmulationReflector reflector = reflector(CardEmulationReflector.class);
+      reflector.setIsInitialized(false);
+      reflector.setService(null);
+      Map<Context, CardEmulation> cardEmus = reflector.getCardEmus();
+      if (cardEmus != null) {
+        cardEmus.clear();
+      }
     }
   }
 
