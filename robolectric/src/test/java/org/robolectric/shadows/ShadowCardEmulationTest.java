@@ -30,7 +30,6 @@ public final class ShadowCardEmulationTest {
 
   @Before
   public void setUp() throws Exception {
-    ShadowCardEmulation.reset();
     Application context = ApplicationProvider.getApplicationContext();
     shadowOf(context.getPackageManager())
         .setSystemFeature(PackageManager.FEATURE_NFC, /* supported= */ true);
