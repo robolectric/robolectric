@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -80,6 +81,18 @@ public class ShadowServiceTest {
     assertThat(shadowOf(service).getLastForegroundNotificationId()).isEqualTo(23);
     assertThat(shadowOf(nm2).getNotification(23)).isSameInstanceAs(n);
     assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void startForegroundWithForegroundServiceType() {
+    Notification n = notBuilder.build();
+    service.startForeground(23, n, 64);
+    assertThat(shadowOf(service).getLastForegroundNotification()).isSameInstanceAs(n);
+    assertThat(shadowOf(service).getLastForegroundNotificationId()).isEqualTo(23);
+    assertThat(shadowOf(nm2).getNotification(23)).isSameInstanceAs(n);
+    assertThat(n.flags & Notification.FLAG_FOREGROUND_SERVICE).isNotEqualTo(0);
+    assertThat(service.getForegroundServiceType()).isEqualTo(64);
   }
 
   @Test
