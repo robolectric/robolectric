@@ -10,9 +10,6 @@ on:
 jobs:
   check_aggregateDocs:
     runs-on: ubuntu-18.04
-    strategy:
-      matrix:
-        java: [ '13', '14', '15'] # OpenJDK fixed broken javadoc from 13
 
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +21,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu' # zulu suports complete JDK list
-          java-version: ${{ matrix.java }}
+          java-version: 14
           cache: 'gradle'
 
       - name: Run aggregateDocs
