@@ -64,6 +64,7 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("org.robolectric.internal.")
         .doNotAcquirePackage("org.robolectric.pluginapi.")
         .doNotAcquirePackage("org.robolectric.manifest.")
+        .doNotAcquirePackage("org.robolectric.nativeruntime.")
         .doNotAcquirePackage("org.robolectric.res.")
         .doNotAcquirePackage("org.robolectric.util.")
         .doNotAcquirePackage("org.robolectric.RobolectricTestRunner$")
