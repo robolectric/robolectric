@@ -7,13 +7,18 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.media.AudioAttributes;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemVibrator;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
+import android.os.vibrator.VibrationEffectSegment;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -46,7 +51,8 @@ public class ShadowSystemVibrator extends ShadowVibrator {
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected void vibrate(int uid, String opPkg, long[] pattern, int repeat, AudioAttributes attributes) {
+  protected void vibrate(
+      int uid, String opPkg, long[] pattern, int repeat, AudioAttributes attributes) {
     recordVibratePattern(pattern, repeat);
   }
 
@@ -65,34 +71,73 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     recordVibrate(milliseconds);
   }
 
-  @Implementation(minSdk = O, maxSdk = VERSION_CODES.P)
-  protected void vibrate(int uid, String opPkg, VibrationEffect effect, AudioAttributes attributes) {
+  @Implementation(minSdk = O, maxSdk = P)
+  protected void vibrate(
+      int uid, String opPkg, VibrationEffect effect, AudioAttributes attributes) {
     vibrate(uid, opPkg, effect, null, attributes);
   }
 
-  @Implementation(minSdk = VERSION_CODES.Q, maxSdk = VERSION_CODES.R)
+  @Implementation(minSdk = Q, maxSdk = R)
   protected void vibrate(
       int uid, String opPkg, VibrationEffect effect, String reason, AudioAttributes attributes) {
-    if (effect instanceof VibrationEffect.Waveform) {
-      VibrationEffect.Waveform waveform = (VibrationEffect.Waveform) effect;
-      recordVibratePattern(waveform.getTimings(), waveform.getRepeatIndex());
+    try {
+      Class<?> waveformClass = Class.forName("android.os.VibrationEffect$Waveform");
+      Class<?> prebakedClass = Class.forName("android.os.VibrationEffect$Prebaked");
+      Class<?> oneShotClass = Class.forName("android.os.VibrationEffect$OneShot");
 
-    } else if (effect instanceof VibrationEffect.Prebaked) {
-      VibrationEffect.Prebaked prebaked = (VibrationEffect.Prebaked) effect;
-      recordVibratePredefined(prebaked.getDuration(), prebaked.getId());
-    } else {
-      VibrationEffect.OneShot oneShot = (VibrationEffect.OneShot) effect;
+      if (waveformClass.isInstance(effect)) {
+        recordVibratePattern(
+            (long[]) ReflectionHelpers.callInstanceMethod(effect, "getTimings"),
+            ReflectionHelpers.callInstanceMethod(effect, "getRepeatIndex"));
+      } else if (prebakedClass.isInstance(effect)) {
+        recordVibratePredefined(
+            ReflectionHelpers.callInstanceMethod(effect, "getDuration"),
+            ReflectionHelpers.callInstanceMethod(effect, "getId"));
+      } else if (oneShotClass.isInstance(effect)) {
+        long timing;
 
-      long timing;
+        if (RuntimeEnvironment.getApiLevel() >= P) {
+          timing = ReflectionHelpers.callInstanceMethod(effect, "getDuration");
+        } else {
+          timing = ReflectionHelpers.callInstanceMethod(effect, "getTiming");
+        }
 
-      if (RuntimeEnvironment.getApiLevel() >= P) {
-        timing = oneShot.getDuration();
+        recordVibrate(timing);
       } else {
-        timing = ReflectionHelpers.callInstanceMethod(oneShot, "getTiming");
+        throw new UnsupportedOperationException(
+            "unrecognized effect type " + effect.getClass().getName());
       }
-
-      recordVibrate(timing);
+    } catch (ClassNotFoundException e) {
+      throw new UnsupportedOperationException(
+          "unrecognized effect type " + effect.getClass().getName(), e);
     }
+  }
+
+  @Implementation(minSdk = S)
+  protected void vibrate(
+      int uid,
+      String opPkg,
+      VibrationEffect effect,
+      String reason,
+      VibrationAttributes attributes) {
+    if (effect instanceof VibrationEffect.Composed) {
+      VibrationEffect.Composed composedEffect = (VibrationEffect.Composed) effect;
+
+      recordVibratePattern(composedEffect.getSegments(), composedEffect.getRepeatIndex());
+    } else {
+      throw new UnsupportedOperationException(
+          "unrecognized effect type " + effect.getClass().getName());
+    }
+  }
+
+  private void recordVibratePattern(List<VibrationEffectSegment> segments, int repeatIndex) {
+    long[] pattern = new long[segments.size()];
+    int i = 0;
+    for (VibrationEffectSegment segment : segments) {
+      pattern[i] = segment.getDuration();
+      i++;
+    }
+    recordVibratePattern(pattern, repeatIndex);
   }
 
   private void recordVibratePredefined(long milliseconds, int effectId) {

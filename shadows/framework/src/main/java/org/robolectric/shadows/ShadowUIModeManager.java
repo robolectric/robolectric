@@ -1,9 +1,16 @@
 package org.robolectric.shadows;
 
+import android.annotation.SystemApi;
 import android.app.UiModeManager;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashSet;
+import java.util.Set;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -14,6 +21,9 @@ public class ShadowUIModeManager {
   public int currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
   public int lastFlags;
   public int lastCarModePriority;
+  private int currentApplicationNightMode = 0;
+  private final Set<Integer> activeProjectionTypes = new HashSet<>();
+  private boolean failOnProjectionToggle;
 
   private static final ImmutableSet<Integer> VALID_NIGHT_MODES =
       ImmutableSet.of(
@@ -55,6 +65,59 @@ public class ShadowUIModeManager {
       currentNightMode = mode;
     } else {
       currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+    }
+  }
+
+  public int getApplicationNightMode() {
+    return currentApplicationNightMode;
+  }
+
+  public Set<Integer> getActiveProjectionTypes() {
+    return new HashSet<>(activeProjectionTypes);
+  }
+
+  public void setFailOnProjectionToggle(boolean failOnProjectionToggle) {
+    this.failOnProjectionToggle = failOnProjectionToggle;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  @HiddenApi
+  protected void setApplicationNightMode(int mode) {
+    currentApplicationNightMode = mode;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  @SystemApi
+  protected boolean requestProjection(int projectionType) {
+    if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
+      assertHasPermission(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+    }
+    if (failOnProjectionToggle) {
+      return false;
+    }
+    activeProjectionTypes.add(projectionType);
+    return true;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  @SystemApi
+  protected boolean releaseProjection(int projectionType) {
+    if (projectionType == UiModeManager.PROJECTION_TYPE_AUTOMOTIVE) {
+      assertHasPermission(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+    }
+    if (failOnProjectionToggle) {
+      return false;
+    }
+    return activeProjectionTypes.remove(projectionType);
+  }
+
+  private void assertHasPermission(String... permissions) {
+    Context context = RuntimeEnvironment.getApplication();
+    for (String permission : permissions) {
+      if (context.getPackageManager().checkPermission(permission, context.getPackageName())
+          != PackageManager.PERMISSION_GRANTED) {
+        throw new SecurityException("Missing required permission: " + permission);
+      }
     }
   }
 }

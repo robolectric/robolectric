@@ -21,11 +21,11 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowLocaleDataTest {
 
   @Test
-  public void shouldSupportLocaleEn_US() {
+  public void shouldSupportLocaleEn_US() throws NoSuchFieldException, IllegalAccessException {
     LocaleData localeData = LocaleData.get(Locale.US);
 
-    assertThat(localeData.amPm).isEqualTo(new String[]{"AM", "PM"});
-    assertThat(localeData.eras).isEqualTo(new String[]{"BC", "AD"});
+    assertThat(localeData.amPm).isEqualTo(new String[] {"AM", "PM"});
+    assertThat(localeData.eras).isEqualTo(new String[] {"BC", "AD"});
 
     assertThat(localeData.firstDayOfWeek).isEqualTo(1);
     assertThat(localeData.minimalDaysInFirstWeek).isEqualTo(1);
@@ -88,8 +88,9 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.NaN).isEqualTo("NaN");
 
     if (getApiLevel() <= R) {
-      assertThat(localeData.currencySymbol).isEqualTo("$");
-      assertThat(localeData.internationalCurrencySymbol).isEqualTo("USD");
+      assertThat((String) ReflectionHelpers.getField(localeData, "currencySymbol")).isEqualTo("$");
+      assertThat((String) ReflectionHelpers.getField(localeData, "internationalCurrencySymbol"))
+          .isEqualTo("USD");
     }
 
     assertThat(localeData.numberPattern).isEqualTo("#,##0.###");
@@ -122,7 +123,8 @@ public class ShadowLocaleDataTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void shouldSupportLocaleEn_US_since_jelly_bean_mr1() {
+  public void shouldSupportLocaleEn_US_since_jelly_bean_mr1()
+      throws NoSuchFieldException, IllegalAccessException {
     LocaleData localeData = LocaleData.get(Locale.US);
 
     assertThat(localeData.tinyMonthNames)
@@ -133,7 +135,8 @@ public class ShadowLocaleDataTest {
     assertThat(localeData.tinyStandAloneWeekdayNames).isEqualTo(localeData.tinyWeekdayNames);
 
     if (getApiLevel() <= R) {
-      assertThat(localeData.yesterday).isEqualTo("Yesterday");
+      assertThat((String) ReflectionHelpers.getField(localeData, "yesterday"))
+          .isEqualTo("Yesterday");
     }
     assertThat(localeData.today).isEqualTo("Today");
     assertThat(localeData.tomorrow).isEqualTo("Tomorrow");
@@ -161,6 +164,6 @@ public class ShadowLocaleDataTest {
     Locale.setDefault(Locale.US);
     LocaleData localeData = LocaleData.get(null);
 
-    assertThat(localeData.amPm).isEqualTo(new String[]{"AM", "PM"});
+    assertThat(localeData.amPm).isEqualTo(new String[] {"AM", "PM"});
   }
 }

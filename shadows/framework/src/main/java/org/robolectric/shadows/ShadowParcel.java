@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.BadParcelableException;
@@ -47,7 +48,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  * IllegalArgumentException} or {@link IllegalStateException} for error-prone behavior normal {@link
  * Parcel} tolerates.
  */
-@Implements(Parcel.class)
+@Implements(value = Parcel.class, looseSignatures = true)
 public class ShadowParcel {
   private static final String TAG = "Parcel";
 
@@ -75,8 +76,8 @@ public class ShadowParcel {
   @HiddenApi
   @Implementation(minSdk = JELLY_BEAN_MR2)
   public Parcelable.Creator<?> readParcelableCreator(ClassLoader loader) {
-    //note: calling `readString` will also consume the string, and increment the data-pointer.
-    //which is exactly what we need, since we do not call the real `readParcelableCreator`.
+    // note: calling `readString` will also consume the string, and increment the data-pointer.
+    // which is exactly what we need, since we do not call the real `readParcelableCreator`.
     final String name = realObject.readString();
     if (name == null) {
       return null;
@@ -86,15 +87,13 @@ public class ShadowParcel {
     try {
       // If loader == null, explicitly emulate Class.forName(String) "caller
       // classloader" behavior.
-      ClassLoader parcelableClassLoader =
-          (loader == null ? getClass().getClassLoader() : loader);
+      ClassLoader parcelableClassLoader = (loader == null ? getClass().getClassLoader() : loader);
       // Avoid initializing the Parcelable class until we know it implements
       // Parcelable and has the necessary CREATOR field. http://b/1171613.
-      Class<?> parcelableClass = Class.forName(name, false /* initialize */,
-          parcelableClassLoader);
+      Class<?> parcelableClass = Class.forName(name, false /* initialize */, parcelableClassLoader);
       if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
-        throw new BadParcelableException("Parcelable protocol requires that the "
-            + "class implements Parcelable");
+        throw new BadParcelableException(
+            "Parcelable protocol requires that the " + "class implements Parcelable");
       }
       Field f = parcelableClass.getField("CREATOR");
 
@@ -104,35 +103,39 @@ public class ShadowParcel {
       f.setAccessible(true);
 
       if ((f.getModifiers() & Modifier.STATIC) == 0) {
-        throw new BadParcelableException("Parcelable protocol requires "
-            + "the CREATOR object to be static on class " + name);
+        throw new BadParcelableException(
+            "Parcelable protocol requires " + "the CREATOR object to be static on class " + name);
       }
       Class<?> creatorType = f.getType();
       if (!Parcelable.Creator.class.isAssignableFrom(creatorType)) {
         // Fail before calling Field.get(), not after, to avoid initializing
         // parcelableClass unnecessarily.
-        throw new BadParcelableException("Parcelable protocol requires a "
-            + "Parcelable.Creator object called "
-            + "CREATOR on class " + name);
+        throw new BadParcelableException(
+            "Parcelable protocol requires a "
+                + "Parcelable.Creator object called "
+                + "CREATOR on class "
+                + name);
       }
       creator = (Parcelable.Creator<?>) f.get(null);
     } catch (IllegalAccessException e) {
       Log.e(TAG, "Illegal access when unmarshalling: " + name, e);
-      throw new BadParcelableException(
-          "IllegalAccessException when unmarshalling: " + name);
+      throw new BadParcelableException("IllegalAccessException when unmarshalling: " + name);
     } catch (ClassNotFoundException e) {
       Log.e(TAG, "Class not found when unmarshalling: " + name, e);
-      throw new BadParcelableException(
-          "ClassNotFoundException when unmarshalling: " + name);
+      throw new BadParcelableException("ClassNotFoundException when unmarshalling: " + name);
     } catch (NoSuchFieldException e) {
-      throw new BadParcelableException("Parcelable protocol requires a "
-          + "Parcelable.Creator object called "
-          + "CREATOR on class " + name);
+      throw new BadParcelableException(
+          "Parcelable protocol requires a "
+              + "Parcelable.Creator object called "
+              + "CREATOR on class "
+              + name);
     }
     if (creator == null) {
-      throw new BadParcelableException("Parcelable protocol requires a "
-          + "non-null Parcelable.Creator object called "
-          + "CREATOR on class " + name);
+      throw new BadParcelableException(
+          "Parcelable protocol requires a "
+              + "non-null Parcelable.Creator object called "
+              + "CREATOR on class "
+              + name);
     }
     return creator;
   }
@@ -604,7 +607,6 @@ public class ShadowParcel {
     /** Immutable empty byte array. */
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
-
     /** Representation for an item that has been serialized in a parcel. */
     private static class FakeEncodedItem implements Serializable {
       /** Number of consecutive bytes consumed by this object. */
@@ -713,9 +715,7 @@ public class ShadowParcel {
       return result;
     }
 
-    /**
-     * Reads a byte array from the byte buffer based on the current data position
-     */
+    /** Reads a byte array from the byte buffer based on the current data position */
     public boolean readByteArray(byte[] dest, int destLen) {
       byte[] result = createByteArray();
       if (result == null || destLen != result.length) {
@@ -742,58 +742,42 @@ public class ShadowParcel {
       }
     }
 
-    /**
-     * Writes an int to the byte buffer at the current data position
-     */
+    /** Writes an int to the byte buffer at the current data position */
     public void writeInt(int i) {
       writeValue(INT_SIZE_BYTES, i);
     }
 
-    /**
-     * Reads a int from the byte buffer based on the current data position
-     */
+    /** Reads a int from the byte buffer based on the current data position */
     public int readInt() {
       return readPrimitive(INT_SIZE_BYTES, 0, Integer.class);
     }
 
-    /**
-     * Writes a long to the byte buffer at the current data position
-     */
+    /** Writes a long to the byte buffer at the current data position */
     public void writeLong(long l) {
       writeValue(LONG_OR_DOUBLE_SIZE_BYTES, l);
     }
 
-    /**
-     * Reads a long from the byte buffer based on the current data position
-     */
+    /** Reads a long from the byte buffer based on the current data position */
     public long readLong() {
       return readPrimitive(LONG_OR_DOUBLE_SIZE_BYTES, 0L, Long.class);
     }
 
-    /**
-     * Writes a float to the byte buffer at the current data position
-     */
+    /** Writes a float to the byte buffer at the current data position */
     public void writeFloat(float f) {
       writeValue(INT_SIZE_BYTES, f);
     }
 
-    /**
-     * Reads a float from the byte buffer based on the current data position
-     */
+    /** Reads a float from the byte buffer based on the current data position */
     public float readFloat() {
       return readPrimitive(INT_SIZE_BYTES, 0f, Float.class);
     }
 
-    /**
-     * Writes a double to the byte buffer at the current data position
-     */
+    /** Writes a double to the byte buffer at the current data position */
     public void writeDouble(double d) {
       writeValue(LONG_OR_DOUBLE_SIZE_BYTES, d);
     }
 
-    /**
-     * Reads a double from the byte buffer based on the current data position
-     */
+    /** Reads a double from the byte buffer based on the current data position */
     public double readDouble() {
       return readPrimitive(LONG_OR_DOUBLE_SIZE_BYTES, 0d, Double.class);
     }
@@ -807,9 +791,7 @@ public class ShadowParcel {
       writeValue(sizeBytes, s);
     }
 
-    /**
-     * Reads a String from the byte buffer based on the current data position
-     */
+    /** Reads a String from the byte buffer based on the current data position */
     public String readString() {
       if (readZeroes(INT_SIZE_BYTES * 2)) {
         // Empty string is 4 bytes for length of 0, and 4 bytes for null terminator and padding.
@@ -818,9 +800,7 @@ public class ShadowParcel {
       return readValue(null, String.class, /* allowNull= */ true);
     }
 
-    /**
-     * Writes an IBinder to the byte buffer at the current data position
-     */
+    /** Writes an IBinder to the byte buffer at the current data position */
     public void writeStrongBinder(IBinder b) {
       // Size of struct flat_binder_object in android/binder.h used to encode binders in the real
       // parceling code.
@@ -828,9 +808,7 @@ public class ShadowParcel {
       writeValue(length, b);
     }
 
-    /**
-     * Reads an IBinder from the byte buffer based on the current data position
-     */
+    /** Reads an IBinder from the byte buffer based on the current data position */
     public IBinder readStrongBinder() {
       return readValue(null, IBinder.class, /* allowNull= */ true);
     }
@@ -910,8 +888,7 @@ public class ShadowParcel {
       }
 
       try {
-        ByteArrayInputStream bis = new ByteArrayInputStream(array, offset,
-            length);
+        ByteArrayInputStream bis = new ByteArrayInputStream(array, offset, length);
         ObjectInputStream ois = new ObjectInputStream(bis);
         int numElements = ois.readInt();
         for (int i = 0; i < numElements; i++) {
@@ -960,30 +937,22 @@ public class ShadowParcel {
       }
     }
 
-    /**
-     * Number of unused bytes in this byte buffer.
-     */
+    /** Number of unused bytes in this byte buffer. */
     public int dataAvailable() {
       return dataSize() - dataPosition();
     }
 
-    /**
-     * Total buffer size in bytes of byte buffer included unused space.
-     */
+    /** Total buffer size in bytes of byte buffer included unused space. */
     public int dataCapacity() {
       return data.length;
     }
 
-    /**
-     * Current data position of byte buffer in bytes. Reads / writes are from this position.
-     */
+    /** Current data position of byte buffer in bytes. Reads / writes are from this position. */
     public int dataPosition() {
       return dataPosition;
     }
 
-    /**
-     * Current amount of bytes currently written for ByteBuffer.
-     */
+    /** Current amount of bytes currently written for ByteBuffer. */
     public int dataSize() {
       return dataSize;
     }
@@ -991,8 +960,7 @@ public class ShadowParcel {
     /**
      * Sets the current data position.
      *
-     * @param pos
-     *          Desired position in bytes
+     * @param pos Desired position in bytes
      */
     public void setDataPosition(int pos) {
       if (pos > dataSize) {
@@ -1237,5 +1205,36 @@ public class ShadowParcel {
   @Implementation(minSdk = R)
   protected static String nativeReadString16(long nativePtr) {
     return nativeReadString(nativePtr);
+  }
+
+  // need to use looseSignatures for the S methods because method signatures differ only by return
+  // type
+  @Implementation(minSdk = S)
+  protected static int nativeWriteInt(Object nativePtr, Object val) {
+    nativeWriteInt((long) nativePtr, (int) val);
+    return 0; /* OK */
+  }
+
+  @Implementation(minSdk = S)
+  protected static int nativeWriteLong(Object nativePtr, Object val) {
+    nativeWriteLong((long) nativePtr, (long) val);
+    return 0; /* OK */
+  }
+
+  @Implementation(minSdk = S)
+  protected static int nativeWriteFloat(Object nativePtr, Object val) {
+    nativeWriteFloat((long) nativePtr, (float) val);
+    return 0; /* OK */
+  }
+
+  @Implementation(minSdk = S)
+  protected static int nativeWriteDouble(Object nativePtr, Object val) {
+    nativeWriteDouble((long) nativePtr, (double) val);
+    return 0; /* OK */
+  }
+
+  @Implementation(minSdk = S)
+  protected static void nativeWriteFileDescriptor(Object nativePtr, Object val) {
+    nativeWriteFileDescriptor((long) nativePtr, (FileDescriptor) val);
   }
 }

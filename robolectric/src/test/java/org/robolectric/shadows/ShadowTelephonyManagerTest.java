@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -20,12 +21,14 @@ import static android.telephony.PhoneStateListener.LISTEN_SIGNAL_STRENGTHS;
 import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_LTE_CA;
 import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE;
 import static android.telephony.TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA;
+import static android.telephony.TelephonyManager.CALL_COMPOSER_STATUS_ON;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_OFFHOOK;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 import static android.telephony.TelephonyManager.NETWORK_TYPE_EVDO_0;
 import static android.telephony.TelephonyManager.NETWORK_TYPE_LTE;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -53,8 +56,11 @@ import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
+import android.telephony.TelephonyManager.AuthenticationFailureReason;
+import android.telephony.TelephonyManager.BootstrapAuthenticationCallback;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.UiccSlotInfo;
+import android.telephony.gba.UaSecurityProtocolIdentifier;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Collections;
@@ -162,8 +168,9 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test(expected = SecurityException.class)
-  public void getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
-      throws Exception {
+  public void
+      getSimSerialNumber_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+          throws Exception {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     telephonyManager.getSimSerialNumber();
   }
@@ -215,20 +222,21 @@ public class ShadowTelephonyManagerTest {
     assertNotEquals(callbackCellInfo, telephonyManager.getAllCellInfo());
 
     CountDownLatch callbackLatch = new CountDownLatch(1);
-    shadowOf(telephonyManager).requestCellInfoUpdate(
-          new Executor() {
-            @Override
-            public void execute(Runnable r) {
-              r.run();
-            }
-          },
-          new CellInfoCallback() {
-            @Override
-            public void onCellInfo(List<CellInfo> list) {
-              assertEquals(callbackCellInfo, list);
-              callbackLatch.countDown();
-            }
-          });
+    shadowOf(telephonyManager)
+        .requestCellInfoUpdate(
+            new Executor() {
+              @Override
+              public void execute(Runnable r) {
+                r.run();
+              }
+            },
+            new CellInfoCallback() {
+              @Override
+              public void onCellInfo(List<CellInfo> list) {
+                assertEquals(callbackCellInfo, list);
+                callbackLatch.countDown();
+              }
+            });
 
     assertTrue(callbackLatch.await(5000, TimeUnit.MILLISECONDS));
   }
@@ -701,31 +709,68 @@ public class ShadowTelephonyManagerTest {
     verify(listener, times(1)).onDisplayInfoChanged(displayInfo);
   }
 
-  @Config(minSdk = R)
   @Test(expected = NullPointerException.class)
-  public void setTelephonyDisplayInfo_rejectsNull() {
+  @Config(minSdk = R)
+  public void setTelephonyDisplayInfo_throwsNullPointerException() {
     shadowTelephonyManager.setTelephonyDisplayInfo(null);
   }
 
-  @Config(minSdk = R)
   @Test
+  @Config(minSdk = R)
   public void isDataConnectionAllowed_returnsFalseByDefault() {
     assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isFalse();
   }
 
-  @Config(minSdk = R)
   @Test
+  @Config(minSdk = R)
   public void isDataConnectionAllowed_returnsFalseWhenSetToFalse() {
     shadowTelephonyManager.setIsDataConnectionAllowed(false);
 
     assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isFalse();
   }
 
-  @Config(minSdk = R)
   @Test
+  @Config(minSdk = R)
   public void isDataConnectionAllowed_returnsTrueWhenSetToTrue() {
     shadowTelephonyManager.setIsDataConnectionAllowed(true);
 
     assertThat(shadowTelephonyManager.isDataConnectionAllowed()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getCallComposerStatus_default() {
+    assertThat(telephonyManager.getCallComposerStatus()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setCallComposerStatus() {
+    ShadowTelephonyManager.setCallComposerStatus(CALL_COMPOSER_STATUS_ON);
+
+    assertThat(telephonyManager.getCallComposerStatus()).isEqualTo(CALL_COMPOSER_STATUS_ON);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getBootstrapAuthenticationCallback() {
+    BootstrapAuthenticationCallback callback =
+        new BootstrapAuthenticationCallback() {
+          @Override
+          public void onKeysAvailable(byte[] gbaKey, String transactionId) {}
+
+          @Override
+          public void onAuthenticationFailure(@AuthenticationFailureReason int reason) {}
+        };
+
+    telephonyManager.bootstrapAuthenticationRequest(
+        TelephonyManager.APPTYPE_ISIM,
+        Uri.parse("tel:test-uri"),
+        new UaSecurityProtocolIdentifier.Builder().build(),
+        true,
+        directExecutor(),
+        callback);
+
+    assertThat(shadowTelephonyManager.getBootstrapAuthenticationCallback()).isEqualTo(callback);
   }
 }

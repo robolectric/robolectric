@@ -71,18 +71,36 @@ public class FrameMetricsBuilderTest {
   }
 
   @Test
+  public void totalDurationIsSumOfOtherDurations() throws Exception {
+    long unknownDelay = 1L;
+    long animation = 20L;
+    long inputHandling = 300L;
+
+    assertThat(
+            new FrameMetricsBuilder()
+                .setMetric(FrameMetrics.UNKNOWN_DELAY_DURATION, unknownDelay)
+                .setMetric(FrameMetrics.ANIMATION_DURATION, animation)
+                .setMetric(FrameMetrics.INPUT_HANDLING_DURATION, inputHandling)
+                .build()
+                .getMetric(FrameMetrics.TOTAL_DURATION))
+        .isEqualTo(unknownDelay + animation + inputHandling);
+  }
+
+  @Test
   public void totalDurationExcludesNonDurationValues() throws Exception {
     long unknownDelay = 1L;
     long animation = 20L;
     long inputHandling = 300L;
+    long deadline = 400L;
     long largeValue = 40000L;
     assertThat(
-            new org.robolectric.shadows.FrameMetricsBuilder()
+            new FrameMetricsBuilder()
                 .setMetric(FrameMetrics.UNKNOWN_DELAY_DURATION, unknownDelay)
                 .setMetric(FrameMetrics.ANIMATION_DURATION, animation)
                 .setMetric(FrameMetrics.INPUT_HANDLING_DURATION, inputHandling)
 
                 // metrics that should not impact TOTAL_DURATION
+                .setMetric(FrameMetrics.DEADLINE, deadline)
                 .setMetric(FrameMetrics.FIRST_DRAW_FRAME, 1)
                 .setMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP, largeValue)
                 .setMetric(FrameMetrics.VSYNC_TIMESTAMP, largeValue)

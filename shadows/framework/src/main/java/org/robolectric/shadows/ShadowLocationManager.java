@@ -63,6 +63,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadows.ShadowSettings.ShadowSecure;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /**
  * Shadow for {@link LocationManager}. Note that the default state of location on Android devices is
@@ -250,8 +251,13 @@ public class ShadowLocationManager {
 
   protected Constructor<LocationProvider> loadLocationProviderConstructor()
       throws ReflectiveOperationException {
-    return LocationProvider.class.getConstructor(
-        String.class, com.android.internal.location.ProviderProperties.class);
+    if (RuntimeEnvironment.getApiLevel() > R) {
+      return LocationProvider.class.getConstructor(
+          String.class, android.location.provider.ProviderProperties.class);
+    } else {
+      return LocationProvider.class.getConstructor(
+          String.class, Class.forName("com.android.internal.location.ProviderProperties"));
+    }
   }
 
   @Implementation
@@ -430,7 +436,7 @@ public class ShadowLocationManager {
     CancellableLocationListener listener = new CancellableLocationListener(executor, consumer);
     requestLocationUpdatesInternal(
         provider,
-        new LocationRequest(new android.location.LocationRequest()),
+        new LocationRequest(android.location.LocationRequest.create()),
         Runnable::run,
         listener);
 
@@ -594,7 +600,7 @@ public class ShadowLocationManager {
   protected void requestLocationUpdates(
       @Nullable Object request, Object executorOrListener, Object listenerOrLooper) {
     if (request == null) {
-      request = new android.location.LocationRequest();
+      request = android.location.LocationRequest.create();
     }
     if (executorOrListener instanceof Executor) {
       requestLocationUpdatesInternal(
@@ -621,7 +627,7 @@ public class ShadowLocationManager {
   @Implementation(minSdk = LOLLIPOP)
   protected void requestLocationUpdates(@Nullable Object request, Object pendingIntent) {
     if (request == null) {
-      request = new android.location.LocationRequest();
+      request = android.location.LocationRequest.create();
     }
     requestLocationUpdatesInternal(
         ((android.location.LocationRequest) request).getProvider(),
@@ -1347,16 +1353,35 @@ public class ShadowLocationManager {
       boolean supportsBearing,
       int powerRequirement,
       int accuracy) {
-    return new com.android.internal.location.ProviderProperties(
-        requiresNetwork,
-        requiresSatellite,
-        requiresCell,
-        hasMonetaryCost,
-        supportsAltitude,
-        supportsSpeed,
-        supportsBearing,
-        powerRequirement,
-        accuracy);
+    if (RuntimeEnvironment.getApiLevel() > R) {
+      return new android.location.provider.ProviderProperties.Builder()
+          .setHasNetworkRequirement(requiresNetwork)
+          .setHasSatelliteRequirement(requiresSatellite)
+          .setHasCellRequirement(requiresCell)
+          .setHasMonetaryCost(hasMonetaryCost)
+          .setHasAltitudeSupport(supportsAltitude)
+          .setHasSpeedSupport(supportsSpeed)
+          .setHasBearingSupport(supportsBearing)
+          .setPowerUsage(powerRequirement)
+          .setAccuracy(accuracy)
+          .build();
+    } else {
+      try {
+        return ReflectionHelpers.callConstructor(
+            Class.forName("com.android.internal.location.ProviderProperties"),
+            ClassParameter.from(boolean.class, requiresNetwork),
+            ClassParameter.from(boolean.class, requiresSatellite),
+            ClassParameter.from(boolean.class, requiresCell),
+            ClassParameter.from(boolean.class, hasMonetaryCost),
+            ClassParameter.from(boolean.class, supportsAltitude),
+            ClassParameter.from(boolean.class, supportsSpeed),
+            ClassParameter.from(boolean.class, supportsBearing),
+            ClassParameter.from(int.class, powerRequirement),
+            ClassParameter.from(int.class, accuracy));
+      } catch (ClassNotFoundException c) {
+        throw new RuntimeException("Unable to load old ProviderProperties class", c);
+      }
+    }
   }
 
   // LocationRequest doesn't exist on JB, so we can't use the platform version

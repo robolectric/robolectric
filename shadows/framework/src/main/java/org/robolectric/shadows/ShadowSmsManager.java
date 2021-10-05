@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -56,7 +57,9 @@ public class ShadowSmsManager {
       throw new IllegalArgumentException("Invalid destinationAddress");
     }
 
-    lastDataParams = new DataMessageParams(destinationAddress, scAddress, destinationPort, data, sentIntent, deliveryIntent);
+    lastDataParams =
+        new DataMessageParams(
+            destinationAddress, scAddress, destinationPort, data, sentIntent, deliveryIntent);
   }
 
   @Implementation
@@ -114,7 +117,8 @@ public class ShadowSmsManager {
       throw new IllegalArgumentException("Invalid message parts");
     }
 
-    lastTextMultipartParams = new TextMultipartParams(destinationAddress, scAddress, parts, sentIntents, deliveryIntents);
+    lastTextMultipartParams =
+        new TextMultipartParams(destinationAddress, scAddress, parts, sentIntents, deliveryIntents);
   }
 
   /** @return Parameters for last call to {@link #sendDataMessage}. */
@@ -155,7 +159,13 @@ public class ShadowSmsManager {
     private final PendingIntent sentIntent;
     private final PendingIntent deliveryIntent;
 
-    public DataMessageParams(String destinationAddress, String scAddress, short destinationPort, byte[] data, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+    public DataMessageParams(
+        String destinationAddress,
+        String scAddress,
+        short destinationPort,
+        byte[] data,
+        PendingIntent sentIntent,
+        PendingIntent deliveryIntent) {
       this.destinationAddress = destinationAddress;
       this.scAddress = scAddress;
       this.destinationPort = destinationPort;
@@ -197,7 +207,12 @@ public class ShadowSmsManager {
     private final PendingIntent deliveryIntent;
     private final long messageId;
 
-    public TextSmsParams(String destinationAddress, String scAddress, String text, PendingIntent sentIntent, PendingIntent deliveryIntent) {
+    public TextSmsParams(
+        String destinationAddress,
+        String scAddress,
+        String text,
+        PendingIntent sentIntent,
+        PendingIntent deliveryIntent) {
       this(destinationAddress, scAddress, text, sentIntent, deliveryIntent, 0L);
     }
 
@@ -249,7 +264,12 @@ public class ShadowSmsManager {
     private final List<PendingIntent> deliveryIntents;
     private final long messageId;
 
-    public TextMultipartParams(String destinationAddress, String scAddress, ArrayList<String> parts, ArrayList<PendingIntent> sentIntents, ArrayList<PendingIntent> deliveryIntents) {
+    public TextMultipartParams(
+        String destinationAddress,
+        String scAddress,
+        ArrayList<String> parts,
+        ArrayList<PendingIntent> sentIntents,
+        ArrayList<PendingIntent> deliveryIntents) {
       this(destinationAddress, scAddress, parts, sentIntents, deliveryIntents, 0L);
     }
 
@@ -313,6 +333,23 @@ public class ShadowSmsManager {
         new SendMultimediaMessageParams(contentUri, locationUrl, configOverrides, sentIntent, 0L);
   }
 
+  @Implementation(minSdk = S)
+  protected void sendMultimediaMessage(
+      Context context,
+      Uri contentUri,
+      @Nullable String locationUrl,
+      @Nullable Bundle configOverrides,
+      @Nullable PendingIntent sentIntent,
+      long messageId) {
+    if (contentUri == null || TextUtils.isEmpty(contentUri.getHost())) {
+      throw new IllegalArgumentException("Invalid contentUri");
+    }
+
+    lastSentMultimediaMessageParams =
+        new SendMultimediaMessageParams(
+            contentUri, locationUrl, configOverrides, sentIntent, messageId);
+  }
+
   @Implementation(minSdk = LOLLIPOP)
   protected void downloadMultimediaMessage(
       Context context,
@@ -331,6 +368,27 @@ public class ShadowSmsManager {
     lastDownloadedMultimediaMessageParams =
         new DownloadMultimediaMessageParams(
             contentUri, locationUrl, configOverrides, sentIntent, 0L);
+  }
+
+  @Implementation(minSdk = S)
+  protected void downloadMultimediaMessage(
+      Context context,
+      String locationUrl,
+      Uri contentUri,
+      @Nullable Bundle configOverrides,
+      @Nullable PendingIntent sentIntent,
+      long messageId) {
+    if (contentUri == null || TextUtils.isEmpty(contentUri.getHost())) {
+      throw new IllegalArgumentException("Invalid contentUri");
+    }
+
+    if (TextUtils.isEmpty(locationUrl)) {
+      throw new IllegalArgumentException("Invalid locationUrl");
+    }
+
+    lastDownloadedMultimediaMessageParams =
+        new org.robolectric.shadows.ShadowSmsManager.DownloadMultimediaMessageParams(
+            contentUri, locationUrl, configOverrides, sentIntent, messageId);
   }
 
   /** @return Parameters for last call to {@link #sendMultimediaMessage}. */

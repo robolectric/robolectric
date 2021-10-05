@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -26,6 +28,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
@@ -165,8 +168,29 @@ public class ShadowActivityThread {
    * @param androidConfiguration
    */
   public void setCompatConfiguration(Configuration androidConfiguration) {
-    reflector(_ActivityThread_.class, realActivityThread)
-        .setCompatConfiguration(androidConfiguration);
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      // Setting compat configuration was refactored in android S
+      // use reflection to create package private classes
+      Class<?> activityThreadInternalClass =
+          ReflectionHelpers.loadClass(
+              getClass().getClassLoader(), "android.app.ActivityThreadInternal");
+      Class<?> configurationControllerClass =
+          ReflectionHelpers.loadClass(
+              getClass().getClassLoader(), "android.app.ConfigurationController");
+      Object configController =
+          ReflectionHelpers.callConstructor(
+              configurationControllerClass, from(activityThreadInternalClass, realActivityThread));
+      ReflectionHelpers.callInstanceMethod(
+          configController,
+          "setCompatConfiguration",
+          from(Configuration.class, androidConfiguration));
+      androidConfiguration =
+          ReflectionHelpers.callInstanceMethod(configController, "getCompatConfiguration");
+      ReflectionHelpers.setField(realActivityThread, "mConfigurationController", configController);
+    } else {
+      reflector(_ActivityThread_.class, realActivityThread)
+          .setCompatConfiguration(androidConfiguration);
+    }
   }
 
   /** Accessor interface for {@link ActivityThread}'s internals. */

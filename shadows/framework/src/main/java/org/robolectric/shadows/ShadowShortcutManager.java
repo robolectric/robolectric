@@ -230,6 +230,13 @@ public class ShadowShortcutManager {
   }
 
   /**
+   * No-op on Robolectric. The real implementation calls out to a service, which will NPE on
+   * Robolectric.
+   */
+  protected void updateShortcutVisibility(
+      final String packageName, final byte[] certificate, final boolean visible) {}
+
+  /**
    * In Robolectric, ShadowShortcutManager doesn't perform any caching so long lived shortcuts are
    * returned on place of shortcuts cached when shown in notifications.
    */

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -30,6 +31,12 @@ public class ShadowHardwareRenderer {
     return nCreateProxy(translucent, rootRenderNode);
   }
 
+  // need to use loose signatures here to account for signature changes
+  @Implementation(minSdk = S)
+  protected static long nCreateProxy(Object translucent, Object rootRenderNode) {
+    return nCreateProxy((boolean) translucent, (long) rootRenderNode);
+  }
+
   @Implementation
   protected static Bitmap createHardwareBitmap(
       /*RenderNode*/ Object node, /*int*/ Object width, /*int*/ Object height) {
@@ -42,5 +49,4 @@ public class ShadowHardwareRenderer {
     shadowBitmap.setMutable(false);
     return bitmap;
   }
-
 }
