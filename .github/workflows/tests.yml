@@ -75,7 +75,7 @@ jobs:
           name: test_results_${{ matrix.api-versions }}
           path: '**/build/test-results/**/TEST-*.xml'
 
-  instrumetation-tests:
+  instrumentation-tests:
     runs-on: macos-latest
     timeout-minutes: 60
     needs: build
