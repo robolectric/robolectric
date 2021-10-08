@@ -308,6 +308,9 @@ public class ShadowResources {
     }
 
     private Resources getResources() {
+      if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+        return realTheme.getResources();
+      }
       return ReflectionHelpers.getField(realTheme, "this$0");
     }
   }
