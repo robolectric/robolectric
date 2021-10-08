@@ -42,7 +42,7 @@ abstract public class ShadowAssetManager {
    */
   @Deprecated
   static ShadowLegacyAssetManager legacyShadowOf(AssetManager assetManager) {
-    return (ShadowLegacyAssetManager) Shadow.extract(assetManager);
+    return Shadow.extract(assetManager);
   }
 
   abstract Collection<Path> getAllAssetDirs();
