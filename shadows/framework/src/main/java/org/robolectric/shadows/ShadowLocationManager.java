@@ -3,13 +3,6 @@ package org.robolectric.shadows;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.P;
-import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.R;
-import static android.os.Build.VERSION_CODES.S;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -31,7 +24,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
+import android.location.LocationRequest;
 import android.location.OnNmeaMessageListener;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
@@ -44,6 +39,7 @@ import android.text.TextUtils;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -54,7 +50,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.function.Consumer;
@@ -95,7 +90,7 @@ public class ShadowLocationManager {
     private final int powerRequirement;
     private final int accuracy;
 
-    @RequiresApi(S)
+    @RequiresApi(VERSION_CODES.S)
     ProviderProperties(android.location.provider.ProviderProperties properties) {
       this.properties = Objects.requireNonNull(properties);
       this.requiresNetwork = false;
@@ -119,7 +114,7 @@ public class ShadowLocationManager {
         boolean supportsBearing,
         int powerRequirement,
         int accuracy) {
-      if (RuntimeEnvironment.getApiLevel() >= S) {
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
         properties =
             new android.location.provider.ProviderProperties.Builder()
                 .setHasNetworkRequirement(requiresNetwork)
@@ -160,7 +155,7 @@ public class ShadowLocationManager {
           criteria.getAccuracy());
     }
 
-    @RequiresApi(S)
+    @RequiresApi(VERSION_CODES.S)
     android.location.provider.ProviderProperties getProviderProperties() {
       return (android.location.provider.ProviderProperties) Objects.requireNonNull(properties);
     }
@@ -364,7 +359,7 @@ public class ShadowLocationManager {
   @Implementation
   @Nullable
   protected LocationProvider getProvider(String name) {
-    if (RuntimeEnvironment.getApiLevel() < KITKAT) {
+    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.KITKAT) {
       // jelly bean has no way to properly construct a LocationProvider, we give up
       return null;
     }
@@ -382,7 +377,7 @@ public class ShadowLocationManager {
     try {
       synchronized (ShadowLocationManager.class) {
         if (locationProviderConstructor == null) {
-          if (RuntimeEnvironment.getApiLevel() >= S) {
+          if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
             locationProviderConstructor =
                 LocationProvider.class.getConstructor(
                     String.class, android.location.provider.ProviderProperties.class);
@@ -395,7 +390,7 @@ public class ShadowLocationManager {
           locationProviderConstructor.setAccessible(true);
         }
 
-        if (RuntimeEnvironment.getApiLevel() >= S) {
+        if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
           return locationProviderConstructor.newInstance(name, properties.getProviderProperties());
         } else {
           return locationProviderConstructor.newInstance(
@@ -448,7 +443,7 @@ public class ShadowLocationManager {
     return null;
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = VERSION_CODES.S)
   @Nullable
   protected Object getProviderProperties(Object providerStr) {
     String provider = (String) providerStr;
@@ -469,7 +464,7 @@ public class ShadowLocationManager {
     return properties.getProviderProperties();
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = VERSION_CODES.S)
   protected boolean hasProvider(String provider) {
     if (provider == null) {
       throw new IllegalArgumentException();
@@ -480,7 +475,7 @@ public class ShadowLocationManager {
 
   @Implementation
   protected boolean isProviderEnabled(String provider) {
-    if (RuntimeEnvironment.getApiLevel() >= P) {
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
       if (!isLocationEnabled()) {
         return false;
       }
@@ -513,7 +508,7 @@ public class ShadowLocationManager {
   }
 
   // @SystemApi
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = VERSION_CODES.P)
   protected boolean isLocationEnabledForUser(UserHandle userHandle) {
     return isLocationEnabled();
   }
@@ -523,7 +518,7 @@ public class ShadowLocationManager {
   }
 
   // @SystemApi
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = VERSION_CODES.P)
   protected void setLocationEnabledForUser(boolean enabled, UserHandle userHandle) {
     setLocationModeInternal(enabled ? LOCATION_MODE_HIGH_ACCURACY : LOCATION_MODE_OFF);
   }
@@ -547,7 +542,7 @@ public class ShadowLocationManager {
    * to achieve the desired effect.
    */
   public void setLocationMode(int locationMode) {
-    if (RuntimeEnvironment.getApiLevel() >= P) {
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.P) {
       throw new AssertionError(
           "Tests may not set location mode directly on P and above. Instead, use"
               + " setLocationEnabled() and setProviderEnabled() in combination to achieve the"
@@ -572,22 +567,40 @@ public class ShadowLocationManager {
     return providerEntry.getLastLocation();
   }
 
-  /** Sets the last known location for the given provider. */
+  /**
+   * @deprecated Use {@link #simulateLocation(Location)} to update the last location for a provider.
+   */
+  @Deprecated
   public void setLastKnownLocation(String provider, @Nullable Location location) {
     getOrCreateProviderEntry(provider).setLastLocation(location);
   }
 
-  @Implementation(minSdk = R)
+  @RequiresApi(api = VERSION_CODES.R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected void getCurrentLocation(
       String provider,
       @Nullable CancellationSignal cancellationSignal,
       Executor executor,
       Consumer<Location> consumer) {
-    getCurrentLocationInternal(provider, cancellationSignal, executor, consumer);
+    getCurrentLocationInternal(
+        provider, LocationRequest.create(), cancellationSignal, executor, consumer);
   }
 
+  @RequiresApi(api = VERSION_CODES.S)
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void getCurrentLocation(
+      String provider,
+      LocationRequest request,
+      @Nullable CancellationSignal cancellationSignal,
+      Executor executor,
+      Consumer<Location> consumer) {
+    getCurrentLocationInternal(provider, request, cancellationSignal, executor, consumer);
+  }
+
+  @RequiresApi(api = VERSION_CODES.R)
   private void getCurrentLocationInternal(
       String provider,
+      LocationRequest request,
       @Nullable CancellationSignal cancellationSignal,
       Executor executor,
       Consumer<Location> consumer) {
@@ -605,12 +618,9 @@ public class ShadowLocationManager {
       }
     }
 
-    CancellableLocationListener listener = new CancellableLocationListener(executor, consumer);
+    CurrentLocationTransport listener = new CurrentLocationTransport(executor, consumer);
     requestLocationUpdatesInternal(
-        provider,
-        new LocationRequest(android.location.LocationRequest.create()),
-        Runnable::run,
-        listener);
+        provider, new RoboLocationRequest(request), Runnable::run, listener);
 
     if (cancellationSignal != null) {
       cancellationSignal.setOnCancelListener(listener::cancel);
@@ -630,7 +640,10 @@ public class ShadowLocationManager {
       }
     }
     requestLocationUpdatesInternal(
-        provider, new LocationRequest(true), new HandlerExecutor(new Handler(looper)), listener);
+        provider,
+        new RoboLocationRequest(provider, 0, 0, true),
+        new HandlerExecutor(new Handler(looper)),
+        listener);
   }
 
   @Implementation
@@ -649,14 +662,15 @@ public class ShadowLocationManager {
     }
     requestLocationUpdatesInternal(
         bestProvider,
-        new LocationRequest(true),
+        new RoboLocationRequest(bestProvider, 0, 0, true),
         new HandlerExecutor(new Handler(looper)),
         listener);
   }
 
   @Implementation
   protected void requestSingleUpdate(String provider, PendingIntent pendingIntent) {
-    requestLocationUpdatesInternal(provider, new LocationRequest(true), pendingIntent);
+    requestLocationUpdatesInternal(
+        provider, new RoboLocationRequest(provider, 0, 0, true), pendingIntent);
   }
 
   @Implementation
@@ -665,7 +679,8 @@ public class ShadowLocationManager {
     if (bestProvider == null) {
       throw new IllegalArgumentException("no providers found for criteria");
     }
-    requestLocationUpdatesInternal(bestProvider, new LocationRequest(true), pendingIntent);
+    requestLocationUpdatesInternal(
+        bestProvider, new RoboLocationRequest(bestProvider, 0, 0, true), pendingIntent);
   }
 
   @Implementation
@@ -673,7 +688,7 @@ public class ShadowLocationManager {
       String provider, long minTime, float minDistance, LocationListener listener) {
     requestLocationUpdatesInternal(
         provider,
-        new LocationRequest(minTime, minDistance),
+        new RoboLocationRequest(provider, minTime, minDistance, false),
         new HandlerExecutor(new Handler()),
         listener);
   }
@@ -694,12 +709,12 @@ public class ShadowLocationManager {
     }
     requestLocationUpdatesInternal(
         provider,
-        new LocationRequest(minTime, minDistance),
+        new RoboLocationRequest(provider, minTime, minDistance, false),
         new HandlerExecutor(new Handler(looper)),
         listener);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected void requestLocationUpdates(
       String provider,
       long minTime,
@@ -707,7 +722,10 @@ public class ShadowLocationManager {
       Executor executor,
       LocationListener listener) {
     requestLocationUpdatesInternal(
-        provider, new LocationRequest(minTime, minDistance), executor, listener);
+        provider,
+        new RoboLocationRequest(provider, minTime, minDistance, false),
+        executor,
+        listener);
   }
 
   @Implementation
@@ -730,12 +748,12 @@ public class ShadowLocationManager {
     }
     requestLocationUpdatesInternal(
         bestProvider,
-        new LocationRequest(minTime, minDistance),
+        new RoboLocationRequest(bestProvider, minTime, minDistance, false),
         new HandlerExecutor(new Handler(looper)),
         listener);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected void requestLocationUpdates(
       long minTime,
       float minDistance,
@@ -747,14 +765,17 @@ public class ShadowLocationManager {
       throw new IllegalArgumentException("no providers found for criteria");
     }
     requestLocationUpdatesInternal(
-        bestProvider, new LocationRequest(minTime, minDistance), executor, listener);
+        bestProvider,
+        new RoboLocationRequest(bestProvider, minTime, minDistance, false),
+        executor,
+        listener);
   }
 
   @Implementation
   protected void requestLocationUpdates(
       String provider, long minTime, float minDistance, PendingIntent pendingIntent) {
     requestLocationUpdatesInternal(
-        provider, new LocationRequest(minTime, minDistance), pendingIntent);
+        provider, new RoboLocationRequest(provider, minTime, minDistance, false), pendingIntent);
   }
 
   @Implementation
@@ -765,50 +786,65 @@ public class ShadowLocationManager {
       throw new IllegalArgumentException("no providers found for criteria");
     }
     requestLocationUpdatesInternal(
-        bestProvider, new LocationRequest(minTime, minDistance), pendingIntent);
+        bestProvider,
+        new RoboLocationRequest(bestProvider, minTime, minDistance, false),
+        pendingIntent);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = VERSION_CODES.KITKAT)
   protected void requestLocationUpdates(
-      @Nullable Object request, Object executorOrListener, Object listenerOrLooper) {
+      @Nullable LocationRequest request, Executor executor, LocationListener listener) {
     if (request == null) {
-      request = android.location.LocationRequest.create();
-    }
-    if (executorOrListener instanceof Executor) {
-      requestLocationUpdatesInternal(
-          ((android.location.LocationRequest) request).getProvider(),
-          new LocationRequest((android.location.LocationRequest) request),
-          (Executor) executorOrListener,
-          (LocationListener) listenerOrLooper);
-    } else if (executorOrListener instanceof LocationListener) {
-      if (listenerOrLooper == null) {
-        listenerOrLooper = Looper.myLooper();
-        if (listenerOrLooper == null) {
-          // forces appropriate exception
-          new Handler();
-        }
-      }
-      requestLocationUpdatesInternal(
-          ((android.location.LocationRequest) request).getProvider(),
-          new LocationRequest((android.location.LocationRequest) request),
-          new HandlerExecutor(new Handler((Looper) listenerOrLooper)),
-          (LocationListener) executorOrListener);
-    }
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void requestLocationUpdates(@Nullable Object request, Object pendingIntent) {
-    if (request == null) {
-      request = android.location.LocationRequest.create();
+      request = LocationRequest.create();
     }
     requestLocationUpdatesInternal(
-        ((android.location.LocationRequest) request).getProvider(),
-        new LocationRequest((android.location.LocationRequest) request),
-        (PendingIntent) pendingIntent);
+        request.getProvider(), new RoboLocationRequest(request), executor, listener);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  protected void requestLocationUpdates(
+      @Nullable LocationRequest request, LocationListener listener, Looper looper) {
+    if (request == null) {
+      request = LocationRequest.create();
+    }
+    if (looper == null) {
+      looper = Looper.myLooper();
+      if (looper == null) {
+        // forces appropriate exception
+        new Handler();
+      }
+    }
+    requestLocationUpdatesInternal(
+        request.getProvider(),
+        new RoboLocationRequest(request),
+        new HandlerExecutor(new Handler(looper)),
+        listener);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  protected void requestLocationUpdates(
+      @Nullable LocationRequest request, PendingIntent pendingIntent) {
+    if (request == null) {
+      request = LocationRequest.create();
+    }
+    requestLocationUpdatesInternal(
+        request.getProvider(), new RoboLocationRequest(request), pendingIntent);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void requestLocationUpdates(
+      String provider, LocationRequest request, Executor executor, LocationListener listener) {
+    requestLocationUpdatesInternal(provider, new RoboLocationRequest(request), executor, listener);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void requestLocationUpdates(
+      String provider, LocationRequest request, PendingIntent pendingIntent) {
+    requestLocationUpdatesInternal(provider, new RoboLocationRequest(request), pendingIntent);
   }
 
   private void requestLocationUpdatesInternal(
-      String provider, LocationRequest request, Executor executor, LocationListener listener) {
+      String provider, RoboLocationRequest request, Executor executor, LocationListener listener) {
     if (provider == null || request == null || executor == null || listener == null) {
       throw new IllegalArgumentException();
     }
@@ -816,7 +852,7 @@ public class ShadowLocationManager {
   }
 
   private void requestLocationUpdatesInternal(
-      String provider, LocationRequest request, PendingIntent pendingIntent) {
+      String provider, RoboLocationRequest request, PendingIntent pendingIntent) {
     if (provider == null || request == null || pendingIntent == null) {
       throw new IllegalArgumentException();
     }
@@ -825,22 +861,65 @@ public class ShadowLocationManager {
 
   @Implementation
   protected void removeUpdates(LocationListener listener) {
-    removeListenerInternal(listener);
+    removeUpdatesInternal(listener);
   }
 
   @Implementation
   protected void removeUpdates(PendingIntent pendingIntent) {
-    removeListenerInternal(pendingIntent);
+    removeUpdatesInternal(pendingIntent);
   }
 
-  @Implementation(minSdk = P)
+  private void removeUpdatesInternal(Object key) {
+    for (ProviderEntry providerEntry : getProviderEntries()) {
+      providerEntry.removeListener(key);
+    }
+  }
+
+  /**
+   * Returns the list of {@link LocationRequest} currently registered under the given provider.
+   * Clients compiled against the public Android SDK should only use this method on S+, clients
+   * compiled against the system Android SDK may only use this method on Kitkat+.
+   *
+   * <p>Prior to Kitkat, or for public clients prior to S, use {@link
+   * #getLegacyLocationRequests(String)} instead.
+   */
+  @RequiresApi(VERSION_CODES.KITKAT)
+  public List<LocationRequest> getLocationRequests(String provider) {
+    ProviderEntry providerEntry = getProviderEntry(provider);
+    if (providerEntry == null) {
+      return ImmutableList.of();
+    }
+
+    return ImmutableList.copyOf(
+        Iterables.transform(
+            providerEntry.getTransports(),
+            transport -> transport.getRequest().getLocationRequest()));
+  }
+
+  /**
+   * Returns the list of {@link RoboLocationRequest} currently registered under the given provider.
+   * Since {@link LocationRequest} was not publicly visible prior to S, and did not exist prior to
+   * Kitkat, {@link RoboLocationRequest} allows querying the location requests prior to those
+   * platforms.
+   */
+  public List<RoboLocationRequest> getLegacyLocationRequests(String provider) {
+    ProviderEntry providerEntry = getProviderEntry(provider);
+    if (providerEntry == null) {
+      return ImmutableList.of();
+    }
+
+    return ImmutableList.copyOf(
+        Iterables.transform(providerEntry.getTransports(), LocationTransport::getRequest));
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
   protected boolean injectLocation(Location location) {
     return false;
   }
 
   @Implementation
   protected boolean addGpsStatusListener(GpsStatus.Listener listener) {
-    if (RuntimeEnvironment.getApiLevel() > R) {
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.R) {
       throw new UnsupportedOperationException(
           "GpsStatus APIs not supported, please use GnssStatus APIs instead");
     }
@@ -854,7 +933,7 @@ public class ShadowLocationManager {
 
   @Implementation
   protected void removeGpsStatusListener(GpsStatus.Listener listener) {
-    if (RuntimeEnvironment.getApiLevel() > R) {
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.R) {
       throw new UnsupportedOperationException(
           "GpsStatus APIs not supported, please use GnssStatus APIs instead");
     }
@@ -871,7 +950,7 @@ public class ShadowLocationManager {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = VERSION_CODES.N)
   protected boolean registerGnssStatusCallback(GnssStatus.Callback callback, Handler handler) {
     if (handler == null) {
       handler = new Handler();
@@ -880,7 +959,7 @@ public class ShadowLocationManager {
     return registerGnssStatusCallback(new HandlerExecutor(handler), callback);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected boolean registerGnssStatusCallback(Executor executor, GnssStatus.Callback listener) {
     synchronized (gnssStatusTransports) {
       Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
@@ -890,7 +969,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = VERSION_CODES.N)
   protected void unregisterGnssStatusCallback(GnssStatus.Callback listener) {
     synchronized (gnssStatusTransports) {
       Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
@@ -898,7 +977,7 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS status started event. */
-  @RequiresApi(N)
+  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatusStarted() {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -911,7 +990,7 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS status first fix event. */
-  @RequiresApi(N)
+  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatusFirstFix(int ttff) {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -924,7 +1003,7 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS status event. */
-  @RequiresApi(N)
+  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatus(GnssStatus status) {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -936,15 +1015,17 @@ public class ShadowLocationManager {
     }
   }
 
-  /** @deprecated Use {@link #simulateGnssStatus(GnssStatus)} instead. */
+  /**
+   * @deprecated Use {@link #simulateGnssStatus(GnssStatus)} instead.
+   */
   @Deprecated
-  @RequiresApi(N)
+  @RequiresApi(VERSION_CODES.N)
   public void sendGnssStatus(GnssStatus status) {
     simulateGnssStatus(status);
   }
 
   /** Simulates a GNSS status stopped event. */
-  @RequiresApi(N)
+  @RequiresApi(VERSION_CODES.N)
   public void simulateGnssStatusStopped() {
     List<GnssStatusCallbackTransport> transports;
     synchronized (gnssStatusTransports) {
@@ -956,7 +1037,7 @@ public class ShadowLocationManager {
     }
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = VERSION_CODES.N)
   protected boolean addNmeaListener(OnNmeaMessageListener listener, Handler handler) {
     if (handler == null) {
       handler = new Handler();
@@ -965,7 +1046,7 @@ public class ShadowLocationManager {
     return addNmeaListener(new HandlerExecutor(handler), listener);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected boolean addNmeaListener(Executor executor, OnNmeaMessageListener listener) {
     synchronized (nmeaMessageTransports) {
       Iterables.removeIf(nmeaMessageTransports, transport -> transport.getListener() == listener);
@@ -975,7 +1056,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = VERSION_CODES.N)
   protected void removeNmeaListener(OnNmeaMessageListener listener) {
     synchronized (nmeaMessageTransports) {
       Iterables.removeIf(nmeaMessageTransports, transport -> transport.getListener() == listener);
@@ -983,7 +1064,7 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a NMEA message. */
-  @RequiresApi(api = N)
+  @RequiresApi(api = VERSION_CODES.N)
   public void simulateNmeaMessage(String message, long timestamp) {
     List<OnNmeaMessageListenerTransport> transports;
     synchronized (nmeaMessageTransports) {
@@ -995,14 +1076,16 @@ public class ShadowLocationManager {
     }
   }
 
-  /** @deprecated Use {@link #simulateNmeaMessage(String, long)} instead. */
+  /**
+   * @deprecated Use {@link #simulateNmeaMessage(String, long)} instead.
+   */
   @Deprecated
-  @RequiresApi(api = N)
+  @RequiresApi(api = VERSION_CODES.N)
   public void sendNmeaMessage(String message, long timestamp) {
     simulateNmeaMessage(message, timestamp);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = VERSION_CODES.N)
   protected boolean registerGnssMeasurementsCallback(
       GnssMeasurementsEvent.Callback listener, Handler handler) {
     if (handler == null) {
@@ -1012,7 +1095,7 @@ public class ShadowLocationManager {
     return registerGnssMeasurementsCallback(new HandlerExecutor(handler), listener);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected boolean registerGnssMeasurementsCallback(
       Executor executor, GnssMeasurementsEvent.Callback listener) {
     synchronized (gnssMeasurementTransports) {
@@ -1024,7 +1107,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = VERSION_CODES.N)
   protected void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback listener) {
     synchronized (gnssMeasurementTransports) {
       Iterables.removeIf(
@@ -1033,7 +1116,7 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS measurements event. */
-  @RequiresApi(api = N)
+  @RequiresApi(api = VERSION_CODES.N)
   public void simulateGnssMeasurementsEvent(GnssMeasurementsEvent event) {
     List<GnssMeasurementsEventCallbackTransport> transports;
     synchronized (gnssMeasurementTransports) {
@@ -1045,15 +1128,17 @@ public class ShadowLocationManager {
     }
   }
 
-  /** @deprecated Use {@link #simulateGnssMeasurementsEvent(GnssMeasurementsEvent)} instead. */
+  /**
+   * @deprecated Use {@link #simulateGnssMeasurementsEvent(GnssMeasurementsEvent)} instead.
+   */
   @Deprecated
-  @RequiresApi(api = N)
+  @RequiresApi(api = VERSION_CODES.N)
   public void sendGnssMeasurementsEvent(GnssMeasurementsEvent event) {
     simulateGnssMeasurementsEvent(event);
   }
 
   /** Simulates a GNSS measurements status change. */
-  @RequiresApi(api = N)
+  @RequiresApi(api = VERSION_CODES.N)
   public void simulateGnssMeasurementsStatus(int status) {
     List<GnssMeasurementsEventCallbackTransport> transports;
     synchronized (gnssMeasurementTransports) {
@@ -1065,7 +1150,7 @@ public class ShadowLocationManager {
     }
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected Object registerAntennaInfoListener(Object executor, Object listener) {
     synchronized (gnssAntennaInfoTransports) {
       Iterables.removeIf(
@@ -1077,7 +1162,7 @@ public class ShadowLocationManager {
     return true;
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected void unregisterAntennaInfoListener(Object listener) {
     synchronized (gnssAntennaInfoTransports) {
       Iterables.removeIf(
@@ -1086,7 +1171,7 @@ public class ShadowLocationManager {
   }
 
   /** Simulates a GNSS antenna info event. */
-  @RequiresApi(api = R)
+  @RequiresApi(api = VERSION_CODES.R)
   public void simulateGnssAntennaInfo(List<GnssAntennaInfo> antennaInfos) {
     List<GnssAntennaInfoListenerTransport> transports;
     synchronized (gnssAntennaInfoTransports) {
@@ -1098,29 +1183,32 @@ public class ShadowLocationManager {
     }
   }
 
-  /** @deprecated Use {@link #simulateGnssAntennaInfo(List)} instead. */
+  /**
+   * @deprecated Use {@link #simulateGnssAntennaInfo(List)} instead.
+   */
   @Deprecated
-  @RequiresApi(api = R)
+  @RequiresApi(api = VERSION_CODES.R)
   public void sendGnssAntennaInfo(List<GnssAntennaInfo> antennaInfos) {
     simulateGnssAntennaInfo(antennaInfos);
   }
 
-  /** @deprecated Use {@link #getLocationUpdateListeners()} instead. */
-  @Deprecated
-  public List<LocationListener> getRequestLocationUpdateListeners() {
-    return new ArrayList<>(getLocationUpdateListeners());
+  /**
+   * A convenience function equivalent to invoking {@link #simulateLocation(String, Location)} with
+   * the provider of the given location.
+   */
+  public void simulateLocation(Location location) {
+    simulateLocation(location.getProvider(), location);
   }
 
   /**
-   * Delivers a new location to the appropriate listeners and updates state accordingly. Delivery
-   * will ignore the enabled/disabled state of providers, unlike location on a real device.
+   * Delivers to the given provider (which will be created if necessary) a new location which will
+   * be delivered to appropriate listeners and updates state accordingly. Delivery will ignore the
+   * enabled/disabled state of providers, unlike location on a real device.
+   *
+   * <p>The location will also be delivered to the passive provider.
    */
-  public void simulateLocation(Location location) {
-    if (location == null) {
-      throw new NullPointerException();
-    }
-
-    ProviderEntry providerEntry = getOrCreateProviderEntry(location.getProvider());
+  public void simulateLocation(String provider, Location location) {
+    ProviderEntry providerEntry = getOrCreateProviderEntry(provider);
     if (!PASSIVE_PROVIDER.equals(providerEntry.getName())) {
       providerEntry.simulateLocation(location);
     }
@@ -1132,30 +1220,32 @@ public class ShadowLocationManager {
   }
 
   /**
-   * Retrieves a list of all currently registered listeners.
-   *
+   * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
+   *     results of those listeners being invoked.
+   */
+  @Deprecated
+  public List<LocationListener> getRequestLocationUpdateListeners() {
+    return getLocationUpdateListeners();
+  }
+
+  /**
    * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
    *     results of those listeners being invoked.
    */
   @Deprecated
   public List<LocationListener> getLocationUpdateListeners() {
-    synchronized (providers) {
-      HashSet<LocationListener> listeners = new HashSet<>();
-      for (ProviderEntry providerEntry : providers) {
-        for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-          LocationTransport transport = listenerEntry.transport;
-          if (transport instanceof ListenerTransport) {
-            listeners.add(((ListenerTransport) transport).locationListener);
-          }
-        }
-      }
-      return new ArrayList<>(listeners);
+    HashSet<LocationListener> listeners = new HashSet<>();
+    for (ProviderEntry providerEntry : getProviderEntries()) {
+      Iterables.addAll(
+          listeners,
+          Iterables.transform(
+              Iterables.filter(providerEntry.getTransports(), LocationListenerTransport.class),
+              LocationTransport::getKey));
     }
+    return new ArrayList<>(listeners);
   }
 
   /**
-   * Retrieves a list of all currently registered listeners for the given provider.
-   *
    * @deprecated Do not test listeners, instead use {@link #simulateLocation(Location)} and test the
    *     results of those listeners being invoked.
    */
@@ -1166,36 +1256,30 @@ public class ShadowLocationManager {
       return Collections.emptyList();
     }
 
-    ArrayList<LocationListener> listeners = new ArrayList<>(providerEntry.listeners.size());
-    for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-      LocationTransport transport = listenerEntry.transport;
-      if (transport instanceof ListenerTransport) {
-        listeners.add(((ListenerTransport) transport).locationListener);
-      }
-    }
-    return listeners;
+    HashSet<LocationListener> listeners = new HashSet<>();
+    Iterables.addAll(
+        listeners,
+        Iterables.transform(
+            Iterables.filter(providerEntry.getTransports(), LocationListenerTransport.class),
+            LocationTransport::getKey));
+    return new ArrayList<>(listeners);
   }
 
   /**
-   * Retrieves a list of all currently registered pending intents.
-   *
    * @deprecated Do not test pending intents, instead use {@link #simulateLocation(Location)} and
    *     test the results of those pending intent being invoked.
    */
   @Deprecated
   public List<PendingIntent> getLocationUpdatePendingIntents() {
-    synchronized (providers) {
-      HashSet<PendingIntent> pendingIntents = new HashSet<>();
-      for (ProviderEntry providerEntry : providers) {
-        for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-          LocationTransport transport = listenerEntry.transport;
-          if (transport instanceof PendingIntentTransport) {
-            pendingIntents.add(((PendingIntentTransport) transport).pendingIntent);
-          }
-        }
-      }
-      return new ArrayList<>(pendingIntents);
+    HashSet<PendingIntent> listeners = new HashSet<>();
+    for (ProviderEntry providerEntry : getProviderEntries()) {
+      Iterables.addAll(
+          listeners,
+          Iterables.transform(
+              Iterables.filter(providerEntry.getTransports(), LocationPendingIntentTransport.class),
+              LocationTransport::getKey));
     }
+    return new ArrayList<>(listeners);
   }
 
   /**
@@ -1211,14 +1295,13 @@ public class ShadowLocationManager {
       return Collections.emptyList();
     }
 
-    ArrayList<PendingIntent> pendingIntents = new ArrayList<>(providerEntry.listeners.size());
-    for (ProviderEntry.ListenerEntry listenerEntry : providerEntry.listeners) {
-      LocationTransport transport = listenerEntry.transport;
-      if (transport instanceof PendingIntentTransport) {
-        pendingIntents.add(((PendingIntentTransport) transport).pendingIntent);
-      }
-    }
-    return pendingIntents;
+    HashSet<PendingIntent> listeners = new HashSet<>();
+    Iterables.addAll(
+        listeners,
+        Iterables.transform(
+            Iterables.filter(providerEntry.getTransports(), LocationPendingIntentTransport.class),
+            LocationTransport::getKey));
+    return new ArrayList<>(listeners);
   }
 
   private Context getContext() {
@@ -1237,14 +1320,6 @@ public class ShadowLocationManager {
         providers.add(providerEntry);
       }
       return providerEntry;
-    }
-  }
-
-  private void removeListenerInternal(Object key) {
-    synchronized (providers) {
-      for (ProviderEntry providerEntry : providers) {
-        providerEntry.removeListener(key);
-      }
     }
   }
 
@@ -1298,7 +1373,10 @@ public class ShadowLocationManager {
   private final class ProviderEntry {
 
     private final String name;
-    private final CopyOnWriteArraySet<ListenerEntry> listeners;
+
+    @GuardedBy("this")
+    private final CopyOnWriteArrayList<LocationTransport<?>> locationTransports =
+        new CopyOnWriteArrayList<>();
 
     @GuardedBy("this")
     @Nullable
@@ -1313,7 +1391,7 @@ public class ShadowLocationManager {
 
     ProviderEntry(String name, @Nullable ProviderProperties properties) {
       this.name = name;
-      listeners = new CopyOnWriteArraySet<>();
+
       this.properties = properties;
 
       switch (name) {
@@ -1337,6 +1415,10 @@ public class ShadowLocationManager {
       return name;
     }
 
+    public synchronized List<LocationTransport<?>> getTransports() {
+      return locationTransports;
+    }
+
     @Nullable
     public synchronized ProviderProperties getProperties() {
       return properties;
@@ -1347,7 +1429,7 @@ public class ShadowLocationManager {
     }
 
     public boolean isEnabled() {
-      if (PASSIVE_PROVIDER.equals(name) || RuntimeEnvironment.getApiLevel() >= Q) {
+      if (PASSIVE_PROVIDER.equals(name) || RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q) {
         synchronized (this) {
           return enabled;
         }
@@ -1363,6 +1445,7 @@ public class ShadowLocationManager {
     }
 
     public void setEnabled(boolean enabled) {
+      List<LocationTransport<?>> transports;
       synchronized (this) {
         if (PASSIVE_PROVIDER.equals(name)) {
           // the passive provider cannot be disabled, but the passive provider didn't exist in
@@ -1375,7 +1458,7 @@ public class ShadowLocationManager {
 
         int oldLocationMode = getLocationMode();
         int newLocationMode = oldLocationMode;
-        if (RuntimeEnvironment.getApiLevel() < P) {
+        if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.P) {
           if (GPS_PROVIDER.equals(name)) {
             if (enabled) {
               switch (oldLocationMode) {
@@ -1430,7 +1513,7 @@ public class ShadowLocationManager {
         if (newLocationMode != oldLocationMode) {
           // this sets LOCATION_MODE and LOCATION_PROVIDERS_ALLOWED
           setLocationModeInternal(newLocationMode);
-        } else if (RuntimeEnvironment.getApiLevel() >= Q) {
+        } else if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q) {
           if (enabled == this.enabled) {
             return;
           }
@@ -1438,8 +1521,7 @@ public class ShadowLocationManager {
           this.enabled = enabled;
           // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE. do this even
           // though LOCATION_PROVIDERS_ALLOWED is not the source of truth - we keep it up to date,
-          // but
-          // ignore any direct writes to it
+          // but ignore any direct writes to it
           ShadowSettings.ShadowSecure.updateEnabledProviders(
               getContext().getContentResolver(), name, enabled);
         } else {
@@ -1452,11 +1534,16 @@ public class ShadowLocationManager {
           ShadowSettings.ShadowSecure.updateEnabledProviders(
               getContext().getContentResolver(), name, enabled);
         }
+
+        transports = locationTransports;
       }
 
-      // fire listeners
-      for (ProviderEntry.ListenerEntry listener : listeners) {
-        listener.invokeOnProviderEnabled(name, enabled);
+      for (LocationTransport<?> transport : transports) {
+        if (!transport.invokeOnProviderEnabled(name, enabled)) {
+          synchronized (this) {
+            Iterables.removeIf(locationTransports, current -> current == transport);
+          }
+        }
       }
     }
 
@@ -1470,12 +1557,18 @@ public class ShadowLocationManager {
     }
 
     public void simulateLocation(Location location) {
+      List<LocationTransport<?>> transports;
       synchronized (this) {
         lastLocation = new Location(location);
+        transports = locationTransports;
       }
 
-      for (ListenerEntry listenerEntry : listeners) {
-        listenerEntry.simulateLocation(location);
+      for (LocationTransport<?> transport : transports) {
+        if (!transport.invokeOnLocation(location)) {
+          synchronized (this) {
+            Iterables.removeIf(locationTransports, current -> current == transport);
+          }
+        }
       }
     }
 
@@ -1491,36 +1584,33 @@ public class ShadowLocationManager {
     }
 
     public void addListener(
-        LocationListener listener,
-        ShadowLocationManager.LocationRequest request,
-        Executor executor) {
-      add(new ListenerEntry(listener, request, new ListenerTransport(executor, listener)));
+        LocationListener listener, RoboLocationRequest request, Executor executor) {
+      addListenerInternal(new LocationListenerTransport(listener, request, executor));
     }
 
-    public void addListener(
-        PendingIntent pendingIntent, ShadowLocationManager.LocationRequest request) {
-      add(
-          new ListenerEntry(
-              pendingIntent, request, new PendingIntentTransport(pendingIntent, getContext())));
+    public void addListener(PendingIntent pendingIntent, RoboLocationRequest request) {
+      addListenerInternal(new LocationPendingIntentTransport(getContext(), pendingIntent, request));
     }
 
-    private void add(ListenerEntry entry) {
-      boolean enabled;
+    private void addListenerInternal(LocationTransport<?> transport) {
+      boolean invokeOnProviderEnabled;
       synchronized (this) {
-        enabled = this.enabled;
+        Iterables.removeIf(locationTransports, current -> current.getKey() == transport.getKey());
+        locationTransports.add(transport);
+        invokeOnProviderEnabled = !enabled;
       }
-      if (!enabled) {
-        entry.invokeOnProviderEnabled(name, false);
-      }
-      listeners.add(entry);
-    }
 
-    public void removeListener(Object key) {
-      for (ListenerEntry listenerEntry : listeners) {
-        if (listenerEntry.key == key) {
-          listeners.remove(listenerEntry);
+      if (invokeOnProviderEnabled) {
+        if (!transport.invokeOnProviderEnabled(name, false)) {
+          synchronized (this) {
+            Iterables.removeIf(locationTransports, current -> current == transport);
+          }
         }
       }
+    }
+
+    public synchronized void removeListener(Object key) {
+      Iterables.removeIf(locationTransports, transport -> transport.getKey() == key);
     }
 
     @Override
@@ -1537,123 +1627,197 @@ public class ShadowLocationManager {
     public int hashCode() {
       return Objects.hashCode(name);
     }
+  }
 
-    private final class ListenerEntry {
+  /**
+   * LocationRequest doesn't exist prior to Kitkat, and is not public prior to S, so a new class is
+   * required to represent it prior to those platforms.
+   */
+  public static final class RoboLocationRequest {
+    @Nullable private final Object locationRequest;
 
-      private final Object key;
-      private final LocationTransport transport;
-      private final ShadowLocationManager.LocationRequest request;
+    // all these parameters are meaningless if locationRequest is set
+    private final long intervalMillis;
+    private final float minUpdateDistanceMeters;
+    private final boolean singleShot;
 
-      private Location lastDeliveredLocation;
-      private int numDeliveries;
+    @RequiresApi(VERSION_CODES.KITKAT)
+    RoboLocationRequest(LocationRequest locationRequest) {
+      this.locationRequest = Objects.requireNonNull(locationRequest);
+      intervalMillis = 0;
+      minUpdateDistanceMeters = 0;
+      singleShot = false;
+    }
 
-      private ListenerEntry(
-          Object key, ShadowLocationManager.LocationRequest request, LocationTransport transport) {
-        if (key == null) {
-          throw new IllegalArgumentException();
-        }
-
-        this.key = key;
-        this.request = request;
-        this.transport = transport;
+    public RoboLocationRequest(
+        String provider, long intervalMillis, float minUpdateDistanceMeters, boolean singleShot) {
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.KITKAT) {
+        locationRequest =
+            LocationRequest.createFromDeprecatedProvider(
+                provider, intervalMillis, minUpdateDistanceMeters, singleShot);
+      } else {
+        locationRequest = null;
       }
 
-      public void simulateLocation(Location location) {
-        if (lastDeliveredLocation != null) {
-          if (location.getTime() - lastDeliveredLocation.getTime()
-              < request.minUpdateIntervalMillis) {
-            return;
-          }
-          if (distanceBetween(location, lastDeliveredLocation) < request.minUpdateDistanceMeters) {
-            return;
-          }
-        }
+      this.intervalMillis = intervalMillis;
+      this.minUpdateDistanceMeters = minUpdateDistanceMeters;
+      this.singleShot = singleShot;
+    }
 
-        lastDeliveredLocation = new Location(location);
+    @RequiresApi(VERSION_CODES.KITKAT)
+    LocationRequest getLocationRequest() {
+      return (LocationRequest) Objects.requireNonNull(locationRequest);
+    }
 
-        if (++numDeliveries >= request.maxUpdates) {
-          listeners.remove(this);
-        }
+    public long getIntervalMillis() {
+      if (locationRequest != null) {
+        return ((LocationRequest) locationRequest).getInterval();
+      } else {
+        return intervalMillis;
+      }
+    }
 
-        try {
-          transport.onLocation(location);
-        } catch (Exception e) {
-          removeListener(key);
+    public float getMinUpdateDistanceMeters() {
+      if (locationRequest != null) {
+        return ((LocationRequest) locationRequest).getSmallestDisplacement();
+      } else {
+        return minUpdateDistanceMeters;
+      }
+    }
+
+    public boolean isSingleShot() {
+      if (locationRequest != null) {
+        return ((LocationRequest) locationRequest).getNumUpdates() == 1;
+      } else {
+        return singleShot;
+      }
+    }
+
+    long getMinUpdateIntervalMillis() {
+      if (locationRequest != null) {
+        return ((LocationRequest) locationRequest).getFastestInterval();
+      } else {
+        return intervalMillis;
+      }
+    }
+
+    int getMaxUpdates() {
+      if (locationRequest != null) {
+        return ((LocationRequest) locationRequest).getNumUpdates();
+      } else {
+        return singleShot ? 1 : Integer.MAX_VALUE;
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof RoboLocationRequest) {
+        RoboLocationRequest that = (RoboLocationRequest) o;
+        if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.KITKAT) {
+          return Objects.equals(locationRequest, that.locationRequest);
+        } else {
+          return intervalMillis == that.intervalMillis
+              && singleShot == that.singleShot
+              && Float.compare(that.minUpdateDistanceMeters, minUpdateDistanceMeters) == 0;
         }
       }
 
-      public void invokeOnProviderEnabled(String provider, boolean enabled) {
-        try {
-          transport.onProviderEnabled(provider, enabled);
-        } catch (Exception e) {
-          removeListener(key);
-        }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      if (locationRequest != null) {
+        return locationRequest.hashCode();
+      } else {
+        return Objects.hash(intervalMillis, singleShot, minUpdateDistanceMeters);
+      }
+    }
+  }
+
+  private abstract static class LocationTransport<KeyT> {
+
+    private final KeyT key;
+    private final RoboLocationRequest request;
+
+    private Location lastDeliveredLocation;
+    private int numDeliveries;
+
+    LocationTransport(KeyT key, RoboLocationRequest request) {
+      if (key == null) {
+        throw new IllegalArgumentException();
       }
 
-      @Override
-      public boolean equals(Object o) {
-        if (this == o) {
+      this.key = key;
+      this.request = request;
+    }
+
+    public KeyT getKey() {
+      return key;
+    }
+
+    public RoboLocationRequest getRequest() {
+      return request;
+    }
+
+    // return false if this listener should be removed by this invocation
+    public boolean invokeOnLocation(Location location) {
+      if (lastDeliveredLocation != null) {
+        if (location.getTime() - lastDeliveredLocation.getTime()
+            < request.getMinUpdateIntervalMillis()) {
           return true;
         }
-        if (!(o instanceof ListenerEntry)) {
-          return false;
+        if (distanceBetween(location, lastDeliveredLocation)
+            < request.getMinUpdateDistanceMeters()) {
+          return true;
         }
-        ListenerEntry that = (ListenerEntry) o;
-        return key == that.key;
       }
 
-      @Override
-      public int hashCode() {
-        return Objects.hashCode(key);
+      lastDeliveredLocation = new Location(location);
+
+      boolean needsRemoval = false;
+
+      if (++numDeliveries >= request.getMaxUpdates()) {
+        needsRemoval = true;
+      }
+
+      try {
+        onLocation(location);
+      } catch (CanceledException e) {
+        needsRemoval = true;
+      }
+
+      return !needsRemoval;
+    }
+
+    // return false if this listener should be removed by this invocation
+    public boolean invokeOnProviderEnabled(String provider, boolean enabled) {
+      try {
+        onProviderEnabled(provider, enabled);
+        return true;
+      } catch (CanceledException e) {
+        return false;
       }
     }
+
+    abstract void onLocation(Location location) throws CanceledException;
+
+    abstract void onProviderEnabled(String provider, boolean enabled) throws CanceledException;
   }
 
-  // LocationRequest doesn't exist on JB, so we can't use the platform version
-  private static class LocationRequest {
-
-    private final long minUpdateIntervalMillis;
-    private final int maxUpdates;
-    private final float minUpdateDistanceMeters;
-
-    LocationRequest(android.location.LocationRequest locationRequest) {
-      minUpdateIntervalMillis = locationRequest.getFastestInterval();
-      maxUpdates = locationRequest.getNumUpdates();
-      minUpdateDistanceMeters = locationRequest.getSmallestDisplacement();
-    }
-
-    LocationRequest(long interval, float minUpdateDistanceMeters) {
-      minUpdateIntervalMillis = interval;
-      maxUpdates = Integer.MAX_VALUE;
-      this.minUpdateDistanceMeters = minUpdateDistanceMeters;
-    }
-
-    LocationRequest(boolean singleShot) {
-      minUpdateIntervalMillis = 0;
-      maxUpdates = singleShot ? 1 : Integer.MAX_VALUE;
-      minUpdateDistanceMeters = 0;
-    }
-  }
-
-  private interface LocationTransport {
-    void onLocation(Location location) throws Exception;
-
-    void onProviderEnabled(String provider, boolean enabled) throws Exception;
-  }
-
-  private static final class ListenerTransport implements LocationTransport {
+  private static final class LocationListenerTransport extends LocationTransport<LocationListener> {
 
     private final Executor executor;
-    private final LocationListener locationListener;
 
-    ListenerTransport(Executor executor, LocationListener locationListener) {
+    LocationListenerTransport(
+        LocationListener key, RoboLocationRequest request, Executor executor) {
+      super(key, request);
       this.executor = executor;
-      this.locationListener = locationListener;
     }
 
     @Override
     public void onLocation(Location location) {
-      executor.execute(() -> locationListener.onLocationChanged(new Location(location)));
+      executor.execute(() -> getKey().onLocationChanged(new Location(location)));
     }
 
     @Override
@@ -1661,21 +1825,22 @@ public class ShadowLocationManager {
       executor.execute(
           () -> {
             if (enabled) {
-              locationListener.onProviderEnabled(provider);
+              getKey().onProviderEnabled(provider);
             } else {
-              locationListener.onProviderDisabled(provider);
+              getKey().onProviderDisabled(provider);
             }
           });
     }
   }
 
-  private static final class PendingIntentTransport implements LocationTransport {
+  private static final class LocationPendingIntentTransport
+      extends LocationTransport<PendingIntent> {
 
-    private final PendingIntent pendingIntent;
     private final Context context;
 
-    PendingIntentTransport(PendingIntent pendingIntent, Context context) {
-      this.pendingIntent = pendingIntent;
+    LocationPendingIntentTransport(
+        Context context, PendingIntent key, RoboLocationRequest request) {
+      super(key, request);
       this.context = context;
     }
 
@@ -1683,14 +1848,14 @@ public class ShadowLocationManager {
     public void onLocation(Location location) throws CanceledException {
       Intent intent = new Intent();
       intent.putExtra(LocationManager.KEY_LOCATION_CHANGED, new Location(location));
-      pendingIntent.send(context, 0, intent);
+      getKey().send(context, 0, intent);
     }
 
     @Override
     public void onProviderEnabled(String provider, boolean enabled) throws CanceledException {
       Intent intent = new Intent();
       intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, enabled);
-      pendingIntent.send(context, 0, intent);
+      getKey().send(context, 0, intent);
     }
   }
 
@@ -1698,7 +1863,7 @@ public class ShadowLocationManager {
    * Returns the distance between the two locations in meters. Adapted from:
    * http://stackoverflow.com/questions/837872/calculate-distance-in-meters-when-you-know-longitude-and-latitude-in-java
    */
-  private static float distanceBetween(Location location1, Location location2) {
+  static float distanceBetween(Location location1, Location location2) {
     double earthRadius = 3958.75;
     double latDifference = Math.toRadians(location2.getLatitude() - location1.getLatitude());
     double lonDifference = Math.toRadians(location2.getLongitude() - location1.getLongitude());
@@ -1721,7 +1886,8 @@ public class ShadowLocationManager {
     locationProviderConstructor = null;
   }
 
-  private final class CancellableLocationListener implements LocationListener {
+  @RequiresApi(api = VERSION_CODES.N)
+  private final class CurrentLocationTransport implements LocationListener {
 
     private final Executor executor;
     private final Consumer<Location> consumer;
@@ -1732,7 +1898,7 @@ public class ShadowLocationManager {
 
     @Nullable Runnable timeoutRunnable;
 
-    CancellableLocationListener(Executor executor, Consumer<Location> consumer) {
+    CurrentLocationTransport(Executor executor, Consumer<Location> consumer) {
       this.executor = executor;
       this.consumer = consumer;
       timeoutHandler = new Handler(Looper.getMainLooper());
@@ -1812,22 +1978,22 @@ public class ShadowLocationManager {
       return listener;
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onStarted() {
       executor.execute(listener::onStarted);
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onFirstFix(int ttff) {
       executor.execute(() -> listener.onFirstFix(ttff));
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onSatelliteStatusChanged(GnssStatus status) {
       executor.execute(() -> listener.onSatelliteStatusChanged(status));
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onStopped() {
       executor.execute(listener::onStopped);
     }
@@ -1847,7 +2013,7 @@ public class ShadowLocationManager {
       return listener;
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onNmeaMessage(String message, long timestamp) {
       executor.execute(() -> listener.onNmeaMessage(message, timestamp));
     }
@@ -1868,12 +2034,12 @@ public class ShadowLocationManager {
       return listener;
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onStatusChanged(int status) {
       executor.execute(() -> listener.onStatusChanged(status));
     }
 
-    @RequiresApi(api = N)
+    @RequiresApi(api = VERSION_CODES.N)
     public void onGnssMeasurementsReceived(GnssMeasurementsEvent event) {
       executor.execute(() -> listener.onGnssMeasurementsReceived(event));
     }
@@ -1893,7 +2059,7 @@ public class ShadowLocationManager {
       return listener;
     }
 
-    @RequiresApi(api = R)
+    @RequiresApi(api = VERSION_CODES.R)
     public void onGnssAntennaInfoReceived(List<GnssAntennaInfo> antennaInfos) {
       executor.execute(() -> listener.onGnssAntennaInfoReceived(antennaInfos));
     }
