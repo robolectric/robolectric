@@ -30,36 +30,36 @@ public class ReflectorTest {
   }
 
   @Test
-  public void reflector_shouldCallPrivateMethod() throws Exception {
+  public void reflector_shouldCallPrivateMethod() {
     assertThat(reflector.someMethod("a", "b")).isEqualTo("a-b-c (someMethod)");
   }
 
   @Test
-  public void reflector_shouldHonorWithTypeAnnotationForParams() throws Exception {
+  public void reflector_shouldHonorWithTypeAnnotationForParams() {
     assertThat(reflector.anotherMethod("a", "b")).isEqualTo("a-b-c (anotherMethod)");
   }
 
   @Test
-  public void reflector_defaultMethodsShouldWork() throws Exception {
+  public void reflector_defaultMethodsShouldWork() {
     assertThat(reflector.defaultMethod("someMethod", "a", "b")).isEqualTo("a-b-c (someMethod)");
     assertThat(reflector.defaultMethod("anotherMethod", "a", "b"))
         .isEqualTo("a-b-c (anotherMethod)");
   }
 
   @Test
-  public void reflector_shouldUnboxReturnValues() throws Exception {
+  public void reflector_shouldUnboxReturnValues() {
     assertThat(reflector.returnLong()).isEqualTo(1234L);
   }
 
   @Test
-  public void reflector_shouldCallStaticMethod() throws Exception {
+  public void reflector_shouldCallStaticMethod() {
     assertThat(reflector.someStaticMethod("a", "b")).isEqualTo("a-b (someStaticMethod)");
 
     assertThat(staticReflector.someStaticMethod("a", "b")).isEqualTo("a-b (someStaticMethod)");
   }
 
   @Test
-  public void reflector_fieldAccessors() throws Exception {
+  public void reflector_fieldAccessors() {
     assertThat(reflector.getC()).isEqualTo("c");
 
     reflector.setC("c++");
@@ -67,7 +67,7 @@ public class ReflectorTest {
   }
 
   @Test
-  public void reflector_primitiveFieldAccessors() throws Exception {
+  public void reflector_primitiveFieldAccessors() {
     assertThat(reflector.getD()).isEqualTo(0);
 
     reflector.setD(1234);
@@ -75,7 +75,7 @@ public class ReflectorTest {
   }
 
   @Test
-  public void reflector_staticFieldAccessors() throws Exception {
+  public void reflector_staticFieldAccessors() {
     assertThat(reflector.getEStatic()).isEqualTo(null);
 
     reflector.setEStatic("eee!");
@@ -83,7 +83,7 @@ public class ReflectorTest {
   }
 
   @Test
-  public void reflector_throwsCorrectExceptions() throws Exception {
+  public void reflector_throwsCorrectExceptions() {
     Throwable expected = new ArrayIndexOutOfBoundsException();
     Throwable actual = null;
     try {
@@ -97,7 +97,7 @@ public class ReflectorTest {
 
   @Ignore
   @Test
-  public void methodPerf() throws Exception {
+  public void methodPerf() {
     SomeClass i = new SomeClass("c");
 
     System.out.println("reflection = " + Collections.singletonList(methodByReflectionHelpers(i)));
@@ -116,7 +116,7 @@ public class ReflectorTest {
 
   @Ignore
   @Test
-  public void fieldPerf() throws Exception {
+  public void fieldPerf() {
     SomeClass i = new SomeClass("c");
 
     System.out.println("reflection = " + Collections.singletonList(fieldByReflectionHelpers(i)));
