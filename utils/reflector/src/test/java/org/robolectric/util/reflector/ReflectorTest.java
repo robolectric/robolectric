@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.ReflectorTest.SomeClass.SomeInnerClass;
 
 @RunWith(JUnit4.class)
 public class ReflectorTest {
@@ -135,13 +134,6 @@ public class ReflectorTest {
   }
 
   @Test
-  public void reflector_getOuterClass() throws Exception {
-    SomeInnerClassReflector innerReflector =
-        reflector(SomeInnerClassReflector.class, someClass.someInnerClass);
-    assertThat(innerReflector.getEnclosingObject()).isEqualTo(someClass);
-  }
-
-  @Test
   public void nonExistentMethod_throwsAssertionError() {
     SomeClass i = new SomeClass("c");
     _SomeClass_ accessor = reflector(_SomeClass_.class, i);
@@ -200,19 +192,12 @@ public class ReflectorTest {
     void throwException(Throwable t);
   }
 
-  @ForType(SomeInnerClass.class)
-  interface SomeInnerClassReflector {
-    @Accessor("this$0")
-    SomeClass getEnclosingObject();
-  }
-
   @SuppressWarnings("unused")
   static class SomeClass {
 
     private static String eStatic;
     private String c;
     private int mD;
-    public SomeInnerClass someInnerClass = new SomeInnerClass();
 
     SomeClass(String c) {
       this.c = c;
@@ -237,14 +222,6 @@ public class ReflectorTest {
     @SuppressWarnings("unused")
     private void throwException(Throwable t) throws Throwable {
       throw t;
-    }
-
-    public class SomeInnerClass {
-      public SomeInnerClass() {}
-
-      public String getEnclosingThing() {
-        return c;
-      }
     }
   }
 
