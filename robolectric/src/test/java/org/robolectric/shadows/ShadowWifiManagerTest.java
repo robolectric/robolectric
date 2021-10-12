@@ -714,4 +714,14 @@ public class ShadowWifiManagerTest {
     assertThat(wifiManager.getWifiState()).isEqualTo(WifiManager.WIFI_STATE_DISABLED);
     assertThat(wifiManager.isWifiEnabled()).isFalse();
   }
+
+  @Test
+  public void shouldRecordTheLastApConfiguration() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiConfiguration.SSID = "foo";
+    boolean status = shadowOf(wifiManager).setWifiApConfiguration(wifiConfiguration);
+    assertThat(status).isTrue();
+
+    assertThat(shadowOf(wifiManager).getWifiApConfiguration().SSID).isEqualTo("foo");
+  }
 }
