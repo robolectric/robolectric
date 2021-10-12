@@ -7,6 +7,27 @@ set (CMAKE_CXX_STANDARD 17)
 
 find_package(JNI REQUIRED)
 
+# On Mac OS, search Homebrew for the icu4c distribution. The system version
+# does not include headers and static libraries.
+if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+  execute_process(
+    COMMAND brew --prefix icu4c
+    RESULT_VARIABLE BREW_ICU4C
+    OUTPUT_VARIABLE BREW_ICU4C_PREFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  if (BREW_ICU4C EQUAL 0 AND EXISTS "${BREW_ICU4C_PREFIX}")
+    message(STATUS "Found icu4c installed by Homebrew at ${BREW_ICU4C_PREFIX}")
+    list(APPEND CMAKE_PREFIX_PATH ${BREW_ICU4C_PREFIX})
+    find_library(BREW_ICUUC_LIBRARY libicuuc.a)
+    find_library(BREW_ICUI18N_LIBRARY libicui18n.a)
+    find_library(BREW_ICUDATA_LIBRARY libicudata.a)
+    include_directories(${BREW_ICU4C_PREFIX}/include)
+  endif()
+endif()
+
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Build flags derived from
@@ -51,6 +72,14 @@ add_library(androidsqlite STATIC
 
 target_compile_options(androidsqlite PRIVATE ${SQLITE_COMPILE_OPTIONS})
 
+if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+  target_link_libraries(androidsqlite
+    ${BREW_ICUUC_LIBRARY}
+    ${BREW_ICUI18N_LIBRARY}
+    ${BREW_ICUDATA_LIBRARY}
+  )
+endif()
+
 include_directories(${JNI_INCLUDE_DIRS})
 
 add_subdirectory (liblog)
@@ -80,11 +109,16 @@ add_library(nativeruntime SHARED
 )
 
 target_link_libraries(nativeruntime
-  -static-libgcc
-  -static-libstdc++
   log
   utils
   androidsqlite
   cutils
   androidfw
 )
+
+if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
+  target_link_libraries(nativeruntime
+    -static-libgcc
+    -static-libstdc++
+  )
+endif()
