@@ -25,6 +25,7 @@ import org.robolectric.shadows.ShadowActivity;
  *
  * <p>All the methods in this class are blocking API.
  */
+@SuppressWarnings("RestrictTo")
 public class LocalActivityInvoker implements ActivityInvoker {
 
   @Nullable private ActivityController<? extends Activity> controller;

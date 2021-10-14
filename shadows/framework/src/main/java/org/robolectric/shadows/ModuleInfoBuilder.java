@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static androidx.test.internal.util.Checks.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.content.pm.ModuleInfo;
 import androidx.annotation.Nullable;
