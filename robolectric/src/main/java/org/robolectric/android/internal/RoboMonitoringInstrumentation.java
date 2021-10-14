@@ -37,6 +37,7 @@ import org.robolectric.shadows.ShadowActivity;
  * {@link androidx.test.runner.MonitoringInstrumentation} with only the parts needed for
  * Robolectric.
  */
+@SuppressWarnings("RestrictTo")
 public class RoboMonitoringInstrumentation extends Instrumentation {
 
   private static final String TAG = "RoboInstrumentation";
