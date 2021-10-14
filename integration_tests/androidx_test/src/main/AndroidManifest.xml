@@ -30,6 +30,16 @@
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithSwitchCompat"
             android:exported="true"
             android:theme="@style/Theme.AppCompat" />
+        <activity android:name="org.robolectric.integrationtests.axt.StubBrowserActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+            </intent-filter>
+        </activity>
 
     </application>
 </manifest>
