@@ -35,6 +35,9 @@
 #include <time.h>
 #include <unistd.h>
 
+// bionic and glibc both have TEMP_FAILURE_RETRY, but some (e.g. Mac OS) do not.
+#include "android-base/macros.h"
+
 static bool ashmem_validate_stat(int fd, struct stat* buf) {
   int result = fstat(fd, buf);
   if (result == -1) {
