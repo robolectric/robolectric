@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 int __android_log_print(int prio, const char* tag, const char* fmt, ...) {
   ((void)prio);
