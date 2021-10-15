@@ -60,6 +60,7 @@ public class ShadowWifiManager {
       wifiUsabilityStatsListeners = new ConcurrentHashMap<>();
   private final List<WifiUsabilityScore> usabilityScores = new ArrayList<>();
   @RealObject WifiManager wifiManager;
+  private WifiConfiguration apConfig;
 
   @Implementation
   protected boolean setWifiEnabled(boolean wifiEnabled) {
@@ -408,6 +409,17 @@ public class ShadowWifiManager {
     synchronized (usabilityScores) {
       usabilityScores.add(new WifiUsabilityScore(seqNum, score, predictionHorizonSec));
     }
+  }
+
+  @Implementation
+  protected boolean setWifiApConfiguration(WifiConfiguration apConfig) {
+    this.apConfig = apConfig;
+    return true;
+  }
+
+  @Implementation
+  protected WifiConfiguration getWifiApConfiguration() {
+    return apConfig;
   }
 
   /**
