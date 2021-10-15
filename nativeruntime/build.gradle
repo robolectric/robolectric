@@ -4,6 +4,26 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
+static def osName() {
+  def osName = System.getProperty("os.name").toLowerCase(Locale.US);
+  if (osName.contains("linux")) {
+    return "linux"
+  } else if (osName.contains("mac")) {
+    return "mac"
+  } else if (osName.contains("win")) {
+    return "windows"
+  }
+  return "unknown"
+}
+
+static def arch() {
+  def arch = System.getProperty("os.arch").toLowerCase(Locale.US);
+  if (arch.equals("x86_64") || arch.equals("amd64")) {
+    return "x86_64"
+  }
+  return arch
+}
+
 task cmakeNativeRuntime(type:Exec) {
   workingDir "$buildDir/cpp"
   commandLine 'cmake', "$projectDir/cpp/"
@@ -21,16 +41,21 @@ task makeNativeRuntime(type:Exec) {
 task copyNativeRuntime(type: Copy) {
   dependsOn makeNativeRuntime
   from ("$buildDir/cpp") {
-    include 'libnativeruntime.so'
+    include '*libnativeruntime.*'
   }
   rename { String fileName ->
-    fileName.replace("libnativeruntime", "robolectric-nativeruntime")
+    fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
   }
-  into project.file("$buildDir/resources/main/native/linux/64/")
+  into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
 }
 
 jar {
-  dependsOn copyNativeRuntime
+  def os = osName()
+  if (os.contains("linux") || os.contains("mac")) {
+    dependsOn copyNativeRuntime
+  } else {
+    println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
+  }
 }
 
 dependencies {
