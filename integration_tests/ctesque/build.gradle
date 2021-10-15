@@ -41,7 +41,8 @@ dependencies {
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:${junitVersion}"
-    testImplementation("androidx.test:monitor:$axtVersion")
+    // temporarily use a newer monitor version for HardwareRendererCompat
+    testImplementation("androidx.test:monitor:1.5.0-alpha03")
     testImplementation("androidx.test:runner:$axtVersion")
     testImplementation("androidx.test:rules:$axtVersion")
     testImplementation("androidx.test.ext:junit:$axtJunitVersion")
