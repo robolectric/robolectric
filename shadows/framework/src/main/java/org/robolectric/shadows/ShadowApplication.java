@@ -313,7 +313,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     return userManagerState;
   }
 
-  public static class Wrapper {
+  public static final class Wrapper {
     public BroadcastReceiver broadcastReceiver;
     public IntentFilter intentFilter;
     public Context context;
@@ -345,6 +345,17 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public Context getContext() {
       return context;
+    }
+
+    @Override
+    public String toString() {
+      return "Wrapper[receiver=["
+          + broadcastReceiver
+          + "], context=["
+          + context
+          + "], intentFilter=["
+          + intentFilter
+          + "]]";
     }
   }
 
