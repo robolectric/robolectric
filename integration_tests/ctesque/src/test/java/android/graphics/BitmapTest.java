@@ -14,6 +14,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import androidx.test.filters.SdkSuppress;
+import androidx.test.platform.graphics.HardwareRendererCompat;
 import androidx.test.runner.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,7 +44,8 @@ public class BitmapTest {
   @Config(minSdk = P)
   @SdkSuppress(minSdkVersion = P)
   @Test public void createBitmap() {
-
+    // Bitmap.createBitmap(Picture) requires hardware-backed bitmaps
+    HardwareRendererCompat.setDrawingEnabled(true);
     Picture picture = new Picture();
     Canvas canvas = picture.beginRecording(200, 100);
 
@@ -58,7 +60,7 @@ public class BitmapTest {
     picture.endRecording();
 
     Bitmap bitmap = Bitmap.createBitmap(picture);
-    assertThat(bitmap.isMutable()).isFalse();
+    assertThat(bitmap).isNotNull();
   }
 
   @Test
