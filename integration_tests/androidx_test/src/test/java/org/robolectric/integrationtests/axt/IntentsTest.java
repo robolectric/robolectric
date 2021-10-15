@@ -11,7 +11,7 @@ import static androidx.test.ext.truth.content.IntentCorrespondences.all;
 import static androidx.test.ext.truth.content.IntentCorrespondences.data;
 import static androidx.test.ext.truth.content.IntentSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/** Integration tests for using ATSL's espresso intents API on Robolectric. */
+/** Integration tests for using androidx.test's espresso intents API on Robolectric. */
 @RunWith(AndroidJUnit4.class)
 public class IntentsTest {
 
@@ -48,13 +48,8 @@ public class IntentsTest {
 
   @Test
   public void testIntendedFailEmpty() {
-    try {
-      Intents.intended(org.hamcrest.Matchers.any(Intent.class));
-    } catch (AssertionError e) {
-      // expected
-      return;
-    }
-    fail("AssertionError not thrown");
+    assertThrows(
+        AssertionError.class, () -> Intents.intended(org.hamcrest.Matchers.any(Intent.class)));
   }
 
   @Test
@@ -72,13 +67,9 @@ public class IntentsTest {
     i.setAction(Intent.ACTION_VIEW);
     i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     getApplicationContext().startActivity(i);
-    try {
-      Intents.intended(hasAction(Intent.ACTION_AIRPLANE_MODE_CHANGED));
-    } catch (AssertionError e) {
-      // expected
-      return;
-    }
-    fail("intended did not throw");
+    assertThrows(
+        AssertionError.class,
+        () -> Intents.intended(hasAction(Intent.ACTION_AIRPLANE_MODE_CHANGED)));
   }
 
   /**
