@@ -33,12 +33,14 @@ public class ShadowInCallService extends ShadowService {
   private static final int MSG_SET_IN_CALL_ADAPTER = 1;
   private static final int MSG_ADD_CALL = 2;
   private static final int MSG_UPDATE_CALL = 3;
+  private static final int MSG_ON_CALL_AUDIO_STATE_CHANGED = 5;
 
   private ShadowPhone shadowPhone;
   private boolean canAddCall;
   private boolean muted;
   private int audioRoute = CallAudioState.ROUTE_EARPIECE;
   private BluetoothDevice bluetoothDevice;
+  private int supportedRouteMask;
 
   @Implementation
   protected void __constructor__() {
@@ -99,17 +101,22 @@ public class ShadowInCallService extends ShadowService {
   @Implementation
   protected void setAudioRoute(int audioRoute) {
     this.audioRoute = audioRoute;
+    CallAudioState previousCallAudioState = getCallAudioState();
+    CallAudioState callAudioState =
+        new CallAudioState(
+            previousCallAudioState.isMuted(),
+            audioRoute,
+            previousCallAudioState.getSupportedRouteMask());
+    getHandler().obtainMessage(MSG_ON_CALL_AUDIO_STATE_CHANGED, callAudioState).sendToTarget();
   }
 
   @Implementation
   protected CallAudioState getCallAudioState() {
-    return new CallAudioState(
-        muted,
-        audioRoute,
-        CallAudioState.ROUTE_EARPIECE
-            | CallAudioState.ROUTE_BLUETOOTH
-            | CallAudioState.ROUTE_WIRED_HEADSET
-            | CallAudioState.ROUTE_SPEAKER);
+    return new CallAudioState(muted, audioRoute, supportedRouteMask);
+  }
+
+  public void setSupportedRouteMask(int mask) {
+    this.supportedRouteMask = mask;
   }
 
   @Implementation(minSdk = P)
