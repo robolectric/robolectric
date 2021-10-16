@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ManagedVirtualDevice
 import org.robolectric.gradle.AndroidProjectConfigPlugin
 
 apply plugin: 'com.android.library'
@@ -18,6 +19,22 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+        }
+        devices {
+            // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi28DebugAndroidTest
+            nexusOneApi28(ManagedVirtualDevice) {
+                device = "Nexus One"
+                apiLevel = 28
+                systemImageSource = "aosp"
+                abi = "x86"
+            }
+            // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi30DebugAndroidTest
+            nexusOneApi30(ManagedVirtualDevice) {
+                device = "Nexus One"
+                apiLevel = 30
+                systemImageSource = "aosp-atd"
+                abi = "x86"
+            }
         }
     }
 
