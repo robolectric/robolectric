@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.P;
 
+import android.graphics.Camera;
+import android.graphics.Matrix;
+import android.graphics.Rect;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -12,6 +15,8 @@ import org.robolectric.annotation.Implements;
     minSdk = LOLLIPOP,
     maxSdk = P)
 public class ShadowRenderNode {
+  private static final float NON_ZERO_EPSILON = 0.001f;
+
   private float alpha = 1f;
   private float cameraDistance;
   private boolean clipToOutline;
@@ -28,6 +33,10 @@ public class ShadowRenderNode {
   private float translationX;
   private float translationY;
   private float translationZ;
+  private int left;
+  private int top;
+  private int right;
+  private int bottom;
 
   @Implementation
   protected boolean setAlpha(float alpha) {
@@ -178,6 +187,14 @@ public class ShadowRenderNode {
   }
 
   @Implementation
+  protected boolean resetPivot() {
+    this.pivotExplicitlySet = false;
+    this.pivotX = 0;
+    this.pivotY = 0;
+    return true;
+  }
+
+  @Implementation
   protected boolean setPivotX(float pivotX) {
     this.pivotX = pivotX;
     this.pivotExplicitlySet = true;
@@ -199,6 +216,144 @@ public class ShadowRenderNode {
   @Implementation
   protected float getPivotY() {
     return pivotY;
+  }
+
+  @Implementation
+  protected boolean setLeft(int left) {
+    this.left = left;
+    return true;
+  }
+
+  @Implementation
+  protected int getLeft() {
+    return left;
+  }
+
+  @Implementation
+  protected boolean setTop(int top) {
+    this.top = top;
+    return true;
+  }
+
+  @Implementation
+  protected int getTop() {
+    return top;
+  }
+
+  @Implementation
+  protected boolean setRight(int right) {
+    this.right = right;
+    return true;
+  }
+
+  @Implementation
+  protected int getRight() {
+    return right;
+  }
+
+  @Implementation
+  protected boolean setBottom(int bottom) {
+    this.bottom = bottom;
+    return true;
+  }
+
+  @Implementation
+  protected int getBottom() {
+    return bottom;
+  }
+
+  @Implementation
+  protected int getWidth() {
+    return right - left;
+  }
+
+  @Implementation
+  protected int getHeight() {
+    return bottom - top;
+  }
+
+  @Implementation
+  protected boolean setLeftTopRightBottom(int left, int top, int right, int bottom) {
+    return setPosition(left, top, right, bottom);
+  }
+
+  @Implementation
+  protected boolean setPosition(int left, int top, int right, int bottom) {
+    this.left = left;
+    this.top = top;
+    this.right = right;
+    this.bottom = bottom;
+    return true;
+  }
+
+  @Implementation
+  protected boolean setPosition(Rect position) {
+    this.left = position.left;
+    this.top = position.top;
+    this.right = position.right;
+    this.bottom = position.bottom;
+    return true;
+  }
+
+  @Implementation
+  protected boolean offsetLeftAndRight(int offset) {
+    this.left += offset;
+    this.right += offset;
+    return true;
+  }
+
+  @Implementation
+  protected boolean offsetTopAndBottom(int offset) {
+    this.top += offset;
+    this.bottom += offset;
+    return true;
+  }
+
+  @Implementation
+  protected void getInverseMatrix(Matrix matrix) {
+    if (!isMatrixEnabled()) {
+      return;
+    }
+    getMatrix(matrix);
+    matrix.invert(matrix);
+  }
+
+  @Implementation
+  protected void getMatrix(Matrix matrix) {
+    if (!isMatrixEnabled()) {
+      return;
+    }
+    if (!pivotExplicitlySet) {
+      pivotX = getWidth() / 2f;
+      pivotY = getHeight() / 2f;
+    }
+    matrix.reset();
+    if (isZero(rotationX) && isZero(rotationY)) {
+      matrix.setTranslate(translationX, translationY);
+      matrix.preRotate(rotation, pivotX, pivotY);
+      matrix.preScale(scaleX, scaleY, pivotX, pivotY);
+    } else {
+      matrix.preScale(scaleX, scaleY, pivotX, pivotY);
+      Camera camera = new Camera();
+      camera.rotateX(rotationX);
+      camera.rotateY(rotationY);
+      camera.rotateZ(-rotation);
+      Matrix transform = new Matrix();
+      camera.getMatrix(transform);
+      transform.preTranslate(-pivotX, -pivotY);
+      transform.postTranslate(pivotX + translationX, pivotY + translationY);
+      matrix.postConcat(transform);
+    }
+  }
+
+  @Implementation
+  protected boolean hasIdentityMatrix() {
+    if (!isMatrixEnabled()) {
+      return true;
+    }
+    Matrix matrix = new Matrix();
+    getMatrix(matrix);
+    return matrix.isIdentity();
   }
 
   @Implementation
@@ -228,5 +383,14 @@ public class ShadowRenderNode {
   @Implementation
   protected static boolean nSetLayerPaint(long renderNode, long paint) {
     return true;
+  }
+
+  private static boolean isZero(float value) {
+    return Math.abs(value) <= NON_ZERO_EPSILON;
+  }
+
+  // Temporarily allow disabling the matrix calculation during migration.
+  private static boolean isMatrixEnabled() {
+    return Boolean.parseBoolean(System.getProperty("robolectric.rendernode.enableMatrix", "false"));
   }
 }
