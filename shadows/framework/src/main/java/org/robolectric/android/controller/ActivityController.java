@@ -26,6 +26,7 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowViewRootImpl;
+import org.robolectric.shadows.ShadowWindowManagerGlobal;
 import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
@@ -230,7 +231,7 @@ public class ActivityController<T extends Activity>
     }
 
     reflector(ViewRootImplActivityControllerReflector.class, root)
-        .windowFocusChanged(hasFocus, false);
+        .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
     shadowMainLooper.idleIfPaused();
     return this;
   }
