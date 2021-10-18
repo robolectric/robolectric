@@ -17,6 +17,10 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
+  if (NOT BREW_ICU4C EQUAL 0)
+    message( FATAL_ERROR "'brew --prefix icu4c' failed. Ensure homebrew is installed and run 'brew install icu4c'.")
+  endif()
+
   if (BREW_ICU4C EQUAL 0 AND EXISTS "${BREW_ICU4C_PREFIX}")
     message(STATUS "Found icu4c installed by Homebrew at ${BREW_ICU4C_PREFIX}")
     list(APPEND CMAKE_PREFIX_PATH ${BREW_ICU4C_PREFIX})
@@ -24,6 +28,10 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
     find_library(BREW_ICUI18N_LIBRARY libicui18n.a)
     find_library(BREW_ICUDATA_LIBRARY libicudata.a)
     include_directories(${BREW_ICU4C_PREFIX}/include)
+  endif()
+
+  if (NOT BREW_ICUUC_LIBRARY)
+    message(FATAL_ERROR "libicuuc.a not found. Please run 'brew install icu4c'")
   endif()
 endif()
 
