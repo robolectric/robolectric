@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.view.View;
+import javax.annotation.Nullable;
 import org.robolectric.android.AttributeSetBuilderImpl;
 import org.robolectric.android.AttributeSetBuilderImpl.ArscResourceResolver;
 import org.robolectric.android.AttributeSetBuilderImpl.LegacyResourceResolver;
@@ -72,7 +73,7 @@ public class Robolectric {
    * too.
    */
   public static <T extends Activity> ActivityController<T> buildActivity(Class<T> activityClass) {
-    return buildActivity(activityClass, null);
+    return buildActivity(activityClass, /* intent= */ null, /* activityOptions= */ null);
   }
 
   /**
@@ -86,7 +87,25 @@ public class Robolectric {
    */
   public static <T extends Activity> ActivityController<T> buildActivity(
       Class<T> activityClass, Intent intent) {
-    return ActivityController.of(ReflectionHelpers.callConstructor(activityClass), intent);
+    return buildActivity(activityClass, intent, /* activityOptions= */ null);
+  }
+
+  /**
+   * Creates a ActivityController for the given activity class with the intent and activity options.
+   *
+   * <p>Note: the activity class is not determined by the intent.
+   *
+   * <p>Note: Display ID is the only option currently supported in the options bundle. Other options
+   * are ignored.
+   *
+   * <p>Consider using {@link androidx.test.core.app.ActivityScenario} instead, which provides
+   * higher-level, streamlined APIs to control the lifecycle and it works with instrumentation tests
+   * too.
+   */
+  public static <T extends Activity> ActivityController<T> buildActivity(
+      Class<T> activityClass, Intent intent, @Nullable Bundle activityOptions) {
+    return ActivityController.of(
+        ReflectionHelpers.callConstructor(activityClass), intent, activityOptions);
   }
 
   /**

@@ -24,12 +24,15 @@ import android.content.IntentFilter;
 import android.content.IntentSender;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.FileUtils;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.UserHandle;
 import com.google.common.base.Strings;
 import java.io.File;
@@ -453,6 +456,17 @@ public class ShadowContextImpl {
 
     @Static
     Context createAppContext(ActivityThread activityThread, LoadedApk loadedApk);
+
+    @Static
+    Context createActivityContext(
+        ActivityThread mainThread,
+        LoadedApk packageInfo,
+        ActivityInfo activityInfo,
+        IBinder activityToken,
+        int displayId,
+        Configuration overrideConfiguration);
+
+    IBinder getActivityToken();
 
     void setOuterContext(Context context);
 

@@ -10,10 +10,12 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.ActivityOptions;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
 import android.app.Instrumentation;
+import android.app.LoadedApk;
 import android.app.PictureInPictureParams;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,6 +31,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,7 +55,9 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
+import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -93,11 +98,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   public void callAttach(Intent intent) {
-    callAttach(intent, /*lastNonConfigurationInstances=*/ null);
+    callAttach(intent, /*activityOptions=*/ null, /*lastNonConfigurationInstances=*/ null);
+  }
+
+  public void callAttach(Intent intent, @Nullable Bundle activityOptions) {
+    callAttach(
+        intent, /*activityOptions=*/ activityOptions, /*lastNonConfigurationInstances=*/ null);
   }
 
   public void callAttach(
       Intent intent,
+      @Nullable Bundle activityOptions,
       @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     Application application = RuntimeEnvironment.getApplication();
@@ -118,6 +129,41 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     Instrumentation instrumentation = activityThread.getInstrumentation();
+
+
+    // If a non-default display is specified in the activity options, create a new context
+    // using createActivityContext with the correct display ID set, instead of using the shared
+    // application context.
+    //
+    // This is more closely aligned with real android and ensures the correct display
+    // is used, but has a couple of caveats:
+    // - Qualifiers set via RuntimeEnvironment.setQualifiers won't be propagated to this activity
+    // - Calling getSystemService on the activity will return a different object than when calling
+    //   on the application, meaning non-static shadow system service state will not be shared.
+    if (activityOptions != null && VERSION.SDK_INT >= VERSION_CODES.O) {
+      int displayId = ActivityOptions.fromBundle(activityOptions).getLaunchDisplayId();
+      if (displayId != Display.DEFAULT_DISPLAY
+          // INVALID_DISPLAY indicates no display was set in the options bundle
+          && displayId != Display.INVALID_DISPLAY) {
+
+        LoadedApk loadedApk =
+            activityThread.getPackageInfo(
+                ShadowActivityThread.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
+        _LoadedApk_ loadedApkReflector = reflector(_LoadedApk_.class, loadedApk);
+        loadedApkReflector.setResources(application.getResources());
+        loadedApkReflector.setApplication(application);
+
+        baseContext =
+          reflector(_ContextImpl_.class).createActivityContext(
+              activityThread,
+              loadedApk,
+              activityInfo,
+              reflector(_ContextImpl_.class, baseContext).getActivityToken(),
+              displayId,
+              /* overrideConfiguration= */ application.getResources().getConfiguration());
+        reflector(_ContextImpl_.class, baseContext).setOuterContext(realActivity);
+      }
+    }
 
     reflector(_Activity_.class, realActivity)
         .callAttach(
