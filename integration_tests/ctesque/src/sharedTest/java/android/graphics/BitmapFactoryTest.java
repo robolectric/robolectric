@@ -38,7 +38,9 @@ public class BitmapFactoryTest {
 
   @Test
   public void decodeResource() {
-    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image);
+    Options opt = new BitmapFactory.Options();
+    opt.inScaled = false;
+    Bitmap bitmap = BitmapFactory.decodeResource(resources, R.drawable.an_image, opt);
     assertThat(bitmap.getHeight()).isEqualTo(START_HEIGHT);
     assertThat(bitmap.getWidth()).isEqualTo(START_WIDTH);
   }

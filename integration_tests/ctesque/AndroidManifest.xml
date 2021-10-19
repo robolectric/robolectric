@@ -8,9 +8,6 @@
       android:minSdkVersion="16"
       android:targetSdkVersion="27" />
 
-  <!-- For SettingsTest -->
-  <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
-
   <application />
 
   <instrumentation
