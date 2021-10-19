@@ -155,6 +155,10 @@ public class ShadowActivityThread {
     ShadowActivityThread.applicationInfo = applicationInfo;
   }
 
+  static ApplicationInfo getApplicationInfo() {
+    return applicationInfo;
+  }
+
   /**
    * internal, do not use
    *

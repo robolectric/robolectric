@@ -1242,6 +1242,75 @@ public class ShadowActivityTest {
     assertThat(activity.getVoiceInteractor()).isNotNull();
   }
 
+  @Test
+  @Config(minSdk = O)
+  public void buildActivity_noOptionsBundle_launchesOnDefaultDisplay() {
+    Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
+
+    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+        .isEqualTo(Display.DEFAULT_DISPLAY);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void buildActivity_optionBundleWithNoDisplaySet_launchesOnDefaultDisplay() {
+    Activity activity =
+        Robolectric.buildActivity(Activity.class, null, ActivityOptions.makeBasic().toBundle())
+            .setup()
+            .get();
+
+    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+        .isEqualTo(Display.DEFAULT_DISPLAY);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void buildActivity_optionBundleWithDefaultDisplaySet_launchesOnDefaultDisplay() {
+    Activity activity =
+        Robolectric.buildActivity(
+                Activity.class,
+                null,
+                ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle())
+            .setup()
+            .get();
+
+    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+        .isEqualTo(Display.DEFAULT_DISPLAY);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void buildActivity_optionBundleWithValidNonDefaultDisplaySet_launchesOnSpecifiedDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("");
+
+    Activity activity =
+        Robolectric.buildActivity(
+                Activity.class,
+                null,
+                ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
+            .setup()
+            .get();
+
+    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+        .isNotEqualTo(Display.DEFAULT_DISPLAY);
+    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId()).isEqualTo(displayId);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
+    Activity activity =
+        Robolectric.buildActivity(
+                Activity.class,
+                null,
+                ActivityOptions.makeBasic().setLaunchDisplayId(123).toBundle())
+            .setup()
+            .get();
+
+    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+        .isEqualTo(Display.DEFAULT_DISPLAY);
+  }
+
   /////////////////////////////
 
   private static class DialogCreatingActivity extends Activity {
