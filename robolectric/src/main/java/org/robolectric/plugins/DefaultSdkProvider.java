@@ -14,6 +14,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Preconditions;
@@ -45,7 +46,7 @@ public class DefaultSdkProvider implements SdkProvider {
 
   private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
-  private static final int PREINSTRUMENTED_VERSION = 1;
+  private static final int PREINSTRUMENTED_VERSION = 2;
 
   private final DependencyResolver dependencyResolver;
 
@@ -75,6 +76,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(P, new DefaultSdk(P, "9", "4913185-2", "REL", 8));
     knownSdks.put(Q, new DefaultSdk(Q, "10", "5803371", "REL", 9));
     knownSdks.put(R, new DefaultSdk(R, "11", "6757853", "REL", 9));
+    knownSdk.sput(S, new DefaultSdk(S, "12", "7732740", "REL", 9));
   }
 
   @Override
