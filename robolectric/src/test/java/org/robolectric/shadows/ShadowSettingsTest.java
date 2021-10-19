@@ -21,7 +21,6 @@ import android.provider.Settings.Secure;
 import android.text.format.DateFormat;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SdkSuppress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -174,7 +173,6 @@ public class ShadowSettingsTest {
         .isEqualTo(0);
   }
 
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Config(minSdk = LOLLIPOP, maxSdk = O) // TODO(christianw) fix location mode
   @Test
   public void locationProviders_affectsLocationMode() {
@@ -203,7 +201,6 @@ public class ShadowSettingsTest {
     assertThat(Secure.getInt(contentResolver, LOCATION_MODE, -1)).isEqualTo(LOCATION_MODE_OFF);
   }
 
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Config(minSdk = LOLLIPOP, maxSdk = O) // TODO(christianw) fix location mode
   @Test
   public void locationMode_affectsLocationProviders() {
@@ -240,7 +237,6 @@ public class ShadowSettingsTest {
     assertThat(Secure.isLocationProviderEnabled(contentResolver, NETWORK_PROVIDER)).isTrue();
   }
 
-  @SdkSuppress(maxSdkVersion = JELLY_BEAN_MR2)
   @Config(maxSdk = JELLY_BEAN_MR2)
   @Test
   public void setLocationProviderEnabled() {
