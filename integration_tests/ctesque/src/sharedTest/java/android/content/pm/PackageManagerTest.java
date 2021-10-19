@@ -79,7 +79,7 @@ public final class PackageManagerTest {
             // For Robolectric, it might be either "org.robolectric.ctesque" (bazel),
             // or "org.robolectric.ctesque.test" (gradle)
             ? context.getPackageName()
-            : "org.robolectric.ctesque";
+            : "org.robolectric.testapp";
 
     assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
     assertThat(activities[0].applicationInfo.packageName).isEqualTo(expectedPackage);
