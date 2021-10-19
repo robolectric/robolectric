@@ -10,7 +10,6 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 30
-        testApplicationId "org.robolectric.testapp"
     }
 
     lintOptions {

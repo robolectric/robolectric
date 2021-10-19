@@ -73,23 +73,12 @@ public final class PackageManagerTest {
     assertThat(activities).hasLength(4);
     assertThat(info.services).hasLength(1);
 
-    // todo: these should be reconciled:
-    String expectedPackage =
-        isRobolectric()
-            // For Robolectric, it might be either "org.robolectric.ctesque" (bazel),
-            // or "org.robolectric.ctesque.test" (gradle)
-            ? context.getPackageName()
-            : "org.robolectric.testapp";
-
     assertThat(activities[0].name).isEqualTo("org.robolectric.testapp.TestActivity");
-    assertThat(activities[0].applicationInfo.packageName).isEqualTo(expectedPackage);
     assertThat(activities[0].enabled).isTrue();
     assertThat(activities[1].name).isEqualTo("org.robolectric.testapp.DisabledTestActivity");
-    assertThat(activities[1].applicationInfo.packageName).isEqualTo(expectedPackage);
     assertThat(activities[1].enabled).isFalse();
 
     assertThat(info.services[0].name).isEqualTo("org.robolectric.testapp.TestService");
-    assertThat(info.services[0].applicationInfo.packageName).isEqualTo(expectedPackage);
     assertThat(info.services[0].enabled).isTrue();
   }
 
