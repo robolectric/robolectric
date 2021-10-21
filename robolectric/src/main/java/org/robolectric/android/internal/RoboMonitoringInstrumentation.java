@@ -34,9 +34,8 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.shadows.ShadowActivity;
 
 /**
- * A Robolectric instrumentation that acts like a slimmed down
- * {@link androidx.test.runner.MonitoringInstrumentation} with only the parts needed for
- * Robolectric.
+ * A Robolectric instrumentation that acts like a slimmed down {@link
+ * androidx.test.runner.MonitoringInstrumentation} with only the parts needed for Robolectric.
  */
 @SuppressWarnings("RestrictTo")
 public class RoboMonitoringInstrumentation extends Instrumentation {
