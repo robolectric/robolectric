@@ -35,12 +35,16 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
   endif()
 endif()
 
-
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Build flags derived from
 # https://cs.android.com/android/platform/superproject/+/android-11.0.0_r1:external/sqlite/dist/Android.bp
-set(ANDROID_SQLITE_DIR "../external/sqlite/")
+set(ANDROID_SQLITE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/sqlite")
+
+if(NOT EXISTS "${ANDROID_SQLITE_DIR}/dist/sqlite3.c")
+  message(FATAL_ERROR "SQLite submodule missing. Please run `git submodule update --init`.")
+endif()
+
 set(SQLITE_COMPILE_OPTIONS
   -DHAVE_USLEEP=1
   -DNDEBUG=1
