@@ -1,7 +1,5 @@
 package org.robolectric.android.internal;
 
-import static androidx.test.InstrumentationRegistry.getContext;
-import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -140,13 +138,18 @@ public class LocalActivityInvoker implements ActivityInvoker {
   // This implementation makes sure, that the activity you are trying to launch exists
   @Override
   public Intent getIntentForActivity(Class<? extends Activity> activityClass) {
-    PackageManager packageManager = getTargetContext().getPackageManager();
-    ComponentName componentName = new ComponentName(getTargetContext(), activityClass);
+    PackageManager packageManager =
+        InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageManager();
+    ComponentName componentName =
+        new ComponentName(
+            InstrumentationRegistry.getInstrumentation().getTargetContext(), activityClass);
     Intent intent = Intent.makeMainActivity(componentName);
     if (packageManager.resolveActivity(intent, 0) != null) {
       return intent;
     }
-    return Intent.makeMainActivity(new ComponentName(getContext(), activityClass));
+    return Intent.makeMainActivity(
+        new ComponentName(
+            InstrumentationRegistry.getInstrumentation().getContext(), activityClass));
   }
 
   private static RoboMonitoringInstrumentation getInstrumentation() {
