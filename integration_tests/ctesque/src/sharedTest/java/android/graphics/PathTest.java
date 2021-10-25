@@ -114,4 +114,12 @@ public class PathTest {
     assertThat(path.isEmpty()).isTrue();
     path.close();
   }
+
+  @Test
+  public void invalidArc_doesNotNPE() {
+    Path path = new Path();
+    // This arc is invalid because the bounding rectangle has left > right and top > bottom.
+    path.arcTo(new RectF(1, 1, 0, 0), 0, 30);
+    assertThat(path.isEmpty()).isTrue();
+  }
 }
