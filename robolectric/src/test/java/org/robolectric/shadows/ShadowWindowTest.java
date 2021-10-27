@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -12,6 +14,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.R;
 import android.app.Activity;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -40,6 +43,68 @@ public class ShadowWindowTest {
     assertThat(shadowOf(window).getFlag(WindowManager.LayoutParams.FLAG_FULLSCREEN)).isTrue();
     window.setFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON, WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON);
     assertThat(shadowOf(window).getFlag(WindowManager.LayoutParams.FLAG_FULLSCREEN)).isTrue();
+  }
+
+  @Test
+  public void getSystemFlag_isFalseByDefault() {
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    Window window = activity.getWindow();
+    int fakeSystemFlag1 = 0b1;
+
+    assertThat(shadowOf(window).getPrivateFlag(fakeSystemFlag1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getSystemFlag_shouldReturnFlagsSetViaAddSystemFlags() throws Exception {
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    Window window = activity.getWindow();
+    int fakeSystemFlag1 = 0b1;
+
+    window.addSystemFlags(fakeSystemFlag1);
+
+    assertThat(shadowOf(window).getPrivateFlag(fakeSystemFlag1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getSystemFlag_callingAddSystemFlagsShouldNotOverrideExistingFlags() throws Exception {
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    Window window = activity.getWindow();
+    int fakeSystemFlag1 = 0b1;
+    int fakeSystemFlag2 = 0b10;
+    window.addSystemFlags(fakeSystemFlag1);
+
+    window.addSystemFlags(fakeSystemFlag2);
+
+    assertThat(shadowOf(window).getPrivateFlag(fakeSystemFlag1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT, maxSdk = VERSION_CODES.R)
+  public void getSystemFlag_shouldReturnFlagsSetViaAddPrivateFlags() throws Exception {
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    Window window = activity.getWindow();
+    int fakeSystemFlag1 = 0b1;
+
+    window.addPrivateFlags(fakeSystemFlag1);
+
+    assertThat(shadowOf(window).getPrivateFlag(fakeSystemFlag1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT, maxSdk = VERSION_CODES.R)
+  public void getSystemFlag_callingAddPrivateFlagsShouldNotOverrideExistingFlags()
+      throws Exception {
+    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
+    Window window = activity.getWindow();
+    int fakeSystemFlag1 = 0b1;
+    int fakeSystemFlag2 = 0b10;
+    window.addPrivateFlags(fakeSystemFlag1);
+
+    window.addPrivateFlags(fakeSystemFlag2);
+
+    assertThat(shadowOf(window).getPrivateFlag(fakeSystemFlag1)).isTrue();
   }
 
   @Test

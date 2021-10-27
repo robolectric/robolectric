@@ -35,7 +35,9 @@ public class InstrumentationConfiguration {
       "org.robolectric.util.FragmentTestUtil$FragmentUtilActivity"
   );
 
-  static final Set<String> RESOURCES_TO_ALWAYS_ACQUIRE = Sets.newHashSet("build.prop");
+  // Must always acquire these as they change from API level to API level
+  static final ImmutableSet<String> RESOURCES_TO_ALWAYS_ACQUIRE =
+      ImmutableSet.of("build.prop", "usr/share/zoneinfo/tzdata");
 
   private final List<String> instrumentedPackages;
   private final Set<String> instrumentedClasses;

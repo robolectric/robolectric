@@ -1,7 +1,10 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -13,6 +16,7 @@ import android.view.Window;
 import android.view.Window.OnFrameMetricsAvailableListener;
 import java.util.HashSet;
 import java.util.Set;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -29,6 +33,7 @@ public class ShadowWindow {
   protected CharSequence title = "";
   protected Drawable backgroundDrawable;
   private int flags;
+  private int privateFlags;
   private int softInputMode;
   private final Set<OnFrameMetricsAvailableListener> onFrameMetricsAvailableListeners =
       new HashSet<>();
@@ -48,6 +53,20 @@ public class ShadowWindow {
     reflector(WindowReflector.class, realWindow).setFlags(flags, mask);
   }
 
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void addSystemFlags(int flags) {
+    this.privateFlags |= flags;
+    reflector(WindowReflector.class, realWindow).addSystemFlags(flags);
+  }
+
+  @Implementation(minSdk = KITKAT, maxSdk = R)
+  @HiddenApi
+  protected void addPrivateFlags(int flags) {
+    this.privateFlags |= flags;
+    reflector(WindowReflector.class, realWindow).addPrivateFlags(flags);
+  }
+
   @Implementation
   protected void setSoftInputMode(int softInputMode) {
     this.softInputMode = softInputMode;
@@ -56,6 +75,16 @@ public class ShadowWindow {
 
   public boolean getFlag(int flag) {
     return (flags & flag) == flag;
+  }
+
+  /**
+   * Return the value from a private flag (a.k.a system flag).
+   *
+   * <p>Private flags can be set via either {@link #addPrivateFlags} (SDK 19-30) or {@link
+   * #addSystemFlags} (SDK 29+) methods.
+   */
+  public boolean getPrivateFlag(int flag) {
+    return (privateFlags & flag) == flag;
   }
 
   public CharSequence getTitle() {
@@ -113,6 +142,12 @@ public class ShadowWindow {
 
     @Direct
     void setFlags(int flags, int mask);
+
+    @Direct
+    void addSystemFlags(int flags);
+
+    @Direct
+    void addPrivateFlags(int flags);
 
     @Direct
     void setSoftInputMode(int softInputMode);
