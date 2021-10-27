@@ -20,6 +20,7 @@ import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.OpEventProxyInfo;
 import android.app.AppOpsManager.PackageOps;
+import android.app.SyncNotedAppOp;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.media.AudioAttributes.AttributeUsage;
@@ -324,7 +325,23 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = KITKAT)
   public int noteOp(int op, int uid, String packageName) {
+    return noteOpInternal(op, uid, packageName, "", "");
+  }
+
+  private int noteOpInternal(
+      int op, int uid, String packageName, String attributionTag, String message) {
     storedOps.put(Key.create(uid, packageName, null), op);
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      Object lock =
+          ReflectionHelpers.getStaticField(AppOpsManager.class, "sLock");
+      synchronized (lock) {
+        AppOpsManager.OnOpNotedCallback callback =
+            ReflectionHelpers.getStaticField(AppOpsManager.class, "sOnOpNotedCallback");
+        if (callback != null) {
+          callback.onSelfNoted(new SyncNotedAppOp(op, attributionTag));
+        }
+      }
+    }
 
     // Permission check not currently implemented in this shadow.
     return AppOpsManager.MODE_ALLOWED;
@@ -332,7 +349,7 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = R)
   protected int noteOp(int op, int uid, String packageName, String attributionTag, String message) {
-    return noteOp(op, uid, packageName);
+    return noteOpInternal(op, uid, packageName, attributionTag, message);
   }
 
   @Implementation(minSdk = KITKAT)
