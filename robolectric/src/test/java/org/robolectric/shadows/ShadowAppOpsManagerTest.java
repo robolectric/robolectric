@@ -17,7 +17,9 @@ import static android.app.AppOpsManager.OP_SEND_SMS;
 import static android.app.AppOpsManager.OP_VIBRATE;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -30,6 +32,7 @@ import android.app.AppOpsManager;
 import android.app.AppOpsManager.OnOpChangedListener;
 import android.app.AppOpsManager.OpEntry;
 import android.app.AppOpsManager.PackageOps;
+import android.app.SyncNotedAppOp;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.os.Binder;
@@ -42,6 +45,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAppOpsManager.ModeAndException;
 import org.robolectric.util.ReflectionHelpers;
@@ -574,6 +578,23 @@ public class ShadowAppOpsManagerTest {
     assertThat(containsPackageOpPair(packageOps, packageName1, 3, MODE_FOREGROUND)).isFalse();
     assertThat(containsPackageOpPair(packageOps, packageName1, 4, MODE_IGNORED)).isFalse();
     assertThat(containsPackageOpPair(packageOps, packageName2, 0, MODE_ALLOWED)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setOnApNotedCallback_isCalled() {
+    AppOpsManager.OnOpNotedCallback callback = mock(AppOpsManager.OnOpNotedCallback.class);
+    appOps.setOnOpNotedCallback(directExecutor(), callback);
+    ArgumentCaptor<SyncNotedAppOp> captor = ArgumentCaptor.forClass(SyncNotedAppOp.class);
+    appOps.noteOp(
+        AppOpsManager.OPSTR_MONITOR_LOCATION,
+        android.os.Process.myUid(),
+        ApplicationProvider.getApplicationContext().getPackageName(),
+        "tag",
+        "message");
+    verify(callback).onSelfNoted(captor.capture());
+    assertThat(captor.getValue().getOp()).isEqualTo(AppOpsManager.OPSTR_MONITOR_LOCATION);
+    assertThat(captor.getValue().getAttributionTag()).isEqualTo("tag");
   }
 
   @Config(minSdk = Q)
