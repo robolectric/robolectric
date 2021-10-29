@@ -195,7 +195,9 @@ public class ShadowServiceManager {
       this.useDeepBinder = useDeepBinder;
     }
 
-    IBinder getBinder() {
+    // Needs to be synchronized in case multiple threads call ServiceManager.getService
+    // concurrently.
+    synchronized IBinder getBinder() {
       if (cachedBinder == null) {
         cachedBinder = new Binder();
         cachedBinder.attachInterface(
@@ -244,6 +246,7 @@ public class ShadowServiceManager {
     if (binderService == null) {
       return null;
     }
+
     return binderService.getBinder();
   }
 
