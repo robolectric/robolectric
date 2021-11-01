@@ -259,4 +259,19 @@ public class ShadowSettingsTest {
     assertThat(Secure.isLocationProviderEnabled(contentResolver, GPS_PROVIDER)).isFalse();
     assertThat(Secure.isLocationProviderEnabled(contentResolver, NETWORK_PROVIDER)).isFalse();
   }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void testGlobalGetFloat() {
+    float durationScale =
+        Global.getFloat(
+            context.getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, /* def= */ 1.0f);
+
+    assertThat(durationScale).isEqualTo(1.0f);
+
+    Global.putFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0.01f);
+    assertThat(
+            Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, /* def= */ 0))
+        .isEqualTo(0.01f);
+  }
 }
