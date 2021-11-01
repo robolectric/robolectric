@@ -404,8 +404,9 @@ public class ShadowPath {
         new Arc2D.Float(
             left, top, right - left, bottom - top, -startAngle, -sweepAngle, Arc2D.OPEN);
     mPath.append(arc, true /*connect*/);
-
-    resetLastPointFromPath();
+    if (hasPoints()) {
+      resetLastPointFromPath();
+    }
   }
 
   @Implementation
