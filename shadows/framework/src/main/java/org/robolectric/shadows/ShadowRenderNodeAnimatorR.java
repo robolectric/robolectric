@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.shadow.api.Shadow.directlyOn;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.animation.RenderNodeAnimator;
 import android.view.Choreographer;
@@ -10,7 +10,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /**
  * Copy of ShadowRenderNodeAnimator that reflects move of RenderNodeAnimator to android.graphics in
@@ -31,12 +33,11 @@ public class ShadowRenderNodeAnimatorR {
     // callbacks on the Choreographer, this is a problem if not reset between tests (as once the
     // test is complete, its scheduled callbacks would be removed, but the static object would still
     // believe it was registered and not re-register for the next test).
-    ReflectionHelpers.setStaticField(
-        RenderNodeAnimator.class, "sAnimationHelper", new ThreadLocal<>());
+    reflector(RenderNodeAnimatorReflector.class).setAnimationHelper(new ThreadLocal<>());
   }
 
   public void moveToRunningState() {
-    directlyOn(realObject, RenderNodeAnimator.class, "moveToRunningState");
+    reflector(RenderNodeAnimatorReflector.class, realObject).moveToRunningState();
     if (!isEnding) {
       // Only schedule if this wasn't called during an end() call, as Robolectric will run any
       // Choreographer callbacks synchronously when unpaused (and thus end up running the full
@@ -47,37 +48,43 @@ public class ShadowRenderNodeAnimatorR {
 
   @Implementation
   public void doStart() {
-    directlyOn(realObject, RenderNodeAnimator.class, "doStart");
+    reflector(RenderNodeAnimatorReflector.class, realObject).doStart();
     schedule();
   }
 
   @Implementation
   public void cancel() {
-    directlyOn(realObject, RenderNodeAnimator.class).cancel();
+    RenderNodeAnimatorReflector renderNodeReflector =
+        reflector(RenderNodeAnimatorReflector.class, realObject);
+    renderNodeReflector.cancel();
 
-    int state = ReflectionHelpers.getField(realObject, "mState");
+    int state = renderNodeReflector.getState();
+
     if (state != STATE_FINISHED) {
       // In 21, RenderNodeAnimator only calls nEnd, it doesn't call the Java end method. Thus, it
       // expects the native code will end up calling onFinished, so we do that here.
-      directlyOn(realObject, RenderNodeAnimator.class, "onFinished");
+      renderNodeReflector.onFinished();
     }
   }
 
   @Implementation
   public void end() {
+    RenderNodeAnimatorReflector renderNodeReflector =
+        reflector(RenderNodeAnimatorReflector.class, realObject);
+
     // Set this to true to prevent us from scheduling and running the full animation on the end()
     // call. This can happen if the animation had not been started yet.
     isEnding = true;
-    directlyOn(realObject, RenderNodeAnimator.class).end();
+    renderNodeReflector.end();
     isEnding = false;
     unschedule();
 
-    int state = ReflectionHelpers.getField(realObject, "mState");
+    int state = renderNodeReflector.getState();
     if (state != STATE_FINISHED) {
       // This means that the RenderNodeAnimator called out to native code to finish the animation,
       // expecting that it would end up calling onFinished. Since that won't happen in Robolectric,
       // we call onFinished ourselves.
-      directlyOn(realObject, RenderNodeAnimator.class, "onFinished");
+      renderNodeReflector.onFinished();
     }
   }
 
@@ -107,10 +114,31 @@ public class ShadowRenderNodeAnimatorR {
           long duration = realObject.getDuration();
           long curTime = frameTimeNanos - startTime;
           if (curTime >= duration) {
-            directlyOn(realObject, RenderNodeAnimator.class, "onFinished");
+            reflector(RenderNodeAnimatorReflector.class, realObject).onFinished();
           } else {
             schedule();
           }
         }
       };
+
+  @ForType(value = RenderNodeAnimator.class, direct = true)
+  interface RenderNodeAnimatorReflector {
+
+    @Accessor("mState")
+    int getState();
+
+    @Static
+    @Accessor("sAnimationHelper")
+    void setAnimationHelper(ThreadLocal<?> threadLocal);
+
+    void onFinished();
+
+    void doStart();
+
+    void cancel();
+
+    void moveToRunningState();
+
+    void end();
+  }
 }

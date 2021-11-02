@@ -126,8 +126,9 @@ public class ShadowNotificationManager {
     return statusBarNotifications;
   }
 
+  /** Returns a NotificationChannel that has the given channel ID, for sdk version >= O. */
   @Implementation(minSdk = Build.VERSION_CODES.O)
-  protected Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
+  public Object /*NotificationChannel*/ getNotificationChannel(String channelId) {
     return notificationChannels.get(channelId);
   }
 

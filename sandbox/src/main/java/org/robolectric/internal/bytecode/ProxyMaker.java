@@ -20,6 +20,16 @@ import org.objectweb.asm.commons.Method;
 import org.robolectric.util.PerfStatsCollector;
 import sun.misc.Unsafe;
 
+/**
+ * Defines proxy classes that can invoke methods names transformed with a {@link MethodMapper}. It
+ * is primarily used to invoke the original $$robo$$-prefixed methods, but it can technically
+ * support arbitrary naming schemes.
+ *
+ * @deprecated This is incompatible with JDK17+. Use a {@link
+ *     org.robolectric.util.reflector.Reflector} interface with {@link
+ *     org.robolectric.util.reflector.Direct}.
+ */
+@Deprecated
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
   private static final Unsafe UNSAFE;
