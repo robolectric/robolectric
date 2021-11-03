@@ -11,6 +11,7 @@ import android.media.session.ISessionManager;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.MediaSessionManager.OnActiveSessionsChangedListener;
+import android.os.Handler;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +46,14 @@ public class ShadowMediaSessionManager {
   @Implementation
   protected void addOnActiveSessionsChangedListener(
       OnActiveSessionsChangedListener listener, ComponentName ignoredNotificationListener) {
+    listeners.add(listener);
+  }
+
+  @Implementation
+  protected void addOnActiveSessionsChangedListener(
+      OnActiveSessionsChangedListener listener,
+      ComponentName ignoredNotificationListener,
+      Handler ignoreHandler) {
     listeners.add(listener);
   }
 
