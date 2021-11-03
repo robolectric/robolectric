@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -22,6 +23,8 @@ import android.app.admin.IDevicePolicyManager;
 import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
+import android.app.timedetector.ITimeDetectorService;
+import android.app.timezonedetector.ITimeZoneDetectorService;
 import android.app.trust.ITrustManager;
 import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
@@ -69,11 +72,16 @@ import android.os.IUserManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
+import android.permission.ILegacyPermissionManager;
+import android.permission.IPermissionManager;
+import android.speech.IRecognitionServiceManager;
+import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
+import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
 import com.android.internal.view.IInputMethodManager;
 import java.util.HashMap;
@@ -106,6 +114,7 @@ public class ShadowServiceManager {
     addBinderService(BatteryStats.SERVICE_NAME, IBatteryStats.class);
     addBinderService(Context.DROPBOX_SERVICE, IDropBoxManagerService.class);
     addBinderService(Context.DEVICE_POLICY_SERVICE, IDevicePolicyManager.class);
+    addBinderService(Context.TELEPHONY_SERVICE, ITelephony.class);
     addBinderService(Context.CONNECTIVITY_SERVICE, IConnectivityManager.class);
     addBinderService(Context.WIFI_SERVICE, IWifiManager.class);
     addBinderService(Context.SEARCH_SERVICE, ISearchManager.class);
@@ -176,6 +185,14 @@ public class ShadowServiceManager {
       addBinderService(Context.TETHERING_SERVICE, ITetheringConnector.class);
       addBinderService("telephony.registry", ITelephonyRegistry.class);
     }
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      addBinderService("permissionmgr", IPermissionManager.class);
+      addBinderService(Context.TIME_ZONE_DETECTOR_SERVICE, ITimeZoneDetectorService.class);
+      addBinderService(Context.TIME_DETECTOR_SERVICE, ITimeDetectorService.class);
+      addBinderService(Context.SPEECH_RECOGNITION_SERVICE, IRecognitionServiceManager.class);
+      addBinderService(Context.LEGACY_PERMISSION_SERVICE, ILegacyPermissionManager.class);
+      addBinderService(Context.UWB_SERVICE, IUwbAdapter.class);
+    }
   }
 
   /**
@@ -195,7 +212,9 @@ public class ShadowServiceManager {
       this.useDeepBinder = useDeepBinder;
     }
 
-    IBinder getBinder() {
+    // Needs to be synchronized in case multiple threads call ServiceManager.getService
+    // concurrently.
+    synchronized IBinder getBinder() {
       if (cachedBinder == null) {
         cachedBinder = new Binder();
         cachedBinder.attachInterface(
@@ -244,6 +263,7 @@ public class ShadowServiceManager {
     if (binderService == null) {
       return null;
     }
+
     return binderService.getBinder();
   }
 

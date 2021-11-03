@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -23,6 +24,7 @@ import android.app.ApplicationPackageManager;
 import android.app.KeyguardManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.DevicePolicyManager.NearbyStreamingPolicy;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
@@ -124,6 +126,10 @@ public class ShadowDevicePolicyManager {
   private boolean isDeviceProvisioned;
   private boolean isDeviceProvisioningConfigApplied;
   private volatile boolean organizationOwnedDeviceWithManagedProfile = false;
+  private int nearbyNotificationStreamingPolicy =
+      DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
+  private int nearbyAppStreamingPolicy =
+      DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -1289,5 +1295,27 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = R)
   protected boolean isOrganizationOwnedDeviceWithManagedProfile() {
     return organizationOwnedDeviceWithManagedProfile;
+  }
+
+  @Implementation(minSdk = S)
+  @NearbyStreamingPolicy
+  protected int getNearbyNotificationStreamingPolicy() {
+    return nearbyNotificationStreamingPolicy;
+  }
+
+  @Implementation(minSdk = S)
+  protected void setNearbyNotificationStreamingPolicy(@NearbyStreamingPolicy int policy) {
+    nearbyNotificationStreamingPolicy = policy;
+  }
+
+  @Implementation(minSdk = S)
+  @NearbyStreamingPolicy
+  protected int getNearbyAppStreamingPolicy() {
+    return nearbyAppStreamingPolicy;
+  }
+
+  @Implementation(minSdk = S)
+  protected void setNearbyAppStreamingPolicy(@NearbyStreamingPolicy int policy) {
+    nearbyAppStreamingPolicy = policy;
   }
 }

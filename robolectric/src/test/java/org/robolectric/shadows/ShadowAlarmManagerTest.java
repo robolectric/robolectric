@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -101,7 +102,9 @@ public class ShadowAlarmManagerTest {
   @Test
   public void set_shouldRegisterAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0,
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
@@ -119,7 +122,9 @@ public class ShadowAlarmManagerTest {
   @Config(minSdk = M)
   public void setAndAllowWhileIdle_shouldRegisterAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME, 0,
+    alarmManager.setAndAllowWhileIdle(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
@@ -128,7 +133,9 @@ public class ShadowAlarmManagerTest {
   @Config(minSdk = M)
   public void setExactAndAllowWhileIdle_shouldRegisterAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME, 0,
+    alarmManager.setExactAndAllowWhileIdle(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
@@ -137,7 +144,9 @@ public class ShadowAlarmManagerTest {
   @Config(minSdk = KITKAT)
   public void setExact_shouldRegisterAlarm_forApi19() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0,
+    alarmManager.setExact(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
@@ -155,7 +164,10 @@ public class ShadowAlarmManagerTest {
   @Config(minSdk = KITKAT)
   public void setWindow_shouldRegisterAlarm_forApi19() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setWindow(AlarmManager.ELAPSED_REALTIME, 0, 1,
+    alarmManager.setWindow(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
+        1,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
@@ -172,34 +184,51 @@ public class ShadowAlarmManagerTest {
   @Test
   public void setRepeating_shouldRegisterAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, INTERVAL_HOUR,
+    alarmManager.setRepeating(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
+        INTERVAL_HOUR,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
 
   @Test
   public void set_shouldReplaceAlarmsWithSameIntentReceiver() {
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 500,
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME,
+        500,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 1000,
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME,
+        1000,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
   }
 
   @Test
   public void set_shouldReplaceDuplicates() {
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0,
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0,
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
   }
 
   @Test
   public void setRepeating_shouldReplaceDuplicates() {
-    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, INTERVAL_HOUR,
+    alarmManager.setRepeating(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
+        INTERVAL_HOUR,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, INTERVAL_HOUR,
+    alarmManager.setRepeating(
+        AlarmManager.ELAPSED_REALTIME,
+        0,
+        INTERVAL_HOUR,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
     assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
   }
@@ -377,12 +406,37 @@ public class ShadowAlarmManagerTest {
     assertThat(shadowAlarmManager.peekNextScheduledAlarm()).isNull();
   }
 
-  private void assertScheduledAlarm(long now, PendingIntent pendingIntent,
-      ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
+  @Test
+  @Config(minSdk = S)
+  public void canScheduleExactAlarms_default_returnsTrue() {
+    assertThat(alarmManager.canScheduleExactAlarms()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void canScheduleExactAlarms_setCanScheduleExactAlarms_returnsTrue() {
+    ShadowAlarmManager.setCanScheduleExactAlarms(true);
+
+    assertThat(alarmManager.canScheduleExactAlarms()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void canScheduleExactAlarms_setCannotScheduleExactAlarms_returnsFalse() {
+    ShadowAlarmManager.setCanScheduleExactAlarms(false);
+
+    assertThat(alarmManager.canScheduleExactAlarms()).isFalse();
+  }
+
+  private void assertScheduledAlarm(
+      long now, PendingIntent pendingIntent, ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
     assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
   }
 
-  private void assertRepeatingScheduledAlarm(long now, long interval, PendingIntent pendingIntent,
+  private void assertRepeatingScheduledAlarm(
+      long now,
+      long interval,
+      PendingIntent pendingIntent,
       ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
     assertThat(scheduledAlarm).isNotNull();
     assertThat(scheduledAlarm.operation).isNotNull();

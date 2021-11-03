@@ -1,10 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Looper;
@@ -63,13 +68,25 @@ public class ShadowInputMethodManager {
     return showSoftInput(view, flags, null);
   }
 
-  @Implementation(maxSdk = VERSION_CODES.R)
+  @Implementation(maxSdk = R)
   protected boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(true);
     return true;
   }
 
-  @Implementation(maxSdk = VERSION_CODES.R)
+  @Implementation(minSdk = S)
+  protected boolean showSoftInput(
+      View view, int flags, ResultReceiver resultReceiver, int ignoredReason) {
+    return showSoftInput(view, flags, resultReceiver);
+  }
+
+  @Implementation(minSdk = S)
+  protected boolean hideSoftInputFromWindow(
+      IBinder windowToken, int flags, ResultReceiver resultReceiver, int ignoredReason) {
+    return hideSoftInputFromWindow(windowToken, flags, resultReceiver);
+  }
+
+  @Implementation(maxSdk = R)
   protected boolean hideSoftInputFromWindow(IBinder windowToken, int flags) {
     return hideSoftInputFromWindow(windowToken, flags, null);
   }
@@ -115,6 +132,13 @@ public class ShadowInputMethodManager {
       visibilityChangeHandler.get().handleSoftInputVisibilityChange(softInputVisible);
     }
   }
+
+  /**
+   * The framework implementation does a blocking call to system server. This will deadlock on
+   * Robolectric, so just stub out the method.
+   */
+  @Implementation(minSdk = S)
+  protected void closeCurrentInput() {}
 
   /**
    * Returns the list of {@link InputMethodInfo} that are installed.
@@ -200,23 +224,23 @@ public class ShadowInputMethodManager {
   @Implementation
   protected void displayCompletions(View view, CompletionInfo[] completions) {}
 
-  @Implementation(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected static InputMethodManager peekInstance() {
     // Android has a bug pre M where peekInstance was dereferenced without a null check:-
     // https://github.com/aosp-mirror/platform_frameworks_base/commit/a046faaf38ad818e6b5e981a39fd7394cf7cee03
     // So for earlier versions, just call through directly to getInstance()
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
+    if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN_MR1) {
       return ReflectionHelpers.callStaticMethod(
           InputMethodManager.class,
           "getInstance",
           ClassParameter.from(Looper.class, Looper.getMainLooper()));
-    } else if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
+    } else if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP_MR1) {
       return InputMethodManager.getInstance();
     }
     return reflector(_InputMethodManager_.class).peekInstance();
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation(minSdk = N)
   protected boolean startInputInner(
       int startInputReason,
       IBinder windowGainingFocus,
@@ -226,7 +250,7 @@ public class ShadowInputMethodManager {
     return true;
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation(minSdk = M)
   protected void sendAppPrivateCommand(View view, String action, Bundle data) {
     if (privateCommandListener.isPresent()) {
       privateCommandListener.get().onPrivateCommand(view, action, data);
@@ -241,9 +265,9 @@ public class ShadowInputMethodManager {
   public static void reset() {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     _InputMethodManager_ _reflector = reflector(_InputMethodManager_.class);
-    if (apiLevel <= VERSION_CODES.JELLY_BEAN_MR1) {
+    if (apiLevel <= JELLY_BEAN_MR1) {
       _reflector.setMInstance(null);
-    } else if (apiLevel <= VERSION_CODES.P) {
+    } else if (apiLevel <= P) {
       _reflector.setInstance(null);
     } else {
       _reflector.getInstanceMap().clear();

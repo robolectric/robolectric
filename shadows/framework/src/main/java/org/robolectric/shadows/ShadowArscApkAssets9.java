@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
@@ -398,4 +399,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // }
   //
   // }  // namespace android
+
+  @Implementation(minSdk = S)
+  protected void close() {}
 }

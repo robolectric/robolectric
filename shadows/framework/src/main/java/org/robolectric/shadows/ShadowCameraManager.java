@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -74,7 +75,32 @@ public class ShadowCameraManager {
     cameraTorches.put(cameraId, enabled);
   }
 
-  @Implementation(minSdk = VERSION_CODES.P)
+  @Implementation(minSdk = Build.VERSION_CODES.S)
+  protected CameraDevice openCameraDeviceUserAsync(
+      String cameraId,
+      CameraDevice.StateCallback callback,
+      Executor executor,
+      int unusedClientUid,
+      int unusedOomScoreOffset) {
+    CameraCharacteristics characteristics = getCameraCharacteristics(cameraId);
+    Context context = RuntimeEnvironment.getApplication();
+    CameraDeviceImpl deviceImpl =
+        ReflectionHelpers.callConstructor(
+            CameraDeviceImpl.class,
+            ClassParameter.from(String.class, cameraId),
+            ClassParameter.from(CameraDevice.StateCallback.class, callback),
+            ClassParameter.from(Executor.class, executor),
+            ClassParameter.from(CameraCharacteristics.class, characteristics),
+            ClassParameter.from(Map.class, Collections.emptyMap()),
+            ClassParameter.from(int.class, context.getApplicationInfo().targetSdkVersion),
+            ClassParameter.from(Context.class, context));
+    createdCameras.add(deviceImpl);
+    updateCameraCallback(deviceImpl, callback, null, executor);
+    executor.execute(() -> callback.onOpened(deviceImpl));
+    return deviceImpl;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P, maxSdk = VERSION_CODES.R)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId, CameraDevice.StateCallback callback, Executor executor, final int uid)
       throws CameraAccessException {
@@ -82,12 +108,13 @@ public class ShadowCameraManager {
     Context context = reflector(ReflectorCameraManager.class, realObject).getContext();
 
     CameraDeviceImpl deviceImpl =
-        new CameraDeviceImpl(
-            cameraId,
-            callback,
-            executor,
-            characteristics,
-            context.getApplicationInfo().targetSdkVersion);
+        ReflectionHelpers.callConstructor(
+            CameraDeviceImpl.class,
+            ClassParameter.from(String.class, cameraId),
+            ClassParameter.from(CameraDevice.StateCallback.class, callback),
+            ClassParameter.from(Executor.class, executor),
+            ClassParameter.from(CameraCharacteristics.class, characteristics),
+            ClassParameter.from(int.class, context.getApplicationInfo().targetSdkVersion));
 
     createdCameras.add(deviceImpl);
     updateCameraCallback(deviceImpl, callback, null, executor);

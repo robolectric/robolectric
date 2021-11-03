@@ -133,29 +133,27 @@ public final class PackageRollbackInfoBuilder {
           ReflectionHelpers.ClassParameter.from(IntArray.class, installedUsers),
           ReflectionHelpers.ClassParameter.from(SparseLongArray.class, ceSnapshotInodes));
     } else if (apiLevel == VERSION_CODES.R) {
-      // We only have access to constructor on R. For all other SDKs, we will need
-      // ReflectionHelper.
-      return new PackageRollbackInfo(
-          packageRolledBackFrom,
-          packageRolledBackTo,
-          pendingBackups,
-          pendingRestores,
-          isApex,
-          isApkInApex,
-          snapshottedUsers,
-          ceSnapshotInodes);
-    } else if (apiLevel > VERSION_CODES.R) {
       return ReflectionHelpers.callConstructor(
           PackageRollbackInfo.class,
           ReflectionHelpers.ClassParameter.from(VersionedPackage.class, packageRolledBackFrom),
           ReflectionHelpers.ClassParameter.from(VersionedPackage.class, packageRolledBackTo),
-          ReflectionHelpers.ClassParameter.from(List.class, getPendingBackupsList()),
+          ReflectionHelpers.ClassParameter.from(IntArray.class, pendingBackups),
           ReflectionHelpers.ClassParameter.from(ArrayList.class, pendingRestores),
           ReflectionHelpers.ClassParameter.from(Boolean.TYPE, isApex),
           ReflectionHelpers.ClassParameter.from(Boolean.TYPE, isApkInApex),
-          ReflectionHelpers.ClassParameter.from(List.class, getSnapshottedUsersList()));
+          ReflectionHelpers.ClassParameter.from(IntArray.class, snapshottedUsers),
+          ReflectionHelpers.ClassParameter.from(SparseLongArray.class, ceSnapshotInodes));
+    } else if (apiLevel > VERSION_CODES.R) {
+      return new PackageRollbackInfo(
+          packageRolledBackFrom,
+          packageRolledBackTo,
+          getPendingBackupsList(),
+          pendingRestores,
+          isApex,
+          isApkInApex,
+          getSnapshottedUsersList());
     } else {
-      throw new UnsupportedOperationException("PackageRollbacakInfoBuilder requires SDK >= Q");
+      throw new UnsupportedOperationException("PackageRollbackInfoBuilder requires SDK >= Q");
     }
   }
 }

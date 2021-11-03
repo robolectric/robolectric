@@ -48,12 +48,7 @@ public class PlaybackInfoBuilder {
 
   public PlaybackInfo build() {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel == VERSION_CODES.Q) {
-      return new PlaybackInfo(volumeType, volumeControl, maxVolume, currentVolume, audioAttrs);
-    } else if (apiLevel > VERSION_CODES.Q) {
-      return new PlaybackInfo(
-          volumeType, volumeControl, maxVolume, currentVolume, audioAttrs, null);
-    } else {
+    if (apiLevel < VERSION_CODES.Q) {
       return ReflectionHelpers.callConstructor(
           PlaybackInfo.class,
           ClassParameter.from(int.class, volumeType),
@@ -61,6 +56,17 @@ public class PlaybackInfoBuilder {
           ClassParameter.from(int.class, volumeControl),
           ClassParameter.from(int.class, maxVolume),
           ClassParameter.from(int.class, currentVolume));
+    } else if (apiLevel == VERSION_CODES.Q) {
+      return ReflectionHelpers.callConstructor(
+          PlaybackInfo.class,
+          ClassParameter.from(int.class, volumeType),
+          ClassParameter.from(int.class, volumeControl),
+          ClassParameter.from(int.class, maxVolume),
+          ClassParameter.from(int.class, currentVolume),
+          ClassParameter.from(AudioAttributes.class, audioAttrs));
+    } else {
+      return new PlaybackInfo(
+          volumeType, volumeControl, maxVolume, currentVolume, audioAttrs, null);
     }
   }
 }

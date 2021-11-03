@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
@@ -1569,7 +1570,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   }
 
   // static void NativeThemeDestroy(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = R)
   protected static void nativeThemeDestroy(long theme_ptr) {
     Registries.NATIVE_THEME9_REGISTRY.unregister(theme_ptr);
   }
@@ -1628,7 +1629,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   }
 
   // static void NativeThemeClear(JNIEnv* /*env*/, jclass /*clazz*/, jlong theme_ptr) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = R)
   protected static void nativeThemeClear(long themePtr) {
     Registries.NATIVE_THEME9_REGISTRY.getNativeObject(themePtr).Clear();
   }

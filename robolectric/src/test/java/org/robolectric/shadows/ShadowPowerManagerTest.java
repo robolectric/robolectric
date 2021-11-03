@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -20,6 +21,7 @@ import android.os.WorkSource;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.Correspondence;
+import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -490,5 +492,24 @@ public class ShadowPowerManagerTest {
     assertThat(shadowPowerManager.getAdaptivePowerSaveEnabled()).isFalse();
     boolean changed = powerManager.setAdaptivePowerSaveEnabled(false);
     assertThat(changed).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setBatteryDischargePrediction() {
+    PowerManager powerManager =
+        ApplicationProvider.getApplicationContext().getSystemService(PowerManager.class);
+    powerManager.setBatteryDischargePrediction(Duration.ofHours(2), true);
+    assertThat(powerManager.getBatteryDischargePrediction()).isEqualTo(Duration.ofHours(2));
+    assertThat(powerManager.isBatteryDischargePredictionPersonalized()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getBatteryDischargePrediction_default() {
+    PowerManager powerManager =
+        ApplicationProvider.getApplicationContext().getSystemService(PowerManager.class);
+    assertThat(powerManager.getBatteryDischargePrediction()).isNull();
+    assertThat(powerManager.isBatteryDischargePredictionPersonalized()).isFalse();
   }
 }

@@ -7,6 +7,8 @@ import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -46,8 +48,26 @@ public class ShadowMediaSessionManagerTest {
     MediaController mediaController = new MediaController(context, mediaSession.getSessionToken());
     final List<MediaController> changedMediaControllers = new ArrayList<>();
     Shadows.shadowOf(mediaSessionManager)
-        .addOnActiveSessionsChangedListener(list -> changedMediaControllers.addAll(list), null);
+        .addOnActiveSessionsChangedListener(changedMediaControllers::addAll, null);
     Shadows.shadowOf(mediaSessionManager).addController(mediaController);
     assertThat(changedMediaControllers).containsExactly(mediaController);
+  }
+
+  @Test
+  public void getActiveSessions_callsActiveSessionListenersWithProvidedHandler() {
+    MediaSession mediaSession = new MediaSession(context, "tag");
+    MediaController mediaController = new MediaController(context, mediaSession.getSessionToken());
+    final List<MediaController> changedMediaControllers = new ArrayList<>();
+    Shadows.shadowOf(mediaSessionManager)
+        .addOnActiveSessionsChangedListener(
+            changedMediaControllers::addAll, null, new FakeHandler());
+    Shadows.shadowOf(mediaSessionManager).addController(mediaController);
+    assertThat(changedMediaControllers).containsExactly(mediaController);
+  }
+
+  private static class FakeHandler extends Handler {
+    FakeHandler() {
+      super(Looper.getMainLooper());
+    }
   }
 }

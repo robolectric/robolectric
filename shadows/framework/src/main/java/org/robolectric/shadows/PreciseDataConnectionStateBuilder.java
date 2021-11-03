@@ -63,25 +63,27 @@ public class PreciseDataConnectionStateBuilder {
   public PreciseDataConnectionState build() {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel <= VERSION_CODES.R) {
-      return new PreciseDataConnectionState(
-          dataState,
-          networkType,
-          apnSetting == null ? ApnSetting.TYPE_DEFAULT : apnSetting.getApnTypeBitmask(),
-          apnSetting == null ? "" : apnSetting.getApnName(),
-          linkProperties,
-          dataFailCause,
-          apnSetting);
-    } else {
-      // TODO(hoisie): switch to the Builder when Robolectric compiles against S
       return ReflectionHelpers.callConstructor(
           PreciseDataConnectionState.class,
-          ClassParameter.from(int.class, transportType),
-          ClassParameter.from(int.class, id),
           ClassParameter.from(int.class, dataState),
           ClassParameter.from(int.class, networkType),
+          ClassParameter.from(
+              int.class,
+              apnSetting == null ? ApnSetting.TYPE_DEFAULT : apnSetting.getApnTypeBitmask()),
+          ClassParameter.from(String.class, apnSetting == null ? "" : apnSetting.getApnName()),
           ClassParameter.from(LinkProperties.class, linkProperties),
           ClassParameter.from(int.class, dataFailCause),
           ClassParameter.from(ApnSetting.class, apnSetting));
+    } else {
+      return new PreciseDataConnectionState.Builder()
+          .setTransportType(transportType)
+          .setId(id)
+          .setState(dataState)
+          .setNetworkType(networkType)
+          .setLinkProperties(linkProperties)
+          .setFailCause(dataFailCause)
+          .setApnSetting(apnSetting)
+          .build();
     }
   }
 }

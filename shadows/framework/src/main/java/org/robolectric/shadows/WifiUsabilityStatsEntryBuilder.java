@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.WifiUsabilityStatsEntry;
+import android.net.wifi.WifiUsabilityStatsEntry.ContentionTimeStats;
+import android.net.wifi.WifiUsabilityStatsEntry.RadioStats;
+import android.net.wifi.WifiUsabilityStatsEntry.RateStats;
 import android.os.Build.VERSION_CODES;
-import java.lang.reflect.Array;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -44,55 +46,6 @@ public class WifiUsabilityStatsEntryBuilder {
 
   public WifiUsabilityStatsEntry build() {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.R) {
-      return new WifiUsabilityStatsEntry(
-          timeStampMillis,
-          rssi,
-          linkSpeedMbps,
-          totalTxSuccess,
-          totalTxRetries,
-          totalTxBad,
-          totalRxSuccess,
-          totalRadioOnTimeMillis,
-          totalRadioTxTimeMillis,
-          totalRadioRxTimeMillis,
-          totalScanTimeMillis,
-          totalNanScanTimeMillis,
-          totalBackgroundScanTimeMillis,
-          totalRoamScanTimeMillis,
-          totalPnoScanTimeMillis,
-          totalHotspot2ScanTimeMillis,
-          totalCcaBusyFreqTimeMillis,
-          totalRadioOnFreqTimeMillis,
-          totalBeaconRx,
-          probeStatusSinceLastUpdate,
-          probeElapsedTimeSinceLastUpdateMillis,
-          probeMcsRateSinceLastUpdate,
-          rxLinkSpeedMbps,
-          cellularDataNetworkType,
-          cellularSignalStrengthDbm,
-          cellularSignalStrengthDb,
-          isSameRegisteredCell);
-    } else {
-      Object[] contentionTimeStats = null;
-      Object[] rateStats = null;
-      Object[] radioStats = null;
-      try {
-        contentionTimeStats =
-            (Object[])
-                Array.newInstance(
-                    Class.forName("android.net.wifi.WifiUsabilityStatsEntry$ContentionTimeStats"),
-                    0);
-        rateStats =
-            (Object[])
-                Array.newInstance(
-                    Class.forName("android.net.wifi.WifiUsabilityStatsEntry$RateStats"), 0);
-        radioStats =
-            (Object[])
-                Array.newInstance(
-                    Class.forName("android.net.wifi.WifiUsabilityStatsEntry$RadioStats"), 0);
-      } catch (ClassNotFoundException e) {
-        throw new LinkageError(e.getLocalizedMessage());
-      }
       return ReflectionHelpers.callConstructor(
           WifiUsabilityStatsEntry.class,
           ClassParameter.from(long.class, timeStampMillis),
@@ -118,18 +71,47 @@ public class WifiUsabilityStatsEntryBuilder {
           ClassParameter.from(int.class, probeElapsedTimeSinceLastUpdateMillis),
           ClassParameter.from(int.class, probeMcsRateSinceLastUpdate),
           ClassParameter.from(int.class, rxLinkSpeedMbps),
-          ClassParameter.from(int.class, timeSliceDutyCycleInPercent),
-          ClassParameter.from(contentionTimeStats.getClass(), contentionTimeStats),
-          ClassParameter.from(rateStats.getClass(), rateStats),
-          ClassParameter.from(radioStats.getClass(), radioStats),
-          ClassParameter.from(int.class, CHANNEL_UTILIZATION_RATIO),
-          ClassParameter.from(boolean.class, isThroughputSufficient),
-          ClassParameter.from(boolean.class, isWifiScoringEnabled),
-          ClassParameter.from(boolean.class, isCellularDataAvailable),
           ClassParameter.from(int.class, cellularDataNetworkType),
           ClassParameter.from(int.class, cellularSignalStrengthDbm),
           ClassParameter.from(int.class, cellularSignalStrengthDb),
           ClassParameter.from(boolean.class, isSameRegisteredCell));
+    } else {
+      return new WifiUsabilityStatsEntry(
+          timeStampMillis,
+          rssi,
+          linkSpeedMbps,
+          totalTxSuccess,
+          totalTxRetries,
+          totalTxBad,
+          totalRxSuccess,
+          totalRadioOnTimeMillis,
+          totalRadioTxTimeMillis,
+          totalRadioRxTimeMillis,
+          totalScanTimeMillis,
+          totalNanScanTimeMillis,
+          totalBackgroundScanTimeMillis,
+          totalRoamScanTimeMillis,
+          totalPnoScanTimeMillis,
+          totalHotspot2ScanTimeMillis,
+          totalCcaBusyFreqTimeMillis,
+          totalRadioOnFreqTimeMillis,
+          totalBeaconRx,
+          probeStatusSinceLastUpdate,
+          probeElapsedTimeSinceLastUpdateMillis,
+          probeMcsRateSinceLastUpdate,
+          rxLinkSpeedMbps,
+          timeSliceDutyCycleInPercent,
+          new ContentionTimeStats[] {},
+          new RateStats[] {},
+          new RadioStats[] {},
+          CHANNEL_UTILIZATION_RATIO,
+          isThroughputSufficient,
+          isWifiScoringEnabled,
+          isCellularDataAvailable,
+          cellularDataNetworkType,
+          cellularSignalStrengthDbm,
+          cellularSignalStrengthDb,
+          isSameRegisteredCell);
     }
   }
 

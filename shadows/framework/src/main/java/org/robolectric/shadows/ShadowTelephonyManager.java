@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -56,13 +57,13 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = TelephonyManager.class, looseSignatures = true)
 public class ShadowTelephonyManager {
 
-  @RealObject
-  protected TelephonyManager realTelephonyManager;
+  @RealObject protected TelephonyManager realTelephonyManager;
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
   private final Map<Integer, String> slotIndexToDeviceId = new HashMap<>();
@@ -126,10 +127,49 @@ public class ShadowTelephonyManager {
   private Throwable requestCellInfoUpdateDetail = null;
   private Object telephonyDisplayInfo;
   private boolean isDataConnectionAllowed;
+  private static int callComposerStatus = 0;
+  /**
+   * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
+   * introduced in Android S, so we are using Object to avoid breaking other SDKs
+   *
+   * <p>XXX Look into using the real types if we're now compiling against S
+   */
+  private Object callback;
 
   {
     resetSimStates();
     resetSimCountryIsos();
+  }
+
+  @Resetter
+  public static void reset() {
+    callComposerStatus = 0;
+  }
+
+  public static void setCallComposerStatus(int callComposerStatus) {
+    ShadowTelephonyManager.callComposerStatus = callComposerStatus;
+  }
+
+  @Implementation(minSdk = S)
+  @HiddenApi
+  protected int getCallComposerStatus() {
+    return callComposerStatus;
+  }
+
+  public Object getBootstrapAuthenticationCallback() {
+    return callback;
+  }
+
+  @Implementation(minSdk = S)
+  @HiddenApi
+  public void bootstrapAuthenticationRequest(
+      Object appType,
+      Object nafId,
+      Object securityProtocol,
+      Object forceBootStrapping,
+      Object e,
+      Object callback) {
+    this.callback = callback;
   }
 
   @Implementation
@@ -520,8 +560,8 @@ public class ShadowTelephonyManager {
 
   /**
    * Sets the value to be returned by calls to {@link requestCellInfoUpdate}. Note that it does not
-   * set the value to be returned by calls to {@link getAllCellInfo}; for that, see
-   * {@link setAllCellInfo}.
+   * set the value to be returned by calls to {@link getAllCellInfo}; for that, see {@link
+   * setAllCellInfo}.
    */
   public void setCallbackCellInfos(List<CellInfo> callbackCellInfos) {
     this.callbackCellInfos = callbackCellInfos;
@@ -878,7 +918,7 @@ public class ShadowTelephonyManager {
   /**
    * Cribbed from {@link android.telephony.PhoneNumberUtils#isEmergencyNumberInternal}.
    *
-   * TODO(b/122324733) need better implementation
+   * <p>TODO(b/122324733) need better implementation
    */
   @Implementation(minSdk = Build.VERSION_CODES.Q)
   protected boolean isEmergencyNumber(String number) {
@@ -938,7 +978,6 @@ public class ShadowTelephonyManager {
       }
     }
 
-
     return false;
   }
 
@@ -949,6 +988,7 @@ public class ShadowTelephonyManager {
 
   /**
    * Implementation for {@link TelephonyManager#isDataEnabled}.
+   *
    * @return False by default, unless set with {@link TelephonyManager#setDataEnabled}.
    */
   @Implementation(minSdk = Build.VERSION_CODES.O)

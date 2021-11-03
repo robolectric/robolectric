@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.TargetApi;
@@ -32,6 +33,7 @@ public class ShadowAlarmManager {
 
   private static final TimeZone DEFAULT_TIMEZONE = TimeZone.getDefault();
 
+  private static boolean canScheduleExactAlarms;
   private final List<ScheduledAlarm> scheduledAlarms = new CopyOnWriteArrayList<>();
 
   @RealObject private AlarmManager realObject;
@@ -39,6 +41,7 @@ public class ShadowAlarmManager {
   @Resetter
   public static void reset() {
     TimeZone.setDefault(DEFAULT_TIMEZONE);
+    canScheduleExactAlarms = false;
   }
 
   @Implementation
@@ -148,9 +151,7 @@ public class ShadowAlarmManager {
     }
   }
 
-  /**
-   * @return the next scheduled alarm after consuming it
-   */
+  /** @return the next scheduled alarm after consuming it */
   public ScheduledAlarm getNextScheduledAlarm() {
     if (scheduledAlarms.isEmpty()) {
       return null;
@@ -159,9 +160,7 @@ public class ShadowAlarmManager {
     }
   }
 
-  /**
-   * @return the most recently scheduled alarm without consuming it
-   */
+  /** @return the most recently scheduled alarm without consuming it */
   public ScheduledAlarm peekNextScheduledAlarm() {
     if (scheduledAlarms.isEmpty()) {
       return null;
@@ -170,9 +169,7 @@ public class ShadowAlarmManager {
     }
   }
 
-  /**
-   * @return all scheduled alarms
-   */
+  /** @return all scheduled alarms */
   public List<ScheduledAlarm> getScheduledAlarms() {
     return scheduledAlarms;
   }
@@ -207,9 +204,21 @@ public class ShadowAlarmManager {
     }
   }
 
+  /** Returns the schedule exact alarm state set by {@link #setCanScheduleExactAlarms}. */
+  @Implementation(minSdk = S)
+  protected boolean canScheduleExactAlarms() {
+    return canScheduleExactAlarms;
+  }
+
   /**
-   * Container object to hold a PendingIntent and parameters describing when to send it.
+   * Sets the schedule exact alarm state reported by {@link AlarmManager#canScheduleExactAlarms},
+   * but has no effect otherwise.
    */
+  public static void setCanScheduleExactAlarms(boolean scheduleExactAlarms) {
+    canScheduleExactAlarms = scheduleExactAlarms;
+  }
+
+  /** Container object to hold a PendingIntent and parameters describing when to send it. */
   public static class ScheduledAlarm implements Comparable<ScheduledAlarm> {
 
     public final int type;
