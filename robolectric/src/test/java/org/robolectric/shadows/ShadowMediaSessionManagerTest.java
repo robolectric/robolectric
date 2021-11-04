@@ -46,7 +46,18 @@ public class ShadowMediaSessionManagerTest {
     MediaController mediaController = new MediaController(context, mediaSession.getSessionToken());
     final List<MediaController> changedMediaControllers = new ArrayList<>();
     Shadows.shadowOf(mediaSessionManager)
-        .addOnActiveSessionsChangedListener(list -> changedMediaControllers.addAll(list), null);
+        .addOnActiveSessionsChangedListener(changedMediaControllers::addAll, null);
+    Shadows.shadowOf(mediaSessionManager).addController(mediaController);
+    assertThat(changedMediaControllers).containsExactly(mediaController);
+  }
+
+  @Test
+  public void getActiveSessions_callsActiveSessionListenersWithProvidedHandler() {
+    MediaSession mediaSession = new MediaSession(context, "tag");
+    MediaController mediaController = new MediaController(context, mediaSession.getSessionToken());
+    final List<MediaController> changedMediaControllers = new ArrayList<>();
+    Shadows.shadowOf(mediaSessionManager)
+        .addOnActiveSessionsChangedListener(changedMediaControllers::addAll, null, null);
     Shadows.shadowOf(mediaSessionManager).addController(mediaController);
     assertThat(changedMediaControllers).containsExactly(mediaController);
   }
