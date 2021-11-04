@@ -74,6 +74,7 @@ import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
+import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
 import com.android.internal.view.IInputMethodManager;
 import java.util.HashMap;
@@ -106,6 +107,7 @@ public class ShadowServiceManager {
     addBinderService(BatteryStats.SERVICE_NAME, IBatteryStats.class);
     addBinderService(Context.DROPBOX_SERVICE, IDropBoxManagerService.class);
     addBinderService(Context.DEVICE_POLICY_SERVICE, IDevicePolicyManager.class);
+    addBinderService(Context.TELEPHONY_SERVICE, ITelephony.class);
     addBinderService(Context.CONNECTIVITY_SERVICE, IConnectivityManager.class);
     addBinderService(Context.WIFI_SERVICE, IWifiManager.class);
     addBinderService(Context.SEARCH_SERVICE, ISearchManager.class);
