@@ -25,4 +25,20 @@ public class SQLiteModeConfigurerTest {
     systemProperties.setProperty("robolectric.sqliteMode", "NATIVE");
     assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.NATIVE);
   }
+
+  @Test
+  public void osArchSpecificConfig() {
+    Properties systemProperties = new Properties();
+    SQLiteModeConfigurer configurer = new SQLiteModeConfigurer(systemProperties);
+    assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
+
+    systemProperties.setProperty("os.name", "Mac OS X");
+    systemProperties.setProperty("os.arch", "aarch64");
+
+    assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.NATIVE);
+
+    systemProperties.setProperty("os.arch", "amd64");
+
+    assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
+  }
 }
