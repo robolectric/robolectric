@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.annotation.NonNull;
@@ -451,22 +452,42 @@ public class ShadowAudioManager {
   protected AudioPlaybackConfiguration createAudioPlaybackConfiguration(
       AudioAttributes audioAttributes) {
     // use reflection to call package private APIs
-    PlayerBase.PlayerIdCard playerIdCard =
-        ReflectionHelpers.callConstructor(
-            PlayerBase.PlayerIdCard.class,
-            from(int.class, 0), /* type */
-            from(AudioAttributes.class, audioAttributes),
-            from(IPlayer.class, null));
-    AudioPlaybackConfiguration config =
-        ReflectionHelpers.callConstructor(
-            AudioPlaybackConfiguration.class,
-            from(PlayerBase.PlayerIdCard.class, playerIdCard),
-            from(int.class, 0), /* piid */
-            from(int.class, 0), /* uid */
-            from(int.class, 0) /* pid */);
-    ReflectionHelpers.setField(
-        config, "mPlayerState", AudioPlaybackConfiguration.PLAYER_STATE_STARTED);
-    return config;
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      PlayerBase.PlayerIdCard playerIdCard =
+          ReflectionHelpers.callConstructor(
+              PlayerBase.PlayerIdCard.class,
+              ReflectionHelpers.ClassParameter.from(int.class, 0), /* type */
+              ReflectionHelpers.ClassParameter.from(AudioAttributes.class, audioAttributes),
+              ReflectionHelpers.ClassParameter.from(IPlayer.class, null),
+              ReflectionHelpers.ClassParameter.from(int.class, 0) /* sessionId */);
+      AudioPlaybackConfiguration config =
+          ReflectionHelpers.callConstructor(
+              AudioPlaybackConfiguration.class,
+              ReflectionHelpers.ClassParameter.from(PlayerBase.PlayerIdCard.class, playerIdCard),
+              ReflectionHelpers.ClassParameter.from(int.class, 0), /* piid */
+              ReflectionHelpers.ClassParameter.from(int.class, 0), /* uid */
+              ReflectionHelpers.ClassParameter.from(int.class, 0) /* pid */);
+      ReflectionHelpers.setField(
+          config, "mPlayerState", AudioPlaybackConfiguration.PLAYER_STATE_STARTED);
+      return config;
+    } else {
+      PlayerBase.PlayerIdCard playerIdCard =
+          ReflectionHelpers.callConstructor(
+              PlayerBase.PlayerIdCard.class,
+              from(int.class, 0), /* type */
+              from(AudioAttributes.class, audioAttributes),
+              from(IPlayer.class, null));
+      AudioPlaybackConfiguration config =
+          ReflectionHelpers.callConstructor(
+              AudioPlaybackConfiguration.class,
+              from(PlayerBase.PlayerIdCard.class, playerIdCard),
+              from(int.class, 0), /* piid */
+              from(int.class, 0), /* uid */
+              from(int.class, 0) /* pid */);
+      ReflectionHelpers.setField(
+          config, "mPlayerState", AudioPlaybackConfiguration.PLAYER_STATE_STARTED);
+      return config;
+    }
   }
 
   public void setIsMusicActive(boolean isMusicActive) {

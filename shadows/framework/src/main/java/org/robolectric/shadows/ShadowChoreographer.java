@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -83,7 +84,7 @@ public abstract class ShadowChoreographer {
     ShadowLegacyChoreographer.setFrameInterval(frameInterval);
   }
 
-  @Implementation
+  @Implementation(maxSdk = R)
   protected void doFrame(long frameTimeNanos, int frame) {
     if (reflector == null) {
       reflector = reflector(ChoreographerReflector.class, realObject);

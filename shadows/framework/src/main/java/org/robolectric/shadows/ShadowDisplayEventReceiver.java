@@ -135,8 +135,8 @@ public class ShadowDisplayEventReceiver {
       reflector(DisplayEventReceiverReflector.class, realReceiver)
           .onVsync(ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
     } else if (RuntimeEnvironment.getApiLevel() <= R) {
-      realReceiver.onVsync(
-          ShadowSystem.nanoTime(), 0L /* physicalDisplayId currently ignored */, 1);
+      reflector(DisplayEventReceiverReflector.class, realReceiver)
+          .onVsync(ShadowSystem.nanoTime(), 0L, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
     } else {
       try {
         // onVsync takes a package-private VSyncData class as a parameter, thus reflection
@@ -231,6 +231,8 @@ public class ShadowDisplayEventReceiver {
     void onVsync(long timestampNanos, int frame);
 
     void onVsync(long timestampNanos, int physicalDisplayId, int frame);
+
+    void onVsync(long timestampNanos, long physicalDisplayId, int frame);
 
     void onVsync(
         long timestampNanos,

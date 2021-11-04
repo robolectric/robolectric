@@ -12,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -89,8 +90,10 @@ public final class PackageRollbackInfoBuilderTest {
     assertThat(packageRollbackInfo).isNotNull();
     assertThat(packageRollbackInfo.getVersionRolledBackFrom()).isEqualTo(packageRolledBackFrom);
     assertThat(packageRollbackInfo.getVersionRolledBackTo()).isEqualTo(packageRolledBackTo);
-    assertThat(packageRollbackInfo.getPendingBackups().toArray()).hasLength(1);
-    assertThat(packageRollbackInfo.getPendingBackups().get(0)).isEqualTo(BACKUP_ID);
+    int[] pendingBackups =
+        ((IntArray) ReflectionHelpers.callInstanceMethod(packageRollbackInfo, "getPendingBackups"))
+            .toArray();
+    assertThat(pendingBackups).asList().containsExactly(BACKUP_ID);
     assertThat(packageRollbackInfo.getPendingRestores()).hasSize(1);
     assertThat(packageRollbackInfo.getPendingRestores().get(0).userId)
         .isEqualTo(RESTORE_INFO_USER_ID);
@@ -103,7 +106,12 @@ public final class PackageRollbackInfoBuilderTest {
         ReflectionHelpers.callInstanceMethod(packageRollbackInfo, "getInstalledUsers");
     assertThat(installedUsers.toArray()).hasLength(1);
     assertThat(installedUsers.get(0)).isEqualTo(INSTALLED_USER_ID);
-    assertThat(packageRollbackInfo.getCeSnapshotInodes()).isEqualTo(ceSnapshotInodes);
+    if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.R) {
+      assertThat(
+              (SparseLongArray)
+                  ReflectionHelpers.callInstanceMethod(packageRollbackInfo, "getCeSnapshotInodes"))
+          .isEqualTo(ceSnapshotInodes);
+    }
   }
 
   @Test
@@ -124,8 +132,10 @@ public final class PackageRollbackInfoBuilderTest {
     assertThat(packageRollbackInfo).isNotNull();
     assertThat(packageRollbackInfo.getVersionRolledBackFrom()).isEqualTo(packageRolledBackFrom);
     assertThat(packageRollbackInfo.getVersionRolledBackTo()).isEqualTo(packageRolledBackTo);
-    assertThat(packageRollbackInfo.getPendingBackups().toArray()).hasLength(1);
-    assertThat(packageRollbackInfo.getPendingBackups().get(0)).isEqualTo(BACKUP_ID);
+    int[] pendingBackups =
+        ((IntArray) ReflectionHelpers.callInstanceMethod(packageRollbackInfo, "getPendingBackups"))
+            .toArray();
+    assertThat(pendingBackups).asList().containsExactly(BACKUP_ID);
     assertThat(packageRollbackInfo.getPendingRestores()).hasSize(1);
     assertThat(packageRollbackInfo.getPendingRestores().get(0).userId)
         .isEqualTo(RESTORE_INFO_USER_ID);
@@ -135,8 +145,14 @@ public final class PackageRollbackInfoBuilderTest {
         .isEqualTo(RESTORE_INFO_SEINFO);
     assertThat(packageRollbackInfo.isApex()).isTrue();
     assertThat(packageRollbackInfo.isApkInApex()).isTrue();
-    assertThat(packageRollbackInfo.getSnapshottedUsers().toArray()).hasLength(1);
-    assertThat(packageRollbackInfo.getSnapshottedUsers().get(0)).isEqualTo(SNAPSHOTTED_USER_ID);
-    assertThat(packageRollbackInfo.getCeSnapshotInodes()).isEqualTo(ceSnapshotInodes);
+    int[] snapshottedUsers =
+        ((IntArray)
+                ReflectionHelpers.callInstanceMethod(packageRollbackInfo, "getSnapshottedUsers"))
+            .toArray();
+    assertThat(snapshottedUsers).asList().containsExactly(SNAPSHOTTED_USER_ID);
+    assertThat(
+            (SparseLongArray)
+                ReflectionHelpers.callInstanceMethod(packageRollbackInfo, "getCeSnapshotInodes"))
+        .isEqualTo(ceSnapshotInodes);
   }
 }

@@ -5,6 +5,9 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -12,8 +15,6 @@ import android.annotation.SuppressLint;
 import android.content.res.AssetManager;
 import android.graphics.FontFamily;
 import android.graphics.Typeface;
-import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.util.ArrayMap;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -52,6 +54,14 @@ public class ShadowTypeface {
   @Implementation
   protected void __constructor__(long fontId) {
     description = findById(fontId);
+  }
+
+  @Implementation
+  protected static void __staticInitializer__() {
+    Shadow.directInitialize(Typeface.class);
+    if (RuntimeEnvironment.getApiLevel() > R) {
+      Typeface.loadPreinstalledSystemFontMap();
+    }
   }
 
   @Implementation(minSdk = P)
@@ -190,7 +200,7 @@ public class ShadowTypeface {
   protected static void init() {}
 
   @HiddenApi
-  @Implementation(minSdk = VERSION_CODES.Q, maxSdk = VERSION_CODES.R)
+  @Implementation(minSdk = Q, maxSdk = R)
   public static void initSystemDefaultTypefaces(
       Object systemFontMap, Object fallbacks, Object aliases) {}
 
@@ -218,7 +228,7 @@ public class ShadowTypeface {
     throw new RuntimeException("Unknown font id: " + fontId);
   }
 
-  @Implementation(minSdk = O, maxSdk = VERSION_CODES.R)
+  @Implementation(minSdk = O, maxSdk = R)
   protected static long nativeCreateFromArray(long[] familyArray, int weight, int italic) {
     // TODO: implement this properly
     long thisFontId = nextFontId.getAndIncrement();
@@ -233,6 +243,17 @@ public class ShadowTypeface {
    */
   public FontDesc getFontDescription() {
     return description;
+  }
+
+  @Implementation(minSdk = S)
+  protected static void nativeForceSetStaticFinalField(String fieldname, Typeface typeface) {
+    ReflectionHelpers.setStaticField(Typeface.class, fieldname, typeface);
+  }
+
+  @Implementation(minSdk = S)
+  protected static long nativeCreateFromArray(
+      long[] familyArray, long fallbackTypeface, int weight, int italic) {
+    return ShadowTypeface.nativeCreateFromArray(familyArray, weight, italic);
   }
 
   public static class FontDesc {
@@ -284,7 +305,7 @@ public class ShadowTypeface {
   }
 
   /** Shadow for {@link Typeface.Builder} */
-  @Implements(value = Typeface.Builder.class, minSdk = Build.VERSION_CODES.Q)
+  @Implements(value = Typeface.Builder.class, minSdk = Q)
   public static class ShadowBuilder {
     @RealObject Typeface.Builder realBuilder;
 

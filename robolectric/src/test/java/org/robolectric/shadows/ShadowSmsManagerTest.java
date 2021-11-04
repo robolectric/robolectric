@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
@@ -18,6 +19,8 @@ import com.google.android.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowSmsManager.DownloadMultimediaMessageParams;
+import org.robolectric.shadows.ShadowSmsManager.SendMultimediaMessageParams;
 import org.robolectric.shadows.ShadowSmsManager.TextMultipartParams;
 import org.robolectric.shadows.ShadowSmsManager.TextSmsParams;
 import org.robolectric.util.ReflectionHelpers;
@@ -66,7 +69,8 @@ public class ShadowSmsManagerTest {
   public void sendMultipartMessage_shouldStoreLastSendMultimediaParameters() {
     smsManager.sendMultipartTextMessage(
         destAddress, scAddress, Lists.newArrayList("Foo", "Bar", "Baz"), null, null);
-    ShadowSmsManager.TextMultipartParams params = shadowOf(smsManager).getLastSentMultipartTextMessageParams();
+    ShadowSmsManager.TextMultipartParams params =
+        shadowOf(smsManager).getLastSentMultipartTextMessageParams();
 
     assertThat(params.getDestinationAddress()).isEqualTo(destAddress);
     assertThat(params.getScAddress()).isEqualTo(scAddress);
@@ -88,7 +92,7 @@ public class ShadowSmsManagerTest {
   @Test
   public void sendDataMessage_shouldStoreLastParameters() {
     final short destPort = 24;
-    final byte[] data = new byte[]{0, 1, 2, 3, 4};
+    final byte[] data = new byte[] {0, 1, 2, 3, 4};
     final PendingIntent sentIntent =
         PendingIntent.getActivity(ApplicationProvider.getApplicationContext(), 10, null, 0);
     final PendingIntent deliveryIntent =
@@ -96,7 +100,8 @@ public class ShadowSmsManagerTest {
 
     smsManager.sendDataMessage(destAddress, scAddress, destPort, data, sentIntent, deliveryIntent);
 
-    final ShadowSmsManager.DataMessageParams params = shadowOf(smsManager).getLastSentDataMessageParams();
+    final ShadowSmsManager.DataMessageParams params =
+        shadowOf(smsManager).getLastSentDataMessageParams();
     assertThat(params.getDestinationAddress()).isEqualTo(destAddress);
     assertThat(params.getScAddress()).isEqualTo(scAddress);
     assertThat(params.getDestinationPort()).isEqualTo(destPort);
@@ -170,6 +175,21 @@ public class ShadowSmsManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void sendMultimediaMessage_shouldStoreMessageId() {
+    Bundle configOverrides = new Bundle();
+    configOverrides.putBoolean("enableMMSDeliveryReports", true);
+    PendingIntent sentIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+
+    long messageId = 32767L;
+    smsManager.sendMultimediaMessage(
+        null, mmsContentUri, mmsLocationUrl, configOverrides, sentIntent, messageId);
+    SendMultimediaMessageParams params = shadowOf(smsManager).getLastSentMultimediaMessageParams();
+
+    assertThat(params.getMessageId()).isEqualTo(messageId);
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void clearLastSentMultimediaMessageParams_shouldClearParameters() {
     smsManager.sendMultimediaMessage(
@@ -202,6 +222,22 @@ public class ShadowSmsManagerTest {
     assertThat(params.getLocationUrl()).isEqualTo(mmsLocationUrl);
     assertThat(params.getConfigOverrides()).isSameInstanceAs(configOverrides);
     assertThat(params.getDownloadedIntent()).isSameInstanceAs(downloadedIntent);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void downloadMultimediaMessageS_shouldStoreLastDownloadedMultimediaMessageParameters() {
+    Bundle configOverrides = new Bundle();
+    configOverrides.putBoolean("enableMMSDeliveryReports", true);
+    PendingIntent downloadedIntent = ReflectionHelpers.callConstructor(PendingIntent.class);
+
+    long messageId = -231543663L;
+    smsManager.downloadMultimediaMessage(
+        null, mmsLocationUrl, mmsContentUri, configOverrides, downloadedIntent, messageId);
+    DownloadMultimediaMessageParams params =
+        shadowOf(smsManager).getLastDownloadedMultimediaMessageParams();
+
+    assertThat(params.getMessageId()).isEqualTo(messageId);
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -31,6 +31,7 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -111,6 +112,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -444,6 +446,25 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       info.providers =
           applyFlagsToComponentInfoList(info.providers, flags, GET_PROVIDERS, ProviderInfo::new);
       return info;
+    }
+  }
+
+  /**
+   * Starting in Android S, this method was moved from {@link android.content.pm.PackageManager} to
+   * {@link ApplicationPackageManager}.
+   */
+  @Override
+  protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      PackageInfo shadowPackageInfo = getShadowPackageArchiveInfo(archiveFilePath, flags);
+      if (shadowPackageInfo != null) {
+        return shadowPackageInfo;
+      } else {
+        return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+            .getPackageArchiveInfo(archiveFilePath, flags);
+      }
+    } else {
+      return super.getPackageArchiveInfo(archiveFilePath, flags);
     }
   }
 

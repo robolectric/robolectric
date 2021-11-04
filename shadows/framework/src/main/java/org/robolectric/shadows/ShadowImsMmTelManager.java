@@ -52,7 +52,7 @@ public class ShadowImsMmTelManager {
   private int imsRegistrationTech = ImsRegistrationImplBase.REGISTRATION_TECH_NONE;
   private int subId;
 
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.R)
   protected void __constructor__(int subId) {
     this.subId = subId;
   }

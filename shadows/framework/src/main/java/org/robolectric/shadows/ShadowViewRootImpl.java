@@ -18,6 +18,7 @@ import android.view.IWindowSession;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
+import android.window.ClientWindowFrames;
 import java.util.ArrayList;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -45,8 +46,7 @@ public class ShadowViewRootImpl {
   }
 
   @Implementation
-  public void playSoundEffect(int effectId) {
-  }
+  public void playSoundEffect(int effectId) {}
 
   @Implementation
   protected int relayoutWindow(
@@ -57,7 +57,27 @@ public class ShadowViewRootImpl {
   }
 
   public void callDispatchResized() {
-    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.Q) {
+    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.R) {
+      Display display = getDisplay();
+      Rect frame = new Rect();
+      display.getRectSize(frame);
+
+      ClientWindowFrames frames = new ClientWindowFrames();
+      // set the final field
+      ReflectionHelpers.setField(frames, "frame", frame);
+
+      ReflectionHelpers.callInstanceMethod(
+          ViewRootImpl.class,
+          realObject,
+          "dispatchResized",
+          ClassParameter.from(ClientWindowFrames.class, frames),
+          ClassParameter.from(boolean.class, true), /* reportDraw */
+          ClassParameter.from(
+              MergedConfiguration.class, new MergedConfiguration()), /* mergedConfiguration */
+          ClassParameter.from(boolean.class, false), /* forceLayout */
+          ClassParameter.from(boolean.class, false), /* alwaysConsumeSystemBars */
+          ClassParameter.from(int.class, 0) /* displayId */);
+    } else if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.Q) {
       Display display = getDisplay();
       Rect frame = new Rect();
       display.getRectSize(frame);
@@ -92,8 +112,9 @@ public class ShadowViewRootImpl {
     if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN_MR1) {
       return reflector(ViewRootImplReflector.class, realObject).getDisplay();
     } else {
-      WindowManager windowManager = (WindowManager) realObject.getView().getContext()
-          .getSystemService(Context.WINDOW_SERVICE);
+      WindowManager windowManager =
+          (WindowManager)
+              realObject.getView().getContext().getSystemService(Context.WINDOW_SERVICE);
       return windowManager.getDefaultDisplay();
     }
   }
@@ -139,17 +160,25 @@ public class ShadowViewRootImpl {
     @Direct
     void setView(View view, WindowManager.LayoutParams attrs, View panelParentView, int userId);
 
-    @Static @Accessor("sRunQueues")
+    @Static
+    @Accessor("sRunQueues")
     void setRunQueues(ThreadLocal<HandlerActionQueue> threadLocal);
 
-    @Static @Accessor("sFirstDrawHandlers")
+    @Static
+    @Accessor("sFirstDrawHandlers")
     void setFirstDrawHandlers(ArrayList<Runnable> handlers);
 
-    @Static @Accessor("sFirstDrawComplete")
+    @Static
+    @Accessor("sFirstDrawComplete")
     void setFirstDrawComplete(boolean isComplete);
 
-    @Static @Accessor("sConfigCallbacks")
+    @Static
+    @Accessor("sConfigCallbacks")
     void setConfigCallbacks(ArrayList<ViewRootImpl.ConfigChangedCallback> callbacks);
+
+    @Accessor("sNewInsetsMode")
+    @Static
+    int getNewInsetsMode();
 
     @Accessor("mWinFrame")
     void setWinFrame(Rect winFrame);
@@ -298,6 +327,5 @@ public class ShadowViewRootImpl {
             new android.view.DisplayCutout.ParcelableWrapper());
       }
     }
-
   }
 }

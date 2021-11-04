@@ -18,9 +18,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
-/**
- * Robolectric only supports en_US regardless of the default locale set in the JVM.
- */
+/** Robolectric only supports en_US regardless of the default locale set in the JVM. */
 @Implements(value = LocaleData.class, isInAndroidSdk = false)
 public class ShadowLocaleData {
   public static final String REAL_CLASS_NAME = "libcore.icu.LocaleData";
@@ -36,8 +34,8 @@ public class ShadowLocaleData {
   }
 
   private static void setEnUsLocaleData(LocaleData localeData) {
-    localeData.amPm = new String[]{"AM", "PM"};
-    localeData.eras = new String[]{"BC", "AD"};
+    localeData.amPm = new String[] {"AM", "PM"};
+    localeData.eras = new String[] {"BC", "AD"};
 
     localeData.firstDayOfWeek = 1;
     localeData.minimalDaysInFirstWeek = 1;
@@ -62,20 +60,20 @@ public class ShadowLocaleData {
           "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
         };
 
+    _LocaleData_ localDataReflector = reflector(_LocaleData_.class, localeData);
     if (getApiLevel() >= JELLY_BEAN_MR1) {
       localeData.tinyMonthNames =
           new String[] {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
       localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
-      localeData.tinyWeekdayNames = new String[]{"", "S", "M", "T", "W", "T", "F", "S"};
+      localeData.tinyWeekdayNames = new String[] {"", "S", "M", "T", "W", "T", "F", "S"};
       localeData.tinyStandAloneWeekdayNames = localeData.tinyWeekdayNames;
 
       if (getApiLevel() <= R) {
-        localeData.yesterday = "Yesterday";
+        localDataReflector.setYesterday("Yesterday");
       }
       localeData.today = "Today";
       localeData.tomorrow = "Tomorrow";
     }
-
 
     localeData.longStandAloneMonthNames = localeData.longMonthNames;
     localeData.shortStandAloneMonthNames = localeData.shortMonthNames;
@@ -95,13 +93,12 @@ public class ShadowLocaleData {
     localeData.mediumTimeFormat = "h:mm:ss a";
     localeData.shortTimeFormat = "h:mm a";
 
-    _LocaleData_ _localeData_ = reflector(_LocaleData_.class, localeData);
     if (getApiLevel() >= M) {
       localeData.timeFormat_hm = "h:mm a";
       localeData.timeFormat_Hm = "HH:mm";
     } else if (getApiLevel() >= JELLY_BEAN_MR2) {
-      _localeData_.setTimeFormat12("h:mm a");
-      _localeData_.setTimeFormat24("HH:mm");
+      localDataReflector.setTimeFormat12("h:mm a");
+      localDataReflector.setTimeFormat24("HH:mm");
     }
 
     localeData.fullDateFormat = "EEEE, MMMM d, y";
@@ -109,7 +106,7 @@ public class ShadowLocaleData {
     localeData.mediumDateFormat = "MMM d, y";
     localeData.shortDateFormat = "M/d/yy";
     if (getApiLevel() >= KITKAT && getApiLevel() < M) {
-      _localeData_.setShortDateFormat4("M/d/yyyy");
+      localDataReflector.setShortDateFormat4("M/d/yyyy");
     }
 
     localeData.zeroDigit = '0';
@@ -122,7 +119,7 @@ public class ShadowLocaleData {
       localeData.percent = "%";
     } else {
       // Upto Lollipop was a char
-      _localeData_.setPercent('%');
+      localDataReflector.setPercent('%');
     }
 
     if (getApiLevel() >= android.os.Build.VERSION_CODES.P) {
@@ -130,7 +127,7 @@ public class ShadowLocaleData {
       localeData.perMill = "\u2030"; // '‰'
     } else {
       // Up to P was a char
-      _localeData_.setPerMill('\u2030'); // '‰'
+      localDataReflector.setPerMill('\u2030'); // '‰'
     }
 
     localeData.monetarySeparator = '.';
@@ -140,7 +137,7 @@ public class ShadowLocaleData {
       localeData.minusSign = "-";
     } else {
       // Upto KitKat was a char
-      _localeData_.setMinusSign('-');
+      localDataReflector.setMinusSign('-');
     }
 
     localeData.exponentSeparator = "E";
@@ -148,8 +145,8 @@ public class ShadowLocaleData {
     localeData.NaN = "NaN";
 
     if (getApiLevel() <= R) {
-      localeData.currencySymbol = "$";
-      localeData.internationalCurrencySymbol = "USD";
+      localDataReflector.setCurrencySymbol("$");
+      localDataReflector.setInternationalCurrencySymbol("USD");
     }
 
     localeData.numberPattern = "\u0023,\u0023\u00230.\u0023\u0023\u0023";
@@ -179,5 +176,17 @@ public class ShadowLocaleData {
 
     @Accessor("shortDateFormat4")
     void setShortDateFormat4(String format);
+
+    // <= R
+    @Accessor("yesterday")
+    void setYesterday(String yesterday);
+
+    // <= R
+    @Accessor("currencySymbol")
+    void setCurrencySymbol(String symbol);
+
+    // <= R
+    @Accessor("internationalCurrencySymbol")
+    void setInternationalCurrencySymbol(String symbol);
   }
 }

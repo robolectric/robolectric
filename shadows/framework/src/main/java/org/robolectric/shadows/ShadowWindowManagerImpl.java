@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.R;
 import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
-import static android.view.ViewRootImpl.NEW_INSETS_MODE_FULL;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -19,7 +18,6 @@ import android.view.DisplayCutout;
 import android.view.InsetsState;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewRootImpl;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerImpl;
@@ -33,6 +31,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -46,6 +45,9 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   @RealObject WindowManagerImpl realObject;
   private static final Multimap<Integer, View> views = ArrayListMultimap.create();
+
+  // removed from WindowManagerImpl in S
+  public static final int NEW_INSETS_MODE_FULL = 2;
 
   /** internal only */
   public static void configureDefaultDisplayForJBOnly(
@@ -99,7 +101,6 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     protected Display getDefaultDisplay() {
       return defaultDisplayJB;
     }
-
   }
 
   /** Re implement to avoid server call */
@@ -113,16 +114,19 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
     final boolean alwaysConsumeSystemBars = true;
 
     final boolean isScreenRound = context.getResources().getConfiguration().isScreenRound();
-    if (getApiLevel() <= R && ViewRootImpl.sNewInsetsMode == NEW_INSETS_MODE_FULL) {
-      return insetsState.calculateInsets(
-          bounds,
-          null /* ignoringVisibilityState*/,
-          isScreenRound,
-          alwaysConsumeSystemBars,
-          displayCutout.get(),
-          SOFT_INPUT_ADJUST_NOTHING,
-          SYSTEM_UI_FLAG_VISIBLE,
-          null /* typeSideMap */);
+    if (getApiLevel() <= R
+        && reflector(ViewRootImplReflector.class).getNewInsetsMode() == NEW_INSETS_MODE_FULL) {
+      return ReflectionHelpers.callInstanceMethod(
+          insetsState,
+          "calculateInsets",
+          ClassParameter.from(Rect.class, bounds),
+          null,
+          ClassParameter.from(Boolean.TYPE, isScreenRound),
+          ClassParameter.from(Boolean.TYPE, alwaysConsumeSystemBars),
+          ClassParameter.from(DisplayCutout.ParcelableWrapper.class, displayCutout.get()),
+          ClassParameter.from(int.class, SOFT_INPUT_ADJUST_NOTHING),
+          ClassParameter.from(int.class, SYSTEM_UI_FLAG_VISIBLE),
+          null);
     } else {
       return new WindowInsets.Builder()
           .setAlwaysConsumeSystemBars(alwaysConsumeSystemBars)

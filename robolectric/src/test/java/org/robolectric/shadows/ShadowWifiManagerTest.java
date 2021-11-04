@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
@@ -33,6 +33,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -241,7 +242,6 @@ public class ShadowWifiManagerTest {
     List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
     assertThat(list.size()).isEqualTo(1);
 
-
     wifiManager.removeNetwork(0);
 
     list = wifiManager.getConfiguredNetworks();
@@ -385,10 +385,12 @@ public class ShadowWifiManagerTest {
   @Test
   public void shouldThrowRuntimeExceptionIfMulticastLockisUnderlocked() {
     MulticastLock lock = wifiManager.createMulticastLock("TAG");
-    try{
+    try {
       lock.release();
       fail("Expected exception");
-    } catch (RuntimeException expected) {};
+    } catch (RuntimeException expected) {
+    }
+    ;
   }
 
   @Test
@@ -527,7 +529,7 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = Q, maxSdk = R)
+  @Config(minSdk = Q)
   public void testAddOnWifiUsabilityStatsListener() {
     // GIVEN
     WifiManager.OnWifiUsabilityStatsListener mockListener =
@@ -565,6 +567,14 @@ public class ShadowWifiManagerTest {
         .setCellularSignalStrengthDb(3)
         .setSameRegisteredCell(false);
 
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      builder
+          .setTimeSliceDutyCycleInPercent(10)
+          .setIsCellularDataAvailable(false)
+          .setIsThroughputSufficient(false)
+          .setIsWifiScoringEnabled(false);
+    }
+
     shadowOf(wifiManager)
         .postUsabilityStats(/* seqNum= */ 10, /* isSameBssidAndFreq= */ false, builder);
     // THEN
@@ -599,11 +609,17 @@ public class ShadowWifiManagerTest {
     assertThat(usabilityStats.getValue().getCellularSignalStrengthDbm()).isEqualTo(2);
     assertThat(usabilityStats.getValue().getCellularSignalStrengthDb()).isEqualTo(3);
     assertThat(usabilityStats.getValue().isSameRegisteredCell()).isFalse();
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      assertThat(usabilityStats.getValue().getTimeSliceDutyCycleInPercent()).isEqualTo(10);
+      assertThat(usabilityStats.getValue().isCellularDataAvailable()).isFalse();
+      assertThat(usabilityStats.getValue().isThroughputSufficient()).isFalse();
+      assertThat(usabilityStats.getValue().isWifiScoringEnabled()).isFalse();
+    }
     verifyNoMoreInteractions(mockListener);
   }
 
   @Test
-  @Config(minSdk = Q, maxSdk = R)
+  @Config(minSdk = Q)
   public void testRemoveOnWifiUsabilityStatsListener() {
     // GIVEN
     WifiManager.OnWifiUsabilityStatsListener mockListener =

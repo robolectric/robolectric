@@ -9,10 +9,13 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.content.Context;
@@ -23,6 +26,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.WorkSource;
 import com.google.common.collect.ImmutableList;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +54,8 @@ public class ShadowPowerManager {
   private boolean isPowerSaveMode = false;
   private boolean isDeviceIdleMode = false;
   private boolean isLightDeviceIdleMode = false;
+  @Nullable private Duration batteryDischargePrediction = null;
+  private boolean isBatteryDischargePredictionPersonalized = false;
 
   @PowerManager.LocationPowerSaveMode
   private int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
@@ -253,6 +259,49 @@ public class ShadowPowerManager {
 
   public void setIgnoringBatteryOptimizations(String packageName, boolean value) {
     ignoringBatteryOptimizations.put(packageName, Boolean.valueOf(value));
+  }
+
+  /**
+   * Differs from real implementation as device charging state is not checked.
+   *
+   * @param timeRemaining The time remaining as a {@link Duration}.
+   * @param isPersonalized true if personalized based on device usage history, false otherwise.
+   */
+  @SystemApi
+  @RequiresPermission(android.Manifest.permission.DEVICE_POWER)
+  @Implementation(minSdk = S)
+  protected void setBatteryDischargePrediction(
+      @NonNull Duration timeRemaining, boolean isPersonalized) {
+    this.batteryDischargePrediction = timeRemaining;
+    this.isBatteryDischargePredictionPersonalized = isPersonalized;
+  }
+
+  /**
+   * Returns the current battery life remaining estimate.
+   *
+   * <p>Differs from real implementation as the time that {@link #setBatteryDischargePrediction} was
+   * called is not taken into account.
+   *
+   * @return The estimated battery life remaining as a {@link Duration}. Will be {@code null} if the
+   *     prediction has not been set.
+   */
+  @Nullable
+  @Implementation(minSdk = S)
+  protected Duration getBatteryDischargePrediction() {
+    return this.batteryDischargePrediction;
+  }
+
+  /**
+   * Returns whether the current battery life remaining estimate is personalized based on device
+   * usage history or not. This value does not take a device's powered or charging state into
+   * account.
+   *
+   * @return A boolean indicating if the current discharge estimate is personalized based on
+   *     historical device usage or not.
+   */
+  @Implementation(minSdk = S)
+  protected boolean isBatteryDischargePredictionPersonalized() {
+    return this.isBatteryDischargePredictionPersonalized;
   }
 
   @Implementation

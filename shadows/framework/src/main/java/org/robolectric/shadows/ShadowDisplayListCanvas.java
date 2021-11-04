@@ -5,13 +5,18 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 
-import android.view.DisplayListCanvas;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = DisplayListCanvas.class, isInAndroidSdk = false, minSdk = M)
+/** Shadow for {@link android.view.DisplayListCanvas} from API versions M to R */
+@Implements(
+    className = "android.view.DisplayListCanvas",
+    isInAndroidSdk = false,
+    minSdk = M,
+    maxSdk = R)
 public class ShadowDisplayListCanvas extends ShadowCanvas {
 
   @Implementation(minSdk = O, maxSdk = P)

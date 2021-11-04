@@ -1,5 +1,5 @@
 class AndroidSdk implements Comparable<AndroidSdk> {
-    static final PREINSTRUMENTED_VERSION = 1
+    static final PREINSTRUMENTED_VERSION = 2
 
     static final JELLY_BEAN = new AndroidSdk(16, "4.1.2_r1", "r1")
     static final JELLY_BEAN_MR1 = new AndroidSdk(17, "4.2.2_r1.2", "r1")
@@ -15,10 +15,11 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final P = new AndroidSdk(28, "9", "4913185-2");
     static final Q = new AndroidSdk(29, "10", "5803371");
     static final R = new AndroidSdk(30, "11", "6757853");
+    static final S = new AndroidSdk(31, "12", "7732740");
 
     static final List<AndroidSdk> ALL_SDKS = [
             JELLY_BEAN, JELLY_BEAN_MR1, JELLY_BEAN_MR2, KITKAT,
-            LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R
+            LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R, S
     ]
 
     static final MAX_SDK = Collections.max(ALL_SDKS)
