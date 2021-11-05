@@ -22,7 +22,17 @@ public class ShadowImpl implements IShadow {
     return ReflectionHelpers.callConstructor(clazz, ReflectionHelpers.ClassParameter.fromComponentLists(parameterTypes, params));
   }
 
-  @Override public <T> T directlyOn(T shadowedObject, Class<T> clazz) {
+  /**
+   * Returns a proxy object that invokes the original $$robo$$-prefixed methods for {@code
+   * shadowedObject}.
+   *
+   * @deprecated This is incompatible with JDK17+. Use a {@link
+   *     org.robolectric.util.reflector.Reflector} interface with {@link
+   *     org.robolectric.util.reflector.Direct}.
+   */
+  @Deprecated
+  @Override
+  public <T> T directlyOn(T shadowedObject, Class<T> clazz) {
     return createProxy(shadowedObject, clazz);
   }
 
