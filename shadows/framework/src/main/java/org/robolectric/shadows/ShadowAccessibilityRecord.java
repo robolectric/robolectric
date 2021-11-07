@@ -8,6 +8,8 @@ import android.view.accessibility.AccessibilityRecord;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -25,6 +27,23 @@ public class ShadowAccessibilityRecord {
   private int virtualDescendantId;
   private AccessibilityNodeInfo sourceNode;
   private int windowId = -1;
+
+  @Implementation
+  protected void init(AccessibilityRecord model) {
+    // Copy shadow fields.
+    ShadowAccessibilityRecord modelShadow = Shadow.extract(model);
+    sourceRoot = modelShadow.sourceRoot;
+    virtualDescendantId = modelShadow.virtualDescendantId;
+    sourceNode = modelShadow.sourceNode;
+    windowId = modelShadow.windowId;
+
+    // Copy realRecord fields.
+    Shadow.directlyOn(
+        realRecord,
+        AccessibilityRecord.class,
+        "init",
+        ClassParameter.from(AccessibilityRecord.class, model));
+  }
 
   @Implementation
   protected void setSource(View root, int virtualDescendantId) {
