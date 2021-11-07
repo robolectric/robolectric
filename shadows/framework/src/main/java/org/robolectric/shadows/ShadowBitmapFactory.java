@@ -75,7 +75,7 @@ public class ShadowBitmapFactory {
     final TypedValue value = new TypedValue();
     InputStream is = res.openRawResource(id, value);
 
-    RobolectricBufferedImage image = getImageFromStream(is);
+    RobolectricBufferedImage image = getImageFromStream(res.getResourceName(id), is);
     if (!allowInvalidImageData && image == null) {
       if (options != null) {
         options.outWidth = -1;
@@ -102,7 +102,7 @@ public class ShadowBitmapFactory {
     if (pathName != null && new File(pathName).exists()) {
       try (FileInputStream fileInputStream = new FileInputStream(pathName);
           BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-        image = getImageFromStream(bufferedInputStream);
+        image = getImageFromStream(pathName, bufferedInputStream);
       } catch (IOException e) {
         Logger.warn("Error getting size of bitmap file", e);
       }

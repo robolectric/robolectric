@@ -60,6 +60,10 @@ public class ImageUtil {
   }
 
   static RobolectricBufferedImage getImageFromStream(InputStream is) {
+    return getImageFromStream(null, is);
+  }
+
+  static RobolectricBufferedImage getImageFromStream(String fileName, InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
@@ -87,9 +91,12 @@ public class ImageUtil {
       }
     } catch (IOException e) {
       if (FORMAT_NAME_PNG.equalsIgnoreCase(format) && e instanceof IIOException) {
+        String pngFileName = "(" + (fileName == null ? "not given PNG file name" : fileName) + ")";
         System.err.println(
-            "Looks like your PNG file has format problem that OpenJDK can't process correctly. You"
-                + " can check https://github.com/robolectric/robolectric/issues/6812 for potential"
+            "Looks like your PNG file"
+                + pngFileName
+                + " has format problem that OpenJDK can't process correctly. You can check"
+                + " https://github.com/robolectric/robolectric/issues/6812 for potential"
                 + " solution.");
       }
       throw new RuntimeException(e);
