@@ -112,7 +112,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.config.ConfigurationRegistry;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -460,7 +459,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       if (shadowPackageInfo != null) {
         return shadowPackageInfo;
       } else {
-        return Shadow.directlyOn(realObject, ApplicationPackageManager.class)
+        return reflector(ReflectorApplicationPackageManager.class, realObject)
             .getPackageArchiveInfo(archiveFilePath, flags);
       }
     } else {
@@ -2143,6 +2142,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     @Direct
     Drawable loadUnbadgedItemIcon(PackageItemInfo itemInfo, ApplicationInfo appInfo);
+
+    @Direct
+    PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags);
 
     @Accessor("mContext")
     Context getContext();
