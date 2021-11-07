@@ -9,7 +9,8 @@ import android.content.Context;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = RoleControllerManager.class, minSdk = Q)
+/** Shadow for {@link RoleControllerManager} */
+@Implements(value = RoleControllerManager.class, minSdk = Q, isInAndroidSdk = false)
 public class ShadowRoleControllerManager {
 
   @Implementation(minSdk = S)
