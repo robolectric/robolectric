@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -66,15 +67,18 @@ public class ImageUtil {
       initialized = true;
     }
 
+    String format = null;
     try {
       ImageInputStream imageStream = createImageInputStream(is);
       Iterator<ImageReader> readers = ImageIO.getImageReaders(imageStream);
-      if (!readers.hasNext()) return null;
+      if (!readers.hasNext()) {
+        return null;
+      }
 
       ImageReader reader = readers.next();
       try {
         reader.setInput(imageStream);
-        String format = reader.getFormatName();
+        format = reader.getFormatName();
         int minIndex = reader.getMinIndex();
         BufferedImage image = reader.read(minIndex);
         return RobolectricBufferedImage.create(image, ("image/" + format).toLowerCase());
@@ -82,6 +86,12 @@ public class ImageUtil {
         reader.dispose();
       }
     } catch (IOException e) {
+      if (FORMAT_NAME_PNG.equalsIgnoreCase(format) && e instanceof IIOException) {
+        System.err.println(
+            "Looks like your PNG file has format problem that OpenJDK can't process correctly. You"
+                + " can check https://github.com/robolectric/robolectric/issues/6812 for potential"
+                + " solution.");
+      }
       throw new RuntimeException(e);
     }
   }
