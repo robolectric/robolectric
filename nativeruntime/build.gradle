@@ -24,29 +24,39 @@ static def arch() {
   return arch
 }
 
-task cmakeNativeRuntime(type:Exec) {
-  workingDir "$buildDir/cpp"
-  commandLine 'cmake', "$projectDir/cpp/"
-  doFirst {
+task cmakeNativeRuntime {
+  doLast {
     mkdir "$buildDir/cpp"
+    exec {
+      workingDir "$buildDir/cpp"
+      commandLine 'cmake', "-B", ".", "-S","$projectDir/cpp/"
+    }
   }
 }
 
-task makeNativeRuntime(type:Exec) {
+task makeNativeRuntime {
   dependsOn cmakeNativeRuntime
-  workingDir "$buildDir/cpp"
-  commandLine 'make'
+  doLast {
+    exec {
+      workingDir "$buildDir/cpp"
+      commandLine 'make'
+    }
+  }
 }
 
-task copyNativeRuntime(type: Copy) {
+task copyNativeRuntime {
   dependsOn makeNativeRuntime
-  from ("$buildDir/cpp") {
-    include '*libnativeruntime.*'
+  doLast {
+    copy {
+      from ("$buildDir/cpp") {
+        include '*libnativeruntime.*'
+      }
+      rename { String fileName ->
+        fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+      }
+      into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
+    }
   }
-  rename { String fileName ->
-    fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
-  }
-  into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
 }
 
 jar {
