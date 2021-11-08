@@ -50,12 +50,12 @@ task copyNativeRuntime(type: Copy) {
 }
 
 jar {
- //  def os = osName()
- //     if (os.contains("linux") || os.contains("mac")) {
- //   dependsOn copyNativeRuntime
- // } else {
- //   println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
- // }
+  def os = osName()
+  if (os.contains("linux") || os.contains("mac")) {
+    dependsOn copyNativeRuntime
+  } else {
+    println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
+  }
 }
 
 dependencies {
