@@ -121,5 +121,8 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
   target_link_libraries(nativeruntime
     -static-libgcc
     -static-libstdc++
+    -ldl
+    -lpthread
+    -Wl,--no-undefined # print an error if there are any undefined symbols
   )
 endif()
