@@ -34,7 +34,43 @@ task cmakeNativeRuntime {
   }
 }
 
+task configureICU {
+  if (!file("$projectDir/external/icu/icu4c/source").exists()) {
+    throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
+  }
+  onlyIf { !file("$projectDir/external/icu/icu4c/source/Makefile").exists() }
+  doLast {
+    exec {
+      def os = osName()
+      workingDir "$projectDir/external/icu/icu4c/source"
+      if (os.contains("linux")) {
+        environment "CFLAGS", "-fPIC"
+        environment "CXXFLAGS", "-fPIC"
+        commandLine './runConfigureICU', 'Linux', '--enable-static', '--disable-shared'
+      } else if (os.contains("mac")) {
+        environment "CFLAGS", "-arch x86_64 -arch arm64"
+        environment "CXXFLAGS", "-arch x86_64 -arch arm64"
+        commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
+      }
+    }
+  }
+}
+
+task buildICU {
+  dependsOn configureICU
+  if (!file("$projectDir/external/icu/icu4c/source").exists()) {
+    throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
+  }
+  doLast {
+    exec {
+      workingDir "$projectDir/external/icu/icu4c/source"
+      commandLine 'make', '-j4'
+    }
+  }
+}
+
 task makeNativeRuntime {
+  dependsOn buildICU
   dependsOn cmakeNativeRuntime
   doLast {
     exec {
@@ -54,7 +90,12 @@ task copyNativeRuntime {
       rename { String fileName ->
         fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
       }
-      into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
+      def os = osName()
+      def arch = arch()
+      if (os.contains("mac")) {
+        arch = "universal"
+      }
+      into project.file("$buildDir/resources/main/native/${os}/${arch}/")
     }
   }
 }
