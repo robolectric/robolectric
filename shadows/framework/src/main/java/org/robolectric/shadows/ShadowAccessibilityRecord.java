@@ -9,7 +9,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -38,11 +37,7 @@ public class ShadowAccessibilityRecord {
     windowId = modelShadow.windowId;
 
     // Copy realRecord fields.
-    Shadow.directlyOn(
-        realRecord,
-        AccessibilityRecord.class,
-        "init",
-        ClassParameter.from(AccessibilityRecord.class, model));
+    reflector(AccessibilityRecordReflector.class, realRecord).init(model);
   }
 
   @Implementation
@@ -110,5 +105,8 @@ public class ShadowAccessibilityRecord {
 
     @Direct
     void setSource(View root);
+
+    @Direct
+    void init(AccessibilityRecord model);
   }
 }
