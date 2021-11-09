@@ -17,7 +17,7 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
-      - name: Set up JDK 
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           distribution: 'zulu' # zulu suports complete JDK list
@@ -25,4 +25,4 @@ jobs:
           cache: 'gradle'
 
       - name: Run aggregateDocs
-        run: ./gradlew clean aggregateDocs
+        run: SKIP_NATIVERUNTIME_BUILD=true ./gradlew clean aggregateDocs # building the native runtime is not required for checking javadoc

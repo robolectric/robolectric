@@ -105,7 +105,7 @@ task copyNativeRuntime {
 
 jar {
   def os = osName()
-  if (os.contains("linux") || os.contains("mac")) {
+  if (!System.getenv('SKIP_NATIVERUNTIME_BUILD') && (os.contains("linux") || os.contains("mac"))) {
     dependsOn copyNativeRuntime
   } else {
     println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
