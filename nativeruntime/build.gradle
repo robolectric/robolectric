@@ -36,12 +36,11 @@ task cmakeNativeRuntime {
 
 task configureICU {
   onlyIf { !System.getenv('SKIP_ICU_BUILD') }
-
-  if (!file("$projectDir/external/icu/icu4c/source").exists()) {
-    throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
-  }
   def os = osName()
   doLast {
+    if (!file("$projectDir/external/icu/icu4c/source").exists()) {
+      throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
+    }
     exec {
       workingDir "$projectDir/external/icu/icu4c/source"
       if (os.contains("linux")) {
