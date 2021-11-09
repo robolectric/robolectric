@@ -31,6 +31,9 @@ jobs:
           java-version: 11.0.8
 
       - name: Build
+        env:
+          CXX: clang++
+          CC: clang
         run: SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
 
   unit-tests:
