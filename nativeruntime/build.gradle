@@ -28,6 +28,10 @@ task cmakeNativeRuntime {
   doLast {
     mkdir "$buildDir/cpp"
     exec {
+      // Building the nativeruntime does not work with GCC due to libstddc++ linker errors.
+      // TODO: figure out which linker args are needed to build with GCC.
+      environment "CC", "clang"
+      environment "CXX", "clang++"
       workingDir "$buildDir/cpp"
       commandLine 'cmake', "-B", ".", "-S","$projectDir/cpp/"
     }
@@ -36,8 +40,8 @@ task cmakeNativeRuntime {
 
 task configureICU {
   onlyIf { !System.getenv('SKIP_ICU_BUILD') }
-  def os = osName()
   doLast {
+    def os = osName()
     if (!file("$projectDir/external/icu/icu4c/source").exists()) {
       throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
     }
@@ -61,9 +65,9 @@ task configureICU {
 task buildICU {
   onlyIf { !System.getenv('SKIP_ICU_BUILD') }
   dependsOn configureICU
-  def os = osName()
   doLast {
     exec {
+      def os = osName()
       if (os.contains("linux") || os.contains("mac")) {
         workingDir "$projectDir/external/icu/icu4c/source"
         commandLine 'make', '-j4'

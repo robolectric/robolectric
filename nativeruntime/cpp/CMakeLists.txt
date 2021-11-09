@@ -17,6 +17,11 @@ if(NOT EXISTS "${ANDROID_SQLITE_DIR}/dist/sqlite3.c")
 endif()
 
 if(DEFINED ENV{ICU_ROOT_DIR})
+
+  if(NOT EXISTS "$ENV{ICU_ROOT_DIR}/lib/libicui18n.a")
+    message(FATAL_ERROR "ICU_ROOT_DIR does not contain 'lib/libicui18n.a'")
+  endif()
+
   message(NOTICE "Using $ENV{ICU_ROOT_DIR} as the ICU root dir")
   list(APPEND CMAKE_PREFIX_PATH "$ENV{ICU_ROOT_DIR}")
   find_library(STATIC_ICUI18N_LIBRARY libicui18n.a)
@@ -24,24 +29,24 @@ if(DEFINED ENV{ICU_ROOT_DIR})
   find_library(STATIC_ICUDATA_LIBRARY libicudata.a)
   include_directories($ENV{ICU_ROOT_DIR}/include)
 else()
-  set(ICU_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/icu")
+  set(ICU_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/icu")
 
-  if(NOT EXISTS "${ICU_DIR}/icu4c/source/i18n/ucol.cpp")
+  if(NOT EXISTS "${ICU_SUBMODULE_DIR}/icu4c/source/i18n/ucol.cpp")
     message(FATAL_ERROR "ICU submodule missing. Please run `git submodule update --init`.")
   endif()
 
-  message(NOTICE "Using ${ICU_DIR} as the ICU root dir")
+  message(NOTICE "Using ${ICU_SUBMODULE_DIR} as the ICU root dir")
 
-  if(NOT EXISTS "${ICU_DIR}/icu4c/source/lib/libicui18n.a")
+  if(NOT EXISTS "${ICU_SUBMODULE_DIR}/icu4c/source/lib/libicui18n.a")
     message(FATAL_ERROR "ICU not built. Please run `./gradlew :nativeruntime:buildICU`.")
   endif()
 
-  list(APPEND CMAKE_PREFIX_PATH "${ICU_DIR}/icu4c/source/")
+  list(APPEND CMAKE_PREFIX_PATH "${ICU_SUBMODULE_DIR}/icu4c/source/")
   find_library(STATIC_ICUI18N_LIBRARY libicui18n.a)
   find_library(STATIC_ICUUC_LIBRARY libicuuc.a)
   find_library(STATIC_ICUDATA_LIBRARY libicudata.a)
-  include_directories(${ICU_DIR}/icu4c/source/i18n)
-  include_directories(${ICU_DIR}/icu4c/source/common)
+  include_directories(${ICU_SUBMODULE_DIR}/icu4c/source/i18n)
+  include_directories(${ICU_SUBMODULE_DIR}/icu4c/source/common)
 endif()
 
 # Build flags derived from
