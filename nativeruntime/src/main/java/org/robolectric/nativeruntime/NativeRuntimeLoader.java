@@ -50,8 +50,13 @@ public final class NativeRuntimeLoader {
   }
 
   private static String nativeLibraryPath() {
+    String os = osName();
+    String arch = arch();
+    if (os.equals("mac")) {
+      arch = "universal"; // use the universal library
+    }
     return String.format(
-        "native/%s/%s/%s", osName(), arch(), System.mapLibraryName("robolectric-nativeruntime"));
+        "native/%s/%s/%s", os, arch, System.mapLibraryName("robolectric-nativeruntime"));
   }
 
   private static String osName() {

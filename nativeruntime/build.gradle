@@ -24,34 +24,92 @@ static def arch() {
   return arch
 }
 
-task cmakeNativeRuntime(type:Exec) {
-  workingDir "$buildDir/cpp"
-  commandLine 'cmake', "$projectDir/cpp/"
-  doFirst {
+task cmakeNativeRuntime {
+  doLast {
     mkdir "$buildDir/cpp"
+    exec {
+      // Building the nativeruntime does not work with GCC due to libstddc++ linker errors.
+      // TODO: figure out which linker args are needed to build with GCC.
+      environment "CC", "clang"
+      environment "CXX", "clang++"
+      workingDir "$buildDir/cpp"
+      commandLine 'cmake', "-B", ".", "-S","$projectDir/cpp/"
+    }
   }
 }
 
-task makeNativeRuntime(type:Exec) {
+task configureICU {
+  onlyIf { !System.getenv('SKIP_ICU_BUILD') }
+  doLast {
+    def os = osName()
+    if (!file("$projectDir/external/icu/icu4c/source").exists()) {
+      throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
+    }
+    exec {
+      workingDir "$projectDir/external/icu/icu4c/source"
+      if (os.contains("linux")) {
+        environment "CFLAGS", "-fPIC"
+        environment "CXXFLAGS", "-fPIC"
+        commandLine './runConfigureICU', 'Linux', '--enable-static', '--disable-shared'
+      } else if (os.contains("mac")) {
+        environment "CFLAGS", "-arch x86_64 -arch arm64"
+        environment "CXXFLAGS", "-arch x86_64 -arch arm64"
+        commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
+      } else {
+        println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
+      }
+    }
+  }
+}
+
+task buildICU {
+  onlyIf { !System.getenv('SKIP_ICU_BUILD') }
+  dependsOn configureICU
+  doLast {
+    exec {
+      def os = osName()
+      if (os.contains("linux") || os.contains("mac")) {
+        workingDir "$projectDir/external/icu/icu4c/source"
+        commandLine 'make', '-j4'
+      }
+    }
+  }
+}
+
+task makeNativeRuntime {
+  dependsOn buildICU
   dependsOn cmakeNativeRuntime
-  workingDir "$buildDir/cpp"
-  commandLine 'make'
+  doLast {
+    exec {
+      workingDir "$buildDir/cpp"
+      commandLine 'make'
+    }
+  }
 }
 
-task copyNativeRuntime(type: Copy) {
+task copyNativeRuntime {
   dependsOn makeNativeRuntime
-  from ("$buildDir/cpp") {
-    include '*libnativeruntime.*'
+  doLast {
+    copy {
+      from ("$buildDir/cpp") {
+        include '*libnativeruntime.*'
+      }
+      rename { String fileName ->
+        fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+      }
+      def os = osName()
+      def arch = arch()
+      if (os.contains("mac")) {
+        arch = "universal"
+      }
+      into project.file("$buildDir/resources/main/native/${os}/${arch}/")
+    }
   }
-  rename { String fileName ->
-    fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
-  }
-  into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
 }
 
 jar {
   def os = osName()
-  if (os.contains("linux") || os.contains("mac")) {
+  if (!System.getenv('SKIP_NATIVERUNTIME_BUILD') && (os.contains("linux") || os.contains("mac"))) {
     dependsOn copyNativeRuntime
   } else {
     println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")

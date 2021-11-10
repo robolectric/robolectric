@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64") # Universal libraries for Mac OS
+
 project(nativeruntime)
 
 # Some libutils headers require C++17
@@ -7,43 +10,47 @@ set (CMAKE_CXX_STANDARD 17)
 
 find_package(JNI REQUIRED)
 
-# On Mac OS, search Homebrew for the icu4c distribution. The system version
-# does not include headers and static libraries.
-if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
-  execute_process(
-    COMMAND brew --prefix icu4c
-    RESULT_VARIABLE BREW_ICU4C
-    OUTPUT_VARIABLE BREW_ICU4C_PREFIX
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-  )
-
-  if (NOT BREW_ICU4C EQUAL 0)
-    message( FATAL_ERROR "'brew --prefix icu4c' failed. Ensure homebrew is installed and run 'brew install icu4c'.")
-  endif()
-
-  if (BREW_ICU4C EQUAL 0 AND EXISTS "${BREW_ICU4C_PREFIX}")
-    message(STATUS "Found icu4c installed by Homebrew at ${BREW_ICU4C_PREFIX}")
-    list(APPEND CMAKE_PREFIX_PATH ${BREW_ICU4C_PREFIX})
-    find_library(BREW_ICUUC_LIBRARY libicuuc.a)
-    find_library(BREW_ICUI18N_LIBRARY libicui18n.a)
-    find_library(BREW_ICUDATA_LIBRARY libicudata.a)
-    include_directories(${BREW_ICU4C_PREFIX}/include)
-  endif()
-
-  if (NOT BREW_ICUUC_LIBRARY)
-    message(FATAL_ERROR "libicuuc.a not found. Please run 'brew install icu4c'")
-  endif()
-endif()
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# Build flags derived from
-# https://cs.android.com/android/platform/superproject/+/android-11.0.0_r1:external/sqlite/dist/Android.bp
 set(ANDROID_SQLITE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/sqlite")
 
 if(NOT EXISTS "${ANDROID_SQLITE_DIR}/dist/sqlite3.c")
   message(FATAL_ERROR "SQLite submodule missing. Please run `git submodule update --init`.")
 endif()
+
+if(DEFINED ENV{ICU_ROOT_DIR})
+
+  if(NOT EXISTS "$ENV{ICU_ROOT_DIR}/lib/libicui18n.a")
+    message(FATAL_ERROR "ICU_ROOT_DIR does not contain 'lib/libicui18n.a'")
+  endif()
+
+  message(NOTICE "Using $ENV{ICU_ROOT_DIR} as the ICU root dir")
+  list(APPEND CMAKE_PREFIX_PATH "$ENV{ICU_ROOT_DIR}")
+  find_library(STATIC_ICUI18N_LIBRARY libicui18n.a)
+  find_library(STATIC_ICUUC_LIBRARY libicuuc.a)
+  find_library(STATIC_ICUDATA_LIBRARY libicudata.a)
+  include_directories($ENV{ICU_ROOT_DIR}/include)
+else()
+  set(ICU_SUBMODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/icu")
+
+  if(NOT EXISTS "${ICU_SUBMODULE_DIR}/icu4c/source/i18n/ucol.cpp")
+    message(FATAL_ERROR "ICU submodule missing. Please run `git submodule update --init`.")
+  endif()
+
+  message(NOTICE "Using ${ICU_SUBMODULE_DIR} as the ICU root dir")
+
+  if(NOT EXISTS "${ICU_SUBMODULE_DIR}/icu4c/source/lib/libicui18n.a")
+    message(FATAL_ERROR "ICU not built. Please run `./gradlew :nativeruntime:buildICU`.")
+  endif()
+
+  list(APPEND CMAKE_PREFIX_PATH "${ICU_SUBMODULE_DIR}/icu4c/source/")
+  find_library(STATIC_ICUI18N_LIBRARY libicui18n.a)
+  find_library(STATIC_ICUUC_LIBRARY libicuuc.a)
+  find_library(STATIC_ICUDATA_LIBRARY libicudata.a)
+  include_directories(${ICU_SUBMODULE_DIR}/icu4c/source/i18n)
+  include_directories(${ICU_SUBMODULE_DIR}/icu4c/source/common)
+endif()
+
+# Build flags derived from
+# https://cs.android.com/android/platform/superproject/+/android-11.0.0_r1:external/sqlite/dist/Android.bp
 
 set(SQLITE_COMPILE_OPTIONS
   -DHAVE_USLEEP=1
@@ -84,13 +91,11 @@ add_library(androidsqlite STATIC
 
 target_compile_options(androidsqlite PRIVATE ${SQLITE_COMPILE_OPTIONS})
 
-if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
-  target_link_libraries(androidsqlite
-    ${BREW_ICUUC_LIBRARY}
-    ${BREW_ICUI18N_LIBRARY}
-    ${BREW_ICUDATA_LIBRARY}
-  )
-endif()
+target_link_libraries(androidsqlite
+  ${STATIC_ICUI18N_LIBRARY}
+  ${STATIC_ICUUC_LIBRARY}
+  ${STATIC_ICUDATA_LIBRARY}
+)
 
 include_directories(${JNI_INCLUDE_DIRS})
 
@@ -132,5 +137,8 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
   target_link_libraries(nativeruntime
     -static-libgcc
     -static-libstdc++
+    -ldl
+    -lpthread
+    -Wl,--no-undefined # print an error if there are any undefined symbols
   )
 endif()

@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  CXX: clang++
+  CC: clang
+
 jobs:
   build:
     runs-on: ubuntu-18.04
@@ -20,7 +24,6 @@ jobs:
           path: |
             ~/.gradle
             ~/.m2
-            ~/sqlite
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -30,8 +33,23 @@ jobs:
         with:
           java-version: 11.0.8
 
+      - name: Cache ICU build output
+        id: cache-icu
+        uses: actions/cache@v2
+        with:
+          path: ~/icu-bin
+          key: ${{ runner.os }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+
+      - name: Build ICU
+        if: steps.cache-icu.outputs.cache-hit != 'true'
+        run: |
+          cd nativeruntime/external/icu/icu4c/source
+          CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./runConfigureICU Linux --enable-static --prefix=$HOME/icu-bin
+          make -j4
+          make install
+
       - name: Build
-        run: SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
+        run: ICU_ROOT_DIR=$HOME/icu-bin SKIP_ICU_BUILD=true SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace
 
   unit-tests:
     runs-on: ubuntu-18.04
@@ -60,9 +78,16 @@ jobs:
         with:
           java-version: 11.0.8
 
+      - name: Cache ICU build output
+        id: cache-icu
+        uses: actions/cache@v2
+        with:
+          path: ~/icu-bin
+          key: ${{ runner.os }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+
       - name: Run unit tests
         run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test --info --stacktrace --continue \
+          ICU_ROOT_DIR=$HOME/icu-bin SKIP_ICU_BUILD=true SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test --info --stacktrace --continue \
           --parallel \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
