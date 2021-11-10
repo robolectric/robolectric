@@ -1,20 +1,22 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.widget.TimePicker;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(value = TimePickerDialog.class)
 public class ShadowTimePickerDialog extends ShadowAlertDialog {
   @RealObject
   protected TimePickerDialog realTimePickerDialog;
-  private int hourOfDay;
-  private int minute;
 
   @Implementation
   protected void __constructor__(
@@ -24,8 +26,6 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
       int hourOfDay,
       int minute,
       boolean is24HourView) {
-    this.hourOfDay = hourOfDay;
-    this.minute = minute;
 
     Shadow.invokeConstructor(TimePickerDialog.class, realTimePickerDialog,
         ClassParameter.from(Context.class, context),
@@ -37,10 +37,27 @@ public class ShadowTimePickerDialog extends ShadowAlertDialog {
   }
 
   public int getHourOfDay() {
-    return hourOfDay;
+    return reflector(TimePickerDialogProvider.class, realTimePickerDialog)
+        .getTimePicker()
+        .getCurrentHour();
   }
 
   public int getMinute() {
-    return minute;
+    return reflector(TimePickerDialogProvider.class, realTimePickerDialog)
+        .getTimePicker()
+        .getCurrentMinute();
+  }
+
+  public boolean getIs24HourView() {
+    return reflector(TimePickerDialogProvider.class, realTimePickerDialog)
+        .getTimePicker()
+        .is24HourView();
+  }
+
+  @ForType(TimePickerDialog.class)
+  interface TimePickerDialogProvider {
+
+    @Accessor("mTimePicker")
+    TimePicker getTimePicker();
   }
 }
