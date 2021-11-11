@@ -5,9 +5,9 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
-    api "org.ow2.asm:asm:9.0"
-    api "org.ow2.asm:asm-commons:9.0"
-    api "org.ow2.asm:asm-util:9.0"
+    api "org.ow2.asm:asm:${asmVersion}"
+    api "org.ow2.asm:asm-commons:${asmVersion}"
+    api "org.ow2.asm:asm-util:${asmVersion}"
     api project(":utils")
 
     testImplementation project(":shadowapi")

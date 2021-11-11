@@ -36,8 +36,8 @@ dependencies {
     api project(":shadowapi")
 
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    api "org.ow2.asm:asm:9.0"
-    api "org.ow2.asm:asm-commons:9.0"
+    api "org.ow2.asm:asm:${asmVersion}"
+    api "org.ow2.asm:asm-commons:${asmVersion}"
     api "com.google.guava:guava:$guavaJREVersion"
     api "com.google.code.gson:gson:2.8.6"
     implementation 'com.google.auto:auto-common:1.1.2'
