@@ -52,8 +52,6 @@ task configureICU {
         environment "CXXFLAGS", "-fPIC"
         commandLine './runConfigureICU', 'Linux', '--enable-static', '--disable-shared'
       } else if (os.contains("mac")) {
-        environment "CFLAGS", "-arch x86_64 -arch arm64"
-        environment "CXXFLAGS", "-arch x86_64 -arch arm64"
         commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
       } else {
         println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
@@ -97,12 +95,7 @@ task copyNativeRuntime {
       rename { String fileName ->
         fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
       }
-      def os = osName()
-      def arch = arch()
-      if (os.contains("mac")) {
-        arch = "universal"
-      }
-      into project.file("$buildDir/resources/main/native/${os}/${arch}/")
+      into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
     }
   }
 }
