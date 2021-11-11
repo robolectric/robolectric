@@ -28,10 +28,6 @@ task cmakeNativeRuntime {
   doLast {
     mkdir "$buildDir/cpp"
     exec {
-      // Building the nativeruntime does not work with GCC due to libstddc++ linker errors.
-      // TODO: figure out which linker args are needed to build with GCC.
-      environment "CC", "clang"
-      environment "CXX", "clang++"
       workingDir "$buildDir/cpp"
       commandLine 'cmake', "-B", ".", "-S","$projectDir/cpp/"
     }
