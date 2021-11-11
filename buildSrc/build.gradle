@@ -13,6 +13,6 @@ dependencies {
 
     api "com.google.guava:guava:27.0.1-jre"
     api 'org.jetbrains:annotations:16.0.2'
-    implementation "org.ow2.asm:asm-tree:9.0"
+    implementation "org.ow2.asm:asm-tree:9.2"
     implementation 'com.android.tools.build:gradle:7.1.0-beta03'
 }
