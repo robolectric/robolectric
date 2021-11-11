@@ -1,11 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 
+# This is needed to ensure that static libraries can be linked into shared libraries.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-project(nativeruntime)
+# Building the nativeruntime does not work with GCC due to libstddc++ linker errors.
+# TODO: figure out which linker args are needed to build with GCC.
+set(CMAKE_C_COMPILER "clang")
+set(CMAKE_CXX_COMPILER "clang++")
 
 # Some libutils headers require C++17
 set (CMAKE_CXX_STANDARD 17)
+
+project(nativeruntime)
 
 find_package(JNI REQUIRED)
 
