@@ -51,8 +51,8 @@ public class CppAssetManager {
     kFileTypeSocket,
   }
 
-
-  // transliterated from https://cs.corp.google.com/android/frameworks/base/libs/androidfw/include/androidfw/AssetManager.h
+  // transliterated from
+  // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/libs/androidfw/include/androidfw/AssetManager.h
   private static class asset_path {
 //    asset_path() : path(""), type(kFileTypeRegular), idmap(""),
 //      isSystemOverlay(false), isSystemAsset(false) {}

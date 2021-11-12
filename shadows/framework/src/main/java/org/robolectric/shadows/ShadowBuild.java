@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.TargetApi;
@@ -108,6 +109,18 @@ public class ShadowBuild {
    */
   public static void setVersionIncremental(String versionIncremental) {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "INCREMENTAL", versionIncremental);
+  }
+
+  /**
+   * Sets the value of the {@link Build.VERSION#MEDIA_PERFORMANCE_CLASS} field. Available in Android
+   * S+.
+   *
+   * <p>It will be reset for the next test.
+   */
+  @TargetApi(S)
+  public static void setVersionMediaPerformanceClass(int performanceClass) {
+    ReflectionHelpers.setStaticField(
+        Build.VERSION.class, "MEDIA_PERFORMANCE_CLASS", performanceClass);
   }
 
   /**

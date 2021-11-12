@@ -204,7 +204,7 @@ public class ShadowLegacyMessageQueueTest {
   }
 
   @Test
-  // TODO(b/74402484): enable once workaround is removed
+  // TODO(https://github.com/robolectric/robolectric/issues/6852): enable once workaround is removed
   @Ignore
   public void removeInvalidSyncBarrierToken() {
     try {

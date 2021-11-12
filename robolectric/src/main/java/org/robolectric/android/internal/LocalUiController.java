@@ -57,7 +57,8 @@ public class LocalUiController implements UiController {
     return true;
   }
 
-  // TODO(b/80130000): implementation copied from espresso's UIControllerImpl. Refactor code into common location
+  // TODO: implementation copied from espresso's UIControllerImpl. Refactor code into common
+  // location
   @Override
   public boolean injectString(String str) throws InjectEventSecurityException {
     checkNotNull(str);
@@ -72,8 +73,7 @@ public class LocalUiController implements UiController {
     boolean eventInjected = false;
     KeyCharacterMap keyCharacterMap = getKeyCharacterMap();
 
-    // TODO(b/80130875): Investigate why not use (as suggested in javadoc of
-    // keyCharacterMap.getEvents):
+    // TODO: Investigate why not use (as suggested in javadoc of keyCharacterMap.getEvents):
     // http://developer.android.com/reference/android/view/KeyEvent.html#KeyEvent(long,
     // java.lang.String, int, int)
     KeyEvent[] events = keyCharacterMap.getEvents(str.toCharArray());
