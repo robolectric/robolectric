@@ -57,7 +57,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          ICU_ROOT_DIR=$HOME/icu-bin cmake -B . -S ../nativeruntime/cpp
+          ICU_ROOT_DIR=$HOME/icu-bin cmake -B . -S ../nativeruntime/cpp -DCMAKE_C_FLAGS=-Os -DCMAKE_CXX_FLAGS=-Os
           make
 
       - name: Rename libnativeruntime for Linux
