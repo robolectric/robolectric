@@ -656,7 +656,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     // : mStart(0), mLength(0), mOffset(0), mFp(null), mFileName(null), mMap(null), mBuf(null)
     {
       // Register the Asset with the global list here after it is fully constructed and its
-      // vtable pointer points to this concrete type. b/31113965
+      // vtable pointer points to this concrete type.
       registerAsset(this);
     }
 
@@ -668,7 +668,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       close();
 
       // Unregister the Asset from the global list here before it is destructed and while its vtable
-      // pointer still points to this concrete type. b/31113965
+      // pointer still points to this concrete type.
       unregisterAsset(this);
     }
 
@@ -1136,7 +1136,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       mFd = -1;
 
       // Register the Asset with the global list here after it is fully constructed and its
-      // vtable pointer points to this concrete type. b/31113965
+      // vtable pointer points to this concrete type.
       registerAsset(this);
     }
 
@@ -1167,7 +1167,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
       close();
 
       // Unregister the Asset from the global list here before it is destructed and while its vtable
-      // pointer still points to this concrete type. b/31113965
+      // pointer still points to this concrete type.
       unregisterAsset(this);
     }
 

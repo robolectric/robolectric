@@ -89,7 +89,7 @@ public class ShadowParcel {
       // classloader" behavior.
       ClassLoader parcelableClassLoader = (loader == null ? getClass().getClassLoader() : loader);
       // Avoid initializing the Parcelable class until we know it implements
-      // Parcelable and has the necessary CREATOR field. http://b/1171613.
+      // Parcelable and has the necessary CREATOR field.
       Class<?> parcelableClass = Class.forName(name, false /* initialize */, parcelableClassLoader);
       if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
         throw new BadParcelableException(
