@@ -27,7 +27,17 @@
 #include <log/log.h>
 #include <stdlib.h>
 #include <string.h>
+// #include <sys/mman.h>
+#if !defined(_WIN32)
 #include <sys/mman.h>
+#else
+#ifndef PORT_READ
+#define PROT_READ -1
+#endif
+#ifndef PROT_WRITE
+#define PROT_WRITE -1
+#endif
+#endif
 #include <unistd.h>
 
 namespace android {
@@ -43,7 +53,16 @@ CursorWindow::CursorWindow(const String8& name, int ashmemFd, void* data,
 }
 
 CursorWindow::~CursorWindow() {
+  // ::munmap(mData, mSize);
+  #if defined(_WIN32)
+  // Robolectric disables the usage of mman.h, so we should delete data manually after
+  // removing usage of munmap.
+  free(mData);
+  mHeader = nullptr;
+  mData = nullptr;
+  #else
   ::munmap(mData, mSize);
+  #endif
   ::close(mAshmemFd);
 }
 
@@ -62,9 +81,18 @@ status_t CursorWindow::create(const String8& name, size_t size,
     if (result < 0) {
       ALOGE("CursorWindow: ashmem_set_prot_region() failed: errno=%d", errno);
     } else {
+      // void* data = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED,
+      //                     ashmemFd, 0);
+      // if (data == MAP_FAILED) {
+      #if defined(_WIN32)
+      void* data = malloc(size);
+      ssize_t readSize = read(ashmemFd, data, size);
+      if (readSize != size) {
+      #else
       void* data = ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED,
                           ashmemFd, 0);
       if (data == MAP_FAILED) {
+      #endif
         result = -errno;
         ALOGE("CursorWindow: mmap() failed: errno=%d.", errno);
       } else {
@@ -88,7 +116,12 @@ status_t CursorWindow::create(const String8& name, size_t size,
           delete window;
         }
       }
+      // ::munmap(data, size);
+      #if defined(_WIN32)
+      free(data);
+      #else
       ::munmap(data, size);
+      #endif
     }
     ::close(ashmemFd);
   }

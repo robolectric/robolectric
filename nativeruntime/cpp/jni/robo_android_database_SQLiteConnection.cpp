@@ -33,7 +33,17 @@
 #include <sqlite3.h>
 #include <sqlite3_android.h>
 #include <string.h>
+// #include <sys/mman.h>
+#if !defined(_WIN32)
 #include <sys/mman.h>
+#else
+#ifndef PORT_READ
+#define PROT_READ -1
+#endif
+#ifndef PROT_WRITE
+#define PROT_WRITE -1
+#endif
+#endif
 #include <unistd.h>
 #include <utils/String16.h>
 #include <utils/String8.h>
@@ -657,6 +667,23 @@ static int createAshmemRegionWithData(JNIEnv* env, const void* data,
     ALOGE("ashmem_create_region failed: %s", strerror(error));
   } else {
     if (length > 0) {
+      // void* ptr =
+      //     mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+      // if (ptr == MAP_FAILED) {
+      //   error = errno;
+      //   ALOGE("mmap failed: %s", strerror(error));
+      // } else {
+      //   memcpy(ptr, data, length);
+      //   munmap(ptr, length);
+      // }
+      #if defined(_WIN32)
+      // Robolectric uses write from unistd.h to replace mmap and munmap to
+      // get more cross compatibility.
+      ssize_t writeSize = write(fd, data, length);
+      if (writeSize != length) {
+          error = errno;
+      }
+      #else
       void* ptr =
           mmap(nullptr, length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
       if (ptr == MAP_FAILED) {
@@ -666,6 +693,7 @@ static int createAshmemRegionWithData(JNIEnv* env, const void* data,
         memcpy(ptr, data, length);
         munmap(ptr, length);
       }
+      #endif
     }
 
     if (!error) {
