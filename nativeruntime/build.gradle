@@ -52,6 +52,8 @@ task configureICU {
           commandLine './runConfigureICU', 'Linux', '--enable-static', '--disable-shared'
         } else if (os.contains("mac")) {
           commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
+        } else if (os.contains("win")) {
+          commandLine './runConfigureICU', 'MinGW', '--enable-static', '--disable-shared'
         } else {
           println("ICU configure not supported for OS '${System.getProperty("os.name")}'")
         }
@@ -66,7 +68,7 @@ task buildICU {
   doLast {
     exec {
       def os = osName()
-      if (os.contains("linux") || os.contains("mac")) {
+      if (os.contains("linux") || os.contains("mac") || os.contains("win")) {
         workingDir "$projectDir/external/icu/icu4c/source"
         commandLine 'make', '-j4'
       }
@@ -89,14 +91,18 @@ processResources {
  def os = osName()
  if (System.getenv('SKIP_NATIVERUNTIME_BUILD')) {
    println("Skipping the nativeruntime build");
- } else if (!os.contains("linux") && !os.contains("mac")) {
+ } else if (!os.contains("linux") && !os.contains("mac") && !os.contains("win")) {
    println("Building the nativeruntime not supported for OS '${System.getProperty("os.name")}'")
  } else {
    dependsOn makeNativeRuntime
    from ("$buildDir/cpp") {
      include '*libnativeruntime.*'
      rename { String fileName ->
-       fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+       if (os.contains("win")) {
+         fileName.replace("libnativeruntime", "robolectric-nativeruntime")
+       } else {
+         fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+       }
      }
      into "native/${os}/${arch()}/"
    }

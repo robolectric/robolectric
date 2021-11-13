@@ -46,7 +46,8 @@ public final class NativeRuntimeLoader {
 
   private static boolean isSupported() {
     return ("mac".equals(osName()) && ("aarch64".equals(arch()) || "x86_64".equals(arch())))
-        || ("linux".equals(osName()) && "x86_64".equals(arch()));
+        || ("linux".equals(osName()) && "x86_64".equals(arch()))
+        || ("windows".equals(osName()) && "x86_64".equals(arch()));
   }
 
   private static String nativeLibraryPath() {
