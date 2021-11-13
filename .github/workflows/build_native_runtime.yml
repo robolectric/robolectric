@@ -65,7 +65,7 @@ jobs:
         run: |
           mv build/libnativeruntime.so build/librobolectric-nativeruntime-linux-x86_64.so
 
-      - name: Rename libnativeruntime for Linux
+      - name: Rename libnativeruntime for macOS
         if: runner.os == 'macOS'
         run: |
           mv build/libnativeruntime.dylib build/librobolectric-nativeruntime-mac-x86_64.dylib
@@ -79,7 +79,7 @@ jobs:
             build/librobolectric-nativeruntime-linux-x86_64.so
             build/*.dylib
 
-      - name: Upload libnativeruntime for Linux
+      - name: Upload libnativeruntime for macOS
         if: runner.os == 'macOS'
         uses: actions/upload-artifact@v2
         with:
