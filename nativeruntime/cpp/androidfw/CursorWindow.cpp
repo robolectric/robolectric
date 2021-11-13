@@ -27,7 +27,9 @@
 #include <log/log.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(_WIN32)
 #include <sys/mman.h>
+#endif
 #include <unistd.h>
 
 namespace android {
@@ -39,14 +41,46 @@ CursorWindow::CursorWindow(const String8& name, int ashmemFd, void* data,
       mData(data),
       mSize(size),
       mReadOnly(readOnly) {
+  #if defined(_WIN32)
+  mHeader = new Header;
+  #else
   mHeader = static_cast<Header*>(mData);
+  #endif
 }
 
 CursorWindow::~CursorWindow() {
+  #if defined(_WIN32)
+  delete mHeader;
+  #else
   ::munmap(mData, mSize);
   ::close(mAshmemFd);
+  #endif
 }
 
+#if defined(_WIN32)
+status_t CursorWindow::create(const String8& name, size_t size,
+                              CursorWindow** outCursorWindow) {
+  String8 ashmemName("CursorWindow: ");
+  ashmemName.append(name);
+
+  status_t result;
+  // We don't use ashmem here, and CursorWindow constructor will use in-memory struct
+  // to support Windows.
+  CursorWindow* window = new CursorWindow(name, -1, nullptr, size, true /*readOnly*/);
+  LOG_WINDOW("Created CursorWindow from parcel: freeOffset=%d, "
+             "numRows=%d, numColumns=%d, mSize=%zu, mData=%p",
+             window->mHeader->freeOffset,
+             window->mHeader->numRows,
+             window->mHeader->numColumns,
+             window->mSize, window->mData);
+  if (window != nullptr) {
+    *outCursorWindow = window;
+    return OK;
+  }
+  *outCursorWindow = nullptr;
+  return result;
+}
+#else
 status_t CursorWindow::create(const String8& name, size_t size,
                               CursorWindow** outCursorWindow) {
   String8 ashmemName("CursorWindow: ");
@@ -95,6 +129,7 @@ status_t CursorWindow::create(const String8& name, size_t size,
   *outCursorWindow = nullptr;
   return result;
 }
+#endif
 //
 // status_t CursorWindow::createFromParcel(Parcel* parcel, CursorWindow**
 // outCursorWindow) {
