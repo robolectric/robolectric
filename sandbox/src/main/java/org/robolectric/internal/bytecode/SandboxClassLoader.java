@@ -82,7 +82,7 @@ public class SandboxClassLoader extends URLClassLoader {
     return parseJavaClassPath();
   }
 
-  // TODO(b/65488446): Use a public API once one is available.
+  // TODO(https://github.com/google/guava/issues/2956): Use a public API once one is available.
   private static URL[] parseJavaClassPath() {
     ImmutableList.Builder<URL> urls = ImmutableList.builder();
     for (String entry : Splitter.on(PATH_SEPARATOR.value()).split(JAVA_CLASS_PATH.value())) {
