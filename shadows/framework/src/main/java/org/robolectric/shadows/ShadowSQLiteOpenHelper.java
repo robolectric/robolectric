@@ -15,6 +15,6 @@ public class ShadowSQLiteOpenHelper {
   @Implementation(minSdk = O_MR1)
   protected void setIdleConnectionTimeout(long idleConnectionTimeoutMs) {
     // Calling the real one currently results in a Robolectric deadlock. Just ignore it.
-    // See b/78464547 .
+    // See https://github.com/robolectric/robolectric/issues/6853.
   }
 }

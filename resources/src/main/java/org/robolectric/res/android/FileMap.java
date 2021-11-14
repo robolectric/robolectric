@@ -239,7 +239,7 @@ public class FileMap {
       while (true) {
         // Instead of trusting numRecords, read until we find the
         // end-of-central-directory signature.  numRecords may wrap
-        // around with >64K entries (b/5455504).
+        // around with >64K entries.
         int sig = readInt(buffer, offset);
         if (sig == ENDSIG || sig == ENDSIG64) {
           break;

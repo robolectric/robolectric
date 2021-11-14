@@ -166,7 +166,8 @@ public class ShadowLegacyMessageQueue extends ShadowMessageQueue {
   @Implementation
   @HiddenApi
   protected void removeSyncBarrier(int token) {
-    // TODO(b/74402484): workaround scheduler corruption of message queue
+    // TODO(https://github.com/robolectric/robolectric/issues/6852): workaround scheduler corruption
+    // of message queue
     try {
       reflector(MessageQueueReflector.class, realQueue).removeSyncBarrier(token);
     } catch (IllegalStateException e) {
