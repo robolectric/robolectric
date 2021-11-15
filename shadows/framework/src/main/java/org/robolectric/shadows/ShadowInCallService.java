@@ -16,6 +16,7 @@ import android.telecom.InCallAdapter;
 import android.telecom.InCallService;
 import android.telecom.ParcelableCall;
 import android.telecom.Phone;
+import com.android.internal.os.SomeArgs;
 import com.android.internal.telecom.IInCallAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -33,6 +34,7 @@ public class ShadowInCallService extends ShadowService {
   private static final int MSG_SET_IN_CALL_ADAPTER = 1;
   private static final int MSG_ADD_CALL = 2;
   private static final int MSG_UPDATE_CALL = 3;
+  private static final int MSG_SET_POST_DIAL_WAIT = 4;
   private static final int MSG_ON_CALL_AUDIO_STATE_CHANGED = 5;
 
   private ShadowPhone shadowPhone;
@@ -77,6 +79,13 @@ public class ShadowInCallService extends ShadowService {
 
   public void addCall(ParcelableCall parcelableCall) {
     getHandler().obtainMessage(MSG_ADD_CALL, parcelableCall).sendToTarget();
+  }
+
+  public void setPostDialWait(String callId, String remaining) {
+    SomeArgs args = SomeArgs.obtain();
+    args.arg1 = callId;
+    args.arg2 = remaining;
+    getHandler().obtainMessage(MSG_SET_POST_DIAL_WAIT, args).sendToTarget();
   }
 
   public void removeCall(Call call) {

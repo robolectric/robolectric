@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Build;
@@ -54,6 +56,13 @@ public class ShadowBuildTest {
   public void setVersionIncremental() {
     ShadowBuild.setVersionIncremental("robo_incremental");
     assertThat(VERSION.INCREMENTAL).isEqualTo("robo_incremental");
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setVersionMediaPerformanceClass() {
+    ShadowBuild.setVersionMediaPerformanceClass(R);
+    assertThat(VERSION.MEDIA_PERFORMANCE_CLASS).isEqualTo(R);
   }
 
   @Test
