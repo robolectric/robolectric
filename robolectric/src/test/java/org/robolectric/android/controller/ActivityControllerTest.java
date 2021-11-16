@@ -379,6 +379,77 @@ public class ActivityControllerTest {
     assertThat(controller.get().hasWindowFocus()).isTrue();
   }
 
+  @Test
+  public void close_transitionsActivityStateToDestroyed() {
+    Robolectric.buildActivity(MyActivity.class).close();
+    assertThat(transcript).isEmpty();
+    transcript.clear();
+
+    Robolectric.buildActivity(MyActivity.class).create().close();
+    assertThat(transcript)
+        .containsExactly("onCreate", "finishedOnCreate", "onDestroy", "finishedOnDestroy");
+    transcript.clear();
+
+    Robolectric.buildActivity(MyActivity.class).create().start().close();
+    assertThat(transcript)
+        .containsExactly(
+            "onCreate",
+            "finishedOnCreate",
+            "onStart",
+            "finishedOnStart",
+            "onStop",
+            "finishedOnStop",
+            "onDestroy",
+            "finishedOnDestroy");
+    transcript.clear();
+
+    Robolectric.buildActivity(MyActivity.class).setup().close();
+    assertThat(transcript)
+        .containsExactly(
+            "onCreate",
+            "finishedOnCreate",
+            "onStart",
+            "finishedOnStart",
+            "onPostCreate",
+            "finishedOnPostCreate",
+            "onResume",
+            "finishedOnResume",
+            "onPostResume",
+            "finishedOnPostResume",
+            "onPause",
+            "finishedOnPause",
+            "onStop",
+            "finishedOnStop",
+            "onDestroy",
+            "finishedOnDestroy");
+  }
+
+  @Test
+  public void close_tryWithResources_getsDestroyed() {
+    try (ActivityController<MyActivity> ignored =
+        Robolectric.buildActivity(MyActivity.class).setup()) {
+      // no-op
+    }
+    assertThat(transcript)
+        .containsExactly(
+            "onCreate",
+            "finishedOnCreate",
+            "onStart",
+            "finishedOnStart",
+            "onPostCreate",
+            "finishedOnPostCreate",
+            "onResume",
+            "finishedOnResume",
+            "onPostResume",
+            "finishedOnPostResume",
+            "onPause",
+            "finishedOnPause",
+            "onStop",
+            "finishedOnStop",
+            "onDestroy",
+            "finishedOnDestroy");
+  }
+
   public static class MyActivity extends Activity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
