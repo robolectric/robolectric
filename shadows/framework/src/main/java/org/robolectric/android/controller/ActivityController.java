@@ -18,8 +18,6 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import androidx.test.runner.lifecycle.Stage;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
@@ -48,7 +46,19 @@ import org.robolectric.util.reflector.WithType;
 public class ActivityController<T extends Activity>
     extends ComponentController<ActivityController<T>, T> {
 
+  enum LifecycleState {
+    INITIAL,
+    CREATED,
+    RESTARTED,
+    STARTED,
+    RESUMED,
+    PAUSED,
+    STOPPED,
+    DESTROYED
+  }
+
   private _Activity_ _component_;
+  private LifecycleState currentState = LifecycleState.INITIAL;
 
   public static <T extends Activity> ActivityController<T> of(
       T activity, Intent intent, @Nullable Bundle activityOptions) {
@@ -109,7 +119,11 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> create(@Nullable final Bundle bundle) {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnCreate(component, bundle));
+    shadowMainLooper.runPaused(
+        () -> {
+          getInstrumentation().callActivityOnCreate(component, bundle);
+          currentState = LifecycleState.CREATED;
+        });
     return this;
   }
 
@@ -118,11 +132,15 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> restart() {
-    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused(() -> _component_.performRestart());
-    } else {
-      invokeWhilePaused(() -> _component_.performRestart(true, "restart()"));
-    }
+    invokeWhilePaused(
+        () -> {
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            _component_.performRestart();
+          } else {
+            _component_.performRestart(true, "restart()");
+          }
+          currentState = LifecycleState.RESTARTED;
+        });
     return this;
   }
 
@@ -130,11 +148,15 @@ public class ActivityController<T extends Activity>
     // Start and stop are tricky cases. Unlike other lifecycle methods such as
     // Instrumentation#callActivityOnPause calls Activity#performPause, Activity#performStop calls
     // Instrumentation#callActivityOnStop internally so the dependency direction is the opposite.
-    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused(() -> _component_.performStart());
-    } else {
-      invokeWhilePaused(() -> _component_.performStart("start()"));
-    }
+    invokeWhilePaused(
+        () -> {
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            _component_.performStart();
+          } else {
+            _component_.performStart("start()");
+          }
+          currentState = LifecycleState.STARTED;
+        });
     return this;
   }
 
@@ -150,11 +172,15 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> resume() {
-    if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused(() -> _component_.performResume());
-    } else {
-      invokeWhilePaused(() -> _component_.performResume(true, "resume()"));
-    }
+    invokeWhilePaused(
+        () -> {
+          if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            _component_.performResume();
+          } else {
+            _component_.performResume(true, "resume()");
+          }
+          currentState = LifecycleState.RESUMED;
+        });
     return this;
   }
 
@@ -214,7 +240,11 @@ public class ActivityController<T extends Activity>
   }
 
   public ActivityController<T> pause() {
-    shadowMainLooper.runPaused(() -> getInstrumentation().callActivityOnPause(component));
+    shadowMainLooper.runPaused(
+        () -> {
+          getInstrumentation().callActivityOnPause(component);
+          currentState = LifecycleState.PAUSED;
+        });
     return this;
   }
 
@@ -228,13 +258,17 @@ public class ActivityController<T extends Activity>
     // Stop and start are tricky cases. Unlike other lifecycle methods such as
     // Instrumentation#callActivityOnPause calls Activity#performPause, Activity#performStop calls
     // Instrumentation#callActivityOnStop internally so the dependency direction is the opposite.
-    if (RuntimeEnvironment.getApiLevel() <= M) {
-      invokeWhilePaused(() -> _component_.performStop());
-    } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-      invokeWhilePaused(() -> _component_.performStop(true));
-    } else {
-      invokeWhilePaused(() -> _component_.performStop(true, "stop()"));
-    }
+    invokeWhilePaused(
+        () -> {
+          if (RuntimeEnvironment.getApiLevel() <= M) {
+            _component_.performStop();
+          } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
+            _component_.performStop(true);
+          } else {
+            _component_.performStop(true, "stop()");
+          }
+          currentState = LifecycleState.STOPPED;
+        });
     return this;
   }
 
@@ -244,6 +278,7 @@ public class ActivityController<T extends Activity>
         () -> {
           getInstrumentation().callActivityOnDestroy(component);
           makeActivityEligibleForGc();
+          currentState = LifecycleState.DESTROYED;
         });
     return this;
   }
@@ -433,11 +468,11 @@ public class ActivityController<T extends Activity>
    */
   @SuppressWarnings("unchecked")
   public ActivityController<T> recreate() {
-    Stage originalStage =
-        ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(component);
 
-    switch (originalStage) {
-      case PRE_ON_CREATE:
+    LifecycleState originalState = currentState;
+
+    switch (originalState) {
+      case INITIAL:
         create();
         // fall through
       case CREATED:
@@ -488,7 +523,7 @@ public class ActivityController<T extends Activity>
 
     // Move back to the original stage. If the original stage was transient stage, it will bring it
     // to resumed state to match the on device behavior.
-    switch (originalStage) {
+    switch (originalState) {
       case PAUSED:
         pause();
         return this;
