@@ -166,7 +166,6 @@ class Chunk {
       return new Chunk(this_chunk);
     }
 
-    // TODO(b/111401637) remove this and have full resource file verification
     // Returns false if there was an error. For legacy purposes.
     boolean VerifyNextChunkNonFatal() {
       if (len_ < ResChunk_header.SIZEOF) {

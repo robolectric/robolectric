@@ -918,7 +918,7 @@ public class ShadowTelephonyManager {
   /**
    * Cribbed from {@link android.telephony.PhoneNumberUtils#isEmergencyNumberInternal}.
    *
-   * <p>TODO(b/122324733) need better implementation
+   * <p>TODO: need better implementation
    */
   @Implementation(minSdk = Build.VERSION_CODES.Q)
   protected boolean isEmergencyNumber(String number) {
