@@ -7,7 +7,6 @@ import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
-import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.ComponentName;
@@ -502,8 +501,9 @@ public class ActivityController<T extends Activity>
     }
   }
 
-  private static Instrumentation getInstrumentation() {
-    return ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
+  // Get the Instrumentation object scoped to the Activity.
+  private Instrumentation getInstrumentation() {
+    return _component_.getInstrumentation();
   }
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances's internals. */

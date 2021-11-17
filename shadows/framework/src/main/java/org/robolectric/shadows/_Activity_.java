@@ -372,4 +372,7 @@ public interface _Activity_ {
 
   @Accessor("mConfigChangeFlags")
   void setConfigChangeFlags(int value);
+
+  @Accessor("mInstrumentation")
+  Instrumentation getInstrumentation();
 }
