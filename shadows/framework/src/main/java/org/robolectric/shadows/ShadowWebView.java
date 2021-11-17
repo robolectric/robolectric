@@ -277,7 +277,7 @@ public class ShadowWebView extends ShadowViewGroup {
                 webChromeClient.onReceivedTitle(realWebView, url);
                 webChromeClient.onProgressChanged(realWebView, 100);
               }
-              if (webViewClient != null && VERSION.SDK_INT >= 23) {
+              if (webViewClient != null) {
                 webViewClient.onPageFinished(realWebView, url);
               }
             });
