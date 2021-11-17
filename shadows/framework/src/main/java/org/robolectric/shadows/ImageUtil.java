@@ -90,14 +90,17 @@ public class ImageUtil {
         reader.dispose();
       }
     } catch (IOException e) {
-      if (FORMAT_NAME_PNG.equalsIgnoreCase(format) && e instanceof IIOException) {
+      Throwable cause = e.getCause();
+      if (FORMAT_NAME_PNG.equalsIgnoreCase(format)
+          && cause instanceof IIOException
+          && cause.getMessage() != null
+          && cause.getMessage().contains("Invalid chunk length")) {
         String pngFileName = "(" + (fileName == null ? "not given PNG file name" : fileName) + ")";
         System.err.println(
-            "Looks like your PNG file"
+            "The PNG file"
                 + pngFileName
-                + " has format problem that OpenJDK can't process correctly. You can check"
-                + " https://github.com/robolectric/robolectric/issues/6812 for potential"
-                + " solution.");
+                + " cannot be decoded. This may be due to an OpenJDK issue with certain PNG files."
+                + " See https://github.com/robolectric/robolectric/issues/6812 for more details.");
       }
       throw new RuntimeException(e);
     }
