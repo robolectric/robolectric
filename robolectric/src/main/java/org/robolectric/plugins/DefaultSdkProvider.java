@@ -47,7 +47,7 @@ public class DefaultSdkProvider implements SdkProvider {
 
   private static final int RUNNING_JAVA_VERSION = Util.getJavaVersion();
 
-  private static final int PREINSTRUMENTED_VERSION = 2;
+  private static final int PREINSTRUMENTED_VERSION = 3;
 
   private final DependencyResolver dependencyResolver;
 
