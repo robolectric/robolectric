@@ -44,7 +44,7 @@ import org.robolectric.util.reflector.WithType;
  */
 @SuppressWarnings("NewApi")
 public class ActivityController<T extends Activity>
-    extends ComponentController<ActivityController<T>, T> {
+    extends ComponentController<ActivityController<T>, T> implements AutoCloseable {
 
   enum LifecycleState {
     INITIAL,
@@ -539,6 +539,38 @@ public class ActivityController<T extends Activity>
   // Get the Instrumentation object scoped to the Activity.
   private Instrumentation getInstrumentation() {
     return _component_.getInstrumentation();
+  }
+
+  /**
+   * Transitions the underlying Activity to the 'destroyed' state by progressing through the
+   * appropriate lifecycle events. It frees up any resources and makes the Activity eligible for GC.
+   */
+  @Override
+  public void close() {
+
+    LifecycleState originalState = currentState;
+
+    switch (originalState) {
+      case INITIAL:
+      case DESTROYED:
+        return;
+      case RESUMED:
+        pause();
+        // fall through
+      case PAUSED:
+        // fall through
+      case RESTARTED:
+        // fall through
+      case STARTED:
+        stop();
+        // fall through
+      case STOPPED:
+        // fall through
+      case CREATED:
+        break;
+    }
+
+    destroy();
   }
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances's internals. */
