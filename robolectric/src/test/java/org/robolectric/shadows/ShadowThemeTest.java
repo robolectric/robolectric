@@ -9,6 +9,7 @@ import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Xml;
@@ -16,6 +17,11 @@ import android.view.View;
 import android.widget.Button;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +29,10 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.Config;
+import org.robolectric.res.android.Registries;
 import org.robolectric.shadows.testing.TestActivity;
+import org.robolectric.util.ReflectionHelpers;
 import org.xmlpull.v1.XmlPullParser;
 
 @RunWith(AndroidJUnit4.class)
@@ -270,6 +279,40 @@ public class ShadowThemeTest {
     TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
     View button = activity.findViewById(R.id.button);
     assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.N)
+  public void shouldFreeNativeObjectInRegistry() {
+    final AtomicLong themeId = new AtomicLong(0);
+    Supplier<Theme> themeSupplier =
+        () -> {
+          Theme theme = resources.newTheme();
+          long nativeId =
+              ReflectionHelpers.getField(ReflectionHelpers.getField(theme, "mThemeImpl"), "mTheme");
+          themeId.set(nativeId);
+          return theme;
+        };
+
+    WeakReference<Theme> weakRef = new WeakReference<>(themeSupplier.get());
+    awaitFinalized(weakRef);
+    assertThat(Registries.NATIVE_THEME9_REGISTRY.peekNativeObject(themeId.get())).isNull();
+  }
+
+  private static <T> void awaitFinalized(WeakReference<T> weakRef) {
+    final CountDownLatch latch = new CountDownLatch(1);
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while (System.nanoTime() < deadline) {
+      if (weakRef.get() == null) {
+        return;
+      }
+      try {
+        System.gc();
+        latch.await(100, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        throw new AssertionError(e);
+      }
+    }
   }
 
   ////////////////////////////
