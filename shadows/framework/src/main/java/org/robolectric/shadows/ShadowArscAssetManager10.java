@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
@@ -1585,6 +1586,12 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     Registries.NATIVE_THEME9_REGISTRY.unregister(theme_ptr);
   }
 
+  @Implementation(minSdk = S)
+  protected void releaseTheme(long ptr) {
+    Registries.NATIVE_THEME9_REGISTRY.unregister(ptr);
+    reflector(AssetManagerReflector.class, realAssetManager).releaseTheme(ptr);
+  }
+
   // static void NativeThemeApplyStyle(JNIEnv* env, jclass /*clazz*/, jlong ptr, jlong theme_ptr,
   //                                   jint resid, jboolean force) {
   @Implementation(minSdk = P)
@@ -1911,6 +1918,9 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     @Static
     @Direct
     void createSystemAssetsInZygoteLocked();
+
+    @Direct
+    void releaseTheme(long ptr);
   }
 }
 ; // namespace android
