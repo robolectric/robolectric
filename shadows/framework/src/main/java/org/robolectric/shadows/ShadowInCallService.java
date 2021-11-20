@@ -9,6 +9,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
 import android.os.Build.VERSION;
+import android.os.Bundle;
 import android.os.Handler;
 import android.telecom.Call;
 import android.telecom.CallAudioState;
@@ -36,6 +37,7 @@ public class ShadowInCallService extends ShadowService {
   private static final int MSG_UPDATE_CALL = 3;
   private static final int MSG_SET_POST_DIAL_WAIT = 4;
   private static final int MSG_ON_CALL_AUDIO_STATE_CHANGED = 5;
+  private static final int MSG_ON_CONNECTION_EVENT = 9;
 
   private ShadowPhone shadowPhone;
   private boolean canAddCall;
@@ -83,13 +85,25 @@ public class ShadowInCallService extends ShadowService {
 
   /**
    * Exposes {@link IIInCallService.Stub#setPostDialWait}. This is normally invoked by Telecom but
-   * in Robolectric Telecom doesn't exist, so tests can invoke this to simulate Telecom's actions.
+   * in Robolectric, Telecom doesn't exist, so tests can invoke this to simulate Telecom's actions.
    */
   public void setPostDialWait(String callId, String remaining) {
     SomeArgs args = SomeArgs.obtain();
     args.arg1 = callId;
     args.arg2 = remaining;
     getHandler().obtainMessage(MSG_SET_POST_DIAL_WAIT, args).sendToTarget();
+  }
+
+  /**
+   * Exposes {@link IIInCallService.Stub#onConnectionEvent}. This is normally invoked by Telecom but
+   * in Robolectric, Telecom doesn't exist, so tests can invoke this to simulate Telecom's actions.
+   */
+  public void onConnectionEvent(String callId, String event, Bundle extras) {
+    SomeArgs args = SomeArgs.obtain();
+    args.arg1 = callId;
+    args.arg2 = event;
+    args.arg3 = extras;
+    getHandler().obtainMessage(MSG_ON_CONNECTION_EVENT, args).sendToTarget();
   }
 
   public void removeCall(Call call) {
