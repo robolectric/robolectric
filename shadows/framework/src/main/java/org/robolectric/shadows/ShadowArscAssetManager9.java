@@ -73,6 +73,7 @@ import org.robolectric.res.android.ResXMLParser;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
@@ -1370,6 +1371,30 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // {
   @Implementation(minSdk = P)
   protected static void nativeApplyStyle(
+      long ptr,
+      long theme_ptr,
+      @AttrRes int def_style_attr,
+      @StyleRes int def_style_resid,
+      long xml_parser_ptr,
+      @NonNull int[] java_attrs,
+      long out_values_ptr,
+      long out_indices_ptr) {
+    PerfStatsCollector.getInstance()
+        .measure(
+            "applyStyle",
+            () ->
+                nativeApplyStyle_measured(
+                    ptr,
+                    theme_ptr,
+                    def_style_attr,
+                    def_style_resid,
+                    xml_parser_ptr,
+                    java_attrs,
+                    out_values_ptr,
+                    out_indices_ptr));
+  }
+
+  private static void nativeApplyStyle_measured(
       long ptr,
       long theme_ptr,
       @AttrRes int def_style_attr,
