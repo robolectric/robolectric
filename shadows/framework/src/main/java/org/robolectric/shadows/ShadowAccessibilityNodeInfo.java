@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -36,7 +37,9 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /**
  * Properties of {@link android.view.accessibility.AccessibilityNodeInfo} that are normally locked
@@ -191,8 +194,7 @@ public class ShadowAccessibilityNodeInfo {
 
   @Implementation
   protected void __constructor__() {
-    ReflectionHelpers.setStaticField(
-        AccessibilityNodeInfo.class, "CREATOR", ShadowAccessibilityNodeInfo.CREATOR);
+    reflector(AccessibilityNodeInfoReflector.class).setCreator(ShadowAccessibilityNodeInfo.CREATOR);
   }
 
   @Implementation
@@ -1223,11 +1225,7 @@ public class ShadowAccessibilityNodeInfo {
 
     @Implementation
     protected void __constructor__(int id, CharSequence label) {
-      if (((id
-                  & (int)
-                      ReflectionHelpers.getStaticField(
-                          AccessibilityNodeInfo.class, "ACTION_TYPE_MASK"))
-              == 0)
+      if (((id & reflector(AccessibilityNodeInfoReflector.class).getActionTypeMask()) == 0)
           && Integer.bitCount(id) != 1) {
         throw new IllegalArgumentException("Invalid standard action id");
       }
@@ -1266,8 +1264,8 @@ public class ShadowAccessibilityNodeInfo {
 
     @Override
     public String toString() {
-      String actionSybolicName = ReflectionHelpers.callStaticMethod(
-          AccessibilityNodeInfo.class, "getActionSymbolicName", ClassParameter.from(int.class, id));
+      String actionSybolicName =
+          reflector(AccessibilityNodeInfoReflector.class).getActionSymbolicName(id);
       return "AccessibilityAction: " + actionSybolicName + " - " + label;
     }
   }
@@ -1292,19 +1290,16 @@ public class ShadowAccessibilityNodeInfo {
 
   private static int getActionTypeMaskFromFramework() {
     // Get the mask to determine whether an int is a legit ID for an action, defined by Android
-    return (int)ReflectionHelpers.getStaticField(AccessibilityNodeInfo.class, "ACTION_TYPE_MASK");
+    return reflector(AccessibilityNodeInfoReflector.class).getActionTypeMask();
   }
   
   private static AccessibilityAction getActionFromIdFromFrameWork(int id) {
     // Convert an action ID to Android standard Accessibility Action defined by Android
-    return ReflectionHelpers.callStaticMethod(
-        AccessibilityNodeInfo.class, "getActionSingleton", ClassParameter.from(int.class, id));
+    return reflector(AccessibilityNodeInfoReflector.class).getActionSingleton(id);
   }
   
   private static int getLastLegacyActionFromFrameWork() {
-    return (int)
-        ReflectionHelpers.getStaticField(
-            AccessibilityNodeInfo.class, "LAST_LEGACY_STANDARD_ACTION");
+    return reflector(AccessibilityNodeInfoReflector.class).getLastLegacyStandardAction();
   }
 
   /**
@@ -1330,5 +1325,26 @@ public class ShadowAccessibilityNodeInfo {
         + ", className:"
         + className
         + "}";
+  }
+
+  @ForType(AccessibilityNodeInfo.class)
+  interface AccessibilityNodeInfoReflector {
+    @Static
+    @Accessor("CREATOR")
+    void setCreator(Parcelable.Creator<AccessibilityNodeInfo> creator);
+
+    @Static
+    @Accessor("ACTION_TYPE_MASK")
+    int getActionTypeMask();
+
+    @Static
+    @Accessor("LAST_LEGACY_STANDARD_ACTION")
+    int getLastLegacyStandardAction();
+
+    @Static
+    String getActionSymbolicName(int id);
+
+    @Static
+    AccessibilityAction getActionSingleton(int id);
   }
 }
