@@ -1,26 +1,31 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.TargetApi;
 import android.app.DatePickerDialog;
+import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
+import androidx.annotation.RequiresApi;
 import java.util.Calendar;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(DatePickerDialog.class)
 public class ShadowDatePickerDialog extends ShadowAlertDialog {
 
   @RealObject protected DatePickerDialog realDatePickerDialog;
   private Calendar calendar;
-  private int year;
-  private int monthOfYear;
-  private int dayOfMonth;
-  private DatePickerDialog.OnDateSetListener callBack;
 
   @Implementation(maxSdk = M)
   protected void __constructor__(
@@ -30,10 +35,6 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
       int year,
       int monthOfYear,
       int dayOfMonth) {
-    this.year = year;
-    this.monthOfYear = monthOfYear;
-    this.dayOfMonth = dayOfMonth;
-    this.callBack = callBack;
 
     invokeConstructor(DatePickerDialog.class, realDatePickerDialog,
         ClassParameter.from(Context.class, context),
@@ -54,10 +55,6 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
       int monthOfYear,
       int dayOfMonth) {
     this.calendar = calendar;
-    this.year = year;
-    this.monthOfYear = monthOfYear;
-    this.dayOfMonth = dayOfMonth;
-    this.callBack = callBack;
 
     invokeConstructor(DatePickerDialog.class, realDatePickerDialog,
         ClassParameter.from(Context.class, context),
@@ -74,18 +71,36 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
   }
 
   public int getYear() {
-    return year;
+    return realDatePickerDialog.getDatePicker().getYear();
   }
 
   public int getMonthOfYear() {
-    return monthOfYear;
+    return realDatePickerDialog.getDatePicker().getMonth();
   }
 
   public int getDayOfMonth() {
-    return dayOfMonth;
+    return realDatePickerDialog.getDatePicker().getDayOfMonth();
   }
 
   public DatePickerDialog.OnDateSetListener getOnDateSetListenerCallback() {
-    return this.callBack;
+    if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
+      return reflector(DatePickerDialogReflector.class, realDatePickerDialog).getCallback();
+    } else {
+      return reflector(DatePickerDialogReflector.class, realDatePickerDialog).getDateSetListener();
+    }
+  }
+
+  @ForType(DatePickerDialog.class)
+  interface DatePickerDialogReflector {
+
+    /** For sdk version at least {@link KITKAT_WATCH} */
+    @RequiresApi(KITKAT_WATCH)
+    @Accessor("mDateSetListener")
+    OnDateSetListener getDateSetListener();
+
+    /** For sdk version is equals to {@link KITKAT} */
+    @TargetApi(KITKAT)
+    @Accessor("mCallBack")
+    OnDateSetListener getCallback();
   }
 }
