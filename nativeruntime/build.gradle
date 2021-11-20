@@ -81,28 +81,17 @@ task makeNativeRuntime {
   }
 }
 
-task copyNativeRuntime {
-  dependsOn makeNativeRuntime
-  doLast {
-    copy {
-      from ("$buildDir/cpp") {
-        include '*libnativeruntime.*'
-      }
-      rename { String fileName ->
-        fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
-      }
-      into project.file("$buildDir/resources/main/native/${osName()}/${arch()}/")
-    }
-  }
-}
-
-jar {
-  def os = osName()
-  if (!System.getenv('SKIP_NATIVERUNTIME_BUILD') && (os.contains("linux") || os.contains("mac"))) {
-    dependsOn copyNativeRuntime
-  } else {
-    println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
-  }
+processResources {
+ def os = osName()
+ onlyIf { !System.getenv('SKIP_NATIVERUNTIME_BUILD') && (os.contains("linux") || os.contains("mac")) }
+ dependsOn makeNativeRuntime
+ from ("$buildDir/cpp") {
+   include '*libnativeruntime.*'
+   rename { String fileName ->
+     fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+   }
+   into "native/${os}/${arch()}/"
+ }
 }
 
 dependencies {
