@@ -16,8 +16,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest]
+        os: [ubuntu-18.04, macos-latest, self-hosted]
     steps:
+      - name: Detect runner CPU architecture
+        run: |
+          echo "CPU_ARCH=$(uname -m)" >> $GITHUB_ENV
+
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -33,7 +37,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/icu-bin
-          key: ${{ runner.os }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+          key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Build ICU for MacOS
         if: runner.os =='macOS' && steps.cache-icu.outputs.cache-hit != 'true'
@@ -63,26 +67,18 @@ jobs:
       - name: Rename libnativeruntime for Linux
         if: runner.os == 'Linux'
         run: |
+          echo "NATIVERUNTIME_ARTIFACT_FILE=librobolectric-nativeruntime-linux-x86_64.so" >> $GITHUB_ENV
           mv build/libnativeruntime.so build/librobolectric-nativeruntime-linux-x86_64.so
 
       - name: Rename libnativeruntime for macOS
         if: runner.os == 'macOS'
         run: |
-          mv build/libnativeruntime.dylib build/librobolectric-nativeruntime-mac-x86_64.dylib
+          echo "NATIVERUNTIME_ARTIFACT_FILE=librobolectric-nativeruntime-mac-$(uname -m).dylib" >> $GITHUB_ENV
+          mv build/libnativeruntime.dylib build/librobolectric-nativeruntime-mac-$(uname -m).dylib
 
-      - name: Upload libnativeruntime for Linux
-        if: runner.os == 'Linux'
+      - name: Upload libnativeruntime
         uses: actions/upload-artifact@v2
         with:
-          name: librobolectric-nativeruntime-linux-x86_64.so
+          name: ${{env.NATIVERUNTIME_ARTIFACT_FILE}}
           path: |
-            build/librobolectric-nativeruntime-linux-x86_64.so
-            build/*.dylib
-
-      - name: Upload libnativeruntime for macOS
-        if: runner.os == 'macOS'
-        uses: actions/upload-artifact@v2
-        with:
-          name: librobolectric-nativeruntime-mac-x86_64.dylib
-          path: |
-            build/librobolectric-nativeruntime-mac-x86_64.dylib
+            build/${{env.NATIVERUNTIME_ARTIFACT_FILE}}
