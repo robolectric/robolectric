@@ -17,11 +17,6 @@ import org.robolectric.integration.axt.R;
 /** Tests Espresso on Activities with {@link androidx.appcompat.widget.SwitchCompat}. */
 @RunWith(AndroidJUnit4.class)
 @TextLayoutMode(TextLayoutMode.Mode.REALISTIC)
-@Config(
-    instrumentedPackages = {
-      // required to access final members on androidx.loader.content.ModernAsyncTask
-      "androidx.loader.content"
-    })
 public class EspressoWithSwitchCompatTest {
   @Test
   public void switchCompatTest() {
