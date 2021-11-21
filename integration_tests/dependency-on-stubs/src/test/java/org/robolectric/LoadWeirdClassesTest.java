@@ -22,18 +22,18 @@ public class LoadWeirdClassesTest {
 
   @Test
   @Config(sdk = KITKAT)
-  public void shouldLoadDisplay() throws Exception {
+  public void shouldLoadDisplay() {
     ReflectionHelpers.callInstanceMethod(
         Display.class, ShadowDisplay.getDefaultDisplay(), "getDisplayAdjustments");
   }
 
   @Test
-  public void reset_shouldWorkEvenIfSdkIntIsOverridden() throws Exception {
+  public void reset_shouldWorkEvenIfSdkIntIsOverridden() {
     ReflectionHelpers.setStaticField(Build.VERSION.class, "SDK_INT", 23);
   }
 
   @Test
-  public void shadowOf_shouldCompile() throws Exception {
+  public void shadowOf_shouldCompile() {
     assumeThat("Windows is an affront to decency.",
         File.separator, Matchers.equalTo("/"));
 
@@ -41,7 +41,7 @@ public class LoadWeirdClassesTest {
   }
 
   @Test
-  public void packageManager() throws Exception {
+  public void packageManager() {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = "test.package";
     shadowOf(RuntimeEnvironment.application.getPackageManager()).addPackage(packageInfo);
