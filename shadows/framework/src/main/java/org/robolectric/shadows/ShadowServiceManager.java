@@ -55,6 +55,7 @@ import android.net.INetworkPolicyManager;
 import android.net.INetworkScoreService;
 import android.net.ITetheringConnector;
 import android.net.nsd.INsdManager;
+import android.net.vcn.IVcnManagementService;
 import android.net.wifi.IWifiManager;
 import android.net.wifi.aware.IWifiAwareManager;
 import android.net.wifi.p2p.IWifiP2pManager;
@@ -192,6 +193,7 @@ public class ShadowServiceManager {
       addBinderService(Context.SPEECH_RECOGNITION_SERVICE, IRecognitionServiceManager.class);
       addBinderService(Context.LEGACY_PERMISSION_SERVICE, ILegacyPermissionManager.class);
       addBinderService(Context.UWB_SERVICE, IUwbAdapter.class);
+      addBinderService(Context.VCN_MANAGEMENT_SERVICE, IVcnManagementService.class);
     }
   }
 

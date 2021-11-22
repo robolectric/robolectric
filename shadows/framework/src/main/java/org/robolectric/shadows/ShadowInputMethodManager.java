@@ -267,9 +267,10 @@ public class ShadowInputMethodManager {
     _InputMethodManager_ _reflector = reflector(_InputMethodManager_.class);
     if (apiLevel <= JELLY_BEAN_MR1) {
       _reflector.setMInstance(null);
-    } else if (apiLevel <= P) {
-      _reflector.setInstance(null);
     } else {
+      _reflector.setInstance(null);
+    }
+    if (apiLevel > P) {
       _reflector.getInstanceMap().clear();
     }
   }
