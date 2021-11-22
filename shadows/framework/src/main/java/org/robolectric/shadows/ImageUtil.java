@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -59,6 +60,10 @@ public class ImageUtil {
   }
 
   static RobolectricBufferedImage getImageFromStream(InputStream is) {
+    return getImageFromStream(null, is);
+  }
+
+  static RobolectricBufferedImage getImageFromStream(String fileName, InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
@@ -66,15 +71,18 @@ public class ImageUtil {
       initialized = true;
     }
 
+    String format = null;
     try {
       ImageInputStream imageStream = createImageInputStream(is);
       Iterator<ImageReader> readers = ImageIO.getImageReaders(imageStream);
-      if (!readers.hasNext()) return null;
+      if (!readers.hasNext()) {
+        return null;
+      }
 
       ImageReader reader = readers.next();
       try {
         reader.setInput(imageStream);
-        String format = reader.getFormatName();
+        format = reader.getFormatName();
         int minIndex = reader.getMinIndex();
         BufferedImage image = reader.read(minIndex);
         return RobolectricBufferedImage.create(image, ("image/" + format).toLowerCase());
@@ -82,6 +90,18 @@ public class ImageUtil {
         reader.dispose();
       }
     } catch (IOException e) {
+      Throwable cause = e.getCause();
+      if (FORMAT_NAME_PNG.equalsIgnoreCase(format)
+          && cause instanceof IIOException
+          && cause.getMessage() != null
+          && cause.getMessage().contains("Invalid chunk length")) {
+        String pngFileName = "(" + (fileName == null ? "not given PNG file name" : fileName) + ")";
+        System.err.println(
+            "The PNG file"
+                + pngFileName
+                + " cannot be decoded. This may be due to an OpenJDK issue with certain PNG files."
+                + " See https://github.com/robolectric/robolectric/issues/6812 for more details.");
+      }
       throw new RuntimeException(e);
     }
   }
