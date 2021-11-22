@@ -22,11 +22,6 @@ import org.robolectric.shadows.ShadowViewConfiguration;
 @RunWith(AndroidJUnit4.class)
 @TextLayoutMode(Mode.REALISTIC)
 @LooperMode(PAUSED)
-@Config(
-    instrumentedPackages = {
-      // required to access final members on androidx.loader.content.ModernAsyncTask
-      "androidx.loader.content"
-    })
 public class EspressoWithToolbarMenuTest {
   @Test
   public void appCompatToolbarMenuClick() {

@@ -21,11 +21,6 @@ import org.robolectric.annotation.TextLayoutMode.Mode;
 @RunWith(AndroidJUnit4.class)
 @TextLayoutMode(Mode.REALISTIC)
 @LooperMode(PAUSED)
-@Config(
-    instrumentedPackages = {
-      // required to access final members on androidx.loader.content.ModernAsyncTask
-      "androidx.loader.content"
-    })
 public class EspressoWithMenuTest {
 
   @Test
