@@ -13,7 +13,7 @@ dependencies {
 
     testCompileOnly AndroidSdk.Q.coordinates
     testRuntime AndroidSdk.Q.coordinates
-    testImplementation("androidx.test:core:$axtVersion")
+    testImplementation "androidx.test:core:$axtVersion"
     testImplementation "junit:junit:$junitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
 }
