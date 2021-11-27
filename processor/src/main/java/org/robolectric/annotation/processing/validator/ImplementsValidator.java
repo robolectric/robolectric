@@ -156,7 +156,7 @@ public class ImplementsValidator extends Validator {
     AnnotationValue looseSignaturesAttr =
         Helpers.getAnnotationTypeMirrorValue(am, "looseSignatures");
     boolean looseSignatures =
-        looseSignaturesAttr == null ? false : (Boolean) looseSignaturesAttr.getValue();
+        looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
     validateShadowMethods(actualType, shadowType, minSdk, maxSdk, looseSignatures);
 
     modelBuilder.addShadowType(shadowType, actualType,
