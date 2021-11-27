@@ -30,8 +30,10 @@ import android.os.Build;
 import android.util.ArrayMap;
 import android.util.LongSparseArray;
 import android.util.LongSparseLongArray;
+import androidx.annotation.RequiresApi;
 import com.android.internal.app.IAppOpsService;
 import com.google.auto.value.AutoValue;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -57,7 +59,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(value = AppOpsManager.class)
+@Implements(value = AppOpsManager.class, looseSignatures = true)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
@@ -394,18 +396,21 @@ public class ShadowAppOpsManager {
     return checkOpNoThrow(op, proxiedUid, proxiedPackageName);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.S)
   @Implementation(minSdk = Build.VERSION_CODES.S)
   protected int noteProxyOpNoThrow(
-      int op,
-      AttributionSource attributionSource,
-      String message,
-      boolean ignoredSkipProxyOperation) {
+      Object op, Object attributionSource, Object message, Object ignoredSkipProxyOperation) {
+    Preconditions.checkArgument(op instanceof Integer);
+    Preconditions.checkArgument(attributionSource instanceof AttributionSource);
+    Preconditions.checkArgument(message == null || message instanceof String);
+    Preconditions.checkArgument(ignoredSkipProxyOperation instanceof Boolean);
+    AttributionSource castedAttributionSource = (AttributionSource) attributionSource;
     return noteProxyOpNoThrow(
-        op,
-        attributionSource.getNextPackageName(),
-        attributionSource.getNextUid(),
-        attributionSource.getNextAttributionTag(),
-        message);
+        (int) op,
+        castedAttributionSource.getNextPackageName(),
+        castedAttributionSource.getNextUid(),
+        castedAttributionSource.getNextAttributionTag(),
+        (String) message);
   }
 
   @Implementation(minSdk = KITKAT)
