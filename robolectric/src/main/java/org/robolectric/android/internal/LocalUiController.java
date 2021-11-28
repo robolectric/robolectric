@@ -38,7 +38,8 @@ public class LocalUiController implements UiController {
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     loopMainThreadUntilIdle();
 
-    getViewRoot().dispatchTouchEvent(event);
+    // FLAG_NOT_TOUCHABLE: "this window can never receive touch events"
+    getTopMostViewRootExcluding(LayoutParams.FLAG_NOT_TOUCHABLE).dispatchTouchEvent(event);
 
     loopMainThreadUntilIdle();
 
@@ -49,9 +50,10 @@ public class LocalUiController implements UiController {
   public boolean injectKeyEvent(KeyEvent event) throws InjectEventSecurityException {
     checkNotNull(event);
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
-
     loopMainThreadUntilIdle();
-    getViewRoot().dispatchKeyEvent(event);
+
+    // FLAG_NOT_FOCUSABLE: "this window won't ever get key input focus"
+    getTopMostViewRootExcluding(LayoutParams.FLAG_NOT_FOCUSABLE).dispatchKeyEvent(event);
 
     loopMainThreadUntilIdle();
     return true;
@@ -146,7 +148,7 @@ public class LocalUiController implements UiController {
     shadowMainLooper().idleFor(Duration.ofMillis(millisDelay));
   }
 
-  private View getViewRoot() {
+  private View getTopMostViewRootExcluding(int prohibitedFlags) {
     List<ViewRootImpl> viewRoots = getViewRoots();
     if (viewRoots.isEmpty()) {
       throw new IllegalStateException("no view roots!");
@@ -159,9 +161,13 @@ public class LocalUiController implements UiController {
     int topMostRootIndex = 0;
     for (int i = 0; i < params.size(); i++) {
       LayoutParams param = params.get(i);
-      if (param.type > params.get(topMostRootIndex).type) {
-        topMostRootIndex = i;
+      if ((param.flags & prohibitedFlags) != 0) {
+        continue;
       }
+      if (param.type <= params.get(topMostRootIndex).type) {
+        continue;
+      }
+      topMostRootIndex = i;
     }
     return viewRoots.get(topMostRootIndex).getView();
   }
