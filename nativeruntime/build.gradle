@@ -41,16 +41,20 @@ task configureICU {
     if (!file("$projectDir/external/icu/icu4c/source").exists()) {
       throw new GradleException("ICU submodule not detected. Please run `git submodule update --init`")
     }
-    exec {
-      workingDir "$projectDir/external/icu/icu4c/source"
-      if (os.contains("linux")) {
-        environment "CFLAGS", "-fPIC"
-        environment "CXXFLAGS", "-fPIC"
-        commandLine './runConfigureICU', 'Linux', '--enable-static', '--disable-shared'
-      } else if (os.contains("mac")) {
-        commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
-      } else {
-        println("Skipping the nativeruntime build for OS '${System.getProperty("os.name")}'")
+    if (file("$projectDir/external/icu/icu4c/source/Makefile").exists()) {
+      println("ICU Makefile detected, skipping ICU configure")
+    } else {
+      exec {
+        workingDir "$projectDir/external/icu/icu4c/source"
+        if (os.contains("linux")) {
+          environment "CFLAGS", "-fPIC"
+          environment "CXXFLAGS", "-fPIC"
+          commandLine './runConfigureICU', 'Linux', '--enable-static', '--disable-shared'
+        } else if (os.contains("mac")) {
+          commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
+        } else {
+          println("ICU configure not supported for OS '${System.getProperty("os.name")}'")
+        }
       }
     }
   }
