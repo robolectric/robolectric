@@ -87,7 +87,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/icu-bin
-          key: ${{ runner.os }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+          key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Run unit tests
         run: |
