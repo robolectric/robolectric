@@ -87,14 +87,19 @@ task makeNativeRuntime {
 
 processResources {
  def os = osName()
- onlyIf { !System.getenv('SKIP_NATIVERUNTIME_BUILD') && (os.contains("linux") || os.contains("mac")) }
- dependsOn makeNativeRuntime
- from ("$buildDir/cpp") {
-   include '*libnativeruntime.*'
-   rename { String fileName ->
-     fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+ if (System.getenv('SKIP_NATIVERUNTIME_BUILD')) {
+   println("Skipping the nativeruntime build");
+ } else if (!os.contains("linux") && !os.contains("mac")) {
+   println("Building the nativeruntime not supported for OS '${System.getProperty("os.name")}'")
+ } else {
+   dependsOn makeNativeRuntime
+   from ("$buildDir/cpp") {
+     include '*libnativeruntime.*'
+     rename { String fileName ->
+       fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+     }
+     into "native/${os}/${arch()}/"
    }
-   into "native/${os}/${arch()}/"
  }
 }
 
