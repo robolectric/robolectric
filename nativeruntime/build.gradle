@@ -35,7 +35,7 @@ task cmakeNativeRuntime {
 }
 
 task configureICU {
-  onlyIf { !System.getenv('SKIP_ICU_BUILD') }
+  onlyIf { !System.getenv('ICU_ROOT_DIR') }
   doLast {
     def os = osName()
     if (!file("$projectDir/external/icu/icu4c/source").exists()) {
@@ -61,7 +61,7 @@ task configureICU {
 }
 
 task buildICU {
-  onlyIf { !System.getenv('SKIP_ICU_BUILD') }
+  onlyIf { !System.getenv('ICU_ROOT_DIR') }
   dependsOn configureICU
   doLast {
     exec {
