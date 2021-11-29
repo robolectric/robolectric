@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+import java.nio.charset.StandardCharsets
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
@@ -22,6 +24,20 @@ static def arch() {
     return "x86_64"
   }
   return arch
+}
+
+static def authHeader() {
+  def user = System.getenv('GITHUB_USER')
+  if (!user) {
+    throw new GradleException("Missing GITHUB_USER environment variable")
+  }
+  def token = System.getenv('GITHUB_TOKEN')
+  if (!token) {
+    throw new GradleException("Missing GITHUB_TOKEN environment variable")
+  }
+  def lp = "$user:$token"
+  def encoded = Base64.getEncoder().encodeToString(lp.getBytes(StandardCharsets.UTF_8))
+  return "Basic $encoded"
 }
 
 task cmakeNativeRuntime {
@@ -85,22 +101,78 @@ task makeNativeRuntime {
   }
 }
 
+task copyNativeRuntimeToResources {
+  def os = osName()
+  if (System.getenv('SKIP_NATIVERUNTIME_BUILD')) {
+    println("Skipping the nativeruntime build");
+  } else if (!os.contains("linux") && !os.contains("mac")) {
+    println("Building the nativeruntime not supported for OS '${System.getProperty("os.name")}'")
+  } else {
+    dependsOn makeNativeRuntime
+    outputs.dir "$buildDir/resources/main/native"
+    doLast {
+      copy {
+        from ("$buildDir/cpp")
+        include '*libnativeruntime.*'
+        rename { String fileName ->
+          fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
+        }
+        into "$buildDir/resources/main/native/$os/${arch()}/"
+      }
+    }
+  }
+}
+
+task copyNativeRuntimeFromGithubAction {
+  outputs.dir "$buildDir/resources/main/native"
+  doLast {
+    def checkRunId = System.getenv('NATIVERUNTIME_ACTION_RUN_ID')
+    def artifactsUrl = "https://api.github.com/repos/robolectric/robolectric/actions/runs/$checkRunId/artifacts"
+    def downloadDir = new File("$buildDir/robolectric-nativeruntime-artifacts-$checkRunId")
+    downloadDir.mkdirs()
+    new JsonSlurper().parseText(new URL(artifactsUrl).text).artifacts.each { artifact ->
+      def f = new File(downloadDir, "${artifact.name}.zip")
+      if (!f.exists()) {
+        println("Fetching ${artifact.name}.zip to $f")
+        def conn = (HttpURLConnection) new URL(artifact.archive_download_url).openConnection()
+        conn.instanceFollowRedirects = true
+        conn.setRequestProperty("Authorization", authHeader())
+
+        f.withOutputStream { out ->
+          conn.inputStream.with { inp ->
+            out << inp
+            inp.close()
+            out.close()
+          }
+        }
+      }
+      copy {
+        from zipTree(f)
+        include "librobolectric*"
+        rename { String fileName ->
+          fileName = fileName.replaceFirst("librobolectric.*dylib", "librobolectric-nativeruntime.dylib")
+          return fileName.replaceFirst("librobolectric.*so", "librobolectric-nativeruntime.so")
+        }
+        def os = "linux"
+        if (artifact.name.contains("-mac")) {
+          os = "mac"
+        }
+        def arch = "x86_64"
+        if (artifact.name.contains("-arm64")) {
+          arch = "aarch64"
+        }
+        into "$buildDir/resources/main/native/$os/$arch/"
+      }
+    }
+  }
+}
+
 processResources {
- def os = osName()
- if (System.getenv('SKIP_NATIVERUNTIME_BUILD')) {
-   println("Skipping the nativeruntime build");
- } else if (!os.contains("linux") && !os.contains("mac")) {
-   println("Building the nativeruntime not supported for OS '${System.getProperty("os.name")}'")
- } else {
-   dependsOn makeNativeRuntime
-   from ("$buildDir/cpp") {
-     include '*libnativeruntime.*'
-     rename { String fileName ->
-       fileName.replace("libnativeruntime", "librobolectric-nativeruntime")
-     }
-     into "native/${os}/${arch()}/"
-   }
- }
+  if (System.getenv('NATIVERUNTIME_ACTION_RUN_ID')) {
+    dependsOn copyNativeRuntimeFromGithubAction
+  } else {
+    dependsOn copyNativeRuntimeToResources
+  }
 }
 
 dependencies {
