@@ -18,10 +18,6 @@ jobs:
       matrix:
         os: [ubuntu-18.04, macos-latest, self-hosted]
     steps:
-      - name: Detect runner CPU architecture
-        run: |
-          echo "CPU_ARCH=$(uname -m)" >> $GITHUB_ENV
-
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -45,7 +41,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/icu-bin
-          key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Build ICU for MacOS
         if: runner.os =='macOS' && steps.cache-icu.outputs.cache-hit != 'true'

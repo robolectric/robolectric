@@ -33,16 +33,12 @@ jobs:
         with:
           java-version: 11.0.8
 
-      - name: Detect runner CPU architecture
-        run: |
-          echo "CPU_ARCH=$(uname -m)" >> $GITHUB_ENV
-
       - name: Cache ICU build output
         id: cache-icu
         uses: actions/cache@v2
         with:
           path: ~/icu-bin
-          key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Build ICU
         if: steps.cache-icu.outputs.cache-hit != 'true'
@@ -86,16 +82,12 @@ jobs:
         with:
           java-version: 11.0.8
 
-      - name: Detect runner CPU architecture
-        run: |
-          echo "CPU_ARCH=$(uname -m)" >> $GITHUB_ENV
-
       - name: Cache ICU build output
         id: cache-icu
         uses: actions/cache@v2
         with:
           path: ~/icu-bin
-          key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+          key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Install Ninja
         if: runner.os =='Linux'
