@@ -53,7 +53,7 @@ jobs:
           make install
 
       - name: Build
-        run: ICU_ROOT_DIR=$HOME/icu-bin SKIP_ICU_BUILD=true SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs 
+        run: ICU_ROOT_DIR=$HOME/icu-bin SKIP_ICU_BUILD=true SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
     runs-on: ubuntu-18.04
@@ -82,12 +82,16 @@ jobs:
         with:
           java-version: 11.0.8
 
+      - name: Detect runner CPU architecture
+        run: |
+          echo "CPU_ARCH=$(uname -m)" >> $GITHUB_ENV
+
       - name: Cache ICU build output
         id: cache-icu
         uses: actions/cache@v2
         with:
           path: ~/icu-bin
-          key: ${{ runner.os }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+          key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Run unit tests
         run: |
