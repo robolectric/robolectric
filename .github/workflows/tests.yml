@@ -159,13 +159,13 @@ jobs:
             **/build/reports/*
             **/build/outputs/*/connected/*
 
-publish-to-snapshots:
-  needs: [tests, instrumentation_tests]
-  runs-on: ubuntu-18.04
-  steps:
-    name: Publish
-    run: |
-      env
-      echo "Tests are complete!"
+  publish-to-snapshots:
+    needs: [unit-tests, instrumentation-tests]
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Publish
+        run: |
+          env
+          echo "Tests are complete!"
 
 
