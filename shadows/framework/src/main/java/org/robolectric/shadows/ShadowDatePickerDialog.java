@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -26,24 +25,6 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
 
   @RealObject protected DatePickerDialog realDatePickerDialog;
   private Calendar calendar;
-
-  @Implementation(maxSdk = M)
-  protected void __constructor__(
-      Context context,
-      int theme,
-      DatePickerDialog.OnDateSetListener callBack,
-      int year,
-      int monthOfYear,
-      int dayOfMonth) {
-
-    invokeConstructor(DatePickerDialog.class, realDatePickerDialog,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(int.class, theme),
-        ClassParameter.from(DatePickerDialog.OnDateSetListener.class, callBack),
-        ClassParameter.from(int.class, year),
-        ClassParameter.from(int.class, monthOfYear),
-        ClassParameter.from(int.class, dayOfMonth));
-  }
 
   @Implementation(minSdk = N)
   protected void __constructor__(
