@@ -3,11 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 # This is needed to ensure that static libraries can be linked into shared libraries.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Building the nativeruntime does not work with GCC due to libstddc++ linker errors.
-# TODO: figure out which linker args are needed to build with GCC.
-set(CMAKE_C_COMPILER "clang")
-set(CMAKE_CXX_COMPILER "clang++")
-
 # Some libutils headers require C++17
 set (CMAKE_CXX_STANDARD 17)
 
@@ -100,6 +95,8 @@ target_link_libraries(androidsqlite
   ${STATIC_ICUI18N_LIBRARY}
   ${STATIC_ICUUC_LIBRARY}
   ${STATIC_ICUDATA_LIBRARY}
+  -ldl
+  -lpthread
 )
 
 include_directories(${JNI_INCLUDE_DIRS})
@@ -142,8 +139,6 @@ if (CMAKE_HOST_SYSTEM_NAME MATCHES "Linux")
   target_link_libraries(nativeruntime
     -static-libgcc
     -static-libstdc++
-    -ldl
-    -lpthread
     -Wl,--no-undefined # print an error if there are any undefined symbols
   )
 endif()
