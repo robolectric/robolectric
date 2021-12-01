@@ -142,6 +142,7 @@ public class ShadowPackageManagerTest {
   private static final String REAL_TEST_APP_ASSET_PATH = "assets/exampleapp.apk";
   private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
   private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
+  private static final int TEST_PACKAGE_VERSOIN_CODE = 10000;
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Context context;
@@ -197,23 +198,14 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void packageInstallerAndGetPackageArchiveInfo() {
-    ApplicationInfo appInfo = new ApplicationInfo();
-    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
-    appInfo.packageName = TEST_PACKAGE_NAME;
-    appInfo.sourceDir = TEST_APP_PATH;
-    appInfo.name = TEST_PACKAGE_LABEL;
+    shadowOf(packageManager).installPackage(generateTestPackageInfo());
+    verifyTestPackageInfo(packageManager.getPackageArchiveInfo(TEST_APP_PATH, 0));
+  }
 
-    PackageInfo packageInfo = new PackageInfo();
-    packageInfo.packageName = TEST_PACKAGE_NAME;
-    packageInfo.applicationInfo = appInfo;
-    shadowOf(packageManager).installPackage(packageInfo);
-
-    PackageInfo packageInfoResult = packageManager.getPackageArchiveInfo(TEST_APP_PATH, 0);
-    assertThat(packageInfoResult).isNotNull();
-    ApplicationInfo applicationInfo = packageInfoResult.applicationInfo;
-    assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
-    assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
-    assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
+  @Test
+  public void packageInstallerAndGetPackageInfo() throws NameNotFoundException {
+    shadowOf(packageManager).installPackage(generateTestPackageInfo());
+    verifyTestPackageInfo(packageManager.getPackageInfo(TEST_PACKAGE_NAME, 0));
   }
 
   @Test
@@ -4025,5 +4017,28 @@ public class ShadowPackageManagerTest {
       String dialogMessage) {
     return packageManager.setPackagesSuspended(
         packageNames, suspended, appExtras, launcherExtras, dialogMessage);
+  }
+
+  private PackageInfo generateTestPackageInfo() {
+    ApplicationInfo appInfo = new ApplicationInfo();
+    appInfo.flags = ApplicationInfo.FLAG_INSTALLED;
+    appInfo.packageName = TEST_PACKAGE_NAME;
+    appInfo.sourceDir = TEST_APP_PATH;
+    appInfo.name = TEST_PACKAGE_LABEL;
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = appInfo;
+    packageInfo.versionCode = TEST_PACKAGE_VERSOIN_CODE;
+    return packageInfo;
+  }
+
+  private void verifyTestPackageInfo(PackageInfo packageInfo) {
+    assertThat(packageInfo).isNotNull();
+    assertThat(packageInfo.versionCode).isEqualTo(TEST_PACKAGE_VERSOIN_CODE);
+    ApplicationInfo applicationInfo = packageInfo.applicationInfo;
+    assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
+    assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
+    assertThat(applicationInfo.sourceDir).isEqualTo(TEST_APP_PATH);
   }
 }
