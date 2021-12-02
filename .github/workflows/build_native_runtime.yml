@@ -32,6 +32,14 @@ jobs:
         with:
           java-version: 11.0.8
 
+      - name: Install Ninja (Mac OS)
+        if: runner.os =='macOS'
+        run: brew install ninja
+
+      - name: Install Ninja (Linux)
+        if: runner.os =='Linux'
+        run: sudo apt-get install ninja-build
+
       - name: Cache ICU build output
         id: cache-icu
         uses: actions/cache@v2
@@ -61,8 +69,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          ICU_ROOT_DIR=$HOME/icu-bin cmake -B . -S ../nativeruntime/cpp
-          make
+          ICU_ROOT_DIR=$HOME/icu-bin cmake -B . -S ../nativeruntime/cpp -G Ninja
+          ninja
 
       - name: Rename libnativeruntime for Linux
         if: runner.os == 'Linux'

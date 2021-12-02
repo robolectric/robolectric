@@ -52,6 +52,10 @@ jobs:
           make -j4
           make install
 
+      - name: Install Ninja (Linux)
+        if: runner.os =='Linux'
+        run: sudo apt-get install ninja-build
+
       - name: Build
         run: ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
 
@@ -92,6 +96,10 @@ jobs:
         with:
           path: ~/icu-bin
           key: ${{ runner.os }}-${{env.CPU_ARCH}}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
+
+      - name: Install Ninja
+        if: runner.os =='Linux'
+        run: sudo apt-get install ninja-build
 
       - name: Run unit tests
         run: |
