@@ -61,7 +61,7 @@ public class ContentProviderControllerTest {
         contentResolver.acquireContentProviderClient("org.robolectric.authority1");
     client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
-    maybeClose(client);
+    close(client);
   }
 
   @Test
@@ -73,7 +73,7 @@ public class ContentProviderControllerTest {
         contentResolver.acquireContentProviderClient("org.robolectric.authority3");
     client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
     assertThat(contentProvider.transcript).containsExactly("onCreate", "query for something");
-    maybeClose(client);
+    close(client);
   }
 
   @Test
@@ -106,7 +106,7 @@ public class ContentProviderControllerTest {
         contentResolver.acquireContentProviderClient(providerInfo.authority);
     client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
-    maybeClose(client);
+    close(client);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class ContentProviderControllerTest {
     ContentProviderClient contentProviderClient =
         contentResolver.acquireContentProviderClient("x-authority");
     assertThat(contentProviderClient.getLocalContentProvider()).isSameInstanceAs(xContentProvider);
-    maybeClose(contentProviderClient);
+    close(contentProviderClient);
   }
 
   @Test
@@ -142,7 +142,7 @@ public class ContentProviderControllerTest {
               ? "x-authority" + " not registered" + " yet"
               : "x-authority" + " is registered");
       if (contentProviderClient != null) {
-        maybeClose(contentProviderClient);
+        close(contentProviderClient);
       }
       return false;
     }
@@ -150,10 +150,11 @@ public class ContentProviderControllerTest {
 
   static class NotInManifestContentProvider extends TestContentProvider1 {}
 
-  /** {@link ContentProviderClient#close is only implemented in SDK > M} */
-  private static void maybeClose(ContentProviderClient client) {
+  private static void close(ContentProviderClient client) {
     if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.M) {
       client.close();
+    } else {
+      client.release();
     }
   }
 }

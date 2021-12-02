@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +33,7 @@ public final class ShadowWifiAwareManagerTest {
   private Binder binder;
   private Handler handler;
   private Looper looper;
+  private WifiAwareSession session;
   private static final int CLIENT_ID = 1;
 
   @Before
@@ -41,9 +43,13 @@ public final class ShadowWifiAwareManagerTest {
     binder = new Binder();
     handler = new Handler();
     looper = handler.getLooper();
-    WifiAwareSession session =
-        ShadowWifiAwareManager.newWifiAwareSession(wifiAwareManager, binder, CLIENT_ID);
+    session = ShadowWifiAwareManager.newWifiAwareSession(wifiAwareManager, binder, CLIENT_ID);
     shadowOf(wifiAwareManager).setWifiAwareSession(session);
+  }
+
+  @After
+  public void tearDown() {
+    session.close();
   }
 
   @Test
@@ -86,6 +92,7 @@ public final class ShadowWifiAwareManagerTest {
     shadowOf(wifiAwareManager).publish(CLIENT_ID, looper, config, testDiscoverySessionCallback);
     shadowMainLooper().idle();
     assertThat(testDiscoverySessionCallback.publishSuccess).isTrue();
+    publishDiscoverySession.close();
   }
 
   @Test
@@ -100,6 +107,7 @@ public final class ShadowWifiAwareManagerTest {
     wifiAwareManager.publish(CLIENT_ID, looper, config, testDiscoverySessionCallback);
     shadowMainLooper().idle();
     assertThat(testDiscoverySessionCallback.publishSuccess).isFalse();
+    publishDiscoverySession.close();
   }
 
   @Test
@@ -114,6 +122,7 @@ public final class ShadowWifiAwareManagerTest {
     wifiAwareManager.subscribe(CLIENT_ID, looper, config, testDiscoverySessionCallback);
     shadowMainLooper().idle();
     assertThat(testDiscoverySessionCallback.subscribeSuccess).isTrue();
+    subscribeDiscoverySession.close();
   }
 
   @Test
@@ -128,14 +137,16 @@ public final class ShadowWifiAwareManagerTest {
     wifiAwareManager.subscribe(CLIENT_ID, looper, config, testDiscoverySessionCallback);
     shadowMainLooper().idle();
     assertThat(testDiscoverySessionCallback.subscribeSuccess).isFalse();
+    subscribeDiscoverySession.close();
   }
 
   @Test
   public void canCreatePublishDiscoverySessionViaNewInstance() {
     int sessionId = 1;
-    PublishDiscoverySession publishDiscoverySession =
-        ShadowWifiAwareManager.newPublishDiscoverySession(wifiAwareManager, CLIENT_ID, sessionId);
-    assertThat(publishDiscoverySession).isNotNull();
+    try (PublishDiscoverySession publishDiscoverySession =
+        ShadowWifiAwareManager.newPublishDiscoverySession(wifiAwareManager, CLIENT_ID, sessionId)) {
+      assertThat(publishDiscoverySession).isNotNull();
+    }
   }
 
   @Test
@@ -144,6 +155,7 @@ public final class ShadowWifiAwareManagerTest {
     SubscribeDiscoverySession subscribeDiscoverySession =
         ShadowWifiAwareManager.newSubscribeDiscoverySession(wifiAwareManager, CLIENT_ID, sessionId);
     assertThat(subscribeDiscoverySession).isNotNull();
+    subscribeDiscoverySession.close();
   }
 
   @Test
@@ -151,6 +163,7 @@ public final class ShadowWifiAwareManagerTest {
     WifiAwareSession wifiAwareSession =
         ShadowWifiAwareManager.newWifiAwareSession(wifiAwareManager, binder, CLIENT_ID);
     assertThat(wifiAwareSession).isNotNull();
+    wifiAwareSession.close();
   }
 
   private static class TestAttachCallback extends AttachCallback {

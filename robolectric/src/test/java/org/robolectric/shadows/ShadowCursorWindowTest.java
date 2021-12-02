@@ -17,6 +17,7 @@ public class ShadowCursorWindowTest {
   public void shouldCreateWindowWithName() {
     CursorWindow window = new CursorWindow("name");
     assertThat(window.getName()).isEqualTo("name");
+    window.close();
   }
 
   @Test
@@ -45,6 +46,8 @@ public class ShadowCursorWindowTest {
     assertThat(window.getBlob(1, 3)).isEqualTo(null);
 
     assertThat(window.getBlob(2, 3)).isEqualTo(new byte[]{});
+    testCursor.close();
+    window.close();
   }
 
   /** Real Android will crash in native code if putBlob is called with a null value. */
@@ -53,6 +56,7 @@ public class ShadowCursorWindowTest {
     CursorWindow cursorWindow = new CursorWindow("test");
     cursorWindow.allocRow();
     assertThrows(NullPointerException.class, () -> cursorWindow.putBlob(null, 0, 0));
+    cursorWindow.close();
   }
 
   /** Real Android will crash in native code if putString is called with a null value. */
@@ -61,5 +65,6 @@ public class ShadowCursorWindowTest {
     CursorWindow cursorWindow = new CursorWindow("test");
     cursorWindow.allocRow();
     assertThrows(NullPointerException.class, () -> cursorWindow.putString(null, 0, 0));
+    cursorWindow.close();
   }
 }

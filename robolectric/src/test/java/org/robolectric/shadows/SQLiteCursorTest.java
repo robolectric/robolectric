@@ -483,6 +483,7 @@ public class SQLiteCursorTest {
 
   private void setupEmptyResult() {
     database.execSQL("DELETE FROM table_name;");
+    cursor.close();
     cursor = createCursor();
   }
 

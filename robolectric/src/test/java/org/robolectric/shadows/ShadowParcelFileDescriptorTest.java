@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +23,7 @@ public class ShadowParcelFileDescriptorTest {
 
   private File file;
   private File readOnlyFile;
+  private ParcelFileDescriptor pfd;
 
   @Before
   public void setUp() throws Exception {
@@ -36,30 +38,32 @@ public class ShadowParcelFileDescriptorTest {
     assertThat(readOnlyFile.setReadOnly()).isTrue();
   }
 
+  @After
+  public void tearDown() throws Exception {
+    if (pfd != null) {
+      pfd.close();
+    }
+  }
+
   @Test
   public void testOpens() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
-    pfd.close();
   }
 
   @Test
   public void testOpens_canReadReadOnlyFile() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
+    pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     FileInputStream is = new FileInputStream(pfd.getFileDescriptor());
     assertThat(is.read()).isEqualTo(READ_ONLY_FILE_CONTENTS);
-    pfd.close();
   }
 
   @Test
   public void testOpens_canWriteWritableFile() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
@@ -69,18 +73,15 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testStatSize_emptyFile() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     assertThat(pfd.getStatSize()).isEqualTo(0);
-    pfd.close();
   }
 
   @Test
   public void testStatSize_writtenFile() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
@@ -91,14 +92,14 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testAppend() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
     os.write(5);
     assertThat(pfd.getStatSize()).isEqualTo(1); // One byte.
     os.close();
+    pfd.close();
 
     pfd =
         ParcelFileDescriptor.open(
@@ -113,8 +114,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testTruncate() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
@@ -131,6 +131,7 @@ public class ShadowParcelFileDescriptorTest {
       assertThat(in.available()).isEqualTo(0);
     }
 
+    pfd.close();
     pfd =
         ParcelFileDescriptor.open(
             file, ParcelFileDescriptor.MODE_READ_WRITE | ParcelFileDescriptor.MODE_TRUNCATE);
@@ -149,8 +150,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testWriteTwiceNoTruncate() throws Exception {
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
     FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
@@ -166,6 +166,7 @@ public class ShadowParcelFileDescriptorTest {
       assertThat(buffer).isEqualTo(new byte[] {1, 2, 3});
       assertThat(in.available()).isEqualTo(0);
     }
+    pfd.close();
 
     pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
@@ -185,7 +186,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testCloses() throws Exception {
-    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    pfd = ParcelFileDescriptor.open(file, -1);
     pfd.close();
     assertThat(pfd.getFileDescriptor().valid()).isFalse();
     assertThat(pfd.getFd()).isEqualTo(-1);
@@ -193,14 +194,14 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testCloses_getStatSize_returnsInvalidLength() throws Exception {
-    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    pfd = ParcelFileDescriptor.open(file, -1);
     pfd.close();
     assertThat(pfd.getStatSize()).isEqualTo(-1);
   }
 
   @Test
   public void testAutoCloseInputStream() throws Exception {
-    ParcelFileDescriptor pfd = ParcelFileDescriptor.open(file, -1);
+    pfd = ParcelFileDescriptor.open(file, -1);
     ParcelFileDescriptor.AutoCloseInputStream is =
         new ParcelFileDescriptor.AutoCloseInputStream(pfd);
     is.close();
@@ -247,8 +248,7 @@ public class ShadowParcelFileDescriptorTest {
     assumeThat("Windows is an affront to decency.",
         File.separator, Matchers.equalTo("/"));
 
-    ParcelFileDescriptor pfd =
-        ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
+    pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
     int fd = pfd.getFd();
     assertThat(fd).isGreaterThan(0);
     FileInputStream is = new FileInputStream(new File("/proc/self/fd/" + fd));

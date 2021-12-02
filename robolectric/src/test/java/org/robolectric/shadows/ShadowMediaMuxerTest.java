@@ -97,5 +97,6 @@ public final class ShadowMediaMuxerTest {
     assertThat(outputBytes)
         .isEqualTo(Arrays.copyOfRange(inputBytes, bufInfoOffset, inputBytes.length));
     new File(tempFilePath).deleteOnExit();
+    muxer.release();
   }
 }

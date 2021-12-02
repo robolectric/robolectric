@@ -43,7 +43,7 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteCursor;
+import android.database.MatrixCursor;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -72,7 +72,6 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
 import org.robolectric.util.TestRunnable;
 
@@ -756,7 +755,7 @@ public class ShadowActivityTest {
     assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
     assertThat(shadowOf(activity).getManagedCursors()).isEmpty();
 
-    Cursor c = Shadow.newInstanceOf(SQLiteCursor.class);
+    Cursor c = new MatrixCursor(new String[] {"a"});
     activity.startManagingCursor(c);
 
     assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
@@ -767,6 +766,7 @@ public class ShadowActivityTest {
 
     assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
     assertThat(shadowOf(activity).getManagedCursors()).isEmpty();
+    c.close();
   }
 
   @Test

@@ -175,8 +175,10 @@ public class ShadowHardwareBufferTest {
   public void createWithOFormatsAndFlagsSucceedsOnOAndLater() {
     for (int format : VALID_FORMATS_O) {
       int height = format == HardwareBuffer.BLOB ? 1 : VALID_HEIGHT;
-      assertNotNull(
-          HardwareBuffer.create(VALID_WIDTH, height, format, VALID_LAYERS, VALID_USAGE_FLAGS_O));
+      try (HardwareBuffer buffer =
+          HardwareBuffer.create(VALID_WIDTH, height, format, VALID_LAYERS, VALID_USAGE_FLAGS_O)) {
+        assertNotNull(buffer);
+      }
     }
   }
 
@@ -184,22 +186,26 @@ public class ShadowHardwareBufferTest {
   @Config(minSdk = P)
   public void createWithPFormatsAndFlagsSucceedsOnPAndLater() {
     for (int format : VALID_FORMATS_P) {
-      assertNotNull(
+      try (HardwareBuffer buffer =
           HardwareBuffer.create(
-              VALID_WIDTH, VALID_HEIGHT, format, VALID_LAYERS, VALID_USAGE_FLAGS_P));
+              VALID_WIDTH, VALID_HEIGHT, format, VALID_LAYERS, VALID_USAGE_FLAGS_P)) {
+        assertNotNull(buffer);
+      }
     }
   }
 
   @Test
   @Config(minSdk = P)
   public void createWithPFlagsSucceedsOnPAndLater() {
-    assertNotNull(
+    try (HardwareBuffer buffer =
         HardwareBuffer.create(
             VALID_WIDTH,
             VALID_HEIGHT,
             HardwareBuffer.RGBA_8888,
             VALID_LAYERS,
-            VALID_USAGE_FLAGS_P));
+            VALID_USAGE_FLAGS_P)) {
+      assertNotNull(buffer);
+    }
   }
 
   @Test
@@ -214,6 +220,7 @@ public class ShadowHardwareBufferTest {
     assertEquals(HardwareBuffer.RGBA_8888, buffer.getFormat());
     assertEquals(VALID_LAYERS, buffer.getLayers());
     assertEquals(VALID_USAGE_FLAGS_O, buffer.getUsage());
+    buffer.close();
   }
 
   @Test
@@ -267,11 +274,14 @@ public class ShadowHardwareBufferTest {
     final Parcel parcel = Parcel.obtain();
     buffer.writeToParcel(parcel, 0);
     parcel.setDataPosition(0);
+
     HardwareBuffer otherBuffer = HardwareBuffer.CREATOR.createFromParcel(parcel);
     assertEquals(VALID_WIDTH, otherBuffer.getWidth());
     assertEquals(VALID_HEIGHT, otherBuffer.getHeight());
     assertEquals(HardwareBuffer.RGBA_8888, otherBuffer.getFormat());
     assertEquals(VALID_LAYERS, otherBuffer.getLayers());
     assertEquals(VALID_USAGE_FLAGS_O, otherBuffer.getUsage());
+    buffer.close();
+    otherBuffer.close();
   }
 }
