@@ -98,6 +98,7 @@ public class ShadowDevicePolicyManager {
   private long maximumTimeToLock = 0;
   private boolean cameraDisabled;
   private boolean isActivePasswordSufficient;
+  private boolean isUniqueDeviceAttestationSupported;
   @PasswordComplexity private int passwordComplexity;
 
   private int wipeCalled;
@@ -292,6 +293,15 @@ public class ShadowDevicePolicyManager {
       enforceActiveAdmin(admin);
     }
     return uninstallBlockedPackages.contains(packageName);
+  }
+
+  public void setIsUniqueDeviceAttestationSupported(boolean supported) {
+    isUniqueDeviceAttestationSupported = supported;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean isUniqueDeviceAttestationSupported() {
+    return isUniqueDeviceAttestationSupported;
   }
 
   /** @see #setDeviceOwner(ComponentName) */
