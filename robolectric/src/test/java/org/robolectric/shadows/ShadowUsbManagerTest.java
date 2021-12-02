@@ -18,6 +18,7 @@ import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
 import android.os.Build;
+import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Arrays;
@@ -194,8 +195,10 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  public void openAccessory() {
-    assertThat(usbManager.openAccessory(usbAccessory)).isNotNull();
+  public void openAccessory() throws Exception {
+    try (ParcelFileDescriptor pfd = usbManager.openAccessory(usbAccessory)) {
+      assertThat(pfd).isNotNull();
+    }
   }
 
   @Test

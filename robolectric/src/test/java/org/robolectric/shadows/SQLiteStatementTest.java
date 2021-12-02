@@ -117,6 +117,7 @@ public class SQLiteStatementTest {
     Cursor dataCursor = database.rawQuery("SELECT `name` FROM `routine`", null);
     assertThat(dataCursor.moveToNext()).isTrue();
     assertThat(dataCursor.getString(0)).isEqualTo("Head Press");
+    dataCursor.close();
   }
 
   @Test

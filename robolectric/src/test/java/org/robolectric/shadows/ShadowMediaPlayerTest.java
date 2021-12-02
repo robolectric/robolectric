@@ -240,11 +240,12 @@ public class ShadowMediaPlayerTest {
   @Test
   public void testSetDataSourceAssetFileDescriptorDataSource() throws IOException {
     Application context = ApplicationProvider.getApplicationContext();
-    AssetFileDescriptor fd = context.getResources().openRawResourceFd(R.drawable.an_image);
-    DataSource ds = toDataSource(fd);
-    ShadowMediaPlayer.addMediaInfo(ds, info);
-    mediaPlayer.setDataSource(fd);
-    assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+    try (AssetFileDescriptor fd = context.getResources().openRawResourceFd(R.drawable.an_image)) {
+      DataSource ds = toDataSource(fd);
+      ShadowMediaPlayer.addMediaInfo(ds, info);
+      mediaPlayer.setDataSource(fd);
+      assertWithMessage("dataSource").that(shadowMediaPlayer.getDataSource()).isEqualTo(ds);
+    }
   }
 
   @Test

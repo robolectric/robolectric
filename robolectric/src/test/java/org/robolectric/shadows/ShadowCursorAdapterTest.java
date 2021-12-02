@@ -88,9 +88,11 @@ public class ShadowCursorAdapterTest {
   }
 
   @Test public void shouldNotErrorOnCursorChangeWhenNoFlagsAreSet() throws Exception {
-    adapter = new TestAdapterWithFlags(curs, 0);
-    adapter.changeCursor(database.rawQuery("SELECT * FROM table_name;", null));
-    assertThat(adapter.getCursor()).isNotSameInstanceAs(curs);
+    try (Cursor newCursor = database.rawQuery("SELECT * FROM table_name;", null)) {
+      adapter = new TestAdapterWithFlags(curs, 0);
+      adapter.changeCursor(newCursor);
+      assertThat(adapter.getCursor()).isNotSameInstanceAs(curs);
+    }
   }
 
   private static class TestAdapter extends CursorAdapter {

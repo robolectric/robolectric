@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,6 +22,11 @@ public class ShadowAbstractCursorTest {
   @Before
   public void setUp() throws Exception {
     cursor = new TestCursor();
+  }
+
+  @After
+  public void tearDown() {
+    cursor.close();
   }
 
   @Test

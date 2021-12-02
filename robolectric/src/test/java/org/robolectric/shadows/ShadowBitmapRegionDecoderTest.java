@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
@@ -11,7 +12,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.ByteStreams;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
@@ -32,10 +32,12 @@ public class ShadowBitmapRegionDecoderTest {
   public void testNewInstance() throws Exception {
     assertThat(BitmapRegionDecoder.newInstance(ByteStreams.toByteArray(getImageInputStream()), 0, 0, false))
         .isNotNull();
-    assertThat(BitmapRegionDecoder.newInstance(getImageFd(), false))
-        .isNotNull();
-    assertThat(BitmapRegionDecoder.newInstance(getImageInputStream(), false))
-        .isNotNull();
+    try (AssetFileDescriptor afd = getImageFd()) {
+      assertThat(BitmapRegionDecoder.newInstance(afd.getFileDescriptor(), false)).isNotNull();
+    }
+    try (InputStream inputStream = getImageInputStream()) {
+      assertThat(BitmapRegionDecoder.newInstance(inputStream, false)).isNotNull();
+    }
     assertThat(BitmapRegionDecoder.newInstance(getGeneratedImageFile(), false))
         .isNotNull();
   }
@@ -59,17 +61,18 @@ public class ShadowBitmapRegionDecoderTest {
 
   @Test
   public void testDecodeRegionReturnsExpectedConfig() throws IOException {
-    BitmapRegionDecoder bitmapRegionDecoder = BitmapRegionDecoder.newInstance(getImageInputStream(), false);
-
-    BitmapFactory.Options options = new BitmapFactory.Options();
-    assertThat(bitmapRegionDecoder.decodeRegion(new Rect(0, 0, 1, 1), options).getConfig())
-        .isEqualTo(Bitmap.Config.ARGB_8888);
-    options.inPreferredConfig = null;
-    assertThat(bitmapRegionDecoder.decodeRegion(new Rect(0, 0, 1, 1), options).getConfig())
-        .isEqualTo(Bitmap.Config.ARGB_8888);
-    options.inPreferredConfig = Bitmap.Config.RGB_565;
-    assertThat(bitmapRegionDecoder.decodeRegion(new Rect(0, 0, 1, 1), options).getConfig())
-        .isEqualTo(Bitmap.Config.RGB_565);
+    try (InputStream inputStream = getImageInputStream()) {
+      BitmapRegionDecoder bitmapRegionDecoder = BitmapRegionDecoder.newInstance(inputStream, false);
+      BitmapFactory.Options options = new BitmapFactory.Options();
+      assertThat(bitmapRegionDecoder.decodeRegion(new Rect(0, 0, 1, 1), options).getConfig())
+          .isEqualTo(Bitmap.Config.ARGB_8888);
+      options.inPreferredConfig = null;
+      assertThat(bitmapRegionDecoder.decodeRegion(new Rect(0, 0, 1, 1), options).getConfig())
+          .isEqualTo(Bitmap.Config.ARGB_8888);
+      options.inPreferredConfig = Bitmap.Config.RGB_565;
+      assertThat(bitmapRegionDecoder.decodeRegion(new Rect(0, 0, 1, 1), options).getConfig())
+          .isEqualTo(Bitmap.Config.RGB_565);
+    }
   }
 
   private static InputStream getImageInputStream() {
@@ -78,12 +81,11 @@ public class ShadowBitmapRegionDecoderTest {
         .openRawResource(R.drawable.robolectric);
   }
 
-  private static FileDescriptor getImageFd() throws Exception {
+  private static AssetFileDescriptor getImageFd() throws Exception {
     return ApplicationProvider.getApplicationContext()
         .getResources()
         .getAssets()
-        .openFd("robolectric.png")
-        .getFileDescriptor();
+        .openFd("robolectric.png");
   }
 
   private String getGeneratedImageFile() throws Exception {

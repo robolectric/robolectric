@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -75,11 +76,13 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void openRawResourceFd_returnsNull_todo_FIX() {
-    if (useLegacy()) {
-      assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
-    } else {
-      assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNotNull();
+  public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
+    try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
+      if (useLegacy()) {
+        assertThat(afd).isNull();
+      } else {
+        assertThat(afd).isNotNull();
+      }
     }
   }
 

@@ -122,6 +122,7 @@ public class SQLiteDatabaseTest {
 
     assertThat(stringValueFromDatabase).isEqualTo(stringColumnValue);
     assertThat(byteValueFromDatabase).isEqualTo(byteColumnValue);
+    cursor.close();
   }
 
   @Test
@@ -146,6 +147,7 @@ public class SQLiteDatabaseTest {
 
     assertThat(stringValueFromDatabase).isEqualTo(stringColumnValue);
     assertThat(byteValueFromDatabase).isEqualTo(byteColumnValue);
+    cursor.close();
   }
 
   @Test(expected = android.database.SQLException.class)
@@ -173,6 +175,7 @@ public class SQLiteDatabaseTest {
     String stringValueFromDatabase = cursor.getString(1);
     assertThat(stringValueFromDatabase).isEqualTo(stringColumnValue);
     assertThat(byteValueFromDatabase).isEqualTo(byteColumnValue);
+    cursor.close();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -194,12 +197,14 @@ public class SQLiteDatabaseTest {
             "select second_column, first_column from rawtable WHERE" + " `id` = ?",
             new String[] {"1"});
     assertThat(cursor.getCount()).isEqualTo(1);
+    cursor.close();
   }
 
   @Test
   public void testRawQueryCountWithNullArgs() {
     Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", null);
     assertThat(cursor.getCount()).isEqualTo(2);
+    cursor.close();
   }
 
   @Test
@@ -208,6 +213,7 @@ public class SQLiteDatabaseTest {
         database.rawQuery(
             "select second_column, first_column" + " from" + " rawtable", new String[] {});
     assertThat(cursor.getCount()).isEqualTo(2);
+    cursor.close();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -235,6 +241,7 @@ public class SQLiteDatabaseTest {
             null);
 
     assertThat(cursor.moveToFirst()).isFalse();
+    cursor.close();
   }
 
   @Test
@@ -325,6 +332,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor.getCount()).isEqualTo(1);
 
     assertIdAndName(cursor, 1234L, "Buster");
+    cursor.close();
   }
 
   @Test
@@ -339,6 +347,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor.getCount()).isEqualTo(1);
 
     assertIdAndName(cursor, 1234L, "Chuck");
+    cursor.close();
   }
 
   @Test
@@ -361,6 +370,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor.moveToNext()).isFalse();
     assertThat(cursor.isAfterLast()).isTrue();
     assertThat(cursor.moveToNext()).isFalse();
+    cursor.close();
   }
 
   @Test
@@ -402,6 +412,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor).isNotNull();
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(1);
+    cursor.close();
 
     cursor = database.rawQuery("SELECT * FROM table_name", null);
     assertThat(cursor).isNotNull();
@@ -409,6 +420,7 @@ public class SQLiteDatabaseTest {
 
     assertThat(cursor.getInt(cursor.getColumnIndex("id"))).isEqualTo(1234);
     assertThat(cursor.getString(cursor.getColumnIndex("name"))).isEqualTo("Chuck");
+    cursor.close();
   }
 
   @Test
@@ -429,6 +441,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor).isNotNull();
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(2);
+    cursor.close();
 
     cursor = database.rawQuery("SELECT `id`, `name` ,`lastUsed` FROM `routine`", null);
     assertThat(cursor).isNotNull();
@@ -443,6 +456,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor.getInt(cursor.getColumnIndex("id"))).isEqualTo(2);
     assertThat(cursor.getInt(cursor.getColumnIndex("lastUsed"))).isEqualTo(1);
     assertThat(cursor.getString(cursor.getColumnIndex("name"))).isEqualTo("Bench Press");
+    cursor.close();
   }
 
   @Test(expected = SQLiteException.class)
@@ -487,6 +501,7 @@ public class SQLiteDatabaseTest {
     int nameIndex = cursor.getColumnIndex("name");
     assertThat(cursor.getString(nameIndex)).isEqualTo(name);
     assertThat(cursor.getString(firstIndex)).isEqualTo(null);
+    cursor.close();
   }
 
   @Test
@@ -525,6 +540,7 @@ public class SQLiteDatabaseTest {
         database.query("table_name", new String[] {"big_int"}, null, null, null, null, null);
     assertThat(cursor.moveToFirst()).isTrue();
     assertEquals(1234567890123456789L, cursor.getLong(0));
+    cursor.close();
   }
 
   @Test
@@ -537,6 +553,7 @@ public class SQLiteDatabaseTest {
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(1);
+    cursor.close();
   }
 
   @Test
@@ -557,6 +574,7 @@ public class SQLiteDatabaseTest {
     cursor = database.rawQuery(select, null);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(0);
+    cursor.close();
   }
 
   @Test
@@ -573,6 +591,7 @@ public class SQLiteDatabaseTest {
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(2);
+    cursor.close();
   }
 
   @Test
@@ -588,6 +607,7 @@ public class SQLiteDatabaseTest {
     Cursor cursor = database.rawQuery("SELECT COUNT(*) FROM table_name", null);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getInt(0)).isEqualTo(0);
+    cursor.close();
   }
 
   @Test
@@ -600,6 +620,8 @@ public class SQLiteDatabaseTest {
     } catch (IllegalStateException e) {
       assertThat(e.getMessage()).contains("transaction");
       assertThat(e.getMessage()).contains("successful");
+    } finally {
+      database.endTransaction();
     }
   }
 
@@ -629,6 +651,7 @@ public class SQLiteDatabaseTest {
 
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getString(cursor.getColumnIndex("name"))).isEqualTo("Norris");
+    cursor.close();
   }
 
   @Test
@@ -657,21 +680,26 @@ public class SQLiteDatabaseTest {
     assertThat(secondId).isEqualTo(id);
     assertThat(firstCursor.getString(0)).isEqualTo(stringValueA);
     assertThat(secondCursor.getString(0)).isEqualTo(stringValueB);
+    firstCursor.close();
+    secondCursor.close();
   }
 
   @Test
   public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToRawQuery() {
-    database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
+    Cursor cursor = database.rawQueryWithFactory(null, ANY_VALID_SQL, null, null);
+    cursor.close();
   }
 
   @Test
   public void shouldCreateDefaultCursorFactoryWhenNullFactoryPassedToQuery() {
-    database.queryWithFactory(null, false, "table_name", null, null, null, null, null, null, null);
+    Cursor cursor =
+        database.queryWithFactory(
+            null, false, "table_name", null, null, null, null, null, null, null);
+    cursor.close();
   }
 
   @Test
   public void shouldOpenExistingDatabaseFromFileSystemIfFileExists() {
-
     database.close();
 
     SQLiteDatabase db =
@@ -679,6 +707,7 @@ public class SQLiteDatabaseTest {
     Cursor c = db.rawQuery("select * from rawtable", null);
     assertThat(c).isNotNull();
     assertThat(c.getCount()).isEqualTo(2);
+    c.close();
     assertThat(db.isOpen()).isTrue();
     db.close();
     assertThat(db.isOpen()).isFalse();
@@ -687,6 +716,7 @@ public class SQLiteDatabaseTest {
         SQLiteDatabase.openDatabase(databasePath.getAbsolutePath(), null, OPEN_READWRITE);
     assertThat(reopened).isNotSameInstanceAs(db);
     assertThat(reopened.isOpen()).isTrue();
+    reopened.close();
   }
 
   @Test(expected = SQLiteException.class)
@@ -701,6 +731,7 @@ public class SQLiteDatabaseTest {
     SQLiteDatabase db = SQLiteDatabase.create(null);
     assertThat(db.isOpen()).isTrue();
     assertThat(db.getPath()).isEqualTo(":memory:");
+    db.close();
   }
 
   @Test
@@ -732,12 +763,14 @@ public class SQLiteDatabaseTest {
     assertThat(c.getCount()).isEqualTo(1);
     assertThat(c.moveToNext()).isTrue();
     assertThat(c.getString(c.getColumnIndex("data"))).isEqualTo("d1");
+    c.close();
 
     c = db2.rawQuery("select * from bar", null);
     assertThat(c).isNotNull();
     assertThat(c.getCount()).isEqualTo(1);
     assertThat(c.moveToNext()).isTrue();
     assertThat(c.getString(c.getColumnIndex("data"))).isEqualTo("d2");
+    c.close();
   }
 
   @Test(expected = SQLiteException.class)
@@ -802,6 +835,7 @@ public class SQLiteDatabaseTest {
     assertThat(c.getCount()).isEqualTo(1);
     assertThat(c.moveToNext()).isTrue();
     assertThat(c.getString(c.getColumnIndex("data"))).isEqualTo("d1");
+    c.close();
   }
 
   @Test
@@ -822,6 +856,7 @@ public class SQLiteDatabaseTest {
     } catch (OperationCanceledException e) {
       // expected
     }
+    cursor.close();
   }
 
   @Test
@@ -848,8 +883,7 @@ public class SQLiteDatabaseTest {
     new Thread() {
       @Override
       public void run() {
-        try {
-          executeQuery("select * from table_name");
+        try (Cursor c = executeQuery("select * from table_name")) {
         } catch (Throwable e) {
           e.printStackTrace();
           error[0] = e;
@@ -915,6 +949,7 @@ public class SQLiteDatabaseTest {
     assertThat(cursor.moveToFirst()).isFalse();
     assertThat(cursor.isClosed()).isFalse();
     assertThat(cursor.getCount()).isEqualTo(0);
+    cursor.close();
   }
 
   private void assertNonEmptyDatabase() {
@@ -922,6 +957,7 @@ public class SQLiteDatabaseTest {
         database.query("table_name", new String[] {"id", "name"}, null, null, null, null, null);
     assertThat(cursor.moveToFirst()).isTrue();
     assertThat(cursor.getCount()).isNotEqualTo(0);
+    cursor.close();
   }
 
   @Test
@@ -986,6 +1022,7 @@ public class SQLiteDatabaseTest {
       assertThat(nullValuesCursor.getString(i)).isNull();
     }
     assertThat(nullValuesCursor.getBlob(3)).isNull();
+    nullValuesCursor.close();
   }
 
   @Test

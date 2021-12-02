@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -35,6 +36,7 @@ public class SQLiteOpenHelperTest {
     SQLiteDatabase database = helper.getReadableDatabase();
     assertDatabaseOpened(database, helper);
     assertInitialDB(database, helper);
+    helper.close();
   }
 
   @Test
@@ -106,6 +108,8 @@ public class SQLiteOpenHelperTest {
     String expectedPath2 =
         ApplicationProvider.getApplicationContext().getDatabasePath(path2).getAbsolutePath();
     assertThat(helper2.getReadableDatabase().getPath()).isEqualTo(expectedPath2);
+    helper1.close();
+    helper2.close();
   }
 
   @Test
@@ -154,8 +158,9 @@ public class SQLiteOpenHelperTest {
   }
 
   private void verifyData(SQLiteDatabase db, String table, int expectedVals) {
-    assertThat(db.query(table, null, null, null,
-          null, null, null).getCount()).isEqualTo(expectedVals);
+    try (Cursor cursor = db.query(table, null, null, null, null, null, null)) {
+      assertThat(cursor.getCount()).isEqualTo(expectedVals);
+    }
   }
 
   @Test
@@ -171,6 +176,7 @@ public class SQLiteOpenHelperTest {
     insertData(db2, TABLE_NAME2, new int[]{4, 5, 6});
     verifyData(db1, TABLE_NAME1, 2);
     verifyData(db2, TABLE_NAME2, 3);
+    helper2.close();
   }
 
   @Test
@@ -191,6 +197,7 @@ public class SQLiteOpenHelperTest {
     db1 = helper.getWritableDatabase();
     verifyData(db1, TABLE_NAME1, 2);
     verifyData(db2, TABLE_NAME2, 3);
+    helper2.close();
   }
 
   @Test

@@ -241,10 +241,11 @@ public class ShadowWallpaperManagerTest {
         /* allowBackup= */ false,
         WallpaperManager.FLAG_SYSTEM);
 
-    ParcelFileDescriptor parcelFileDescriptor =
-        manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM);
+    try (ParcelFileDescriptor parcelFileDescriptor =
+        manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)) {
     assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
         .isEqualTo(getBytesFromBitmap(TEST_IMAGE_1));
+    }
   }
 
   @Test
@@ -263,10 +264,11 @@ public class ShadowWallpaperManagerTest {
         /* allowBackup= */ false,
         WallpaperManager.FLAG_LOCK);
 
-    ParcelFileDescriptor parcelFileDescriptor =
-        manager.getWallpaperFile(WallpaperManager.FLAG_LOCK);
+    try (ParcelFileDescriptor parcelFileDescriptor =
+        manager.getWallpaperFile(WallpaperManager.FLAG_LOCK)) {
     assertThat(getBytesFromFileDescriptor(parcelFileDescriptor.getFileDescriptor()))
         .isEqualTo(getBytesFromBitmap(TEST_IMAGE_3));
+    }
   }
 
   @Test

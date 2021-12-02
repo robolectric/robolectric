@@ -912,12 +912,13 @@ public class ShadowContentResolverTest {
   public void openTypedAssetFileDescriptor_shouldOpenDescriptor() throws IOException, RemoteException {
     Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
 
-    AssetFileDescriptor afd =
+    try (AssetFileDescriptor afd =
         contentResolver.openTypedAssetFileDescriptor(
-            Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null);
+            Uri.parse("content://" + AUTHORITY + "/whatever"), "*/*", null)) {
 
     FileDescriptor descriptor = afd.getFileDescriptor();
     assertThat(descriptor).isNotNull();
+    }
   }
 
   @Test

@@ -20,6 +20,9 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,10 +36,18 @@ public final class ShadowBugreportManagerTest {
 
   private ShadowBugreportManager shadowBugreportManager;
   private final Context context = ApplicationProvider.getApplicationContext();
+  private final List<ParcelFileDescriptor> openFds = new ArrayList<>();
 
   @Before
   public void setUp() {
     shadowBugreportManager = Shadow.extract(context.getSystemService(Context.BUGREPORT_SERVICE));
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    for (ParcelFileDescriptor pfd : openFds) {
+      pfd.close();
+    }
   }
 
   @Test
@@ -281,7 +292,10 @@ public final class ShadowBugreportManagerTest {
       f.delete();
     }
     f.createNewFile();
-    return ParcelFileDescriptor.open(
-        f, ParcelFileDescriptor.MODE_WRITE_ONLY | ParcelFileDescriptor.MODE_APPEND);
+    ParcelFileDescriptor pfd =
+        ParcelFileDescriptor.open(
+            f, ParcelFileDescriptor.MODE_WRITE_ONLY | ParcelFileDescriptor.MODE_APPEND);
+    openFds.add(pfd);
+    return pfd;
   }
 }
