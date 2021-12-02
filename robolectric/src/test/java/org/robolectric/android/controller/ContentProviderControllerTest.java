@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.app.Application;
 import android.content.ContentProviderClient;
@@ -8,12 +9,14 @@ import android.content.ContentResolver;
 import android.content.pm.PathPermission;
 import android.content.pm.ProviderInfo;
 import android.net.Uri;
+import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.testing.TestContentProvider1;
 import org.robolectric.shadows.testing.TestContentProvider3And4;
 
@@ -42,7 +45,7 @@ public class ContentProviderControllerTest {
     assertThat(myContentProvider.getReadPermission()).isEqualTo("READ_PERMISSION");
     assertThat(myContentProvider.getWritePermission()).isEqualTo("WRITE_PERMISSION");
 
-    assertThat(myContentProvider.getPathPermissions()).asList().hasSize(1);
+    assertThat(myContentProvider.getPathPermissions()).hasLength(1);
     PathPermission pathPermission = myContentProvider.getPathPermissions()[0];
     assertThat(pathPermission.getPath()).isEqualTo("/path/*");
     assertThat(pathPermission.getType()).isEqualTo(PathPermission.PATTERN_SIMPLE_GLOB);
@@ -55,10 +58,10 @@ public class ContentProviderControllerTest {
     controller.create().get();
 
     ContentProviderClient client =
-        contentResolver.acquireContentProviderClient(
-            "org.robolectric.authority1");
-    client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
+        contentResolver.acquireContentProviderClient("org.robolectric.authority1");
+    client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
+    maybeClose(client);
   }
 
   @Test
@@ -70,6 +73,7 @@ public class ContentProviderControllerTest {
         contentResolver.acquireContentProviderClient("org.robolectric.authority3");
     client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
     assertThat(contentProvider.transcript).containsExactly("onCreate", "query for something");
+    maybeClose(client);
   }
 
   @Test
@@ -98,9 +102,11 @@ public class ContentProviderControllerTest {
     providerInfo.authority = "some-authority";
     controller.create(providerInfo);
 
-    ContentProviderClient client = contentResolver.acquireContentProviderClient(providerInfo.authority);
-    client.query(Uri.parse("something"), new String[]{"title"}, "*", new String[]{}, "created");
+    ContentProviderClient client =
+        contentResolver.acquireContentProviderClient(providerInfo.authority);
+    client.query(Uri.parse("something"), new String[] {"title"}, "*", new String[] {}, "created");
     assertThat(controller.get().transcript).containsExactly("onCreate", "query for something");
+    maybeClose(client);
   }
 
   @Test
@@ -111,11 +117,17 @@ public class ContentProviderControllerTest {
     ContentProviderClient contentProviderClient =
         contentResolver.acquireContentProviderClient("x-authority");
     assertThat(contentProviderClient.getLocalContentProvider()).isSameInstanceAs(xContentProvider);
+    maybeClose(contentProviderClient);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void createContentProvider_nullAuthority() throws Exception {
-    Robolectric.buildContentProvider(XContentProvider.class).create(new ProviderInfo()).get();
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            Robolectric.buildContentProvider(XContentProvider.class)
+                .create(new ProviderInfo())
+                .get());
   }
 
   static class XContentProvider extends TestContentProvider1 {
@@ -129,9 +141,19 @@ public class ContentProviderControllerTest {
           contentProviderClient == null
               ? "x-authority" + " not registered" + " yet"
               : "x-authority" + " is registered");
+      if (contentProviderClient != null) {
+        maybeClose(contentProviderClient);
+      }
       return false;
     }
   }
 
   static class NotInManifestContentProvider extends TestContentProvider1 {}
+
+  /** {@link ContentProviderClient#close is only implemented in SDK > M} */
+  private static void maybeClose(ContentProviderClient client) {
+    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.M) {
+      client.close();
+    }
+  }
 }
