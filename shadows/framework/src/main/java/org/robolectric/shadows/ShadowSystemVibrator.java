@@ -27,8 +27,8 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = SystemVibrator.class, isInAndroidSdk = false)
 public class ShadowSystemVibrator extends ShadowVibrator {
 
-  private Handler handler = new Handler(Looper.myLooper());
-  private Runnable stopVibratingRunnable = () -> vibrating = false;
+  private final Handler handler = new Handler(Looper.getMainLooper());
+  private final Runnable stopVibratingRunnable = () -> vibrating = false;
 
   @Implementation
   protected boolean hasVibrator() {
@@ -137,6 +137,8 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       pattern[i] = segment.getDuration();
       i++;
     }
+    vibrationEffectSegments.clear();
+    vibrationEffectSegments.addAll(segments);
     recordVibratePattern(pattern, repeatIndex);
   }
 
