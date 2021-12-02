@@ -1,6 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.R;
+
 import android.os.Vibrator;
+import android.os.vibrator.VibrationEffectSegment;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 @Implements(Vibrator.class)
@@ -9,6 +16,8 @@ public class ShadowVibrator {
   boolean cancelled;
   long milliseconds;
   protected long[] pattern;
+  protected final List<VibrationEffectSegment> vibrationEffectSegments = new ArrayList<>();
+  protected final List<Integer> supportedPrimitives = new ArrayList<>();
   int repeat;
   boolean hasVibrator = true;
   boolean hasAmplitudeControl = false;
@@ -73,4 +82,24 @@ public class ShadowVibrator {
     return repeat;
   }
 
+  /** Returns the last list of {@link VibrationEffectSegment}. */
+  public List<VibrationEffectSegment> getVibrationEffectSegments() {
+    return vibrationEffectSegments;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean areAllPrimitivesSupported(int... primitiveIds) {
+    for (int i = 0; i < primitiveIds.length; i++) {
+      if (!supportedPrimitives.contains(primitiveIds[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /** Adds supported vibration primitives. */
+  public void setSupportedPrimitives(Collection<Integer> primitives) {
+    supportedPrimitives.clear();
+    supportedPrimitives.addAll(primitives);
+  }
 }
