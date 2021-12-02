@@ -543,6 +543,14 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = R)
+  public void isUniqueDeviceAttestationSupported() {
+    shadowOf(devicePolicyManager).setIsUniqueDeviceAttestationSupported(true);
+
+    assertThat(devicePolicyManager.isUniqueDeviceAttestationSupported()).isTrue();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void setApplicationRestrictionsShouldWorkAsIntendedForDeviceOwner() {
     // GIVEN the caller is the device owner
