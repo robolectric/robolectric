@@ -66,20 +66,32 @@ public class SQLiteQueryBuilderTest {
   public void shouldBeAbleToMakeQueries() {
     Cursor cursor = builder.query(database, new String[] {"rowid"}, null, null, null, null, null);
     assertThat(cursor.getCount()).isEqualTo(2);
+    cursor.close();
   }
 
   @Test
   public void shouldBeAbleToMakeQueriesWithSelection() {
-    Cursor cursor = builder.query(database, new String[] {"rowid"}, COL_VALUE + "=?", new String[] {"record1"}, null, null, null);
+    Cursor cursor =
+        builder.query(
+            database,
+            new String[] {"rowid"},
+            COL_VALUE + "=?",
+            new String[] {"record1"},
+            null,
+            null,
+            null);
     assertThat(cursor.getCount()).isEqualTo(1);
     assertThat(cursor.moveToNext()).isTrue();
     assertThat(cursor.getLong(0)).isEqualTo(firstRecordId);
+    cursor.close();
   }
 
   @Test
   public void shouldBeAbleToMakeQueriesWithGrouping() {
-    Cursor cursor = builder.query(database, new String[] {"rowid"}, null, null, COL_GROUP, null, null);
+    Cursor cursor =
+        builder.query(database, new String[] {"rowid"}, null, null, COL_GROUP, null, null);
     assertThat(cursor.getCount()).isEqualTo(1);
+    cursor.close();
   }
 
 }

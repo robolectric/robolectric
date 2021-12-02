@@ -7,6 +7,7 @@ import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +51,13 @@ public class ShadowMergeCursorTest {
                 + " clob_value_2 CLOB );",
             TABLE_2_INSERTS,
             "SELECT * FROM table_2;");
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    database.close();
+    dbCursor1.close();
+    dbCursor2.close();
   }
 
   private SQLiteCursor setupTable(final String createSql, final String[] insertions, final String selectSql) {

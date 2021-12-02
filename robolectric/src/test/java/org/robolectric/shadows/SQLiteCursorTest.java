@@ -39,6 +39,7 @@ public class SQLiteCursorTest {
   @After
   public void tearDown() {
     database.close();
+    cursor.close();
   }
 
   @Test

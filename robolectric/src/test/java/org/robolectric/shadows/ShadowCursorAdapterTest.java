@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +42,12 @@ public class ShadowCursorAdapterTest {
     curs = database.rawQuery(sql, null);
 
     adapter = new TestAdapter(curs);
+  }
+
+  @After
+  public void tearDown() {
+    database.close();
+    curs.close();
   }
 
   @Test
