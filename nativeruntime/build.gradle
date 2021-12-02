@@ -29,7 +29,7 @@ task cmakeNativeRuntime {
     mkdir "$buildDir/cpp"
     exec {
       workingDir "$buildDir/cpp"
-      commandLine 'cmake', "-B", ".", "-S","$projectDir/cpp/"
+      commandLine 'cmake', "-B", ".", "-S","$projectDir/cpp/", "-G", "Ninja"
     }
   }
 }
@@ -80,7 +80,7 @@ task makeNativeRuntime {
   doLast {
     exec {
       workingDir "$buildDir/cpp"
-      commandLine 'make'
+      commandLine 'ninja'
     }
   }
 }
