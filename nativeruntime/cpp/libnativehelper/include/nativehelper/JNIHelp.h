@@ -89,26 +89,22 @@ struct [[maybe_unused]] ExpandableString {
   return ExpandableStringAppend(s, text);
 }
 
-[[maybe_unused]] inline char* safe_strerror(
-    char* (*strerror_r_method)(int, char*, size_t), int errnum, char* buf,
-    size_t buflen) {
-  return strerror_r_method(errnum, buf, buflen);
-}
-
-[[maybe_unused]] inline char* safe_strerror(int (*strerror_r_method)(int, char*,
-                                                                     size_t),
-                                            int errnum, char* buf,
-                                            size_t buflen) {
-  int rc = strerror_r_method(errnum, buf, buflen);
+[[maybe_unused]] inline const char* platformStrError(int errnum, char* buf,
+                                                     size_t buflen) {
+#ifdef _WIN32
+  strerror_s(buf, buflen, errnum);
+  return buf;
+#elif defined(__USE_GNU)
+  // char *strerror_r(int errnum, char *buf, size_t buflen);  /* GNU-specific */
+  return strerror_r(errnum, buf, buflen);
+#else
+  // int strerror_r(int errnum, char *buf, size_t buflen);  /* XSI-compliant */
+  int rc = strerror_r(errnum, buf, buflen);
   if (rc != 0) {
     snprintf(buf, buflen, "errno %d", errnum);
   }
   return buf;
-}
-
-[[maybe_unused]] static const char* platformStrError(int errnum, char* buf,
-                                                     size_t buflen) {
-  return safe_strerror(strerror_r, errnum, buf, buflen);
+#endif
 }
 
 [[maybe_unused]] static jmethodID FindMethod(JNIEnv* env, const char* className,
