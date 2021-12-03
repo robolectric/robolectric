@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ContentProvider;
 import android.content.ContentProviderClient;
@@ -11,22 +12,26 @@ import android.content.OperationApplicationException;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(ContentProviderClient.class)
 public class ShadowContentProviderClient {
   @RealObject private ContentProviderClient realContentProviderClient;
 
-  private boolean released;
   private ContentProvider provider;
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -109,30 +114,40 @@ public class ShadowContentProviderClient {
   }
 
   @Implementation
-  protected boolean release() {
-    synchronized (this) {
-      if (released) {
-        throw new IllegalStateException("Already released");
-      }
-      released = true;
-    }
-    return true;
-  }
-
-  @Implementation
   protected ContentProvider getLocalContentProvider() {
     return ContentProvider.coerceToLocalContentProvider(provider.getIContentProvider());
   }
 
   public boolean isStable() {
-    return ReflectionHelpers.getField(realContentProviderClient, "mStable");
+    return reflector(ContentProviderClientReflector.class, realContentProviderClient).getStable();
   }
 
   public boolean isReleased() {
-    return released;
+    ContentProviderClientReflector contentProviderClientReflector =
+        reflector(ContentProviderClientReflector.class, realContentProviderClient);
+    if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.M) {
+      return contentProviderClientReflector.getReleased();
+    } else {
+      return contentProviderClientReflector.getClosed().get();
+    }
   }
 
   void setContentProvider(ContentProvider provider) {
     this.provider = provider;
+  }
+
+  @ForType(ContentProviderClient.class)
+  interface ContentProviderClientReflector {
+    @Direct
+    boolean release();
+
+    @Accessor("mStable")
+    boolean getStable();
+
+    @Accessor("mReleased")
+    boolean getReleased();
+
+    @Accessor("mClosed")
+    AtomicBoolean getClosed();
   }
 }
