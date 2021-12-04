@@ -41,7 +41,21 @@ public class ShadowSystemProperties {
   @Implementation
   protected static boolean native_get_boolean(String key, boolean def) {
     String stringValue = getProperty(key);
-    return stringValue == null ? def : Boolean.parseBoolean(stringValue);
+    if ("1".equals(stringValue)
+        || "y".equals(stringValue)
+        || "yes".equals(stringValue)
+        || "on".equals(stringValue)
+        || "true".equals(stringValue)) {
+      return true;
+    }
+    if ("0".equals(stringValue)
+        || "n".equals(stringValue)
+        || "no".equals(stringValue)
+        || "off".equals(stringValue)
+        || "false".equals(stringValue)) {
+      return false;
+    }
+    return def;
   }
 
   @Implementation
@@ -54,11 +68,11 @@ public class ShadowSystemProperties {
   }
 
   /**
-   * Overrides the system property for testing. Similar to the Android implementation, the value
-   * may be coerced to other types like boolean or long depending on the get method that is used.
+   * Overrides the system property for testing. Similar to the Android implementation, the value may
+   * be coerced to other types like boolean or long depending on the get method that is used.
    *
-   * <p>Note: Use {@link org.robolectric.shadows.ShadowBuild} instead for changing fields in
-   * {@link android.os.Build}.
+   * <p>Note: Use {@link org.robolectric.shadows.ShadowBuild} instead for changing fields in {@link
+   * android.os.Build}.
    */
   public static void override(String key, String val) {
     SystemProperties.set(key, val);
