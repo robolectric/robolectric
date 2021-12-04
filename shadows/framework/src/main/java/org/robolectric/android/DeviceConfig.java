@@ -2,7 +2,9 @@ package org.robolectric.android;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+import android.app.WindowConfiguration;
 import android.content.res.Configuration;
+import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
@@ -10,6 +12,7 @@ import java.util.Locale;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Supports device configuration for Robolectric tests.
@@ -198,7 +201,7 @@ public class DeviceConfig {
     if (resTab.density != ResTable_config.DENSITY_DEFAULT) {
       setDensity(resTab.density, apiLevel, configuration, displayMetrics);
     }
-    setDimensions(configuration, displayMetrics);
+    setDimensions(apiLevel, configuration, displayMetrics);
 
     if (resTab.touchscreen != ResTable_config.TOUCHSCREEN_ANY) {
       configuration.touchscreen = resTab.touchscreen;
@@ -243,11 +246,19 @@ public class DeviceConfig {
     displayMetrics.ydpi = displayMetrics.noncompatYdpi = displayMetrics.densityDpi;
   }
 
-  private static void setDimensions(Configuration configuration, DisplayMetrics displayMetrics) {
+  private static void setDimensions(
+      int apiLevel, Configuration configuration, DisplayMetrics displayMetrics) {
     int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
     int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
     displayMetrics.widthPixels = displayMetrics.noncompatWidthPixels = widthPx;
     displayMetrics.heightPixels = displayMetrics.noncompatHeightPixels = heightPx;
+    if (apiLevel >= VERSION_CODES.P) {
+      Rect bounds = new Rect(0, 0, widthPx, heightPx);
+      WindowConfiguration windowConfiguration =
+          ReflectionHelpers.getField(configuration, "windowConfiguration");
+      windowConfiguration.setBounds(bounds);
+      windowConfiguration.setAppBounds(bounds);
+    }
   }
 
   /**
@@ -353,7 +364,7 @@ public class DeviceConfig {
         // DisplayMetrics.DENSITY_DEFAULT is mdpi
         setDensity(DEFAULT_DENSITY, apiLevel, configuration, displayMetrics);
     }
-    setDimensions(configuration, displayMetrics);
+    setDimensions(apiLevel, configuration, displayMetrics);
 
     if (configuration.touchscreen == Configuration.TOUCHSCREEN_UNDEFINED) {
       configuration.touchscreen = Configuration.TOUCHSCREEN_FINGER;

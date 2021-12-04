@@ -4,11 +4,11 @@ apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 30
+        targetSdkVersion 31
     }
 
     compileOptions {
@@ -26,6 +26,7 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.2.0")
+    implementation("androidx.window:window:1.0.0-beta04")
 
     // Testing dependencies
     testImplementation project(path: ':testapp')
