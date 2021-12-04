@@ -1,6 +1,7 @@
 # Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
 # file Copyright.txt or https://cmake.org/licensing for details.
 
+# Robolectric maintained version, copied from cmake v3.22.0 release.
 #[=======================================================================[.rst:
 FindJNI
 -------
