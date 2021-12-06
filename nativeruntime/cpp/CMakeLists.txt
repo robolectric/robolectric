@@ -8,7 +8,15 @@ set (CMAKE_CXX_STANDARD 17)
 
 project(nativeruntime)
 
-find_package(JNI REQUIRED)
+if (WIN32)
+  if(NOT DEFINED ENV{JAVA_HOME})
+    message(FATAL_ERROR "JAVA_HOME is required in Windows")
+  endif()
+  # find_package JNI is broken on Windows, manually include header files
+  set(JNI_INCLUDE_DIRS "$ENV{JAVA_HOME}/include" "$ENV{JAVA_HOME}/include/win32")
+else()
+  find_package(JNI REQUIRED)
+endif()
 
 set(ANDROID_SQLITE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../external/sqlite")
 
