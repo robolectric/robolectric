@@ -116,7 +116,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @RealObject protected AssetManager realObject;
 
-  private ResourceTable resourceTable;
+  boolean isSystem = false;
 
   class NativeTheme {
     private ThemeStyleSet themeStyleSet;
@@ -159,7 +159,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       if (attribute.getReferenceResId() != null) {
         resourceId = attribute.getReferenceResId();
       } else {
-        resourceId = resourceTable.getResourceId(resName);
+        resourceId = getResourceTable().getResourceId(resName);
       }
 
       if (resourceId == null) {
@@ -174,7 +174,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
       outValue.resourceId = resourceId;
 
-      TypedResource dereferencedRef = resourceTable.getValue(resName, config);
+      TypedResource dereferencedRef = getResourceTable().getValue(resName, config);
       if (dereferencedRef == null) {
         Logger.strict("couldn't resolve %s from %s", resName.getFullyQualifiedName(), attribute);
         return;
@@ -235,29 +235,24 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
 
   public TypedResource getAttrTypeData(ResName resName) {
-    return resourceTable.getValue(resName, config);
+    return getResourceTable().getValue(resName, config);
   }
 
   @Implementation
   protected void __constructor__() {
-    resourceTable = RuntimeEnvironment.getAppResourceTable();
-
-    
     if (RuntimeEnvironment.getApiLevel() >= P) {
       invokeConstructor(AssetManager.class, realObject);
     }
-    
+
   }
 
   @Implementation
   protected void __constructor__(boolean isSystem) {
-    resourceTable = isSystem ? RuntimeEnvironment.getSystemResourceTable() : RuntimeEnvironment.getAppResourceTable();
-
-    
+    this.isSystem = isSystem;
     if (RuntimeEnvironment.getApiLevel() >= P) {
       invokeConstructor(AssetManager.class, realObject, from(boolean.class, isSystem));
     }
-    
+
   }
 
   @Implementation(minSdk = P)
@@ -277,7 +272,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   protected ResourceTable getResourceTable() {
-    return resourceTable;
+    return isSystem
+        ? RuntimeEnvironment.getSystemResourceTable()
+        : RuntimeEnvironment.getAppResourceTable();
   }
 
   @HiddenApi @Implementation
@@ -310,7 +307,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation
   public int getResourceIdentifier(String name, String defType, String defPackage) {
-    Integer resourceId = resourceTable.getResourceId(ResName.qualifyResName(name, defPackage, defType));
+    Integer resourceId =
+        getResourceTable().getResourceId(ResName.qualifyResName(name, defPackage, defType));
     return resourceId == null ? 0 : resourceId;
   }
 
@@ -352,7 +350,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @HiddenApi @Implementation(minSdk = LOLLIPOP)
   public boolean getThemeValue(long themePtr, int ident, TypedValue outValue, boolean resolveRefs) {
-    ResName resName = resourceTable.getResName(ident);
+    ResName resName = getResourceTable().getResName(ident);
 
     ThemeStyleSet themeStyleSet = getNativeTheme(themePtr).themeStyleSet;
     AttributeResource attrValue = themeStyleSet.getAttrValue(resName);
@@ -467,7 +465,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
     final FileTypedResource typedResource =
-        (FileTypedResource) resourceTable.getValue(resName, config);
+        (FileTypedResource) getResourceTable().getValue(resName, config);
 
     if (typedResource == null) {
       throw new IOException("Unable to find resource for " + fileName);
@@ -542,11 +540,11 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Implementation
   protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
       throws IOException {
-    XmlBlock xmlBlock = XmlBlock.create(Fs.fromUrl(fileName), resourceTable.getPackageName());
+    XmlBlock xmlBlock = XmlBlock.create(Fs.fromUrl(fileName), getResourceTable().getPackageName());
     if (xmlBlock == null) {
       throw new Resources.NotFoundException(fileName);
     }
-    return getXmlResourceParser(resourceTable, xmlBlock, resourceTable.getPackageName());
+    return getXmlResourceParser(getResourceTable(), xmlBlock, getResourceTable().getPackageName());
   }
 
   @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
@@ -597,7 +595,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
     resName = resolvedResName;
 
-    XmlBlock block = resourceTable.getXml(resName, config);
+    XmlBlock block = getResourceTable().getXml(resName, config);
     if (block == null) {
       throw new Resources.NotFoundException(resName.getFullyQualifiedName());
     }
@@ -825,7 +823,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         ResName refResName =
             AttributeResource.getResourceReference(
                 reference, typedResource.getXmlContext().getPackageName(), null);
-        typedValue.resourceId = resourceTable.getResourceId(refResName);
+        typedValue.resourceId = getResourceTable().getResourceId(refResName);
         typedValue.data = typedValue.resourceId;
         typedResource = resolve(typedResource, config, typedValue.resourceId);
 
@@ -846,7 +844,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         final ResName attrResName =
             AttributeResource.getStyleReference(
                 reference, typedResource.getXmlContext().getPackageName(), "attr");
-        typedValue.data = resourceTable.getResourceId(attrResName);
+        typedValue.data = getResourceTable().getResourceId(attrResName);
       }
 
       if (typedResource != null && type != TypedValue.TYPE_NULL && type != TypedValue.TYPE_ATTRIBUTE) {
@@ -1087,14 +1085,14 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   private Style resolveStyle(@Nonnull ResName themeStyleName, Style themeStyleSet) {
-    TypedResource themeStyleResource = resourceTable.getValue(themeStyleName, config);
+    TypedResource themeStyleResource = getResourceTable().getValue(themeStyleName, config);
     if (themeStyleResource == null) return null;
     StyleData themeStyleData = (StyleData) themeStyleResource.getData();
     if (themeStyleSet == null) {
       themeStyleSet = new ThemeStyleSet();
     }
     return new StyleResolver(
-        resourceTable,
+        getResourceTable(),
         legacyShadowOf(AssetManager.getSystem()).getResourceTable(),
         themeStyleData,
         themeStyleSet,
@@ -1103,7 +1101,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   private TypedResource getAndResolve(int resId, ResTable_config config, boolean resolveRefs) {
-    TypedResource value = resourceTable.getValue(resId, config);
+    TypedResource value = getResourceTable().getValue(resId, config);
     if (resolveRefs) {
       value = resolve(value, config, resId);
     }
@@ -1115,7 +1113,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   protected ResName resolveResName(ResName resName, ResTable_config config) {
-    TypedResource value = resourceTable.getValue(resName, config);
+    TypedResource value = getResourceTable().getValue(resName, config);
     return resolveResource(value, config, resName);
   }
 
@@ -1128,7 +1126,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceTable.getValue(resName, config);
+        value = getResourceTable().getValue(resName, config);
       }
     }
 
@@ -1143,7 +1141,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       } else {
         String refStr = s.substring(1).replace("+", "");
         resName = ResName.qualifyResName(refStr, resName);
-        value = resourceTable.getValue(resName, config);
+        value = getResourceTable().getValue(resName, config);
       }
     }
 
@@ -1235,7 +1233,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
         Logger.info("huh... circular reference for %s?", attribute.resName.getFullyQualifiedName());
         return null;
       }
-      ResName resName = resourceTable.getResName(resId);
+      ResName resName = getResourceTable().getResName(resId);
 
       AttributeResource otherAttr = themeStyleSet.getAttrValue(otherAttrName);
       if (otherAttr == null) {
@@ -1328,7 +1326,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
               referenceResId = attributeSet.getAttributeResourceValue(i, -1);
               // binary AttributeSet references have a string value of @resId rather than fully qualified resource name
               if (referenceResId != 0) {
-                ResName refResName = resourceTable.getResName(referenceResId);
+                ResName refResName = getResourceTable().getResName(referenceResId);
                 if (refResName != null) {
                   attributeValue = "@" + refResName.getFullyQualifiedName();
                 }
@@ -1340,7 +1338,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       }
     }
 
-    ResName attrName = resourceTable.getResName(resId);
+    ResName attrName = getResourceTable().getResName(resId);
     if (attrName == null) return null;
 
     if (styleAttrStyle != null) {
@@ -1375,7 +1373,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Nonnull private ResName getResName(int id) {
-    ResName resName = resourceTable.getResName(id);
+    ResName resName = getResourceTable().getResName(id);
     if (resName == null) {
       throw new Resources.NotFoundException("Resource ID #0x" + Integer.toHexString(id));
     }
