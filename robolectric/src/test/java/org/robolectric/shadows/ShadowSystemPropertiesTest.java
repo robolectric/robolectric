@@ -21,6 +21,34 @@ public class ShadowSystemPropertiesTest {
     assertThat(SystemProperties.get("foo", "bar")).isEqualTo("bar");
   }
 
+  @Test
+  public void getBoolean() {
+    ShadowSystemProperties.override("false_1", "0");
+    ShadowSystemProperties.override("false_2", "n");
+    ShadowSystemProperties.override("false_3", "no");
+    ShadowSystemProperties.override("false_4", "off");
+    ShadowSystemProperties.override("false_5", "false");
+    ShadowSystemProperties.override("true_1", "1");
+    ShadowSystemProperties.override("true_2", "y");
+    ShadowSystemProperties.override("true_3", "yes");
+    ShadowSystemProperties.override("true_4", "on");
+    ShadowSystemProperties.override("true_5", "true");
+    ShadowSystemProperties.override("error_value", "error");
+
+    assertThat(SystemProperties.getBoolean("false_1", true)).isFalse();
+    assertThat(SystemProperties.getBoolean("false_2", true)).isFalse();
+    assertThat(SystemProperties.getBoolean("false_3", true)).isFalse();
+    assertThat(SystemProperties.getBoolean("false_4", true)).isFalse();
+    assertThat(SystemProperties.getBoolean("false_5", true)).isFalse();
+    assertThat(SystemProperties.getBoolean("true_1", false)).isTrue();
+    assertThat(SystemProperties.getBoolean("true_2", false)).isTrue();
+    assertThat(SystemProperties.getBoolean("true_3", false)).isTrue();
+    assertThat(SystemProperties.getBoolean("true_4", false)).isTrue();
+    assertThat(SystemProperties.getBoolean("true_5", false)).isTrue();
+    assertThat(SystemProperties.getBoolean("error_value", false)).isFalse();
+    assertThat(SystemProperties.getBoolean("error_value", true)).isTrue();
+  }
+
   // The following readPropFromJarNotClassPathXX tests check build.prop is loaded from appropriate
   // android-all jar instead of loading build.prop from classpath aka LATEST_SDK.
 
