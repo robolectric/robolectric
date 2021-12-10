@@ -1,9 +1,5 @@
 name: Build Native Runtime
 
-env:
-  CXX: clang++
-  CC: clang
-
 on:
   push:
     branches: [ master ]
