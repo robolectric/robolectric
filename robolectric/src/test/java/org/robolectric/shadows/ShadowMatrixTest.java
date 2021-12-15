@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -118,11 +118,7 @@ public class ShadowMatrixTest {
   }
 
   @Test
-  @Config(sdk = {
-      Build.VERSION_CODES.LOLLIPOP,
-      Build.VERSION_CODES.LOLLIPOP_MR1,
-      Build.VERSION_CODES.M
-  })
+  @Config(minSdk = LOLLIPOP)
   public void testIsAffine() {
     final Matrix matrix = new Matrix();
     assertThat(matrix.isAffine())
@@ -524,7 +520,9 @@ public class ShadowMatrixTest {
   }
 
   private static PointF mapPoint(Matrix matrix, float x, float y) {
-    return shadowOf(matrix).mapPoint(x, y);
+    float[] pf = new float[] {x, y};
+    matrix.mapPoints(pf);
+    return new PointF(pf[0], pf[1]);
   }
 
   private static void assertPointsEqual(PointF actual, PointF expected) {
