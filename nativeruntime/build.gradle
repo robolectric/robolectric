@@ -112,6 +112,9 @@ processResources {
 dependencies {
   api project(":utils")
 
+  annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
   api "com.google.guava:guava:$guavaJREVersion"
+
+  compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
   compileOnly AndroidSdk.MAX_SDK.coordinates
 }
