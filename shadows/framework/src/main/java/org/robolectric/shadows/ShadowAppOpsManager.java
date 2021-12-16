@@ -81,7 +81,7 @@ public class ShadowAppOpsManager {
   // (uid, packageName, opCode)
   private final Set<Key> longRunningOp = new HashSet<>();
 
-  private final Map<OnOpChangedListener, Key> appOpListeners = new ArrayMap<>();
+  private final Map<OnOpChangedListener, Set<Key>> appOpListeners = new ArrayMap<>();
 
   // op | (usage << 8) => ModeAndExcpetion
   private final Map<Integer, ModeAndException> audioRestrictions = new HashMap<>();
@@ -140,12 +140,14 @@ public class ShadowAppOpsManager {
       return;
     }
 
-    for (Map.Entry<OnOpChangedListener, Key> entry : appOpListeners.entrySet()) {
-      if (op == entry.getValue().getOpCode()
-          && (entry.getValue().getPackageName() == null
-              || entry.getValue().getPackageName().equals(packageName))) {
-        String[] sOpToString = ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
-        entry.getKey().onOpChanged(sOpToString[op], packageName);
+    for (Map.Entry<OnOpChangedListener, Set<Key>> entry : appOpListeners.entrySet()) {
+      for (Key key : entry.getValue()) {
+        if (op == key.getOpCode()
+            && (key.getPackageName() == null || key.getPackageName().equals(packageName))) {
+          String[] sOpToString =
+              ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
+          entry.getKey().onOpChanged(sOpToString[op], packageName);
+        }
       }
     }
   }
@@ -492,13 +494,23 @@ public class ShadowAppOpsManager {
 
   @Implementation(minSdk = KITKAT)
   protected void startWatchingMode(int op, String packageName, OnOpChangedListener callback) {
-    appOpListeners.put(callback, Key.create(null, packageName, op));
+    startWatchingModeImpl(op, packageName, 0, callback);
   }
 
   @Implementation(minSdk = Q)
   protected void startWatchingMode(
       int op, String packageName, int flags, OnOpChangedListener callback) {
-    appOpListeners.put(callback, Key.create(null, packageName, op));
+    startWatchingModeImpl(op, packageName, flags, callback);
+  }
+
+  private void startWatchingModeImpl(
+      int op, String packageName, int flags, OnOpChangedListener callback) {
+    Set<Key> keys = appOpListeners.get(callback);
+    if (keys == null) {
+      keys = new HashSet<>();
+      appOpListeners.put(callback, keys);
+    }
+    keys.add(Key.create(null, packageName, op));
   }
 
   @Implementation(minSdk = KITKAT)
