@@ -3,8 +3,13 @@ package org.robolectric.util.inject;
 import static java.util.Collections.reverseOrder;
 import static java.util.Comparator.comparing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -117,10 +122,28 @@ class PluginFinder {
 
     @Nonnull
     <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
-      if (classLoader == null) {
-        return ServiceFinder.load(pluginType);
-      } else {
-        return ServiceFinder.load(pluginType, classLoader);
+
+      ClassLoader serviceClassLoader = classLoader;
+      if (serviceClassLoader == null) {
+        serviceClassLoader = Thread.currentThread().getContextClassLoader();
+      }
+      HashSet<Class<? extends T>> result = new HashSet<>();
+
+      try {
+        Enumeration<URL> urls =
+            serviceClassLoader.getResources("META-INF/services/" + pluginType.getName());
+        while (urls.hasMoreElements()) {
+          URL url = urls.nextElement();
+          BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+          while (reader.ready()) {
+            String s = reader.readLine();
+            result.add(Class.forName(s, false, serviceClassLoader).asSubclass(pluginType));
+          }
+          reader.close();
+        }
+        return result;
+      } catch (IOException | ClassNotFoundException e) {
+        throw new AssertionError(e);
       }
     }
   }
