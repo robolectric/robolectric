@@ -10,6 +10,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
+import android.app.servertransaction.ActivityLifecycleItem;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -96,11 +97,8 @@ public class ActivityController<T extends Activity>
     ComponentName componentName =
         new ComponentName(context.getPackageName(), this.component.getClass().getName());
     ((ShadowPackageManager) extract(packageManager)).addActivityIfNotPresent(componentName);
-    packageManager
-        .setComponentEnabledSetting(
-            componentName,
-            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-            0);
+    packageManager.setComponentEnabledSetting(
+        componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
     ShadowActivity shadowActivity = Shadow.extract(component);
     shadowActivity.callAttach(getIntent(), activityOptions, lastNonConfigurationInstances);
     shadowActivity.attachController(this);
@@ -123,12 +121,15 @@ public class ActivityController<T extends Activity>
     shadowMainLooper.runPaused(
         () -> {
           getInstrumentation().callActivityOnCreate(component, bundle);
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_CREATE);
           currentState = LifecycleState.CREATED;
         });
     return this;
   }
 
-  @Override public ActivityController<T> create() {
+  @Override
+  public ActivityController<T> create() {
     return create(null);
   }
 
@@ -140,6 +141,8 @@ public class ActivityController<T extends Activity>
           } else {
             _component_.performRestart(true, "restart()");
           }
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_RESTART);
           currentState = LifecycleState.RESTARTED;
         });
     return this;
@@ -156,6 +159,8 @@ public class ActivityController<T extends Activity>
           } else {
             _component_.performStart("start()");
           }
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_START);
           currentState = LifecycleState.STARTED;
         });
     return this;
@@ -180,6 +185,8 @@ public class ActivityController<T extends Activity>
           } else {
             _component_.performResume(true, "resume()");
           }
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_RESUME);
           currentState = LifecycleState.RESUMED;
         });
     return this;
@@ -244,6 +251,8 @@ public class ActivityController<T extends Activity>
     shadowMainLooper.runPaused(
         () -> {
           getInstrumentation().callActivityOnPause(component);
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_PAUSE);
           currentState = LifecycleState.PAUSED;
         });
     return this;
@@ -268,6 +277,8 @@ public class ActivityController<T extends Activity>
           } else {
             _component_.performStop(true, "stop()");
           }
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_STOP);
           currentState = LifecycleState.STOPPED;
         });
     return this;
@@ -279,6 +290,8 @@ public class ActivityController<T extends Activity>
         () -> {
           getInstrumentation().callActivityOnDestroy(component);
           makeActivityEligibleForGc();
+          _component_.maybeUpdateActivityRecordState(
+              RuntimeEnvironment.getActivityThread(), ActivityLifecycleItem.ON_DESTROY);
           currentState = LifecycleState.DESTROYED;
         });
     return this;
@@ -302,7 +315,8 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Calls the same lifecycle methods on the Activity called by Android the first time the Activity is created.
+   * Calls the same lifecycle methods on the Activity called by Android the first time the Activity
+   * is created.
    *
    * @return Activity controller instance.
    */
@@ -595,4 +609,3 @@ public class ActivityController<T extends Activity>
     void windowFocusChanged(boolean hasFocus, boolean inTouchMode);
   }
 }
-

@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -14,6 +15,7 @@ import android.app.ActivityOptions;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.DirectAction;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.app.PictureInPictureParams;
@@ -24,11 +26,15 @@ import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ParceledListSlice;
 import android.database.Cursor;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcel;
+import android.os.RemoteCallback;
+import android.os.RemoteException;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.Display;
@@ -42,9 +48,11 @@ import com.android.internal.app.IVoiceInteractor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
@@ -825,6 +833,38 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
     reflector(_Activity_.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
+  }
+
+  /** Simulates assistant requesting direct actions from this activity. */
+  public void simulateGetDirectActions(Consumer<List<DirectAction>> directActionsConsumer)
+      throws RemoteException {
+    if (RuntimeEnvironment.getApiLevel() < S) {
+      throw new IllegalStateException("simulateGetDirectActions requires API " + S);
+    }
+    ShadowActivityThread shadowActivityThread =
+        Shadow.extract(RuntimeEnvironment.getActivityThread());
+    IBinder token = reflector(_Activity_.class, realActivity).getToken();
+    RemoteCallback callback =
+        new RemoteCallback(
+            result -> {
+              // simulate serialize / deserialize of Bundle during IPC
+              Parcel parcel = Parcel.obtain();
+              parcel.writeTypedObject(result, 0);
+              parcel.setDataPosition(0);
+              Bundle ipcResult = parcel.readTypedObject(Bundle.CREATOR);
+              if (ipcResult == null) {
+                directActionsConsumer.accept(Collections.emptyList());
+                return;
+              }
+              ParceledListSlice<DirectAction> directActionsParcel =
+                  ipcResult.getParcelable(DirectAction.KEY_ACTIONS_LIST);
+              if (directActionsParcel == null) {
+                directActionsConsumer.accept(Collections.emptyList());
+                return;
+              }
+              directActionsConsumer.accept(directActionsParcel.getList());
+            });
+    shadowActivityThread.handleRequestDirectActions(token, callback);
   }
 
   private final class ActivityInvoker {
