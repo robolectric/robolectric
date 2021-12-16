@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.robolectric.util.PerfStatsCollector;
 
 /** Loads the Robolectric native runtime. */
 public final class NativeRuntimeLoader {
@@ -32,12 +33,18 @@ public final class NativeRuntimeLoader {
   static void ensureLoaded() {
     if (loaded.compareAndSet(false, true)) {
       try {
-        String libraryName = System.mapLibraryName("robolectric-nativeruntime");
-        File tmpLibraryFile = java.nio.file.Files.createTempFile("", libraryName).toFile();
-        tmpLibraryFile.deleteOnExit();
-        URL resource = Resources.getResource(nativeLibraryPath());
-        Resources.asByteSource(resource).copyTo(Files.asByteSink(tmpLibraryFile));
-        System.load(tmpLibraryFile.getAbsolutePath());
+        PerfStatsCollector.getInstance()
+            .measure(
+                "loadNativeRuntime",
+                () -> {
+                  String libraryName = System.mapLibraryName("robolectric-nativeruntime");
+                  File tmpLibraryFile =
+                      java.nio.file.Files.createTempFile("", libraryName).toFile();
+                  tmpLibraryFile.deleteOnExit();
+                  URL resource = Resources.getResource(nativeLibraryPath());
+                  Resources.asByteSource(resource).copyTo(Files.asByteSink(tmpLibraryFile));
+                  System.load(tmpLibraryFile.getAbsolutePath());
+                });
       } catch (IOException e) {
         throw new AssertionError("Unable to load Robolectric native runtime library", e);
       }
