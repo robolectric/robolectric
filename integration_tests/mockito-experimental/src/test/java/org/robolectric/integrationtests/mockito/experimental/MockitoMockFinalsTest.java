@@ -26,6 +26,7 @@ public class MockitoMockFinalsTest {
     Layout layout = mock(Layout.class);
     when(textView.getLayout()).thenReturn(layout);
     assertThat(textView.getLayout()).isSameInstanceAs(layout);
+    assertThat(1).isEqualTo(2);
   }
 
   @Test
