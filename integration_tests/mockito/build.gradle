@@ -3,6 +3,7 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 
 test {
+    useJUnit()
     systemProperty "robolectric.resourcesMode", "binary"
 }
 
