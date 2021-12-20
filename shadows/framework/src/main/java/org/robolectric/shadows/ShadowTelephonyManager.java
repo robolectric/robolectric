@@ -498,9 +498,12 @@ public class ShadowTelephonyManager {
   /**
    * Returns whatever value was set by the last call to {@link #setVoiceNetworkType}, defaulting to
    * {@link TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
+   *
+   * <p>An exception will be thrown if the READ_PHONE_STATE permission has not been granted.
    */
   @Implementation(minSdk = N)
   protected int getVoiceNetworkType() {
+    checkReadPhoneStatePermission();
     return voiceNetworkType;
   }
 
