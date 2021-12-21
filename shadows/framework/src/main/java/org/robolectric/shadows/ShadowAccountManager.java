@@ -53,7 +53,7 @@ public class ShadowAccountManager {
   private Map<Account, Map<String, String>> userData = new HashMap<>();
   private Map<Account, String> passwords = new HashMap<>();
   private Map<Account, Set<String>> accountFeatures = new HashMap<>();
-  private Map<Account, Set<String>> packageVisibileAccounts = new HashMap<>();
+  private Map<Account, Set<String>> packageVisibleAccounts = new HashMap<>();
 
   private List<Bundle> addAccountOptionsList = new ArrayList<>();
   private Handler mainHandler;
@@ -488,16 +488,17 @@ public class ShadowAccountManager {
   }
 
   /**
-   * Adds an account to the AccountManager but when {@link AccountManager#getAccountsByTypeForPackage(String, String)}
-   * is called will be included if is in one of the #visibileToPackages
+   * Adds an account to the AccountManager but when {@link
+   * AccountManager#getAccountsByTypeForPackage(String, String)} is called will be included if is in
+   * one of the #visibleToPackages
    *
    * @param account User account.
    */
-  public void addAccount(Account account, String... visibileToPackages) {
+  public void addAccount(Account account, String... visibleToPackages) {
     addAccount(account);
     HashSet<String> value = new HashSet<>();
-    Collections.addAll(value, visibileToPackages);
-    packageVisibileAccounts.put(account, value);
+    Collections.addAll(value, visibleToPackages);
+    packageVisibleAccounts.put(account, value);
   }
 
   /**
@@ -740,7 +741,8 @@ public class ShadowAccountManager {
 
     Account[] accountsByType = getAccountsByType(type);
     for (Account account : accountsByType) {
-      if (packageVisibileAccounts.containsKey(account) && packageVisibileAccounts.get(account).contains(packageName)) {
+      if (packageVisibleAccounts.containsKey(account)
+          && packageVisibleAccounts.get(account).contains(packageName)) {
         result.add(account);
       }
     }
