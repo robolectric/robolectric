@@ -2,10 +2,6 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 
-test {
-    systemProperty "robolectric.resourcesMode", "binary"
-}
-
 dependencies {
     api project(":robolectric")
     compileOnly AndroidSdk.MAX_SDK.coordinates
