@@ -1,5 +1,7 @@
 package org.robolectric.android.controller;
 
+import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.robolectric.Shadows.shadowOf;
@@ -298,28 +300,22 @@ public class ActivityControllerTest {
   }
 
   @Test
-  public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged() {
-    Configuration config =
-        new Configuration(
-            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
-    final float newFontScale = config.fontScale *= 2;
-    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+  @Config(maxSdk = O_MR1)
+  public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged_beforeP() {
+    configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged(
+        "onSaveInstanceState", "onStop");
+  }
 
-    ActivityController<ConfigAwareActivity> configController =
-        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
-    transcript.clear();
-    configController.configurationChange(config);
-    assertThat(transcript)
-        .containsAtLeast("onPause", "onStop", "onDestroy", "onCreate", "onStart", "onResume");
-    assertThat(configController.get().getResources().getConfiguration().fontScale)
-        .isEqualTo(newFontScale);
-    assertThat(configController.get().getResources().getConfiguration().orientation)
-        .isEqualTo(newOrientation);
+  @Test
+  @Config(minSdk = P)
+  public void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged_fromP() {
+    configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged(
+        "onStop", "onSaveInstanceState");
   }
 
   @Test
   @Config(qualifiers = "land")
-  public void noArgsConfigurationChange_appliesChangedSystemConfiguration() throws Exception {
+  public void noArgsConfigurationChange_appliesChangedSystemConfiguration() {
     ActivityController<ConfigAwareActivity> configController =
         Robolectric.buildActivity(ConfigAwareActivity.class).setup();
     RuntimeEnvironment.setQualifiers("port");
@@ -450,12 +446,47 @@ public class ActivityControllerTest {
             "finishedOnDestroy");
   }
 
+  private void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged(
+      String secondExpected, String thirdExpected) {
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
+    final float newFontScale = config.fontScale *= 2;
+    final int newOrientation = config.orientation = (config.orientation + 1) % 3;
+
+    ActivityController<ConfigAwareActivity> configController =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
+    configController.configurationChange(config);
+    assertThat(transcript)
+        .containsAtLeast(
+            "onPause",
+            secondExpected,
+            thirdExpected,
+            "onDestroy",
+            "onCreate",
+            "onStart",
+            "onResume")
+        .inOrder();
+    assertThat(configController.get().getResources().getConfiguration().fontScale)
+        .isEqualTo(newFontScale);
+    assertThat(configController.get().getResources().getConfiguration().orientation)
+        .isEqualTo(newOrientation);
+  }
+
   public static class MyActivity extends Activity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
       super.onRestoreInstanceState(savedInstanceState);
       transcribeWhilePaused("onRestoreInstanceState");
       transcript.add("finishedOnRestoreInstanceState");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+      super.onSaveInstanceState(outState);
+      transcribeWhilePaused("onSaveInstanceState");
+      transcript.add("finishedOnSaveInstanceState");
     }
 
     @Override
