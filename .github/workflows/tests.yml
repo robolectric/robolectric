@@ -7,10 +7,6 @@ on:
   pull_request:
     branches: [ master ]
 
-env:
-  CXX: clang++
-  CC: clang
-
 jobs:
   build:
     runs-on: ubuntu-18.04
