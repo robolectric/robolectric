@@ -141,7 +141,7 @@ public class ShadowPackageManagerTest {
   private static final String REAL_TEST_APP_ASSET_PATH = "assets/exampleapp.apk";
   private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
   private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
-  private static final int TEST_PACKAGE_VERSOIN_CODE = 10000;
+  private static final int TEST_PACKAGE_VERSION_CODE = 10000;
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Context context;
@@ -4027,13 +4027,13 @@ public class ShadowPackageManagerTest {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
     packageInfo.applicationInfo = appInfo;
-    packageInfo.versionCode = TEST_PACKAGE_VERSOIN_CODE;
+    packageInfo.versionCode = TEST_PACKAGE_VERSION_CODE;
     return packageInfo;
   }
 
   private void verifyTestPackageInfo(PackageInfo packageInfo) {
     assertThat(packageInfo).isNotNull();
-    assertThat(packageInfo.versionCode).isEqualTo(TEST_PACKAGE_VERSOIN_CODE);
+    assertThat(packageInfo.versionCode).isEqualTo(TEST_PACKAGE_VERSION_CODE);
     ApplicationInfo applicationInfo = packageInfo.applicationInfo;
     assertThat(applicationInfo).isInstanceOf(ApplicationInfo.class);
     assertThat(applicationInfo.packageName).isEqualTo(TEST_PACKAGE_NAME);
