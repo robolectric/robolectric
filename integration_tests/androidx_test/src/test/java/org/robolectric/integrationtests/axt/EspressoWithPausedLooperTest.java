@@ -28,13 +28,13 @@ public final class EspressoWithPausedLooperTest {
   public void launchActivity() {}
 
   @Test
-  public void onIdle_doesnt_block() throws Exception {
+  public void onIdle_doesnt_block() {
     Espresso.onIdle();
   }
 
   /** Perform the equivalent of launchActivityAndFindView_ById except using espresso APIs */
   @Test
-  public void launchActivityAndFindView_espresso() throws Exception {
+  public void launchActivityAndFindView_espresso() {
     onView(withId(R.id.edit_text)).check(matches(isCompletelyDisplayed()));
   }
 }

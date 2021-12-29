@@ -145,9 +145,7 @@ public class ActivityScenarioTest {
 
     assertThat(activityScenario).isNotNull();
     activityScenario.onActivity(
-        activity -> {
-          assertThat(activity).isInstanceOf(TranscriptActivity.class);
-        });
+        activity -> assertThat(activity).isInstanceOf(TranscriptActivity.class));
     assertThat(callbacks)
         .containsExactly(
             "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true");
@@ -159,19 +157,13 @@ public class ActivityScenarioTest {
         ActivityScenario.launch(LifecycleOwnerActivity.class);
     assertThat(activityScenario).isNotNull();
     activityScenario.onActivity(
-        activity -> {
-          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED);
-        });
+        activity -> assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.RESUMED));
     activityScenario.moveToState(State.STARTED);
     activityScenario.onActivity(
-        activity -> {
-          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED);
-        });
+        activity -> assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.STARTED));
     activityScenario.moveToState(State.CREATED);
     activityScenario.onActivity(
-        activity -> {
-          assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED);
-        });
+        activity -> assertThat(activity.getLifecycle().getCurrentState()).isEqualTo(State.CREATED));
   }
 
   @Test
