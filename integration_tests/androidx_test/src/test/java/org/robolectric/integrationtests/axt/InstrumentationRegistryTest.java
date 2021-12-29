@@ -4,8 +4,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Instrumentation;
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,8 +28,8 @@ public class InstrumentationRegistryTest {
 
   @Test
   public void getTargetContext() {
-    assertThat(InstrumentationRegistry.getTargetContext()).isNotNull();
-    assertThat(InstrumentationRegistry.getContext()).isNotNull();
+    assertThat(InstrumentationRegistry.getInstrumentation().getTargetContext()).isNotNull();
+    assertThat(InstrumentationRegistry.getInstrumentation().getContext()).isNotNull();
   }
 
   @Test
@@ -49,10 +49,11 @@ public class InstrumentationRegistryTest {
   private void checkInstances() {
     if (priorInstrumentation == null) {
       priorInstrumentation = InstrumentationRegistry.getInstrumentation();
-      priorContext = InstrumentationRegistry.getTargetContext();
+      priorContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
     } else {
       assertThat(priorInstrumentation).isNotEqualTo(InstrumentationRegistry.getInstrumentation());
-      assertThat(priorContext).isNotEqualTo(InstrumentationRegistry.getTargetContext());
+      assertThat(priorContext)
+          .isNotEqualTo(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
   }
 
