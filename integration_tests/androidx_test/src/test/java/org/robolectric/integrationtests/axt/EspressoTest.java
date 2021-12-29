@@ -33,12 +33,12 @@ public final class EspressoTest {
       new ActivityTestRule<>(EspressoActivity.class, false, true);
 
   @Test
-  public void onIdle_doesnt_block() throws Exception {
+  public void onIdle_doesnt_block() {
     Espresso.onIdle();
   }
 
   @Test
-  public void launchActivityAndFindView_ById() throws Exception {
+  public void launchActivityAndFindView_ById() {
     EspressoActivity activity = activityRule.getActivity();
 
     EditText editText = activity.findViewById(R.id.edit_text);
@@ -49,14 +49,14 @@ public final class EspressoTest {
 
   /** Perform the equivalent of launchActivityAndFindView_ById except using espresso APIs */
   @Test
-  public void launchActivityAndFindView_espresso() throws Exception {
+  public void launchActivityAndFindView_espresso() {
     onView(withId(R.id.edit_text)).check(matches(isCompletelyDisplayed()));
   }
 
   /** Perform the 'traditional' mechanism of clicking a button in Robolectric using findViewById */
   @Test
   @UiThreadTest
-  public void buttonClick() throws Exception {
+  public void buttonClick() {
     EspressoActivity activity = activityRule.getActivity();
     Button button = activity.findViewById(R.id.button);
 
@@ -67,7 +67,7 @@ public final class EspressoTest {
 
   /** Perform the equivalent of click except using espresso APIs */
   @Test
-  public void buttonClick_espresso() throws Exception {
+  public void buttonClick_espresso() {
     EspressoActivity activity = activityRule.getActivity();
 
     onView(withId(R.id.button)).check(matches(isCompletelyDisplayed()));
@@ -79,7 +79,7 @@ public final class EspressoTest {
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
   @Test
   @UiThreadTest
-  public void typeText_findView() throws Exception {
+  public void typeText_findView() {
     EspressoActivity activity = activityRule.getActivity();
     EditText editText = activity.findViewById(R.id.edit_text);
     editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
@@ -90,7 +90,7 @@ public final class EspressoTest {
 
   /** Perform the equivalent of setText except using espresso APIs */
   @Test
-  public void typeText_espresso() throws Exception {
+  public void typeText_espresso() {
     onView(withId(R.id.edit_text))
         .perform(typeText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org"));
 
@@ -100,7 +100,7 @@ public final class EspressoTest {
 
   /** use typeText with a inputType phone */
   @Test
-  public void typeText_phone() throws Exception {
+  public void typeText_phone() {
     onView(withId(R.id.edit_text_phone)).perform(typeText("411"));
 
     onView(withId(R.id.edit_text_phone)).check(matches(withText("411")));

@@ -23,7 +23,7 @@ import org.robolectric.annotation.TextLayoutMode.Mode;
 public class EspressoWithMenuTest {
 
   @Test
-  public void platformMenuClick() throws InterruptedException {
+  public void platformMenuClick() {
     try (ActivityScenario<ActivityWithPlatformMenu> scenario =
         ActivityScenario.launch(ActivityWithPlatformMenu.class)) {
       openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext());
@@ -34,7 +34,7 @@ public class EspressoWithMenuTest {
   }
 
   @Test
-  public void appCompatMenuClick() throws InterruptedException {
+  public void appCompatMenuClick() {
     try (ActivityScenario<ActivityWithAppCompatMenu> scenario =
         ActivityScenario.launch(ActivityWithAppCompatMenu.class)) {
       openActionBarOverflowOrOptionsMenu(ApplicationProvider.getApplicationContext());

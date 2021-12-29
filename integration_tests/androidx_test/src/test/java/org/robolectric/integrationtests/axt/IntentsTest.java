@@ -176,9 +176,7 @@ public class IntentsTest {
         ActivityScenario.launch(ResultCapturingActivity.class);
 
     activityScenario.onActivity(
-        activity -> {
-          activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0);
-        });
+        activity -> activity.startActivityForResult(new Intent(activity, DummyActivity.class), 0));
 
     activityScenario.onActivity(
         activity -> {
