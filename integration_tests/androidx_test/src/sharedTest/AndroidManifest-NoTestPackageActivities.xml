@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.robolectric.integrationtests.axt">
+
+  <uses-sdk
+      android:minSdkVersion="14"
+      android:targetSdkVersion="27"/>
+
+  <application>
+    <activity android:name=".EspressoActivity" android:exported="true"/>
+  </application>
+
+  <instrumentation
+      android:name="androidx.test.runner.AndroidJUnitRunner"
+      android:targetPackage="org.robolectric.integration.axt"/>
+
+</manifest>
