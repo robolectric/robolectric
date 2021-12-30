@@ -110,6 +110,6 @@ processResources {
 }
 
 dependencies {
-  api "com.google.guava:guava:27.0.1-jre"
+  api "com.google.guava:guava:$guavaJREVersion"
   compileOnly AndroidSdk.MAX_SDK.coordinates
 }
