@@ -4,4 +4,8 @@
       android:fontStyle="normal"
       android:fontWeight="400"
       android:font="@font/vt323_regular" />
+  <font
+      android:fontStyle="normal"
+      android:fontWeight="700"
+      android:font="@font/vt323_bold" />
 </font-family>

@@ -18,7 +18,6 @@ import org.robolectric.util.TestUtil;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
 public class ShadowFontBuilderTest {
-
   private File fontFile;
 
   @Before
@@ -31,5 +30,11 @@ public class ShadowFontBuilderTest {
     Font font = new Font.Builder(fontFile).build();
     assertThat(font.getStyle().getWeight()).isEqualTo(FontStyle.FONT_WEIGHT_NORMAL);
     assertThat(font.getStyle().getSlant()).isEqualTo(FontStyle.FONT_SLANT_UPRIGHT);
+  }
+
+  @Test
+  public void fontBuilder_toString() throws IOException {
+    Font font = new Font.Builder(fontFile).build();
+    assertThat(font.toString()).isNotNull();
   }
 }
