@@ -166,6 +166,10 @@ public class ClassInstrumentor {
         // If there is no constructor, adds one
         addNoArgsConstructor(mutableClass);
 
+        if (mutableClass.getName().equals("android.util.SparseArray")) {
+          addSetToSparseArray(mutableClass);
+        }
+
         addDirectCallConstructor(mutableClass);
 
         addRoboInitMethod(mutableClass);
@@ -177,6 +181,56 @@ public class ClassInstrumentor {
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
+  }
+
+  // See https://github.com/robolectric/robolectric/issues/6840
+  // Adds Set(int, object) to android.util.SparseArray.
+  private void addSetToSparseArray(MutableClass mutableClass) {
+    for (MethodNode method : mutableClass.getMethods()) {
+      if ("set".equals(method.name)) {
+        return;
+      }
+    }
+
+    MethodNode setFunction =
+        new MethodNode(
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            "$$robo$$android_util_SparseArray$set",
+            "(ILjava/lang/Object;)V",
+            "(ITE;)V",
+            null);
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(setFunction);
+    generator.loadThis();
+    generator.loadArg(0);
+    generator.loadArg(1);
+    generator.invokeVirtual(mutableClass.classType, new Method("put", "(ILjava/lang/Object;)V"));
+    generator.returnValue();
+    mutableClass.addMethod(setFunction);
+
+    Handle original =
+        new Handle(
+            Opcodes.H_INVOKESPECIAL,
+            mutableClass.classType.getInternalName(),
+            "$$robo$$android_util_SparseArray$set",
+            "(ILjava/lang/Object;)V",
+            false);
+
+    MethodNode setFunctionDynamic =
+        new MethodNode(
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            "set",
+            "(ILjava/lang/Object;)V",
+            "(ITE;)V",
+            null);
+    RobolectricGeneratorAdapter generatorDynamic =
+        new RobolectricGeneratorAdapter(setFunctionDynamic);
+    generatorDynamic.loadThis();
+    generatorDynamic.loadArg(0);
+    generatorDynamic.loadArg(1);
+    generatorDynamic.invokeDynamic(
+        "set", "(Landroid/util/SparseArray;ILjava/lang/Object;)V", BOOTSTRAP, original);
+    generatorDynamic.returnValue();
+    mutableClass.addMethod(setFunctionDynamic);
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
