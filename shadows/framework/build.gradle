@@ -46,6 +46,7 @@ dependencies {
     api project(":nativeruntime")
     api project(":resources")
     api project(":pluginapi")
+    api project(":sandbox")
     api project(":shadowapi")
     api project(":utils")
     api project(":utils:reflector")

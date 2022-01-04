@@ -7,6 +7,7 @@ import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -221,5 +222,14 @@ public class ShadowResourcesTest {
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(2000);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(9);
     typedArray.recycle();
+  }
+
+  @Test
+  public void getAttributeSetSourceResId() {
+    XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
+
+    int sourceRedId = ShadowResources.getAttributeSetSourceResId(xmlResourceParser);
+
+    assertThat(sourceRedId).isEqualTo(R.xml.preferences);
   }
 }
