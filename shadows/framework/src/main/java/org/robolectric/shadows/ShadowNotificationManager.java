@@ -33,7 +33,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings({"UnusedDeclaration", "AndroidConcurrentHashMap"})
 @Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
   private static final int MAX_NOTIFICATION_LIMIT = 25;
@@ -330,7 +330,10 @@ public class ShadowNotificationManager {
   protected String addAutomaticZenRule(AutomaticZenRule automaticZenRule) {
     Preconditions.checkNotNull(automaticZenRule);
     Preconditions.checkNotNull(automaticZenRule.getName());
-    Preconditions.checkNotNull(automaticZenRule.getOwner());
+    Preconditions.checkState(
+        automaticZenRule.getOwner() != null || automaticZenRule.getConfigurationActivity() != null,
+        "owner/configurationActivity cannot be null at the same time");
+
     Preconditions.checkNotNull(automaticZenRule.getConditionId());
     enforcePolicyAccess();
 

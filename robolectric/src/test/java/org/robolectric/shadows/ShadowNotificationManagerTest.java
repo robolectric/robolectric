@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.service.notification.StatusBarNotification;
+import android.service.notification.ZenPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
@@ -322,6 +323,27 @@ public class ShadowNotificationManagerTest {
       fail("Should have thrown SecurityException");
     } catch (SecurityException expected) {
     }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void addAutomaticZenRule_oneRuleWithConfigurationActivity_shouldAddRuleAndReturnId() {
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+
+    AutomaticZenRule rule =
+        new AutomaticZenRule(
+            "name",
+            /* owner= */ null,
+            new ComponentName("pkg", "cls"),
+            Uri.parse("condition://id"),
+            new ZenPolicy.Builder().build(),
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+            /* enabled= */ true);
+    String id = notificationManager.addAutomaticZenRule(rule);
+
+    assertThat(id).isNotEmpty();
+    assertThat(notificationManager.getAutomaticZenRule(id)).isEqualTo(rule);
+    assertThat(notificationManager.getAutomaticZenRules()).containsExactly(id, rule);
   }
 
   @Test
