@@ -20,6 +20,27 @@ import java.util.Map;
 public class DataSource {
   private String dataSource;
 
+  @SuppressWarnings("ObjectToString")
+  private static final FileDescriptorTransform DEFAULT_FD_TRANSFORM =
+      (fd, offset) -> fd.toString() + offset;
+
+  private static FileDescriptorTransform fdTransform = DEFAULT_FD_TRANSFORM;
+
+  /** Transform a {@link FileDescriptor} to a string. */
+  public interface FileDescriptorTransform {
+    String toString(FileDescriptor fd, long offset);
+  }
+
+  /**
+   * Optional transformation for {@link FileDescriptor}.
+   *
+   * <p>Helpful for associating a real test file to the data source used by shadow objects in
+   * stubbed methods.
+   */
+  public static void setFileDescriptorTransform(FileDescriptorTransform transform) {
+    fdTransform = transform;
+  }
+
   private DataSource(String dataSource) {
     this.dataSource = dataSource;
   }
@@ -60,9 +81,12 @@ public class DataSource {
             + assetFileDescriptor.getLength());
   }
 
-  @SuppressWarnings("ObjectToString")
   public static DataSource toDataSource(FileDescriptor fd, long offset, long length) {
-    return toDataSource(fd.toString() + offset);
+    return toDataSource(fdTransform.toString(fd, offset));
+  }
+
+  public static void reset() {
+    fdTransform = DEFAULT_FD_TRANSFORM;
   }
 
   @Override
