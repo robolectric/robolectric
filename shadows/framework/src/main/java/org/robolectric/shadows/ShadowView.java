@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -41,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -791,6 +793,9 @@ public class ShadowView {
 
     @Direct
     void mapRectFromViewToScreenCoords(RectF rect, boolean clipToParent);
+
+    @Direct
+    int getSourceLayoutResId();
   }
 
   public void callOnAttachedToWindow() {
@@ -862,6 +867,19 @@ public class ShadowView {
     //   mAttachInfo.mSession.getDisplayFrame(mAttachInfo.mWindow, outRect);
 
     ShadowDisplay.getDefaultDisplay().getRectSize(outRect);
+  }
+
+  /**
+   * Returns the layout resource id this view was inflated from. Backwards compatible version of
+   * {@link View#getSourceLayoutResId()}, passes through to the underlying implementation on API
+   * levels where it is supported.
+   */
+  public int getSourceLayoutResId() {
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      return reflector(_View_.class, realView).getSourceLayoutResId();
+    } else {
+      return ShadowResources.getAttributeSetSourceResId(attributeSet);
+    }
   }
 
   public static class WindowIdHelper {
