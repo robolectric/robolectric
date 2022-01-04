@@ -12,7 +12,7 @@ import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/** A Shadow for android.content.rollback.RollbackManager added in Android S. */
+/** A Shadow for android.net.vcn.VcnManager added in Android S. */
 @Implements(value = VcnManager.class, minSdk = VERSION_CODES.S, isInAndroidSdk = false)
 public class ShadowVcnManager {
 
