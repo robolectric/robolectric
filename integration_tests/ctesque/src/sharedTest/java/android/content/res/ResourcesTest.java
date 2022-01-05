@@ -1149,6 +1149,17 @@ public class ResourcesTest {
     new Font.Builder(context.getResources(), R.font.vt323_regular).build();
   }
 
+  @Test
+  @SdkSuppress(minSdkVersion = Q)
+  @Config(minSdk = Q)
+  public void getAttributeSetSourceResId() {
+    XmlResourceParser xmlResourceParser = resources.getXml(R.xml.preferences);
+
+    int sourceResId = Resources.getAttributeSetSourceResId(xmlResourceParser);
+
+    assertThat(sourceResId).isEqualTo(R.xml.preferences);
+  }
+
   private static String findRootTag(XmlResourceParser parser) throws Exception {
     int event;
     do {

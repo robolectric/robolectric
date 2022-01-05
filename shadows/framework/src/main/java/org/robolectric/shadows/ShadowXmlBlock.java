@@ -96,6 +96,7 @@ public class ShadowXmlBlock {
 //      return 0;
 //    }
 
+    st.setSourceResourceId(resid);
     st.restart();
 
     return Registries.NATIVE_RES_XML_PARSERS.register(st);
@@ -332,6 +333,16 @@ public class ShadowXmlBlock {
     }
 
     return st.indexOfAttribute(ns, nsLen, name, name.length());
+  }
+
+  @Implementation(minSdk = VERSION_CODES.Q)
+  protected static int nativeGetSourceResId(long state) {
+    ResXMLParser st = getResXMLParser(state);
+    if (st == null) {
+      return 0;
+    } else {
+      return st.getSourceResourceId();
+    }
   }
 
   @Implementation(maxSdk = VERSION_CODES.KITKAT_WATCH)

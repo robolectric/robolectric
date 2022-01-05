@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Priority;
+import org.robolectric.util.PerfStatsCollector;
 
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 class PluginFinder {
@@ -122,29 +123,35 @@ class PluginFinder {
 
     @Nonnull
     <T> Iterable<Class<? extends T>> load(Class<T> pluginType) {
+      return PerfStatsCollector.getInstance()
+          .measure(
+              "loadPlugins",
+              () -> {
+                ClassLoader serviceClassLoader = classLoader;
+                if (serviceClassLoader == null) {
+                  serviceClassLoader = Thread.currentThread().getContextClassLoader();
+                }
+                HashSet<Class<? extends T>> result = new HashSet<>();
 
-      ClassLoader serviceClassLoader = classLoader;
-      if (serviceClassLoader == null) {
-        serviceClassLoader = Thread.currentThread().getContextClassLoader();
-      }
-      HashSet<Class<? extends T>> result = new HashSet<>();
-
-      try {
-        Enumeration<URL> urls =
-            serviceClassLoader.getResources("META-INF/services/" + pluginType.getName());
-        while (urls.hasMoreElements()) {
-          URL url = urls.nextElement();
-          BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-          while (reader.ready()) {
-            String s = reader.readLine();
-            result.add(Class.forName(s, false, serviceClassLoader).asSubclass(pluginType));
-          }
-          reader.close();
-        }
-        return result;
-      } catch (IOException | ClassNotFoundException e) {
-        throw new AssertionError(e);
-      }
+                try {
+                  Enumeration<URL> urls =
+                      serviceClassLoader.getResources("META-INF/services/" + pluginType.getName());
+                  while (urls.hasMoreElements()) {
+                    URL url = urls.nextElement();
+                    BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(url.openStream()));
+                    while (reader.ready()) {
+                      String s = reader.readLine();
+                      result.add(
+                          Class.forName(s, false, serviceClassLoader).asSubclass(pluginType));
+                    }
+                    reader.close();
+                  }
+                  return result;
+                } catch (IOException | ClassNotFoundException e) {
+                  throw new AssertionError(e);
+                }
+              });
     }
   }
 
