@@ -59,6 +59,7 @@ public class ResXMLParser {
   int                mEventCode;
     ResXMLTree_node      mCurNode;
     int                 mCurExt;
+  int mSourceResourceId;
 
   public ResXMLParser(ResXMLTree tree) {
     this.mTree = tree;
@@ -598,6 +599,16 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     mEventCode = pos.eventCode;
     mCurNode = pos.curNode;
     mCurExt = pos.curExt;
+  }
+
+  public void setSourceResourceId(int resId)
+  {
+    mSourceResourceId = resId;
+  }
+
+  public int getSourceResourceId()
+  {
+    return mSourceResourceId;
   }
 
   static class ResXMLPosition
