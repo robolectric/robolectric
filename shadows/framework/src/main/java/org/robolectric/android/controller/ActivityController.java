@@ -2,6 +2,7 @@ package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -385,15 +386,23 @@ public class ActivityController<T extends Activity>
             final Bundle outState = new Bundle();
 
             // The order of onPause/onStop/onSaveInstanceState is undefined, but is usually:
-            // onPause -> onSaveInstanceState -> onStop
+            // onPause -> onSaveInstanceState -> onStop before API P, and onPause -> onStop ->
+            // onSaveInstanceState from API P.
+            // See
+            // https://developer.android.com/reference/android/app/Activity#onSaveInstanceState(android.os.Bundle) for documentation explained.
+            // And see ActivityThread#callActivityOnStop for related code.
             _component_.performPause();
-            _component_.performSaveInstanceState(outState);
-            if (RuntimeEnvironment.getApiLevel() <= M) {
-              _component_.performStop();
-            } else if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
-              _component_.performStop(true);
+            if (RuntimeEnvironment.getApiLevel() < P) {
+              _component_.performSaveInstanceState(outState);
+              if (RuntimeEnvironment.getApiLevel() <= M) {
+                _component_.performStop();
+              } else {
+                // API from N to O_MR1(both including)
+                _component_.performStop(true);
+              }
             } else {
               _component_.performStop(true, "configurationChange");
+              _component_.performSaveInstanceState(outState);
             }
 
             // This is the true and complete retained state, including loaders and retained
