@@ -234,7 +234,7 @@ public class ShadowWrangler implements ClassHandler {
             });
   }
 
-  @SuppressWarnings("ReferenceEquality")
+  @SuppressWarnings({"ReferenceEquality", "AndroidJdkLibsChecker"})
   @Override
   public MethodHandle findShadowMethodHandle(
       Class<?> definingClass, String name, MethodType methodType, boolean isStatic)
@@ -255,7 +255,22 @@ public class ShadowWrangler implements ClassHandler {
               }
 
               shadowMethod.setAccessible(true);
-              MethodHandle mh = LOOKUP.unreflect(shadowMethod);
+
+              MethodHandle mh;
+              if (name.equals(ShadowConstants.CONSTRUCTOR_METHOD_NAME)) {
+                if (Modifier.isStatic(shadowMethod.getModifiers())) {
+                  throw new UnsupportedOperationException(
+                      "static __constructor__ shadow methods are not supported");
+                }
+                // Use invokespecial to call constructor shadow methods. If invokevirtual is used,
+                // the wrong constructor may be called in situations where constructors with
+                // identical signatures are shadowed in object hierarchies.
+                mh =
+                    MethodHandles.privateLookupIn(shadowMethod.getDeclaringClass(), LOOKUP)
+                        .unreflectSpecial(shadowMethod, shadowMethod.getDeclaringClass());
+              } else {
+                mh = LOOKUP.unreflect(shadowMethod);
+              }
 
               // Robolectric doesn't actually look for static, this for example happens
               // in MessageQueue.nativeInit() which used to be void non-static in 4.2.
