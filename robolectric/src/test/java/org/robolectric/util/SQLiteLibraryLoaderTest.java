@@ -3,7 +3,6 @@ package org.robolectric.util;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,66 +41,65 @@ public class SQLiteLibraryLoaderTest {
   }
 
   @Test
-  public void shouldFindLibraryForWindowsXPX86() throws IOException {
+  public void shouldFindLibraryForWindowsXPX86() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "x86"))
         .isEqualTo("sqlite4java/win32-x86/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForWindows7X86() throws IOException {
+  public void shouldFindLibraryForWindows7X86() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "x86"))
         .isEqualTo("sqlite4java/win32-x86/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForWindowsXPAmd64() throws IOException {
+  public void shouldFindLibraryForWindowsXPAmd64() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows XP", "amd64"))
         .isEqualTo("sqlite4java/win32-x64/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForWindows7Amd64() throws IOException {
+  public void shouldFindLibraryForWindows7Amd64() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 7", "amd64"))
         .isEqualTo("sqlite4java/win32-x64/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForWindows10Amd64() throws IOException {
+  public void shouldFindLibraryForWindows10Amd64() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(WINDOWS), "Windows 10", "amd64"))
         .isEqualTo("sqlite4java/win32-x64/sqlite4java.dll");
   }
 
   @Test
-  public void shouldFindLibraryForLinuxi386() throws IOException {
+  public void shouldFindLibraryForLinuxi386() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "i386"))
         .isEqualTo("sqlite4java/linux-i386/libsqlite4java.so");
   }
 
   @Test
-  public void shouldFindLibraryForLinuxx86() throws IOException {
+  public void shouldFindLibraryForLinuxx86() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "x86"))
         .isEqualTo("sqlite4java/linux-i386/libsqlite4java.so");
   }
 
   @Test
-  public void shouldFindLibraryForLinuxAmd64() throws IOException {
+  public void shouldFindLibraryForLinuxAmd64() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(LINUX), "Some linux version", "amd64"))
         .isEqualTo("sqlite4java/linux-amd64/libsqlite4java.so");
   }
 
   @Test
-  public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() throws IOException {
+  public void shouldFindLibraryForMacWithAnyArchAndDyLibMapping() {
     assertThat(loadLibrary(new SQLiteLibraryLoader(MAC), "Mac OS X", "any architecture"))
         .isEqualTo("sqlite4java/osx/libsqlite4java.dylib");
   }
 
   @Test(expected = UnsupportedOperationException.class)
-  public void shouldThrowExceptionIfUnknownNameAndArch() throws Exception {
+  public void shouldThrowExceptionIfUnknownNameAndArch() {
     loadLibrary(new SQLiteLibraryLoader(LINUX), "ACME Electronic", "FooBar2000");
   }
 
-  private String loadLibrary(SQLiteLibraryLoader loader, String name, String arch)
-      throws IOException {
+  private String loadLibrary(SQLiteLibraryLoader loader, String name, String arch) {
     setNameAndArch(name, arch);
     return loader.getLibClasspathResourceName();
   }
