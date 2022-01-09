@@ -91,10 +91,10 @@ public class ShadowXmlBlock {
 //    }
 
     ResXMLParser st = new ResXMLParser(osb);
-//    if (st == NULL) {
-//      jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
-//      return 0;
-//    }
+    //    if (st == NULL) {
+    //      jniThrowException(env, "java/lang/OutOfMemoryError", NULL);
+    //      return 0;
+    //    }
 
     st.setSourceResourceId(resid);
     st.restart();

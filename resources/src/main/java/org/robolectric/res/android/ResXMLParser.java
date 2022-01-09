@@ -601,13 +601,11 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
     mCurExt = pos.curExt;
   }
 
-  public void setSourceResourceId(int resId)
-  {
+  public void setSourceResourceId(int resId) {
     mSourceResourceId = resId;
   }
 
-  public int getSourceResourceId()
-  {
+  public int getSourceResourceId() {
     return mSourceResourceId;
   }
 
