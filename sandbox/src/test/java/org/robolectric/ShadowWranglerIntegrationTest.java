@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
@@ -328,18 +327,6 @@ public class ShadowWranglerIntegrationTest {
   public static class TextFoo extends Foo {
     public TextFoo(String s) {
       super(s);
-    }
-  }
-
-  @Implements(Foo.class)
-  public static class ShadowFooParent {
-    @RealObject
-    private Foo realFoo;
-    public Foo realFooInParentConstructor;
-
-    @Implementation
-    protected void __constructor__(String name) {
-      realFooInParentConstructor = realFoo;
     }
   }
 
