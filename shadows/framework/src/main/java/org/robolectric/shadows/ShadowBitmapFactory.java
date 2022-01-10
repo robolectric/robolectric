@@ -201,8 +201,6 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeByteArray(byte[] data, int offset, int length) {
     Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
-    shadowBitmap.createdFromBytes = data;
     return bitmap;
   }
 
@@ -225,6 +223,8 @@ public class ShadowBitmapFactory {
       return null;
     }
     Bitmap bitmap = create(desc, opts, image);
+    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    shadowBitmap.createdFromBytes = data;
     return bitmap;
   }
 
