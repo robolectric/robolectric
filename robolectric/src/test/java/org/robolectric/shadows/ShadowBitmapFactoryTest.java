@@ -143,6 +143,18 @@ public class ShadowBitmapFactoryTest {
   }
 
   @Test
+  public void decodeBytes_shouldSetDescriptionAndCreatedFromWithOptions() throws Exception {
+    byte[] yummyBites = "Hi!".getBytes("UTF-8");
+    BitmapFactory.Options options = new BitmapFactory.Options();
+    Bitmap bitmap = BitmapFactory.decodeByteArray(yummyBites, 100, 100, options);
+    ShadowBitmap shadowBitmap = shadowOf(bitmap);
+    assertEquals("Bitmap for Hi! bytes 100..100", shadowBitmap.getDescription());
+    assertEquals(yummyBites, shadowBitmap.getCreatedFromBytes());
+    assertEquals(100, bitmap.getWidth());
+    assertEquals(100, bitmap.getHeight());
+  }
+
+  @Test
   public void decodeStream_shouldSetDescriptionWithNullOptions() throws Exception {
     InputStream inputStream =
         context.getContentResolver().openInputStream(Uri.parse("content:/path"));
