@@ -120,6 +120,9 @@ public class ShadowEnvironment {
 
   @Implementation
   protected static File getExternalStoragePublicDirectory(String type) {
+    if (externalStorageState.equals(Environment.MEDIA_UNKNOWN)) {
+      return null;
+    }
     if (EXTERNAL_FILES_DIR == null) {
       EXTERNAL_FILES_DIR =
           RuntimeEnvironment.getTempDirectory().createIfNotExists("external-files");
@@ -145,6 +148,7 @@ public class ShadowEnvironment {
 
     storageState = new HashMap<>();
     externalDirs.clear();
+    externalStorageState = Environment.MEDIA_REMOVED;
 
     sIsExternalStorageEmulated = false;
     isExternalStorageLegacy = false;
