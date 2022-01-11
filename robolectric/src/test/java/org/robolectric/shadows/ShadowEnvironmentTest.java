@@ -27,7 +27,7 @@ public class ShadowEnvironmentTest {
 
   @After
   public void tearDown() throws Exception {
-    ShadowEnvironment.setExternalStorageState(Environment.MEDIA_REMOVED);
+    ShadowEnvironment.reset();
   }
 
   @Test
@@ -72,6 +72,12 @@ public class ShadowEnvironmentTest {
     File path2 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
 
     assertThat(path1).isEqualTo(path2);
+  }
+
+  @Test
+  public void getExternalStoragePublicDirectory_unknownMediaState_returnsNull() {
+    ShadowEnvironment.setExternalStorageState(Environment.MEDIA_UNKNOWN);
+    assertThat(Environment.getExternalStoragePublicDirectory(null)).isNull();
   }
 
   @Test
@@ -142,6 +148,14 @@ public class ShadowEnvironmentTest {
     assertThat(Environment.isExternalStorageEmulated(file)).isTrue();
     ShadowEnvironment.reset();
     assertThat(Environment.isExternalStorageEmulated(file)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void reset_shouldResetExternalStorageState() {
+    ShadowEnvironment.setExternalStorageState(Environment.MEDIA_UNKNOWN);
+    ShadowEnvironment.reset();
+    assertThat(Environment.getExternalStorageState()).isEqualTo(Environment.MEDIA_REMOVED);
   }
 
   @Test
