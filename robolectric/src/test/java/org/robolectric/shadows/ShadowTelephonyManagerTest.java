@@ -455,6 +455,29 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void listen_doesNotNotifyListenerOfCurrentServiceStateIfUninitialized() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+
+    telephonyManager.listen(listener, LISTEN_SERVICE_STATE);
+
+    verifyNoMoreInteractions(listener);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void listen_notifiesListenerOfCurrentServiceStateIfInitialized() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    ServiceState serviceState = new ServiceState();
+    serviceState.setState(ServiceState.STATE_OUT_OF_SERVICE);
+    shadowOf(telephonyManager).setServiceState(serviceState);
+
+    telephonyManager.listen(listener, LISTEN_SERVICE_STATE);
+
+    verify(listener, times(1)).onServiceStateChanged(serviceState);
+  }
+
+  @Test
   public void shouldSetIsNetworkRoaming() {
     shadowOf(telephonyManager).setIsNetworkRoaming(true);
 
