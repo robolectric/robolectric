@@ -146,6 +146,10 @@ public class ClassInstrumentor {
       // Need Java version >=7 to allow invokedynamic
       mutableClass.classNode.version = Math.max(mutableClass.classNode.version, Opcodes.V1_7);
 
+      if (mutableClass.getName().equals("android.util.SparseArray")) {
+        addSetToSparseArray(mutableClass);
+      }
+
       instrumentMethods(mutableClass);
 
       if (mutableClass.isInterface()) {
@@ -177,6 +181,31 @@ public class ClassInstrumentor {
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
+  }
+
+  // See https://github.com/robolectric/robolectric/issues/6840
+  // Adds Set(int, object) to android.util.SparseArray.
+  private void addSetToSparseArray(MutableClass mutableClass) {
+    for (MethodNode method : mutableClass.getMethods()) {
+      if ("set".equals(method.name)) {
+        return;
+      }
+    }
+
+    MethodNode setFunction =
+        new MethodNode(
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            "set",
+            "(ILjava/lang/Object;)V",
+            "(ITE;)V",
+            null);
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(setFunction);
+    generator.loadThis();
+    generator.loadArg(0);
+    generator.loadArg(1);
+    generator.invokeVirtual(mutableClass.classType, new Method("put", "(ILjava/lang/Object;)V"));
+    generator.returnValue();
+    mutableClass.addMethod(setFunction);
   }
 
   private void instrumentMethods(MutableClass mutableClass) {

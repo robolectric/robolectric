@@ -33,6 +33,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
+/** Shadows for NotificationManager. */
 @SuppressWarnings({"UnusedDeclaration", "AndroidConcurrentHashMap"})
 @Implements(value = NotificationManager.class, looseSignatures = true)
 public class ShadowNotificationManager {
@@ -347,7 +348,9 @@ public class ShadowNotificationManager {
     // NotificationManagerService doesn't check that id is non-null.
     Preconditions.checkNotNull(automaticZenRule);
     Preconditions.checkNotNull(automaticZenRule.getName());
-    Preconditions.checkNotNull(automaticZenRule.getOwner());
+    Preconditions.checkState(
+        automaticZenRule.getOwner() != null || automaticZenRule.getConfigurationActivity() != null,
+        "owner/configurationActivity cannot be null at the same time");
     Preconditions.checkNotNull(automaticZenRule.getConditionId());
     enforcePolicyAccess();
 

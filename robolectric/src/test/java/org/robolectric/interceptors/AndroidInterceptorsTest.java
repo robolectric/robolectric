@@ -26,7 +26,9 @@ public class AndroidInterceptorsTest {
             new MethodRef("java.lang.System", "arraycopy"),
             new MethodRef("java.lang.System", "logE"),
             new MethodRef("java.util.Locale", "adjustLanguageCode"),
-            new MethodRef("java.io.FileDescriptor", "release$"));
+            new MethodRef("java.io.FileDescriptor", "release$"),
+            new MethodRef("java.io.FileDescriptor", "getInt$"),
+            new MethodRef("java.io.FileDescriptor", "setInt$"));
   }
 
   @Test

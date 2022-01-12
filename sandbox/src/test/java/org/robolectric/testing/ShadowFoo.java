@@ -1,12 +1,12 @@
 package org.robolectric.testing;
 
-import org.robolectric.ShadowWranglerIntegrationTest;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 
+/** A test class that shadows a constructor. */
 @Implements(Foo.class)
-public class ShadowFoo extends ShadowWranglerIntegrationTest.ShadowFooParent {
+public class ShadowFoo extends ShadowFooParent {
   @RealObject public Foo realFooField;
   public Foo realFooInConstructor;
   public String name;
