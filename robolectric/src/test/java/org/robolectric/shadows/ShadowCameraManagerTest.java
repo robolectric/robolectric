@@ -262,4 +262,78 @@ public class ShadowCameraManagerTest {
     shadowOf(Looper.myLooper()).idle();
     verify(mockCallback).onClosed(cameraDeviceCaptor.getValue());
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void registerCallbackAvailable() throws CameraAccessException {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+    // Verify adding the camera triggers the callback
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    verify(mockCallback).onCameraAvailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void unregisterCallbackAvailable() throws CameraAccessException {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.unregisterAvailabilityCallback(mockCallback);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    verify(mockCallback, never()).onCameraAvailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void registerCallbackUnavailable() throws CameraAccessException {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+
+    // Verify that the camera unavailable callback is called when the camera is removed
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    verify(mockCallback).onCameraUnavailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void unregisterCallbackUnavailable() throws CameraAccessException {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    cameraManager.unregisterAvailabilityCallback(mockCallback);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+
+    verify(mockCallback, never()).onCameraUnavailable(CAMERA_ID_0);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void registerCallbackUnavailableInvalidCameraId() throws CameraAccessException {
+    CameraManager.AvailabilityCallback mockCallback =
+        mock(CameraManager.AvailabilityCallback.class);
+
+    // Verify that the callback is not triggered for a camera that was never added
+    cameraManager.registerAvailabilityCallback(mockCallback, /* handler = */ null);
+    try {
+      shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+    } catch (IllegalArgumentException e) {
+      // Expected path for a bad cameraId
+    }
+
+    verify(mockCallback, never()).onCameraUnavailable(CAMERA_ID_0);
+  }
 }

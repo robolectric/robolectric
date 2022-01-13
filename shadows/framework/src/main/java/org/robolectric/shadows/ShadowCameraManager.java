@@ -16,6 +16,7 @@ import android.os.Handler;
 import com.google.common.base.Preconditions;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ public class ShadowCameraManager {
   private final Map<String, CameraCharacteristics> cameraIdToCharacteristics =
       new LinkedHashMap<>();
   private final Map<String, Boolean> cameraTorches = new HashMap<>();
+  private final Set<CameraManager.AvailabilityCallback> registeredCallbacks = new HashSet<>();
   // Most recent camera device opened with openCamera
   private CameraDevice lastDevice;
   // Most recent callback passed to openCamera
@@ -186,6 +188,41 @@ public class ShadowCameraManager {
     return deviceImpl;
   }
 
+  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  protected void registerAvailabilityCallback(
+      CameraManager.AvailabilityCallback callback, Handler handler) {
+    Preconditions.checkNotNull(callback);
+    registeredCallbacks.add(callback);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  protected void unregisterAvailabilityCallback(CameraManager.AvailabilityCallback callback) {
+    Preconditions.checkNotNull(callback);
+    registeredCallbacks.remove(callback);
+  }
+
+  /**
+   * Calls all registered callbacks's onCameraAvailable method. This is a no-op if no callbacks are
+   * registered.
+   */
+  private void triggerOnCameraAvailable(@NonNull String cameraId) {
+    Preconditions.checkNotNull(cameraId);
+    for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
+      callback.onCameraAvailable(cameraId);
+    }
+  }
+
+  /**
+   * Calls all registered callbacks's onCameraUnavailable method. This is a no-op if no callbacks
+   * are registered.
+   */
+  private void triggerOnCameraUnavailable(@NonNull String cameraId) {
+    Preconditions.checkNotNull(cameraId);
+    for (CameraManager.AvailabilityCallback callback : registeredCallbacks) {
+      callback.onCameraUnavailable(cameraId);
+    }
+  }
+
   /**
    * Adds the given cameraId and characteristics to this shadow.
    *
@@ -199,6 +236,7 @@ public class ShadowCameraManager {
     Preconditions.checkArgument(!cameraIdToCharacteristics.containsKey(cameraId));
 
     cameraIdToCharacteristics.put(cameraId, characteristics);
+    triggerOnCameraAvailable(cameraId);
   }
 
   /**
@@ -211,6 +249,7 @@ public class ShadowCameraManager {
     Preconditions.checkArgument(cameraIdToCharacteristics.containsKey(cameraId));
 
     cameraIdToCharacteristics.remove(cameraId);
+    triggerOnCameraUnavailable(cameraId);
   }
 
   /** Returns what the supplied camera's torch is set to. */
