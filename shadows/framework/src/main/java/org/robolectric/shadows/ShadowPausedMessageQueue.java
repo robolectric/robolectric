@@ -331,7 +331,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @ForType(MessageQueue.class)
   private interface MessageQueueReflector {
 
-    void enqueueMessage(Message msg, long when);
+    boolean enqueueMessage(Message msg, long when);
 
     Message next();
 
