@@ -399,6 +399,18 @@ public class ClassInstrumentor {
           }
           break;
 
+        case Opcodes.PUTFIELD:
+          FieldInsnNode pnode = (FieldInsnNode) node;
+          if (pnode.owner.equals(mutableClass.internalClassName) && pnode.name.equals("this$0")) {
+            // remove all instructions in the range startIndex..i, from aload_0 to putfield this$0
+            while (startIndex <= i) {
+              ctor.instructions.remove(insns[startIndex]);
+              removedInstructions.add(insns[startIndex]);
+              startIndex++;
+            }
+          }
+          break;
+
         case Opcodes.INVOKESPECIAL:
           MethodInsnNode mnode = (MethodInsnNode) node;
           if (mnode.owner.equals(mutableClass.internalClassName)
