@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -39,6 +40,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link android.net.wifi.WifiManager}. */
 @Implements(value = WifiManager.class, looseSignatures = true)
+@SuppressWarnings("AndroidConcurrentHashMap")
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
 
@@ -54,6 +56,7 @@ public class ShadowWifiManager {
   private DhcpInfo dhcpInfo;
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
+  private boolean isStaApConcurrencySupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
@@ -103,6 +106,17 @@ public class ShadowWifiManager {
   /** Sets whether 5ghz band is supported. */
   public void setIs5GHzBandSupported(boolean is5GHzBandSupported) {
     this.is5GHzBandSupported = is5GHzBandSupported;
+  }
+
+  /** Returns last value provided to #setStaApConcurrencySupported. */
+  @Implementation(minSdk = R)
+  protected boolean isStaApConcurrencySupported() {
+    return isStaApConcurrencySupported;
+  }
+
+  /** Sets whether STA/AP concurrency is supported. */
+  public void setStaApConcurrencySupported(boolean isStaApConcurrencySupported) {
+    this.isStaApConcurrencySupported = isStaApConcurrencySupported;
   }
 
   /**

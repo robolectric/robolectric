@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
@@ -526,6 +527,14 @@ public class ShadowWifiManagerTest {
     assertThat(wifiManager.is5GHzBandSupported()).isFalse();
     shadowOf(wifiManager).setIs5GHzBandSupported(true);
     assertThat(wifiManager.is5GHzBandSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isStaApConcurrencySupportedAndConfigurable() {
+    assertThat(wifiManager.isStaApConcurrencySupported()).isFalse();
+    shadowOf(wifiManager).setStaApConcurrencySupported(true);
+    assertThat(wifiManager.isStaApConcurrencySupported()).isTrue();
   }
 
   @Test
