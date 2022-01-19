@@ -619,6 +619,10 @@ public class ShadowTelephonyManager {
         && ((flags & PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED) != 0)) {
       listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
     }
+
+    if (serviceState != null && ((flags & PhoneStateListener.LISTEN_SERVICE_STATE) != 0)) {
+      listener.onServiceStateChanged(serviceState);
+    }
   }
 
   protected Iterable<PhoneStateListener> getListenersForFlags(int flags) {
