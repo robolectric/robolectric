@@ -146,6 +146,10 @@ public class ClassInstrumentor {
       // Need Java version >=7 to allow invokedynamic
       mutableClass.classNode.version = Math.max(mutableClass.classNode.version, Opcodes.V1_7);
 
+      if (mutableClass.getName().equals("android.util.SparseArray")) {
+        addSetToSparseArray(mutableClass);
+      }
+
       instrumentMethods(mutableClass);
 
       if (mutableClass.isInterface()) {
@@ -177,6 +181,31 @@ public class ClassInstrumentor {
     } catch (Exception e) {
       throw new RuntimeException("failed to instrument " + mutableClass.getName(), e);
     }
+  }
+
+  // See https://github.com/robolectric/robolectric/issues/6840
+  // Adds Set(int, object) to android.util.SparseArray.
+  private void addSetToSparseArray(MutableClass mutableClass) {
+    for (MethodNode method : mutableClass.getMethods()) {
+      if ("set".equals(method.name)) {
+        return;
+      }
+    }
+
+    MethodNode setFunction =
+        new MethodNode(
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            "set",
+            "(ILjava/lang/Object;)V",
+            "(ITE;)V",
+            null);
+    RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(setFunction);
+    generator.loadThis();
+    generator.loadArg(0);
+    generator.loadArg(1);
+    generator.invokeVirtual(mutableClass.classType, new Method("put", "(ILjava/lang/Object;)V"));
+    generator.returnValue();
+    mutableClass.addMethod(setFunction);
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
@@ -367,6 +396,18 @@ public class ClassInstrumentor {
           VarInsnNode vnode = (VarInsnNode) node;
           if (vnode.var == 0) {
             startIndex = i;
+          }
+          break;
+
+        case Opcodes.PUTFIELD:
+          FieldInsnNode pnode = (FieldInsnNode) node;
+          if (pnode.owner.equals(mutableClass.internalClassName) && pnode.name.equals("this$0")) {
+            // remove all instructions in the range startIndex..i, from aload_0 to putfield this$0
+            while (startIndex <= i) {
+              ctor.instructions.remove(insns[startIndex]);
+              removedInstructions.add(insns[startIndex]);
+              startIndex++;
+            }
           }
           break;
 

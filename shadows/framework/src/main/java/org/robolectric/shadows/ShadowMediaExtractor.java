@@ -206,5 +206,6 @@ public class ShadowMediaExtractor {
   @Resetter
   public static void reset() {
     tracksMap.clear();
+    DataSource.reset();
   }
 }
