@@ -131,6 +131,24 @@ public class ShadowStatFs {
     stats.put(path, new Stats(blockCount, freeBlocks, availableBlocks));
   }
 
+  /**
+   * Unregister stats for a path. If the path is not registered, it will be a no-op.
+   *
+   * @param path path to the file
+   */
+  public static void unregisterStats(File path) {
+    unregisterStats(path.getAbsolutePath());
+  }
+
+  /**
+   * Unregister stats for a path. If the path is not registered, it will be a no-op.
+   *
+   * @param path path to the file
+   */
+  public static void unregisterStats(String path) {
+    stats.remove(path);
+  }
+
   @Resetter
   public static void reset() {
     stats.clear();
