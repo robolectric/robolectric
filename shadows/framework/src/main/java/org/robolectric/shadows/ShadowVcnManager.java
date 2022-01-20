@@ -51,8 +51,6 @@ public class ShadowVcnManager {
   protected void clearVcnConfig(ParcelUuid subGroup) {
     if (subGroup == null) {
       throw new IllegalArgumentException("subGroup == null");
-    } else if (!configs.containsKey(subGroup)) {
-      throw new IllegalArgumentException("subGroup not configured");
     }
     configs.remove(subGroup);
   }
