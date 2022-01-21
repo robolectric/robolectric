@@ -6,7 +6,6 @@ import static android.media.MediaMetadataRetriever.METADATA_KEY_TITLE;
 import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
-
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.fail;
@@ -23,14 +22,13 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.FileDescriptor;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.util.DataSource;
-
-import java.io.FileDescriptor;
-import java.util.HashMap;
-import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMediaMetadataRetrieverTest {
@@ -74,9 +72,12 @@ public class ShadowMediaMetadataRetrieverTest {
     retriever.setDataSource(path);
     retriever2.setDataSource(path2);
     assertThat(retriever.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 1024, 768)).isEqualTo(bitmap);
-    assertThat(retriever.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 1024, 768)).isNotEqualTo(bitmap2);
-    assertThat(retriever2.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 320, 640)).isEqualTo(bitmap2);
-    assertThat(retriever2.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 320, 640)).isNotEqualTo(bitmap);
+    assertThat(retriever.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 1024, 768))
+        .isNotEqualTo(bitmap2);
+    assertThat(retriever2.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 320, 640))
+        .isEqualTo(bitmap2);
+    assertThat(retriever2.getScaledFrameAtTime(1, OPTION_CLOSEST_SYNC, 320, 640))
+        .isNotEqualTo(bitmap);
   }
 
   @Test
@@ -100,36 +101,59 @@ public class ShadowMediaMetadataRetrieverTest {
   }
 
   @Test
+  public void setDataSource_noFdTransform_differentFdsAreDifferentDataSources() {
+    FileDescriptor fd2 = new FileDescriptor();
+    addFrame(fd, 1, bitmap);
+
+    retriever.setDataSource(fd2);
+
+    assertThat(retriever.getFrameAtTime(1)).isNotEqualTo(bitmap);
+  }
+
+  @Test
+  public void setDataSource_withFdTransform_differentFdsSameFileAreSameDataSource() {
+    DataSource.setFileDescriptorTransform((fd, offset) -> "bytesextractedfromfile");
+    addFrame(fd, 1, bitmap);
+
+    FileDescriptor fd2 = new FileDescriptor();
+    retriever.setDataSource(fd2);
+
+    assertThat(retriever.getFrameAtTime(1)).isEqualTo(bitmap);
+  }
+
+  @Test
   @Config(minSdk = M)
   public void setDataSource_withDifferentMediaDataSourceAreSameDataSources() {
-    MediaDataSource mediaDataSource1 = new MediaDataSource() {
-      @Override
-      public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
-        return 0;
-      }
+    MediaDataSource mediaDataSource1 =
+        new MediaDataSource() {
+          @Override
+          public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
+            return 0;
+          }
 
-      @Override
-      public long getSize() {
-        return 0;
-      }
+          @Override
+          public long getSize() {
+            return 0;
+          }
 
-      @Override
-      public void close() {}
-    };
-    MediaDataSource mediaDataSource2 = new MediaDataSource() {
-      @Override
-      public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
-        return 0;
-      }
+          @Override
+          public void close() {}
+        };
+    MediaDataSource mediaDataSource2 =
+        new MediaDataSource() {
+          @Override
+          public int readAt(final long l, final byte[] bytes, final int i, final int i1) {
+            return 0;
+          }
 
-      @Override
-      public long getSize() {
-        return 0;
-      }
+          @Override
+          public long getSize() {
+            return 0;
+          }
 
-      @Override
-      public void close() {}
-    };
+          @Override
+          public void close() {}
+        };
     addFrame(DataSource.toDataSource(mediaDataSource1), 1, bitmap);
     addFrame(DataSource.toDataSource(mediaDataSource2), 1, bitmap2);
     retriever.setDataSource(mediaDataSource1);
@@ -161,10 +185,14 @@ public class ShadowMediaMetadataRetrieverTest {
     addScaledFrame(toDataSource(context, uri), 12, 1024, 768, bitmap);
     addScaledFrame(toDataSource(context, uri), 13, 320, 640, bitmap2);
     retriever.setDataSource(context, uri);
-    assertThat(retriever.getScaledFrameAtTime(12, OPTION_CLOSEST_SYNC, 1024, 768)).isEqualTo(bitmap);
-    assertThat(retriever.getScaledFrameAtTime(13, OPTION_CLOSEST_SYNC, 1024, 768)).isNotEqualTo(bitmap);
-    assertThat(retriever.getScaledFrameAtTime(12, OPTION_CLOSEST_SYNC, 320, 640)).isNotEqualTo(bitmap2);
-    assertThat(retriever.getScaledFrameAtTime(13, OPTION_CLOSEST_SYNC, 320, 640)).isEqualTo(bitmap2);
+    assertThat(retriever.getScaledFrameAtTime(12, OPTION_CLOSEST_SYNC, 1024, 768))
+        .isEqualTo(bitmap);
+    assertThat(retriever.getScaledFrameAtTime(13, OPTION_CLOSEST_SYNC, 1024, 768))
+        .isNotEqualTo(bitmap);
+    assertThat(retriever.getScaledFrameAtTime(12, OPTION_CLOSEST_SYNC, 320, 640))
+        .isNotEqualTo(bitmap2);
+    assertThat(retriever.getScaledFrameAtTime(13, OPTION_CLOSEST_SYNC, 320, 640))
+        .isEqualTo(bitmap2);
   }
 
   @Test
@@ -194,7 +222,9 @@ public class ShadowMediaMetadataRetrieverTest {
     try {
       retriever2.setDataSource(path2);
       fail("Expected exception");
-    } catch (IllegalArgumentException e) {}
+    } catch (Exception caught) {
+      assertThat(caught).isInstanceOf(IllegalArgumentException.class);
+    }
     ShadowMediaMetadataRetriever.reset();
     assertThat(retriever.extractMetadata(METADATA_KEY_ARTIST)).isNull();
     assertThat(retriever.getFrameAtTime(1)).isNull();
@@ -204,7 +234,7 @@ public class ShadowMediaMetadataRetrieverTest {
       throw new RuntimeException("Shouldn't throw exception after reset", e);
     }
   }
-  
+
   @Test
   public void setDataSourceException_withAllowedException() {
     RuntimeException e = new RuntimeException("some dummy message");

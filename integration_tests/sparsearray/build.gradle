@@ -1,0 +1,19 @@
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
+apply plugin: 'kotlin'
+
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+dependencies {
+    api project(":robolectric")
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntime AndroidSdk.MAX_SDK.coordinates
+    testImplementation "androidx.test:core:$axtVersion"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "com.google.truth:truth:${truthVersion}"
+}

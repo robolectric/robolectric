@@ -59,7 +59,10 @@ public class AndroidInterceptors {
    */
   public static class FileDescriptorInterceptor extends Interceptor {
     public FileDescriptorInterceptor() {
-      super(new MethodRef(FileDescriptor.class, "release$"));
+      super(
+          new MethodRef(FileDescriptor.class, "release$"),
+          new MethodRef(FileDescriptor.class, "getInt$"),
+          new MethodRef(FileDescriptor.class, "setInt$"));
     }
 
     private static void moveField(
@@ -69,6 +72,28 @@ public class AndroidInterceptors {
       fieldAccessor.setAccessible(true);
       fieldAccessor.set(out, fieldAccessor.get(in));
       fieldAccessor.set(in, movedOutValue);
+    }
+
+    static Object setInt(FileDescriptor input, int value) {
+      try {
+        input.getClass().getDeclaredField("fd").setInt(input, value);
+      } catch (Exception e) {
+        // Ignore
+      }
+      return null;
+    }
+
+    static int getInt(FileDescriptor input) {
+      try {
+        Field fieldAccessor = input.getClass().getDeclaredField("fd");
+        fieldAccessor.setAccessible(true);
+        return fieldAccessor.getInt(input);
+      } catch (IllegalAccessException e) {
+        // Should not happen since we set this to be accessible
+        return -1;
+      } catch (NoSuchFieldException e) {
+        return -2;
+      }
     }
 
     static FileDescriptor release(FileDescriptor input) {
@@ -104,7 +129,13 @@ public class AndroidInterceptors {
       return new Function<Object, Object>() {
         @Override
         public Object call(Class<?> theClass, Object value, Object[] params) {
-          return release((FileDescriptor) value);
+          if ("release$".equals(methodSignature.methodName)) {
+            return release((FileDescriptor) value);
+          } else if ("getInt$".equals(methodSignature.methodName)) {
+            return getInt((FileDescriptor) value);
+          } else {
+            return setInt((FileDescriptor) value, (int) params[0]);
+          }
         }
       };
     }
@@ -112,8 +143,15 @@ public class AndroidInterceptors {
     @Override
     public MethodHandle getMethodHandle(String methodName, MethodType type)
         throws NoSuchMethodException, IllegalAccessException {
-      return lookup.findStatic(
-          getClass(), "release", methodType(FileDescriptor.class, FileDescriptor.class));
+      if ("release$".equals(methodName)) {
+        return lookup.findStatic(
+            getClass(), "release", methodType(FileDescriptor.class, FileDescriptor.class));
+      } else if ("getInt$".equals(methodName)) {
+        return lookup.findStatic(getClass(), "getInt", methodType(int.class, FileDescriptor.class));
+      } else {
+        return lookup.findStatic(
+            getClass(), "setInt", methodType(Object.class, FileDescriptor.class, int.class));
+      }
     }
   }
 
