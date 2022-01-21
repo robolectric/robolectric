@@ -391,6 +391,6 @@ public class ShadowRenderNode {
 
   // Temporarily allow disabling the matrix calculation during migration.
   private static boolean isMatrixEnabled() {
-    return Boolean.parseBoolean(System.getProperty("robolectric.rendernode.enableMatrix", "false"));
+    return Boolean.parseBoolean(System.getProperty("robolectric.rendernode.enableMatrix", "true"));
   }
 }
