@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.ActivityThread;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -14,12 +16,15 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -115,6 +120,7 @@ public class ShadowBluetoothDevice {
 
   @Implementation
   protected String getAlias() {
+    checkForBluetoothConnectIfAtLeastAndroidS();
     return alias;
   }
 
@@ -187,7 +193,20 @@ public class ShadowBluetoothDevice {
   /** Returns whether this device has been bonded with. */
   @Implementation
   protected boolean createBond() {
+    checkForBluetoothConnectIfAtLeastAndroidS();
     return createdBond;
+  }
+
+  @Implementation(minSdk = Q)
+  protected BluetoothSocket createInsecureL2capChannel(int psm) throws IOException {
+    checkForBluetoothConnectIfAtLeastAndroidS();
+    return realBluetoothDevice.createInsecureL2capChannel(psm);
+  }
+
+  @Implementation(minSdk = Q)
+  protected BluetoothSocket createL2capChannel(int psm) throws IOException {
+    checkForBluetoothConnectIfAtLeastAndroidS();
+    return realBluetoothDevice.createL2capChannel(psm);
   }
 
   @Implementation
@@ -249,6 +268,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation
   protected boolean fetchUuidsWithSdp() {
+    checkForBluetoothConnectIfAtLeastAndroidS();
     fetchUuidsWithSdpCount++;
     return fetchUuidsWithSdpResult;
   }
@@ -261,12 +281,14 @@ public class ShadowBluetoothDevice {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
+    checkForBluetoothConnectIfAtLeastAndroidS();
     return connectGatt(callback);
   }
 
   @Implementation(minSdk = M)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback, int transport) {
+    checkForBluetoothConnectIfAtLeastAndroidS();
     return connectGatt(callback);
   }
 
@@ -318,6 +340,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation
   public BluetoothClass getBluetoothClass() {
+    checkForBluetoothConnectIfAtLeastAndroidS();
     return bluetoothClass;
   }
 
@@ -332,5 +355,23 @@ public class ShadowBluetoothDevice {
     @Static
     @Direct
     IBluetooth getService();
+  }
+
+  static ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  private void checkForBluetoothConnectIfAtLeastAndroidS() {
+    if (VERSION.SDK_INT >= VERSION_CODES.S
+        && !checkPermission(android.Manifest.permission.BLUETOOTH_CONNECT)) {
+      throw new SecurityException("Bluetooth connect permission required.");
+    }
+  }
+
+  static boolean checkPermission(String permission) {
+    return getShadowInstrumentation()
+            .checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid())
+        == PERMISSION_GRANTED;
   }
 }

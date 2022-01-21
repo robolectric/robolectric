@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
@@ -9,16 +10,19 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothSocket;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
@@ -75,6 +79,8 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   public void canSetAndGetCreatedBond() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     assertThat(device.createBond()).isFalse();
@@ -109,6 +115,8 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   public void canSetAndGetFetchUuidsWithSdpResult() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(device.fetchUuidsWithSdp()).isFalse();
 
@@ -118,6 +126,8 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   public void canSetAndGetBluetoothClass() throws Exception {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     assertThat(shadowOf(device).getBluetoothClass()).isNull();
@@ -130,6 +140,8 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   public void canCreateAndRemoveBonds() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
 
     assertThat(device.createBond()).isFalse();
@@ -142,6 +154,8 @@ public class ShadowBluetoothDeviceTest {
 
   @Test
   public void getCorrectFetchUuidsWithSdpCount() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
     assertThat(shadowOf(device).getFetchUuidsWithSdpCount()).isEqualTo(0);
 
@@ -155,6 +169,8 @@ public class ShadowBluetoothDeviceTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void connectGatt_doesntCrash() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
             bluetoothDevice.connectGatt(
@@ -165,6 +181,8 @@ public class ShadowBluetoothDeviceTest {
   @Test
   @Config(minSdk = M)
   public void connectGatt_withTransport_doesntCrash() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     assertThat(
             bluetoothDevice.connectGatt(
@@ -216,6 +234,8 @@ public class ShadowBluetoothDeviceTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void canGetBluetoothGatts() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     List<BluetoothGatt> createdGatts = new ArrayList<>();
 
@@ -232,6 +252,8 @@ public class ShadowBluetoothDeviceTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void connectGatt_setsBluetoothGattCallback() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGattCallback callback = new BluetoothGattCallback() {};
 
@@ -245,6 +267,8 @@ public class ShadowBluetoothDeviceTest {
   @Test
   @Config(minSdk = JELLY_BEAN_MR2)
   public void canSimulateGattConnectionChange() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
     BluetoothGattCallback callback = mock(BluetoothGattCallback.class);
     BluetoothGatt bluetoothGatt =
@@ -266,6 +290,7 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
+  @Config(maxSdk = VERSION_CODES.R)
   public void getSetAlias() {
     String aliasName = "alias";
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
@@ -294,6 +319,105 @@ public class ShadowBluetoothDeviceTest {
     } catch (ReflectiveOperationException e) {
       throw new AssertionError("Failure accessing getAliasName via reflection", e);
     }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void getAliasName_noBluetoothConnectPermission_throwsException() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setAlias(aliasName);
+
+    assertThrows(
+        SecurityException.class,
+        () -> {
+          device.getAlias();
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void fetchUuidsWithSdp_noBluetoothConnectPermission_throwsException() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    assertThrows(
+        SecurityException.class,
+        () -> {
+          device.fetchUuidsWithSdp();
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void getBluetoothClass_noBluetoothConnectPermission_throwsException() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    assertThrows(
+        SecurityException.class,
+        () -> {
+          device.getBluetoothClass();
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void createBond_noBluetoothConnectPermission_throwsException() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    assertThrows(
+        SecurityException.class,
+        () -> {
+          device.createBond();
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void createInsecureL2capChannel_noBluetoothConnectPermission_throwsException() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    assertThrows(
+        SecurityException.class,
+        () -> {
+          device.createInsecureL2capChannel(0);
+        });
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void createL2capChannel_noBluetoothConnectPermission_throwsException() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+
+    assertThrows(
+        SecurityException.class,
+        () -> {
+          device.createL2capChannel(0);
+        });
+  }
+
+  @Test
+  public void getAliasName_hasPermission_noExceptionThrown() {
+    Application application = ApplicationProvider.getApplicationContext();
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    String aliasName = "alias";
+    BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
+    shadowOf(device).setAlias(aliasName);
+
+    String retrievedAlias = device.getAlias();
+    assertThat(retrievedAlias).isNotNull();
   }
 
   @Config(maxSdk = Q)
