@@ -123,14 +123,19 @@ public class DefaultSdkProvider implements SdkProvider {
         throw new UnsupportedClassVersionError(getUnsupportedMessage());
       }
 
-      String version =
-          String.join(
-              "-",
-              getAndroidVersion(),
-              "robolectric",
-              robolectricVersion,
-              "i" + PREINSTRUMENTED_VERSION);
-      return new DependencyJar("org.robolectric", "android-all-instrumented", version, null);
+      if (Boolean.parseBoolean(System.getProperty("robolectric.usePreinstrumentedJars", "true"))) {
+        String version =
+            String.join(
+                "-",
+                getAndroidVersion(),
+                "robolectric",
+                robolectricVersion,
+                "i" + PREINSTRUMENTED_VERSION);
+        return new DependencyJar("org.robolectric", "android-all-instrumented", version, null);
+      } else {
+        String version = String.join("-", getAndroidVersion(), "robolectric", robolectricVersion);
+        return new DependencyJar("org.robolectric", "android-all", version, null);
+      }
     }
 
     @Override
