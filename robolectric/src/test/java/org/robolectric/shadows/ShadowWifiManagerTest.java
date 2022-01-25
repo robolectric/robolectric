@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
@@ -13,7 +15,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
@@ -28,7 +33,9 @@ import android.util.Pair;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -123,6 +130,34 @@ public class ShadowWifiManagerTest {
 
     shadowOf(wifiManager).setStartScanSucceeds(false);
     assertThat(wifiManager.startScan()).isFalse();
+  }
+
+  @Test
+  public void startScanAndBroadcast() {
+    AtomicBoolean broadcastSent = new AtomicBoolean();
+    ApplicationProvider.getApplicationContext()
+        .registerReceiver(
+            new BroadcastReceiver() {
+              @Override
+              public void onReceive(Context context, Intent intent) {
+                if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(intent.getAction())) {
+                  broadcastSent.set(true);
+                }
+              }
+            },
+            new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
+    shadowOf(wifiManager)
+        .setScanResults(
+            Arrays.asList(
+                ShadowScanResult.newInstance(
+                    "ssid", "ssid", /* caps= */ null, /* level= */ 0, /* frequency= */ 0)));
+
+    // By default startScan() succeeds.
+    shadowOf(wifiManager).setStartScanSucceeds(true);
+    assertThat(wifiManager.startScan()).isTrue();
+    shadowOf(getMainLooper()).idle();
+    assertThat(broadcastSent.get()).isTrue();
   }
 
   @Test
@@ -526,6 +561,14 @@ public class ShadowWifiManagerTest {
     assertThat(wifiManager.is5GHzBandSupported()).isFalse();
     shadowOf(wifiManager).setIs5GHzBandSupported(true);
     assertThat(wifiManager.is5GHzBandSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isStaApConcurrencySupportedAndConfigurable() {
+    assertThat(wifiManager.isStaApConcurrencySupported()).isFalse();
+    shadowOf(wifiManager).setStaApConcurrencySupported(true);
+    assertThat(wifiManager.isStaApConcurrencySupported()).isTrue();
   }
 
   @Test

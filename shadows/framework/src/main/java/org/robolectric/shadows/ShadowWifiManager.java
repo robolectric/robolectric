@@ -4,8 +4,10 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
@@ -39,6 +41,7 @@ import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link android.net.wifi.WifiManager}. */
 @Implements(value = WifiManager.class, looseSignatures = true)
+@SuppressWarnings("AndroidConcurrentHashMap")
 public class ShadowWifiManager {
   private static final int LOCAL_HOST = 2130706433;
 
@@ -54,6 +57,7 @@ public class ShadowWifiManager {
   private DhcpInfo dhcpInfo;
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
+  private boolean isStaApConcurrencySupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
@@ -103,6 +107,17 @@ public class ShadowWifiManager {
   /** Sets whether 5ghz band is supported. */
   public void setIs5GHzBandSupported(boolean is5GHzBandSupported) {
     this.is5GHzBandSupported = is5GHzBandSupported;
+  }
+
+  /** Sets whether STA/AP concurrency supported. */
+  @Implementation(minSdk = R)
+  protected boolean isStaApConcurrencySupported() {
+    return isStaApConcurrencySupported;
+  }
+
+  /** Sets whether STA/AP concurrency is supported. */
+  public void setStaApConcurrencySupported(boolean isStaApConcurrencySupported) {
+    this.isStaApConcurrencySupported = isStaApConcurrencySupported;
   }
 
   /**
@@ -211,7 +226,8 @@ public class ShadowWifiManager {
   }
 
   /**
-   * Does nothing and returns the configured success status.
+   * Broadcasts {@link WifiManager.SCAN_RESULTS_AVAILABLE_ACTION} if the scan result not empty once
+   * this API calls and returns the configured success status.
    *
    * <p>That is different from the Android implementation which always returns {@code true} up to
    * and including Android 8, and either {@code true} or {@code false} on Android 9+.
@@ -221,6 +237,10 @@ public class ShadowWifiManager {
    */
   @Implementation
   protected boolean startScan() {
+    if (getScanResults() != null && !getScanResults().isEmpty()) {
+      Intent intent = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+      RuntimeEnvironment.getApplication().sendBroadcast(intent);
+    }
     return startScanSucceeds;
   }
 
