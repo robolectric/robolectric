@@ -479,6 +479,48 @@ public class ShadowNotificationManagerTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.Q)
+  public void updateAutomaticZenRule_nullOwnerWithConfigurationActivity_updateRuleAndReturnTrue() {
+    shadowOf(notificationManager).setNotificationPolicyAccessGranted(true);
+    AutomaticZenRule rule1 =
+        new AutomaticZenRule(
+            "name1",
+            /* owner= */ null,
+            new ComponentName("pkg1", "cls1"),
+            Uri.parse("condition://id1"),
+            new ZenPolicy.Builder().build(),
+            NotificationManager.INTERRUPTION_FILTER_PRIORITY,
+            /* enabled= */ true);
+    AutomaticZenRule rule2 =
+        new AutomaticZenRule(
+            "name2",
+            /* owner= */ null,
+            new ComponentName("pkg2", "cls2"),
+            Uri.parse("condition://id2"),
+            new ZenPolicy.Builder().build(),
+            NotificationManager.INTERRUPTION_FILTER_ALARMS,
+            /* enabled= */ false);
+    String id1 = notificationManager.addAutomaticZenRule(rule1);
+    String id2 = notificationManager.addAutomaticZenRule(rule2);
+
+    AutomaticZenRule updatedRule =
+        new AutomaticZenRule(
+            "updated_name",
+            /* owner= */ null,
+            new ComponentName("updated_pkg", "updated_cls"),
+            Uri.parse("condition://updated_id"),
+            new ZenPolicy.Builder().build(),
+            NotificationManager.INTERRUPTION_FILTER_ALL,
+            /* enabled= */ false);
+    assertThat(notificationManager.updateAutomaticZenRule(id2, updatedRule)).isTrue();
+
+    assertThat(notificationManager.getAutomaticZenRule(id1)).isEqualTo(rule1);
+    assertThat(notificationManager.getAutomaticZenRule(id2)).isEqualTo(updatedRule);
+    assertThat(notificationManager.getAutomaticZenRules())
+        .containsExactly(id1, rule1, id2, updatedRule);
+  }
+
+  @Test
   @Config(minSdk = Build.VERSION_CODES.N)
   public void removeAutomaticZenRule_notificationAccessDenied_shouldThrowSecurityException() {
     try {
