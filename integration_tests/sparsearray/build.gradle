@@ -1,6 +1,8 @@
-import org.robolectric.gradle.RoboJavaModulePlugin
+import org.robolectric.gradle.AndroidProjectConfigPlugin
 
-apply plugin: RoboJavaModulePlugin
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+apply plugin: 'kotlin-android'
 apply plugin: "com.diffplug.spotless"
 
 spotless {
@@ -10,11 +12,35 @@ spotless {
     }
 }
 
-dependencies {
-    api project(":robolectric")
-    compileOnly AndroidSdk.MAX_SDK.coordinates
+android {
+    compileSdk 31
 
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 31
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    android {
+        testOptions {
+            unitTests {
+                includeAndroidResources = true
+            }
+        }
+    }
+}
+
+dependencies {
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+    implementation project(path: ':shadowapi', configuration: 'default')
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
+    testImplementation project(":robolectric")
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "com.google.truth:truth:$truthVersion"
 }
