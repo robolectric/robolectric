@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.ActivityThread.ActivityClientRecord;
 import android.app.Application;
+import android.app.IApplicationThread;
 import android.app.Instrumentation;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -16,7 +17,11 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Binder;
+import android.os.CancellationSignal;
 import android.os.IBinder;
+import android.os.RemoteCallback;
+import android.os.RemoteException;
+import com.android.internal.app.IVoiceInteractor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -32,6 +37,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
+import org.robolectric.util.reflector.WithType;
 
 @Implements(value = ActivityThread.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowActivityThread {
@@ -144,6 +150,16 @@ public class ShadowActivityThread {
     return token;
   }
 
+  boolean maybeSetActivityState(IBinder token, int state) {
+    if (!reflector(_ActivityThread_.class, realActivityThread).getActivities().containsKey(token)) {
+      return false;
+    }
+    ActivityClientRecord record =
+        reflector(_ActivityThread_.class, realActivityThread).getActivities().get(token);
+    record.setState(state);
+    return true;
+  }
+
   void removeActivity(IBinder token) {
     reflector(_ActivityThread_.class, realActivityThread).getActivities().remove(token);
   }
@@ -193,6 +209,14 @@ public class ShadowActivityThread {
     }
   }
 
+  void handleRequestDirectActions(IBinder activityToken, RemoteCallback callback)
+      throws RemoteException {
+    IApplicationThread applicationThread = realActivityThread.getApplicationThread();
+    applicationThread.requestDirectActions(
+        activityToken, ReflectionHelpers.createDeepProxy(IVoiceInteractor.class), null, callback);
+    ShadowLooper.idleMainLooper();
+  }
+
   /** Accessor interface for {@link ActivityThread}'s internals. */
   @ForType(ActivityThread.class)
   public interface _ActivityThread_ {
@@ -218,6 +242,12 @@ public class ShadowActivityThread {
 
     @Accessor("mActivities")
     Map<IBinder, ActivityClientRecord> getActivities();
+
+    void handleRequestDirectActions(
+        IBinder activityToken,
+        @WithType("com.android.internal.app.IVoiceInteractor") Object interactor,
+        CancellationSignal cancellationSignal,
+        RemoteCallback callback);
   }
 
   /** Accessor interface for {@link ActivityThread.AppBindData}'s internals. */

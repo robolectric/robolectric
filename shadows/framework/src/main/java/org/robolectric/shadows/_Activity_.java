@@ -311,6 +311,11 @@ public interface _Activity_ {
     }
   }
 
+  default void maybeUpdateActivityRecordState(Object activityThread, int state) {
+    ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
+    shadowActivityThread.maybeSetActivityState(getToken(), state);
+  }
+
   void performCreate(Bundle icicle);
 
   void performDestroy();
