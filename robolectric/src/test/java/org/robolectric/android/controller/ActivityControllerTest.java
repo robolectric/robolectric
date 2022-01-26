@@ -294,7 +294,7 @@ public class ActivityControllerTest {
         Robolectric.buildActivity(ConfigAwareActivity.class).setup();
     transcript.clear();
     configController.configurationChange(config);
-    assertThat(transcript).contains("onConfigurationChanged");
+    assertThat(transcript).containsAtLeast("onConfigurationChanged", "View.onConfigurationChanged");
     assertThat(configController.get().getResources().getConfiguration().fontScale)
         .isEqualTo(newFontScale);
   }
@@ -493,7 +493,14 @@ public class ActivityControllerTest {
     protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-      setContentView(new LinearLayout(ApplicationProvider.getApplicationContext()));
+      setContentView(
+          new LinearLayout(this) {
+            @Override
+            protected void onConfigurationChanged(Configuration configuration) {
+              super.onConfigurationChanged(configuration);
+              transcribeWhilePaused("View.onConfigurationChanged");
+            }
+          });
       transcribeWhilePaused("onCreate");
       transcript.add("finishedOnCreate");
     }
