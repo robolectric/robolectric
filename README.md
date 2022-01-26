@@ -49,6 +49,13 @@ Robolectric supports running tests against multiple Android API levels. The work
 
     ./gradlew clean assemble testClasses --parallel
 
+### Prerequisites
+
+- JDK 11.  
+  To build this project, Gradle JVM should be set to Java 11.
+  - For command line, make sure the environment variable `JAVA_HOME` is correctly point to JDK11, or set the build environment by [Gradle CLI option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:environment_options) `-Dorg.gradle.java.home="YourJdkHomePath"` or by [Gradle Properties](https://docs.gradle.org/current/userguide/build_environment.html#sec:gradle_configuration_properties) `org.gradle.java.home=YourJdkHomePath`.
+  - For both IntelliJ and Android Studio, see _Settings/Preferences | Build, Execution, Deployment | Build Tools | Gradle_.
+
 ### Using Snapshots
 
 If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
