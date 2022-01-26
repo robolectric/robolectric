@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
 import android.net.NetworkInfo;
@@ -16,6 +17,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiUsabilityStatsEntry;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Pair;
@@ -235,6 +238,14 @@ public class ShadowWifiManager {
    */
   @Implementation
   protected boolean startScan() {
+    if (getScanResults() != null && !getScanResults().isEmpty()) {
+      new Handler(Looper.getMainLooper())
+          .post(
+              () -> {
+                Intent intent = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+                RuntimeEnvironment.getApplication().sendBroadcast(intent);
+              });
+    }
     return startScanSucceeds;
   }
 
