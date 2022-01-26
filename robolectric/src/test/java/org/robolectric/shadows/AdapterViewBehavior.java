@@ -15,8 +15,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-abstract public class AdapterViewBehavior {
-  private AdapterView adapterView;
+public abstract class AdapterViewBehavior {
+  private AdapterView<ShadowCountingAdapter> adapterView;
 
   @Before
   public void setUp() throws Exception {
@@ -24,21 +24,22 @@ abstract public class AdapterViewBehavior {
     adapterView = createAdapterView();
   }
 
-  abstract public AdapterView createAdapterView();
+  public abstract AdapterView<ShadowCountingAdapter> createAdapterView();
 
-  @Test public void shouldIgnoreSetSelectionCallsWithInvalidPosition() {
+  @Test
+  public void shouldIgnoreSetSelectionCallsWithInvalidPosition() {
     final List<String> transcript = new ArrayList<>();
 
-    adapterView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        transcript.add("onItemSelected fired");
-      }
+    adapterView.setOnItemSelectedListener(
+        new AdapterView.OnItemSelectedListener() {
+          @Override
+          public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            transcript.add("onItemSelected fired");
+          }
 
-      @Override
-      public void onNothingSelected(AdapterView<?> parent) {
-      }
-    });
+          @Override
+          public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
     shadowMainLooper().idle();
     assertThat(transcript).isEmpty();
@@ -47,7 +48,8 @@ abstract public class AdapterViewBehavior {
     assertThat(transcript).isEmpty();
   }
 
-  @Test public void testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously() throws Exception {
+  @Test
+  public void testSetAdapter_shouldCauseViewsToBeRenderedAsynchronously() throws Exception {
     adapterView.setAdapter(new ShadowCountingAdapter(2));
 
     assertThat(adapterView.getCount()).isEqualTo(2);
@@ -59,7 +61,8 @@ abstract public class AdapterViewBehavior {
     assertThat(((TextView) adapterView.getChildAt(1)).getText().toString()).isEqualTo("Item 1");
   }
 
-  @Test public void testSetEmptyView_ShouldHideAdapterViewIfAdapterIsNull() throws Exception {
+  @Test
+  public void testSetEmptyView_shouldHideAdapterViewIfAdapterIsNull() throws Exception {
     adapterView.setAdapter(null);
 
     View emptyView = new View(adapterView.getContext());
@@ -69,7 +72,8 @@ abstract public class AdapterViewBehavior {
     assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
   }
 
-  @Test public void testSetEmptyView_ShouldHideAdapterViewIfAdapterViewIsEmpty() throws Exception {
+  @Test
+  public void testSetEmptyView_shouldHideAdapterViewIfAdapterViewIsEmpty() throws Exception {
     adapterView.setAdapter(new ShadowCountingAdapter(0));
 
     View emptyView = new View(adapterView.getContext());
@@ -79,7 +83,8 @@ abstract public class AdapterViewBehavior {
     assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
   }
 
-  @Test public void testSetEmptyView_ShouldHideEmptyViewIfAdapterViewIsNotEmpty() throws Exception {
+  @Test
+  public void testSetEmptyView_shouldHideEmptyViewIfAdapterViewIsNotEmpty() throws Exception {
     adapterView.setAdapter(new ShadowCountingAdapter(1));
 
     View emptyView = new View(adapterView.getContext());
@@ -89,7 +94,8 @@ abstract public class AdapterViewBehavior {
     assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
   }
 
-  @Test public void testSetEmptyView_ShouldHideEmptyViewWhenAdapterGetsNewItem() throws Exception {
+  @Test
+  public void testSetEmptyView_shouldHideEmptyViewWhenAdapterGetsNewItem() throws Exception {
     ShadowCountingAdapter adapter = new ShadowCountingAdapter(0);
     adapterView.setAdapter(adapter);
 
@@ -107,7 +113,8 @@ abstract public class AdapterViewBehavior {
     assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
   }
 
-  @Test public void testSetEmptyView_ShouldHideAdapterViewWhenAdapterBecomesEmpty() throws Exception {
+  @Test
+  public void testSetEmptyView_shouldHideAdapterViewWhenAdapterBecomesEmpty() throws Exception {
     ShadowCountingAdapter adapter = new ShadowCountingAdapter(1);
     adapterView.setAdapter(adapter);
 
