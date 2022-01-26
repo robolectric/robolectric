@@ -11,9 +11,12 @@ import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Instrumentation;
+import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Rect;
+import android.os.Binder;
 import android.os.Build.VERSION;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -24,8 +27,12 @@ import android.view.IWindowSession;
 import android.view.InputChannel;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
+import android.view.Surface;
+import android.view.SurfaceControl;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
+import androidx.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -84,6 +91,22 @@ public class ShadowWindowManagerGlobal {
     getWindowSessionDelegate().setInTouchMode(inTouchMode);
   }
 
+  /**
+   * Returns the last {@link ClipData} passed to a drag initiated from a call to {@link
+   * View#startDrag} or {@link View#startDragAndDrop}, or null if there isn't one.
+   */
+  @Nullable
+  public static ClipData getLastDragClipData() {
+    return windowSessionDelegate != null ? windowSessionDelegate.lastDragClipData : null;
+  }
+
+  /** Clears the data returned by {@link #getLastDragClipData()}. */
+  public static void clearLastDragClipData() {
+    if (windowSessionDelegate != null) {
+      windowSessionDelegate.lastDragClipData = null;
+    }
+  }
+
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected static synchronized IWindowSession getWindowSession() {
     if (windowSession == null) {
@@ -140,7 +163,8 @@ public class ShadowWindowManagerGlobal {
     // From WindowManagerGlobal (was WindowManagerImpl in JB).
     static final int ADD_FLAG_IN_TOUCH_MODE = 0x1;
 
-    boolean inTouchMode;
+    private boolean inTouchMode;
+    @Nullable protected ClipData lastDragClipData;
 
     protected int getAddFlags() {
       int res = 0;
@@ -157,10 +181,43 @@ public class ShadowWindowManagerGlobal {
     public void setInTouchMode(boolean inTouchMode) {
       this.inTouchMode = inTouchMode;
     }
+
+    // @Implementation(maxSdk = O_MR1)
+    public IBinder prepareDrag(
+        IWindow window, int flags, int thumbnailWidth, int thumbnailHeight, Surface outSurface) {
+      return new Binder();
+    }
+
+    // @Implementation(maxSdk = M)
+    public boolean performDrag(
+        IWindow window,
+        IBinder dragToken,
+        float touchX,
+        float touchY,
+        float thumbCenterX,
+        float thumbCenterY,
+        ClipData data) {
+      lastDragClipData = data;
+      return true;
+    }
+
+    // @Implementation(minSdk = N, maxSdk = O_MR1)
+    public boolean performDrag(
+        IWindow window,
+        IBinder dragToken,
+        int touchSource,
+        float touchX,
+        float touchY,
+        float thumbCenterX,
+        float thumbCenterY,
+        ClipData data) {
+      lastDragClipData = data;
+      return true;
+    }
   }
 
-  // maxSdk = JELLY_BEAN
-  private static final class WindowSessionDelegateJB extends WindowSessionDelegate {
+  private static class WindowSessionDelegateJB extends WindowSessionDelegate {
+    // @Implementation(maxSdk = JELLY_BEAN)
     public int add(
         IWindow window,
         int seq,
@@ -173,8 +230,8 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  // minSdk = JELLY_BEAN_MR1, maxSdk = LOLLIPOP
-  private static final class WindowSessionDelegateJBMR1 extends WindowSessionDelegate {
+  private static class WindowSessionDelegateJBMR1 extends WindowSessionDelegateJB {
+    // @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = LOLLIPOP)
     public int addToDisplay(
         IWindow window,
         int seq,
@@ -187,8 +244,8 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  // sdk = LOLLIPOP_MR1
-  private static final class WindowSessionDelegateLMR1 extends WindowSessionDelegate {
+  private static class WindowSessionDelegateLMR1 extends WindowSessionDelegateJBMR1 {
+    // @Implementation(sdk = LOLLIPOP_MR1)
     public int addToDisplay(
         IWindow window,
         int seq,
@@ -202,8 +259,8 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  // minSdk = M, maxSdk = O_MR1
-  private static final class WindowSessionDelegateM extends WindowSessionDelegate {
+  private static class WindowSessionDelegateM extends WindowSessionDelegateLMR1 {
+    // @Implementation(minSdk = M, maxSdk = O_MR1)
     public int addToDisplay(
         IWindow window,
         int seq,
@@ -218,8 +275,8 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  // sdk = P
-  private static final class WindowSessionDelegateP extends WindowSessionDelegate {
+  private static class WindowSessionDelegateP extends WindowSessionDelegateM {
+    // @Implementation(sdk = P)
     public int addToDisplay(
         IWindow window,
         int seq,
@@ -234,10 +291,25 @@ public class ShadowWindowManagerGlobal {
         InputChannel outInputChannel) {
       return getAddFlags();
     }
+
+    // @Implementation(minSdk = P)
+    public IBinder performDrag(
+        IWindow window,
+        int flags,
+        SurfaceControl surface,
+        int touchSource,
+        float touchX,
+        float touchY,
+        float thumbCenterX,
+        float thumbCenterY,
+        ClipData data) {
+      lastDragClipData = data;
+      return new Binder();
+    }
   }
 
-  // sdk = Q
-  private static final class WindowSessionDelegateQ extends WindowSessionDelegate {
+  private static class WindowSessionDelegateQ extends WindowSessionDelegateP {
+    // @Implementation(sdk = Q)
     public int addToDisplay(
         IWindow window,
         int seq,
@@ -255,8 +327,8 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  // sdk = R
-  private static final class WindowSessionDelegateR extends WindowSessionDelegate {
+  private static class WindowSessionDelegateR extends WindowSessionDelegateQ {
+    // @Implementation(sdk = R)
     public int addToDisplayAsUser(
         IWindow window,
         int seq,
@@ -275,8 +347,8 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
-  // minSdk = S
-  private static final class WindowSessionDelegateS extends WindowSessionDelegate {
+  private static class WindowSessionDelegateS extends WindowSessionDelegateR {
+    // @Implementation(minSdk = S)
     public int addToDisplayAsUser(
         IWindow window,
         WindowManager.LayoutParams attrs,
