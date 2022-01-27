@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -14,6 +15,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -25,8 +27,10 @@ import android.view.IWindowFocusObserver;
 import android.view.IWindowId;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.ViewParent;
 import android.view.WindowId;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import android.widget.ImageView;
@@ -566,6 +570,33 @@ public class ShadowView {
   }
 
   @Implementation
+  protected void getLocationOnScreen(int[] outLocation) {
+    reflector(_View_.class, realView).getLocationOnScreen(outLocation);
+    int[] windowLocation = getWindowLocation();
+    outLocation[0] += windowLocation[0];
+    outLocation[1] += windowLocation[1];
+  }
+
+  @Implementation(minSdk = O)
+  protected void mapRectFromViewToScreenCoords(RectF rect, boolean clipToParent) {
+    reflector(_View_.class, realView).mapRectFromViewToScreenCoords(rect, clipToParent);
+    int[] windowLocation = getWindowLocation();
+    rect.offset(windowLocation[0], windowLocation[1]);
+  }
+
+  // TODO(paulsowden): Should configure the correct frame on the ViewRootImpl instead and remove
+  //  this.
+  private int[] getWindowLocation() {
+    int[] location = new int[2];
+    LayoutParams rootParams = realView.getRootView().getLayoutParams();
+    if (rootParams instanceof WindowManager.LayoutParams) {
+      location[0] = ((WindowManager.LayoutParams) rootParams).x;
+      location[1] = ((WindowManager.LayoutParams) rootParams).y;
+    }
+    return location;
+  }
+
+  @Implementation
   protected int getLayerType() {
     return this.layerType;
   }
@@ -739,6 +770,12 @@ public class ShadowView {
     void onAttachedToWindow();
 
     void onDetachedFromWindow();
+
+    @Direct
+    void getLocationOnScreen(int[] outLocation);
+
+    @Direct
+    void mapRectFromViewToScreenCoords(RectF rect, boolean clipToParent);
   }
 
   public void callOnAttachedToWindow() {

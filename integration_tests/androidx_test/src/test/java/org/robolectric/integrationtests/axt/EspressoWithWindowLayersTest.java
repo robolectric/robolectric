@@ -1,216 +1,179 @@
 package org.robolectric.integrationtests.axt;
 
+import static androidx.test.core.app.ActivityScenario.launch;
 import static androidx.test.espresso.Espresso.onView;
-import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.view.Gravity;
+import android.view.InputDevice;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.EditText;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 import androidx.test.core.app.ActivityScenario;
-import androidx.test.espresso.Root;
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.action.CoordinatesProvider;
+import androidx.test.espresso.action.GeneralClickAction;
+import androidx.test.espresso.action.GeneralLocation;
+import androidx.test.espresso.action.Press;
+import androidx.test.espresso.action.Tap;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.integration.axt.R;
 
-/** Test Espresso on Robolectric interoperability for toolbar menus. */
+/** Test Espresso on Robolectric interoperability for event dispatch with various window flags. */
 @RunWith(AndroidJUnit4.class)
-@LooperMode(LooperMode.Mode.PAUSED)
 public class EspressoWithWindowLayersTest {
   private static final String TEXT = "Hello World";
 
-  /** The touchable popup window gets the event and the button is *not* clicked. */
+  private static final int FOCUSABLE = 1;
+  private static final int TOUCHABLE = 2;
+  private static final int TOUCH_MODAL = 4;
+  private static final int TOUCH_OUTSIDE = 8;
+
+  private boolean popupTouchOutside;
+
   @Test
-  public void click_interactivePopupWindow_isNotClicked() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showInteractivePopupAsButtonDropdown(scenario);
+  public void click_notTouchablePopupOverButton_isClicked() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.button, FOCUSABLE);
 
-      onView(withId(R.id.button)).inRoot(new IsBaseApplication()).perform(click());
-
-      scenario.onActivity(activity -> assertThat(activity.buttonClicked).isFalse());
-    }
-  }
-
-  /** The touchable popup window gets the event and the button is *not* clicked. */
-  @Test
-  public void click_occludingInteractivePopupWindow_isNotClicked() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showOccludingInteractivePopupAsButtonDropdown(scenario);
-
-      onView(withId(R.id.button)).inRoot(new IsBaseApplication()).perform(click());
-
-      scenario.onActivity(activity -> assertThat(activity.buttonClicked).isFalse());
-    }
-  }
-
-  /** The non-touchable popup window does *not* get the event and the button is clicked. */
-  @Test
-  public void click_nonInteractivePopupWindow_isClicked() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showNonInteractivePopupAsButtonDropdown(scenario);
-
-      onView(withId(R.id.button)).perform(click());
+      onView(isRoot()).perform(clickAtLocation(centerOf(scenario, R.id.button)));
 
       scenario.onActivity(activity -> assertThat(activity.buttonClicked).isTrue());
     }
   }
 
-  /** The focusable popup window gets the event and the text is *not* typed. */
   @Test
-  public void typeText_interactivePopupWindow_textIsNotTyped() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showOccludingInteractivePopupAsButtonDropdown(scenario);
+  public void click_touchablePopupOverButton_isNotClicked() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.button, FOCUSABLE | TOUCHABLE);
 
-      onView(withId(R.id.edit_text)).inRoot(new IsBaseApplication()).perform(typeText(TEXT));
+      onView(isRoot()).perform(clickAtLocation(centerOf(scenario, R.id.button)));
 
-      scenario.onActivity(
-          activity -> {
-            TextView tv = activity.findViewById(R.id.edit_text);
-            assertThat(tv.getText().toString()).isNotEqualTo(TEXT);
-          });
+      scenario.onActivity(activity -> assertThat(activity.buttonClicked).isFalse());
     }
   }
 
-  /** The non-focusable popup window does *not* get the event and the text is typed. */
   @Test
-  public void typeText_nonInteractivePopupWindow_textIsTyped() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showNonInteractivePopupAsButtonDropdown(scenario);
+  public void click_touchablePopupNotOverButton_isClicked() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.edit_text, FOCUSABLE | TOUCHABLE);
 
-      onView(withId(R.id.edit_text)).inRoot(new IsBaseApplication()).perform(typeText(TEXT));
+      onView(isRoot()).perform(clickAtLocation(centerOf(scenario, R.id.button)));
 
-      scenario.onActivity(
-          activity -> {
-            TextView tv = activity.findViewById(R.id.edit_text);
-            assertThat(tv.getText().toString()).isEqualTo(TEXT);
-          });
+      scenario.onActivity(activity -> assertThat(activity.buttonClicked).isTrue());
     }
   }
 
-  /** Replacing text does not depend on events, so the focusable window does not interfere. */
   @Test
-  public void replaceText_interactivePopupWindow_textIsReplaced() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showOccludingInteractivePopupAsButtonDropdown(scenario);
+  public void click_touchModalPopupNotOverButton_isNotClicked() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.edit_text, FOCUSABLE | TOUCHABLE | TOUCH_MODAL);
 
-      onView(withId(R.id.edit_text)).inRoot(new IsBaseApplication()).perform(replaceText(TEXT));
+      onView(isRoot()).perform(clickAtLocation(centerOf(scenario, R.id.button)));
 
-      scenario.onActivity(
-          activity -> {
-            TextView tv = activity.findViewById(R.id.edit_text);
-            assertThat(tv.getText().toString()).isEqualTo(TEXT);
-          });
+      scenario.onActivity(activity -> assertThat(activity.buttonClicked).isFalse());
     }
   }
 
-  /** Replacing text does not depend on events, so the non-focusable window does not interfere. */
   @Test
-  public void replaceText_nonInteractivePopupWindow_textIsReplaced() {
-    try (ActivityScenario<EspressoActivity> scenario =
-        ActivityScenario.launch(EspressoActivity.class)) {
-      showNonInteractivePopupAsButtonDropdown(scenario);
+  public void click_touchOutsidePopupNotOverButton_isClicked() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.edit_text, FOCUSABLE | TOUCHABLE | TOUCH_OUTSIDE);
 
-      onView(withId(R.id.edit_text)).perform(replaceText(TEXT));
+      onView(isRoot()).perform(clickAtLocation(centerOf(scenario, R.id.button)));
+
+      scenario.onActivity(activity -> assertThat(activity.buttonClicked).isTrue());
+      assertThat(popupTouchOutside).isTrue();
+    }
+  }
+
+  @Test
+  public void typeText_focusablePopupWindow_textIsNotTyped() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.button, FOCUSABLE);
+
+      onView(withId(R.id.edit_text)).perform(typeText(TEXT));
 
       scenario.onActivity(
-          activity -> {
-            TextView tv = activity.findViewById(R.id.edit_text);
-            assertThat(tv.getText().toString()).isEqualTo(TEXT);
-          });
+          activity -> assertThat(activity.editText.getText().toString()).isNotEqualTo(TEXT));
+    }
+  }
+
+  @Test
+  public void typeText_notFocusablePopupWindow_textIsTyped() {
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      showPopupOver(scenario, R.id.button, /* flags= */ 0);
+
+      onView(withId(R.id.edit_text)).perform(typeText(TEXT));
+
+      scenario.onActivity(
+          activity -> assertThat(activity.editText.getText().toString()).isEqualTo(TEXT));
     }
   }
 
   /**
-   * Shows an occluding touchable and focusable popup window as a drop-down on the button.
-   *
-   * <p>The drop-down is shown *over* the button by adjusting the x and y offsets. The position of
-   * the popup is *not* yet accounted for in the window selection heuristic. If it were, we should
-   * see different behavior when attempting to click the button underneath.
+   * Shows a popup window entirely occluding the view identified by the view id in the activity. The
+   * popup window will be cleared of its touch and focus flags so they reflect the flags configured.
    */
-  private static void showOccludingInteractivePopupAsButtonDropdown(
-      ActivityScenario<EspressoActivity> scenario) {
+  private void showPopupOver(ActivityScenario<EspressoActivity> scenario, int viewId, int flags) {
     scenario.onActivity(
         activity -> {
-          View anchor = activity.findViewById(R.id.button);
-          new PopupWindow(
-                  /* contentView= */ new FrameLayout(activity),
-                  /* width= */ anchor.getWidth() * 2,
-                  /* height= */ anchor.getHeight() * 2,
-                  /* focusable= */ true)
-              .showAsDropDown(anchor, -anchor.getWidth(), -anchor.getHeight());
+          View view = activity.findViewById(viewId);
+          int[] viewLocation = new int[2];
+          view.getLocationOnScreen(viewLocation);
+
+          // Create an edit text with the same id as the edit text in EspressoActivity so we can
+          // test that the correct window receives the text input.
+          EditText popupContentView = new EditText(view.getContext());
+          popupContentView.setId(R.id.edit_text);
+
+          PopupWindow popup = new PopupWindow(popupContentView, view.getWidth(), view.getHeight());
+          popup.setFocusable((flags & FOCUSABLE) != 0);
+          popup.setTouchable((flags & TOUCHABLE) != 0);
+          popup.setTouchModal((flags & TOUCH_MODAL) != 0);
+          popup.setOutsideTouchable((flags & TOUCH_OUTSIDE) != 0);
+          // On sdk <=22 the touch interceptor is only used if the popup has a background configured
+          popup.setBackgroundDrawable(new ColorDrawable(Color.RED));
+          popup.setTouchInterceptor(
+              (v, e) -> {
+                if (e.getActionMasked() == MotionEvent.ACTION_OUTSIDE) {
+                  popupTouchOutside = true;
+                }
+                return true;
+              });
+          popup.showAtLocation(view, Gravity.LEFT | Gravity.TOP, viewLocation[0], viewLocation[1]);
         });
   }
 
-  /** Shows a non-occluding touchable and focusable popup window as a drop-down on the button. */
-  private static void showInteractivePopupAsButtonDropdown(
-      ActivityScenario<EspressoActivity> scenario) {
-    scenario.onActivity(
-        activity -> {
-          View anchor = activity.findViewById(R.id.button);
-          new PopupWindow(
-                  /* contentView= */ new FrameLayout(activity),
-                  /* width= */ 10,
-                  /* height= */ 10,
-                  /* focusable= */ true)
-              .showAsDropDown(anchor);
-        });
+  /** Performs a click at the location from the coordinates provider (ignoring the matched view). */
+  private static ViewAction clickAtLocation(CoordinatesProvider coordinatesProvider) {
+    return new GeneralClickAction(
+        Tap.SINGLE,
+        coordinatesProvider,
+        Press.FINGER,
+        InputDevice.SOURCE_UNKNOWN,
+        MotionEvent.BUTTON_PRIMARY);
   }
 
-  /**
-   * Shows an occluding non-touchable and non-focusable popup window as a drop-down on the button.
-   *
-   * <p>The drop-down is shown *over* the button by adjusting the x and y offsets. The position of
-   * the popup is *not* yet accounted for in the window selection heuristic. If it were, we should
-   * see different behavior when attempting to click the button underneath.
-   */
-  private static void showNonInteractivePopupAsButtonDropdown(
-      ActivityScenario<EspressoActivity> scenario) {
-    scenario.onActivity(
-        activity -> {
-          View anchor = activity.findViewById(R.id.button);
-          PopupWindow popup =
-              new PopupWindow(
-                  /* contentView= */ new FrameLayout(activity),
-                  /* width= */ anchor.getWidth() * 2,
-                  /* height= */ anchor.getHeight() * 2,
-                  /* focusable= */ false);
-          popup.setTouchable(false);
-          popup.showAsDropDown(anchor, -anchor.getWidth(), -anchor.getHeight());
-        });
-  }
-
-  /**
-   * Espresso Root matcher for only windows with the base application window type.
-   *
-   * <p>This matcher is required as Espresso will dutifully default to finding views in the focused
-   * window. However, the events are *not* guaranteed to be dispatched in this window. Robolectric
-   * uses a different heuristic, so forcing this window to be used is good for testing.
-   */
-  static final class IsBaseApplication extends TypeSafeMatcher<Root> {
-    @Override
-    public void describeTo(Description description) {
-      description.appendText("is the base application window");
-    }
-
-    @Override
-    public boolean matchesSafely(Root root) {
-      return root.getWindowLayoutParams().get().type
-          == WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
-    }
+  /** Returns coordinates at the center of the view. */
+  private static CoordinatesProvider centerOf(
+      ActivityScenario<EspressoActivity> scenario, int viewId) {
+    return v -> {
+      AtomicReference<float[]> result = new AtomicReference<>();
+      scenario.onActivity(
+          activity ->
+              result.set(
+                  GeneralLocation.CENTER.calculateCoordinates(activity.findViewById(viewId))));
+      return result.get();
+    };
   }
 }
