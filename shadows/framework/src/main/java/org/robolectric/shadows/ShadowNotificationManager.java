@@ -369,7 +369,7 @@ public class ShadowNotificationManager {
     for (Map.Entry<String, AutomaticZenRule> entry : automaticZenRules.entrySet()) {
       rules.put(entry.getKey(), copyAutomaticZenRule(entry.getValue()));
     }
-    return rules.build();
+    return rules.buildOrThrow();
   }
 
   @Implementation(minSdk = N)
