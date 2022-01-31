@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -16,6 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.buildActivity;
@@ -31,6 +33,7 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.DirectAction;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
@@ -40,6 +43,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentSender;
+import android.content.LocusId;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -47,6 +51,7 @@ import android.database.MatrixCursor;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -62,8 +67,10 @@ import android.widget.SearchView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -801,6 +808,7 @@ public class ShadowActivityTest {
     List<String> transcript = new ArrayList<>();
 
     private boolean isRecreating = false;
+    private boolean returnMalformedDirectAction = false;
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -876,6 +884,33 @@ public class ShadowActivityTest {
     public void onResume() {
       transcript.add("onResume");
       super.onResume();
+    }
+
+    void setReturnMalformedDirectAction(boolean returnMalformedDirectAction) {
+      this.returnMalformedDirectAction = returnMalformedDirectAction;
+    }
+
+    DirectAction getDirectActionForTesting() {
+      Bundle extras = new Bundle();
+      extras.putParcelable("componentName", this.getComponentName());
+      return new DirectAction.Builder("testDirectAction")
+          .setExtras(extras)
+          .setLocusId(new LocusId("unused"))
+          .build();
+    }
+
+    DirectAction getMalformedDirectAction() {
+      return new DirectAction.Builder("malformedDirectAction").build();
+    }
+
+    @Override
+    public void onGetDirectActions(
+        CancellationSignal cancellationSignal, Consumer<List<DirectAction>> callback) {
+      if (returnMalformedDirectAction) {
+        callback.accept(Collections.singletonList(getMalformedDirectAction()));
+      } else {
+        callback.accept(Collections.singletonList(getDirectActionForTesting()));
+      }
     }
   }
 
@@ -1309,6 +1344,36 @@ public class ShadowActivityTest {
 
     assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
         .isEqualTo(Display.DEFAULT_DISPLAY);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void callOnGetDirectActions_succeeds() throws Exception {
+    ActivityController<TestActivity> controller = Robolectric.buildActivity(TestActivity.class);
+    TestActivity testActivity = controller.setup().get();
+    Consumer<List<DirectAction>> testConsumer =
+        (directActions) -> {
+          assertThat(directActions.size()).isEqualTo(1);
+          DirectAction action = directActions.get(0);
+          assertThat(action.getId()).isEqualTo(testActivity.getDirectActionForTesting().getId());
+          ComponentName componentName = action.getExtras().getParcelable("componentName");
+          assertThat(componentName.compareTo(testActivity.getComponentName())).isEqualTo(0);
+        };
+    shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), testConsumer);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void callOnGetDirectActions_malformedDirectAction_fails() throws Exception {
+    ActivityController<TestActivity> controller = Robolectric.buildActivity(TestActivity.class);
+    TestActivity testActivity = controller.setup().get();
+    // malformed DirectAction has missing LocusId
+    testActivity.setReturnMalformedDirectAction(true);
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), (unused) -> {});
+        });
   }
 
   /////////////////////////////

@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -13,6 +14,7 @@ import android.app.ActivityOptions;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.DirectAction;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.app.PictureInPictureParams;
@@ -27,7 +29,9 @@ import android.database.Cursor;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.Display;
@@ -42,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
@@ -810,6 +815,27 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
     reflector(_Activity_.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
+  }
+
+  /**
+   * Calls Activity#onGetDirectActions with the given parameters. This method also simulates the
+   * Parcel serialization/deserialization which occurs when assistant requests DirectAction.
+   */
+  public void callOnGetDirectActions(
+      CancellationSignal cancellationSignal, Consumer<List<DirectAction>> callback) {
+    if (RuntimeEnvironment.getApiLevel() < Q) {
+      throw new IllegalStateException("callOnGetDirectActions requires API " + Q);
+    }
+    realActivity.onGetDirectActions(
+        cancellationSignal,
+        directActions -> {
+          Parcel parcel = Parcel.obtain();
+          parcel.writeParcelableList(directActions, 0);
+          parcel.setDataPosition(0);
+          List<DirectAction> output = new ArrayList<>();
+          parcel.readParcelableList(output, DirectAction.class.getClassLoader());
+          callback.accept(output);
+        });
   }
 
   /** Class to hold a permissions request, including its request code. */
