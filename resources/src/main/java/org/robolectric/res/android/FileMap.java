@@ -267,7 +267,7 @@ public class FileMap {
         offset += 46 + fileNameLength + extraLength + fieldCommentLength;
       }
 
-      return result.build();
+      return result.buildOrThrow();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

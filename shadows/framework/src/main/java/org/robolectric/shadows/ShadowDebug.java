@@ -33,7 +33,7 @@ public class ShadowDebug {
 
   @Implementation(minSdk = M)
   protected static Map<String, String> getRuntimeStats() {
-    return ImmutableMap.<String, String>builder().build();
+    return ImmutableMap.<String, String>builder().buildOrThrow();
   }
 
   @Implementation

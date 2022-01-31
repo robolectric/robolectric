@@ -55,7 +55,7 @@ public enum DataType {
     for (DataType type : values()) {
       builder.put(type.code(), type);
     }
-    FROM_BYTE = builder.build();
+    FROM_BYTE = builder.buildOrThrow();
   }
 
   DataType(int code) {
