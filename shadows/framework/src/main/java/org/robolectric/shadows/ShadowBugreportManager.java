@@ -7,6 +7,7 @@ import android.os.BugreportManager;
 import android.os.BugreportManager.BugreportCallback;
 import android.os.BugreportParams;
 import android.os.ParcelFileDescriptor;
+import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
@@ -22,11 +23,13 @@ public class ShadowBugreportManager {
 
   private boolean hasPermission = true;
 
-  private ParcelFileDescriptor bugreportFd;
-  private ParcelFileDescriptor screenshotFd;
-  private Executor executor;
-  private BugreportCallback callback;
+  @Nullable private ParcelFileDescriptor bugreportFd;
+  @Nullable private ParcelFileDescriptor screenshotFd;
+  @Nullable private Executor executor;
+  @Nullable private BugreportCallback callback;
   private boolean bugreportRequested;
+  @Nullable private CharSequence shareTitle;
+  @Nullable private CharSequence shareDescription;
 
   /**
    * Starts a bugreport with which can execute callback methods on the provided executor.
@@ -56,12 +59,15 @@ public class ShadowBugreportManager {
    * Normally requests the platform/system to take a bugreport and make the final bugreport
    * available to the user.
    *
-   * <p>This implementation just sets a boolean recording that the method was invoked.
+   * <p>This implementation just sets a boolean recording that the method was invoked, and the share
+   * title and description.
    */
   @Implementation(minSdk = R)
   protected void requestBugreport(
       BugreportParams params, CharSequence shareTitle, CharSequence shareDescription) {
     this.bugreportRequested = true;
+    this.shareTitle = shareTitle;
+    this.shareDescription = shareDescription;
   }
 
   /** Cancels bugreport in progress and executes {@link BugreportCallback#onError}. */
@@ -122,6 +128,18 @@ public class ShadowBugreportManager {
     }
   }
 
+  /** Returns the title of the bugreport if set with {@code requestBugreport}, else null. */
+  @Nullable
+  public CharSequence getShareTitle() {
+    return shareTitle;
+  }
+
+  /** Returns the description of the bugreport if set with {@code requestBugreport}, else null. */
+  @Nullable
+  public CharSequence getShareDescription() {
+    return shareDescription;
+  }
+
   private void resetParams() {
     try {
       bugreportFd.close();
@@ -136,5 +154,7 @@ public class ShadowBugreportManager {
     executor = null;
     callback = null;
     bugreportRequested = false;
+    shareTitle = null;
+    shareDescription = null;
   }
 }
