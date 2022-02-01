@@ -52,10 +52,14 @@ public final class ShadowBugreportManagerTest {
 
   @Test
   public void requestBugreport() {
+    String title = "title";
+    String description = "description";
     shadowBugreportManager.requestBugreport(
-        new BugreportParams(BugreportParams.BUGREPORT_MODE_INTERACTIVE), "title", "description");
+        new BugreportParams(BugreportParams.BUGREPORT_MODE_INTERACTIVE), title, description);
 
     assertThat(shadowBugreportManager.wasBugreportRequested()).isTrue();
+    assertThat(shadowBugreportManager.getShareTitle().toString()).isEqualTo(title);
+    assertThat(shadowBugreportManager.getShareDescription().toString()).isEqualTo(description);
   }
 
   @Test
