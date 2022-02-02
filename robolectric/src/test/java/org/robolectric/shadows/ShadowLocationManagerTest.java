@@ -106,7 +106,7 @@ public class ShadowLocationManagerTest {
   public void testGetAllProviders() {
     assertThat(locationManager.getAllProviders())
         .containsExactly(GPS_PROVIDER, NETWORK_PROVIDER, PASSIVE_PROVIDER);
-    shadowLocationManager.setProviderProperties(MY_PROVIDER, null);
+    shadowLocationManager.setProviderProperties(MY_PROVIDER, (ProviderProperties) null);
     assertThat(locationManager.getAllProviders())
         .containsExactly(MY_PROVIDER, GPS_PROVIDER, NETWORK_PROVIDER, PASSIVE_PROVIDER);
   }
@@ -205,7 +205,6 @@ public class ShadowLocationManagerTest {
     none.setPowerRequirement(Criteria.POWER_LOW);
     none.setAccuracy(Criteria.ACCURACY_FINE);
 
-    shadowLocationManager.setProviderProperties(MY_PROVIDER, new ProviderProperties(all));
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
@@ -213,16 +212,92 @@ public class ShadowLocationManagerTest {
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
     assertThat(locationManager.getBestProvider(all, true)).isEqualTo(NETWORK_PROVIDER);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
+    shadowLocationManager.setProviderEnabled(PASSIVE_PROVIDER, false);
     assertThat(locationManager.getBestProvider(all, true)).isEqualTo(MY_PROVIDER);
 
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+    shadowLocationManager.setProviderEnabled(PASSIVE_PROVIDER, true);
     assertThat(locationManager.getBestProvider(none, true)).isEqualTo(GPS_PROVIDER);
     shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
     assertThat(locationManager.getBestProvider(none, true)).isEqualTo(NETWORK_PROVIDER);
     shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
     shadowLocationManager.setProviderEnabled(MY_PROVIDER, false);
     assertThat(locationManager.getBestProvider(none, true)).isEqualTo(PASSIVE_PROVIDER);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testGetProviderProperties() {
+    android.location.provider.ProviderProperties p;
+
+    shadowLocationManager.setProviderProperties(
+        MY_PROVIDER,
+        new ProviderProperties(
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            Criteria.POWER_HIGH,
+            Criteria.ACCURACY_COARSE));
+
+    p = locationManager.getProviderProperties(MY_PROVIDER);
+    assertThat(p).isNotNull();
+    assertThat(p.hasNetworkRequirement()).isTrue();
+    assertThat(p.hasSatelliteRequirement()).isFalse();
+    assertThat(p.hasCellRequirement()).isTrue();
+    assertThat(p.hasMonetaryCost()).isFalse();
+    assertThat(p.hasAltitudeSupport()).isTrue();
+    assertThat(p.hasSpeedSupport()).isFalse();
+    assertThat(p.hasBearingSupport()).isTrue();
+    assertThat(p.getPowerUsage()).isEqualTo(Criteria.POWER_HIGH);
+    assertThat(p.getAccuracy()).isEqualTo(Criteria.ACCURACY_COARSE);
+
+    shadowLocationManager.setProviderProperties(
+        MY_PROVIDER,
+        new ProviderProperties(
+            false,
+            true,
+            false,
+            true,
+            false,
+            true,
+            false,
+            android.location.provider.ProviderProperties.POWER_USAGE_LOW,
+            android.location.provider.ProviderProperties.ACCURACY_FINE));
+
+    p = locationManager.getProviderProperties(MY_PROVIDER);
+    assertThat(p).isNotNull();
+    assertThat(p.hasNetworkRequirement()).isFalse();
+    assertThat(p.hasSatelliteRequirement()).isTrue();
+    assertThat(p.hasCellRequirement()).isFalse();
+    assertThat(p.hasMonetaryCost()).isTrue();
+    assertThat(p.hasAltitudeSupport()).isFalse();
+    assertThat(p.hasSpeedSupport()).isTrue();
+    assertThat(p.hasBearingSupport()).isFalse();
+    assertThat(p.getPowerUsage())
+        .isEqualTo(android.location.provider.ProviderProperties.POWER_USAGE_LOW);
+    assertThat(p.getAccuracy())
+        .isEqualTo(android.location.provider.ProviderProperties.ACCURACY_FINE);
+
+    p = locationManager.getProviderProperties("noProvider");
+    assertThat(p).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testHasProvider() {
+    assertThat(locationManager.hasProvider(GPS_PROVIDER)).isTrue();
+    assertThat(locationManager.hasProvider(NETWORK_PROVIDER)).isTrue();
+    assertThat(locationManager.hasProvider(PASSIVE_PROVIDER)).isTrue();
+
+    assertThat(locationManager.hasProvider(MY_PROVIDER)).isFalse();
+
+    shadowLocationManager.setProviderEnabled(MY_PROVIDER, true);
+    assertThat(locationManager.hasProvider(MY_PROVIDER)).isTrue();
   }
 
   @Test
