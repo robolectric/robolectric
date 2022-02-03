@@ -122,7 +122,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       VibrationAttributes attributes) {
     if (effect instanceof VibrationEffect.Composed) {
       VibrationEffect.Composed composedEffect = (VibrationEffect.Composed) effect;
-
+      vibrationAttributesFromLastVibration = attributes;
       recordVibratePattern(composedEffect.getSegments(), composedEffect.getRepeatIndex());
     } else {
       throw new UnsupportedOperationException(

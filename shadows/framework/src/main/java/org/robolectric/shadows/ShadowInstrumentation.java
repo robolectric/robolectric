@@ -226,6 +226,11 @@ public class ShadowInstrumentation {
     return execStartActivity(who, contextThread, token, resultWho, intent, requestCode, options);
   }
 
+  @Implementation
+  protected void setInTouchMode(boolean inTouchMode) {
+    ShadowWindowManagerGlobal.setInTouchMode(inTouchMode);
+  }
+
   private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
     startedActivities.add(intent);
     intentRequestCodeMap.put(

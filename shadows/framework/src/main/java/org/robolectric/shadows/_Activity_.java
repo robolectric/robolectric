@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.Application;
+import android.app.Dialog;
 import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
@@ -346,6 +347,19 @@ public interface _Activity_ {
   void makeVisible();
 
   void onNewIntent(Intent intent);
+
+  void onActivityResult(int requestCode, int resultCode, Intent data);
+
+  void dispatchActivityResult(String who, int requestCode, int resultCode, Intent data);
+
+  void dispatchActivityResult(
+      String who, int requestCode, int resultCode, Intent data, String type);
+
+  Dialog onCreateDialog(int id);
+
+  void onPrepareDialog(int id, Dialog dialog, Bundle args);
+
+  void onPrepareDialog(int id, Dialog dialog);
 
   Object retainNonConfigurationInstances();
 

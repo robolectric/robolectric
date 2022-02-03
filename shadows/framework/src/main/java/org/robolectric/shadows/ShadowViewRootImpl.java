@@ -18,6 +18,7 @@ import android.view.IWindowSession;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
+import android.view.WindowManagerGlobal;
 import android.window.ClientWindowFrames;
 import java.util.ArrayList;
 import org.robolectric.RuntimeEnvironment;
@@ -41,8 +42,10 @@ public class ShadowViewRootImpl {
   @RealObject protected ViewRootImpl realObject;
 
   @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
-  public static IWindowSession getWindowSession(Looper mainLooper) {
-    return null;
+  protected static IWindowSession getWindowSession(Looper mainLooper) {
+    IWindowSession windowSession = ShadowWindowManagerGlobal.getWindowSession();
+    ReflectionHelpers.setStaticField(ViewRootImpl.class, "sWindowSession", windowSession);
+    return windowSession;
   }
 
   @Implementation
@@ -53,7 +56,11 @@ public class ShadowViewRootImpl {
       WindowManager.LayoutParams params, int viewVisibility, boolean insetsPending)
       throws RemoteException {
     // TODO(christianw): probably should return WindowManagerGlobal.RELAYOUT_RES_SURFACE_RESIZED?
-    return 0;
+    int result = 0;
+    if (ShadowWindowManagerGlobal.getInTouchMode()) {
+      result |= WindowManagerGlobal.RELAYOUT_RES_IN_TOUCH_MODE;
+    }
+    return result;
   }
 
   public void callDispatchResized() {

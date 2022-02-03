@@ -39,8 +39,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import com.android.internal.app.IVoiceInteractor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -517,30 +515,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @Deprecated
   public void callOnActivityResult(int requestCode, int resultCode, Intent resultData) {
-    final ActivityInvoker invoker = new ActivityInvoker();
-    invoker
-        .call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
-        .with(requestCode, resultCode, resultData);
+    reflector(_Activity_.class, realActivity).onActivityResult(requestCode, resultCode, resultData);
   }
 
   /** For internal use only. Not for public use. */
   public void internalCallDispatchActivityResult(
       String who, int requestCode, int resultCode, Intent data) {
-    final ActivityInvoker invoker = new ActivityInvoker();
     if (VERSION.SDK_INT >= VERSION_CODES.P) {
-      invoker
-          .call(
-              "dispatchActivityResult",
-              String.class,
-              Integer.TYPE,
-              Integer.TYPE,
-              Intent.class,
-              String.class)
-          .with(who, requestCode, resultCode, data, "ACTIVITY_RESULT");
+      reflector(_Activity_.class, realActivity)
+          .dispatchActivityResult(who, requestCode, resultCode, data, "ACTIVITY_RESULT");
     } else {
-      invoker
-          .call("dispatchActivityResult", String.class, Integer.TYPE, Integer.TYPE, Intent.class)
-          .with(who, requestCode, resultCode, data);
+      reflector(_Activity_.class, realActivity)
+          .dispatchActivityResult(who, requestCode, resultCode, data);
     }
   }
 
@@ -625,17 +611,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     Dialog dialog = dialogForId.get(id);
 
     if (dialog == null) {
-      final ActivityInvoker invoker = new ActivityInvoker();
-      dialog = (Dialog) invoker.call("onCreateDialog", Integer.TYPE).with(id);
+      dialog = reflector(_Activity_.class, realActivity).onCreateDialog(id);
       if (dialog == null) {
         return false;
       }
       if (bundle == null) {
-        invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class).with(id, dialog);
+        reflector(_Activity_.class, realActivity).onPrepareDialog(id, dialog);
       } else {
-        invoker
-            .call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class)
-            .with(id, dialog, bundle);
+        reflector(_Activity_.class, realActivity).onPrepareDialog(id, dialog, bundle);
       }
 
       dialogForId.put(id, dialog);
@@ -825,32 +808,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
     reflector(_Activity_.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
-  }
-
-  private final class ActivityInvoker {
-    private Method method;
-
-    public ActivityInvoker call(final String methodName, final Class... argumentClasses) {
-      try {
-        method = Activity.class.getDeclaredMethod(methodName, argumentClasses);
-        method.setAccessible(true);
-        return this;
-      } catch (NoSuchMethodException e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    public Object withNothing() {
-      return with();
-    }
-
-    public Object with(final Object... parameters) {
-      try {
-        return method.invoke(realActivity, parameters);
-      } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-        throw new RuntimeException(e);
-      }
-    }
   }
 
   /** Class to hold a permissions request, including its request code. */

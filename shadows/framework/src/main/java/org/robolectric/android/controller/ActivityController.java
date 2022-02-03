@@ -1,6 +1,7 @@
 package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -17,6 +18,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import javax.annotation.Nullable;
@@ -26,8 +28,10 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowViewRootImpl;
+import org.robolectric.shadows.ShadowWindowManagerGlobal;
 import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -230,7 +234,7 @@ public class ActivityController<T extends Activity>
     }
 
     reflector(ViewRootImplActivityControllerReflector.class, root)
-        .windowFocusChanged(hasFocus, false);
+        .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
     shadowMainLooper.idleIfPaused();
     return this;
   }
@@ -368,7 +372,22 @@ public class ActivityController<T extends Activity>
 
     // Can the activity handle itself ALL configuration changes?
     if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
-      shadowMainLooper.runPaused(() -> component.onConfigurationChanged(newConfiguration));
+      shadowMainLooper.runPaused(
+          () -> {
+            component.onConfigurationChanged(newConfiguration);
+            ViewRootImpl root = getViewRoot();
+            if (root != null) {
+              if (RuntimeEnvironment.getApiLevel() <= N_MR1) {
+                ReflectionHelpers.callInstanceMethod(
+                    root,
+                    "updateConfiguration",
+                    ClassParameter.from(Configuration.class, newConfiguration),
+                    ClassParameter.from(boolean.class, false));
+              } else {
+                root.updateConfiguration(Display.INVALID_DISPLAY);
+              }
+            }
+          });
 
       return this;
     } else {

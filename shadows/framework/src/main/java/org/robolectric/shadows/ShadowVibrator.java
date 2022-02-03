@@ -2,11 +2,14 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
 
+import android.os.VibrationAttributes;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.VibrationEffectSegment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -18,6 +21,7 @@ public class ShadowVibrator {
   protected long[] pattern;
   protected final List<VibrationEffectSegment> vibrationEffectSegments = new ArrayList<>();
   protected final List<Integer> supportedPrimitives = new ArrayList<>();
+  @Nullable protected VibrationAttributes vibrationAttributesFromLastVibration;
   int repeat;
   boolean hasVibrator = true;
   boolean hasAmplitudeControl = false;
@@ -101,5 +105,11 @@ public class ShadowVibrator {
   public void setSupportedPrimitives(Collection<Integer> primitives) {
     supportedPrimitives.clear();
     supportedPrimitives.addAll(primitives);
+  }
+
+  /** Returns the {@link VibrationAttributes} from the last vibration. */
+  @Nullable
+  public VibrationAttributes getVibrationAttributesFromLastVibration() {
+    return vibrationAttributesFromLastVibration;
   }
 }

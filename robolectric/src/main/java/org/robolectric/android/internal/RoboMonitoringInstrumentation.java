@@ -65,11 +65,6 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   }
 
   @Override
-  public void setInTouchMode(boolean inTouch) {
-    // ignore
-  }
-
-  @Override
   public void waitForIdleSync() {
     shadowMainLooper().idle();
   }
