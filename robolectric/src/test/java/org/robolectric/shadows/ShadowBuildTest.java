@@ -121,7 +121,9 @@ public class ShadowBuildTest {
   @Test
   @Config(minSdk = O)
   public void getSerial() {
-    assertThat(Build.getSerial()).isEqualTo(Build.UNKNOWN);
+    assertThat(Build.getSerial()).isEqualTo("unknown");
+    ShadowBuild.setSerial("robo_serial");
+    assertThat(Build.getSerial()).isEqualTo("robo_serial");
   }
 
   /** Verifies that each test gets a fresh set of Build values. */
