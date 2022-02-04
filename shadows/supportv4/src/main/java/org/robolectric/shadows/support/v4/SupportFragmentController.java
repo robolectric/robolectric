@@ -20,6 +20,7 @@ import org.robolectric.android.controller.ComponentController;
  *
  * @param <F> a class of the fragment which is under control by this class.
  */
+@Deprecated
 public class SupportFragmentController<F extends Fragment>
     extends ComponentController<SupportFragmentController<F>, F> {
   private final F fragment;
