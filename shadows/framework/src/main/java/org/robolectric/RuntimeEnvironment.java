@@ -19,17 +19,17 @@ import org.robolectric.util.TempDirectory;
 
 public class RuntimeEnvironment {
   /**
-   * @deprecated Use {@link #getApplication} or {@link
-   *     androidx.test.core.app.ApplicationProvider#getApplicationContext} instead. Note that unlike
-   *     the alternatives, this field is inherently incompatible with {@link
+   * @deprecated Use {@link #getApplication} instead. Note that unlike the alternative, this field
+   *     is inherently incompatible with {@link
    *     org.robolectric.annotation.experimental.LazyApplication}. This field may be removed in a
    *     later release
    */
   @Deprecated public static Context systemContext;
 
   /**
-   * @deprecated Please migrate to {@link
-   *     androidx.test.core.app.ApplicationProvider#getApplicationContext}
+   * @deprecated Please use {#getApplication} instead. Accessing this field directly is inherently
+   *     incompatible with {@link org.robolectric.annotation.experimental.LazyApplication} and
+   *     Robolectric makes no guarantees if a test *modifies* this field during execution.
    */
   @Deprecated public static Application application;
 
@@ -51,13 +51,13 @@ public class RuntimeEnvironment {
   /**
    * Get a reference to the {@link Application} under test.
    *
-   * The Application may be created a test setup time or created lazily at call time, based on the
-   * test's {@link LazyApplication) setting. If lazy loading is enabled, this method must be
-   * called on the main/test thread.
+   * <p>The Application may be created a test setup time or created lazily at call time, based on
+   * the test's {@link org.robolectric.annotation.experimental.LazyApplication} setting. If lazy
+   * loading is enabled, this method must be called on the main/test thread.
    *
-   * An alternate API is
-   * {@link androidx.test.core.app.ApplicationProvider#getApplicationContext()}, which is
-   * preferable if you desire cross platform tests that work on the JVM and real Android devices.
+   * <p>An alternate API outside of Robolectric is {@link
+   * androidx.test.core.app.ApplicationProvider#getApplicationContext()}, which is preferable if you
+   * desire cross platform tests that work on the JVM and real Android devices.
    */
   public static Application getApplication() {
     // IMPORTANT NOTE: Given the order in which these are nulled out when cleaning up in
