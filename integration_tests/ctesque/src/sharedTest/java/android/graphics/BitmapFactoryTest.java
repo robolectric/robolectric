@@ -7,7 +7,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory.Options;
 import android.os.Build;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.truth.TruthJUnit;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
