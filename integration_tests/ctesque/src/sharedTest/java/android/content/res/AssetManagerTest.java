@@ -5,7 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.CharStreams;
 import java.io.File;
 import java.io.FileOutputStream;

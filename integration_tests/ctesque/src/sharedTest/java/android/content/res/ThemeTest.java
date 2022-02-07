@@ -7,7 +7,7 @@ import android.content.res.Resources.Theme;
 import android.graphics.Color;
 import android.util.TypedValue;
 import androidx.test.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
