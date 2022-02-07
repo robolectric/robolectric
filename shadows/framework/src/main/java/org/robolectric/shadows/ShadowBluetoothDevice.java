@@ -32,6 +32,7 @@ import org.robolectric.util.reflector.Static;
 
 @Implements(BluetoothDevice.class)
 public class ShadowBluetoothDevice {
+  @Deprecated // Prefer {@link android.bluetooth.BluetoothAdapter#getRemoteDevice}
   public static BluetoothDevice newInstance(String address) {
     return ReflectionHelpers.callConstructor(
         BluetoothDevice.class, ReflectionHelpers.ClassParameter.from(String.class, address));

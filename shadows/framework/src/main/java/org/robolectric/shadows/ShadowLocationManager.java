@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -42,6 +43,7 @@ import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import com.google.common.base.Preconditions;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -76,8 +79,13 @@ public class ShadowLocationManager {
   private static final long GET_CURRENT_LOCATION_TIMEOUT_MS = 30 * 1000;
   private static final long MAX_CURRENT_LOCATION_AGE_MS = 10 * 1000;
 
-  /** Properties of a provider. */
+  /**
+   * ProviderProperties is not public prior to S, so a new class is required to represent it prior
+   * to that platform.
+   */
   public static class ProviderProperties {
+    @Nullable private final Object properties;
+
     private final boolean requiresNetwork;
     private final boolean requiresSatellite;
     private final boolean requiresCell;
@@ -87,6 +95,20 @@ public class ShadowLocationManager {
     private final boolean supportsBearing;
     private final int powerRequirement;
     private final int accuracy;
+
+    @RequiresApi(S)
+    ProviderProperties(android.location.provider.ProviderProperties properties) {
+      this.properties = Objects.requireNonNull(properties);
+      this.requiresNetwork = false;
+      this.requiresSatellite = false;
+      this.requiresCell = false;
+      this.hasMonetaryCost = false;
+      this.supportsAltitude = false;
+      this.supportsSpeed = false;
+      this.supportsBearing = false;
+      this.powerRequirement = 0;
+      this.accuracy = 0;
+    }
 
     public ProviderProperties(
         boolean requiresNetwork,
@@ -98,6 +120,23 @@ public class ShadowLocationManager {
         boolean supportsBearing,
         int powerRequirement,
         int accuracy) {
+      if (RuntimeEnvironment.getApiLevel() >= S) {
+        properties =
+            new android.location.provider.ProviderProperties.Builder()
+                .setHasNetworkRequirement(requiresNetwork)
+                .setHasSatelliteRequirement(requiresSatellite)
+                .setHasCellRequirement(requiresCell)
+                .setHasMonetaryCost(hasMonetaryCost)
+                .setHasAltitudeSupport(supportsAltitude)
+                .setHasSpeedSupport(supportsSpeed)
+                .setHasBearingSupport(supportsBearing)
+                .setPowerUsage(powerRequirement)
+                .setAccuracy(accuracy)
+                .build();
+      } else {
+        properties = null;
+      }
+
       this.requiresNetwork = requiresNetwork;
       this.requiresSatellite = requiresSatellite;
       this.requiresCell = requiresCell;
@@ -110,32 +149,130 @@ public class ShadowLocationManager {
     }
 
     public ProviderProperties(Criteria criteria) {
-      this.requiresNetwork = false;
-      this.requiresSatellite = false;
-      this.requiresCell = false;
-      this.hasMonetaryCost = criteria.isCostAllowed();
-      this.supportsAltitude = criteria.isAltitudeRequired();
-      this.supportsSpeed = criteria.isSpeedRequired();
-      this.supportsBearing = criteria.isBearingRequired();
-      this.powerRequirement = criteria.getPowerRequirement();
-      this.accuracy = criteria.getAccuracy();
+      this(
+          false,
+          false,
+          false,
+          criteria.isCostAllowed(),
+          criteria.isAltitudeRequired(),
+          criteria.isSpeedRequired(),
+          criteria.isBearingRequired(),
+          criteria.getPowerRequirement(),
+          criteria.getAccuracy());
     }
 
-    private boolean meetsCriteria(Criteria criteria) {
-      if (criteria.getAccuracy() != Criteria.NO_REQUIREMENT && criteria.getAccuracy() < accuracy) {
+    @RequiresApi(S)
+    android.location.provider.ProviderProperties getProviderProperties() {
+      return (android.location.provider.ProviderProperties) Objects.requireNonNull(properties);
+    }
+
+    Object getLegacyProviderProperties() {
+      try {
+        return ReflectionHelpers.callConstructor(
+            Class.forName("com.android.internal.location.ProviderProperties"),
+            ClassParameter.from(boolean.class, requiresNetwork),
+            ClassParameter.from(boolean.class, requiresSatellite),
+            ClassParameter.from(boolean.class, requiresCell),
+            ClassParameter.from(boolean.class, hasMonetaryCost),
+            ClassParameter.from(boolean.class, supportsAltitude),
+            ClassParameter.from(boolean.class, supportsSpeed),
+            ClassParameter.from(boolean.class, supportsBearing),
+            ClassParameter.from(int.class, powerRequirement),
+            ClassParameter.from(int.class, accuracy));
+      } catch (ClassNotFoundException c) {
+        throw new RuntimeException("Unable to load old ProviderProperties class", c);
+      }
+    }
+
+    public boolean hasNetworkRequirement() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).hasNetworkRequirement();
+      } else {
+        return requiresNetwork;
+      }
+    }
+
+    public boolean hasSatelliteRequirement() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties)
+            .hasSatelliteRequirement();
+      } else {
+        return requiresSatellite;
+      }
+    }
+
+    public boolean isRequiresCell() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).hasCellRequirement();
+      } else {
+        return requiresCell;
+      }
+    }
+
+    public boolean isHasMonetaryCost() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).hasMonetaryCost();
+      } else {
+        return hasMonetaryCost;
+      }
+    }
+
+    public boolean hasAltitudeSupport() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).hasAltitudeSupport();
+      } else {
+        return supportsAltitude;
+      }
+    }
+
+    public boolean hasSpeedSupport() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).hasSpeedSupport();
+      } else {
+        return supportsSpeed;
+      }
+    }
+
+    public boolean hasBearingSupport() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).hasBearingSupport();
+      } else {
+        return supportsBearing;
+      }
+    }
+
+    public int getPowerUsage() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).getPowerUsage();
+      } else {
+        return powerRequirement;
+      }
+    }
+
+    public int getAccuracy() {
+      if (properties != null) {
+        return ((android.location.provider.ProviderProperties) properties).getAccuracy();
+      } else {
+        return accuracy;
+      }
+    }
+
+    boolean meetsCriteria(Criteria criteria) {
+      if (criteria.getAccuracy() != Criteria.NO_REQUIREMENT
+          && criteria.getAccuracy() < getAccuracy()) {
         return false;
       }
       if (criteria.getPowerRequirement() != Criteria.NO_REQUIREMENT
-          && criteria.getPowerRequirement() < powerRequirement) {
+          && criteria.getPowerRequirement() < getPowerUsage()) {
         return false;
       }
-      if (criteria.isAltitudeRequired() && !supportsAltitude) {
+      if (criteria.isAltitudeRequired() && !hasAltitudeSupport()) {
         return false;
       }
-      if (criteria.isSpeedRequired() && !supportsSpeed) {
+      if (criteria.isSpeedRequired() && !hasSpeedSupport()) {
         return false;
       }
-      if (criteria.isBearingRequired() && !supportsBearing) {
+      if (criteria.isBearingRequired() && !hasBearingSupport()) {
         return false;
       }
       if (!criteria.isCostAllowed() && hasMonetaryCost) {
@@ -213,13 +350,11 @@ public class ShadowLocationManager {
 
   @Implementation
   protected List<String> getAllProviders() {
-    synchronized (providers) {
-      ArrayList<String> allProviders = new ArrayList<>(providers.size());
-      for (ProviderEntry providerEntry : providers) {
-        allProviders.add(providerEntry.name);
-      }
-      return allProviders;
+    ArrayList<String> allProviders = new ArrayList<>();
+    for (ProviderEntry providerEntry : getProviderEntries()) {
+      allProviders.add(providerEntry.getName());
     }
+    return allProviders;
   }
 
   @Implementation
@@ -235,28 +370,36 @@ public class ShadowLocationManager {
       return null;
     }
 
+    ProviderProperties properties = providerEntry.getProperties();
+    if (properties == null) {
+      return null;
+    }
+
     try {
       synchronized (ShadowLocationManager.class) {
         if (locationProviderConstructor == null) {
-          locationProviderConstructor = loadLocationProviderConstructor();
-
+          if (RuntimeEnvironment.getApiLevel() >= S) {
+            locationProviderConstructor =
+                LocationProvider.class.getConstructor(
+                    String.class, android.location.provider.ProviderProperties.class);
+          } else {
+            locationProviderConstructor =
+                LocationProvider.class.getConstructor(
+                    String.class,
+                    Class.forName("com.android.internal.location.ProviderProperties"));
+          }
           locationProviderConstructor.setAccessible(true);
         }
       }
-      return locationProviderConstructor.newInstance(name, providerEntry.createRealProperties());
+
+      if (RuntimeEnvironment.getApiLevel() >= S) {
+        return locationProviderConstructor.newInstance(name, properties.getProviderProperties());
+      } else {
+        return locationProviderConstructor.newInstance(
+            name, properties.getLegacyProviderProperties());
+      }
     } catch (ReflectiveOperationException e) {
       throw new LinkageError(e.getMessage(), e);
-    }
-  }
-
-  protected Constructor<LocationProvider> loadLocationProviderConstructor()
-      throws ReflectiveOperationException {
-    if (RuntimeEnvironment.getApiLevel() > R) {
-      return LocationProvider.class.getConstructor(
-          String.class, android.location.provider.ProviderProperties.class);
-    } else {
-      return LocationProvider.class.getConstructor(
-          String.class, Class.forName("com.android.internal.location.ProviderProperties"));
     }
   }
 
@@ -267,19 +410,17 @@ public class ShadowLocationManager {
 
   @Implementation
   protected List<String> getProviders(@Nullable Criteria criteria, boolean enabled) {
-    synchronized (providers) {
-      ArrayList<String> matchingProviders = new ArrayList<>(providers.size());
-      for (ProviderEntry providerEntry : providers) {
-        if (enabled && !isProviderEnabled(providerEntry.name)) {
-          continue;
-        }
-        if (criteria != null && !providerEntry.meetsCriteria(criteria)) {
-          continue;
-        }
-        matchingProviders.add(providerEntry.name);
+    ArrayList<String> matchingProviders = new ArrayList<>();
+    for (ProviderEntry providerEntry : getProviderEntries()) {
+      if (enabled && !isProviderEnabled(providerEntry.getName())) {
+        continue;
       }
-      return matchingProviders;
+      if (criteria != null && !providerEntry.meetsCriteria(criteria)) {
+        continue;
+      }
+      matchingProviders.add(providerEntry.getName());
     }
+    return matchingProviders;
   }
 
   @Implementation
@@ -303,6 +444,36 @@ public class ShadowLocationManager {
     return null;
   }
 
+  @Implementation(minSdk = S)
+  @Nullable
+  protected Object getProviderProperties(Object providerStr) {
+    String provider = (String) providerStr;
+    if (provider == null) {
+      throw new IllegalArgumentException();
+    }
+
+    ProviderEntry providerEntry = getProviderEntry(provider);
+    if (providerEntry == null) {
+      return null;
+    }
+
+    ProviderProperties properties = providerEntry.getProperties();
+    if (properties == null) {
+      return null;
+    }
+
+    return properties.getProviderProperties();
+  }
+
+  @Implementation(minSdk = S)
+  protected boolean hasProvider(String provider) {
+    if (provider == null) {
+      throw new IllegalArgumentException();
+    }
+
+    return getProviderEntry(provider) != null;
+  }
+
   @Implementation
   protected boolean isProviderEnabled(String provider) {
     if (RuntimeEnvironment.getApiLevel() >= P) {
@@ -322,13 +493,10 @@ public class ShadowLocationManager {
 
   /**
    * Sets the properties of the given provider. The provider will be created if it doesn't exist
-   * already.
+   * already. This overload functions for all Android SDK levels.
    */
   public void setProviderProperties(String name, @Nullable ProviderProperties properties) {
-    if (name == null) {
-      throw new NullPointerException();
-    }
-    getOrCreateProviderEntry(name).properties = properties;
+    getOrCreateProviderEntry(Objects.requireNonNull(name)).setProperties(properties);
   }
 
   /**
@@ -397,12 +565,12 @@ public class ShadowLocationManager {
       return null;
     }
 
-    return providerEntry.lastLocation;
+    return providerEntry.getLastLocation();
   }
 
   /** Sets the last known location for the given provider. */
   public void setLastKnownLocation(String provider, @Nullable Location location) {
-    getOrCreateProviderEntry(provider).lastLocation = location;
+    getOrCreateProviderEntry(provider).setLastLocation(location);
   }
 
   @Implementation(minSdk = R)
@@ -880,7 +1048,7 @@ public class ShadowLocationManager {
     }
 
     ProviderEntry providerEntry = getOrCreateProviderEntry(location.getProvider());
-    if (!PASSIVE_PROVIDER.equals(providerEntry.name)) {
+    if (!PASSIVE_PROVIDER.equals(providerEntry.getName())) {
       providerEntry.simulateLocation(location);
     }
 
@@ -1015,7 +1183,7 @@ public class ShadowLocationManager {
 
     synchronized (providers) {
       for (ProviderEntry providerEntry : providers) {
-        if (name.equals(providerEntry.name)) {
+        if (name.equals(providerEntry.getName())) {
           return providerEntry;
         }
       }
@@ -1024,10 +1192,15 @@ public class ShadowLocationManager {
     return null;
   }
 
+  private Set<ProviderEntry> getProviderEntries() {
+    synchronized (providers) {
+      return providers;
+    }
+  }
+
   private void removeProviderEntry(String name) {
     synchronized (providers) {
-      ProviderEntry providerEntry = getProviderEntry(name);
-      providers.remove(providerEntry);
+      providers.remove(getProviderEntry(name));
     }
   }
 
@@ -1050,14 +1223,22 @@ public class ShadowLocationManager {
   // 5) the passive provider is always special-cased at all API levels - it's state is controlled
   //    programmatically, and should never be determined by LOCATION_PROVIDERS_ALLOWED.
   private final class ProviderEntry {
+
     private final String name;
     private final CopyOnWriteArraySet<ListenerEntry> listeners;
 
-    @Nullable private volatile ProviderProperties properties;
+    @GuardedBy("this")
+    @Nullable
+    private ProviderProperties properties;
+
+    @GuardedBy("this")
     private boolean enabled;
+
+    @GuardedBy("this")
+    @Nullable
     private Location lastLocation;
 
-    private ProviderEntry(String name, @Nullable ProviderProperties properties) {
+    ProviderEntry(String name, @Nullable ProviderProperties properties) {
       this.name = name;
       listeners = new CopyOnWriteArraySet<>();
       this.properties = properties;
@@ -1079,9 +1260,24 @@ public class ShadowLocationManager {
       }
     }
 
+    public String getName() {
+      return name;
+    }
+
+    @Nullable
+    public synchronized ProviderProperties getProperties() {
+      return properties;
+    }
+
+    public synchronized void setProperties(@Nullable ProviderProperties properties) {
+      this.properties = properties;
+    }
+
     public boolean isEnabled() {
       if (PASSIVE_PROVIDER.equals(name) || RuntimeEnvironment.getApiLevel() >= Q) {
-        return enabled;
+        synchronized (this) {
+          return enabled;
+        }
       } else {
         String allowedProviders =
             Secure.getString(getContext().getContentResolver(), LOCATION_PROVIDERS_ALLOWED);
@@ -1094,92 +1290,95 @@ public class ShadowLocationManager {
     }
 
     public void setEnabled(boolean enabled) {
-      if (PASSIVE_PROVIDER.equals(name)) {
-        // the passive provider cannot be disabled, but the passive provider didn't exist in
-        // previous versions of this shadow. for backwards compatibility, we let the passive
-        // provider be disabled. this also help emulate the situation where an app only has COARSE
-        // permissions, which this shadow normally can't emulate.
-        this.enabled = enabled;
-        return;
-      }
-
-      int oldLocationMode = getLocationMode();
-      int newLocationMode = oldLocationMode;
-      if (RuntimeEnvironment.getApiLevel() < P) {
-        if (GPS_PROVIDER.equals(name)) {
-          if (enabled) {
-            switch (oldLocationMode) {
-              case LOCATION_MODE_OFF:
-                newLocationMode = LOCATION_MODE_SENSORS_ONLY;
-                break;
-              case LOCATION_MODE_BATTERY_SAVING:
-                newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
-                break;
-              default:
-                break;
-            }
-          } else {
-            switch (oldLocationMode) {
-              case LOCATION_MODE_SENSORS_ONLY:
-                newLocationMode = LOCATION_MODE_OFF;
-                break;
-              case LOCATION_MODE_HIGH_ACCURACY:
-                newLocationMode = LOCATION_MODE_BATTERY_SAVING;
-                break;
-              default:
-                break;
-            }
-          }
-        } else if (NETWORK_PROVIDER.equals(name)) {
-          if (enabled) {
-            switch (oldLocationMode) {
-              case LOCATION_MODE_OFF:
-                newLocationMode = LOCATION_MODE_BATTERY_SAVING;
-                break;
-              case LOCATION_MODE_SENSORS_ONLY:
-                newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
-                break;
-              default:
-                break;
-            }
-          } else {
-            switch (oldLocationMode) {
-              case LOCATION_MODE_BATTERY_SAVING:
-                newLocationMode = LOCATION_MODE_OFF;
-                break;
-              case LOCATION_MODE_HIGH_ACCURACY:
-                newLocationMode = LOCATION_MODE_SENSORS_ONLY;
-                break;
-              default:
-                break;
-            }
-          }
-        }
-      }
-
-      if (newLocationMode != oldLocationMode) {
-        // this sets LOCATION_MODE and LOCATION_PROVIDERS_ALLOWED
-        setLocationModeInternal(newLocationMode);
-      } else if (RuntimeEnvironment.getApiLevel() >= Q) {
-        if (enabled == this.enabled) {
+      synchronized (this) {
+        if (PASSIVE_PROVIDER.equals(name)) {
+          // the passive provider cannot be disabled, but the passive provider didn't exist in
+          // previous versions of this shadow. for backwards compatibility, we let the passive
+          // provider be disabled. this also help emulate the situation where an app only has COARSE
+          // permissions, which this shadow normally can't emulate.
+          this.enabled = enabled;
           return;
         }
 
-        this.enabled = enabled;
-        // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE. do this even
-        // though LOCATION_PROVIDERS_ALLOWED is not the source of truth - we keep it up to date, but
-        // ignore any direct writes to it
-        ShadowSettings.ShadowSecure.updateEnabledProviders(
-            getContext().getContentResolver(), name, enabled);
-      } else {
-        if (enabled == this.enabled) {
-          return;
+        int oldLocationMode = getLocationMode();
+        int newLocationMode = oldLocationMode;
+        if (RuntimeEnvironment.getApiLevel() < P) {
+          if (GPS_PROVIDER.equals(name)) {
+            if (enabled) {
+              switch (oldLocationMode) {
+                case LOCATION_MODE_OFF:
+                  newLocationMode = LOCATION_MODE_SENSORS_ONLY;
+                  break;
+                case LOCATION_MODE_BATTERY_SAVING:
+                  newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
+                  break;
+                default:
+                  break;
+              }
+            } else {
+              switch (oldLocationMode) {
+                case LOCATION_MODE_SENSORS_ONLY:
+                  newLocationMode = LOCATION_MODE_OFF;
+                  break;
+                case LOCATION_MODE_HIGH_ACCURACY:
+                  newLocationMode = LOCATION_MODE_BATTERY_SAVING;
+                  break;
+                default:
+                  break;
+              }
+            }
+          } else if (NETWORK_PROVIDER.equals(name)) {
+            if (enabled) {
+              switch (oldLocationMode) {
+                case LOCATION_MODE_OFF:
+                  newLocationMode = LOCATION_MODE_BATTERY_SAVING;
+                  break;
+                case LOCATION_MODE_SENSORS_ONLY:
+                  newLocationMode = LOCATION_MODE_HIGH_ACCURACY;
+                  break;
+                default:
+                  break;
+              }
+            } else {
+              switch (oldLocationMode) {
+                case LOCATION_MODE_BATTERY_SAVING:
+                  newLocationMode = LOCATION_MODE_OFF;
+                  break;
+                case LOCATION_MODE_HIGH_ACCURACY:
+                  newLocationMode = LOCATION_MODE_SENSORS_ONLY;
+                  break;
+                default:
+                  break;
+              }
+            }
+          }
         }
 
-        this.enabled = enabled;
-        // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE
-        ShadowSettings.ShadowSecure.updateEnabledProviders(
-            getContext().getContentResolver(), name, enabled);
+        if (newLocationMode != oldLocationMode) {
+          // this sets LOCATION_MODE and LOCATION_PROVIDERS_ALLOWED
+          setLocationModeInternal(newLocationMode);
+        } else if (RuntimeEnvironment.getApiLevel() >= Q) {
+          if (enabled == this.enabled) {
+            return;
+          }
+
+          this.enabled = enabled;
+          // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE. do this even
+          // though LOCATION_PROVIDERS_ALLOWED is not the source of truth - we keep it up to date,
+          // but
+          // ignore any direct writes to it
+          ShadowSettings.ShadowSecure.updateEnabledProviders(
+              getContext().getContentResolver(), name, enabled);
+        } else {
+          if (enabled == this.enabled) {
+            return;
+          }
+
+          this.enabled = enabled;
+          // set LOCATION_PROVIDERS_ALLOWED directly, without setting LOCATION_MODE
+          ShadowSettings.ShadowSecure.updateEnabledProviders(
+              getContext().getContentResolver(), name, enabled);
+        }
       }
 
       // fire listeners
@@ -1188,42 +1387,34 @@ public class ShadowLocationManager {
       }
     }
 
+    @Nullable
+    public synchronized Location getLastLocation() {
+      return lastLocation;
+    }
+
+    public synchronized void setLastLocation(@Nullable Location location) {
+      lastLocation = location;
+    }
+
     public void simulateLocation(Location location) {
-      lastLocation = new Location(location);
+      synchronized (this) {
+        lastLocation = new Location(location);
+      }
 
       for (ListenerEntry listenerEntry : listeners) {
         listenerEntry.simulateLocation(location);
       }
     }
 
-    public boolean meetsCriteria(Criteria criteria) {
+    public synchronized boolean meetsCriteria(Criteria criteria) {
       if (PASSIVE_PROVIDER.equals(name)) {
         return false;
       }
 
-      ProviderProperties myProperties = properties;
-      if (myProperties == null) {
+      if (properties == null) {
         return false;
       }
-      return myProperties.meetsCriteria(criteria);
-    }
-
-    public Object createRealProperties() {
-      ProviderProperties myProperties = properties;
-      if (myProperties == null) {
-        return null;
-      } else {
-        return ShadowLocationManager.this.createRealProperties(
-            myProperties.requiresNetwork,
-            myProperties.requiresSatellite,
-            myProperties.requiresCell,
-            myProperties.hasMonetaryCost,
-            myProperties.supportsAltitude,
-            myProperties.supportsSpeed,
-            myProperties.supportsBearing,
-            myProperties.powerRequirement,
-            myProperties.accuracy);
-      }
+      return properties.meetsCriteria(criteria);
     }
 
     public void addListener(
@@ -1241,6 +1432,10 @@ public class ShadowLocationManager {
     }
 
     private void add(ListenerEntry entry) {
+      boolean enabled;
+      synchronized (this) {
+        enabled = this.enabled;
+      }
       if (!enabled) {
         entry.invokeOnProviderEnabled(name, false);
       }
@@ -1257,14 +1452,12 @@ public class ShadowLocationManager {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) {
-        return true;
+      if (o instanceof ProviderEntry) {
+        ProviderEntry that = (ProviderEntry) o;
+        return Objects.equals(name, that.name);
       }
-      if (!(o instanceof ProviderEntry)) {
-        return false;
-      }
-      ProviderEntry that = (ProviderEntry) o;
-      return Objects.equals(name, that.name);
+
+      return false;
     }
 
     @Override
@@ -1339,47 +1532,6 @@ public class ShadowLocationManager {
       @Override
       public int hashCode() {
         return Objects.hashCode(key);
-      }
-    }
-  }
-
-  protected Object createRealProperties(
-      boolean requiresNetwork,
-      boolean requiresSatellite,
-      boolean requiresCell,
-      boolean hasMonetaryCost,
-      boolean supportsAltitude,
-      boolean supportsSpeed,
-      boolean supportsBearing,
-      int powerRequirement,
-      int accuracy) {
-    if (RuntimeEnvironment.getApiLevel() > R) {
-      return new android.location.provider.ProviderProperties.Builder()
-          .setHasNetworkRequirement(requiresNetwork)
-          .setHasSatelliteRequirement(requiresSatellite)
-          .setHasCellRequirement(requiresCell)
-          .setHasMonetaryCost(hasMonetaryCost)
-          .setHasAltitudeSupport(supportsAltitude)
-          .setHasSpeedSupport(supportsSpeed)
-          .setHasBearingSupport(supportsBearing)
-          .setPowerUsage(powerRequirement)
-          .setAccuracy(accuracy)
-          .build();
-    } else {
-      try {
-        return ReflectionHelpers.callConstructor(
-            Class.forName("com.android.internal.location.ProviderProperties"),
-            ClassParameter.from(boolean.class, requiresNetwork),
-            ClassParameter.from(boolean.class, requiresSatellite),
-            ClassParameter.from(boolean.class, requiresCell),
-            ClassParameter.from(boolean.class, hasMonetaryCost),
-            ClassParameter.from(boolean.class, supportsAltitude),
-            ClassParameter.from(boolean.class, supportsSpeed),
-            ClassParameter.from(boolean.class, supportsBearing),
-            ClassParameter.from(int.class, powerRequirement),
-            ClassParameter.from(int.class, accuracy));
-      } catch (ClassNotFoundException c) {
-        throw new RuntimeException("Unable to load old ProviderProperties class", c);
       }
     }
   }

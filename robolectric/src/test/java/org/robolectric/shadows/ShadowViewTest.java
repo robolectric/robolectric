@@ -48,6 +48,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,6 +72,7 @@ public class ShadowViewTest {
 
   @Before
   public void setUp() throws Exception {
+    InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
     transcript = new ArrayList<>();
     context = ApplicationProvider.getApplicationContext();
     view = Robolectric.setupActivity(ContainerActivity.class).getView();

@@ -34,6 +34,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE1 = 17;
   private static final int MOCK_PROFILE2 = 21;
+  private static final String MOCK_MAC_ADDRESS = "00:11:22:33:AA:BB";
 
   private BluetoothAdapter bluetoothAdapter;
 
@@ -291,6 +292,21 @@ public class ShadowBluetoothAdapterTest {
             IllegalStateException.class,
             () -> shadowOf(bluetoothAdapter).getSingleLeScanCallback());
     assertThat(expected).hasMessageThat().isEqualTo("There are 2 callbacks");
+  }
+
+  /**
+   * Verifies that the state of any specific remote device is global. Although in robolectric this
+   * is accomplished by caching the same instance, in android, multiple unique instances
+   * nevertheless return the same state so long as they point to the same address.
+   */
+  @Test
+  public void testGetRemoteDevice_sameState() {
+    BluetoothDevice remoteDevice1 = bluetoothAdapter.getRemoteDevice(MOCK_MAC_ADDRESS);
+    BluetoothDevice remoteDevice2 = bluetoothAdapter.getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(remoteDevice2.getBondState()).isEqualTo(BluetoothDevice.BOND_NONE);
+    shadowOf(remoteDevice1).setBondState(BluetoothDevice.BOND_BONDED);
+    assertThat(remoteDevice2.getBondState()).isEqualTo(BluetoothDevice.BOND_BONDED);
   }
 
   @Test

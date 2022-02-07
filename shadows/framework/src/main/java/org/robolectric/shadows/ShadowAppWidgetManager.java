@@ -10,6 +10,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.appwidget.AppWidgetProviderInfo;
@@ -20,7 +21,6 @@ import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.os.UserHandle;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.google.common.collect.HashMultimap;
@@ -85,7 +85,7 @@ public class ShadowAppWidgetManager {
     if (canReapplyRemoteViews(widgetInfo, views)) {
       views.reapply(context, widgetInfo.view);
     } else {
-      widgetInfo.view = views.apply(context, new FrameLayout(context));
+      widgetInfo.view = views.apply(context, new AppWidgetHostView(context));
       widgetInfo.layoutId = getRemoteViewsToApply(views).getLayoutId();
     }
     widgetInfo.lastRemoteViews = views;
@@ -305,7 +305,7 @@ public class ShadowAppWidgetManager {
    */
   public void reconstructWidgetViewAsIfPhoneWasRotated(int appWidgetId) {
     WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
-    widgetInfo.view = widgetInfo.lastRemoteViews.apply(context, new FrameLayout(context));
+    widgetInfo.view = widgetInfo.lastRemoteViews.apply(context, new AppWidgetHostView(context));
   }
 
   /**
@@ -338,7 +338,7 @@ public class ShadowAppWidgetManager {
     for (int i = 0; i < howManyToCreate; i++) {
       int myWidgetId = nextWidgetId++;
       RemoteViews remoteViews = new RemoteViews(context.getPackageName(), widgetLayoutId);
-      View widgetView = remoteViews.apply(context, new FrameLayout(context));
+      View widgetView = remoteViews.apply(context, new AppWidgetHostView(context));
       WidgetInfo widgetInfo =
           new WidgetInfo(widgetView, widgetLayoutId, context, appWidgetProvider);
       widgetInfo.lastRemoteViews = remoteViews;

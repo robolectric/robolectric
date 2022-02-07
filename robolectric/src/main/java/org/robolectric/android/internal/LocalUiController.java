@@ -1,7 +1,13 @@
 package org.robolectric.android.internal;
 
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.comparingInt;
+import static java.util.stream.Collectors.toList;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
@@ -13,7 +19,6 @@ import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
@@ -22,8 +27,10 @@ import androidx.test.platform.ui.InjectEventSecurityException;
 import androidx.test.platform.ui.UiController;
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -32,14 +39,40 @@ public class LocalUiController implements UiController {
 
   private static final String TAG = "LocalUiController";
 
+  private static final Predicate<Root> IS_FOCUSABLE = hasLayoutFlag(FLAG_NOT_FOCUSABLE).negate();
+  private static final Predicate<Root> IS_TOUCHABLE = hasLayoutFlag(FLAG_NOT_TOUCHABLE).negate();
+  private static final Predicate<Root> IS_TOUCH_MODAL =
+      IS_FOCUSABLE.and(hasLayoutFlag(FLAG_NOT_TOUCH_MODAL).negate());
+  private static final Predicate<Root> WATCH_TOUCH_OUTSIDE =
+      IS_TOUCH_MODAL.negate().and(hasLayoutFlag(FLAG_WATCH_OUTSIDE_TOUCH));
+
   @Override
   public boolean injectMotionEvent(MotionEvent event) throws InjectEventSecurityException {
     checkNotNull(event);
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     loopMainThreadUntilIdle();
 
-    // FLAG_NOT_TOUCHABLE: "this window can never receive touch events"
-    getTopMostViewRootExcluding(LayoutParams.FLAG_NOT_TOUCHABLE).dispatchTouchEvent(event);
+    // TODO(paulsowden): The real implementation will send a full event stream (a touch down
+    //  followed by a series of moves, etc) to the same window/root even if the subsequent events
+    //  leave the window bounds, and will split pointer down events based on the window flags.
+    //  This will be necessary to support more sophisticated multi-window use cases.
+
+    List<Root> touchableRoots = getViewRoots().stream().filter(IS_TOUCHABLE).collect(toList());
+    for (int i = 0; i < touchableRoots.size(); i++) {
+      Root root = touchableRoots.get(i);
+      if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
+        event.offsetLocation(-root.params.x, -root.params.y);
+        root.impl.getView().dispatchTouchEvent(event);
+        event.offsetLocation(root.params.x, root.params.y);
+        break;
+      } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN && root.watchTouchOutside()) {
+        MotionEvent outsideEvent = MotionEvent.obtain(event);
+        outsideEvent.setAction(MotionEvent.ACTION_OUTSIDE);
+        outsideEvent.offsetLocation(-root.params.x, -root.params.y);
+        root.impl.getView().dispatchTouchEvent(outsideEvent);
+        outsideEvent.recycle();
+      }
+    }
 
     loopMainThreadUntilIdle();
 
@@ -52,8 +85,10 @@ public class LocalUiController implements UiController {
     checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     loopMainThreadUntilIdle();
 
-    // FLAG_NOT_FOCUSABLE: "this window won't ever get key input focus"
-    getTopMostViewRootExcluding(LayoutParams.FLAG_NOT_FOCUSABLE).dispatchKeyEvent(event);
+    getViewRoots().stream()
+        .filter(IS_FOCUSABLE)
+        .findFirst()
+        .ifPresent(root -> root.impl.getView().dispatchKeyEvent(event));
 
     loopMainThreadUntilIdle();
     return true;
@@ -148,31 +183,24 @@ public class LocalUiController implements UiController {
     shadowMainLooper().idleFor(Duration.ofMillis(millisDelay));
   }
 
-  private View getTopMostViewRootExcluding(int prohibitedFlags) {
-    List<ViewRootImpl> viewRoots = getViewRoots();
-    if (viewRoots.isEmpty()) {
+  private ArrayList<Root> getViewRoots() {
+    List<ViewRootImpl> viewRootImpls = getViewRootImpls();
+    if (viewRootImpls.isEmpty()) {
       throw new IllegalStateException("no view roots!");
     }
     List<LayoutParams> params = getRootLayoutParams();
-    if (params.size() != viewRoots.size()) {
+    if (params.size() != viewRootImpls.size()) {
       throw new IllegalStateException("number params is not consistent with number of view roots!");
     }
-
-    int topMostRootIndex = 0;
-    for (int i = 0; i < params.size(); i++) {
-      LayoutParams param = params.get(i);
-      if ((param.flags & prohibitedFlags) != 0) {
-        continue;
-      }
-      if (param.type <= params.get(topMostRootIndex).type) {
-        continue;
-      }
-      topMostRootIndex = i;
+    ArrayList<Root> roots = new ArrayList<>();
+    for (int i = 0; i < viewRootImpls.size(); i++) {
+      roots.add(new Root(viewRootImpls.get(i), params.get(i), i));
     }
-    return viewRoots.get(topMostRootIndex).getView();
+    roots.sort(comparingInt(Root::getType).reversed().thenComparingInt(Root::getIndex));
+    return roots;
   }
 
-  private static List<ViewRootImpl> getViewRoots() {
+  private static List<ViewRootImpl> getViewRootImpls() {
     Object windowManager = getViewRootsContainer();
     Object viewRootsObj = ReflectionHelpers.getField(windowManager, "mRoots");
     Class<?> viewRootsClass = viewRootsObj.getClass();
@@ -205,6 +233,46 @@ public class LocalUiController implements UiController {
       return ReflectionHelpers.callStaticMethod(WindowManagerImpl.class, "getDefault");
     } else {
       return WindowManagerGlobal.getInstance();
+    }
+  }
+
+  private static Predicate<Root> hasLayoutFlag(int flag) {
+    return root -> (root.params.flags & flag) == flag;
+  }
+
+  private static final class Root {
+    final ViewRootImpl impl;
+    final LayoutParams params;
+    final int index;
+
+    Root(ViewRootImpl impl, LayoutParams params, int index) {
+      this.impl = impl;
+      this.params = params;
+      this.index = index;
+    }
+
+    int getIndex() {
+      return index;
+    }
+
+    int getType() {
+      return params.type;
+    }
+
+    boolean isTouchInside(MotionEvent event) {
+      int index = event.getActionIndex();
+      return event.getX(index) >= params.x
+          && event.getX(index) <= params.x + impl.getView().getWidth()
+          && event.getY(index) >= params.y
+          && event.getY(index) <= params.y + impl.getView().getHeight();
+    }
+
+    boolean isTouchModal() {
+      return IS_TOUCH_MODAL.test(this);
+    }
+
+    boolean watchTouchOutside() {
+      return WATCH_TOUCH_OUTSIDE.test(this);
     }
   }
 }

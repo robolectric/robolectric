@@ -17,6 +17,7 @@ public class ResourceTestUtil {
     System.out.println("elapsed " + message + ": " + (elapsed / 1000000.0) + "ms");
   }
 
+  @SuppressWarnings("rawtypes")
   static String stringify(ResourceTable resourceTable) {
     final HashMap<String, List<TypedResource>> map = new HashMap<>();
     resourceTable.receive(new ResourceTable.Visitor() {
@@ -65,7 +66,7 @@ public class ResourceTestUtil {
     return buf.toString();
   }
 
-  static String shortContext(TypedResource typedResource) {
+  static String shortContext(TypedResource<?> typedResource) {
     return typedResource.getXmlContext().toString().replaceAll("jar:/usr/local/google/home/.*\\.jar\\!", "jar:");
   }
 }

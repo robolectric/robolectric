@@ -34,7 +34,7 @@ public class BootstrapDeferringRobolectricTestRunner extends RobolectricTestRunn
 
   @Nonnull
   @Override
-  protected Class<? extends TestLifecycle> getTestLifecycleClass() {
+  protected Class<MyTestLifecycle> getTestLifecycleClass() {
     return MyTestLifecycle.class;
   }
 
