@@ -17,6 +17,8 @@ import static androidx.test.ext.truth.location.LocationCorrespondences.equality;
 import static androidx.test.ext.truth.location.LocationSubject.assertThat;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -27,7 +29,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.Criteria;
 import android.location.GnssAntennaInfo;
-import android.location.GnssAntennaInfo.Listener;
 import android.location.GnssAntennaInfo.PhaseCenterOffset;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
@@ -37,6 +38,7 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.location.LocationRequest;
 import android.location.OnNmeaMessageListener;
+import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -45,7 +47,6 @@ import android.os.Looper;
 import android.os.Process;
 import android.provider.Settings.Secure;
 import android.text.TextUtils;
-import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -59,6 +60,8 @@ import java.util.function.Consumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
@@ -1251,8 +1254,9 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  public void testAddGpsStatusListener() {
-    GpsStatus.Listener listener = new TestGpsListener();
+  @Config(maxSdk = R)
+  public void testGpsStatusListener() {
+    GpsStatus.Listener listener = mock(GpsStatus.Listener.class);
 
     assertThat(shadowLocationManager.getGpsStatusListeners()).isEmpty();
     locationManager.addGpsStatusListener(listener);
@@ -1263,105 +1267,96 @@ public class ShadowLocationManagerTest {
 
   @Test
   @Config(minSdk = R)
-  public void testRegisterGnssStatusCallback() {
-    TestGnssCallback callback = new TestGnssCallback();
+  public void testGnssStatusCallback() {
+    GnssStatus.Callback listener1 = mock(GnssStatus.Callback.class);
+    GnssStatus.Callback listener2 = mock(GnssStatus.Callback.class);
+    InOrder inOrder1 = Mockito.inOrder(listener1);
+    InOrder inOrder2 = Mockito.inOrder(listener2);
+
     GnssStatus status1 = new GnssStatus.Builder().build();
     GnssStatus status2 = new GnssStatus.Builder().build();
 
-    shadowLocationManager.sendGnssStatus(status1);
-    shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.gnssStatuses).isEmpty();
+    locationManager.registerGnssStatusCallback(listener1, new Handler(Looper.getMainLooper()));
+    locationManager.registerGnssStatusCallback(Runnable::run, listener2);
 
-    locationManager.registerGnssStatusCallback(callback, new Handler(Looper.getMainLooper()));
-
-    shadowLocationManager.sendGnssStatus(status1);
+    shadowLocationManager.simulateGnssStatusStarted();
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.gnssStatuses).containsExactly(status1).inOrder();
+    inOrder1.verify(listener1).onStarted();
+    inOrder2.verify(listener2).onStarted();
+
+    shadowLocationManager.simulateGnssStatusFirstFix(1);
+    shadowOf(Looper.getMainLooper()).idle();
+    inOrder1.verify(listener1).onFirstFix(1);
+    inOrder2.verify(listener2).onFirstFix(1);
+
+    shadowLocationManager.simulateGnssStatus(status1);
+    shadowOf(Looper.getMainLooper()).idle();
+    inOrder1.verify(listener1).onSatelliteStatusChanged(status1);
+    inOrder2.verify(listener2).onSatelliteStatusChanged(status1);
+
+    locationManager.unregisterGnssStatusCallback(listener2);
 
     shadowLocationManager.sendGnssStatus(status2);
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
+    inOrder1.verify(listener1).onSatelliteStatusChanged(status2);
+    inOrder2.verify(listener2, never()).onSatelliteStatusChanged(status2);
 
-    locationManager.unregisterGnssStatusCallback(callback);
-    shadowLocationManager.sendGnssStatus(status1);
+    shadowLocationManager.simulateGnssStatusStopped();
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
-  }
+    inOrder1.verify(listener1).onStopped();
+    inOrder2.verify(listener2, never()).onStopped();
 
-  @Test
-  @Config(minSdk = R)
-  public void testRegisterGnssStatusCallback_executor() {
-    TestGnssCallback callback = new TestGnssCallback();
-    GnssStatus status1 = new GnssStatus.Builder().build();
-    GnssStatus status2 = new GnssStatus.Builder().build();
-
-    shadowLocationManager.sendGnssStatus(status1);
-    assertThat(callback.gnssStatuses).isEmpty();
-
-    locationManager.registerGnssStatusCallback(Runnable::run, callback);
-
-    shadowLocationManager.sendGnssStatus(status1);
-    assertThat(callback.gnssStatuses).containsExactly(status1).inOrder();
+    locationManager.unregisterGnssStatusCallback(listener1);
 
     shadowLocationManager.sendGnssStatus(status2);
-    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
-
-    locationManager.unregisterGnssStatusCallback(callback);
-    assertThat(callback.gnssStatuses).containsExactly(status1, status2).inOrder();
+    shadowOf(Looper.getMainLooper()).idle();
+    inOrder1.verify(listener1, never()).onSatelliteStatusChanged(status2);
+    inOrder2.verify(listener2, never()).onSatelliteStatusChanged(status2);
   }
 
   @Test
   @Config(minSdk = N)
-  public void testAddNmeaListener() {
-    TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
+  public void testGnssNmeaMessageListener() {
+    OnNmeaMessageListener listener1 = mock(OnNmeaMessageListener.class);
+    OnNmeaMessageListener listener2 = mock(OnNmeaMessageListener.class);
+    InOrder inOrder1 = Mockito.inOrder(listener1);
+    InOrder inOrder2 = Mockito.inOrder(listener2);
 
-    shadowLocationManager.sendNmeaMessage("message", 0);
+    locationManager.addNmeaListener(listener1, new Handler(Looper.getMainLooper()));
+    if (VERSION.SDK_INT >= VERSION_CODES.R) {
+      locationManager.addNmeaListener(Runnable::run, listener2);
+    } else {
+      locationManager.addNmeaListener(listener2, new Handler(Looper.getMainLooper()));
+    }
+
+    shadowLocationManager.simulateNmeaMessage("message1", 1);
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.nmeaMessages).isEmpty();
+    inOrder1.verify(listener1).onNmeaMessage("message1", 1);
+    inOrder2.verify(listener2).onNmeaMessage("message1", 1);
 
-    locationManager.addNmeaListener(callback, new Handler(Looper.getMainLooper()));
+    locationManager.removeNmeaListener(listener2);
 
-    shadowLocationManager.sendNmeaMessage("message1", 0);
+    shadowLocationManager.simulateNmeaMessage("message2", 2);
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.nmeaMessages).containsExactly("message1").inOrder();
+    inOrder1.verify(listener1).onNmeaMessage("message2", 2);
+    inOrder2.verify(listener2, never()).onNmeaMessage("message2", 2);
 
-    shadowLocationManager.sendNmeaMessage("message2", 0);
+    locationManager.removeNmeaListener(listener1);
+
+    shadowLocationManager.simulateNmeaMessage("message3", 3);
     shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
-
-    locationManager.removeNmeaListener(callback);
-
-    shadowLocationManager.sendNmeaMessage("message1", 0);
-    shadowOf(Looper.getMainLooper()).idle();
-    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
+    inOrder1.verify(listener1, never()).onNmeaMessage("message3", 3);
+    inOrder2.verify(listener2, never()).onNmeaMessage("message3", 3);
   }
 
   @Test
   @Config(minSdk = R)
-  public void testAddNmeaListener_executor() {
-    TestOnNmeaMessageListener callback = new TestOnNmeaMessageListener();
+  public void testGnssAntennaInfoListener() {
+    GnssAntennaInfo.Listener listener1 = mock(GnssAntennaInfo.Listener.class);
+    GnssAntennaInfo.Listener listener2 = mock(GnssAntennaInfo.Listener.class);
+    InOrder inOrder1 = Mockito.inOrder(listener1);
+    InOrder inOrder2 = Mockito.inOrder(listener2);
 
-    shadowLocationManager.sendNmeaMessage("message", 0);
-    assertThat(callback.nmeaMessages).isEmpty();
-
-    locationManager.addNmeaListener(Runnable::run, callback);
-
-    shadowLocationManager.sendNmeaMessage("message1", 0);
-    assertThat(callback.nmeaMessages).containsExactly("message1").inOrder();
-
-    shadowLocationManager.sendNmeaMessage("message2", 0);
-    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
-
-    locationManager.removeNmeaListener(callback);
-
-    shadowLocationManager.sendNmeaMessage("message1", 0);
-    assertThat(callback.nmeaMessages).containsExactly("message1", "message2").inOrder();
-  }
-
-  @Test
-  @Config(minSdk = R)
-  public void testRegisterAntennaInfoListener() {
-    TestGnssAntennaInfoListener callback = new TestGnssAntennaInfoListener();
     List<GnssAntennaInfo> events1 =
         Collections.singletonList(
             new GnssAntennaInfo.Builder()
@@ -1370,24 +1365,27 @@ public class ShadowLocationManagerTest {
     List<GnssAntennaInfo> events2 =
         Collections.singletonList(
             new GnssAntennaInfo.Builder()
-                .setPhaseCenterOffset(new PhaseCenterOffset(0, 0, 0, 0, 0, 0))
+                .setPhaseCenterOffset(new PhaseCenterOffset(1, 1, 1, 1, 1, 1))
                 .build());
 
-    shadowLocationManager.sendGnssAntennaInfo(events1);
-    assertThat(callback.antennaInfos).isEmpty();
+    locationManager.registerAntennaInfoListener(Runnable::run, listener1);
+    locationManager.registerAntennaInfoListener(Runnable::run, listener2);
 
-    locationManager.registerAntennaInfoListener(Runnable::run, callback);
+    shadowLocationManager.simulateGnssAntennaInfo(events1);
+    inOrder1.verify(listener1).onGnssAntennaInfoReceived(events1);
+    inOrder2.verify(listener2).onGnssAntennaInfoReceived(events1);
 
-    shadowLocationManager.sendGnssAntennaInfo(events1);
-    assertThat(callback.antennaInfos).containsExactly(events1).inOrder();
+    locationManager.unregisterAntennaInfoListener(listener2);
 
-    shadowLocationManager.sendGnssAntennaInfo(events2);
-    assertThat(callback.antennaInfos).containsExactly(events1, events2).inOrder();
+    shadowLocationManager.simulateGnssAntennaInfo(events2);
+    inOrder1.verify(listener1).onGnssAntennaInfoReceived(events2);
+    inOrder2.verify(listener2, never()).onGnssAntennaInfoReceived(events2);
 
-    locationManager.unregisterAntennaInfoListener(callback);
+    locationManager.unregisterAntennaInfoListener(listener1);
 
-    shadowLocationManager.sendGnssAntennaInfo(events1);
-    assertThat(callback.antennaInfos).containsExactly(events1, events2).inOrder();
+    shadowLocationManager.simulateGnssAntennaInfo(events1);
+    inOrder1.verify(listener1, never()).onGnssAntennaInfoReceived(events1);
+    inOrder2.verify(listener2, never()).onGnssAntennaInfoReceived(events1);
   }
 
   private static final Random random = new Random(101);
@@ -1510,39 +1508,6 @@ public class ShadowLocationManagerTest {
     public void onLocationChanged(Location location) {
       locationManager.removeUpdates(this);
       super.onLocationChanged(location);
-    }
-  }
-
-  private static class TestGpsListener implements GpsStatus.Listener {
-
-    @Override
-    public void onGpsStatusChanged(int event) {}
-  }
-
-  private static class TestGnssCallback extends GnssStatus.Callback {
-    final ArrayList<GnssStatus> gnssStatuses = new ArrayList<>();
-
-    @Override
-    public void onSatelliteStatusChanged(GnssStatus status) {
-      gnssStatuses.add(status);
-    }
-  }
-
-  private static class TestOnNmeaMessageListener implements OnNmeaMessageListener {
-    final ArrayList<String> nmeaMessages = new ArrayList<>();
-
-    @Override
-    public void onNmeaMessage(String message, long timestamp) {
-      nmeaMessages.add(message);
-    }
-  }
-
-  private static class TestGnssAntennaInfoListener implements Listener {
-    final ArrayList<List<GnssAntennaInfo>> antennaInfos = new ArrayList<>();
-
-    @Override
-    public void onGnssAntennaInfoReceived(@NonNull List<GnssAntennaInfo> gnssAntennaInfos) {
-      antennaInfos.add(gnssAntennaInfos);
     }
   }
 }
