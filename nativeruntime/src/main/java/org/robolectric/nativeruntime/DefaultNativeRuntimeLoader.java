@@ -3,6 +3,7 @@ package org.robolectric.nativeruntime;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
+import com.google.auto.service.AutoService;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import java.io.File;
@@ -10,27 +11,26 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.annotation.Priority;
+import org.robolectric.pluginapi.NativeRuntimeLoader;
 import org.robolectric.util.PerfStatsCollector;
 
 /** Loads the Robolectric native runtime. */
-public final class NativeRuntimeLoader {
+@AutoService(NativeRuntimeLoader.class)
+@Priority(Integer.MIN_VALUE)
+public final class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private static final AtomicBoolean loaded = new AtomicBoolean(false);
 
-  static {
-    if (isSupported()) {
-      ensureLoaded();
-    } else {
+  @Override
+  public void ensureLoaded() {
+    if (!isSupported()) {
       String errorMessage =
           String.format(
               "The Robolectric native runtime is not supported on %s (%s)",
               OS_NAME.value(), OS_ARCH.value());
       throw new AssertionError(errorMessage);
     }
-  }
 
-  private NativeRuntimeLoader() {}
-
-  static void ensureLoaded() {
     if (loaded.compareAndSet(false, true)) {
       try {
         PerfStatsCollector.getInstance()

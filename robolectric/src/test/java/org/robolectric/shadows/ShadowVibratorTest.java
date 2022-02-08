@@ -13,6 +13,8 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.PrimitiveSegment;
@@ -172,5 +174,23 @@ public class ShadowVibratorTest {
 
     assertThat(shadowOf(vibrator).isVibrating()).isFalse();
     assertThat(shadowOf(vibrator).isCancelled()).isTrue();
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void vibratePattern_withVibrationAttributes() {
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST)
+            .setFlags(AudioAttributes.FLAG_BYPASS_INTERRUPTION_POLICY)
+            .build();
+
+    vibrator.vibrate(VibrationEffect.createPredefined(EFFECT_CLICK), audioAttributes);
+
+    assertThat(shadowOf(vibrator).getVibrationAttributesFromLastVibration())
+        .isEqualTo(
+            new VibrationAttributes.Builder(
+                    audioAttributes, VibrationEffect.createPredefined(EFFECT_CLICK))
+                .build());
   }
 }
