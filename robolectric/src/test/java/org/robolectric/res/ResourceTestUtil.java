@@ -41,7 +41,11 @@ public class ResourceTestUtil {
           for (Object item : ((List) data)) {
             if (item.getClass().equals(TypedResource.class)) {
               TypedResource typedResourceItem = (TypedResource) item;
-              newList.add(typedResourceItem.getData().toString() + " (" + typedResourceItem.getResType() + ")");
+              newList.add(
+                  typedResourceItem.getData().toString()
+                      + " ("
+                      + typedResourceItem.getResType()
+                      + ")");
             } else {
               newList.add(item.toString());
             }
@@ -67,6 +71,9 @@ public class ResourceTestUtil {
   }
 
   static String shortContext(TypedResource<?> typedResource) {
-    return typedResource.getXmlContext().toString().replaceAll("jar:/usr/local/google/home/.*\\.jar\\!", "jar:");
+    return typedResource
+        .getXmlContext()
+        .toString()
+        .replaceAll("jar:/usr/local/google/home/.*\\.jar\\!", "jar:");
   }
 }
