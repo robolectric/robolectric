@@ -50,6 +50,7 @@ public class ShadowBluetoothAdapter {
 
   private static boolean isBluetoothSupported = true;
 
+  private static final Map<String, BluetoothDevice> deviceCache = new HashMap<>();
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
   private boolean isDiscovering;
@@ -75,6 +76,7 @@ public class ShadowBluetoothAdapter {
       bluetoothReflector.setSBluetoothLeScanner(null);
     }
     bluetoothReflector.setAdapter(null);
+    deviceCache.clear();
   }
 
   @Implementation
@@ -98,6 +100,16 @@ public class ShadowBluetoothAdapter {
     } else {
       reflector(BluetoothAdapterReflector.class, realAdapter).setBluetoothLeAdvertiser(advertiser);
     }
+  }
+
+  @Implementation
+  protected synchronized BluetoothDevice getRemoteDevice(String address) {
+    if (!deviceCache.containsKey(address)) {
+      deviceCache.put(
+          address,
+          reflector(BluetoothAdapterReflector.class, realAdapter).getRemoteDevice(address));
+    }
+    return deviceCache.get(address);
   }
 
   @Implementation
@@ -486,6 +498,9 @@ public class ShadowBluetoothAdapter {
 
     @Direct
     void closeProfileProxy(int profile, BluetoothProfile proxy);
+
+    @Direct
+    BluetoothDevice getRemoteDevice(String address);
 
     @Accessor("sAdapter")
     @Static

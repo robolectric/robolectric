@@ -14,13 +14,13 @@ import org.robolectric.annotation.Config;
 public class ShadowWindowManagerGlobalTest {
 
   @Test
-  public void getWindowSession_shouldReturnNull_toStubAndroidStartup() {
-    assertThat(ShadowWindowManagerGlobal.getWindowSession()).isNull();
+  public void getWindowSession_shouldReturnSession() {
+    assertThat(ShadowWindowManagerGlobal.getWindowSession()).isNotNull();
   }
 
   @Test
-  public void getWindowSession_withLooper_shouldReturnNull_toStubAndroidStartup() {
+  public void getWindowSession_withLooper_shouldReturnSession() {
     // method not available in JELLY BEAN, sorry :(
-    assertThat(ShadowWindowManagerGlobal.getWindowSession(Looper.getMainLooper())).isNull();
+    assertThat(ShadowWindowManagerGlobal.getWindowSession(Looper.getMainLooper())).isNotNull();
   }
 }

@@ -6,6 +6,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import android.view.View;
 import android.view.ViewRootImpl;
 import androidx.test.internal.platform.os.ControlledLooper;
+import org.robolectric.shadows.ShadowWindowManagerGlobal;
 import org.robolectric.util.ReflectionHelpers;
 
 /** A Robolectric implementation for {@link ControlledLooper}. */
@@ -25,7 +26,7 @@ public class LocalControlledLooper implements ControlledLooper {
           viewRoot,
           "windowFocusChanged",
           from(boolean.class, true), /* hasFocus */
-          from(boolean.class, false) /* inTouchMode */);
+          from(boolean.class, ShadowWindowManagerGlobal.getInTouchMode()));
     }
   }
 }

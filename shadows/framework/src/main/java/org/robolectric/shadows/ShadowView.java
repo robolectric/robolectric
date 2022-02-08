@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -134,9 +135,10 @@ public class ShadowView {
     return shadowView.innerText();
   }
 
-  @Implementation
+  // Only override up to kitkat, while this version exists after kitkat it just calls through to the
+  // __constructor__(Context, AttributeSet, int, int) variant below.
+  @Implementation(maxSdk = KITKAT)
   protected void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
-    if (context == null) throw new NullPointerException("no context");
     this.attributeSet = attributeSet;
     invokeConstructor(
         View.class,
@@ -144,6 +146,19 @@ public class ShadowView {
         ClassParameter.from(Context.class, context),
         ClassParameter.from(AttributeSet.class, attributeSet),
         ClassParameter.from(int.class, defStyle));
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected void __constructor__(
+      Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
+    this.attributeSet = attributeSet;
+    invokeConstructor(
+        View.class,
+        realView,
+        ClassParameter.from(Context.class, context),
+        ClassParameter.from(AttributeSet.class, attributeSet),
+        ClassParameter.from(int.class, defStyleAttr),
+        ClassParameter.from(int.class, defStyleRes));
   }
 
   @Implementation
