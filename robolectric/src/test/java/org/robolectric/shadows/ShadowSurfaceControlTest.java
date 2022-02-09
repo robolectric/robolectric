@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -39,7 +38,7 @@ public class ShadowSurfaceControlTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT_WATCH, maxSdk = O)
+  @Config(maxSdk = O)
   public void newSurfaceControl_isNotNull() {
     SurfaceControl surfaceControl =
         ReflectionHelpers.callConstructor(
