@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -44,10 +43,8 @@ public class ShadowSurfaceControl {
     reflector(SurfaceControlReflector.class, realSurfaceControl).finalize();
   }
 
-  // TODO(paulsowden): SDKs 18/19 use the same argument signature but a return type of int, to
-  //  implement this properly will need a different shadow targetted to 18/19.
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = N_MR1)
-  protected static long nativeCreate(
+  @Implementation(maxSdk = N_MR1)
+  protected static Number nativeCreate(
       SurfaceSession session, String name, int w, int h, int format, int flags) {
     // Return a non-zero value otherwise constructing a SurfaceControl fails with
     // OutOfResourcesException.
