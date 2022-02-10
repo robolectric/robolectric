@@ -277,6 +277,11 @@ public class ShadowContextImpl {
     return getShadowInstrumentation().registerReceiver(receiver, filter, realContextImpl);
   }
 
+  @Implementation(minSdk = O)
+  protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, int flags) {
+    return getShadowInstrumentation().registerReceiver(receiver, filter, realContextImpl);
+  }
+
   @Implementation
   protected Intent registerReceiver(
       BroadcastReceiver receiver,
