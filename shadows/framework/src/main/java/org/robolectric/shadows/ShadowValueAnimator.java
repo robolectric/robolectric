@@ -70,6 +70,7 @@ public class ShadowValueAnimator {
    * Sets the duration scale for value animator. Calling this method with {@code duration} set to
    * zero will make all {@link ValueAnimator} based animations have zero duration.
    */
+  @Implementation
   public static void setDurationScale(float duration) {
     reflector(ValueAnimatorReflector.class, null).setDurationScale(duration);
   }

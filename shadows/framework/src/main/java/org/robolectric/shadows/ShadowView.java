@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
@@ -85,8 +86,8 @@ public class ShadowView {
   private AnimationRunner animationRunner;
 
   /**
-   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
-   * is enabled.
+   * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are
+   * visible and that it is enabled.
    *
    * @param view the view to click on
    * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
@@ -346,9 +347,11 @@ public class ShadowView {
   }
 
   /**
-   * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
+   * Returns a string representation of this {@code View}. Unless overridden, it will be an empty
+   * string.
    *
-   * Robolectric extension.
+   * <p>Robolectric extension.
+   *
    * @return String representation of this view.
    */
   public String innerText() {
@@ -357,6 +360,7 @@ public class ShadowView {
 
   /**
    * Dumps the status of this {@code View} to {@code System.out}
+   *
    * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
    */
   @Deprecated
@@ -366,6 +370,7 @@ public class ShadowView {
 
   /**
    * Dumps the status of this {@code View} to {@code System.out} at the given indentation level
+   *
    * @param out Output stream.
    * @param indent Indentation level.
    * @deprecated - Please use {@link androidx.test.espresso.util.HumanReadables#describe(View)}
@@ -420,19 +425,19 @@ public class ShadowView {
     return wasInvalidated;
   }
 
-  /**
-   * Clears the wasInvalidated flag
-   */
+  /** Clears the wasInvalidated flag */
   public void clearWasInvalidated() {
     wasInvalidated = false;
   }
 
   /**
-   * Utility method for clicking on views exposing testing scenarios that are not possible when using the actual app.
+   * Utility method for clicking on views exposing testing scenarios that are not possible when
+   * using the actual app.
    *
-   * If running with LooperMode PAUSED will also idle the main Looper.
+   * <p>If running with LooperMode PAUSED will also idle the main Looper.
    *
-   * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
+   * @throws RuntimeException if the view is disabled or if the view or any of its parents are not
+   *     visible.
    * @return Return value of the underlying click operation.
    * @deprecated - Please use Espresso for View interactions.
    */
@@ -466,6 +471,7 @@ public class ShadowView {
   /**
    * @return Returns long click listener, if set.
    */
+  @Implementation(minSdk = R)
   public View.OnLongClickListener getOnLongClickListener() {
     return onLongClickListener;
   }
@@ -484,7 +490,9 @@ public class ShadowView {
     return onCreateContextMenuListener;
   }
 
-  /** @return Returns the attached listeners, or the empty set if none are present. */
+  /**
+   * @return Returns the attached listeners, or the empty set if none are present.
+   */
   public Set<View.OnAttachStateChangeListener> getOnAttachStateChangeListeners() {
     return onAttachStateChangeListeners;
   }
@@ -874,6 +882,7 @@ public class ShadowView {
    * {@link View#getSourceLayoutResId()}, passes through to the underlying implementation on API
    * levels where it is supported.
    */
+  @Implementation(minSdk = Q)
   public int getSourceLayoutResId() {
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       return reflector(_View_.class, realView).getSourceLayoutResId();
@@ -898,12 +907,12 @@ public class ShadowView {
 
     private static class MyIWindowIdStub extends IWindowId.Stub {
       @Override
-      public void registerFocusObserver(IWindowFocusObserver iWindowFocusObserver) throws RemoteException {
-      }
+      public void registerFocusObserver(IWindowFocusObserver iWindowFocusObserver)
+          throws RemoteException {}
 
       @Override
-      public void unregisterFocusObserver(IWindowFocusObserver iWindowFocusObserver) throws RemoteException {
-      }
+      public void unregisterFocusObserver(IWindowFocusObserver iWindowFocusObserver)
+          throws RemoteException {}
 
       @Override
       public boolean isFocused() throws RemoteException {

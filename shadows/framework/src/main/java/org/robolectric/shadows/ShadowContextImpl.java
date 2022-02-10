@@ -356,7 +356,8 @@ public class ShadowContextImpl {
   }
 
   // This is a private method in ContextImpl so we copy the relevant portions of it here.
-  private void validateServiceIntent(Intent service) {
+  @Implementation(minSdk = KITKAT)
+  protected void validateServiceIntent(Intent service) {
     if (service.getComponent() == null
         && service.getPackage() == null
         && realContextImpl.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {

@@ -156,7 +156,7 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected void native_configure(
       String[] keys, Object[] values, Surface surface, MediaCrypto crypto, int flags) {
-    configure(keys, values, surface, crypto, flags);
+    innerConfigure(keys, values, surface, crypto, flags);
   }
 
   @Implementation(minSdk = O)
@@ -167,11 +167,11 @@ public class ShadowMediaCodec {
       Object crypto,
       Object descramblerBinder,
       Object flags) {
-    configure(
+    innerConfigure(
         (String[]) keys, (Object[]) values, (Surface) surface, (MediaCrypto) crypto, (int) flags);
   }
 
-  private void configure(
+  private void innerConfigure(
       String[] keys,
       Object[] values,
       @Nullable Surface surface,
@@ -242,6 +242,7 @@ public class ShadowMediaCodec {
         : null;
   }
 
+  @Implementation(minSdk = LOLLIPOP)
   protected int native_dequeueInputBuffer(long timeoutUs) {
     checkState(!isAsync, "Attempting to deque buffer in Async mode.");
     try {

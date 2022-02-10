@@ -186,6 +186,7 @@ public class ShadowAudioManager {
     this.ringerMode = ringerMode;
   }
 
+  @Implementation
   public static boolean isValidRingerMode(int ringerMode) {
     return ringerMode >= 0
         && ringerMode

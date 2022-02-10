@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Rect;
@@ -268,26 +269,32 @@ public class ShadowAccessibilityWindowInfo {
     anchorNode = anchor;
   }
 
+  @Implementation
   public void setType(int value) {
     type = value;
   }
 
+  @Implementation(maxSdk = Q)
   public void setBoundsInScreen(Rect bounds) {
     boundsInScreen.set(bounds);
   }
 
+  @Implementation
   public void setAccessibilityFocused(boolean value) {
     isAccessibilityFocused = value;
   }
 
+  @Implementation
   public void setActive(boolean value) {
     isActive = value;
   }
 
+  @Implementation
   public void setId(int value) {
     reflector(AccessibilityWindowInfoReflector.class, mRealAccessibilityWindowInfo).setId(value);
   }
 
+  @Implementation
   public void setLayer(int value) {
     layer = value;
   }
@@ -297,10 +304,12 @@ public class ShadowAccessibilityWindowInfo {
    *
    * @param value The {@link CharSequence} to set as the title of this window
    */
+  @Implementation(minSdk = N)
   public void setTitle(CharSequence value) {
     title = value;
   }
 
+  @Implementation
   public void setFocused(boolean focused) {
     isFocused = focused;
   }

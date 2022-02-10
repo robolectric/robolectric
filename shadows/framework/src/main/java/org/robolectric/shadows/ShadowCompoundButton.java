@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.drawable.Drawable;
+import android.os.Build.VERSION_CODES;
 import android.widget.CompoundButton;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -33,6 +34,7 @@ public class ShadowCompoundButton extends ShadowTextView {
     return buttonDrawableId;
   }
 
+  @Implementation(minSdk = VERSION_CODES.M)
   public Drawable getButtonDrawable() {
     return buttonDrawable;
   }

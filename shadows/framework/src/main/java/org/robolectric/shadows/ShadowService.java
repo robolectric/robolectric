@@ -75,6 +75,7 @@ public class ShadowService extends ShadowContextWrapper {
     this.foregroundServiceType = foregroundServiceType;
   }
 
+  @Implementation
   protected void stopForeground(boolean removeNotification) {
     foregroundStopped = true;
     notificationShouldRemoved = removeNotification;

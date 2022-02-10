@@ -614,6 +614,7 @@ public class ShadowTelecomManager {
     this.manageBlockNumbersIntent = intent;
   }
 
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   public void setSimCallManager(PhoneAccountHandle simCallManager) {
     this.simCallManager = simCallManager;
   }
