@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.location.LocationManager.PASSIVE_PROVIDER;
+import static android.os.Build.VERSION_CODES.P;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
 import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
@@ -513,7 +514,8 @@ public class ShadowLocationManager {
     return isLocationEnabled();
   }
 
-  private boolean isLocationEnabled() {
+  @Implementation(minSdk = P)
+  protected boolean isLocationEnabled() {
     return getLocationMode() != LOCATION_MODE_OFF;
   }
 

@@ -171,7 +171,8 @@ public class ShadowDownloadManager {
       return realObject;
     }
 
-    private void setDestinationFromBase(File base, String subPath) {
+    @Implementation
+    protected void setDestinationFromBase(File base, String subPath) {
       if (subPath == null) {
         throw new NullPointerException("subPath cannot be null");
       }

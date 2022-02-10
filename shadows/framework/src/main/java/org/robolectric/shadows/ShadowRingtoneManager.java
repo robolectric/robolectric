@@ -23,7 +23,8 @@ public final class ShadowRingtoneManager {
         ringtoneUri != null ? ringtoneUri.toString() : null);
   }
 
-  private static String getSettingForType(int type) {
+  @Implementation
+  protected static String getSettingForType(int type) {
     if ((type & TYPE_RINGTONE) != 0) {
       return Settings.System.RINGTONE;
     } else if ((type & TYPE_NOTIFICATION) != 0) {

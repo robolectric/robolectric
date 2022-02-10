@@ -149,6 +149,7 @@ public class ShadowNetworkInfo {
     this.detailedState = detailedState;
   }
 
+  @Implementation
   public void setExtraInfo(String extraInfo) {
     reflector(NetworkInfoReflector.class, realNetworkInfo).setExtraInfo(extraInfo);
   }

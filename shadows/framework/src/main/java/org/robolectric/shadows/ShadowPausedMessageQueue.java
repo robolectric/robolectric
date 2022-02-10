@@ -25,6 +25,7 @@ import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /**
@@ -179,13 +180,15 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return reflector(MessageQueueReflector.class, realQueue).getMessages();
   }
 
-  boolean isPolling() {
+  @Implementation(minSdk = M)
+  protected boolean isPolling() {
     synchronized (realQueue) {
       return isPolling;
     }
   }
 
-  void quit() {
+  @Implementation(maxSdk = JELLY_BEAN_MR1)
+  protected void quit() {
     if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
       reflector(MessageQueueReflector.class, realQueue).quit(false);
     } else {
@@ -359,8 +362,10 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     int getPtr();
 
     // for APIs < JELLYBEAN_MR2
+    @Direct
     void quit();
 
+    @Direct
     void quit(boolean b);
 
     // for APIs < KITKAT

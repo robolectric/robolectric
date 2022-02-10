@@ -455,6 +455,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * android.content.pm.PackageManager} in T.
    */
   @Override
+  @Implementation(minSdk = S)
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel == S || apiLevel == 32) {
