@@ -29,7 +29,6 @@ public class ShadowVcnManager {
       ParcelUuid subGroup, Executor executor, VcnStatusCallback callback) {
 
     callbacks.put(callback, new VcnStatusCallbackInfo(executor, subGroup));
-    executor.execute(() -> callback.onStatusChanged(currentVcnStatus));
   }
 
   @Implementation
