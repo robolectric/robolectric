@@ -23,11 +23,8 @@ public class ShadowMatrixTest {
     m.preTranslate(16, 23);
     m.preSkew(42, 108);
 
-    assertThat(shadowOf(m).getPreOperations()).containsExactly(
-        "skew 42.0 108.0",
-        "translate 16.0 23.0",
-        "rotate 4.0 8.0 15.0"
-    );
+    assertThat(shadowOf(m).getPreOperations())
+        .containsExactly("skew 42.0 108.0", "translate 16.0 23.0", "rotate 4.0 8.0 15.0");
   }
 
   @Test
@@ -37,11 +34,8 @@ public class ShadowMatrixTest {
     m.postTranslate(16, 23);
     m.postSkew(42, 108);
 
-    assertThat(shadowOf(m).getPostOperations()).containsExactly(
-        "rotate 4.0 8.0 15.0",
-        "translate 16.0 23.0",
-        "skew 42.0 108.0"
-    );
+    assertThat(shadowOf(m).getPostOperations())
+        .containsExactly("rotate 4.0 8.0 15.0", "translate 16.0 23.0", "skew 42.0 108.0");
   }
 
   @Test
@@ -81,7 +75,7 @@ public class ShadowMatrixTest {
   }
 
   @Test
-  public void set_shouldOverrideValues(){
+  public void set_shouldOverrideValues() {
     final Matrix matrix1 = new Matrix();
     matrix1.setScale(1, 2);
 
@@ -109,65 +103,52 @@ public class ShadowMatrixTest {
   @Test
   public void testIsIdentity() {
     final Matrix matrix = new Matrix();
-    assertThat(matrix.isIdentity())
-        .isTrue();
+    assertThat(matrix.isIdentity()).isTrue();
 
     matrix.postScale(2.0f, 2.0f);
-    assertThat(matrix.isIdentity())
-        .isFalse();
+    assertThat(matrix.isIdentity()).isFalse();
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void testIsAffine() {
     final Matrix matrix = new Matrix();
-    assertThat(matrix.isAffine())
-        .isTrue();
+    assertThat(matrix.isAffine()).isTrue();
 
     matrix.postScale(2.0f, 2.0f);
-    assertThat(matrix.isAffine())
-        .isTrue();
+    assertThat(matrix.isAffine()).isTrue();
     matrix.postTranslate(1.0f, 2.0f);
-    assertThat(matrix.isAffine())
-        .isTrue();
+    assertThat(matrix.isAffine()).isTrue();
     matrix.postRotate(45.0f);
-    assertThat(matrix.isAffine())
-        .isTrue();
+    assertThat(matrix.isAffine()).isTrue();
 
-    matrix.setValues(new float[] { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 2.0f });
-    assertThat(matrix.isAffine())
-        .isFalse();
+    matrix.setValues(new float[] {1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 2.0f});
+    assertThat(matrix.isAffine()).isFalse();
   }
 
   @Test
   public void testRectStaysRect() {
     final Matrix matrix = new Matrix();
-    assertThat(matrix.rectStaysRect())
-        .isTrue();
+    assertThat(matrix.rectStaysRect()).isTrue();
 
     matrix.postScale(2.0f, 2.0f);
-    assertThat(matrix.rectStaysRect())
-        .isTrue();
+    assertThat(matrix.rectStaysRect()).isTrue();
     matrix.postTranslate(1.0f, 2.0f);
-    assertThat(matrix.rectStaysRect())
-        .isTrue();
+    assertThat(matrix.rectStaysRect()).isTrue();
     matrix.postRotate(45.0f);
-    assertThat(matrix.rectStaysRect())
-        .isFalse();
+    assertThat(matrix.rectStaysRect()).isFalse();
     matrix.postRotate(45.0f);
-    assertThat(matrix.rectStaysRect())
-        .isTrue();
+    assertThat(matrix.rectStaysRect()).isTrue();
   }
 
   @Test
   public void testGetSetValues() {
     final Matrix matrix = new Matrix();
-    final float[] values = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f };
+    final float[] values = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f};
     matrix.setValues(values);
     final float[] matrixValues = new float[9];
     matrix.getValues(matrixValues);
-    assertThat(matrixValues)
-        .isEqualTo(values);
+    assertThat(matrixValues).isEqualTo(values);
   }
 
   @Test
@@ -179,12 +160,10 @@ public class ShadowMatrixTest {
 
     final Matrix matrix2 = new Matrix();
     matrix2.set(matrix1);
-    assertThat(matrix1)
-        .isEqualTo(matrix2);
+    assertThat(matrix1).isEqualTo(matrix2);
 
     matrix2.set(null);
-    assertThat(matrix2.isIdentity())
-        .isTrue();
+    assertThat(matrix2.isIdentity()).isTrue();
   }
 
   @Test
@@ -194,8 +173,7 @@ public class ShadowMatrixTest {
     matrix.postTranslate(1.0f, 2.0f);
     matrix.postRotate(45.0f);
     matrix.reset();
-    assertThat(matrix.isIdentity())
-        .isTrue();
+    assertThat(matrix.isIdentity()).isTrue();
   }
 
   @Test
@@ -449,11 +427,9 @@ public class ShadowMatrixTest {
     final Matrix matrix = new Matrix();
     final Matrix inverse = new Matrix();
     matrix.setScale(0.0f, 1.0f);
-    assertThat(matrix.invert(inverse))
-        .isFalse();
+    assertThat(matrix.invert(inverse)).isFalse();
     matrix.setScale(1.0f, 0.0f);
-    assertThat(matrix.invert(inverse))
-        .isFalse();
+    assertThat(matrix.invert(inverse)).isFalse();
 
     matrix.setScale(1.0f, 1.0f);
     checkInverse(matrix);
@@ -477,14 +453,12 @@ public class ShadowMatrixTest {
     final RectF input = new RectF(1.0f, 1.0f, 2.0f, 2.0f);
     final RectF output1 = new RectF();
     matrix.mapRect(output1, input);
-    assertThat(output1)
-        .isEqualTo(new RectF(2.0f, 3.0f, 4.0f, 6.0f));
+    assertThat(output1).isEqualTo(new RectF(2.0f, 3.0f, 4.0f, 6.0f));
 
     matrix.postScale(-1.0f, -1.0f);
     final RectF output2 = new RectF();
     matrix.mapRect(output2, input);
-    assertThat(output2)
-        .isEqualTo(new RectF(-4.0f, -6.0f, -2.0f, -3.0f));
+    assertThat(output2).isEqualTo(new RectF(-4.0f, -6.0f, -2.0f, -3.0f));
   }
 
   @Test
@@ -493,14 +467,12 @@ public class ShadowMatrixTest {
     matrix.postTranslate(-1.0f, -2.0f);
     matrix.postScale(2.0f, 3.0f);
     final float[] input = {
-        0.0f, 0.0f,
-        1.0f, 2.0f
+      0.0f, 0.0f,
+      1.0f, 2.0f
     };
     final float[] output = new float[input.length];
     matrix.mapPoints(output, input);
-    assertThat(output)
-        .usingExactEquality()
-        .containsExactly(-2.0f, -6.0f, 0.0f, 0.0f);
+    assertThat(output).usingExactEquality().containsExactly(-2.0f, -6.0f, 0.0f, 0.0f);
   }
 
   @Test
@@ -509,14 +481,12 @@ public class ShadowMatrixTest {
     matrix.postTranslate(-1.0f, -2.0f);
     matrix.postScale(2.0f, 3.0f);
     final float[] input = {
-        0.0f, 0.0f,
-        1.0f, 2.0f
+      0.0f, 0.0f,
+      1.0f, 2.0f
     };
     final float[] output = new float[input.length];
     matrix.mapVectors(output, input);
-    assertThat(output)
-        .usingExactEquality()
-        .containsExactly(0.0f, 0.0f, 2.0f, 6.0f);
+    assertThat(output).usingExactEquality().containsExactly(0.0f, 0.0f, 2.0f, 6.0f);
   }
 
   private static PointF mapPoint(Matrix matrix, float x, float y) {
@@ -532,10 +502,8 @@ public class ShadowMatrixTest {
 
   private static void checkInverse(Matrix matrix) {
     final Matrix inverse = new Matrix();
-    assertThat(matrix.invert(inverse))
-        .isTrue();
+    assertThat(matrix.invert(inverse)).isTrue();
     matrix.postConcat(inverse);
-    assertThat(matrix.isIdentity())
-        .isTrue();
+    assertThat(matrix.isIdentity()).isTrue();
   }
 }
