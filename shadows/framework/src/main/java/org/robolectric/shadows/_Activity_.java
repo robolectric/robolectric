@@ -369,6 +369,9 @@ public interface _Activity_ {
   @Accessor("mDecor")
   void setDecor(View decorView);
 
+  @Accessor("mFinished")
+  void setFinished(boolean finished);
+
   @Accessor("mLastNonConfigurationInstances")
   void setLastNonConfigurationInstances(Object nonConfigInstance);
 

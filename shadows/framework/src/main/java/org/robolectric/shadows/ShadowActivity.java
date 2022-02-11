@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -14,6 +14,7 @@ import android.app.ActivityOptions;
 import android.app.ActivityThread;
 import android.app.Application;
 import android.app.Dialog;
+import android.app.DirectAction;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.app.PictureInPictureParams;
@@ -28,7 +29,9 @@ import android.database.Cursor;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.Display;
@@ -43,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
@@ -298,32 +302,35 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void finish() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
+    reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
   @Implementation(minSdk = LOLLIPOP)
   protected void finishAndRemoveTask() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
+    reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
-  @Implementation(minSdk = JELLY_BEAN)
+  @Implementation
   protected void finishAffinity() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", true);
+    reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
   public void resetIsFinishing() {
-    ReflectionHelpers.setField(Activity.class, realActivity, "mFinished", false);
+    reflector(_Activity_.class, realActivity).setFinished(false);
   }
 
   /**
    * Returns whether {@link #finish()} was called.
    *
-   * @deprecated Use {@link Activity#isFinishing()} instead.
+   * <p>Note: this method seems redundant, but removing it will cause problems for Mockito spies of
+   * Activities that call {@link Activity#finish()} followed by {@link Activity#isFinishing()}. This
+   * is because `finish` modifies the members of {@link ShadowActivity#realActivity}, so
+   * `isFinishing` should refer to those same members.
    */
-  @Deprecated
-  public boolean isFinishing() {
+  @Implementation
+  protected boolean isFinishing() {
     return reflector(DirectActivityReflector.class, realActivity).isFinishing();
   }
 
@@ -808,6 +815,27 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
     reflector(_Activity_.class, realActivity)
         .setVoiceInteractor(ReflectionHelpers.createDeepProxy(IVoiceInteractor.class));
+  }
+
+  /**
+   * Calls Activity#onGetDirectActions with the given parameters. This method also simulates the
+   * Parcel serialization/deserialization which occurs when assistant requests DirectAction.
+   */
+  public void callOnGetDirectActions(
+      CancellationSignal cancellationSignal, Consumer<List<DirectAction>> callback) {
+    if (RuntimeEnvironment.getApiLevel() < Q) {
+      throw new IllegalStateException("callOnGetDirectActions requires API " + Q);
+    }
+    realActivity.onGetDirectActions(
+        cancellationSignal,
+        directActions -> {
+          Parcel parcel = Parcel.obtain();
+          parcel.writeParcelableList(directActions, 0);
+          parcel.setDataPosition(0);
+          List<DirectAction> output = new ArrayList<>();
+          parcel.readParcelableList(output, DirectAction.class.getClassLoader());
+          callback.accept(output);
+        });
   }
 
   /** Class to hold a permissions request, including its request code. */

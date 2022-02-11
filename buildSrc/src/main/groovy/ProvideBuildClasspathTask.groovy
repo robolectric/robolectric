@@ -9,10 +9,23 @@ class ProvideBuildClasspathTask extends DefaultTask {
     public void writeProperties() throws Exception {
         final Properties props = new Properties()
 
+        String preinstrumentedKey = "robolectric.usePreinstrumentedJars";
+        boolean usePreinstrumentedJars =
+            Boolean.parseBoolean(
+              System.getProperty(preinstrumentedKey, "true"));
+
         AndroidSdk.ALL_SDKS.each { androidSdk ->
-            def config = project.configurations.create("sdk${androidSdk.apiLevel}")
-            project.dependencies.add("sdk${androidSdk.apiLevel}", androidSdk.preinstrumentedCoordinates)
-            props.setProperty(androidSdk.preinstrumentedCoordinates, config.files.join(File.pathSeparator))
+            String coordinates =
+              usePreinstrumentedJars ?
+                androidSdk.preinstrumentedCoordinates : androidSdk.coordinates;
+            def config =
+                project.configurations.create("sdk${androidSdk.apiLevel}")
+            project.dependencies.add(
+                "sdk${androidSdk.apiLevel}",
+                coordinates)
+            props.setProperty(
+                coordinates,
+                config.files.join(File.pathSeparator))
         }
 
         File outDir = outFile.parentFile

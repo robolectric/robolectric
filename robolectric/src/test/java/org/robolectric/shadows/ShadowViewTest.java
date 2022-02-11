@@ -31,6 +31,7 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.HapticFeedbackConstants;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -1123,6 +1124,13 @@ public class ShadowViewTest {
 
     assertThat(globalClickListener.receivedEvent).isFalse();
     assertThat(globalLongClickListener.receivedEvent).isFalse();
+  }
+
+  @Test
+  public void getSourceLayoutResId() {
+    View view = LayoutInflater.from(context).inflate(R.layout.edit_text, null, false);
+
+    assertThat(shadowOf(view).getSourceLayoutResId()).isEqualTo(R.layout.edit_text);
   }
 
   public static class MyActivity extends Activity {

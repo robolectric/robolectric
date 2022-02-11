@@ -20,6 +20,7 @@ import org.robolectric.util.reflector.Static;
 public class ShadowBuild {
 
   private static String radioVersionOverride = null;
+  private static String serialOverride = Build.UNKNOWN;
 
   /**
    * Sets the value of the {@link Build#DEVICE} field.
@@ -91,6 +92,11 @@ public class ShadowBuild {
    */
   public static void setHardware(String hardware) {
     ReflectionHelpers.setStaticField(Build.class, "HARDWARE", hardware);
+  }
+
+  /** Override return value from {@link Build#getSerial()}. */
+  public static void setSerial(String serial) {
+    serialOverride = serial;
   }
 
   /**
@@ -189,12 +195,13 @@ public class ShadowBuild {
 
   @Implementation(minSdk = O)
   protected static String getSerial() {
-    return Build.UNKNOWN;
+    return serialOverride;
   }
 
   @Resetter
   public static synchronized void reset() {
     radioVersionOverride = null;
+    serialOverride = Build.UNKNOWN;
     reflector(_Build_.class).__staticInitializer__();
     reflector(_VERSION_.class).__staticInitializer__();
   }
