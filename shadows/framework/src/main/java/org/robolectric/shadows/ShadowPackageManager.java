@@ -1216,9 +1216,7 @@ public class ShadowPackageManager {
           PackageParser.generatePermissionGroupInfo(permissionGroup, flags);
       addPermissionGroupInfo(permissionGroupInfo);
     }
-    PackageInfo packageInfo =
-        reflector(_PackageParser_.class)
-            .generatePackageInfo(appPackage, new int[] {0}, flags, 0, 0);
+    PackageInfo packageInfo = generatePackageInfo(appPackage, flags);
 
     packageInfo.applicationInfo.uid = Process.myUid();
     packageInfo.applicationInfo.dataDir = createTempDir(packageInfo.packageName + "-dataDir");
@@ -1227,6 +1225,11 @@ public class ShadowPackageManager {
     addFilters(serviceFilters, appPackage.services);
     addFilters(providerFilters, appPackage.providers);
     addFilters(receiverFilters, appPackage.receivers);
+  }
+
+  protected PackageInfo generatePackageInfo(Package appPackage, int flags) {
+    return reflector(_PackageParser_.class)
+        .generatePackageInfo(appPackage, new int[] {0}, flags, 0, 0);
   }
 
   private void addFilters(
