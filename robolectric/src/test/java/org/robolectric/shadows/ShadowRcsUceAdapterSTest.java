@@ -63,6 +63,7 @@ public class ShadowRcsUceAdapterSTest {
         new SuccessfulCapabilityVerifierCallback(ImmutableList.of(capability));
 
     rcsUceAdapter.requestCapabilities(ImmutableList.of(URI), executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertExchangeSuccessfullyCompleted();
@@ -81,6 +82,7 @@ public class ShadowRcsUceAdapterSTest {
 
     rcsUceAdapter.requestCapabilities(
         ImmutableList.of(OTHER_URI), executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertExchangeSuccessfullyCompleted();
@@ -93,6 +95,7 @@ public class ShadowRcsUceAdapterSTest {
     ErrorVerifierCallback verifierCallback = new ErrorVerifierCallback(failureInfo);
 
     rcsUceAdapter.requestCapabilities(ImmutableList.of(URI), executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertOnErrorCalled();
@@ -110,6 +113,7 @@ public class ShadowRcsUceAdapterSTest {
 
     rcsUceAdapter.requestCapabilities(
         ImmutableList.of(OTHER_URI), executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertExchangeSuccessfullyCompleted();
@@ -125,6 +129,7 @@ public class ShadowRcsUceAdapterSTest {
         new SuccessfulCapabilityVerifierCallback(ImmutableList.of(capability));
 
     rcsUceAdapter.requestAvailability(URI, executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertExchangeSuccessfullyCompleted();
@@ -142,6 +147,7 @@ public class ShadowRcsUceAdapterSTest {
         new SuccessfulCapabilityVerifierCallback(ImmutableList.of(otherEmptyCapability));
 
     rcsUceAdapter.requestAvailability(OTHER_URI, executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertExchangeSuccessfullyCompleted();
@@ -154,6 +160,7 @@ public class ShadowRcsUceAdapterSTest {
     ErrorVerifierCallback verifierCallback = new ErrorVerifierCallback(failureInfo);
 
     rcsUceAdapter.requestAvailability(URI, executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertOnErrorCalled();
@@ -170,6 +177,7 @@ public class ShadowRcsUceAdapterSTest {
         new SuccessfulCapabilityVerifierCallback(ImmutableList.of(otherEmptyCapability));
 
     rcsUceAdapter.requestAvailability(OTHER_URI, executorService, verifierCallback);
+    executorService.shutdown();
     executorService.awaitTermination(10, SECONDS);
 
     verifierCallback.assertExchangeSuccessfullyCompleted();
