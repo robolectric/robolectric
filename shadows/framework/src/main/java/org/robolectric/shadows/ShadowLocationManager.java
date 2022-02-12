@@ -44,17 +44,16 @@ import android.text.TextUtils;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
@@ -282,7 +281,9 @@ public class ShadowLocationManager {
     }
   }
 
-  @Nullable private static Constructor<LocationProvider> locationProviderConstructor;
+  @GuardedBy("ShadowLocationManager.class")
+  @Nullable
+  private static Constructor<LocationProvider> locationProviderConstructor;
 
   @RealObject private LocationManager realLocationManager;
 
@@ -292,18 +293,21 @@ public class ShadowLocationManager {
   @GuardedBy("gpsStatusListeners")
   private final HashSet<GpsStatus.Listener> gpsStatusListeners = new HashSet<>();
 
-  @GuardedBy("gnssStatusCallbacks")
-  private final Map<GnssStatus.Callback, Executor> gnssStatusCallbacks = new LinkedHashMap<>();
+  @GuardedBy("gnssStatusTransports")
+  private final CopyOnWriteArrayList<GnssStatusCallbackTransport> gnssStatusTransports =
+      new CopyOnWriteArrayList<>();
 
-  @GuardedBy("nmeaMessageListeners")
-  private final Map<OnNmeaMessageListener, Executor> nmeaMessageListeners = new LinkedHashMap<>();
+  @GuardedBy("nmeaMessageTransports")
+  private final CopyOnWriteArrayList<OnNmeaMessageListenerTransport> nmeaMessageTransports =
+      new CopyOnWriteArrayList<>();
 
-  @GuardedBy("gnssMeasurementListeners")
-  private final Map<GnssMeasurementsEvent.Callback, Executor> gnssMeasurementListeners =
-      new LinkedHashMap<>();
+  @GuardedBy("gnssMeasurementTransports")
+  private final CopyOnWriteArrayList<GnssMeasurementsEventCallbackTransport>
+      gnssMeasurementTransports = new CopyOnWriteArrayList<>();
 
-  @GuardedBy("gnssAntennaInfoListeners")
-  private final Map<Object, Executor> gnssAntennaInfoListeners = new LinkedHashMap<>();
+  @GuardedBy("gnssAntennaInfoTransports")
+  private final CopyOnWriteArrayList<GnssAntennaInfoListenerTransport> gnssAntennaInfoTransports =
+      new CopyOnWriteArrayList<>();
 
   public ShadowLocationManager() {
     // create default providers
@@ -390,13 +394,13 @@ public class ShadowLocationManager {
           }
           locationProviderConstructor.setAccessible(true);
         }
-      }
 
-      if (RuntimeEnvironment.getApiLevel() >= S) {
-        return locationProviderConstructor.newInstance(name, properties.getProviderProperties());
-      } else {
-        return locationProviderConstructor.newInstance(
-            name, properties.getLegacyProviderProperties());
+        if (RuntimeEnvironment.getApiLevel() >= S) {
+          return locationProviderConstructor.newInstance(name, properties.getProviderProperties());
+        } else {
+          return locationProviderConstructor.newInstance(
+              name, properties.getLegacyProviderProperties());
+        }
       }
     } catch (ReflectiveOperationException e) {
       throw new LinkageError(e.getMessage(), e);
@@ -836,19 +840,31 @@ public class ShadowLocationManager {
 
   @Implementation
   protected boolean addGpsStatusListener(GpsStatus.Listener listener) {
+    if (RuntimeEnvironment.getApiLevel() > R) {
+      throw new UnsupportedOperationException(
+          "GpsStatus APIs not supported, please use GnssStatus APIs instead");
+    }
+
     synchronized (gpsStatusListeners) {
       gpsStatusListeners.add(listener);
     }
+
     return true;
   }
 
   @Implementation
   protected void removeGpsStatusListener(GpsStatus.Listener listener) {
+    if (RuntimeEnvironment.getApiLevel() > R) {
+      throw new UnsupportedOperationException(
+          "GpsStatus APIs not supported, please use GnssStatus APIs instead");
+    }
+
     synchronized (gpsStatusListeners) {
       gpsStatusListeners.remove(listener);
     }
   }
 
+  /** Returns the list of currently registered {@link GpsStatus.Listener}s. */
   public List<GpsStatus.Listener> getGpsStatusListeners() {
     synchronized (gpsStatusListeners) {
       return new ArrayList<>(gpsStatusListeners);
@@ -861,36 +877,82 @@ public class ShadowLocationManager {
       handler = new Handler();
     }
 
-    synchronized (gnssStatusCallbacks) {
-      gnssStatusCallbacks.put(callback, new HandlerExecutor(handler));
-    }
-    return true;
+    return registerGnssStatusCallback(new HandlerExecutor(handler), callback);
   }
 
   @Implementation(minSdk = R)
-  protected boolean registerGnssStatusCallback(Executor executor, GnssStatus.Callback callback) {
-    synchronized (gnssStatusCallbacks) {
-      gnssStatusCallbacks.put(callback, executor);
+  protected boolean registerGnssStatusCallback(Executor executor, GnssStatus.Callback listener) {
+    synchronized (gnssStatusTransports) {
+      Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
+      gnssStatusTransports.add(new GnssStatusCallbackTransport(executor, listener));
     }
+
     return true;
   }
 
   @Implementation(minSdk = N)
-  protected void unregisterGnssStatusCallback(GnssStatus.Callback callback) {
-    synchronized (gnssStatusCallbacks) {
-      gnssStatusCallbacks.remove(callback);
+  protected void unregisterGnssStatusCallback(GnssStatus.Callback listener) {
+    synchronized (gnssStatusTransports) {
+      Iterables.removeIf(gnssStatusTransports, transport -> transport.getListener() == listener);
     }
   }
 
-  /** Sends a {@link GnssStatus} to all registered {@link GnssStatus.Callback}s. */
-  public void sendGnssStatus(GnssStatus status) {
-    Map<GnssStatus.Callback, Executor> callbacks;
-    synchronized (gnssStatusCallbacks) {
-      callbacks = new LinkedHashMap<>(gnssStatusCallbacks);
+  /** Simulates a GNSS status started event. */
+  @RequiresApi(N)
+  public void simulateGnssStatusStarted() {
+    List<GnssStatusCallbackTransport> transports;
+    synchronized (gnssStatusTransports) {
+      transports = gnssStatusTransports;
     }
 
-    for (Map.Entry<GnssStatus.Callback, Executor> callback : callbacks.entrySet()) {
-      callback.getValue().execute(() -> callback.getKey().onSatelliteStatusChanged(status));
+    for (GnssStatusCallbackTransport transport : transports) {
+      transport.onStarted();
+    }
+  }
+
+  /** Simulates a GNSS status first fix event. */
+  @RequiresApi(N)
+  public void simulateGnssStatusFirstFix(int ttff) {
+    List<GnssStatusCallbackTransport> transports;
+    synchronized (gnssStatusTransports) {
+      transports = gnssStatusTransports;
+    }
+
+    for (GnssStatusCallbackTransport transport : transports) {
+      transport.onFirstFix(ttff);
+    }
+  }
+
+  /** Simulates a GNSS status event. */
+  @RequiresApi(N)
+  public void simulateGnssStatus(GnssStatus status) {
+    List<GnssStatusCallbackTransport> transports;
+    synchronized (gnssStatusTransports) {
+      transports = gnssStatusTransports;
+    }
+
+    for (GnssStatusCallbackTransport transport : transports) {
+      transport.onSatelliteStatusChanged(status);
+    }
+  }
+
+  /** @deprecated Use {@link #simulateGnssStatus(GnssStatus)} instead. */
+  @Deprecated
+  @RequiresApi(N)
+  public void sendGnssStatus(GnssStatus status) {
+    simulateGnssStatus(status);
+  }
+
+  /** Simulates a GNSS status stopped event. */
+  @RequiresApi(N)
+  public void simulateGnssStatusStopped() {
+    List<GnssStatusCallbackTransport> transports;
+    synchronized (gnssStatusTransports) {
+      transports = gnssStatusTransports;
+    }
+
+    for (GnssStatusCallbackTransport transport : transports) {
+      transport.onStopped();
     }
   }
 
@@ -900,136 +962,147 @@ public class ShadowLocationManager {
       handler = new Handler();
     }
 
-    synchronized (nmeaMessageListeners) {
-      nmeaMessageListeners.put(listener, new HandlerExecutor(handler));
-    }
-    return true;
+    return addNmeaListener(new HandlerExecutor(handler), listener);
   }
 
   @Implementation(minSdk = R)
   protected boolean addNmeaListener(Executor executor, OnNmeaMessageListener listener) {
-    synchronized (nmeaMessageListeners) {
-      nmeaMessageListeners.put(listener, executor);
+    synchronized (nmeaMessageTransports) {
+      Iterables.removeIf(nmeaMessageTransports, transport -> transport.getListener() == listener);
+      nmeaMessageTransports.add(new OnNmeaMessageListenerTransport(executor, listener));
     }
+
     return true;
   }
 
   @Implementation(minSdk = N)
   protected void removeNmeaListener(OnNmeaMessageListener listener) {
-    synchronized (nmeaMessageListeners) {
-      nmeaMessageListeners.remove(listener);
+    synchronized (nmeaMessageTransports) {
+      Iterables.removeIf(nmeaMessageTransports, transport -> transport.getListener() == listener);
     }
   }
 
-  /** Sends a NMEA message to all registered {@link OnNmeaMessageListener}s. */
-  public void sendNmeaMessage(String message, long timestamp) {
-    Map<OnNmeaMessageListener, Executor> listeners;
-    synchronized (nmeaMessageListeners) {
-      listeners = new LinkedHashMap<>(nmeaMessageListeners);
+  /** Simulates a NMEA message. */
+  @RequiresApi(api = N)
+  public void simulateNmeaMessage(String message, long timestamp) {
+    List<OnNmeaMessageListenerTransport> transports;
+    synchronized (nmeaMessageTransports) {
+      transports = nmeaMessageTransports;
     }
 
-    for (Map.Entry<OnNmeaMessageListener, Executor> listener : listeners.entrySet()) {
-      listener.getValue().execute(() -> listener.getKey().onNmeaMessage(message, timestamp));
+    for (OnNmeaMessageListenerTransport transport : transports) {
+      transport.onNmeaMessage(message, timestamp);
     }
+  }
+
+  /** @deprecated Use {@link #simulateNmeaMessage(String, long)} instead. */
+  @Deprecated
+  @RequiresApi(api = N)
+  public void sendNmeaMessage(String message, long timestamp) {
+    simulateNmeaMessage(message, timestamp);
   }
 
   @Implementation(minSdk = N)
   protected boolean registerGnssMeasurementsCallback(
-      GnssMeasurementsEvent.Callback callback, Handler handler) {
+      GnssMeasurementsEvent.Callback listener, Handler handler) {
     if (handler == null) {
       handler = new Handler();
     }
 
-    synchronized (gnssMeasurementListeners) {
-      gnssMeasurementListeners.put(callback, new HandlerExecutor(handler));
-    }
-    return true;
+    return registerGnssMeasurementsCallback(new HandlerExecutor(handler), listener);
   }
 
   @Implementation(minSdk = R)
   protected boolean registerGnssMeasurementsCallback(
-      Executor executor, GnssMeasurementsEvent.Callback callback) {
-    synchronized (gnssMeasurementListeners) {
-      gnssMeasurementListeners.put(callback, executor);
+      Executor executor, GnssMeasurementsEvent.Callback listener) {
+    synchronized (gnssMeasurementTransports) {
+      Iterables.removeIf(
+          gnssMeasurementTransports, transport -> transport.getListener() == listener);
+      gnssMeasurementTransports.add(new GnssMeasurementsEventCallbackTransport(executor, listener));
     }
+
     return true;
   }
 
   @Implementation(minSdk = N)
-  protected void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback callback) {
-    synchronized (gnssMeasurementListeners) {
-      gnssMeasurementListeners.remove(callback);
+  protected void unregisterGnssMeasurementsCallback(GnssMeasurementsEvent.Callback listener) {
+    synchronized (gnssMeasurementTransports) {
+      Iterables.removeIf(
+          gnssMeasurementTransports, transport -> transport.getListener() == listener);
     }
   }
 
-  /** Sends a GNSS measurement event to all registered {@link GnssMeasurementsEvent.Callback}s. */
-  public void sendGnssMeasurementsEvent(GnssMeasurementsEvent event) {
-    Map<GnssMeasurementsEvent.Callback, Executor> listeners;
-    synchronized (gnssMeasurementListeners) {
-      listeners = new LinkedHashMap<>(gnssMeasurementListeners);
+  /** Simulates a GNSS measurements event. */
+  @RequiresApi(api = N)
+  public void simulateGnssMeasurementsEvent(GnssMeasurementsEvent event) {
+    List<GnssMeasurementsEventCallbackTransport> transports;
+    synchronized (gnssMeasurementTransports) {
+      transports = gnssMeasurementTransports;
     }
 
-    for (Map.Entry<GnssMeasurementsEvent.Callback, Executor> listener : listeners.entrySet()) {
-      listener.getValue().execute(() -> listener.getKey().onGnssMeasurementsReceived(event));
+    for (GnssMeasurementsEventCallbackTransport transport : transports) {
+      transport.onGnssMeasurementsReceived(event);
+    }
+  }
+
+  /** @deprecated Use {@link #simulateGnssMeasurementsEvent(GnssMeasurementsEvent)} instead. */
+  @Deprecated
+  @RequiresApi(api = N)
+  public void sendGnssMeasurementsEvent(GnssMeasurementsEvent event) {
+    simulateGnssMeasurementsEvent(event);
+  }
+
+  /** Simulates a GNSS measurements status change. */
+  @RequiresApi(api = N)
+  public void simulateGnssMeasurementsStatus(int status) {
+    List<GnssMeasurementsEventCallbackTransport> transports;
+    synchronized (gnssMeasurementTransports) {
+      transports = gnssMeasurementTransports;
+    }
+
+    for (GnssMeasurementsEventCallbackTransport transport : transports) {
+      transport.onStatusChanged(status);
     }
   }
 
   @Implementation(minSdk = R)
-  protected boolean registerAntennaInfoListener(Object executor, Object listener) {
-    // We should use Object for all input parameter, although we only want to use Object
-    // to replace one input parameter to avoid NoClassDefFoundError, otherwise this method
-    // will not tagged as shadow method for
-    // registerAntennaInfoListener(Executor executor, GnssAntennaInfo.Listener listener).
-    Preconditions.checkArgument(listener instanceof GnssAntennaInfo.Listener);
-    Preconditions.checkArgument(executor instanceof Executor);
-    synchronized (gnssAntennaInfoListeners) {
-      gnssAntennaInfoListeners.put((GnssAntennaInfo.Listener) listener, (Executor) executor);
+  protected Object registerAntennaInfoListener(Object executor, Object listener) {
+    synchronized (gnssAntennaInfoTransports) {
+      Iterables.removeIf(
+          gnssAntennaInfoTransports, transport -> transport.getListener() == listener);
+      gnssAntennaInfoTransports.add(
+          new GnssAntennaInfoListenerTransport(
+              (Executor) executor, (GnssAntennaInfo.Listener) listener));
     }
     return true;
   }
 
   @Implementation(minSdk = R)
   protected void unregisterAntennaInfoListener(Object listener) {
-    Preconditions.checkArgument(listener instanceof GnssAntennaInfo.Listener);
-    synchronized (gnssAntennaInfoListeners) {
-      gnssAntennaInfoListeners.remove((GnssAntennaInfo.Listener) listener);
+    synchronized (gnssAntennaInfoTransports) {
+      Iterables.removeIf(
+          gnssAntennaInfoTransports, transport -> transport.getListener() == listener);
     }
   }
 
-  /** Sends a GNSS antenna info to all registered {@link GnssAntennaInfo.Listener}s. */
-  public void sendGnssAntennaInfo(List<?> antennaInfos) {
-    if (RuntimeEnvironment.getApiLevel() < R) {
-      // The GnssAntennaInfo is added from R, we don't need to support this method
-      // for lower API.
-      return;
-    }
-    if (antennaInfos == null || antennaInfos.size() == 0) {
-      return;
-    }
-    Map<Object, Executor> listeners;
-    synchronized (gnssAntennaInfoListeners) {
-      listeners = new LinkedHashMap<>(gnssAntennaInfoListeners);
+  /** Simulates a GNSS antenna info event. */
+  @RequiresApi(api = R)
+  public void simulateGnssAntennaInfo(List<GnssAntennaInfo> antennaInfos) {
+    List<GnssAntennaInfoListenerTransport> transports;
+    synchronized (gnssAntennaInfoTransports) {
+      transports = gnssAntennaInfoTransports;
     }
 
-    List<GnssAntennaInfo> castedAntennaInfos = new ArrayList<>(antennaInfos.size());
-    for (Object antennaInfo : antennaInfos) {
-      castedAntennaInfos.add((GnssAntennaInfo) antennaInfo);
+    for (GnssAntennaInfoListenerTransport transport : transports) {
+      transport.onGnssAntennaInfoReceived(new ArrayList<>(antennaInfos));
     }
+  }
 
-    for (Map.Entry<Object, Executor> listenerEntry : listeners.entrySet()) {
-      // Note that if we use
-      // final GnssAntennaInfo.Listener castedListener =
-      //     (GnssAntennaInfo.Listener) listener.getKey();
-      // to extract key as local field, the JVM will parse GnssAntennaInfo.Listener
-      // on lower target SDK. If we get key when running, the class loader process
-      // will not been broken by NoClassDefFoundError on lower target SDK.
-      listenerEntry
-          .getValue()
-          .execute(
-              () ->
-                  ((GnssAntennaInfo.Listener) listenerEntry.getKey())
-                      .onGnssAntennaInfoReceived(castedAntennaInfos));
-    }
+  /** @deprecated Use {@link #simulateGnssAntennaInfo(List)} instead. */
+  @Deprecated
+  @RequiresApi(api = R)
+  public void sendGnssAntennaInfo(List<GnssAntennaInfo> antennaInfos) {
+    simulateGnssAntennaInfo(antennaInfos);
   }
 
   /** @deprecated Use {@link #getLocationUpdateListeners()} instead. */
@@ -1644,7 +1717,7 @@ public class ShadowLocationManager {
   }
 
   @Resetter
-  public static void reset() {
+  public static synchronized void reset() {
     locationProviderConstructor = null;
   }
 
@@ -1722,6 +1795,107 @@ public class ShadowLocationManager {
         timeoutHandler.removeCallbacks(timeoutRunnable);
         timeoutRunnable = null;
       }
+    }
+  }
+
+  private static final class GnssStatusCallbackTransport {
+
+    private final Executor executor;
+    private final GnssStatus.Callback listener;
+
+    GnssStatusCallbackTransport(Executor executor, GnssStatus.Callback listener) {
+      this.executor = Objects.requireNonNull(executor);
+      this.listener = Objects.requireNonNull(listener);
+    }
+
+    GnssStatus.Callback getListener() {
+      return listener;
+    }
+
+    @RequiresApi(api = N)
+    public void onStarted() {
+      executor.execute(listener::onStarted);
+    }
+
+    @RequiresApi(api = N)
+    public void onFirstFix(int ttff) {
+      executor.execute(() -> listener.onFirstFix(ttff));
+    }
+
+    @RequiresApi(api = N)
+    public void onSatelliteStatusChanged(GnssStatus status) {
+      executor.execute(() -> listener.onSatelliteStatusChanged(status));
+    }
+
+    @RequiresApi(api = N)
+    public void onStopped() {
+      executor.execute(listener::onStopped);
+    }
+  }
+
+  private static final class OnNmeaMessageListenerTransport {
+
+    private final Executor executor;
+    private final OnNmeaMessageListener listener;
+
+    OnNmeaMessageListenerTransport(Executor executor, OnNmeaMessageListener listener) {
+      this.executor = Objects.requireNonNull(executor);
+      this.listener = Objects.requireNonNull(listener);
+    }
+
+    OnNmeaMessageListener getListener() {
+      return listener;
+    }
+
+    @RequiresApi(api = N)
+    public void onNmeaMessage(String message, long timestamp) {
+      executor.execute(() -> listener.onNmeaMessage(message, timestamp));
+    }
+  }
+
+  private static final class GnssMeasurementsEventCallbackTransport {
+
+    private final Executor executor;
+    private final GnssMeasurementsEvent.Callback listener;
+
+    GnssMeasurementsEventCallbackTransport(
+        Executor executor, GnssMeasurementsEvent.Callback listener) {
+      this.executor = Objects.requireNonNull(executor);
+      this.listener = Objects.requireNonNull(listener);
+    }
+
+    GnssMeasurementsEvent.Callback getListener() {
+      return listener;
+    }
+
+    @RequiresApi(api = N)
+    public void onStatusChanged(int status) {
+      executor.execute(() -> listener.onStatusChanged(status));
+    }
+
+    @RequiresApi(api = N)
+    public void onGnssMeasurementsReceived(GnssMeasurementsEvent event) {
+      executor.execute(() -> listener.onGnssMeasurementsReceived(event));
+    }
+  }
+
+  private static final class GnssAntennaInfoListenerTransport {
+
+    private final Executor executor;
+    private final GnssAntennaInfo.Listener listener;
+
+    GnssAntennaInfoListenerTransport(Executor executor, GnssAntennaInfo.Listener listener) {
+      this.executor = Objects.requireNonNull(executor);
+      this.listener = Objects.requireNonNull(listener);
+    }
+
+    GnssAntennaInfo.Listener getListener() {
+      return listener;
+    }
+
+    @RequiresApi(api = R)
+    public void onGnssAntennaInfoReceived(List<GnssAntennaInfo> antennaInfos) {
+      executor.execute(() -> listener.onGnssAntennaInfoReceived(antennaInfos));
     }
   }
 

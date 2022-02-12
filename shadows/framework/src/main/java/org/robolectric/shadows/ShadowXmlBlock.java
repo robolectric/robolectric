@@ -368,4 +368,18 @@ public class ShadowXmlBlock {
   private static ResXMLParser getResXMLParser(long state) {
     return Registries.NATIVE_RES_XML_PARSERS.peekNativeObject(state);
   }
+
+  /** Shadow of XmlBlock.Parser. */
+  @Implements(className = "android.content.res.XmlBlock$Parser", isInAndroidSdk = false)
+  public static class ShadowParser {
+    private int sourceResourceId;
+
+    void setSourceResourceId(int sourceResourceId) {
+      this.sourceResourceId = sourceResourceId;
+    }
+
+    int getSourceResourceId() {
+      return sourceResourceId;
+    }
+  }
 }

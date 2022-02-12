@@ -12,6 +12,10 @@ import java.io.FileDescriptor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.ref.PhantomReference;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -41,7 +45,8 @@ public class AndroidInterceptors {
                 new SystemLogInterceptor(),
                 new FileDescriptorInterceptor(),
                 new NoOpInterceptor(),
-                new SocketInterceptor()));
+                new SocketInterceptor(),
+                new ReferenceRefersToInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
       interceptors.add(new CleanerInterceptor());
@@ -457,6 +462,34 @@ public class AndroidInterceptors {
         throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(
           getClass(), "getFileDescriptor", methodType(FileDescriptor.class, Socket.class));
+    }
+  }
+
+  /** AndroidInterceptor for Reference.refersTo which is not available until JDK 16. */
+  public static class ReferenceRefersToInterceptor extends Interceptor {
+    private static final String METHOD = "refersTo";
+
+    public ReferenceRefersToInterceptor() {
+      super(
+          new MethodRef(WeakReference.class.getName(), METHOD),
+          new MethodRef(SoftReference.class.getName(), METHOD),
+          new MethodRef(PhantomReference.class.getName(), METHOD));
+    }
+
+    static boolean refersTo(Reference ref, Object obj) {
+      return ref.get() == obj;
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return (theClass, value, params) -> refersTo((Reference) value, params[0]);
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(
+          getClass(), METHOD, methodType(boolean.class, Reference.class, Object.class));
     }
   }
 }
