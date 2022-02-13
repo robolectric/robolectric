@@ -18,6 +18,9 @@ public class SQLiteLibraryLoader {
   private static SQLiteLibraryLoader instance;
   private static final String SQLITE4JAVA = "sqlite4java";
   private static final String OS_WIN = "win32", OS_LINUX = "linux", OS_MAC = "osx";
+  private static final String OS_ARCH_ARM64 = "aarch64";
+  private static final String SYSTEM_PROPERTY_OS_NAME = "os.name";
+  private static final String SYSTEM_PROPERTY_OS_ARCH = "os.arch";
 
   private final LibraryNameMapper libraryNameMapper;
   private boolean loaded;
@@ -77,6 +80,13 @@ public class SQLiteLibraryLoader {
     return loaded;
   }
 
+  public static boolean isOsSupported() {
+    String prefix = getOsPrefix();
+    String arch = getArchitecture();
+    // We know macOS with aarch64 arch is not supported by sqlite4java now.
+    return !(OS_MAC.equals(prefix) && OS_ARCH_ARM64.equals(arch));
+  }
+
   private void loadFromDirectory(final File libPath) {
     // configure less verbose logging
     Logger.getLogger("com.almworks.sqlite4java").setLevel(Level.WARNING);
@@ -108,8 +118,8 @@ public class SQLiteLibraryLoader {
     }
   }
 
-  private String getOsPrefix() {
-    String name = System.getProperty("os.name").toLowerCase(Locale.US);
+  private static String getOsPrefix() {
+    String name = System.getProperty(SYSTEM_PROPERTY_OS_NAME).toLowerCase(Locale.US);
     if (name.contains("win")) {
       return OS_WIN;
     } else if (name.contains("linux")) {
@@ -118,15 +128,19 @@ public class SQLiteLibraryLoader {
       return OS_MAC;
     } else {
       throw new UnsupportedOperationException(
-          "Platform \'" + name + "\' is not supported by SQLite library");
+          "Platform '" + name + "' is not supported by SQLite library");
     }
   }
 
-  private String getArchitectureSuffix(String prefix) {
-    String arch = System.getProperty("os.arch").toLowerCase(Locale.US).replaceAll("\\W", "");
+  private static String getArchitectureSuffix(String prefix) {
+    String arch = getArchitecture();
     switch (prefix) {
       case OS_MAC:
-        return null;
+        // Current sqlite4java doesn't support macOS aarch64.
+        if (!OS_ARCH_ARM64.equals(arch)) {
+          return null;
+        }
+        break;
       case OS_LINUX:
         switch (arch) {
           case "i386":
@@ -148,7 +162,11 @@ public class SQLiteLibraryLoader {
         break;
     }
     throw new UnsupportedOperationException(
-        "Architecture \'" + arch + "\' is not supported by SQLite library");
+        "Architecture '" + arch + "' is not supported by SQLite library");
+  }
+
+  private static String getArchitecture() {
+    return System.getProperty(SYSTEM_PROPERTY_OS_ARCH).toLowerCase(Locale.US).replaceAll("\\W", "");
   }
 
   public interface LibraryNameMapper {
