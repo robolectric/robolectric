@@ -96,6 +96,7 @@ jobs:
           --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+          -Drobolectric.usePreinstrumentedJars=false \
           -Dorg.gradle.workers.max=2
 
       - name: Upload Test Results
