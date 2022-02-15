@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -27,9 +28,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-/**
- * Unit tests for {@link ShadowBluetoothAdapter}
- */
+/** Unit tests for {@link ShadowBluetoothAdapter} */
 @RunWith(AndroidJUnit4.class)
 public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE1 = 17;
@@ -168,12 +167,14 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(maxSdk = 32)
   public void scanMode_getAndSet_connectable() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE)).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
   }
 
   @Test
+  @Config(maxSdk = 32)
   public void scanMode_getAndSet_discoverable() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
         .isTrue();
@@ -182,12 +183,14 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(maxSdk = 32)
   public void scanMode_getAndSet_none() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE)).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
   }
 
   @Test
+  @Config(maxSdk = 32)
   public void scanMode_getAndSet_invalid() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
   }
@@ -209,7 +212,7 @@ public class ShadowBluetoothAdapterTest {
     assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
   }
 
-  @Config(minSdk = R)
+  @Config(minSdk = R, maxSdk = 32)
   @Test
   public void scanMode_withDiscoverableTimeout_R() {
     assertThat(
@@ -227,6 +230,7 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(maxSdk = S)
   public void discoverableTimeout_getAndSet() {
     bluetoothAdapter.setDiscoverableTimeout(60);
     assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(60);
