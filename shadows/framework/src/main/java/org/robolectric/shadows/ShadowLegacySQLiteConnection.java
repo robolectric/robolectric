@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
@@ -162,8 +163,14 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     nativeExecute((long) connectionPtr, (long) statementPtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = 32)
   protected static void nativeExecute(final long connectionPtr, final long statementPtr) {
+    CONNECTIONS.executeStatement(connectionPtr, statementPtr);
+  }
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected static void nativeExecute(
+      final long connectionPtr, final long statementPtr, boolean isPragmaStmt) {
     CONNECTIONS.executeStatement(connectionPtr, statementPtr);
   }
 

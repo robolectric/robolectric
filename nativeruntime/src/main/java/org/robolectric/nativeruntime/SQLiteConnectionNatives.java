@@ -86,7 +86,8 @@ public class SQLiteConnectionNatives {
   public static native void nativeResetStatementAndClearBindings(
       long connectionPtr, long statementPtr);
 
-  public static native void nativeExecute(long connectionPtr, long statementPtr);
+  public static native void nativeExecute(
+      long connectionPtr, long statementPtr, boolean isPragmaStmt);
 
   public static native long nativeExecuteForLong(long connectionPtr, long statementPtr);
 
