@@ -56,8 +56,7 @@ public class ShadowActivityThread {
               throws Exception {
             if (method.getName().equals("getApplicationInfo")) {
               String packageName = (String) args[0];
-              int flags = (Integer) args[1];
-
+              int flags = ((Number) args[1]).intValue();
               if (packageName.equals(ShadowActivityThread.applicationInfo.packageName)) {
                 return ShadowActivityThread.applicationInfo;
               }
