@@ -40,7 +40,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(BluetoothAdapter.class)
+@Implements(value = BluetoothAdapter.class, looseSignatures = true)
 public class ShadowBluetoothAdapter {
   @RealObject private BluetoothAdapter realAdapter;
 
@@ -264,7 +264,7 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
-  protected boolean setScanMode(int scanMode) {
+  protected Object setScanMode(int scanMode) {
     if (scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE
         && scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
         && scanMode != BluetoothAdapter.SCAN_MODE_NONE) {
@@ -278,14 +278,14 @@ public class ShadowBluetoothAdapter {
   @Implementation(maxSdk = Q)
   protected boolean setScanMode(int scanMode, int discoverableTimeout) {
     setDiscoverableTimeout(discoverableTimeout);
-    return setScanMode(scanMode);
+    return (boolean) setScanMode(scanMode);
   }
 
   @Implementation(minSdk = R)
   protected boolean setScanMode(int scanMode, long durationMillis) {
     int durationSeconds = Math.toIntExact(durationMillis / 1000);
     setDiscoverableTimeout(durationSeconds);
-    return setScanMode(scanMode);
+    return (boolean) setScanMode(scanMode);
   }
 
   @Implementation
