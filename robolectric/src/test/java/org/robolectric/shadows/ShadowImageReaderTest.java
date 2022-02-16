@@ -20,6 +20,7 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowImageReader}. */
 @RunWith(AndroidJUnit4.class)
+@Config(minSdk = KITKAT)
 public class ShadowImageReaderTest {
   private static final int WIDTH = 640;
   private static final int HEIGHT = 480;
@@ -29,44 +30,37 @@ public class ShadowImageReaderTest {
       ImageReader.newInstance(WIDTH, HEIGHT, IMAGE_FORMAT, MAX_IMAGES);
 
   @Test
-  @Config(minSdk = KITKAT)
   public void newInstance_returnsImageReader() {
     assertThat(imageReader).isNotNull();
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getWidth_returnsWidth() {
     assertThat(imageReader.getWidth()).isEqualTo(WIDTH);
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getHeight_returnsHeight() {
     assertThat(imageReader.getHeight()).isEqualTo(HEIGHT);
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getFormat_returnsFormat() {
     assertThat(imageReader.getImageFormat()).isEqualTo(IMAGE_FORMAT);
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getMaxImages_returnsMaxImages() {
     assertThat(imageReader.getMaxImages()).isEqualTo(MAX_IMAGES);
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getSurface_returnsValidSurface() {
     assertThat(imageReader.getSurface()).isNotNull();
     assertThat(imageReader.getSurface().isValid()).isTrue();
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void setOnImageAvailableListener_isInvokedWhenSurfaceIsUpdated() throws Exception {
     AtomicBoolean listenerCalled = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);
@@ -92,19 +86,16 @@ public class ShadowImageReaderTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireNextImage_returnsNullImageWithoutSurfaceUpdate() {
     assertThat(imageReader.acquireNextImage()).isNull();
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireLatestImage_returnsNullImageWithoutSurfaceUpdate() {
     assertThat(imageReader.acquireLatestImage()).isNull();
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireNextImage_returnsValidImageWithSurfaceUpdate() {
     postUpdateOnSurface();
     Image image = imageReader.acquireNextImage();
@@ -117,7 +108,6 @@ public class ShadowImageReaderTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireNextImage_throwsWhenImageReaderIsClosed() {
     imageReader.close();
 
@@ -125,7 +115,6 @@ public class ShadowImageReaderTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireLatestImage_throwsWhenImageReaderIsClosed() {
     imageReader.close();
 
@@ -133,7 +122,6 @@ public class ShadowImageReaderTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireNextImage_closingImage() {
     for (int i = 0; i < MAX_IMAGES; i++) {
       postUpdateOnSurface();
@@ -146,7 +134,6 @@ public class ShadowImageReaderTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireNextImage_throwsWhenAllImagesAreUsed() {
     for (int i = 0; i < MAX_IMAGES; i++) {
       postUpdateOnSurface();
@@ -157,7 +144,6 @@ public class ShadowImageReaderTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void acquireLatestImage_returnsLatestImage() {
     for (int i = 0; i < MAX_IMAGES; i++) {
       postUpdateOnSurface();
