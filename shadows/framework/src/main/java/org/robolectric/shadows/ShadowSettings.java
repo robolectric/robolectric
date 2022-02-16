@@ -277,6 +277,19 @@ public class ShadowSettings {
       return true;
     }
 
+    @Implementation(minSdk = JELLY_BEAN_MR1)
+    protected static int getIntForUser(ContentResolver cr, String name, int def, int userHandle) {
+      // ignore userhandle
+      return getInt(cr, name, def);
+    }
+
+    @Implementation(minSdk = JELLY_BEAN_MR1)
+    protected static int getIntForUser(ContentResolver cr, String name, int userHandle)
+        throws Settings.SettingNotFoundException {
+      // ignore userhandle
+      return getInt(cr, name);
+    }
+
     @Implementation
     protected static int getInt(ContentResolver cr, String name)
         throws Settings.SettingNotFoundException {
