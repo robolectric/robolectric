@@ -13,8 +13,11 @@ import android.os.Handler;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +35,7 @@ public class ShadowPackageInstaller {
   private int nextSessionId = 1;
   private Map<Integer, PackageInstaller.SessionInfo> sessionInfos = new HashMap<>();
   private Map<Integer, PackageInstaller.Session> sessions = new HashMap<>();
-  private Set<CallbackInfo> callbackInfos = new HashSet<>();
+  private Set<CallbackInfo> callbackInfos = Collections.synchronizedSet(new HashSet<>());
 
   private static class CallbackInfo {
     PackageInstaller.SessionCallback callback;
@@ -59,6 +62,17 @@ public class ShadowPackageInstaller {
   }
 
   @Implementation
+  protected void unregisterSessionCallback(@NonNull PackageInstaller.SessionCallback callback) {
+    for (Iterator<CallbackInfo> i = callbackInfos.iterator(); i.hasNext(); ) {
+      final CallbackInfo callbackInfo = i.next();
+      if (callbackInfo.callback == callback) {
+        i.remove();
+        return;
+      }
+    }
+  }
+
+  @Implementation
   @Nullable
   protected PackageInstaller.SessionInfo getSessionInfo(int sessionId) {
     return sessionInfos.get(sessionId);
@@ -72,7 +86,7 @@ public class ShadowPackageInstaller {
     sessionInfo.appPackageName = params.appPackageName;
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
 
-    for (final CallbackInfo callbackInfo : callbackInfos) {
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
       callbackInfo.handler.post(new Runnable() {
         @Override
         public void run() {
@@ -89,7 +103,7 @@ public class ShadowPackageInstaller {
     sessionInfos.remove(sessionId);
     sessions.remove(sessionId);
 
-    for (final CallbackInfo callbackInfo : callbackInfos) {
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
       callbackInfo.handler.post(new Runnable() {
         @Override
         public void run() {
@@ -114,7 +128,7 @@ public class ShadowPackageInstaller {
   }
 
   public void setSessionProgress(final int sessionId, final float progress) {
-    for (final CallbackInfo callbackInfo : callbackInfos) {
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
       callbackInfo.handler.post(new Runnable() {
         @Override
         public void run() {
@@ -138,7 +152,7 @@ public class ShadowPackageInstaller {
   }
 
   private void setSessionFinishes(final int sessionId, final boolean success) {
-    for (final CallbackInfo callbackInfo : callbackInfos) {
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
       callbackInfo.handler.post(new Runnable() {
         @Override
         public void run() {
