@@ -22,6 +22,7 @@ public final class StorageVolumeBuilder {
   private boolean removable = false;
   private boolean emulated = false;
   private long mtpReserveSize = 00L;
+  private boolean externallyManaged = false;
   private boolean allowMassStorage = false;
   private long maxFileSize = 100L;
   private final UserHandle owner;
@@ -61,6 +62,11 @@ public final class StorageVolumeBuilder {
 
   public StorageVolumeBuilder setMtpReserveSize(long mtpReserveSize) {
     this.mtpReserveSize = mtpReserveSize;
+    return this;
+  }
+
+  public StorageVolumeBuilder setExternallyManaged(boolean externallyManaged) {
+    this.externallyManaged = externallyManaged;
     return this;
   }
 
@@ -117,7 +123,7 @@ public final class StorageVolumeBuilder {
           from(UserHandle.class, owner), // UserHandle owner,
           from(String.class, fsUuid), //  String fsUuid,
           from(String.class, state)); // String state
-    } else if (apiLevel > VERSION_CODES.R) {
+    } else if (apiLevel > VERSION_CODES.R && apiLevel <= 32) {
       return ReflectionHelpers.callConstructor(
           StorageVolume.class,
           from(String.class, id), // String id,
@@ -127,6 +133,23 @@ public final class StorageVolumeBuilder {
           from(boolean.class, primary), // boolean primary,
           from(boolean.class, removable), // boolean removable,
           from(boolean.class, emulated), // boolean emulated,
+          from(boolean.class, allowMassStorage), //  boolean allowMassStorage,
+          from(long.class, maxFileSize), // long maxFileSize,
+          from(UserHandle.class, owner), // UserHandle owner,
+          from(UUID.class, uuid), // UUID uuid
+          from(String.class, fsUuid), //  String fsUuid,
+          from(String.class, state)); // String state
+    } else if (apiLevel >= 33) {
+      return ReflectionHelpers.callConstructor(
+          StorageVolume.class,
+          from(String.class, id), // String id,
+          from(File.class, path), // File path,
+          from(File.class, internalPath), // File internalPath
+          from(String.class, description), // String description
+          from(boolean.class, primary), // boolean primary,
+          from(boolean.class, removable), // boolean removable,
+          from(boolean.class, emulated), // boolean emulated,
+          from(boolean.class, externallyManaged), // boolean externallyManaged,
           from(boolean.class, allowMassStorage), //  boolean allowMassStorage,
           from(long.class, maxFileSize), // long maxFileSize,
           from(UserHandle.class, owner), // UserHandle owner,
