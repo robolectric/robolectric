@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
@@ -171,6 +172,17 @@ public class ShadowPackageInstallerTest {
     verify(mockCallback).onProgressChanged(sessionId, 50.0f);
 
     verify(mockCallback).onFinished(sessionId, true);
+  }
+
+  @Test
+  public void unregisterSessionCallback() throws Exception {
+    PackageInstaller.SessionCallback mockCallback = mock(PackageInstaller.SessionCallback.class);
+    packageInstaller.registerSessionCallback(mockCallback, new Handler());
+    packageInstaller.unregisterSessionCallback(mockCallback);
+
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+    shadowMainLooper().idle();
+    verify(mockCallback, never()).onCreated(sessionId);
   }
 
   private static PackageInstaller.SessionParams createSessionParams(String appPackageName) {
