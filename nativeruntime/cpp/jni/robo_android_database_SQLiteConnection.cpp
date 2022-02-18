@@ -565,25 +565,30 @@ static void nativeResetStatementAndClearBindings(JNIEnv* env, jclass clazz,
 }
 
 static int executeNonQuery(JNIEnv* env, SQLiteConnection* connection,
-                           sqlite3_stmt* statement) {
-  int err = sqlite3_step(statement);
-  if (err == SQLITE_ROW) {
+                           sqlite3_stmt* statement, bool isPragmaStmt) {
+  int rc = sqlite3_step(statement);
+  if (isPragmaStmt) {
+    while (rc == SQLITE_ROW) {
+      rc = sqlite3_step(statement);
+    }
+  }
+  if (rc == SQLITE_ROW) {
     throw_sqlite3_exception(env,
                             "Queries can be performed using SQLiteDatabase "
                             "query or rawQuery methods only.");
-  } else if (err != SQLITE_DONE) {
+  } else if (rc != SQLITE_DONE) {
     throw_sqlite3_exception(env, connection->db);
   }
-  return err;
+  return rc;
 }
 
 static void nativeExecute(JNIEnv* env, jclass clazz, jlong connectionPtr,
-                          jlong statementPtr) {
+                          jlong statementPtr, jboolean isPragmaStmt) {
   SQLiteConnection* connection =
       reinterpret_cast<SQLiteConnection*>(connectionPtr);
   sqlite3_stmt* statement = reinterpret_cast<sqlite3_stmt*>(statementPtr);
 
-  executeNonQuery(env, connection, statement);
+  executeNonQuery(env, connection, statement, isPragmaStmt);
 }
 
 static jint nativeExecuteForChangedRowCount(JNIEnv* env, jclass clazz,
@@ -593,7 +598,7 @@ static jint nativeExecuteForChangedRowCount(JNIEnv* env, jclass clazz,
       reinterpret_cast<SQLiteConnection*>(connectionPtr);
   sqlite3_stmt* statement = reinterpret_cast<sqlite3_stmt*>(statementPtr);
 
-  int err = executeNonQuery(env, connection, statement);
+  int err = executeNonQuery(env, connection, statement, false);
   return err == SQLITE_DONE ? sqlite3_changes(connection->db) : -1;
 }
 
@@ -604,7 +609,7 @@ static jlong nativeExecuteForLastInsertedRowId(JNIEnv* env, jclass clazz,
       reinterpret_cast<SQLiteConnection*>(connectionPtr);
   sqlite3_stmt* statement = reinterpret_cast<sqlite3_stmt*>(statementPtr);
 
-  int err = executeNonQuery(env, connection, statement);
+  int err = executeNonQuery(env, connection, statement, false);
   return err == SQLITE_DONE && sqlite3_changes(connection->db) > 0
              ? sqlite3_last_insert_rowid(connection->db)
              : -1;
@@ -1004,7 +1009,7 @@ static const JNINativeMethod sMethods[] = {
     {const_cast<char*>("nativeResetStatementAndClearBindings"),
      const_cast<char*>("(JJ)V"),
      reinterpret_cast<void*>(nativeResetStatementAndClearBindings)},
-    {const_cast<char*>("nativeExecute"), const_cast<char*>("(JJ)V"),
+    {const_cast<char*>("nativeExecute"), const_cast<char*>("(JJZ)V"),
      reinterpret_cast<void*>(nativeExecute)},
     {const_cast<char*>("nativeExecuteForLong"), const_cast<char*>("(JJ)J"),
      reinterpret_cast<void*>(nativeExecuteForLong)},

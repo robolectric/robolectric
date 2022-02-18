@@ -71,7 +71,7 @@ public class ShadowCardEmulation {
   public static void setCategoryPaymentAllowsForegroundPreference(boolean value) {
     Settings.Secure.putInt(
         RuntimeEnvironment.getApplication().getContentResolver(),
-        "nfc_payment_foreground",
+        Settings.Secure.NFC_PAYMENT_FOREGROUND,
         value ? 1 : 0);
   }
 

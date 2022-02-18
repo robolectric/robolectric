@@ -14,11 +14,13 @@ import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
+import android.webkit.WebMessagePort;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import android.webkit.WebViewFactoryProvider;
+import com.google.common.collect.ImmutableList;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -26,12 +28,14 @@ import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.fakes.RoboWebMessagePort;
 import org.robolectric.fakes.RoboWebSettings;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -45,6 +49,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private static PackageInfo packageInfo = null;
 
+  private List<RoboWebMessagePort[]> allCreatedPorts = new ArrayList<>();
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
   private HashMap<String, Object> javascriptInterfaces = new HashMap<>();
@@ -339,6 +344,17 @@ public class ShadowWebView extends ShadowViewGroup {
   @Implementation
   protected void removeJavascriptInterface(String name) {
     javascriptInterfaces.remove(name);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.M)
+  protected WebMessagePort[] createWebMessageChannel() {
+    RoboWebMessagePort[] ports = RoboWebMessagePort.createPair();
+    allCreatedPorts.add(ports);
+    return ports;
+  }
+
+  public List<RoboWebMessagePort[]> getCreatedPorts() {
+    return ImmutableList.copyOf(allCreatedPorts);
   }
 
   @Implementation

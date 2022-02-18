@@ -14,7 +14,6 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.content.Context;
 import android.media.AudioAttributes;
-import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.PrimitiveSegment;
@@ -189,8 +188,9 @@ public class ShadowVibratorTest {
 
     assertThat(shadowOf(vibrator).getVibrationAttributesFromLastVibration())
         .isEqualTo(
-            new VibrationAttributes.Builder(
-                    audioAttributes, VibrationEffect.createPredefined(EFFECT_CLICK))
+            VibrationAttributesBuilder.newBuilder()
+                .setAudioAttributes(audioAttributes)
+                .setVibrationEffect(VibrationEffect.createPredefined(EFFECT_CLICK))
                 .build());
   }
 }

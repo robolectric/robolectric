@@ -49,13 +49,6 @@ public final class ShadowVcnManagerTest {
   }
 
   @Test
-  public void registerVcnStatusCallback_callbackOnStatusChanged() {
-    instance.registerVcnStatusCallback(subGroup, executor, callback);
-
-    verify(callback).onStatusChanged(VcnManager.VCN_STATUS_CODE_NOT_CONFIGURED);
-  }
-
-  @Test
   public void setStatus_callbackOnStatusChanged() {
     instance.registerVcnStatusCallback(subGroup, executor, callback);
     instance.setStatus(VcnManager.VCN_STATUS_CODE_ACTIVE);

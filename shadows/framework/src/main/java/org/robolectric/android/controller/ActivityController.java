@@ -233,8 +233,13 @@ public class ActivityController<T extends Activity>
       callDispatchResized(root);
     }
 
-    reflector(ViewRootImplActivityControllerReflector.class, root)
-        .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
+    // if sdk <= S_V2
+    if (RuntimeEnvironment.getApiLevel() <= 32) {
+      reflector(ViewRootImplActivityControllerReflector.class, root)
+          .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
+    } else {
+      reflector(ViewRootImplActivityControllerReflector.class, root).windowFocusChanged(hasFocus);
+    }
     shadowMainLooper.idleIfPaused();
     return this;
   }
@@ -611,7 +616,11 @@ public class ActivityController<T extends Activity>
 
   @ForType(ViewRootImpl.class)
   interface ViewRootImplActivityControllerReflector {
+    // SDK <= S_V2
     void windowFocusChanged(boolean hasFocus, boolean inTouchMode);
+
+    // SDK >= T
+    void windowFocusChanged(boolean hasFocus);
   }
 }
 

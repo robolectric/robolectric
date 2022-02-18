@@ -331,9 +331,9 @@ public class ShadowMediaCodec {
     ((Buffer) inputBuffers[index]).clear();
 
     if (isAsync) {
+      inputBuffersPendingQueuing.add(index);
       // Signal input buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_INPUT_AVAILABLE, index, null);
-      inputBuffersPendingQueuing.add(index);
     } else {
       inputBuffersPendingDequeue.add(index);
     }

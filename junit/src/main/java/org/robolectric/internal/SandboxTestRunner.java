@@ -374,6 +374,11 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       }
       return annotation.timeout();
     }
+
+    @Override
+    protected String testName(FrameworkMethod method) {
+      return frameworkMethod.getName();
+    }
   }
 
   @Nonnull

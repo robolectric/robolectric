@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -39,6 +40,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.internal.bytecode.ShadowedObject;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralRules;
 import org.robolectric.res.ResName;
@@ -51,6 +53,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
+/** Shadow of {@link Resources}. */
 @Implements(Resources.class)
 public class ShadowResources {
 
@@ -111,8 +114,8 @@ public class ShadowResources {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
 
-      TypedResource typedResource = shadowAssetManager.getResourceTable()
-          .getValue(resId, shadowAssetManager.config);
+      TypedResource typedResource =
+          shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
       if (typedResource != null && typedResource instanceof PluralRules) {
         PluralRules pluralRules = (PluralRules) typedResource;
         Plural plural = pluralRules.find(quantity);
@@ -209,9 +212,10 @@ public class ShadowResources {
       throws Resources.NotFoundException {
     if (isLegacyAssetManager()) {
       ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      return shadowAssetManager.loadXmlResourceParser(resId, type);
+      return setSourceResourceId(shadowAssetManager.loadXmlResourceParser(resId, type), resId);
     } else {
-      return reflector(ResourcesReflector.class, realResources).loadXmlResourceParser(resId, type);
+      ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
+      return setSourceResourceId(relectedResources.loadXmlResourceParser(resId, type), resId);
     }
   }
 
@@ -222,9 +226,18 @@ public class ShadowResources {
     if (isLegacyAssetManager()) {
       return loadXmlResourceParser(id, type);
     } else {
-      return reflector(ResourcesReflector.class, realResources)
-          .loadXmlResourceParser(file, id, assetCookie, type);
+      ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
+      return setSourceResourceId(
+          relectedResources.loadXmlResourceParser(file, id, assetCookie, type), id);
     }
+  }
+
+  private static XmlResourceParser setSourceResourceId(XmlResourceParser parser, int resourceId) {
+    Object shadow = parser instanceof ShadowedObject ? Shadow.extract(parser) : null;
+    if (shadow instanceof ShadowXmlBlock.ShadowParser) {
+      ((ShadowXmlBlock.ShadowParser) shadow).setSourceResourceId(resourceId);
+    }
+    return parser;
   }
 
   @HiddenApi
@@ -248,7 +261,8 @@ public class ShadowResources {
     List<LongSparseArray<?>> resettableArrays = new ArrayList<>();
     Field[] allFields = Resources.class.getDeclaredFields();
     for (Field field : allFields) {
-      if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
+      if (Modifier.isStatic(field.getModifiers())
+          && field.getType().equals(LongSparseArray.class)) {
         field.setAccessible(true);
         try {
           LongSparseArray<?> longSparseArray = (LongSparseArray<?>) field.get(null);
@@ -263,8 +277,26 @@ public class ShadowResources {
     return resettableArrays;
   }
 
-  public static abstract class ShadowTheme {
+  /**
+   * Returns the layout resource id the attribute set was inflated from. Backwards compatible
+   * version of {@link Resources#getAttributeSetSourceResId(AttributeSet)}, passes through to the
+   * underlying implementation on API levels where it is supported.
+   */
+  public static int getAttributeSetSourceResId(AttributeSet attrs) {
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      return reflector(ResourcesReflector.class).getAttributeSetSourceResId(attrs);
+    } else {
+      Object shadow = attrs instanceof ShadowedObject ? Shadow.extract(attrs) : null;
+      return shadow instanceof ShadowXmlBlock.ShadowParser
+          ? ((ShadowXmlBlock.ShadowParser) shadow).getSourceResourceId()
+          : 0;
+    }
+  }
 
+  /** Base class for shadows of {@link Resources.Theme}. */
+  public abstract static class ShadowTheme {
+
+    /** Shadow picker for {@link ShadowTheme}. */
     public static class Picker extends ResourceModeShadowPicker<ShadowTheme> {
 
       public Picker() {
@@ -273,6 +305,7 @@ public class ShadowResources {
     }
   }
 
+  /** Shadow for {@link Resources.Theme}. */
   @Implements(value = Resources.Theme.class, shadowPicker = ShadowTheme.Picker.class)
   public static class ShadowLegacyTheme extends ShadowTheme {
     @RealObject Resources.Theme realTheme;
@@ -300,7 +333,8 @@ public class ShadowResources {
     @Implementation(maxSdk = M)
     protected TypedArray obtainStyledAttributes(
         AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return getShadowAssetManager().attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+      return getShadowAssetManager()
+          .attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
     }
 
     private ShadowLegacyAssetManager getShadowAssetManager() {
@@ -315,7 +349,6 @@ public class ShadowResources {
     }
   }
 
-
   static void setCreatedFromResId(Resources resources, int id, Drawable drawable) {
     // todo: this kinda sucks, find some better way...
     if (drawable != null && Shadow.extract(drawable) instanceof ShadowDrawable) {
@@ -323,7 +356,7 @@ public class ShadowResources {
       shadowDrawable.createdFromResId = id;
       if (drawable instanceof BitmapDrawable) {
         Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null  && Shadow.extract(bitmap) instanceof ShadowBitmap) {
+        if (bitmap != null && Shadow.extract(bitmap) instanceof ShadowBitmap) {
           ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
           if (shadowBitmap.createdFromResId == -1) {
             String resourceName;
@@ -343,6 +376,7 @@ public class ShadowResources {
     return ShadowAssetManager.useLegacy();
   }
 
+  /** Shadow for {@link Resources.NotFoundException}. */
   @Implements(Resources.NotFoundException.class)
   public static class ShadowNotFoundException {
     @RealObject Resources.NotFoundException realObject;
@@ -357,7 +391,8 @@ public class ShadowResources {
       this.message = name;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public String toString() {
       return realObject.getClass().getName() + ": " + message;
     }
@@ -395,5 +430,8 @@ public class ShadowResources {
 
     @Direct
     TypedArray obtainTypedArray(int id);
+
+    @Direct
+    int getAttributeSetSourceResId(AttributeSet attrs);
   }
 }

@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
@@ -16,6 +17,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.webkit.DownloadListener;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebMessagePort;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
@@ -705,5 +707,21 @@ public class ShadowWebViewTest {
   public void restoreAndSaveState() {
     webView.restoreState(new Bundle());
     webView.saveState(new Bundle());
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldCreateWebMessageChannel() {
+    WebMessagePort[] channel = shadowOf(webView).createWebMessageChannel();
+
+    assertThat(channel[0]).isNotNull();
+    assertThat(channel[1]).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getCreatedPorts_returnsCreatedPortsList() {
+    shadowOf(webView).createWebMessageChannel();
+    assertThat(shadowOf(webView).getCreatedPorts()).isNotEmpty();
   }
 }

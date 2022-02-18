@@ -63,6 +63,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.fakes.BaseCursor;
+import org.robolectric.util.NamedStream;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentResolverTest {
@@ -410,6 +411,33 @@ public class ShadowContentResolverTest {
                 .build());
     assertThat(inputStream).isNotNull();
     inputStream.read();
+  }
+
+  @Test
+  public void openInputStream_returnsProviderInputStream() throws Exception {
+    ProviderInfo info = new ProviderInfo();
+    info.authority = AUTHORITY;
+    ContentProvider myContentProvider = new MyContentProvider();
+    myContentProvider.attachInfo(ApplicationProvider.getApplicationContext(), info);
+    ShadowContentResolver.registerProviderInternal(AUTHORITY, myContentProvider);
+
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/some/path");
+    InputStream actualInputStream = contentResolver.openInputStream(uri);
+    // Registered provider does not return named stream
+    assertThat(actualInputStream).isNotInstanceOf(NamedStream.class);
+
+    Uri otherUri = Uri.parse("content://otherAuthority/some/path");
+    InputStream secondInputStream = contentResolver.openInputStream(otherUri);
+    // No registered provider results in named stream
+    assertThat(secondInputStream).isInstanceOf(NamedStream.class);
+
+    shadowContentResolver.registerInputStreamSupplier(
+        uri, () -> new ByteArrayInputStream("ourStream".getBytes(UTF_8)));
+    InputStream registeredInputStream = contentResolver.openInputStream(uri);
+    byte[] byteArray = new byte[registeredInputStream.available()];
+    registeredInputStream.read(byteArray);
+    // Explicitly registered stream takes precedence
+    assertThat(byteArray).isEqualTo("ourStream".getBytes(UTF_8));
   }
 
   @Test
