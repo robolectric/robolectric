@@ -31,7 +31,8 @@ public class ShadowRangingSession {
 
   static RangingSession newInstance(
       Executor executor, RangingSession.Callback callback, Adapter adapter) {
-    RangingSession rangingSession = new RangingSession(executor, callback, null, null);
+    RangingSession rangingSession =
+        RangingSessionBuilder.newBuilder().setExecutor(executor).setCallback(callback).build();
 
     ShadowRangingSession shadow = Shadow.extract(rangingSession);
     shadow.setCallback(callback, executor);
