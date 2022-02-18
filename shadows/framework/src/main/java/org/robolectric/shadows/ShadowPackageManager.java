@@ -147,7 +147,8 @@ public class ShadowPackageManager {
   static final Map<ComponentName, Drawable> drawableList = new LinkedHashMap<>();
   static final Map<String, Drawable> applicationIcons = new HashMap<>();
   static final Map<String, Drawable> unbadgedApplicationIcons = new HashMap<>();
-  static final Map<String, Boolean> systemFeatureList = new LinkedHashMap<>();
+  static final Map<String, Boolean> systemFeatureList =
+      new LinkedHashMap<>(SystemFeatureListInitializer.getSystemFeatures());
   static final SortedMap<ComponentName, List<IntentFilter>> preferredActivities = new TreeMap<>();
   static final SortedMap<ComponentName, List<IntentFilter>> persistentPreferredActivities =
       new TreeMap<>();
@@ -1697,6 +1698,7 @@ public class ShadowPackageManager {
       applicationIcons.clear();
       unbadgedApplicationIcons.clear();
       systemFeatureList.clear();
+      systemFeatureList.putAll(SystemFeatureListInitializer.getSystemFeatures());
       preferredActivities.clear();
       persistentPreferredActivities.clear();
       drawables.clear();
