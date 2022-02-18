@@ -20,6 +20,7 @@ import android.webkit.WebView;
 import android.webkit.WebView.HitTestResult;
 import android.webkit.WebViewClient;
 import android.webkit.WebViewFactoryProvider;
+import com.google.common.collect.ImmutableList;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -48,7 +49,7 @@ public class ShadowWebView extends ShadowViewGroup {
 
   private static PackageInfo packageInfo = null;
 
-  private List</* RoboWebMessagePort */ Object[]> allCreatedPorts = new ArrayList<>();
+  private List<RoboWebMessagePort[]> allCreatedPorts = new ArrayList<>();
   private String lastUrl;
   private Map<String, String> lastAdditionalHttpHeaders;
   private HashMap<String, Object> javascriptInterfaces = new HashMap<>();
@@ -352,8 +353,8 @@ public class ShadowWebView extends ShadowViewGroup {
     return ports;
   }
 
-  public List</* RoboWebMessagePort */ Object[]> getCreatedPorts() {
-    return allCreatedPorts;
+  public List<RoboWebMessagePort[]> getCreatedPorts() {
+    return ImmutableList.copyOf(allCreatedPorts);
   }
 
   @Implementation
