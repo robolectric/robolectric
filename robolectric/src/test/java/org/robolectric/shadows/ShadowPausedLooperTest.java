@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -542,6 +543,26 @@ public class ShadowPausedLooperTest {
     shadowOf(looper).idle();
     thread.join(5_000);
     assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void poll() {
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    AtomicBoolean backgroundThreadPosted = new AtomicBoolean();
+    AtomicBoolean foregroundThreadReceived = new AtomicBoolean();
+    shadowPausedLooper.idle();
+
+    new Handler(handlerThread.getLooper())
+        .post(
+            () -> {
+              backgroundThreadPosted.set(true);
+              new Handler(Looper.getMainLooper()).post(() -> foregroundThreadReceived.set(true));
+            });
+    shadowPausedLooper.poll(0);
+    shadowPausedLooper.idle();
+
+    assertThat(backgroundThreadPosted.get()).isTrue();
+    assertThat(foregroundThreadReceived.get()).isTrue();
   }
 
   private static class BlockingRunnable implements Runnable {

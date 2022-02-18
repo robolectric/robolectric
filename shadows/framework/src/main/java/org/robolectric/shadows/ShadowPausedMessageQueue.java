@@ -6,10 +6,12 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.os.Looper;
 import android.os.Message;
 import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
@@ -23,6 +25,7 @@ import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -33,6 +36,7 @@ import org.robolectric.util.reflector.ForType;
  *
  * <p>This class should not be referenced directly. Use {@link ShadowMessageQueue} instead.
  */
+@SuppressWarnings("SynchronizeOnNonFinalField")
 @Implements(value = MessageQueue.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
@@ -101,6 +105,40 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
         }
       }
       isPolling = false;
+    }
+  }
+
+  /**
+   * Polls the message queue waiting until a message is posted to the head of the queue. This will
+   * suspend the thread until a new message becomes available. Returns immediately if the queue is
+   * not idle. There's no guarantee that the message queue will not still be idle when returning,
+   * but if the message queue becomes not idle it will return immediately.
+   *
+   * <p>See {@link ShadowPausedLooper#poll(long)} for more information.
+   *
+   * @param timeout Timeout in milliseconds, the maximum time to wait before returning, or 0 to wait
+   *     indefinitely,
+   */
+  void poll(long timeout) {
+    checkState(Looper.myLooper() == Looper.getMainLooper() && Looper.myQueue() == realQueue);
+    // Message queue typically expects the looper to loop calling next() which returns current
+    // messages from the head of the queue. If no messages are current it will mark itself blocked
+    // and call nativePollOnce (see above) which suspends the thread until the next message's time.
+    // When messages are posted to the queue, if a new message is posted to the head and the queue
+    // is marked as blocked, then the enqueue function will notify and resume next(), allowing it
+    // return the next message. To simulate this behavior check if the queue is idle and if it is
+    // mark the queue as blocked and wait on a new message.
+    synchronized (realQueue) {
+      if (isIdle()) {
+        ReflectionHelpers.setField(realQueue, "mBlocked", true);
+        try {
+          realQueue.wait(timeout);
+        } catch (InterruptedException ignored) {
+          // Fall through and unblock with no messages.
+        } finally {
+          ReflectionHelpers.setField(realQueue, "mBlocked", false);
+        }
+      }
     }
   }
 
@@ -272,7 +310,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     return count;
   }
 
-  Message poll() {
+  /**
+   * Returns the message at the head of the queue immediately, regardless of its scheduled time.
+   * Compare to {@link #getNext()} which will only return the next message if the system clock is
+   * advanced to its scheduled time.
+   */
+  Message getNextIgnoringWhen() {
     synchronized (realQueue) {
       Message head = getMessages();
       if (head != null) {

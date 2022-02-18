@@ -44,6 +44,7 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:${junitVersion}"
     implementation "androidx.test:monitor:$axtVersion"
+    implementation "androidx.test.espresso:espresso-idling-resource:3.4.0"
 
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"

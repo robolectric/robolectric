@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -206,6 +207,41 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  /**
+   * Polls the message queue waiting until a message is posted to the head of the queue. This will
+   * suspend the thread until a new message becomes available. Returns immediately if the queue is
+   * not idle. There's no guarantee that the message queue will not still be idle when returning,
+   * but if the message queue becomes not idle it will return immediately.
+   *
+   * <p>This method is only applicable for the main looper's queue when called on the main thread,
+   * as the main looper in Robolectric is processed manually (it doesn't loop)--looper threads are
+   * using the native polling of their loopers. Throws an exception if called for another looper's
+   * queue. Non-main thread loopers should use {@link #unPause()}.
+   *
+   * <p>This should be used with care, it can be used to suspend the main (i.e. test) thread while
+   * worker threads perform some work, and then resumed by posting to the main looper. Used in a
+   * loop to wait on some condition it can process messages on the main looper, simulating the
+   * behavior of the real looper, for example:
+   *
+   * <pre>{@code
+   * while (!condition) {
+   *   shadowMainLooper.poll(timeout);
+   *   shadowMainLooper.idle();
+   * }
+   * }</pre>
+   *
+   * <p>Beware though that a message must be posted to the main thread after the condition is
+   * satisfied, or the condition satisfied while idling the main thread, otherwise the main thread
+   * will continue to be suspended until the timeout.
+   *
+   * @param timeout Timeout in milliseconds, the maximum time to wait before returning, or 0 to wait
+   *     indefinitely,
+   */
+  public void poll(long timeout) {
+    checkState(Looper.myLooper() == Looper.getMainLooper() && Looper.myLooper() == realLooper);
+    shadowQueue().poll(timeout);
+  }
+
   @Override
   public Duration getNextScheduledTaskTime() {
     return shadowQueue().getNextScheduledTaskTime();
@@ -344,7 +380,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     @Override
     public void run() {
       try {
-        Message msg = shadowQueue().poll();
+        Message msg = shadowQueue().getNextIgnoringWhen();
         if (msg != null) {
           SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
           msg.getTarget().dispatchMessage(msg);
