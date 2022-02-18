@@ -4019,6 +4019,23 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.isAutoRevokeWhitelisted()).isTrue();
   }
 
+  @Test
+  public void hasSystemFeature_default() {
+    for (String feature : SystemFeatureListInitializer.getSystemFeatures().keySet()) {
+      assertThat(packageManager.hasSystemFeature(feature)).isTrue();
+    }
+  }
+
+  @Test
+  public void reset_setsSystemFeatureListToDefaults() {
+    shadowOf(packageManager).setSystemFeature(PackageManager.FEATURE_CAMERA, true);
+    ShadowPackageManager.reset();
+    for (String feature : SystemFeatureListInitializer.getSystemFeatures().keySet()) {
+      assertThat(packageManager.hasSystemFeature(feature)).isTrue();
+    }
+    assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
+  }
+
   public String[] setPackagesSuspended(
       String[] packageNames,
       boolean suspended,
