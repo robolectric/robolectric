@@ -32,7 +32,7 @@ dependencies {
     testImplementation "androidx.test.ext:junit:$axtJunitVersion"
 
     testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
-    testRuntimeOnly AndroidSdk.LOLLIPOP_MR1.coordinates
+    testRuntimeOnly AndroidSdk.S.coordinates
 }
 
 // httpcore needs to come before android-all on runtime classpath; the gradle IntelliJ plugin
