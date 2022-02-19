@@ -4,7 +4,7 @@
 
 Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
 
-Robolectic supports running unit tests for *15* different versions of Android, ranging from Jelly Bean (API level 16) to S (API level 31).
+Robolectric supports running unit tests for *15* different versions of Android, ranging from Jelly Bean (API level 16) to S (API level 31).
 
 ## Usage
 
@@ -45,16 +45,31 @@ testImplementation "org.robolectric:robolectric:4.7.3"
 
 Robolectric is built using Gradle. Both IntelliJ and Android Studio can import the top-level `build.gradle` file and will automatically generate their project files from it.
 
+### Prerequisites
+
+Those software configurations are recommended and tested.
+
+- JDK 11. Gradle JVM should be set to Java 11.
+  - For command line, make sure the environment variable `JAVA_HOME` is correctly point to JDK11, or set the build environment by [Gradle CLI option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:environment_options) `-Dorg.gradle.java.home="YourJdkHomePath"` or by [Gradle Properties](https://docs.gradle.org/current/userguide/build_environment.html#sec:gradle_configuration_properties) `org.gradle.java.home=YourJdkHomePath`.
+  - For both IntelliJ and Android Studio, see _Settings/Preferences | Build, Execution, Deployment | Build Tools | Gradle_.
+- Ninja 1.10.2+. Check it by `ninja --version`.
+- CMake 3.22.2+. Check it by `cmake --version`.
+- GCC 7.5.0+. Check it by `gcc --version`.
+
+### build and test
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
     ./gradlew clean assemble testClasses --parallel
 
-### Prerequisites
+Run tests for all API levels:
 
-- JDK 11.  
-  To build this project, Gradle JVM should be set to Java 11.
-  - For command line, make sure the environment variable `JAVA_HOME` is correctly point to JDK11, or set the build environment by [Gradle CLI option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:environment_options) `-Dorg.gradle.java.home="YourJdkHomePath"` or by [Gradle Properties](https://docs.gradle.org/current/userguide/build_environment.html#sec:gradle_configuration_properties) `org.gradle.java.home=YourJdkHomePath`.
-  - For both IntelliJ and Android Studio, see _Settings/Preferences | Build, Execution, Deployment | Build Tools | Gradle_.
+> The fully tests could consume more than 16G memory(total of physical and virtual memory).
+
+    ./gradlew test --parallel
+
+Run tests for part of supported API levels, e.g. run tests for API level 26, 27, 28:
+
+    ./gradlew test --parallel -Drobolectric.enabledSdks=26,27,28
 
 ### Using Snapshots
 
