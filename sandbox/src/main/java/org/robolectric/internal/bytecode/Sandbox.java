@@ -10,8 +10,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicReference;
-
 import javax.inject.Inject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Util;
@@ -101,15 +99,17 @@ public class Sandbox {
         Util.sneakyThrow(throwable);
       }
     }
-    Future<T> future = executorService.submit(
-        () -> {
-          isMainThread.set(true);
-          try {
-            return callable.call();
-          } finally {
-            isMainThread.remove();;
-          }
-        });
+    Future<T> future =
+        executorService.submit(
+            () -> {
+              isMainThread.set(true);
+              try {
+                return callable.call();
+              } finally {
+                isMainThread.remove();
+                ;
+              }
+            });
     try {
       return future.get();
     } catch (InterruptedException e) {

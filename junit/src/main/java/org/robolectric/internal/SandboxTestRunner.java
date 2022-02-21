@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
-
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -103,54 +102,60 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     for (FrameworkMethod method : getChildren()) {
       Sandbox sandbox = getSandbox(method);
       configureSandbox(sandbox, method);
-      TestClass testClass = runInSandbox(
-          sandbox, () -> new TestClass(sandbox.bootstrappedClass(getTestClass().getJavaClass())));
-      methods.computeIfAbsent(testClass, (t) -> new ArrayList<>())
+      TestClass testClass =
+          runInSandbox(
+              sandbox,
+              () -> new TestClass(sandbox.bootstrappedClass(getTestClass().getJavaClass())));
+      methods
+          .computeIfAbsent(testClass, (t) -> new ArrayList<>())
           .add(new AbstractMap.SimpleEntry<>(method, sandbox));
     }
-    List<Statement> statements = methods.entrySet().stream()
-        .map(
-            (entry) -> {
-              if (entry.getValue().stream().allMatch((t) -> isIgnored(t.getKey()))) {
-                return null;
-              }
-              TestClass testClass = entry.getKey();
-              return runInSandbox(
-                  entry.getValue().iterator().next().getValue(), () -> {
-                    Statement statement = new Statement() {
-                      @Override
-                      public void evaluate() throws Throwable {
-                        for (Map.Entry<FrameworkMethod, Sandbox> entry : entry.getValue()) {
-                          runInSandbox(entry.getValue(), () -> runChild(entry.getKey(), notifier));
+    List<Statement> statements =
+        methods.entrySet().stream()
+            .map(
+                (entry) -> {
+                  if (entry.getValue().stream().allMatch((t) -> isIgnored(t.getKey()))) {
+                    return null;
+                  }
+                  TestClass testClass = entry.getKey();
+                  return runInSandbox(
+                      entry.getValue().iterator().next().getValue(),
+                      () -> {
+                        Statement statement =
+                            new Statement() {
+                              @Override
+                              public void evaluate() throws Throwable {
+                                for (Map.Entry<FrameworkMethod, Sandbox> entry : entry.getValue()) {
+                                  runInSandbox(
+                                      entry.getValue(), () -> runChild(entry.getKey(), notifier));
+                                }
+                              }
+                            };
+                        final List<FrameworkMethod> befores =
+                            testClass.getAnnotatedMethods(BeforeClass.class);
+                        if (!befores.isEmpty()) {
+                          statement = new RunBefores(statement, befores, null);
                         }
-                      }
-                    };
-                    final List<FrameworkMethod> befores =
-                        testClass.getAnnotatedMethods(BeforeClass.class);
-                    if (!befores.isEmpty()) {
-                      statement = new RunBefores(statement, befores, null);
-                    }
-                    final List<FrameworkMethod> afters =
-                        testClass.getAnnotatedMethods(AfterClass.class);
-                    if (!afters.isEmpty()) {
-                      statement = new RunAfters(statement, afters, null);
-                    }
-                    ClassRuleCollector collector = new ClassRuleCollector();
-                    testClass.collectAnnotatedMethodValues(
-                        null, ClassRule.class, TestRule.class, collector);
-                    testClass.collectAnnotatedFieldValues(
-                        null, ClassRule.class, TestRule.class, collector);
-                    List<TestRule> rules = collector.getRules();
-                    if (!rules.isEmpty()) {
-                      statement = new RunRules(statement, rules, null);
-                    }
-                    statement = withInterruptIsolation(statement);
-                    return statement;
-                  });
-            }
-        )
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
+                        final List<FrameworkMethod> afters =
+                            testClass.getAnnotatedMethods(AfterClass.class);
+                        if (!afters.isEmpty()) {
+                          statement = new RunAfters(statement, afters, null);
+                        }
+                        ClassRuleCollector collector = new ClassRuleCollector();
+                        testClass.collectAnnotatedMethodValues(
+                            null, ClassRule.class, TestRule.class, collector);
+                        testClass.collectAnnotatedFieldValues(
+                            null, ClassRule.class, TestRule.class, collector);
+                        List<TestRule> rules = collector.getRules();
+                        if (!rules.isEmpty()) {
+                          statement = new RunRules(statement, rules, null);
+                        }
+                        statement = withInterruptIsolation(statement);
+                        return statement;
+                      });
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
@@ -448,8 +453,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           } finally {
             Thread.currentThread().setContextClassLoader(priorContextClassLoader);
           }
-        }
-    );
+        });
   }
 
   private static <T> T runInSandbox(Sandbox sandbox, Callable<T> callable) {
@@ -462,8 +466,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
           } finally {
             Thread.currentThread().setContextClassLoader(priorContextClassLoader);
           }
-        }
-    );
+        });
   }
 
   private static class ClassRuleCollector implements MemberValueConsumer<TestRule> {
