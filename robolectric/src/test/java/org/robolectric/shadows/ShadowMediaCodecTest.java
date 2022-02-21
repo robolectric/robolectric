@@ -43,6 +43,8 @@ import org.robolectric.shadows.ShadowMediaCodec.CodecConfig.Codec;
 @Config(minSdk = LOLLIPOP)
 public final class ShadowMediaCodecTest {
   private static final String AUDIO_MIME = "audio/fake";
+  private static final String AUDIO_DECODER_NAME = "audio-fake.decoder";
+  private static final String AUDIO_ENCODER_NAME = "audio-fake.encoder";
   private static final int WITHOUT_TIMEOUT = -1;
 
   private Callback callback;
@@ -50,6 +52,54 @@ public final class ShadowMediaCodecTest {
   @After
   public void tearDown() throws Exception {
     ShadowMediaCodec.clearCodecs();
+  }
+
+  @Test
+  public void constructShadowMediaCodec_byDecoderName_succeeds() throws Exception {
+    // Add an audio decoder to the MediaCodecList.
+    MediaFormat mediaFormat = new MediaFormat();
+    mediaFormat.setString(MediaFormat.KEY_MIME, AUDIO_MIME);
+    ShadowMediaCodecList.addCodec(
+        MediaCodecInfoBuilder.newBuilder()
+            .setName(AUDIO_DECODER_NAME)
+            .setCapabilities(
+                MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+                    .setMediaFormat(mediaFormat)
+                    .build())
+            .build());
+    ShadowMediaCodec.addDecoder(
+        AUDIO_DECODER_NAME,
+        new CodecConfig(/* inputBufferSize= */ 0, /* outputBufferSize= */ 0, (in, out) -> {}));
+
+    MediaCodec codec = MediaCodec.createByCodecName(AUDIO_DECODER_NAME);
+
+    assertThat(codec.getCodecInfo().getName()).isEqualTo(AUDIO_DECODER_NAME);
+    assertThat(codec.getCodecInfo().isEncoder()).isFalse();
+  }
+
+  @Test
+  public void constructShadowMediaCodec_byEncoderName_succeeds() throws Exception {
+    // Add an audio encoder to the MediaCodecList.
+    MediaFormat mediaFormat = new MediaFormat();
+    mediaFormat.setString(MediaFormat.KEY_MIME, AUDIO_MIME);
+    ShadowMediaCodecList.addCodec(
+        MediaCodecInfoBuilder.newBuilder()
+            .setName(AUDIO_ENCODER_NAME)
+            .setIsEncoder(true)
+            .setCapabilities(
+                MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+                    .setMediaFormat(mediaFormat)
+                    .setIsEncoder(true)
+                    .build())
+            .build());
+    ShadowMediaCodec.addEncoder(
+        AUDIO_ENCODER_NAME,
+        new CodecConfig(/* inputBufferSize= */ 0, /* outputBufferSize= */ 0, (in, out) -> {}));
+
+    MediaCodec codec = MediaCodec.createByCodecName(AUDIO_ENCODER_NAME);
+
+    assertThat(codec.getCodecInfo().getName()).isEqualTo(AUDIO_ENCODER_NAME);
+    assertThat(codec.getCodecInfo().isEncoder()).isTrue();
   }
 
   @Test
