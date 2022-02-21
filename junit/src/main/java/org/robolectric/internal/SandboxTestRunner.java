@@ -3,22 +3,37 @@ package org.robolectric.internal;
 import static java.util.Arrays.asList;
 
 import java.lang.reflect.Method;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.internal.AssumptionViolatedException;
 import org.junit.internal.runners.statements.FailOnTimeout;
+import org.junit.internal.runners.statements.RunAfters;
+import org.junit.internal.runners.statements.RunBefores;
+import org.junit.rules.RunRules;
+import org.junit.rules.TestRule;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMember;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.MemberValueConsumer;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 import org.robolectric.internal.bytecode.ClassHandler;
@@ -57,7 +72,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   protected final ClassHandlerBuilder classHandlerBuilder;
 
   private final List<PerfStatsReporter> perfStatsReporters;
-  private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     this(klass, DEFAULT_INJECTOR);
@@ -85,54 +99,76 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected Statement classBlock(RunNotifier notifier) {
-    final Statement statement = childrenInvoker(notifier);
+    Map<TestClass, List<Map.Entry<FrameworkMethod, Sandbox>>> methods = new LinkedHashMap<>();
+    for (FrameworkMethod method : getChildren()) {
+      Sandbox sandbox = getSandbox(method);
+      configureSandbox(sandbox, method);
+      TestClass testClass = runInSandbox(
+          sandbox, () -> new TestClass(sandbox.bootstrappedClass(getTestClass().getJavaClass())));
+      methods.computeIfAbsent(testClass, (t) -> new ArrayList<>())
+          .add(new AbstractMap.SimpleEntry<>(method, sandbox));
+    }
+    List<Statement> statements = methods.entrySet().stream()
+        .map(
+            (entry) -> {
+              if (entry.getValue().stream().allMatch((t) -> isIgnored(t.getKey()))) {
+                return null;
+              }
+              TestClass testClass = entry.getKey();
+              return runInSandbox(
+                  entry.getValue().iterator().next().getValue(), () -> {
+                    Statement statement = new Statement() {
+                      @Override
+                      public void evaluate() throws Throwable {
+                        for (Map.Entry<FrameworkMethod, Sandbox> entry : entry.getValue()) {
+                          runInSandbox(entry.getValue(), () -> runChild(entry.getKey(), notifier));
+                        }
+                      }
+                    };
+                    final List<FrameworkMethod> befores =
+                        testClass.getAnnotatedMethods(BeforeClass.class);
+                    if (!befores.isEmpty()) {
+                      statement = new RunBefores(statement, befores, null);
+                    }
+                    final List<FrameworkMethod> afters =
+                        testClass.getAnnotatedMethods(AfterClass.class);
+                    if (!afters.isEmpty()) {
+                      statement = new RunAfters(statement, afters, null);
+                    }
+                    ClassRuleCollector collector = new ClassRuleCollector();
+                    testClass.collectAnnotatedMethodValues(
+                        null, ClassRule.class, TestRule.class, collector);
+                    testClass.collectAnnotatedFieldValues(
+                        null, ClassRule.class, TestRule.class, collector);
+                    List<TestRule> rules = collector.getRules();
+                    if (!rules.isEmpty()) {
+                      statement = new RunRules(statement, rules, null);
+                    }
+                    statement = withInterruptIsolation(statement);
+                    return statement;
+                  });
+            }
+        )
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
     return new Statement() {
       @Override
       public void evaluate() throws Throwable {
         try {
-          statement.evaluate();
-          for (Map.Entry<Class<?>, Sandbox> entry : loadedTestClasses.entrySet()) {
-            Sandbox sandbox = entry.getValue();
-            sandbox.runOnMainThread(
-                () -> {
-                  ClassLoader priorContextClassLoader =
-                      Thread.currentThread().getContextClassLoader();
-                  Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
-                  try {
-                    invokeAfterClass(entry.getKey());
-                  } catch (Throwable throwable) {
-                    throw Util.sneakyThrow(throwable);
-                  } finally {
-                    Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-                  }
-                });
+          for (Statement statement : statements) {
+            try {
+              statement.evaluate();
+            } catch (AssumptionViolatedException e) {
+              notifier.fireTestAssumptionFailed(new Failure(getDescription(), e));
+            } catch (Throwable e) {
+              notifier.fireTestFailure(new Failure(getDescription(), e));
+            }
           }
         } finally {
           afterClass();
-          loadedTestClasses.clear();
         }
       }
     };
-  }
-
-  private void invokeBeforeClass(final Class clazz, final Sandbox sandbox) throws Throwable {
-    if (!loadedTestClasses.containsKey(clazz)) {
-      loadedTestClasses.put(clazz, sandbox);
-
-      final TestClass testClass = new TestClass(clazz);
-      final List<FrameworkMethod> befores = testClass.getAnnotatedMethods(BeforeClass.class);
-      for (FrameworkMethod before : befores) {
-        before.invokeExplosively(null);
-      }
-    }
-  }
-
-  private static void invokeAfterClass(final Class<?> clazz) throws Throwable {
-    final TestClass testClass = new TestClass(clazz);
-    final List<FrameworkMethod> afters = testClass.getAnnotatedMethods(AfterClass.class);
-    for (FrameworkMethod after : afters) {
-      after.invokeExplosively(null);
-    }
   }
 
   protected void afterClass() {}
@@ -259,9 +295,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
               }
 
               try {
-                // Only invoke @BeforeClass once per class
-                invokeBeforeClass(bootstrappedTestClass, sandbox);
-
                 beforeTest(sandbox, method, bootstrappedMethod);
 
                 initialization.finished();
@@ -403,5 +436,68 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
    */
   protected Statement withPotentialTimeout(FrameworkMethod method, Object test, Statement next) {
     return next;
+  }
+
+  private static void runInSandbox(Sandbox sandbox, Runnable runnable) {
+    sandbox.runOnMainThread(
+        () -> {
+          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+          Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+          try {
+            runnable.run();
+          } finally {
+            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+          }
+        }
+    );
+  }
+
+  private static <T> T runInSandbox(Sandbox sandbox, Callable<T> callable) {
+    return sandbox.runOnMainThread(
+        () -> {
+          ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
+          Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
+          try {
+            return callable.call();
+          } finally {
+            Thread.currentThread().setContextClassLoader(priorContextClassLoader);
+          }
+        }
+    );
+  }
+
+  private static class ClassRuleCollector implements MemberValueConsumer<TestRule> {
+    private final List<Entry> entries = new ArrayList<>();
+
+    @Override
+    public void accept(FrameworkMember<?> member, TestRule value) {
+      ClassRule rule = member.getAnnotation(ClassRule.class);
+      entries.add(new Entry(value, rule != null ? rule.order() : null));
+    }
+
+    public List<TestRule> getRules() {
+      return entries.stream()
+          .sorted(Comparator.comparingInt(Entry::getOrder))
+          .map(Entry::getValue)
+          .collect(Collectors.toList());
+    }
+
+    private static class Entry {
+      private final TestRule value;
+      private final Integer order;
+
+      public Entry(TestRule value, Integer order) {
+        this.value = value;
+        this.order = order;
+      }
+
+      public TestRule getValue() {
+        return value;
+      }
+
+      public Integer getOrder() {
+        return order;
+      }
+    }
   }
 }
