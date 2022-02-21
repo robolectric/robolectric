@@ -7,13 +7,15 @@ import android.os.SystemClock;
 import java.time.DateTimeException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
 
 /**
- * A shadow SystemClock used when {@link LooperMode.Mode.PAUSED} is active.
+ * A shadow SystemClock used when {@link LooperMode.Mode#PAUSED} is active.
  *
  * <p>In this variant, there is just one global system time controlled by this class. The current
  * time is fixed in place, and manually advanced by calling {@link
@@ -30,15 +32,18 @@ import org.robolectric.annotation.Resetter;
     shadowPicker = ShadowSystemClock.Picker.class)
 public class ShadowPausedSystemClock extends ShadowSystemClock {
   private static final long INITIAL_TIME = 100;
-  private static final int MILLIS_PER_NANO = 1000000;;
+  private static final int MILLIS_PER_NANO = 1000000;
+
+  @GuardedBy("ShadowPausedSystemClock.class")
   private static long currentTimeMillis = INITIAL_TIME;
-  private static List<Listener> listeners = new CopyOnWriteArrayList<>();
+
+  private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
   /**
    * Callback for clock updates
    */
   interface Listener {
-    void clockUpdated(long newCurrentTimeMillis);
+    void onClockAdvanced();
   }
 
   static void addListener(Listener listener) {
@@ -52,7 +57,12 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   /** Advances the current time by given millis, without sleeping the current thread/ */
   @Implementation
   protected static void sleep(long millis) {
-    currentTimeMillis += millis;
+    synchronized (ShadowPausedSystemClock.class) {
+      currentTimeMillis += millis;
+    }
+    for (Listener listener : listeners) {
+      listener.onClockAdvanced();
+    }
   }
 
   /**
@@ -64,21 +74,23 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
    */
   @Implementation
   protected static boolean setCurrentTimeMillis(long millis) {
-    if (currentTimeMillis > millis) {
-      return false;
-    }
-
-    if (currentTimeMillis != millis) {
-      currentTimeMillis = millis;
-      for (Listener listener : listeners) {
-        listener.clockUpdated(currentTimeMillis);
+    synchronized (ShadowPausedSystemClock.class) {
+      if (currentTimeMillis > millis) {
+        return false;
+      } else if (currentTimeMillis == millis) {
+        return true;
+      } else {
+        currentTimeMillis = millis;
       }
+    }
+    for (Listener listener : listeners) {
+      listener.onClockAdvanced();
     }
     return true;
   }
 
   @Implementation
-  protected static long uptimeMillis() {
+  protected static synchronized long uptimeMillis() {
     return currentTimeMillis;
   }
 
@@ -111,7 +123,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
 
   @Implementation(minSdk = P)
   @HiddenApi
-  protected static long currentNetworkTimeMillis() {
+  protected static synchronized long currentNetworkTimeMillis() {
     if (networkTimeAvailable) {
       return currentTimeMillis;
     } else {
@@ -120,7 +132,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   }
 
   @Resetter
-  public static void reset() {
+  public static synchronized void reset() {
     currentTimeMillis = INITIAL_TIME;
     ShadowSystemClock.reset();
     listeners.clear();
