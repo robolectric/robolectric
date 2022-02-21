@@ -18,6 +18,7 @@ import android.view.DisplayEventReceiver;
 import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
 import java.time.Duration;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -41,7 +42,7 @@ public class ShadowDisplayEventReceiver {
 
   private static NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =
       new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
-  private static int asyncVsyncDelay;
+  private static volatile int asyncVsyncDelay;
 
   @RealObject protected DisplayEventReceiver realReceiver;
 
@@ -179,23 +180,25 @@ public class ShadowDisplayEventReceiver {
   private static class NativeDisplayEventReceiver {
 
     private final WeakReference<DisplayEventReceiver> receiverRef;
-    private final ShadowPausedSystemClock.Listener clockListener;
+    private final ShadowPausedSystemClock.Listener clockListener = this::onClockAdvanced;
+
+    @GuardedBy("this")
     private long nextVsyncTime = 0;
 
     public NativeDisplayEventReceiver(WeakReference<DisplayEventReceiver> receiverRef) {
       this.receiverRef = receiverRef;
       // register a clock listener for the async mode
-      this.clockListener =
-          new ShadowPausedSystemClock.Listener() {
-            @Override
-            public void clockUpdated(long newCurrentTimeMillis) {
-              if (nextVsyncTime > 0 && newCurrentTimeMillis >= nextVsyncTime) {
-                nextVsyncTime = 0;
-                doVsync();
-              }
-            }
-          };
       ShadowPausedSystemClock.addListener(clockListener);
+    }
+
+    private void onClockAdvanced() {
+      synchronized (this) {
+        if (nextVsyncTime == 0 || ShadowPausedSystemClock.uptimeMillis() < nextVsyncTime) {
+          return;
+        }
+        nextVsyncTime = 0;
+      }
+      doVsync();
     }
 
     void dispose() {
@@ -203,8 +206,11 @@ public class ShadowDisplayEventReceiver {
     }
 
     public void scheduleVsync() {
-      if (asyncVsyncDelay > 0 && nextVsyncTime == 0) {
-        nextVsyncTime = SystemClock.uptimeMillis() + asyncVsyncDelay;
+      int asyncVsyncDelay = ShadowDisplayEventReceiver.asyncVsyncDelay;
+      if (asyncVsyncDelay > 0) {
+        synchronized (this) {
+          nextVsyncTime = SystemClock.uptimeMillis() + asyncVsyncDelay;
+        }
       } else {
         // simulate an immediate callback
         ShadowSystemClock.advanceBy(VSYNC_DELAY);
