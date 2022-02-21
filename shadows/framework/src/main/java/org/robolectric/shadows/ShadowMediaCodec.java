@@ -14,6 +14,8 @@ import android.annotation.Nullable;
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
 import android.media.MediaCodec.CodecException;
+import android.media.MediaCodecInfo;
+import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.view.Surface;
@@ -119,6 +121,16 @@ public class ShadowMediaCodec {
         ClassParameter.from(String.class, name),
         ClassParameter.from(boolean.class, nameIsType),
         ClassParameter.from(boolean.class, encoder));
+
+    if (!nameIsType) {
+      for (MediaCodecInfo codecInfo :
+          new MediaCodecList(MediaCodecList.ALL_CODECS).getCodecInfos()) {
+        if (codecInfo.getName().equals(name)) {
+          encoder = codecInfo.isEncoder();
+          break;
+        }
+      }
+    }
 
     CodecConfig codecConfig =
         encoder
@@ -331,9 +343,9 @@ public class ShadowMediaCodec {
     ((Buffer) inputBuffers[index]).clear();
 
     if (isAsync) {
+      inputBuffersPendingQueuing.add(index);
       // Signal input buffer availability.
       postFakeNativeEvent(EVENT_CALLBACK, CB_INPUT_AVAILABLE, index, null);
-      inputBuffersPendingQueuing.add(index);
     } else {
       inputBuffersPendingDequeue.add(index);
     }
