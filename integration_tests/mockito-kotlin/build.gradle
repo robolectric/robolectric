@@ -1,0 +1,17 @@
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
+
+dependencies {
+    api project(":robolectric")
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+}
