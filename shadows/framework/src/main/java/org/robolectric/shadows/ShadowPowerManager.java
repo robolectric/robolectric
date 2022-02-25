@@ -26,6 +26,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.WorkSource;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,7 +90,9 @@ public class ShadowPowerManager {
     return isInteractive;
   }
 
-  /** @deprecated Use {@link #setIsInteractive(boolean)} instead. */
+  /**
+   * @deprecated Use {@link #setIsInteractive(boolean)} instead.
+   */
   @Deprecated
   public void setIsScreenOn(boolean screenOn) {
     setIsInteractive(screenOn);
@@ -100,7 +103,9 @@ public class ShadowPowerManager {
     return isInteractive;
   }
 
-  /** @deprecated Prefer {@link #turnScreenOn(boolean)} instead. */
+  /**
+   * @deprecated Prefer {@link #turnScreenOn(boolean)} instead.
+   */
   @Deprecated
   public void setIsInteractive(boolean interactive) {
     isInteractive = interactive;
@@ -134,7 +139,9 @@ public class ShadowPowerManager {
     supportedWakeLockLevels.put(level, supported);
   }
 
-  /** @return false by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)} */
+  /**
+   * @return false by default, or the value specified via {@link #setIsDeviceIdleMode(boolean)}
+   */
   @Implementation(minSdk = M)
   protected boolean isDeviceIdleMode() {
     return isDeviceIdleMode;
@@ -195,6 +202,11 @@ public class ShadowPowerManager {
         listener instanceof PowerManager.OnThermalStatusChangedListener,
         "Listener must implement PowerManager.OnThermalStatusChangedListener");
     this.thermalListeners.add(listener);
+  }
+
+  /** This function gets listeners for thermal status change. */
+  public ImmutableSet<Object> getThermalStatusListeners() {
+    return ImmutableSet.copyOf(this.thermalListeners);
   }
 
   /** This function removes a listener for thermal status change. */
