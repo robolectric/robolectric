@@ -79,6 +79,11 @@ public class BrightnessChangeEventBuilder {
     return this;
   }
 
+  public BrightnessChangeEventBuilder setUniqueDisplayId(String displayId) {
+    builderInternal.setUniqueDisplayId(displayId);
+    return this;
+  }
+
   public BrightnessChangeEvent build() {
     return builderInternal.build();
   }
