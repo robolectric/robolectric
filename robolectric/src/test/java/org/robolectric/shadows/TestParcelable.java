@@ -3,7 +3,8 @@ package org.robolectric.shadows;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-class TestParcelable implements Parcelable {
+/** Dummy {@link Parcelable} for use in tests */
+public class TestParcelable implements Parcelable {
   int contents;
 
   public TestParcelable(int contents) {

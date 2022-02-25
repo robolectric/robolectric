@@ -3,7 +3,8 @@ package org.robolectric.shadows;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-class TestParcelablePackage implements Parcelable {
+/** Dummy {@link Parcelable} for use in tests */
+public class TestParcelablePackage implements Parcelable {
   int contents;
 
   public TestParcelablePackage(int contents) {
@@ -22,6 +23,7 @@ class TestParcelablePackage implements Parcelable {
     dest.writeInt(contents);
   }
 
+  /** Helper class around {@link TestParcelablePackage} for use in tests */
   public static class CreatorImpl implements Creator<TestParcelablePackage> {
     @Override
     public TestParcelablePackage createFromParcel(Parcel source) {
