@@ -451,11 +451,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /**
    * Starting in Android S, this method was moved from {@link android.content.pm.PackageManager} to
-   * {@link ApplicationPackageManager}.
+   * {@link ApplicationPackageManager}. However, it was moved back to {@link
+   * android.content.pm.PackageManager} in T.
    */
   @Override
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
-    if (RuntimeEnvironment.getApiLevel() >= S) {
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    if (apiLevel == S || apiLevel == 32) {
+
       PackageInfo shadowPackageInfo = getShadowPackageArchiveInfo(archiveFilePath, flags);
       if (shadowPackageInfo != null) {
         return shadowPackageInfo;
