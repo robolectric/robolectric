@@ -12,7 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest, self-hosted, windows-2019]
+        os: [macos-latest, self-hosted]
+        # os: [ubuntu-18.04, macos-latest, self-hosted, windows-2019]
     steps:
       - uses: actions/checkout@v2
         with:
@@ -139,3 +140,13 @@ jobs:
           name: robolectric-nativeruntime-windows-x86_64.dll
           path: |
             build/robolectric-nativeruntime-windows-x86_64.dll
+
+      - name: Test build artifact
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        run: echo hello > world.txt
+
+      - uses: actions/upload-artifact@v2
+        if: runner.os == 'Linux' || runner.os == 'macOS'
+        with:
+          name: test-artifact
+          path: world.txt
