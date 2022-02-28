@@ -4,13 +4,6 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
-apply plugin: ShadowsPlugin
-
-shadows {
-    packageName "org.robolectric.shadows.support.v4"
-    sdkCheckMode "OFF"
-}
-
 configurations {
     earlyTestRuntime
 }
