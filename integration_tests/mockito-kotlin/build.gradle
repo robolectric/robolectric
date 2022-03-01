@@ -2,7 +2,7 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'kotlin'
 
 dependencies {
     api project(":robolectric")
