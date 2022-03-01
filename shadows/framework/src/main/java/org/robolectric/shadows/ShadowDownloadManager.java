@@ -70,6 +70,7 @@ public class ShadowDownloadManager {
     return result;
   }
 
+  @Implementation
   protected long addCompletedDownload(
       String title,
       String description,
