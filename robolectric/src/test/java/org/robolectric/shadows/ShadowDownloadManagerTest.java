@@ -113,7 +113,7 @@ public class ShadowDownloadManagerTest {
   }
 
   @Test
-  public void query_shouldReturnColumnIndexes() {
+  public void query_shouldReturnColumnIndices() {
     ShadowDownloadManager manager = new ShadowDownloadManager();
     long id = manager.enqueue(request.setDestinationUri(destination));
     Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
@@ -124,6 +124,9 @@ public class ShadowDownloadManagerTest {
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION)).isAtLeast(0);
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_REASON)).isAtLeast(0);
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)).isAtLeast(0);
   }
 
   @Test
@@ -166,6 +169,24 @@ public class ShadowDownloadManagerTest {
         .isEqualTo(secondUri.toString());
     assertThat(cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI)))
         .isEqualTo(secondDestination.toString());
+  }
+
+  @Test
+  public void query_shouldGetTotalSizeAndBytesSoFar() {
+    long currentBytes = 500L;
+    long totalSize = 1000L;
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    long id = manager.enqueue(request.setDestinationUri(destination));
+    shadow.setTotalSize(totalSize);
+    shadow.setBytesSoFar(currentBytes);
+    Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(id));
+
+    cursor.moveToNext();
+    assertThat(cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)))
+        .isEqualTo(totalSize);
+    assertThat(
+            cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)))
+        .isEqualTo(currentBytes);
   }
 
   @Test
