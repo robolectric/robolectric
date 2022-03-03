@@ -15,9 +15,11 @@ import android.os.Message;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -41,6 +43,8 @@ public class ShadowAccessibilityManager {
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
   private List<ServiceInfo> accessibilityServiceList;
+  private HashMap<AccessibilityStateChangeListener, Handler> onAccessibilityStateChangeListeners =
+      new HashMap<>();
   private boolean touchExplorationEnabled;
 
   private static boolean isAccessibilityButtonSupported = true;
@@ -95,17 +99,22 @@ public class ShadowAccessibilityManager {
   @Implementation
   protected boolean addAccessibilityStateChangeListener(
       AccessibilityManager.AccessibilityStateChangeListener listener) {
+    addAccessibilityStateChangeListener(listener, null);
     return true;
   }
 
   @Implementation(minSdk = O)
   protected void addAccessibilityStateChangeListener(
-      AccessibilityManager.AccessibilityStateChangeListener listener, Handler handler) {}
+      AccessibilityManager.AccessibilityStateChangeListener listener, Handler handler) {
+    onAccessibilityStateChangeListeners.put(listener, handler);
+  }
 
   @Implementation
   protected boolean removeAccessibilityStateChangeListener(
       AccessibilityManager.AccessibilityStateChangeListener listener) {
-    return true;
+    final boolean wasRegistered = onAccessibilityStateChangeListeners.containsKey(listener);
+    onAccessibilityStateChangeListeners.remove(listener);
+    return wasRegistered;
   }
 
   @Implementation
@@ -159,6 +168,11 @@ public class ShadowAccessibilityManager {
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
     ReflectionHelpers.setField(realAccessibilityManager, "mIsEnabled", enabled);
+    for (AccessibilityStateChangeListener l : onAccessibilityStateChangeListeners.keySet()) {
+      if (l != null) {
+        l.onAccessibilityStateChanged(enabled);
+      }
+    }
   }
 
   @Implementation

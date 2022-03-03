@@ -126,4 +126,78 @@ public class ShadowAccessibilityManagerTest {
         .containsExactly(event1, event2, event3)
         .inOrder();
   }
+
+  @Test
+  public void addAccessibilityStateChangeListener_shouldAddListener() {
+    TestAccessibilityStateChangeListener listener1 = new TestAccessibilityStateChangeListener();
+    TestAccessibilityStateChangeListener listener2 = new TestAccessibilityStateChangeListener();
+
+    accessibilityManager.addAccessibilityStateChangeListener(listener1);
+    accessibilityManager.addAccessibilityStateChangeListener(listener2);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+
+    assertThat(listener1.isEnabled()).isTrue();
+    assertThat(listener2.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void removeAccessibilityStateChangeListener_shouldRemoveListeners() {
+    // Add two different callbacks.
+    TestAccessibilityStateChangeListener listener1 = new TestAccessibilityStateChangeListener();
+    TestAccessibilityStateChangeListener listener2 = new TestAccessibilityStateChangeListener();
+    accessibilityManager.addAccessibilityStateChangeListener(listener1);
+    accessibilityManager.addAccessibilityStateChangeListener(listener2);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+
+    assertThat(listener1.isEnabled()).isTrue();
+    assertThat(listener2.isEnabled()).isTrue();
+    // Remove one at the time.
+    accessibilityManager.removeAccessibilityStateChangeListener(listener2);
+
+    shadowOf(accessibilityManager).setEnabled(false);
+
+    assertThat(listener1.isEnabled()).isFalse();
+    assertThat(listener2.isEnabled()).isTrue();
+
+    accessibilityManager.removeAccessibilityStateChangeListener(listener1);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+
+    assertThat(listener1.isEnabled()).isFalse();
+    assertThat(listener2.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void removeAccessibilityStateChangeListener_returnsTrueIfRemoved() {
+    TestAccessibilityStateChangeListener listener = new TestAccessibilityStateChangeListener();
+    accessibilityManager.addAccessibilityStateChangeListener(listener);
+
+    assertThat(accessibilityManager.removeAccessibilityStateChangeListener(listener)).isTrue();
+  }
+
+  @Test
+  public void removeAccessibilityStateChangeListener_returnsFalseIfNotRegistered() {
+    assertThat(
+            accessibilityManager.removeAccessibilityStateChangeListener(
+                new TestAccessibilityStateChangeListener()))
+        .isFalse();
+    assertThat(accessibilityManager.removeAccessibilityStateChangeListener(null)).isFalse();
+  }
+
+  private static class TestAccessibilityStateChangeListener
+      implements AccessibilityManager.AccessibilityStateChangeListener {
+
+    private boolean enabled = false;
+
+    @Override
+    public void onAccessibilityStateChanged(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+      return enabled;
+    }
+  }
 }
