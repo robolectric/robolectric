@@ -23,6 +23,10 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowParcelFileDescriptorTest {
 
   private static final int READ_ONLY_FILE_CONTENTS = 42;
+  private static final int READ_ONLY_FILE_CONTENTS_THE_SECOND_BYTE = 43;
+
+  private static final String TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS =
+      "Not supposed to be run on Windows.";
 
   private File file;
   private File readOnlyFile;
@@ -37,6 +41,7 @@ public class ShadowParcelFileDescriptorTest {
         new File(ApplicationProvider.getApplicationContext().getFilesDir(), "test_readonly");
     os = new FileOutputStream(readOnlyFile);
     os.write(READ_ONLY_FILE_CONTENTS);
+    os.write(READ_ONLY_FILE_CONTENTS_THE_SECOND_BYTE);
     os.close();
     assertThat(readOnlyFile.setReadOnly()).isTrue();
   }
@@ -53,6 +58,176 @@ public class ShadowParcelFileDescriptorTest {
     pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
+  }
+
+  @Test
+  public void testAdoptFd_transferFdSuccessfully() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    assertThat(pfd.detachFd()).isEqualTo(fd);
+
+    ParcelFileDescriptor newPfd = ParcelFileDescriptor.adoptFd(fd);
+
+    assertThat(newPfd).isNotNull();
+    assertThat(newPfd.getFileDescriptor().valid()).isTrue();
+    assertThat(newPfd.getFd()).isEqualTo(fd);
+
+    assertThrows(IllegalStateException.class, () -> pfd.getFd());
+
+    newPfd.close();
+  }
+
+  @Test
+  public void testAdoptFd_alreadyClosed() throws IOException {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    pfd.close();
+
+    assertThrows(IllegalStateException.class, () -> ParcelFileDescriptor.adoptFd(fd));
+  }
+
+  @Test
+  public void testAdoptFd_unknownFd() {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    assertThrows(
+        IllegalStateException.class, () -> ParcelFileDescriptor.adoptFd(Integer.MAX_VALUE));
+  }
+
+  @Test
+  public void testAdoptFd_canReadReadOnlyFile() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    FileInputStream is = new FileInputStream(pfd.getFileDescriptor());
+    assertThat(is.read()).isEqualTo(READ_ONLY_FILE_CONTENTS);
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    assertThat(pfd.detachFd()).isEqualTo(fd);
+
+    ParcelFileDescriptor newPfd = ParcelFileDescriptor.adoptFd(fd);
+
+    assertThat(newPfd).isNotNull();
+    assertThat(newPfd.getFileDescriptor().valid()).isTrue();
+    is = new FileInputStream(newPfd.getFileDescriptor());
+    assertThat(is.read()).isEqualTo(READ_ONLY_FILE_CONTENTS_THE_SECOND_BYTE);
+  }
+
+  @Test
+  public void testAdoptFd_canWriteWritableFile() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    assertThat(pfd.detachFd()).isEqualTo(fd);
+
+    ParcelFileDescriptor newPfd = ParcelFileDescriptor.adoptFd(fd);
+
+    assertThat(newPfd).isNotNull();
+    assertThat(newPfd.getFileDescriptor().valid()).isTrue();
+
+    FileOutputStream os = new FileOutputStream(newPfd.getFileDescriptor());
+    final int writableFileContents = 5;
+    os.write(writableFileContents);
+    os.close();
+    newPfd.close();
+
+    FileInputStream is = new FileInputStream(file);
+    assertThat(is.read()).isEqualTo(writableFileContents);
+  }
+
+  @Test
+  public void testAdoptFd_canNotWriteReadOnlyFile() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    assertThat(pfd.detachFd()).isEqualTo(fd);
+
+    ParcelFileDescriptor newPfd = ParcelFileDescriptor.adoptFd(fd);
+
+    assertThat(newPfd).isNotNull();
+    assertThat(newPfd.getFileDescriptor().valid()).isTrue();
+
+    try (FileOutputStream os = new FileOutputStream(newPfd.getFileDescriptor())) {
+      assertThrows(IOException.class, () -> os.write(5));
+    }
+    newPfd.close();
+  }
+
+  @Test
+  public void testDetachFd() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    int detachedFd = pfd.detachFd();
+
+    assertThat(detachedFd).isEqualTo(fd);
+  }
+
+  @Test
+  public void testDetachFd_alreadyClosed() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    pfd.close();
+
+    assertThrows(IllegalStateException.class, () -> pfd.detachFd());
+  }
+
+  @Test
+  public void testDetachFd_alreadyDetached() throws Exception {
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
+
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    int detachedFd = pfd.detachFd();
+
+    assertThat(detachedFd).isEqualTo(fd);
+    assertThrows(IllegalStateException.class, () -> pfd.detachFd());
   }
 
   @Test
@@ -205,6 +380,22 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
+  public void testClose_alreadyDetached() throws Exception {
+    pfd = ParcelFileDescriptor.open(file, -1);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    int detachedFd = pfd.detachFd();
+
+    assertThat(detachedFd).isEqualTo(fd);
+
+    pfd.close();
+  }
+
+  @Test
   public void testCloses_getStatSize_returnsInvalidLength() throws Exception {
     pfd = ParcelFileDescriptor.open(file, -1);
     pfd.close();
@@ -257,8 +448,7 @@ public class ShadowParcelFileDescriptorTest {
 
   @Test
   public void testGetFd_canRead() throws IOException {
-    assumeThat("Windows is an affront to decency.",
-        File.separator, Matchers.equalTo("/"));
+    assumeThat(TIPS_TESTS_NOT_SUPPOSED_TO_BE_RUN_ON_WINDOWS, File.separator, Matchers.equalTo("/"));
 
     pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
     int fd = pfd.getFd();
@@ -279,8 +469,26 @@ public class ShadowParcelFileDescriptorTest {
     assertThat(pfd).isNotNull();
     assertThat(pfd.getFileDescriptor().valid()).isTrue();
 
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
     pfd.close();
 
+    assertThrows(IllegalStateException.class, () -> pfd.getFd());
+  }
+
+  @Test
+  public void testGetFd_alreadyDetached() throws Exception {
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    int fd = pfd.getFd();
+    assertThat(fd).isGreaterThan(0);
+
+    int detachedFd = pfd.detachFd();
+
+    assertThat(detachedFd).isEqualTo(fd);
     assertThrows(IllegalStateException.class, () -> pfd.getFd());
   }
 }
