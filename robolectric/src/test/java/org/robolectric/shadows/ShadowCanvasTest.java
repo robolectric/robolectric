@@ -496,4 +496,37 @@ public class ShadowCanvasTest {
     assertThat(roundRectPaintHistoryEvent.rect).isEqualTo(rect0);
     assertThat(roundRectPaintHistoryEvent.paint.getColor()).isEqualTo(Color.WHITE);
   }
+
+  @Test
+  public void save() {
+    Canvas canvas = new Canvas();
+
+    int save1 = canvas.save();
+    int save2 = canvas.save();
+
+    assertThat(save2).isGreaterThan(save1);
+    assertThat(canvas.getSaveCount()).isGreaterThan(save2);
+  }
+
+  @Test
+  public void restore() {
+    Canvas canvas = new Canvas();
+
+    int save1 = canvas.save();
+    canvas.restore();
+
+    assertThat(canvas.getSaveCount()).isEqualTo(save1);
+  }
+
+  @Test
+  public void restoreToCount() {
+    Canvas canvas = new Canvas();
+
+    int save1 = canvas.save();
+    canvas.save();
+    canvas.save();
+    canvas.restoreToCount(save1);
+
+    assertThat(canvas.getSaveCount()).isEqualTo(save1);
+  }
 }
