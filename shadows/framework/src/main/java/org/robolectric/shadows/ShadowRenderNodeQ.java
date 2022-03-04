@@ -306,18 +306,12 @@ public class ShadowRenderNodeQ {
 
   @Implementation
   protected void getInverseMatrix(Matrix matrix) {
-    if (!isMatrixEnabled()) {
-      return;
-    }
     getMatrix(matrix);
     matrix.invert(matrix);
   }
 
   @Implementation
   protected void getMatrix(Matrix matrix) {
-    if (!isMatrixEnabled()) {
-      return;
-    }
     if (!pivotExplicitlySet) {
       pivotX = getWidth() / 2f;
       pivotY = getHeight() / 2f;
@@ -343,9 +337,6 @@ public class ShadowRenderNodeQ {
 
   @Implementation
   protected boolean hasIdentityMatrix() {
-    if (!isMatrixEnabled()) {
-      return true;
-    }
     Matrix matrix = new Matrix();
     getMatrix(matrix);
     return matrix.isIdentity();
@@ -358,10 +349,5 @@ public class ShadowRenderNodeQ {
 
   private static boolean isZero(float value) {
     return Math.abs(value) <= NON_ZERO_EPSILON;
-  }
-
-  // Temporarily allow disabling the matrix calculation during migration.
-  private static boolean isMatrixEnabled() {
-    return Boolean.parseBoolean(System.getProperty("robolectric.rendernode.enableMatrix", "true"));
   }
 }
