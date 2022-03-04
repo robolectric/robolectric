@@ -1910,6 +1910,14 @@ public final class ShadowDevicePolicyManagerTest {
         .isEqualTo(DevicePolicyManager.NEARBY_STREAMING_DISABLED);
   }
 
+  @Config(minSdk = S)
+  @Test
+  public void isUsbDataSignalingEnabled_shouldReturnSetValue() {
+    assertThat(devicePolicyManager.isUsbDataSignalingEnabled()).isTrue();
+    shadowOf(devicePolicyManager).setIsUsbDataSignalingEnabled(false);
+    assertThat(devicePolicyManager.isUsbDataSignalingEnabled()).isFalse();
+  }
+
   private ServiceConnection buildServiceConnection() {
     return new ServiceConnection() {
       @Override

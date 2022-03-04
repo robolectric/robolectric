@@ -131,7 +131,7 @@ public class ShadowDevicePolicyManager {
       DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
   private int nearbyAppStreamingPolicy =
       DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
-
+  private boolean isUsbDataSignalingEnabled = true;
   private @RealObject DevicePolicyManager realObject;
 
   private static class PackageAndPermission {
@@ -302,6 +302,16 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = R)
   protected boolean isUniqueDeviceAttestationSupported() {
     return isUniqueDeviceAttestationSupported;
+  }
+
+  /** Sets USB signaling device restriction. */
+  public void setIsUsbDataSignalingEnabled(boolean isEnabled) {
+    isUsbDataSignalingEnabled = isEnabled;
+  }
+
+  @Implementation(minSdk = S)
+  protected boolean isUsbDataSignalingEnabled() {
+    return isUsbDataSignalingEnabled;
   }
 
   /** @see #setDeviceOwner(ComponentName) */
