@@ -68,6 +68,7 @@ import android.content.pm.ChangedPackages;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.IPackageStatsObserver;
+import android.content.pm.InstallSourceInfo;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
@@ -2758,6 +2759,17 @@ public class ShadowPackageManagerTest {
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("target.package");
     }
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void installerSourceInfo() throws Exception {
+    shadowOf(packageManager)
+        .setInstallSourceInfo("target.package", "initiating.package", "installing.package");
+
+    InstallSourceInfo info = packageManager.getInstallSourceInfo("target.package");
+    assertThat(info.getInitiatingPackageName()).isEqualTo("initiating.package");
+    assertThat(info.getInstallingPackageName()).isEqualTo("installing.package");
   }
 
   @Test

@@ -58,6 +58,7 @@ import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
 import android.content.pm.IPackageStatsObserver;
+import android.content.pm.InstallSourceInfo;
 import android.content.pm.InstrumentationInfo;
 import android.content.pm.IntentFilterVerificationInfo;
 import android.content.pm.ModuleInfo;
@@ -955,6 +956,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
 
     return packageInstallerMap.get(packageName);
+  }
+
+  @Implementation(minSdk = R)
+  protected Object getInstallSourceInfo(String packageName) {
+    return (InstallSourceInfo) packageInstallSourceInfoMap.get(packageName);
   }
 
   @Implementation
