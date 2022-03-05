@@ -105,9 +105,9 @@ public class ShadowBitmapTest {
   @Test
   public void hasAlpha() {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
-    assertThat(bitmap.hasAlpha()).isFalse();
-    bitmap.setHasAlpha(true);
     assertThat(bitmap.hasAlpha()).isTrue();
+    bitmap.setHasAlpha(false);
+    assertThat(bitmap.hasAlpha()).isFalse();
   }
 
   @Test
@@ -644,16 +644,40 @@ public class ShadowBitmapTest {
     original.reconfigure(100, 100, Bitmap.Config.ARGB_8888);
   }
 
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   @Test
-  public void setPremultiplied() {
+  public void isPremultiplied_argb888_defaultsTrue() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-    assertThat(original.isPremultiplied()).isFalse();
-    original.setPremultiplied(true);
+
     assertThat(original.isPremultiplied()).isTrue();
-    original.setPremultiplied(false);
+  }
+
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  public void isPremultiplied_argb888_noAlpha_defaultsFalse() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    original.setHasAlpha(false);
+
     assertThat(original.isPremultiplied()).isFalse();
   }
+
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  public void isPremultiplied_rgb565_defaultsFalse() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
+
+    assertThat(original.isPremultiplied()).isFalse();
+  }
+
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
+  @Test
+  public void setPremultiplied_argb888_isFalse() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    original.setPremultiplied(false);
+
+    assertThat(original.isPremultiplied()).isFalse();
+  }
+
 
   @Test
   public void sameAs_bitmapsDifferentWidth() {
