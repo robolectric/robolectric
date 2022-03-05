@@ -44,6 +44,7 @@ import android.content.pm.ComponentInfo;
 import android.content.pm.FeatureInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
+import android.content.pm.InstallSourceInfo;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -134,6 +135,7 @@ public class ShadowPackageManager {
   private static Map<String, PackageInfo> packageArchiveInfo = new HashMap<>();
   static final Map<String, PackageStats> packageStatsMap = new HashMap<>();
   static final Map<String, String> packageInstallerMap = new HashMap<>();
+  static final Map<String, Object> packageInstallSourceInfoMap = new HashMap<>();
   static final Map<Integer, String[]> packagesForUid = new HashMap<>();
   static final Map<String, Integer> uidForPackage = new HashMap<>();
   static final Map<Integer, String> namesForUid = new HashMap<>();
@@ -819,10 +821,17 @@ public class ShadowPackageManager {
     addPackageNoDefaults(packageInfo);
   }
 
+  /** Adds install source information for a package. */
+  public void setInstallSourceInfo(
+      String packageName, String initiatingPackage, String installerPackage) {
+    packageInstallSourceInfoMap.put(
+        packageName, new InstallSourceInfo(initiatingPackage, null, null, installerPackage));
+  }
+
   /**
    * Adds a package to the {@link PackageManager}, but doesn't set any default values on it.
    *
-   * Right now it will not set {@link ApplicationInfo#FLAG_INSTALLED} flag on its application, so
+   * <p>Right now it will not set {@link ApplicationInfo#FLAG_INSTALLED} flag on its application, so
    * if not set explicitly, it will be treated as not installed.
    */
   public void addPackageNoDefaults(PackageInfo packageInfo) {
@@ -1674,6 +1683,7 @@ public class ShadowPackageManager {
       packageArchiveInfo.clear();
       packageStatsMap.clear();
       packageInstallerMap.clear();
+      packageInstallSourceInfoMap.clear();
       packagesForUid.clear();
       uidForPackage.clear();
       namesForUid.clear();
