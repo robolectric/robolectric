@@ -31,6 +31,7 @@ public class ShadowParcelFileDescriptor {
   private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
   private static final String PIPE_FILE_NAME = "pipe";
   private RandomAccessFile file;
+  private boolean closed;
   @RealObject ParcelFileDescriptor realParcelFd;
 
   private @RealObject ParcelFileDescriptor realObject;
@@ -133,6 +134,10 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected int getFd() {
+    if (closed) {
+      throw new IllegalStateException("Already closed");
+    }
+
     try {
       return ReflectionHelpers.getField(file.getFD(), "fd");
     } catch (IOException e) {
@@ -142,8 +147,14 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected void close() throws IOException {
+    // Act this status check the same as real close operation in AOSP.
+    if (closed) {
+      return;
+    }
+
     file.close();
     reflector(ParcelFileDescriptorReflector.class, realParcelFd).close();
+    closed = true;
   }
 
   @ForType(ParcelFileDescriptor.class)

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
 
 import android.os.ParcelFileDescriptor;
@@ -189,7 +190,16 @@ public class ShadowParcelFileDescriptorTest {
     pfd = ParcelFileDescriptor.open(file, -1);
     pfd.close();
     assertThat(pfd.getFileDescriptor().valid()).isFalse();
-    assertThat(pfd.getFd()).isEqualTo(-1);
+  }
+
+  @Test
+  public void testClose_twice() throws Exception {
+    pfd = ParcelFileDescriptor.open(file, -1);
+    pfd.close();
+    assertThat(pfd.getFileDescriptor().valid()).isFalse();
+
+    pfd.close();
+    assertThat(pfd.getFileDescriptor().valid()).isFalse();
   }
 
   @Test
@@ -254,5 +264,16 @@ public class ShadowParcelFileDescriptorTest {
     FileInputStream is = new FileInputStream(new File("/proc/self/fd/" + fd));
     assertThat(is.read()).isEqualTo(READ_ONLY_FILE_CONTENTS);
     is.close();
+  }
+
+  @Test
+  public void testGetFd_alreadyClosed() throws Exception {
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+
+    pfd.close();
+
+    assertThrows(IllegalStateException.class, () -> pfd.getFd());
   }
 }
