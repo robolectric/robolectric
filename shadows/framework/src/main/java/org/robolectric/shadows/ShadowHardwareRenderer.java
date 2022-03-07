@@ -9,6 +9,7 @@ import android.graphics.Bitmap.Config;
 import android.graphics.HardwareRenderer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 
 @Implements(
@@ -23,6 +24,11 @@ public class ShadowHardwareRenderer {
   @Implementation(maxSdk = Q)
   protected static long nCreateProxy(boolean translucent, long rootRenderNode) {
     return ++nextCreateProxy;
+  }
+
+  @Implementation
+  protected static long nCreateTextureLayer(long nativeProxy) {
+    return ShadowVirtualRefBasePtr.put(nativeProxy);
   }
 
   @Implementation(minSdk = R, maxSdk = R)
@@ -48,5 +54,10 @@ public class ShadowHardwareRenderer {
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.setMutable(false);
     return bitmap;
+  }
+
+  @Resetter
+  public static void reset() {
+    nextCreateProxy = 0;
   }
 }
