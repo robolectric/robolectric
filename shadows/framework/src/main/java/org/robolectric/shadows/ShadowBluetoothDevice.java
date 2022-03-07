@@ -1,12 +1,14 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.ActivityThread;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -14,12 +16,15 @@ import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -59,6 +64,7 @@ public class ShadowBluetoothDevice {
   private String alias;
   private boolean shouldThrowOnGetAliasName = false;
   private BluetoothClass bluetoothClass = null;
+  private boolean shouldThrowSecurityExceptions = false;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -109,13 +115,28 @@ public class ShadowBluetoothDevice {
     shouldThrowOnGetAliasName = shouldThrow;
   }
 
+  /**
+   * Sets if a runtime exception is thrown when bluetooth methods with BLUETOOTH_CONNECT permission
+   * pre-requisites are accessed.
+   *
+   * <p>Intended to replicate what may happen if user has not enabled nearby device permissions.
+   *
+   * @param shouldThrow if methods should throw SecurityExceptions without enabled permissions when
+   *     called.
+   */
+  public void setShouldThrowSecurityExceptions(boolean shouldThrow) {
+    shouldThrowSecurityExceptions = shouldThrow;
+  }
+
   @Implementation
   protected String getName() {
+    checkForBluetoothConnectPermission();
     return name;
   }
 
   @Implementation
   protected String getAlias() {
+    checkForBluetoothConnectPermission();
     return alias;
   }
 
@@ -144,6 +165,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected int getType() {
+    checkForBluetoothConnectPermission();
     return type;
   }
 
@@ -160,6 +182,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation
   protected ParcelUuid[] getUuids() {
+    checkForBluetoothConnectPermission();
     return uuids;
   }
 
@@ -177,6 +200,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation
   protected int getBondState() {
+    checkForBluetoothConnectPermission();
     return bondState;
   }
 
@@ -188,11 +212,26 @@ public class ShadowBluetoothDevice {
   /** Returns whether this device has been bonded with. */
   @Implementation
   protected boolean createBond() {
+    checkForBluetoothConnectPermission();
     return createdBond;
+  }
+
+  @Implementation(minSdk = Q)
+  protected BluetoothSocket createInsecureL2capChannel(int psm) throws IOException {
+    checkForBluetoothConnectPermission();
+    return reflector(BluetoothDeviceReflector.class, realBluetoothDevice)
+        .createInsecureL2capChannel(psm);
+  }
+
+  @Implementation(minSdk = Q)
+  protected BluetoothSocket createL2capChannel(int psm) throws IOException {
+    checkForBluetoothConnectPermission();
+    return reflector(BluetoothDeviceReflector.class, realBluetoothDevice).createL2capChannel(psm);
   }
 
   @Implementation
   protected boolean removeBond() {
+    checkForBluetoothConnectPermission();
     boolean result = createdBond;
     createdBond = false;
     return result;
@@ -200,6 +239,7 @@ public class ShadowBluetoothDevice {
 
   @Implementation
   protected boolean setPin(byte[] pin) {
+    checkForBluetoothConnectPermission();
     this.pin = pin;
     return true;
   }
@@ -214,6 +254,7 @@ public class ShadowBluetoothDevice {
 
   @Implementation
   public boolean setPairingConfirmation(boolean confirm) {
+    checkForBluetoothConnectPermission();
     this.pairingConfirmation = confirm;
     return true;
   }
@@ -228,6 +269,7 @@ public class ShadowBluetoothDevice {
 
   @Implementation
   protected BluetoothSocket createRfcommSocketToServiceRecord(UUID uuid) throws IOException {
+    checkForBluetoothConnectPermission();
     synchronized (ShadowBluetoothDevice.class) {
       if (bluetoothSocket == null) {
         bluetoothSocket = Shadow.newInstanceOf(BluetoothSocket.class);
@@ -250,6 +292,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation
   protected boolean fetchUuidsWithSdp() {
+    checkForBluetoothConnectPermission();
     fetchUuidsWithSdpCount++;
     return fetchUuidsWithSdpResult;
   }
@@ -262,12 +305,14 @@ public class ShadowBluetoothDevice {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
+    checkForBluetoothConnectPermission();
     return connectGatt(callback);
   }
 
   @Implementation(minSdk = M)
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback, int transport) {
+    checkForBluetoothConnectPermission();
     return connectGatt(callback);
   }
 
@@ -279,6 +324,7 @@ public class ShadowBluetoothDevice {
       int transport,
       int phy,
       Handler handler) {
+    checkForBluetoothConnectPermission();
     return connectGatt(callback);
   }
 
@@ -319,6 +365,7 @@ public class ShadowBluetoothDevice {
    */
   @Implementation
   public BluetoothClass getBluetoothClass() {
+    checkForBluetoothConnectPermission();
     return bluetoothClass;
   }
 
@@ -333,5 +380,30 @@ public class ShadowBluetoothDevice {
     @Static
     @Direct
     IBluetooth getService();
+
+    @Direct
+    BluetoothSocket createInsecureL2capChannel(int psm);
+
+    @Direct
+    BluetoothSocket createL2capChannel(int psm);
+  }
+
+  static ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  private void checkForBluetoothConnectPermission() {
+    if (shouldThrowSecurityExceptions
+        && VERSION.SDK_INT >= VERSION_CODES.S
+        && !checkPermission(android.Manifest.permission.BLUETOOTH_CONNECT)) {
+      throw new SecurityException("Bluetooth connect permission required.");
+    }
+  }
+
+  static boolean checkPermission(String permission) {
+    return getShadowInstrumentation()
+            .checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid())
+        == PERMISSION_GRANTED;
   }
 }
