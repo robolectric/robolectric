@@ -1,0 +1,36 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+
+android {
+    compileSdkVersion 31
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 31
+    }
+
+    buildTypes {
+        debug {
+            testCoverageEnabled = true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions.unitTests.includeAndroidResources true
+}
+
+dependencies {
+    // Testing dependencies
+    testImplementation project(":robolectric")
+
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation("androidx.test:core:$axtVersion")
+    testImplementation("androidx.test:runner:$axtVersion")
+    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
+}

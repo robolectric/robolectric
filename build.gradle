@@ -211,3 +211,658 @@ task prefetchDependencies() {
 
 // for use of external initialization scripts...
 project.ext.allSdks = AndroidSdk.ALL_SDKS
+
+
+def projectInfo = [:]
+
+def taskInfo = [:]
+
+gradle.buildFinished { buildResult ->
+    // Persist the module info if needed.
+    def projectInfoOutputFilePath = gradle.rootProject.getProperties().get('projectInfoOutputFilePath')
+
+    if (projectInfoOutputFilePath != null) {
+        def projectInfoFile = new File(projectInfoOutputFilePath)
+
+        projectInfoFile.setText(groovy.json.JsonOutput.toJson(projectInfo))
+    }
+
+    def taskInfoOutputFilePath = gradle.rootProject.getProperties().get('taskInfoOutputFilePath')
+
+    if (taskInfoOutputFilePath != null) {
+        def taskInfoFile = new File(taskInfoOutputFilePath)
+
+        taskInfoFile.setText(groovy.json.JsonOutput.toJson(taskInfo))
+    }
+}
+
+class TestTaskListener implements TaskExecutionListener {
+    Closure callback
+
+
+    TestTaskListener(Closure closure) {
+        callback = closure
+    }
+
+    @Override
+    void beforeExecute(Task task) {
+    }
+
+    @Override
+    void afterExecute(Task task, TaskState state) {
+        callback.call(task, state)
+    }
+}
+
+
+gradle.addListener(new TestTaskListener({ task, taskState ->
+    // Update target test task info to target module info.
+    def moduleInfo = projectInfo.get(task.project.path)
+
+    if (moduleInfo == null) {
+        println 'Not target module: ' + task.project.name + ', taskName: ' + task.name
+        return
+    }
+
+    if (moduleInfo.get('allTestTasksNames').contains(task.name)) {
+        def moduleTestTaskInfo = taskInfo.getOrDefault(task.project.path, [:])
+
+        def testTaskInfo = [:]
+
+        if (taskState.failure) {
+            testTaskInfo.put('is_task_success', 'false')
+            testTaskInfo.put('failure_message', taskState.failure.message)
+        } else {
+            testTaskInfo.put('is_task_success', 'true')
+        }
+
+        moduleTestTaskInfo.put(task.name, testTaskInfo)
+        taskInfo.put(task.project.path, moduleTestTaskInfo)
+    }
+}))
+
+class TestableTarget {
+    String name
+    String compileSourceTaskName
+    List<String> classesDirPaths
+    List<String> sourceDirPaths
+    List<String> unitTestSourceDirPaths
+    List<String> unitTestClassesDirPaths
+    String unitTestTaskName
+    String jacocoInstrumentOutputDirPath
+
+    LinkedHashMap<Object, Object> toDict() {
+        def dict = [:]
+        dict.put("src_dir_paths", sourceDirPaths)
+        dict.put("class_dir_paths", classesDirPaths)
+        dict.put("test_task_name", unitTestTaskName)
+        dict.put("unit_test_src_dir_paths", unitTestSourceDirPaths)
+        dict.put("unit_test_classes_dir_paths", unitTestClassesDirPaths)
+        return dict
+    }
+}
+
+class JavaTestableTarget extends TestableTarget {
+
+    static List<String> getSourceDirPathsFromSourceSet(SourceSet sourceSet) {
+        def sourceDirPaths = []
+        sourceSet.allSource.srcDirs.each { sourceDirectory ->
+            if (sourceDirectory.exists()) {
+                sourceDirPaths.add(sourceDirectory.canonicalPath)
+            }
+        }
+        return sourceDirPaths
+    }
+
+    static List<String> getClassesDirPathsFromSourceSet(SourceSet sourceSet) {
+        def classesDirPaths = []
+        sourceSet.output.classesDirs.each { classesDirectory ->
+            // not check, classesDirPath may not exist at configuration phrase.
+            classesDirPaths.add(classesDirectory.canonicalPath)
+        }
+        return classesDirPaths
+    }
+}
+
+
+class AndroidTestableTarget extends TestableTarget {
+
+    static JavaCompile getJavaCompileFromVariant(variant) {
+        def javaCompile
+        if (variant.hasProperty('javaCompileProvider')) {
+            // Gradle 4.10.1 +
+            javaCompile = variant.javaCompileProvider.get()
+        } else {
+            // Compatible for <= Gradle 4.10.1
+            javaCompile = variant.hasProperty('javaCompiler') ? variant.javaCompiler : variant.javaCompile
+        }
+        return javaCompile
+    }
+
+    static Set<String> getSourceDirPathsFromVariant(variant) {
+        def sourceDirPaths = new HashSet()
+        variant.sourceSets.each { sourceSet ->
+            // Added source set for kotlin DSL if needed.
+            if (sourceSet.hasProperty('kotlin')) {
+                def kotlinSourceSetDSL = sourceSet.getProperty('kotlin')
+                def kotlinSourceDirs = kotlinSourceSetDSL.srcDirs
+
+                if (kotlinSourceDirs) {
+                    kotlinSourceDirs.each { kotlinDirectory ->
+                        if (kotlinDirectory.exists()) {
+                            sourceDirPaths.add(kotlinDirectory.canonicalPath)
+                        }
+                    }
+                }
+            }
+
+            sourceSet.javaDirectories.each { javaDirectory ->
+                if (javaDirectory.exists()) {
+                    sourceDirPaths.add(javaDirectory.canonicalPath)
+                }
+            }
+        }
+        return sourceDirPaths
+    }
+
+    static Set<String> getResourcesDirPathsFromVariant(variant) {
+        def resourcesDirPaths = new HashSet()
+        variant.sourceSets.each { sourceSet ->
+            sourceSet.resources.srcDirs.each { resourcesDirectory ->
+                resourcesDirPaths.add(resourcesDirectory.canonicalPath)
+            }
+        }
+        return resourcesDirPaths
+    }
+
+    static List<String> getClassesDirPathsFromVariant(variant, boolean supportKotlin, String projectBuildDir) {
+        def classesDirPaths = [getJavaCompileFromVariant(variant).destinationDir.canonicalPath]
+        if (supportKotlin) {
+            // TODO fix hardcode of kotlin classesDir.
+            classesDirPaths.add("${projectBuildDir}/tmp/kotlin-classes/${variant.name}")
+        }
+        return classesDirPaths
+    }
+}
+
+
+class AndroidLibraryTestableTarget extends AndroidTestableTarget {
+    String compileTestApkTaskName
+    String testApkFilePath
+    int minSdkVersion
+    int targetSdkVersion
+    List<String> androidTestClassesDirPaths
+    List<String> androidTestSourceDirPaths
+    List<String> androidTestResourcesDirPaths
+
+    @Override
+    LinkedHashMap<Object, Object> toDict() {
+        def dict = super.toDict()
+        dict.put('compile_test_apk_task_name', compileTestApkTaskName)
+        dict.put('test_apk_file_path', testApkFilePath)
+        dict.put('min_sdk_version', minSdkVersion)
+        dict.put('target_sdk_version', targetSdkVersion)
+        dict.put("android_test_src_dir_paths", androidTestSourceDirPaths)
+        dict.put("android_test_classes_dir_paths", androidTestClassesDirPaths)
+        dict.put("android_test_resources_dir_paths", androidTestResourcesDirPaths)
+        return dict
+    }
+}
+
+class AndroidApplicationTestableTarget extends AndroidLibraryTestableTarget {
+    String compileAppApkTaskName
+    String appApkFilePath
+
+    @Override
+    LinkedHashMap<Object, Object> toDict() {
+        def dict = super.toDict()
+        dict.put('compile_app_apk_task_name', compileAppApkTaskName)
+        dict.put('app_apk_file_path', appApkFilePath)
+        return dict
+    }
+}
+
+
+// Debug: check Android D8 options.
+println 'android.enableD8=' + gradle.rootProject.getProperties().get('android.enableD8')
+
+// For Gradle API compatibility.
+def gradleVersion = gradle.gradleVersion
+
+println "Running gradle version: $gradleVersion"
+
+def jacocoVersion = "0.8.7"
+
+// Parse k,v = project.path, execDataFilePath from format [project.path execDataFilePath;]
+def moduleInstrumentExecDataFilePathStr = gradle.rootProject.getProperties().get('moduleInstrumentExecDataFilePathStr')
+
+def moduleInstrumentExecDataFilePaths = [:]
+
+if (moduleInstrumentExecDataFilePathStr != null) {
+    // format: in string, "projectA projectA_exec_abs_path;projectB projectB_exec_abs_path"
+    // exec_abs_path could be null.
+    def moduleInstrumentExecutionDataFilePathStrs = moduleInstrumentExecDataFilePathStr.split(';')
+
+    for (int i = 0; i < moduleInstrumentExecutionDataFilePathStrs.size(); i++) {
+        def moduleInstrumentExecutionDataFilePathPair = moduleInstrumentExecutionDataFilePathStrs[i].split(' ')
+        if (moduleInstrumentExecutionDataFilePathPair.size() == 2) {
+            def projectPath = moduleInstrumentExecutionDataFilePathPair[0]
+            def projectExecDataFilePath = moduleInstrumentExecutionDataFilePathPair[1]
+            moduleInstrumentExecDataFilePaths.put(projectPath, projectExecDataFilePath)
+        } else {
+            println 'Incomplete project path or project execution data, in: ' + moduleInstrumentExecutionDataFilePathStrs[i]
+        }
+    }
+}
+
+println 'ModulesInstrumentExecutionDataFilePaths: ' + moduleInstrumentExecDataFilePaths
+
+subprojects {
+    apply plugin: 'jacoco'
+
+    jacoco {
+        toolVersion = jacocoVersion
+    }
+
+    configurations {
+        jacocoAnt
+        jacocoRuntime
+
+        testImplementation
+        implementation
+    }
+
+    dependencies {
+        testImplementation 'junit:junit:4.13.2'
+
+        implementation "org.jacoco:org.jacoco.agent:${jacocoVersion}:runtime"
+    }
+
+
+    afterEvaluate {
+        if (!it.projectDir.exists()) {
+            println it.name + " projectDir not exist."
+            return
+        }
+
+        // after project `afterEvaluate`, overwrite the original Jacoco version.
+        jacoco {
+            toolVersion = jacocoVersion
+        }
+
+        if (it.getPlugins().hasPlugin('com.android.application') || it.getPlugins().hasPlugin('com.android.library')) {
+            android {
+                jacoco {
+                    // Fixed https://issuetracker.google.com/37116789
+                    // when using DX(DexCompiler) it uses downgraded version: 0.7.4.201502262128.
+                    // which can cause Execute Data parsed error.
+                    // when using D8DexCompiler, use custom JaCoCo version.
+                    version = jacocoVersion
+                }
+
+                buildTypes {
+                    debug {
+                        testCoverageEnabled = true
+                    }
+                }
+                testBuildType "debug"
+
+                testOptions {
+                    unitTests {
+                        all {
+                            minHeapSize = "256m"
+                            maxHeapSize = "2048m"
+                            jvmArgs '-XX:MaxPermSize=1024m'
+                        }
+                    }
+                }
+            }
+        }
+
+        afterEvaluate { project ->
+            if (project.getPlugins() == null || project.getPlugins().isEmpty()) {
+                println "No plugin in module: " + project.path
+                return
+            }
+
+            def module_plugin_type = ""
+            // Known supported plugin types.
+            def module_plugins = project.getPlugins()
+            if (module_plugins.findPlugin('com.android.application')) {
+                module_plugin_type = "application"
+            }
+            if (module_plugins.findPlugin('com.android.library')) {
+                module_plugin_type = "android"
+            }
+            if (module_plugins.findPlugin('java-library')) {
+                module_plugin_type = "java"
+            }
+            if (module_plugins.findPlugin('java')) {
+                module_plugin_type = "java"
+            }
+
+            // Multiple variants support.
+            def androidVariants = []
+            if (module_plugin_type == "application") {
+                println "Counting Android application variants for module: " + project.path
+                androidVariants = android.applicationVariants
+            } else if (module_plugin_type == "android") {
+                println "Counting Android library variants for module: " + project.path
+                androidVariants = android.libraryVariants
+            } else {
+                println "Not an android module: " + project.path
+            }
+
+            // Kotlin support.
+            def isKotlinContained = false
+            if (project.getPlugins().findPlugin('kotlin-android') || project.getPlugins().findPlugin('kotlin-android-extensions')) {
+                println "Kotlin is supported."
+                isKotlinContained = true
+            }
+
+            def testableTargets = []
+
+            if (module_plugin_type == "java") {
+                def testableTarget = new TestableTarget()
+
+                // References:
+                // 1. Convention
+                // Gradle Java Plugin Convention Properties:
+                // https://docs.gradle.org/current/userguide/java_plugin.html#convention_properties
+                // https://docs.gradle.org/current/javadoc/org/gradle/api/plugins/Convention.html
+                //
+                // 2. Kotlin Support
+                // JetBrain Kotlin Plugin SourceCode: kotlin-gradle-plugin-1.3.71-sources.jar!/org/jetbrains/kotlin/gradle/plugin/KotlinPlugin.kt
+                // Kotlin Plugin will add sourceSets to Java Plugin sourSets.
+                def sourceSets = project.convention.getPlugin(JavaPluginConvention.class).sourceSets
+                def mainSourceSet = sourceSets.main
+                def testSourceSet = sourceSets.test
+
+                println mainSourceSet.classesTaskName
+
+                def sourceDirPaths = JavaTestableTarget.getSourceDirPathsFromSourceSet(mainSourceSet)
+                def classesDirPaths = JavaTestableTarget.getClassesDirPathsFromSourceSet(mainSourceSet)
+
+                def unitTestSourceDirPaths = JavaTestableTarget.getSourceDirPathsFromSourceSet(testSourceSet)
+                def unitTestClassesDirPaths = JavaTestableTarget.getClassesDirPathsFromSourceSet(testSourceSet)
+
+                testableTarget.name = ""
+                testableTarget.compileSourceTaskName = mainSourceSet.classesTaskName
+                testableTarget.sourceDirPaths = sourceDirPaths
+                testableTarget.classesDirPaths = classesDirPaths
+                testableTarget.unitTestSourceDirPaths = unitTestSourceDirPaths
+                testableTarget.unitTestClassesDirPaths = unitTestClassesDirPaths
+                testableTarget.jacocoInstrumentOutputDirPath = "${buildDir.path}/classes/java/classes-instrumented"
+
+                // No task name for test sourceSet.
+                testableTarget.unitTestTaskName = "test"
+                testableTargets.add(testableTarget)
+            }
+
+            androidVariants.each { androidVariant ->
+                if (androidVariant.buildType.name != android.testBuildType) {
+                    return
+                }
+
+                def variantName = androidVariant.name
+
+                def assembleAndroidTestTaskName
+                if (androidVariant.testVariant.hasProperty('assembleProvider')) {
+                    // Android Gradle Plugin 3.1.2+
+                    assembleAndroidTestTaskName = androidVariant.testVariant.assembleProvider.get().name
+                } else {
+                    // Android Gradle Plugin <= 3.1.2
+                    assembleAndroidTestTaskName = androidVariant.testVariant.assemble.name
+                }
+
+                def androidTestApkFilePath = androidVariant.testVariant.outputs[0].outputFile.canonicalPath
+
+                def unitTestVariant = androidVariant.unitTestVariant
+                def androidTestVariant = androidVariant.testVariant
+
+                def javaCompile = AndroidTestableTarget.getJavaCompileFromVariant(androidVariant)
+
+                def compileSourceTaskName = javaCompile.name
+
+                def sourceDirPaths = AndroidTestableTarget.getSourceDirPathsFromVariant(androidVariant)
+                def classesDirPaths = AndroidTestableTarget.getClassesDirPathsFromVariant(androidVariant, isKotlinContained, buildDir.path)
+
+                def jacocoInstrumentOutputDirPath = AndroidTestableTarget.getJavaCompileFromVariant(androidVariant).destinationDir.getParentFile().getAbsolutePath() + "/classes-instrumented"
+
+                def unitTestSourceDirPaths = AndroidTestableTarget.getSourceDirPathsFromVariant(unitTestVariant)
+                def unitTestClassesDirPaths = AndroidTestableTarget.getClassesDirPathsFromVariant(unitTestVariant, isKotlinContained, buildDir.path)
+
+                def androidTestSourceDirPaths = AndroidTestableTarget.getSourceDirPathsFromVariant(androidTestVariant)
+                def androidTestResourcesDirPaths = AndroidTestableTarget.getResourcesDirPathsFromVariant(androidTestVariant)
+                def androidTestClassesDirPaths = AndroidTestableTarget.getClassesDirPathsFromVariant(androidTestVariant, isKotlinContained, buildDir.path)
+
+                def testableTarget
+
+                if (module_plugin_type == "application") {
+                    testableTarget = new AndroidApplicationTestableTarget()
+
+                    def assembleTaskName
+                    if (androidVariant.testVariant.hasProperty('assembleProvider')) {
+                        // Android Gradle Plugin 3.1.2+
+                        assembleTaskName = androidVariant.assembleProvider.get().name
+                    } else {
+                        // Android Gradle Plugin <= 3.1.2
+                        assembleTaskName = androidVariant.assemble.name
+                    }
+
+                    def appApkFilePath = androidVariant.outputs[0].outputFile.canonicalPath
+
+                    testableTarget.compileAppApkTaskName = assembleTaskName
+                    testableTarget.appApkFilePath = appApkFilePath
+                } else {
+                    testableTarget = new AndroidLibraryTestableTarget()
+                }
+
+                testableTarget.name = variantName
+                testableTarget.compileTestApkTaskName = assembleAndroidTestTaskName
+                testableTarget.testApkFilePath = androidTestApkFilePath
+                testableTarget.compileSourceTaskName = compileSourceTaskName
+
+                testableTarget.sourceDirPaths = new ArrayList(sourceDirPaths)
+                testableTarget.classesDirPaths = classesDirPaths
+
+                testableTarget.jacocoInstrumentOutputDirPath = jacocoInstrumentOutputDirPath
+
+                testableTarget.unitTestTaskName = "test" + androidVariant.unitTestVariant.name.capitalize()
+
+                testableTarget.unitTestSourceDirPaths = new ArrayList(unitTestSourceDirPaths)
+                testableTarget.unitTestClassesDirPaths = unitTestClassesDirPaths
+
+                testableTarget.androidTestSourceDirPaths = new ArrayList(androidTestSourceDirPaths)
+                testableTarget.androidTestClassesDirPaths = androidTestClassesDirPaths
+                testableTarget.androidTestResourcesDirPaths = new ArrayList(androidTestResourcesDirPaths)
+
+                if (androidVariant.mergedFlavor != null) {
+                    // minSdkVersion and targetSdkVersion is optional, and may be missing.
+                    if (androidVariant.mergedFlavor.minSdkVersion != null) {
+                        testableTarget.minSdkVersion = androidVariant.mergedFlavor.minSdkVersion.apiLevel
+                    }
+                    if (androidVariant.mergedFlavor.targetSdkVersion != null) {
+                        testableTarget.targetSdkVersion = androidVariant.mergedFlavor.targetSdkVersion.apiLevel
+                    }
+                }
+
+                testableTargets.add(testableTarget)
+            }
+
+            def extraExcludeFilesStr = project.getProperties().get('exclude_files')
+            def excludeFiles = []
+            if (extraExcludeFilesStr != null) {
+                def extraExcludeFiles = extraExcludeFilesStr.split(',')
+                excludeFiles.addAll(extraExcludeFiles)
+            }
+
+            def testableTargetsInfo = [:]
+
+            def moduleInfo = [:]
+
+            def moduleAllTestTasksNames = []
+
+            // Define jacoco tasks for each testable target.
+            testableTargets.each { testableTarget ->
+                def targetName = testableTarget.name
+                println "[Jacoco]:Configuring coverage for ${project.name}, name: ${targetName}"
+
+                def jacocoInstrumentTaskName = "instrument${targetName.capitalize()}UnitTest"
+
+                // Define instrument task
+                task "${jacocoInstrumentTaskName}"(dependsOn: [testableTarget.compileSourceTaskName]) {
+                    group = "Jacoco"
+                    description = "Generate instrumented classes on the ${targetName.capitalize()} build."
+                    println "[${group}]:Defining task :${project.name}:${name}"
+                    doLast {
+                        println "[${group}]:Generating instrumented classes on the ${targetName.capitalize()} build."
+                        ant.taskdef(name: 'instrument',
+                                classname: 'org.jacoco.ant.InstrumentTask',
+                                classpath: configurations.jacocoAnt.asPath)
+                        testableTarget.classesDirPaths.each { classesDirPath ->
+                            def classesDirPathFile = new File(classesDirPath)
+                            if (classesDirPathFile.exists()) {
+                                ant.instrument(destdir: testableTarget.jacocoInstrumentOutputDirPath) {
+                                    fileset(
+                                            dir: classesDirPath,
+                                            excludes: excludeFiles
+                                    )
+                                }
+                            } else {
+                                println "Class dir path: " + classesDirPath + " not exists."
+                            }
+                        }
+                    }
+                }
+
+                def unitTestTaskName = testableTarget.unitTestTaskName
+
+                moduleAllTestTasksNames.add(unitTestTaskName)
+
+                def executionDataFilePath = "${buildDir.path}/jacoco/${unitTestTaskName}.exec"
+
+                // Put instrumented classes and JacocoRuntime to the beginning of classpath
+                tasks[unitTestTaskName].doFirst {
+                    jacoco {
+                        // Disable JaCoCo on-the-fly
+                        // https://github.com/jacoco/jacoco/issues/51
+                        // https://github.com/powermock/powermock/issues/727
+                        // https://github.com/powermock/powermock/wiki/Code-coverage-with-JaCoCo
+                        enabled = System.getenv().getOrDefault('jacoco_agent_enabled', 'true').toBoolean()
+                    }
+
+                    println "[Jacoco]:Modifying args of ${unitTestTaskName}"
+                    systemProperty 'jacoco-agent.destfile', executionDataFilePath
+                    classpath = files(testableTarget.jacocoInstrumentOutputDirPath) + classpath + configurations.jacocoRuntime
+                    println "[Jacoco]:Running ${name}"
+                    for (def path in classpath.getAsPath().split(":")) {
+                        if (path.contains("jacoco")) {
+                            println "[Jacoco]: jacoco related classpath of project: ${path}"
+                        }
+
+                        if (!path.startsWith(buildDir.path)) {
+                            continue
+                        }
+                        println "[Jacoco]:classpath of project: ${path}"
+                    }
+                }
+
+                def reportTaskName = "create${targetName.capitalize()}CodeCoverage"
+
+                def reportXmlPath = ''
+                def reportHtmlPath = ''
+
+                // Simple wrapper task for Jacoco instrument and test.
+                def unitTestWrapperTaskName = "test${targetName.capitalize()}UnitTestWrapper"
+
+                task "${unitTestWrapperTaskName}"(dependsOn: [jacocoInstrumentTaskName, unitTestTaskName]) {
+                    doLast {
+                        println "Finished unit test for: ${targetName}"
+                    }
+                }
+
+                // Define report task
+                // Currently, repo task has no dependency on test task.
+                task "${reportTaskName}"(type: JacocoReport) {
+                    group = "Jacoco"
+                    description = "Generate Jacoco coverage reports on the ${targetName.capitalize()} build."
+                    println "[${group}]:Defining task :${project.name}:${name}"
+
+                    def execFilePaths = []
+
+                    def fileCheck = new File(executionDataFilePath)
+                    if (fileCheck.exists()) {
+                        execFilePaths.add(executionDataFilePath)
+                    }
+
+                    def instrumentExecutionDataFilePath = moduleInstrumentExecDataFilePaths.getOrDefault(project.path, null)
+
+                    if (instrumentExecutionDataFilePath != null) {
+                        fileCheck = new File(instrumentExecutionDataFilePath)
+                        if (fileCheck.exists()) {
+                            execFilePaths.add(instrumentExecutionDataFilePath)
+                        }
+                    }
+
+                    def classDirectories = []
+
+                    testableTarget.classesDirPaths.each { classesDirPath ->
+                        classDirectories.add(fileTree(
+                                dir: classesDirPath,
+                                excludes: excludeFiles
+                        ))
+                    }
+
+                    def sourceDirectories = []
+
+                    testableTarget.sourceDirPaths.each { sourceDirPath ->
+                        sourceDirectories.add(fileTree(
+                                dir: sourceDirPath
+                        ))
+                    }
+
+                    if (gradleVersion.startsWith('4.')) {
+                        println "Use compatible set method."
+
+                        setExecutionData(files(execFilePaths))
+                        setClassDirectories(files(classDirectories))
+                        setSourceDirectories(files(sourceDirectories))
+                    } else {
+                        getExecutionData().setFrom(files(execFilePaths))
+                        getClassDirectories().setFrom(files(classDirectories))
+                        getSourceDirectories().setFrom(files(sourceDirectories))
+                    }
+
+                    reports {
+                        xml.enabled = true
+                        html.enabled = System.getenv().getOrDefault('jacoco_html_enabled', 'true').toBoolean()
+                        reportXmlPath = xml.destination.canonicalPath
+                        reportHtmlPath = html.destination.canonicalPath
+                    }
+
+                    doLast {
+                        println "[Jacoco]:Report file generated at ${reportXmlPath}."
+                    }
+                }
+
+                def testableTargetInfo = testableTarget.toDict()
+                testableTargetInfo.put('jacoco_report_task_name', reportTaskName)
+                testableTargetInfo.put('test_wrapper_task_name', unitTestWrapperTaskName)
+                testableTargetInfo.put('coverage_xml_file_path', reportXmlPath)
+                testableTargetInfo.put('coverage_html_dir_path', reportHtmlPath)
+
+                testableTargetsInfo.put(targetName, testableTargetInfo)
+            }
+
+            moduleInfo.put('testable_targets', testableTargetsInfo)
+            moduleInfo.put('build_dir_path', project.buildDir.canonicalPath)
+            moduleInfo.put('project_dir_path', project.projectDir.canonicalPath)
+            moduleInfo.put('allTestTasksNames', moduleAllTestTasksNames)
+
+            moduleInfo.put('plugin_type', module_plugin_type)
+
+            projectInfo.put(project.path, moduleInfo)
+        }
+    }
+}
