@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 
+/** Tests for mocking Kotlin classes with Mockito (in Kotlin code). */
 @RunWith(RobolectricTestRunner.class)
 public class MockitoKotlinFunctionTest {
   @Test
