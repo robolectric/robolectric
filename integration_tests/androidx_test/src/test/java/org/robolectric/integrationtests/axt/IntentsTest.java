@@ -15,6 +15,7 @@ import static org.junit.Assert.assertThrows;
 
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -183,5 +184,22 @@ public class IntentsTest {
           assertThat(activity.activityResult.getResultCode()).isEqualTo(Activity.RESULT_OK);
           assertThat(activity.activityResult.getResultData()).extras().containsKey("key");
         });
+  }
+
+  @Test
+  public void browserIntentNotResolved() {
+    Intent browserIntent = new Intent(Intent.ACTION_VIEW);
+    browserIntent.setData(Uri.parse("http://www.robolectric.org"));
+    browserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+    Intents.intending(hasAction(Intent.ACTION_VIEW))
+        .respondWithFunction(
+            intent -> {
+              throw new ActivityNotFoundException();
+            });
+
+    assertThrows(
+        ActivityNotFoundException.class,
+        () -> getApplicationContext().startActivity(browserIntent));
   }
 }
