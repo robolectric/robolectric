@@ -93,12 +93,12 @@ public class ShadowAlarmManager {
 
   @Implementation(minSdk = M)
   protected void setAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
-    internalSet(type, triggerAtTime, 0L, operation, null);
+    internalSet(type, triggerAtTime, 0L, operation, null, true);
   }
 
   @Implementation(minSdk = M)
   protected void setExactAndAllowWhileIdle(int type, long triggerAtTime, PendingIntent operation) {
-    internalSet(type, triggerAtTime, 0L, operation, null);
+    internalSet(type, triggerAtTime, 0L, operation, null, true);
   }
 
   @Implementation
@@ -138,6 +138,21 @@ public class ShadowAlarmManager {
     cancel(operation);
     synchronized (scheduledAlarms) {
       scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent));
+      Collections.sort(scheduledAlarms);
+    }
+  }
+
+  private void internalSet(
+      int type,
+      long triggerAtTime,
+      long interval,
+      PendingIntent operation,
+      PendingIntent showIntent,
+      boolean allowWhileIdle) {
+    cancel(operation);
+    synchronized (scheduledAlarms) {
+      scheduledAlarms.add(
+          new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent, allowWhileIdle));
       Collections.sort(scheduledAlarms);
     }
   }
@@ -225,6 +240,7 @@ public class ShadowAlarmManager {
     public final long triggerAtTime;
     public final long interval;
     public final PendingIntent operation;
+    public final boolean allowWhileIdle;
 
     // A non-null showIntent implies this alarm has a user interface. (i.e. in an alarm clock app)
     public final PendingIntent showIntent;
@@ -243,7 +259,17 @@ public class ShadowAlarmManager {
         long interval,
         PendingIntent operation,
         PendingIntent showIntent) {
-      this(type, triggerAtTime, interval, operation, showIntent, null, null);
+      this(type, triggerAtTime, interval, operation, showIntent, null, null, false);
+    }
+
+    public ScheduledAlarm(
+        int type,
+        long triggerAtTime,
+        long interval,
+        PendingIntent operation,
+        PendingIntent showIntent,
+        boolean allowWhileIdle) {
+      this(type, triggerAtTime, interval, operation, showIntent, null, null, allowWhileIdle);
     }
 
     private ScheduledAlarm(
@@ -252,7 +278,7 @@ public class ShadowAlarmManager {
         long interval,
         OnAlarmListener onAlarmListener,
         Handler handler) {
-      this(type, triggerAtTime, interval, null, null, onAlarmListener, handler);
+      this(type, triggerAtTime, interval, null, null, onAlarmListener, handler, false);
     }
 
     private ScheduledAlarm(
@@ -262,7 +288,8 @@ public class ShadowAlarmManager {
         PendingIntent operation,
         PendingIntent showIntent,
         OnAlarmListener onAlarmListener,
-        Handler handler) {
+        Handler handler,
+        boolean allowWhileIdle) {
       this.type = type;
       this.triggerAtTime = triggerAtTime;
       this.operation = operation;
@@ -270,6 +297,7 @@ public class ShadowAlarmManager {
       this.showIntent = showIntent;
       this.onAlarmListener = onAlarmListener;
       this.handler = handler;
+      this.allowWhileIdle = allowWhileIdle;
     }
 
     @TargetApi(LOLLIPOP)
