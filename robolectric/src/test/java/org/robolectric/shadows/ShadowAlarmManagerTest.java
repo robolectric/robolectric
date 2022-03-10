@@ -106,7 +106,10 @@ public class ShadowAlarmManagerTest {
         AlarmManager.ELAPSED_REALTIME,
         0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+
+    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+    assertThat(scheduledAlarm).isNotNull();
+    assertThat(scheduledAlarm.allowWhileIdle).isFalse();
   }
 
   @Test
@@ -126,7 +129,10 @@ public class ShadowAlarmManagerTest {
         AlarmManager.ELAPSED_REALTIME,
         0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+
+    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+    assertThat(scheduledAlarm).isNotNull();
+    assertThat(scheduledAlarm.allowWhileIdle).isTrue();
   }
 
   @Test
@@ -137,7 +143,10 @@ public class ShadowAlarmManagerTest {
         AlarmManager.ELAPSED_REALTIME,
         0,
         PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+
+    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+    assertThat(scheduledAlarm).isNotNull();
+    assertThat(scheduledAlarm.allowWhileIdle).isTrue();
   }
 
   @Test
