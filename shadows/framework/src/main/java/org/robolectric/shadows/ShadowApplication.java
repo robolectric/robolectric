@@ -169,19 +169,25 @@ public class ShadowApplication extends ShadowContextWrapper {
     return getShadowInstrumentation().getUnboundServiceConnections();
   }
 
-  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  /**
+   * @deprecated use PackageManager.queryBroadcastReceivers instead
+   */
   @Deprecated
   public boolean hasReceiverForIntent(Intent intent) {
     return getShadowInstrumentation().hasReceiverForIntent(intent);
   }
 
-  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  /**
+   * @deprecated use PackageManager.queryBroadcastReceivers instead
+   */
   @Deprecated
   public List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
     return getShadowInstrumentation().getReceiversForIntent(intent);
   }
 
-  /** @return list of {@link Wrapper}s for registered receivers */
+  /**
+   * @return list of {@link Wrapper}s for registered receivers
+   */
   public ImmutableList<Wrapper> getRegisteredReceivers() {
     return getShadowInstrumentation().getRegisteredReceivers();
   }
@@ -199,21 +205,27 @@ public class ShadowApplication extends ShadowContextWrapper {
     return (AppWidgetManager) realApplication.getSystemService(Context.APPWIDGET_SERVICE);
   }
 
-  /** @deprecated Use {@link ShadowAlertDialog#getLatestAlertDialog()} instead. */
+  /**
+   * @deprecated Use {@link ShadowAlertDialog#getLatestAlertDialog()} instead.
+   */
   @Deprecated
   public ShadowAlertDialog getLatestAlertDialog() {
     AlertDialog dialog = ShadowAlertDialog.getLatestAlertDialog();
     return dialog == null ? null : Shadow.extract(dialog);
   }
 
-  /** @deprecated Use {@link ShadowDialog#getLatestDialog()} instead. */
+  /**
+   * @deprecated Use {@link ShadowDialog#getLatestDialog()} instead.
+   */
   @Deprecated
   public ShadowDialog getLatestDialog() {
     Dialog dialog = ShadowDialog.getLatestDialog();
     return dialog == null ? null : Shadow.extract(dialog);
   }
 
-  /** @deprecated Use {@link BluetoothAdapter#getDefaultAdapter()} ()} instead. */
+  /**
+   * @deprecated Use {@link BluetoothAdapter#getDefaultAdapter()} ()} instead.
+   */
   @Deprecated
   public final BluetoothAdapter getBluetoothAdapter() {
     return BluetoothAdapter.getDefaultAdapter();
@@ -231,19 +243,25 @@ public class ShadowApplication extends ShadowContextWrapper {
     getShadowInstrumentation().declareComponentUnbindable(component);
   }
 
-  /** @deprecated use ShadowPowerManager.getLatestWakeLock */
+  /**
+   * @deprecated use ShadowPowerManager.getLatestWakeLock
+   */
   @Deprecated
   public PowerManager.WakeLock getLatestWakeLock() {
     return ShadowPowerManager.getLatestWakeLock();
   }
 
-  /** @deprecated use PowerManager APIs instead */
+  /**
+   * @deprecated use PowerManager APIs instead
+   */
   @Deprecated
   public void addWakeLock(PowerManager.WakeLock wl) {
     ShadowPowerManager.addWakeLock(wl);
   }
 
-  /** @deprecated use ShadowPowerManager.clearWakeLocks */
+  /**
+   * @deprecated use ShadowPowerManager.clearWakeLocks
+   */
   @Deprecated
   public void clearWakeLocks() {
     ShadowPowerManager.clearWakeLocks();
@@ -279,7 +297,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     shadowInstrumentation.checkActivities(checkActivities);
   }
 
-  /** @deprecated Use {@link ShadowPopupMenu#getLatestPopupMenu()} instead. */
+  /**
+   * @deprecated Use {@link ShadowPopupMenu#getLatestPopupMenu()} instead.
+   */
   @Deprecated
   public ShadowPopupMenu getLatestPopupMenu() {
     return latestPopupMenu;
@@ -320,18 +340,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     public Throwable exception;
     public String broadcastPermission;
     public Handler scheduler;
+    public int flags;
 
     public Wrapper(
         BroadcastReceiver broadcastReceiver,
         IntentFilter intentFilter,
         Context context,
         String broadcastPermission,
-        Handler scheduler) {
+        Handler scheduler,
+        int flags) {
       this.broadcastReceiver = broadcastReceiver;
       this.intentFilter = intentFilter;
       this.context = context;
       this.broadcastPermission = broadcastPermission;
       this.scheduler = scheduler;
+      this.flags = flags;
       exception = new Throwable();
     }
 
