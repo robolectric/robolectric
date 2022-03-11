@@ -1,4 +1,4 @@
-name: Check Java formatting
+name: Check Code Formatting
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     branches: [ master ]
 
 jobs:
-  check_java_formatting:
+  check_code_formatting:
     runs-on: ubuntu-18.04
 
     steps:
@@ -34,3 +34,7 @@ jobs:
             git diff -U0 $(git merge-base HEAD origin/master) | $HOME/google-java-format-diff.py --google-java-format-jar=$HOME/google-java-format.jar -p1
             exit 1
           fi
+
+      - name: Check Kotlin formatting
+        run: |
+          ./gradlew spotlessCheck
