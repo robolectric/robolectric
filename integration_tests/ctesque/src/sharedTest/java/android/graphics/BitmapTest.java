@@ -4,7 +4,9 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -632,5 +634,35 @@ public class BitmapTest {
     output.rewind();
 
     assertThat(output).isEqualTo(input);
+  }
+
+  @SdkSuppress(minSdkVersion = O)
+  @Config(minSdk = O)
+  @Test
+  public void createBitmap_colorSpace_defaultColorSpace() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+
+    assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.SRGB));
+  }
+
+  @SdkSuppress(minSdkVersion = O)
+  @Config(minSdk = O)
+  @Test
+  public void createBitmap_colorSpace_customColorSpace() {
+    Bitmap bitmap =
+        Bitmap.createBitmap(
+            100, 100, Bitmap.Config.ARGB_8888, true, ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
+
+    assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
+  }
+
+  @SdkSuppress(minSdkVersion = Q)
+  @Config(minSdk = Q)
+  @Test
+  public void setColorSpace() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    bitmap.setColorSpace(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
+
+    assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
   }
 }

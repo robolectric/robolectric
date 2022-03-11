@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -541,7 +542,7 @@ public class ShadowBitmapTest {
     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
   }
 
-  @Config(sdk = Build.VERSION_CODES.O)
+  @Config(sdk = O)
   @Test
   public void getBytesPerPixel_O() {
     assertThat(ShadowBitmap.getBytesPerPixel(Bitmap.Config.RGBA_F16)).isEqualTo(8);
@@ -634,7 +635,7 @@ public class ShadowBitmapTest {
     original.reconfigure(100, 100, Bitmap.Config.ARGB_8888);
   }
 
-  @Config(sdk = Build.VERSION_CODES.O)
+  @Config(sdk = O)
   @Test(expected = IllegalStateException.class)
   public void reconfigure_withHardwareBitmap_validDimensionsAndConfig_throws() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
