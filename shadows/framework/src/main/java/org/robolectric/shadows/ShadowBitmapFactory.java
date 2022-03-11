@@ -142,7 +142,7 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    Bitmap bitmap = create("fd:" + fd, outPadding, opts, null, image);
+    Bitmap bitmap = create("fd:" + fd, null, outPadding, opts, null, image);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
@@ -186,7 +186,7 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    Bitmap bitmap = create(name, outPadding, opts, null, image);
+    Bitmap bitmap = create(name, null, outPadding, opts, null, image);
     ReflectionHelpers.callInstanceMethod(
         bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, ninePatchChunk));
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
@@ -207,10 +207,10 @@ public class ShadowBitmapFactory {
   @Implementation
   protected static Bitmap decodeByteArray(
       byte[] data, int offset, int length, BitmapFactory.Options opts) {
-    String desc = new String(data, UTF_8);
+    String desc = data.length + " bytes";
 
     if (offset != 0 || length != data.length) {
-      desc += " bytes " + offset + ".." + length;
+      desc += " " + offset + ".." + length;
     }
 
     ByteArrayInputStream is = new ByteArrayInputStream(data, offset, length);
@@ -222,7 +222,7 @@ public class ShadowBitmapFactory {
       }
       return null;
     }
-    Bitmap bitmap = create(desc, opts, image);
+    Bitmap bitmap = create(desc, data, null, opts, null, image);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromBytes = data;
     return bitmap;
@@ -248,18 +248,19 @@ public class ShadowBitmapFactory {
   @Deprecated
   public static Bitmap create(
       final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
-    return create(name, null, options, widthAndHeight, null);
+    return create(name, null, null, options, widthAndHeight, null);
   }
 
   private static Bitmap create(
       final String name,
       final BitmapFactory.Options options,
       final RobolectricBufferedImage image) {
-    return create(name, null, options, null, image);
+    return create(name, null, null, options, null, image);
   }
 
   private static Bitmap create(
       final String name,
+      byte[] bytes,
       final Rect outPadding,
       final BitmapFactory.Options options,
       final Point widthAndHeightOverride,
@@ -282,7 +283,7 @@ public class ShadowBitmapFactory {
       shadowBitmap.appendDescription(optionsString);
     }
 
-    Point p = new Point(selectWidthAndHeight(name, widthAndHeightOverride, image));
+    Point p = new Point(selectWidthAndHeight(name, bytes, widthAndHeightOverride, image));
     if (options != null && options.inSampleSize > 1) {
       p.x = p.x / options.inSampleSize;
       p.y = p.y / options.inSampleSize;
@@ -373,11 +374,15 @@ public class ShadowBitmapFactory {
 
   private static Point selectWidthAndHeight(
       final String name,
+      byte[] bytes,
       final Point widthAndHeightOverride,
       final RobolectricBufferedImage robolectricBufferedImage) {
-    final Point widthAndHeightFromMap = widthAndHeightMap.get(name);
-    if (widthAndHeightFromMap != null) {
-      return widthAndHeightFromMap;
+    if (!widthAndHeightMap.isEmpty()) {
+      String sizeKey = bytes == null ? name : new String(bytes, UTF_8);
+      final Point widthAndHeightFromMap = widthAndHeightMap.get(sizeKey);
+      if (widthAndHeightFromMap != null) {
+        return widthAndHeightFromMap;
+      }
     }
     if (robolectricBufferedImage != null) {
       return robolectricBufferedImage.getWidthAndHeight();
