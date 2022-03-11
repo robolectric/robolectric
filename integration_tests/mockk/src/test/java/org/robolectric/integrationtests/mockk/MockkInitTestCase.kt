@@ -15,11 +15,9 @@ class NumberReturner {
 @RunWith(RobolectricTestRunner::class)
 class MockkInitTestCase {
 
-  @MockK
-  lateinit var returner: NumberReturner
+  @MockK lateinit var returner: NumberReturner
 
-  @Before
-  fun setUp() = MockKAnnotations.init(this)
+  @Before fun setUp() = MockKAnnotations.init(this)
 
   @Test
   fun `Mockk1`() {

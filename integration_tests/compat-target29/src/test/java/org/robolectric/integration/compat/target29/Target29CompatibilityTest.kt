@@ -9,17 +9,17 @@ import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class Target29CompatibilityTest {
-    private val application = ApplicationProvider.getApplicationContext<Context>()
+  private val application = ApplicationProvider.getApplicationContext<Context>()
 
-    @Test
-    fun `Initialize LocationManager succeed`() {
-        val locationManager = application.getSystemService(Context.LOCATION_SERVICE)
-        assertThat(locationManager).isNotNull()
-    }
+  @Test
+  fun `Initialize LocationManager succeed`() {
+    val locationManager = application.getSystemService(Context.LOCATION_SERVICE)
+    assertThat(locationManager).isNotNull()
+  }
 
-    @Test
-    fun `Initialize AppOpsManager succeed`() {
-        val appOpsManager = application.getSystemService(Context.APP_OPS_SERVICE)
-        assertThat(appOpsManager).isNotNull()
-    }
+  @Test
+  fun `Initialize AppOpsManager succeed`() {
+    val appOpsManager = application.getSystemService(Context.APP_OPS_SERVICE)
+    assertThat(appOpsManager).isNotNull()
+  }
 }

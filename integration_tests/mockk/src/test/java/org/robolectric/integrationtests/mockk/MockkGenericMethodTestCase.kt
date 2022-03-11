@@ -10,18 +10,16 @@ import org.robolectric.RobolectricTestRunner
 class Entity
 
 interface Repository {
-    fun <T> get(key: String, type: Class<T>): T
+  fun <T> get(key: String, type: Class<T>): T
 }
 
 @RunWith(RobolectricTestRunner::class)
 class MockkGenericMethodTestCase {
-    @Test
-    fun `stubbing a generic method works`() {
-        val entity = Entity()
-        val repo: Repository = mockk {
-            every { get(any(), Entity::class.java) } returns entity
-        }
+  @Test
+  fun `stubbing a generic method works`() {
+    val entity = Entity()
+    val repo: Repository = mockk { every { get(any(), Entity::class.java) } returns entity }
 
-        assertThat(repo.get("a", Entity::class.java)).isEqualTo(entity)
-    }
+    assertThat(repo.get("a", Entity::class.java)).isEqualTo(entity)
+  }
 }
