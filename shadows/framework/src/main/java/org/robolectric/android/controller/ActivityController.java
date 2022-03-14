@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -233,8 +234,7 @@ public class ActivityController<T extends Activity>
       callDispatchResized(root);
     }
 
-    // if sdk <= S_V2
-    if (RuntimeEnvironment.getApiLevel() <= 32) {
+    if (RuntimeEnvironment.getApiLevel() <= S_V2) {
       reflector(ViewRootImplActivityControllerReflector.class, root)
           .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
     } else {

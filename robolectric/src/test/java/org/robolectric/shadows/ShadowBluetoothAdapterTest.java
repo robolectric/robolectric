@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -167,14 +168,14 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(maxSdk = 32)
+  @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_connectable() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE)).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
   }
 
   @Test
-  @Config(maxSdk = 32)
+  @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_discoverable() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
         .isTrue();
@@ -183,14 +184,14 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(maxSdk = 32)
+  @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_none() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE)).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
   }
 
   @Test
-  @Config(maxSdk = 32)
+  @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_invalid() throws Exception {
     assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
   }
@@ -212,7 +213,7 @@ public class ShadowBluetoothAdapterTest {
     assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
   }
 
-  @Config(minSdk = R, maxSdk = 32)
+  @Config(minSdk = R, maxSdk = S_V2)
   @Test
   public void scanMode_withDiscoverableTimeout_R() {
     assertThat(

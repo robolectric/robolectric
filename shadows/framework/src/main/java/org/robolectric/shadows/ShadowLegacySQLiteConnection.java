@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.database.sqlite.SQLiteAbortException;
@@ -163,7 +164,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
     nativeExecute((long) connectionPtr, (long) statementPtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = 32)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = S_V2)
   protected static void nativeExecute(final long connectionPtr, final long statementPtr) {
     CONNECTIONS.executeStatement(connectionPtr, statementPtr);
   }

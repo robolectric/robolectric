@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S_V2;
 
 import android.database.sqlite.SQLiteConnection;
 import java.util.function.BinaryOperator;
@@ -147,7 +148,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeExecute(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = 32)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = S_V2)
   protected static void nativeExecute(final long connectionPtr, final long statementPtr) {
     PerfStatsCollector.getInstance()
         .measure(
