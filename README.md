@@ -55,8 +55,8 @@ Those software configurations are recommended and tested.
   - For command line, make sure the environment variable `JAVA_HOME` is correctly point to JDK11, or set the build environment by [Gradle CLI option](https://docs.gradle.org/current/userguide/command_line_interface.html#sec:environment_options) `-Dorg.gradle.java.home="YourJdkHomePath"` or by [Gradle Properties](https://docs.gradle.org/current/userguide/build_environment.html#sec:gradle_configuration_properties) `org.gradle.java.home=YourJdkHomePath`.
   - For both IntelliJ and Android Studio, see _Settings/Preferences | Build, Execution, Deployment | Build Tools | Gradle_.
 - Ninja 1.10.2+. Check it by `ninja --version`.
-- CMake 3.22.2+. Check it by `cmake --version`.
-- GCC 7.5.0+. Check it by `gcc --version`.
+- CMake 3.22.1+. Check it by `cmake --version`.
+- GCC 7.5.0+ on Linux or Apple clang 12.0.0+ on macOS. Check it by `gcc --version`.
 
 ### build and test
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
