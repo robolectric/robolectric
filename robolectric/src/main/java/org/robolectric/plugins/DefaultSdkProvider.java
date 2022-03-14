@@ -15,6 +15,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 
 import com.google.auto.service.AutoService;
 import com.google.common.base.Preconditions;
@@ -78,6 +79,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(Q, new DefaultSdk(Q, "10", "5803371", "REL", 9));
     knownSdks.put(R, new DefaultSdk(R, "11", "6757853", "REL", 9));
     knownSdks.put(S, new DefaultSdk(S, "12", "7732740", "REL", 9));
+    knownSdks.put(S_V2, new DefaultSdk(S_V2, "12.1", "8229987", "REL", 9));
   }
 
   @Override

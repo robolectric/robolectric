@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.media.AudioAttributes;
@@ -33,7 +34,7 @@ public final class VibrationAttributesBuilder {
 
   public VibrationAttributes build() {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel >= S && apiLevel <= 32) {
+    if (apiLevel >= S && apiLevel <= S_V2) {
       return new VibrationAttributes.Builder(audioAttributes, vibrationEffect).build();
     } else if (apiLevel >= 33) {
       return ReflectionHelpers.callConstructor(
