@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.wifi.SupplicantState;
@@ -8,6 +9,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiSsid;
 import java.net.InetAddress;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
@@ -24,14 +26,17 @@ public class ShadowWifiInfo {
 
   @RealObject WifiInfo realObject;
 
+  @Implementation
   public void setInetAddress(InetAddress address) {
     reflector(WifiInfoReflector.class, realObject).setInetAddress(address);
   }
 
+  @Implementation
   public void setMacAddress(String newMacAddress) {
     reflector(WifiInfoReflector.class, realObject).setMacAddress(newMacAddress);
   }
 
+  @Implementation(maxSdk = JELLY_BEAN)
   public void setSSID(String ssid) {
     if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN) {
       reflector(WifiInfoReflector.class, realObject).setSSID(ssid);
@@ -50,26 +55,32 @@ public class ShadowWifiInfo {
     return wifiSsid;
   }
 
+  @Implementation
   public void setBSSID(String bssid) {
     reflector(WifiInfoReflector.class, realObject).setBSSID(bssid);
   }
 
+  @Implementation
   public void setSupplicantState(SupplicantState state) {
     reflector(WifiInfoReflector.class, realObject).setSupplicantState(state);
   }
 
+  @Implementation
   public void setRssi(int rssi) {
     reflector(WifiInfoReflector.class, realObject).setRssi(rssi);
   }
 
+  @Implementation
   public void setLinkSpeed(int linkSpeed) {
     reflector(WifiInfoReflector.class, realObject).setLinkSpeed(linkSpeed);
   }
 
+  @Implementation(minSdk = LOLLIPOP)
   public void setFrequency(int frequency) {
     reflector(WifiInfoReflector.class, realObject).setFrequency(frequency);
   }
 
+  @Implementation
   public void setNetworkId(int id) {
     reflector(WifiInfoReflector.class, realObject).setNetworkId(id);
   }

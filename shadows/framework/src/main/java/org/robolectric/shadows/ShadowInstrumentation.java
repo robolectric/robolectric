@@ -263,7 +263,7 @@ public class ShadowInstrumentation {
             context, userHandle, intent, receiverPermission, /* broadcastOptions= */ null);
     sortByPriority(receivers);
     if (resultReceiver != null) {
-      receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler));
+      receivers.add(new Wrapper(resultReceiver, null, context, null, scheduler, 0));
     }
     postOrderedToWrappers(receivers, intent, initialCode, initialData, initialExtras, context);
   }
@@ -841,8 +841,9 @@ public class ShadowInstrumentation {
         intent, /*userHandle=*/ null, /*receiverPermission=*/ null, context);
   }
 
-  Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, Context context) {
-    return registerReceiver(receiver, filter, null, null, context);
+  Intent registerReceiver(
+      BroadcastReceiver receiver, IntentFilter filter, int flags, Context context) {
+    return registerReceiver(receiver, filter, null, null, flags, context);
   }
 
   Intent registerReceiver(
@@ -850,8 +851,10 @@ public class ShadowInstrumentation {
       IntentFilter filter,
       String broadcastPermission,
       Handler scheduler,
+      int flags,
       Context context) {
-    return registerReceiverWithContext(receiver, filter, broadcastPermission, scheduler, context);
+    return registerReceiverWithContext(
+        receiver, filter, broadcastPermission, scheduler, flags, context);
   }
 
   Intent registerReceiverWithContext(
@@ -859,11 +862,12 @@ public class ShadowInstrumentation {
       IntentFilter filter,
       String broadcastPermission,
       Handler scheduler,
+      int flags,
       Context context) {
     if (receiver != null) {
       synchronized (registeredReceivers) {
         registeredReceivers.add(
-            new Wrapper(receiver, filter, context, broadcastPermission, scheduler));
+            new Wrapper(receiver, filter, context, broadcastPermission, scheduler, flags));
       }
     }
     return processStickyIntents(filter, receiver, context);
@@ -914,7 +918,9 @@ public class ShadowInstrumentation {
     }
   }
 
-  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  /**
+   * @deprecated use PackageManager.queryBroadcastReceivers instead
+   */
   @Deprecated
   boolean hasReceiverForIntent(Intent intent) {
     synchronized (registeredReceivers) {
@@ -927,7 +933,9 @@ public class ShadowInstrumentation {
     return false;
   }
 
-  /** @deprecated use PackageManager.queryBroadcastReceivers instead */
+  /**
+   * @deprecated use PackageManager.queryBroadcastReceivers instead
+   */
   @Deprecated
   List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
     ArrayList<BroadcastReceiver> broadcastReceivers = new ArrayList<>();
@@ -942,7 +950,9 @@ public class ShadowInstrumentation {
     return broadcastReceivers;
   }
 
-  /** @return copy of the list of {@link Wrapper}s for registered receivers */
+  /**
+   * @return copy of the list of {@link Wrapper}s for registered receivers
+   */
   ImmutableList<Wrapper> getRegisteredReceivers() {
     ImmutableList<Wrapper> copy;
     synchronized (registeredReceivers) {

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.media.AudioRecord.ERROR_BAD_VALUE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.media.AudioFormat;
@@ -79,6 +80,7 @@ public final class ShadowAudioRecord {
     return AudioSystem.SUCCESS;
   }
 
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected int native_read_in_byte_array(byte[] audioData, int offsetInBytes, int sizeInBytes) {
     return native_read_in_byte_array(audioData, offsetInBytes, sizeInBytes, true);
   }
@@ -90,6 +92,7 @@ public final class ShadowAudioRecord {
         .readInByteArray(audioData, offsetInBytes, sizeInBytes, isBlocking);
   }
 
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected int native_read_in_short_array(
       short[] audioData, int offsetInShorts, int sizeInShorts) {
     return native_read_in_short_array(audioData, offsetInShorts, sizeInShorts, true);
@@ -109,6 +112,7 @@ public final class ShadowAudioRecord {
         .readInFloatArray(audioData, offsetInFloats, sizeInFloats, isBlocking);
   }
 
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected int native_read_in_direct_buffer(Object jBuffer, int sizeInBytes) {
     return native_read_in_direct_buffer(jBuffer, sizeInBytes, true);
   }

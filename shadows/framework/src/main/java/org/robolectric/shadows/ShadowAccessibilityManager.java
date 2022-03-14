@@ -12,9 +12,11 @@ import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityManager.TouchExplorationStateChangeListener;
 import android.view.accessibility.IAccessibilityManager;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -58,7 +61,7 @@ public class ShadowAccessibilityManager {
   public static AccessibilityManager getInstance(Context context) throws Exception {
     synchronized (sInstanceSync) {
       if (sInstance == null) {
-          sInstance = createInstance(context);
+        sInstance = createInstance(context);
       }
     }
     return sInstance;
@@ -79,7 +82,8 @@ public class ShadowAccessibilityManager {
           new MyHandler(context.getMainLooper(), accessibilityManager));
       return accessibilityManager;
     } else {
-      AccessibilityManager accessibilityManager = Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
+      AccessibilityManager accessibilityManager =
+          Shadow.newInstance(AccessibilityManager.class, new Class[0], new Object[0]);
       ReflectionHelpers.setField(
           accessibilityManager,
           "mHandler",
@@ -123,7 +127,8 @@ public class ShadowAccessibilityManager {
     return enabledAccessibilityServiceList;
   }
 
-  public void setEnabledAccessibilityServiceList(List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
+  public void setEnabledAccessibilityServiceList(
+      List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
     this.enabledAccessibilityServiceList = enabledAccessibilityServiceList;
   }
 
@@ -132,7 +137,8 @@ public class ShadowAccessibilityManager {
     return installedAccessibilityServiceList;
   }
 
-  public void setInstalledAccessibilityServiceList(List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
+  public void setInstalledAccessibilityServiceList(
+      List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
     this.installedAccessibilityServiceList = installedAccessibilityServiceList;
   }
 
@@ -144,8 +150,8 @@ public class ShadowAccessibilityManager {
   }
 
   /**
-   * Returns a list of all {@linkplain AccessibilityEvent accessibility events} that have been
-   * sent via {@link #sendAccessibilityEvent}.
+   * Returns a list of all {@linkplain AccessibilityEvent accessibility events} that have been sent
+   * via {@link #sendAccessibilityEvent}.
    */
   public ImmutableList<AccessibilityEvent> getSentAccessibilityEvents() {
     return ImmutableList.copyOf(sentAccessibilityEvents);
@@ -168,6 +174,20 @@ public class ShadowAccessibilityManager {
 
   public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
     this.touchExplorationEnabled = touchExplorationEnabled;
+
+    if (getApiLevel() >= KITKAT) {
+      try {
+        ArrayMap<TouchExplorationStateChangeListener, Handler> listeners =
+            new ArrayMap<>(
+                reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
+                    .getTouchExplorationStateChangeListeners());
+        listeners.forEach(
+            (listener, handler) ->
+                listener.onTouchExplorationStateChanged(touchExplorationEnabled));
+      } catch (ClassCastException e) {
+        return;
+      }
+    }
   }
 
   /**
@@ -221,5 +241,9 @@ public class ShadowAccessibilityManager {
 
     @Direct
     void sendAccessibilityEvent(AccessibilityEvent event);
+
+    @Accessor("mTouchExplorationStateChangeListeners")
+    ArrayMap<TouchExplorationStateChangeListener, Handler>
+        getTouchExplorationStateChangeListeners();
   }
 }

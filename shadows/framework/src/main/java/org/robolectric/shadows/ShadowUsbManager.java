@@ -214,6 +214,7 @@ public class ShadowUsbManager {
    * portId} if present; otherwise returns {@code null}.
    */
   @Nullable
+  @Implementation(minSdk = M)
   public /* UsbPortStatus */ Object getPortStatus(String portId) {
     return usbPortStatuses.get(usbPorts.get(portId));
   }

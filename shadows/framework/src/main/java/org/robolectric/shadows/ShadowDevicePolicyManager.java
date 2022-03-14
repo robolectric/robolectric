@@ -350,9 +350,11 @@ public class ShadowDevicePolicyManager {
    *
    * @see DevicePolicyManager#getDeviceOwner()
    */
-  public void setDeviceOwner(ComponentName admin) {
+  @Implementation(minSdk = N)
+  public boolean setDeviceOwner(ComponentName admin) {
     setActiveAdmin(admin);
     deviceOwner = admin;
+    return true;
   }
 
   /**

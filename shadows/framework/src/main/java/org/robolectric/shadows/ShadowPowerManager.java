@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -495,7 +496,8 @@ public class ShadowPowerManager {
     }
 
     /** Sets the tag. */
-    private void setTag(String tag) {
+    @Implementation(minSdk = LOLLIPOP_MR1)
+    protected void setTag(String tag) {
       this.tag = tag;
     }
   }

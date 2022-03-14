@@ -236,7 +236,8 @@ public class ShadowCrossProfileApps {
     startedActivities.clear();
   }
 
-  private void verifyCanAccessUser(UserHandle userHandle) {
+  @Implementation(minSdk = P)
+  protected void verifyCanAccessUser(UserHandle userHandle) {
     if (!targetUserProfiles.contains(userHandle)) {
       throw new SecurityException(
           "Not allowed to access "

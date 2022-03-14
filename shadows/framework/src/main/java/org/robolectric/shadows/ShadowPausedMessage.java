@@ -21,7 +21,8 @@ public class ShadowPausedMessage extends ShadowMessage {
 
   @RealObject private Message realObject;
 
-  long getWhen() {
+  @Implementation
+  protected long getWhen() {
     return reflector(MessageReflector.class, realObject).getWhen();
   }
 
@@ -58,7 +59,8 @@ public class ShadowPausedMessage extends ShadowMessage {
     throw new UnsupportedOperationException("Not supported in PAUSED LooperMode");
   }
 
-  Handler getTarget() {
+  @Implementation
+  protected Handler getTarget() {
     return reflector(MessageReflector.class, realObject).getTarget();
   }
 }

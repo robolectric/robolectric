@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.SystemClock;
@@ -382,7 +383,8 @@ public class ShadowTime {
     return inUtc;
   }
 
-  private static int getChar(String s, int spos, int mul) {
+  @Implementation(minSdk = LOLLIPOP)
+  protected static int getChar(String s, int spos, int mul) {
     char c = s.charAt(spos);
     if (Character.isDigit(c)) {
       return Character.getNumericValue(c) * mul;
@@ -392,7 +394,8 @@ public class ShadowTime {
     return -1;
   }
 
-  private void checkChar(String s, int spos, char expected) {
+  @Implementation(minSdk = LOLLIPOP)
+  protected void checkChar(String s, int spos, char expected) {
     char c = s.charAt(spos);
     if (c != expected) {
       throwTimeFormatException(

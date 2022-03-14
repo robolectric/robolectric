@@ -1130,6 +1130,7 @@ public class ShadowPackageManager {
     }
   }
 
+  @Implementation
   protected void deletePackage(String packageName, IPackageDeleteObserver observer, int flags) {
     pendingDeleteCallbacks.put(packageName, observer);
   }

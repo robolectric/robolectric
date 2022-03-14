@@ -62,11 +62,11 @@ public class ShadowBitmap {
   private int height;
   private BufferedImage bufferedImage;
   private Bitmap.Config config;
-  private boolean mutable;
+  private boolean mutable = true;
   private String description = "";
   private boolean recycled = false;
   private boolean hasMipMap;
-  private boolean isPremultiplied;
+  private boolean requestPremultiplied = true;
 
   /**
    * Returns a textual representation of the appearance of the object.
@@ -206,17 +206,17 @@ public class ShadowBitmap {
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected static Bitmap createBitmap(
+      DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
+    return createBitmap(displayMetrics, width, height, config, true);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static Bitmap createBitmap(
       DisplayMetrics displayMetrics,
       int width,
       int height,
       Bitmap.Config config,
       boolean hasAlpha) {
-    return createBitmap((DisplayMetrics) null, width, height, config);
-  }
-
-  @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected static Bitmap createBitmap(
-      DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
     }
@@ -227,6 +227,7 @@ public class ShadowBitmap {
     shadowBitmap.width = width;
     shadowBitmap.height = height;
     shadowBitmap.config = config;
+    shadowBitmap.hasAlpha = hasAlpha;
     shadowBitmap.setMutable(true);
     if (displayMetrics != null) {
       scaledBitmap.setDensity(displayMetrics.densityDpi);
@@ -524,7 +525,7 @@ public class ShadowBitmap {
 
   @Implementation
   protected final boolean hasAlpha() {
-    return hasAlpha;
+    return hasAlpha && config != Config.RGB_565;
   }
 
   @Implementation
@@ -704,12 +705,12 @@ public class ShadowBitmap {
 
   @Implementation(minSdk = KITKAT)
   protected void setPremultiplied(boolean isPremultiplied) {
-    this.isPremultiplied = isPremultiplied;
+    this.requestPremultiplied = isPremultiplied;
   }
 
   @Implementation(minSdk = KITKAT)
   protected boolean isPremultiplied() {
-    return isPremultiplied;
+    return requestPremultiplied && hasAlpha();
   }
 
   @Implementation

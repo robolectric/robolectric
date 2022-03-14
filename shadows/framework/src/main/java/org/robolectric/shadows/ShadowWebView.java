@@ -5,6 +5,7 @@ import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -288,7 +289,9 @@ public class ShadowWebView extends ShadowViewGroup {
             });
   }
 
-  /** @return the last loaded url */
+  /**
+   * @return the last loaded url
+   */
   public String getLastLoadedUrl() {
     return lastUrl;
   }
@@ -308,7 +311,9 @@ public class ShadowWebView extends ShadowViewGroup {
     return originalUrl;
   }
 
-  /** @return the additional Http headers that in the same request with last loaded url */
+  /**
+   * @return the additional Http headers that in the same request with last loaded url
+   */
   public Map<String, String> getLastAdditionalHttpHeaders() {
     return lastAdditionalHttpHeaders;
   }
@@ -328,6 +333,7 @@ public class ShadowWebView extends ShadowViewGroup {
     webChromeClient = client;
   }
 
+  @Implementation(minSdk = VERSION_CODES.O)
   public WebViewClient getWebViewClient() {
     return webViewClient;
   }
@@ -437,7 +443,10 @@ public class ShadowWebView extends ShadowViewGroup {
     return destroyCalled;
   }
 
-  /** @return webChromeClient */
+  /**
+   * @return webChromeClient
+   */
+  @Implementation(minSdk = VERSION_CODES.O)
   public WebChromeClient getWebChromeClient() {
     return webChromeClient;
   }
@@ -622,6 +631,7 @@ public class ShadowWebView extends ShadowViewGroup {
     packageInfo = null;
   }
 
+  @Implementation(minSdk = VERSION_CODES.KITKAT)
   public static void setWebContentsDebuggingEnabled(boolean enabled) {}
 
   /**

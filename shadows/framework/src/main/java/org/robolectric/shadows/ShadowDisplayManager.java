@@ -65,7 +65,8 @@ public class ShadowDisplayManager {
   }
 
   /** internal only */
-  public static void configureDefaultDisplay(Configuration configuration, DisplayMetrics displayMetrics) {
+  public static void configureDefaultDisplay(
+      Configuration configuration, DisplayMetrics displayMetrics) {
     ShadowDisplayManagerGlobal shadowDisplayManagerGlobal = getShadowDisplayManagerGlobal();
     if (DisplayManagerGlobal.getInstance().getDisplayIds().length != 0) {
       throw new IllegalStateException("this method should only be called by Robolectric");
@@ -74,7 +75,8 @@ public class ShadowDisplayManager {
     shadowDisplayManagerGlobal.addDisplay(createDisplayInfo(configuration, displayMetrics));
   }
 
-  private static DisplayInfo createDisplayInfo(Configuration configuration, DisplayMetrics displayMetrics) {
+  private static DisplayInfo createDisplayInfo(
+      Configuration configuration, DisplayMetrics displayMetrics) {
     int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
     int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
 
@@ -88,15 +90,14 @@ public class ShadowDisplayManager {
     fixNominalDimens(displayInfo);
     displayInfo.logicalWidth = widthPx;
     displayInfo.logicalHeight = heightPx;
-    displayInfo.rotation = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-        ? Surface.ROTATION_0
-        : Surface.ROTATION_90;
+    displayInfo.rotation =
+        configuration.orientation == Configuration.ORIENTATION_PORTRAIT
+            ? Surface.ROTATION_0
+            : Surface.ROTATION_90;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       displayInfo.modeId = 0;
       displayInfo.defaultModeId = 0;
-      displayInfo.supportedModes = new Display.Mode[] {
-          new Display.Mode(0, widthPx, heightPx, 60)
-      };
+      displayInfo.supportedModes = new Display.Mode[] {new Display.Mode(0, widthPx, heightPx, 60)};
     }
     displayInfo.logicalDensityDpi = displayMetrics.densityDpi;
     displayInfo.physicalXDpi = displayMetrics.densityDpi;
@@ -112,16 +113,6 @@ public class ShadowDisplayManager {
     return displayInfo;
   }
 
-  private static void fixNominalDimens(DisplayInfo displayInfo) {
-    int smallest = Math.min(displayInfo.appWidth, displayInfo.appHeight);
-    int largest = Math.max(displayInfo.appWidth, displayInfo.appHeight);
-
-    displayInfo.smallestNominalAppWidth = smallest;
-    displayInfo.smallestNominalAppHeight = smallest;
-    displayInfo.largestNominalAppWidth = largest;
-    displayInfo.largestNominalAppHeight = largest;
-  }
-
   private static DisplayInfo createDisplayInfo(String qualifiersStr, DisplayInfo baseDisplayInfo) {
     Configuration configuration = new Configuration();
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -129,13 +120,17 @@ public class ShadowDisplayManager {
     if (qualifiersStr.startsWith("+") && baseDisplayInfo != null) {
       configuration.orientation =
           (baseDisplayInfo.rotation == Surface.ROTATION_0
-              || baseDisplayInfo.rotation == Surface.ROTATION_180)
+                  || baseDisplayInfo.rotation == Surface.ROTATION_180)
               ? Configuration.ORIENTATION_PORTRAIT
               : Configuration.ORIENTATION_LANDSCAPE;
-      configuration.screenWidthDp = baseDisplayInfo.logicalWidth * DisplayMetrics.DENSITY_DEFAULT
-          / baseDisplayInfo.logicalDensityDpi;
-      configuration.screenHeightDp = baseDisplayInfo.logicalHeight * DisplayMetrics.DENSITY_DEFAULT
-          / baseDisplayInfo.logicalDensityDpi;
+      configuration.screenWidthDp =
+          baseDisplayInfo.logicalWidth
+              * DisplayMetrics.DENSITY_DEFAULT
+              / baseDisplayInfo.logicalDensityDpi;
+      configuration.screenHeightDp =
+          baseDisplayInfo.logicalHeight
+              * DisplayMetrics.DENSITY_DEFAULT
+              / baseDisplayInfo.logicalDensityDpi;
       configuration.densityDpi = baseDisplayInfo.logicalDensityDpi;
       displayMetrics.densityDpi = baseDisplayInfo.logicalDensityDpi;
       displayMetrics.density =
@@ -146,6 +141,16 @@ public class ShadowDisplayManager {
         qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
 
     return createDisplayInfo(configuration, displayMetrics);
+  }
+
+  private static void fixNominalDimens(DisplayInfo displayInfo) {
+    int smallest = Math.min(displayInfo.appWidth, displayInfo.appHeight);
+    int largest = Math.max(displayInfo.appWidth, displayInfo.appHeight);
+
+    displayInfo.smallestNominalAppWidth = smallest;
+    displayInfo.smallestNominalAppHeight = smallest;
+    displayInfo.largestNominalAppWidth = largest;
+    displayInfo.largestNominalAppHeight = largest;
   }
 
   /**
@@ -213,10 +218,11 @@ public class ShadowDisplayManager {
   /**
    * Sets the current display saturation level.
    *
-   * This is a workaround for tests which cannot use the relevant hidden
-   * {@link android.annotation.SystemApi},
-   * {@link android.hardware.display.DisplayManager#setSaturationLevel(float)}.
+   * <p>This is a workaround for tests which cannot use the relevant hidden {@link
+   * android.annotation.SystemApi}, {@link
+   * android.hardware.display.DisplayManager#setSaturationLevel(float)}.
    */
+  @Implementation(minSdk = P)
   public void setSaturationLevel(float level) {
     reflector(DisplayManagerReflector.class, realDisplayManager).setSaturationLevel(level);
   }

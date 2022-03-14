@@ -4,6 +4,7 @@ import static android.app.NotificationManager.INTERRUPTION_FILTER_ALL;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
@@ -304,6 +305,7 @@ public class ShadowNotificationManager {
    * NotificationManager#isNotificationListenerAccessGranted(ComponentName)} for the provided {@link
    * ComponentName}.
    */
+  @Implementation(minSdk = O_MR1)
   public void setNotificationListenerAccessGranted(ComponentName componentName, boolean granted) {
     listenerAccessGrantedComponents.put(componentName.flattenToString(), granted);
   }
@@ -455,6 +457,7 @@ public class ShadowNotificationManager {
     return deletedNotificationChannels.containsKey(channelId);
   }
 
+  @Implementation(minSdk = P)
   public Object /*NotificationChannelGroup*/ getNotificationChannelGroup(String id) {
     return notificationChannelGroups.get(id);
   }

@@ -1,6 +1,7 @@
 package android.graphics;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
@@ -13,6 +14,8 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.util.DisplayMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.graphics.HardwareRendererCompat;
@@ -357,6 +360,209 @@ public class BitmapTest {
     int[] pixels = new int[10];
     Bitmap result = Bitmap.createBitmap(pixels, 0, 2, 2, 5, Bitmap.Config.ARGB_8888);
     assertThat(result).isNotNull();
+  }
+
+  @Test
+  public void createBitmap_mutability() {
+    // Mutable constructor variants.
+    assertThat(
+            Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+                .isMutable())
+        .isTrue();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      assertThat(
+              Bitmap.createBitmap(
+                      (DisplayMetrics) null,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888)
+                  .isMutable())
+          .isTrue();
+    }
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      assertThat(
+              Bitmap.createBitmap(
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ true)
+                  .isMutable())
+          .isTrue();
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ true)
+                  .isMutable())
+          .isTrue();
+    }
+
+    // Immutable constructor variants.
+    assertThat(
+            Bitmap.createBitmap(
+                    /* colors= */ new int[] {0},
+                    /* width= */ 1,
+                    /* height= */ 1,
+                    Bitmap.Config.ARGB_8888)
+                .isMutable())
+        .isFalse();
+    assertThat(
+            Bitmap.createBitmap(
+                    /* colors= */ new int[] {0},
+                    /* offset= */ 0,
+                    /* stride= */ 1,
+                    /* width= */ 1,
+                    /* height= */ 1,
+                    Bitmap.Config.ARGB_8888)
+                .isMutable())
+        .isFalse();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* colors= */ new int[] {0},
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888)
+                  .isMutable())
+          .isFalse();
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* colors= */ new int[] {0},
+                      /* offset= */ 0,
+                      /* stride= */ 1,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888)
+                  .isMutable())
+          .isFalse();
+    }
+  }
+
+  @Test
+  public void createBitmap_hasAlpha() {
+    // ARGB_8888 has alpha by default.
+    assertThat(
+            Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+                .hasAlpha())
+        .isTrue();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      assertThat(
+              Bitmap.createBitmap(
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ true)
+                  .hasAlpha())
+          .isTrue();
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ true)
+                  .hasAlpha())
+          .isTrue();
+    }
+    assertThat(
+            Bitmap.createBitmap(
+                    /* colors= */ new int[] {0},
+                    /* width= */ 1,
+                    /* height= */ 1,
+                    Bitmap.Config.ARGB_8888)
+                .hasAlpha())
+        .isTrue();
+
+    // Doesn't have alpha
+    assertThat(
+            Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.RGB_565).hasAlpha())
+        .isFalse();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      assertThat(
+              Bitmap.createBitmap(
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ false)
+                  .hasAlpha())
+          .isFalse();
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ false)
+                  .hasAlpha())
+          .isFalse();
+    }
+  }
+
+  @Config(minSdk = JELLY_BEAN_MR1)
+  @SdkSuppress(minSdkVersion = JELLY_BEAN_MR1)
+  @Test
+  public void createBitmap_premultiplied() {
+    // ARGB_8888 has alpha by default, is premultiplied.
+    assertThat(
+            Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+                .isPremultiplied())
+        .isTrue();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      assertThat(
+              Bitmap.createBitmap(
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ true)
+                  .isPremultiplied())
+          .isTrue();
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ true)
+                  .isPremultiplied())
+          .isTrue();
+    }
+    assertThat(
+            Bitmap.createBitmap(
+                    /* colors= */ new int[] {0},
+                    /* width= */ 1,
+                    /* height= */ 1,
+                    Bitmap.Config.ARGB_8888)
+                .isPremultiplied())
+        .isTrue();
+
+    // Doesn't have alpha, is not premultiplied
+    assertThat(
+            Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.RGB_565)
+                .isPremultiplied())
+        .isFalse();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      assertThat(
+              Bitmap.createBitmap(
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ false)
+                  .isPremultiplied())
+          .isFalse();
+      assertThat(
+              Bitmap.createBitmap(
+                      /* displayMetrics= */ null,
+                      /* width= */ 1,
+                      /* height= */ 1,
+                      Bitmap.Config.ARGB_8888,
+                      /* hasAlpha= */ false)
+                  .isPremultiplied())
+          .isFalse();
+    }
   }
 
   @Test
