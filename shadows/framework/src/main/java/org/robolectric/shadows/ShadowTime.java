@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.os.SystemClock;
 import android.text.format.Time;
@@ -21,8 +20,7 @@ import org.robolectric.util.Strftime;
 
 @Implements(value = Time.class)
 public class ShadowTime {
-  @RealObject
-  private Time time;
+  @RealObject private Time time;
 
   @Implementation(maxSdk = KITKAT_WATCH)
   protected void setToNow() {
@@ -88,7 +86,7 @@ public class ShadowTime {
     // Don't bother with the GMT offset since we don't know the correct
     // value for the given Julian day.  Just get close and then adjust
     // the day.
-    //long millis = (julianDay - EPOCH_JULIAN_DAY) * DateUtils.DAY_IN_MILLIS;
+    // long millis = (julianDay - EPOCH_JULIAN_DAY) * DateUtils.DAY_IN_MILLIS;
     long millis = (julianDay - Time.EPOCH_JULIAN_DAY) * DAY_IN_MILLIS;
     set(millis);
 
@@ -116,8 +114,7 @@ public class ShadowTime {
         c.get(Calendar.HOUR_OF_DAY),
         c.get(Calendar.DAY_OF_MONTH),
         c.get(Calendar.MONTH),
-        c.get(Calendar.YEAR)
-        );
+        c.get(Calendar.YEAR));
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -230,7 +227,7 @@ public class ShadowTime {
   @Implementation(maxSdk = KITKAT_WATCH)
   protected String format2445() {
     String value = format("%Y%m%dT%H%M%S");
-    if ( "UTC".equals(time.timezone)){
+    if ("UTC".equals(time.timezone)) {
       value += "Z";
     }
     return value;
@@ -406,12 +403,19 @@ public class ShadowTime {
   }
 
   private static void throwTimeFormatException(String optionalMessage) {
-    throw ReflectionHelpers.callConstructor(TimeFormatException.class, from(String.class, optionalMessage == null ? "fail" : optionalMessage));
+    throw ReflectionHelpers.callConstructor(
+        TimeFormatException.class,
+        ReflectionHelpers.ClassParameter.from(
+            String.class, optionalMessage == null ? "fail" : optionalMessage));
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
   protected String format(String format) {
-    return Strftime.format(format, new Date(toMillis(false)), Locale.getDefault(), TimeZone.getTimeZone(time.timezone));
+    return Strftime.format(
+        format,
+        new Date(toMillis(false)),
+        Locale.getDefault(),
+        TimeZone.getTimeZone(time.timezone));
   }
 
   private Calendar getCalendar() {
