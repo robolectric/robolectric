@@ -21,6 +21,7 @@ import static android.util.TypedValue.TYPE_REFERENCE;
 import static android.util.TypedValue.TYPE_STRING;
 import static android.util.TypedValue.applyDimension;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 import static org.robolectric.testapp.R.color.test_ARGB8;
@@ -337,14 +338,14 @@ public class ResourcesTest {
     assertThat(resources.getBoolean(R.bool.reference_to_true)).isEqualTo(true);
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void getStringArray_shouldThrowExceptionIfNotFound() {
-    resources.getStringArray(-1);
+    assertThrows(Resources.NotFoundException.class, () -> resources.getStringArray(-1));
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void getIntegerArray_shouldThrowExceptionIfNotFound() {
-    resources.getIntArray(-1);
+    assertThrows(Resources.NotFoundException.class, () -> resources.getIntArray(-1));
   }
 
   @Test
@@ -395,9 +396,11 @@ public class ResourcesTest {
     assertThat(resources.newTheme()).isNotNull();
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void testGetDrawableNullRClass() {
-    assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
+    assertThrows(
+        Resources.NotFoundException.class,
+        () -> assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class));
   }
 
   @Test
@@ -422,9 +425,9 @@ public class ResourcesTest {
     assertThat(resources.getColor(R.color.background)).isEqualTo(0xfff5f5f5);
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void testGetColor_Missing() {
-    resources.getColor(11234);
+    assertThrows(Resources.NotFoundException.class, () -> resources.getColor(11234));
   }
 
   @Test
@@ -442,9 +445,13 @@ public class ResourcesTest {
     assertThat(resources.getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void testGetBitmapDrawableForUnknownId() {
-    assertThat(resources.getDrawable(Integer.MAX_VALUE)).isInstanceOf(BitmapDrawable.class);
+    assertThrows(
+        Resources.NotFoundException.class,
+        () ->
+            assertThat(resources.getDrawable(Integer.MAX_VALUE))
+                .isInstanceOf(BitmapDrawable.class));
   }
 
   @Test
@@ -579,14 +586,14 @@ public class ResourcesTest {
     assertThat(findRootTag(parser)).isEqualTo("selector");
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void testGetXml_nonexistentResource() {
-    resources.getXml(0);
+    assertThrows(Resources.NotFoundException.class, () -> resources.getXml(0));
   }
 
-  @Test(expected = Resources.NotFoundException.class)
+  @Test
   public void testGetXml_nonxmlfile() {
-    resources.getXml(R.drawable.an_image);
+    assertThrows(Resources.NotFoundException.class, () -> resources.getXml(R.drawable.an_image));
   }
 
   @Test

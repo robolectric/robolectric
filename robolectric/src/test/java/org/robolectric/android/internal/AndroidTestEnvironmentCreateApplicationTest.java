@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.android.internal.AndroidTestEnvironment.registerBroadcastReceivers;
@@ -31,11 +32,16 @@ public class AndroidTestEnvironmentCreateApplicationTest {
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void shouldThrowWhenManifestContainsBadApplicationClassName() throws Exception {
-    AndroidTestEnvironment.createApplication(
-        newConfigWith("<application android:name=\"org.robolectric.BogusTestApplication\"/>)"),
-        null, null);
+    assertThrows(
+        RuntimeException.class,
+        () ->
+            AndroidTestEnvironment.createApplication(
+                newConfigWith(
+                    "<application android:name=\"org.robolectric.BogusTestApplication\"/>)"),
+                null,
+                null));
   }
 
   @Test
