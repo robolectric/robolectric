@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -187,20 +188,20 @@ public class ShadowAccessibilityManager {
 
   public void setTouchExplorationEnabled(boolean touchExplorationEnabled) {
     this.touchExplorationEnabled = touchExplorationEnabled;
-
-    if (getApiLevel() >= KITKAT) {
-      try {
-        ArrayMap<TouchExplorationStateChangeListener, Handler> listeners =
-            new ArrayMap<>(
-                reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
-                    .getTouchExplorationStateChangeListeners());
-        listeners.forEach(
-            (listener, handler) ->
-                listener.onTouchExplorationStateChanged(touchExplorationEnabled));
-      } catch (ClassCastException e) {
-        return;
-      }
+    List<TouchExplorationStateChangeListener> listeners = new ArrayList<>();
+    if (getApiLevel() >= O) {
+      listeners =
+          new ArrayList<>(
+              reflector(AccessibilityManagerReflector.class, realAccessibilityManager)
+                  .getTouchExplorationStateChangeListeners()
+                  .keySet());
+    } else if (getApiLevel() >= KITKAT) {
+      listeners =
+          new ArrayList<>(
+              reflector(AccessibilityManagerReflectorN.class, realAccessibilityManager)
+                  .getTouchExplorationStateChangeListeners());
     }
+    listeners.forEach(listener -> listener.onTouchExplorationStateChanged(touchExplorationEnabled));
   }
 
   /**
@@ -257,6 +258,13 @@ public class ShadowAccessibilityManager {
 
     @Accessor("mTouchExplorationStateChangeListeners")
     ArrayMap<TouchExplorationStateChangeListener, Handler>
+        getTouchExplorationStateChangeListeners();
+  }
+
+  @ForType(AccessibilityManager.class)
+  interface AccessibilityManagerReflectorN {
+    @Accessor("mTouchExplorationStateChangeListeners")
+    CopyOnWriteArrayList<TouchExplorationStateChangeListener>
         getTouchExplorationStateChangeListeners();
   }
 }

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -16,6 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -184,6 +186,17 @@ public class ShadowAccessibilityManagerTest {
                 new TestAccessibilityStateChangeListener()))
         .isFalse();
     assertThat(accessibilityManager.removeAccessibilityStateChangeListener(null)).isFalse();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void setTouchExplorationEnabled_invokesCallbacks() {
+    AtomicBoolean enabled = new AtomicBoolean(false);
+    accessibilityManager.addTouchExplorationStateChangeListener(val -> enabled.set(val));
+    shadowOf(accessibilityManager).setTouchExplorationEnabled(true);
+    assertThat(enabled.get()).isEqualTo(true);
+    shadowOf(accessibilityManager).setTouchExplorationEnabled(false);
+    assertThat(enabled.get()).isEqualTo(false);
   }
 
   private static class TestAccessibilityStateChangeListener
