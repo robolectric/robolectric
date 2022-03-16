@@ -6,10 +6,9 @@ import android.content.Context;
 import android.content.res.Resources.Theme;
 import android.graphics.Color;
 import android.util.TypedValue;
-import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
@@ -27,18 +26,18 @@ public class ThemeTest {
 
   @Before
   public void setup() throws Exception {
-    context = InstrumentationRegistry.getTargetContext();
+    context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     resources = context.getResources();
   }
 
   @Test
-  public void withEmptyTheme_returnsEmptyAttributes() throws Exception {
+  public void withEmptyTheme_returnsEmptyAttributes() {
     assertThat(resources.newTheme().obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0))
         .isFalse();
   }
 
   @Test
-  public void shouldLookUpStylesFromStyleResId() throws Exception {
+  public void shouldLookUpStylesFromStyleResId() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
     TypedArray a = theme.obtainStyledAttributes(R.style.MyCustomView, R.styleable.CustomView);
@@ -48,7 +47,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void shouldApplyStylesFromResourceReference() throws Exception {
+  public void shouldApplyStylesFromResourceReference() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
     TypedArray a =
@@ -60,7 +59,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void shouldApplyStylesFromAttributeReference() throws Exception {
+  public void shouldApplyStylesFromAttributeReference() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_ThirdTheme, true);
     TypedArray a =
@@ -72,7 +71,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void shouldGetValuesFromAttributeReference() throws Exception {
+  public void shouldGetValuesFromAttributeReference() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_ThirdTheme, true);
 
@@ -89,7 +88,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void withResolveRefsFalse_shouldResolveValue() throws Exception {
+  public void withResolveRefsFalse_shouldResolveValue() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
 
@@ -102,7 +101,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void withResolveRefsFalse_shouldNotResolveResource() throws Exception {
+  public void withResolveRefsFalse_shouldNotResolveResource() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
 
@@ -115,7 +114,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void withResolveRefsTrue_shouldResolveResource() throws Exception {
+  public void withResolveRefsTrue_shouldResolveResource() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
 
@@ -129,7 +128,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void failToResolveCircularReference() throws Exception {
+  public void failToResolveCircularReference() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
 
@@ -140,7 +139,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void canResolveAttrReferenceToDifferentPackage() throws Exception {
+  public void canResolveAttrReferenceToDifferentPackage() {
     Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
 
@@ -153,8 +152,7 @@ public class ThemeTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() throws Exception {
+  public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric_ImplicitChild, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -164,15 +162,14 @@ public class ThemeTest {
   }
 
   @Test
-  public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() throws Exception {
+  public void whenAThemeHasExplicitlyEmptyParentAttr_shouldHaveNoParent() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric_EmptyParent, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void shouldApplyParentStylesFromAttrs() throws Exception {
+  public void shouldApplyParentStylesFromAttrs() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_AnotherTheme, true);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -182,8 +179,7 @@ public class ThemeTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void setTo_shouldCopyAllAttributesToEmptyTheme() throws Exception {
+  public void setTo_shouldCopyAllAttributesToEmptyTheme() {
     Resources.Theme theme1 = resources.newTheme();
     theme1.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(theme1.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -197,8 +193,7 @@ public class ThemeTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void setTo_whenDestThemeIsModified_sourceThemeShouldNotMutate() throws Exception {
+  public void setTo_whenDestThemeIsModified_sourceThemeShouldNotMutate() {
     Resources.Theme sourceTheme = resources.newTheme();
     sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(sourceTheme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -213,8 +208,7 @@ public class ThemeTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void setTo_whenSourceThemeIsModified_destThemeShouldNotMutate() throws Exception {
+  public void setTo_whenSourceThemeIsModified_destThemeShouldNotMutate() {
     Resources.Theme sourceTheme = resources.newTheme();
     sourceTheme.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(sourceTheme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -229,9 +223,7 @@ public class ThemeTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void applyStyle_withForceFalse_shouldApplyButNotOverwriteExistingAttributeValues()
-      throws Exception {
+  public void applyStyle_withForceFalse_shouldApplyButNotOverwriteExistingAttributeValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -245,9 +237,7 @@ public class ThemeTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void applyStyle_withForceTrue_shouldApplyAndOverwriteExistingAttributeValues()
-      throws Exception {
+  public void applyStyle_withForceTrue_shouldApplyAndOverwriteExistingAttributeValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).getString(0))
@@ -264,7 +254,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void shouldFindInheritedAndroidAttributeInTheme() throws Exception {
+  public void shouldFindInheritedAndroidAttributeInTheme() {
     context.setTheme(R.style.Theme_AnotherTheme);
     Resources.Theme theme1 = context.getTheme();
 
@@ -275,7 +265,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void themesShouldBeApplyableAcrossResources() throws Exception {
+  public void themesShouldBeApplyableAcrossResources() {
     Resources.Theme themeFromSystem = Resources.getSystem().newTheme();
     themeFromSystem.applyStyle(android.R.style.Theme_Light, true);
 
@@ -307,7 +297,7 @@ public class ThemeTest {
   }
 
   @Test
-  public void styleResolutionShouldIgnoreThemes() throws Exception {
+  public void styleResolutionShouldIgnoreThemes() {
     Resources.Theme themeFromSystem = resources.newTheme();
     themeFromSystem.applyStyle(android.R.style.Theme_DeviceDefault, true);
     themeFromSystem.applyStyle(R.style.ThemeWithSelfReferencingTextAttr, true);
