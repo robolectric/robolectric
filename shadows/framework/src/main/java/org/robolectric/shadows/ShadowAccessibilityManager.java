@@ -43,8 +43,8 @@ public class ShadowAccessibilityManager {
   private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
   private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
   private List<ServiceInfo> accessibilityServiceList;
-  private HashMap<AccessibilityStateChangeListener, Handler> onAccessibilityStateChangeListeners =
-      new HashMap<>();
+  private final HashMap<AccessibilityStateChangeListener, Handler>
+      onAccessibilityStateChangeListeners = new HashMap<>();
   private boolean touchExplorationEnabled;
 
   private static boolean isAccessibilityButtonSupported = true;
@@ -68,7 +68,7 @@ public class ShadowAccessibilityManager {
     return sInstance;
   }
 
-  private static AccessibilityManager createInstance(Context context) throws Exception {
+  private static AccessibilityManager createInstance(Context context) {
     if (getApiLevel() >= KITKAT) {
       AccessibilityManager accessibilityManager =
           Shadow.newInstance(
@@ -97,21 +97,20 @@ public class ShadowAccessibilityManager {
   }
 
   @Implementation
-  protected boolean addAccessibilityStateChangeListener(
-      AccessibilityManager.AccessibilityStateChangeListener listener) {
+  protected boolean addAccessibilityStateChangeListener(AccessibilityStateChangeListener listener) {
     addAccessibilityStateChangeListener(listener, null);
     return true;
   }
 
   @Implementation(minSdk = O)
   protected void addAccessibilityStateChangeListener(
-      AccessibilityManager.AccessibilityStateChangeListener listener, Handler handler) {
+      AccessibilityStateChangeListener listener, Handler handler) {
     onAccessibilityStateChangeListeners.put(listener, handler);
   }
 
   @Implementation
   protected boolean removeAccessibilityStateChangeListener(
-      AccessibilityManager.AccessibilityStateChangeListener listener) {
+      AccessibilityStateChangeListener listener) {
     final boolean wasRegistered = onAccessibilityStateChangeListeners.containsKey(listener);
     onAccessibilityStateChangeListeners.remove(listener);
     return wasRegistered;
@@ -132,7 +131,8 @@ public class ShadowAccessibilityManager {
     return enabledAccessibilityServiceList;
   }
 
-  public void setEnabledAccessibilityServiceList(List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
+  public void setEnabledAccessibilityServiceList(
+      List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
     this.enabledAccessibilityServiceList = enabledAccessibilityServiceList;
   }
 
@@ -141,7 +141,8 @@ public class ShadowAccessibilityManager {
     return installedAccessibilityServiceList;
   }
 
-  public void setInstalledAccessibilityServiceList(List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
+  public void setInstalledAccessibilityServiceList(
+      List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
     this.installedAccessibilityServiceList = installedAccessibilityServiceList;
   }
 
