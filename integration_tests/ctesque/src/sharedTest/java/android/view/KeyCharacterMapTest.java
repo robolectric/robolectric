@@ -2,6 +2,7 @@ package android.view;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
@@ -32,9 +33,10 @@ public final class KeyCharacterMapTest {
     assertNotNull(keyCharacterMap);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testGetMatchNull() {
-    keyCharacterMap.getMatch(KeyEvent.KEYCODE_0, null);
+    assertThrows(
+        IllegalArgumentException.class, () -> keyCharacterMap.getMatch(KeyEvent.KEYCODE_0, null));
   }
 
   private int getCharacterKeyCode(char oneChar) {
@@ -44,9 +46,11 @@ public final class KeyCharacterMapTest {
     return events[0].getKeyCode();
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testGetMatchMetaStateNull() {
-    keyCharacterMap.getMatch(KeyEvent.KEYCODE_0, null, 1);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> keyCharacterMap.getMatch(KeyEvent.KEYCODE_0, null, 1));
   }
 
   @Test
@@ -54,9 +58,9 @@ public final class KeyCharacterMapTest {
     assertThat(keyCharacterMap.getKeyboardType()).isEqualTo(KeyCharacterMap.FULL);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testGetEventsNull() {
-    keyCharacterMap.getEvents(null);
+    assertThrows(IllegalArgumentException.class, () -> keyCharacterMap.getEvents(null));
   }
 
   @Test

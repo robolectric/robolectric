@@ -1,6 +1,7 @@
 package org.robolectric.internal.dependency;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
@@ -143,17 +144,20 @@ public class MavenDependencyResolverTest {
     assertThat(mavenArtifactFetcher.getNumRequests()).isEqualTo(0);
   }
 
-  @Test(expected = AssertionError.class)
+  @Test
   public void getLocalArtifactUrl_handlesFileNotFound() throws Exception {
     DependencyJar dependencyJar = new DependencyJar("group", "missing-artifact", "1");
-    mavenDependencyResolver.getLocalArtifactUrl(dependencyJar);
+
+    assertThrows(
+        AssertionError.class, () -> mavenDependencyResolver.getLocalArtifactUrl(dependencyJar));
   }
 
-  @Test(expected = AssertionError.class)
+  @Test
   public void getLocalArtifactUrl_handlesInvalidSha1() throws Exception {
     DependencyJar dependencyJar = new DependencyJar("group", "artifact-invalid-sha1", "1");
     addTestArtifactInvalidSha1(dependencyJar);
-    mavenDependencyResolver.getLocalArtifactUrl(dependencyJar);
+    assertThrows(
+        AssertionError.class, () -> mavenDependencyResolver.getLocalArtifactUrl(dependencyJar));
   }
 
   class TestMavenDependencyResolver extends MavenDependencyResolver {

@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.util.TimeFormatException;
@@ -220,10 +221,10 @@ public class TimeTest {
     assertEquals(0, t.second);
   }
 
-  @Test(expected = TimeFormatException.class)
+  @Test
   public void shouldThrowTimeFormatException() {
     Time t = new Time();
-    t.parse("BLARGH");
+    assertThrows(TimeFormatException.class, () -> t.parse("BLARGH"));
   }
 
   @Test

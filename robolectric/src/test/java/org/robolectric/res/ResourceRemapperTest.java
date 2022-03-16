@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,10 +12,10 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class ResourceRemapperTest {
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void forbidFinalRClasses() {
     ResourceRemapper remapper = new ResourceRemapper(null);
-    remapper.remapRClass(FinalRClass.class);
+    assertThrows(IllegalArgumentException.class, () -> remapper.remapRClass(FinalRClass.class));
   }
 
   @SuppressWarnings("TruthConstantAsserts")

@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -36,11 +37,11 @@ public class RobolectricTest {
 
   private Application context = ApplicationProvider.getApplicationContext();
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
     View view = new View(context);
     view.setEnabled(false);
-    ShadowView.clickOn(view);
+    assertThrows(RuntimeException.class, () -> ShadowView.clickOn(view));
   }
 
   @Test
@@ -80,11 +81,14 @@ public class RobolectricTest {
     verify(testOnClickListener).onClick(view);
   }
 
-  @Test(expected = ActivityNotFoundException.class)
+  @Test
   public void checkActivities_shouldSetValueOnShadowApplication() throws Exception {
     ShadowApplication.getInstance().checkActivities(true);
-    context.startActivity(
-        new Intent("i.dont.exist.activity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    assertThrows(
+        ActivityNotFoundException.class,
+        () ->
+            context.startActivity(
+                new Intent("i.dont.exist.activity").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
   }
 
   @Test
