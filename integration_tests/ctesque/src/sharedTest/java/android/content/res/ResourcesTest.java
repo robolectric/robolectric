@@ -1048,8 +1048,7 @@ public class ResourcesTest {
   @Ignore(
       "currently ids are always automatically assigned a value; to fix this we'd need to check "
           + "layouts for +@id/___, which is expensive")
-  public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero()
-      throws Exception {
+  public void whenCalledForIdWithNameNotInRClassOrXml_getResourceIdentifier_shouldReturnZero() {
     assertThat(
         resources.getIdentifier(
             "org.robolectric:id/idThatDoesntExistAnywhere", "other", "other"))
@@ -1058,8 +1057,7 @@ public class ResourcesTest {
 
   @Test
   public void
-  whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout()
-      throws Exception {
+      whenIdIsAbsentInXmlButPresentInRClass_getResourceIdentifier_shouldReturnIdFromRClass_probablyBecauseItWasDeclaredInALayout() {
     assertThat(
         resources.getIdentifier("id_declared_in_layout", "id", context.getPackageName()))
         .isEqualTo(R.id.id_declared_in_layout);
