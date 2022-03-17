@@ -22,7 +22,6 @@ import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
@@ -322,7 +321,6 @@ public class MotionEventTest {
   }
 
   @Test
-  @Ignore // doesn't actually fail when expected on emulator API 23
   public void testReadFromParcelWithInvalidSampleSize() {
     Parcel parcel = Parcel.obtain();
     motionEvent2.writeToParcel(parcel, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
