@@ -7,18 +7,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling how
- * Robolectric performs UI layout.
+ * A {@link org.robolectric.pluginapi.config.Configurer} annotation for controlling how Robolectric
+ * performs UI layout.
  *
- * PR #4818 changed Robolectric to be more realistic when performing layout on Android views.
+ * <p>PR #4818 changed Robolectric to be more realistic when performing layout on Android views.
  * This change in behavior could cause tests still using the legacy 'UNPAUSED' looper mode or
  * relying on views being a specific size to fail.
  *
- * This annotation can be applied to tests to have Robolectric perform the legacy, less accurate
+ * <p>This annotation can be applied to tests to have Robolectric perform the legacy, less accurate
  * mechanism of laying out and measuring Android text views, as a stopgap until the tests can be
  * properly fixed.
  *
- * This annotation will be deleted in a forthcoming Robolectric release.
+ * <p>This annotation will be deleted in a forthcoming Robolectric release.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
