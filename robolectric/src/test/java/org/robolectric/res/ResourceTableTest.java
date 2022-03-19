@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,21 +32,27 @@ public class ResourceTableTest {
     assertThat(resourceTable.getPackageIdentifier()).isEqualTo(0x02);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void addResource_shouldPreventMixedPackageIdentifiers() {
     resourceTable.addResource(0x02999999, "type", "name");
-    resourceTable.addResource(0x03999999, "type", "name");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> resourceTable.addResource(0x03999999, "type", "name"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void shouldForbidIdClashes() {
     resourceTable.addResource(0x02888888, "type", "name");
-    resourceTable.addResource(0x02999999, "type", "name");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> resourceTable.addResource(0x02999999, "type", "name"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void shouldForbidDuplicateNames() {
     resourceTable.addResource(0x02999999, "type", "name");
-    resourceTable.addResource(0x02999999, "type", "anotherName");
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> resourceTable.addResource(0x02999999, "type", "anotherName"));
   }
 }

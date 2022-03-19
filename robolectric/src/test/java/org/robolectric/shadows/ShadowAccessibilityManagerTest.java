@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -16,6 +17,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -125,5 +127,90 @@ public class ShadowAccessibilityManagerTest {
     assertThat(shadowOf(accessibilityManager).getSentAccessibilityEvents())
         .containsExactly(event1, event2, event3)
         .inOrder();
+  }
+
+  @Test
+  public void addAccessibilityStateChangeListener_shouldAddListener() {
+    TestAccessibilityStateChangeListener listener1 = new TestAccessibilityStateChangeListener();
+    TestAccessibilityStateChangeListener listener2 = new TestAccessibilityStateChangeListener();
+
+    accessibilityManager.addAccessibilityStateChangeListener(listener1);
+    accessibilityManager.addAccessibilityStateChangeListener(listener2);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+
+    assertThat(listener1.isEnabled()).isTrue();
+    assertThat(listener2.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void removeAccessibilityStateChangeListener_shouldRemoveListeners() {
+    // Add two different callbacks.
+    TestAccessibilityStateChangeListener listener1 = new TestAccessibilityStateChangeListener();
+    TestAccessibilityStateChangeListener listener2 = new TestAccessibilityStateChangeListener();
+    accessibilityManager.addAccessibilityStateChangeListener(listener1);
+    accessibilityManager.addAccessibilityStateChangeListener(listener2);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+
+    assertThat(listener1.isEnabled()).isTrue();
+    assertThat(listener2.isEnabled()).isTrue();
+    // Remove one at the time.
+    accessibilityManager.removeAccessibilityStateChangeListener(listener2);
+
+    shadowOf(accessibilityManager).setEnabled(false);
+
+    assertThat(listener1.isEnabled()).isFalse();
+    assertThat(listener2.isEnabled()).isTrue();
+
+    accessibilityManager.removeAccessibilityStateChangeListener(listener1);
+
+    shadowOf(accessibilityManager).setEnabled(true);
+
+    assertThat(listener1.isEnabled()).isFalse();
+    assertThat(listener2.isEnabled()).isTrue();
+  }
+
+  @Test
+  public void removeAccessibilityStateChangeListener_returnsTrueIfRemoved() {
+    TestAccessibilityStateChangeListener listener = new TestAccessibilityStateChangeListener();
+    accessibilityManager.addAccessibilityStateChangeListener(listener);
+
+    assertThat(accessibilityManager.removeAccessibilityStateChangeListener(listener)).isTrue();
+  }
+
+  @Test
+  public void removeAccessibilityStateChangeListener_returnsFalseIfNotRegistered() {
+    assertThat(
+            accessibilityManager.removeAccessibilityStateChangeListener(
+                new TestAccessibilityStateChangeListener()))
+        .isFalse();
+    assertThat(accessibilityManager.removeAccessibilityStateChangeListener(null)).isFalse();
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void setTouchExplorationEnabled_invokesCallbacks() {
+    AtomicBoolean enabled = new AtomicBoolean(false);
+    accessibilityManager.addTouchExplorationStateChangeListener(val -> enabled.set(val));
+    shadowOf(accessibilityManager).setTouchExplorationEnabled(true);
+    assertThat(enabled.get()).isEqualTo(true);
+    shadowOf(accessibilityManager).setTouchExplorationEnabled(false);
+    assertThat(enabled.get()).isEqualTo(false);
+  }
+
+  private static class TestAccessibilityStateChangeListener
+      implements AccessibilityManager.AccessibilityStateChangeListener {
+
+    private boolean enabled = false;
+
+    @Override
+    public void onAccessibilityStateChanged(boolean enabled) {
+      this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+      return enabled;
+    }
   }
 }

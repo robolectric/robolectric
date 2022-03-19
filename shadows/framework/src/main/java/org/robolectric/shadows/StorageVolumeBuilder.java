@@ -123,7 +123,7 @@ public final class StorageVolumeBuilder {
           from(UserHandle.class, owner), // UserHandle owner,
           from(String.class, fsUuid), //  String fsUuid,
           from(String.class, state)); // String state
-    } else if (apiLevel > VERSION_CODES.R && apiLevel <= 32) {
+    } else if (apiLevel > VERSION_CODES.R && apiLevel <= VERSION_CODES.S_V2) {
       return ReflectionHelpers.callConstructor(
           StorageVolume.class,
           from(String.class, id), // String id,

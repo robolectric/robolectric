@@ -27,44 +27,36 @@ public class ShadowVibrator {
   boolean hasAmplitudeControl = false;
   int effectId;
 
-  /**
-   * Controls the return value of {@link Vibrator#hasVibrator()} the default is true.
-   */
+  /** Controls the return value of {@link Vibrator#hasVibrator()} the default is true. */
   public void setHasVibrator(boolean hasVibrator) {
     this.hasVibrator = hasVibrator;
   }
 
-  /**
-   * Controls the return value of {@link Vibrator#hasAmplitudeControl()} the default is false.
-   */
+  /** Controls the return value of {@link Vibrator#hasAmplitudeControl()} the default is false. */
   public void setHasAmplitudeControl(boolean hasAmplitudeControl) {
     this.hasAmplitudeControl = hasAmplitudeControl;
   }
 
   /**
-   * Returns true if the Vibrator is currently vibrating as controlled by {@link Vibrator#vibrate(long)}
+   * Returns true if the Vibrator is currently vibrating as controlled by {@link
+   * Vibrator#vibrate(long)}
    */
+  @Implementation(minSdk = R)
   public boolean isVibrating() {
     return vibrating;
   }
 
-  /**
-   * Returns true if the Vibrator has been cancelled.
-   */
+  /** Returns true if the Vibrator has been cancelled. */
   public boolean isCancelled() {
     return cancelled;
   }
 
-  /**
-   * Returns the last vibration duration in MS.
-   */
+  /** Returns the last vibration duration in MS. */
   public long getMilliseconds() {
     return milliseconds;
   }
 
-  /**
-   * Returns the last vibration pattern.
-   */
+  /** Returns the last vibration pattern. */
   public long[] getPattern() {
     return pattern;
   }
@@ -79,9 +71,7 @@ public class ShadowVibrator {
     return effectId;
   }
 
-  /**
-   * Returns the last vibration repeat times.
-   */
+  /** Returns the last vibration repeat times. */
   public int getRepeat() {
     return repeat;
   }

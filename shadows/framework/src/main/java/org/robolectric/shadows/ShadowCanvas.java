@@ -1,5 +1,17 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -12,12 +24,19 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
+import org.robolectric.annotation.Resetter;
+import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Join;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * Broken. This implementation is very specific to the application for which it was developed.
@@ -27,6 +46,12 @@ import org.robolectric.util.ReflectionHelpers;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)
 public class ShadowCanvas {
+  private static final NativeObjRegistry<NativeCanvas> nativeObjectRegistry =
+      new NativeObjRegistry<>(NativeCanvas.class);
+
+  @RealObject protected Canvas realCanvas;
+  @ReflectorObject protected CanvasReflector canvasReflector;
+
   private final List<RoundRectPaintHistoryEvent> roundRectPaintEvents = new ArrayList<>();
   private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<>();
   private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<>();
@@ -57,7 +82,18 @@ public class ShadowCanvas {
 
   @Implementation
   protected void __constructor__(Bitmap bitmap) {
+    canvasReflector.__constructor__(bitmap);
     this.targetBitmap = bitmap;
+  }
+
+  private long getNativeId() {
+    return RuntimeEnvironment.getApiLevel() <= KITKAT_WATCH
+        ? (int) ReflectionHelpers.getField(realCanvas, "mNativeCanvas")
+        : canvasReflector.getNativeCanvasWrapper();
+  }
+
+  private NativeCanvas getNativeCanvas() {
+    return nativeObjectRegistry.getNativeObject(getNativeId());
   }
 
   public void appendDescription(String s) {
@@ -236,14 +272,6 @@ public class ShadowCanvas {
     ovalPaintEvents.add(new OvalPaintHistoryEvent(oval, paint));
   }
 
-  @Implementation
-  protected int save() {
-    return 1;
-  }
-
-  @Implementation
-  protected void restore() {}
-
   private void describeBitmap(Bitmap bitmap, Paint paint) {
     separateLines();
 
@@ -406,6 +434,141 @@ public class ShadowCanvas {
     return ovalPaintEvents.get(i);
   }
 
+  @Implementation(maxSdk = N_MR1)
+  protected int save() {
+    return getNativeCanvas().save();
+  }
+
+  @Implementation(maxSdk = N_MR1)
+  protected void restore() {
+    getNativeCanvas().restore();
+  }
+
+  @Implementation(maxSdk = N_MR1)
+  protected int getSaveCount() {
+    return getNativeCanvas().getSaveCount();
+  }
+
+  @Implementation(maxSdk = N_MR1)
+  protected void restoreToCount(int saveCount) {
+    getNativeCanvas().restoreToCount(saveCount);
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected void release() {
+    nativeObjectRegistry.unregister(getNativeId());
+    canvasReflector.release();
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int initRaster(int bitmapHandle) {
+    return (int) nativeObjectRegistry.register(new NativeCanvas());
+  }
+
+  @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP_MR1)
+  protected static long initRaster(long bitmapHandle) {
+    return nativeObjectRegistry.register(new NativeCanvas());
+  }
+
+  @Implementation(minSdk = M, maxSdk = N_MR1)
+  protected static long initRaster(Bitmap bitmap) {
+    return nativeObjectRegistry.register(new NativeCanvas());
+  }
+
+  @Implementation(minSdk = O, maxSdk = P)
+  protected static long nInitRaster(Bitmap bitmap) {
+    return nativeObjectRegistry.register(new NativeCanvas());
+  }
+
+  @Implementation(minSdk = Q)
+  protected static long nInitRaster(long bitmapHandle) {
+    return nativeObjectRegistry.register(new NativeCanvas());
+  }
+
+  @Implementation(minSdk = O)
+  protected static int nGetSaveCount(long canvasHandle) {
+    return nativeObjectRegistry.getNativeObject(canvasHandle).getSaveCount();
+  }
+
+  @Implementation(minSdk = O)
+  protected static int nSave(long canvasHandle, int saveFlags) {
+    return nativeObjectRegistry.getNativeObject(canvasHandle).save();
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int native_saveLayer(int nativeCanvas, RectF bounds, int paint, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int native_saveLayer(
+      int nativeCanvas, float l, float t, float r, float b, int paint, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  protected static int native_saveLayer(
+      long nativeCanvas, float l, float t, float r, float b, long nativePaint, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = O, maxSdk = R)
+  protected static int nSaveLayer(
+      long nativeCanvas, float l, float t, float r, float b, long nativePaint, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = S)
+  protected static int nSaveLayer(
+      long nativeCanvas, float l, float t, float r, float b, long nativePaint) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int native_saveLayerAlpha(
+      int nativeCanvas, RectF bounds, int alpha, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected static int native_saveLayerAlpha(
+      int nativeCanvas, float l, float t, float r, float b, int alpha, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  protected static int native_saveLayerAlpha(
+      long nativeCanvas, float l, float t, float r, float b, int alpha, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = O, maxSdk = R)
+  protected static int nSaveLayerAlpha(
+      long nativeCanvas, float l, float t, float r, float b, int alpha, int layerFlags) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = S)
+  protected static int nSaveLayerAlpha(
+      long nativeCanvas, float l, float t, float r, float b, int alpha) {
+    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
+  }
+
+  @Implementation(minSdk = O)
+  protected static boolean nRestore(long canvasHandle) {
+    return nativeObjectRegistry.getNativeObject(canvasHandle).restore();
+  }
+
+  @Implementation(minSdk = O)
+  protected static void nRestoreToCount(long canvasHandle, int saveCount) {
+    nativeObjectRegistry.getNativeObject(canvasHandle).restoreToCount(saveCount);
+  }
+
+  @Resetter
+  public static void reset() {
+    nativeObjectRegistry.clear();
+  }
+
   public static class LinePaintHistoryEvent {
     public Paint paint;
     public float startX;
@@ -540,6 +703,46 @@ public class ShadowCanvas {
       this.y = y;
       this.paint = paint;
       this.text = text;
+    }
+  }
+
+  @SuppressWarnings("MemberName")
+  @ForType(Canvas.class)
+  private interface CanvasReflector {
+    @Direct
+    void __constructor__(Bitmap bitmap);
+
+    @Direct
+    long getNativeCanvasWrapper();
+
+    @Direct
+    void release();
+  }
+
+  private static class NativeCanvas {
+    private int saveCount = 1;
+
+    int save() {
+      return saveCount++;
+    }
+
+    boolean restore() {
+      if (saveCount > 1) {
+        saveCount--;
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    int getSaveCount() {
+      return saveCount;
+    }
+
+    void restoreToCount(int saveCount) {
+      if (saveCount > 0) {
+        this.saveCount = saveCount;
+      }
     }
   }
 }

@@ -32,6 +32,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -451,11 +452,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /**
    * Starting in Android S, this method was moved from {@link android.content.pm.PackageManager} to
-   * {@link ApplicationPackageManager}.
+   * {@link ApplicationPackageManager}. However, it was moved back to {@link
+   * android.content.pm.PackageManager} in T.
    */
   @Override
+  @Implementation(minSdk = S)
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
-    if (RuntimeEnvironment.getApiLevel() >= S) {
+    int apiLevel = RuntimeEnvironment.getApiLevel();
+    if (apiLevel == S || apiLevel == S_V2) {
+
       PackageInfo shadowPackageInfo = getShadowPackageArchiveInfo(archiveFilePath, flags);
       if (shadowPackageInfo != null) {
         return shadowPackageInfo;

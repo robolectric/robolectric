@@ -3,11 +3,16 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.ColorSpace;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -26,6 +31,7 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.Arrays;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -56,17 +62,18 @@ public class ShadowBitmap {
   private int[] createdFromColors;
   private Matrix createdFromMatrix;
   private boolean createdFromFilter;
-  private boolean hasAlpha;
 
   private int width;
   private int height;
   private BufferedImage bufferedImage;
   private Bitmap.Config config;
-  private boolean mutable;
+  private boolean mutable = true;
   private String description = "";
   private boolean recycled = false;
   private boolean hasMipMap;
-  private boolean isPremultiplied;
+  private boolean requestPremultiplied = true;
+  private boolean hasAlpha;
+  private ColorSpace colorSpace;
 
   /**
    * Returns a textual representation of the appearance of the object.
@@ -206,17 +213,17 @@ public class ShadowBitmap {
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected static Bitmap createBitmap(
+      DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
+    return createBitmap(displayMetrics, width, height, config, true);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected static Bitmap createBitmap(
       DisplayMetrics displayMetrics,
       int width,
       int height,
       Bitmap.Config config,
       boolean hasAlpha) {
-    return createBitmap((DisplayMetrics) null, width, height, config);
-  }
-
-  @Implementation(minSdk = JELLY_BEAN_MR1)
-  protected static Bitmap createBitmap(
-      DisplayMetrics displayMetrics, int width, int height, Bitmap.Config config) {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
     }
@@ -227,12 +234,26 @@ public class ShadowBitmap {
     shadowBitmap.width = width;
     shadowBitmap.height = height;
     shadowBitmap.config = config;
+    shadowBitmap.hasAlpha = hasAlpha;
     shadowBitmap.setMutable(true);
     if (displayMetrics != null) {
       scaledBitmap.setDensity(displayMetrics.densityDpi);
     }
     shadowBitmap.bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      shadowBitmap.colorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+    }
     return scaledBitmap;
+  }
+
+  @Implementation(minSdk = O)
+  protected static Bitmap createBitmap(
+      int width, int height, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace) {
+    checkArgument(colorSpace != null || config == Config.ALPHA_8);
+    Bitmap bitmap = createBitmap(null, width, height, config, hasAlpha);
+    ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
+    shadowBitmap.colorSpace = colorSpace;
+    return bitmap;
   }
 
   @Implementation
@@ -297,7 +318,16 @@ public class ShadowBitmap {
       shadowNewBitmap.bufferedImage =
           shadowSrcBitmap.bufferedImage.getSubimage(x, y, width, height);
     }
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      shadowNewBitmap.colorSpace = shadowSrcBitmap.colorSpace;
+    }
     return newBitmap;
+  }
+
+  @Implementation
+  protected static Bitmap createBitmap(
+      int[] colors, int offset, int stride, int width, int height, Config config) {
+    return createBitmap(null, colors, offset, stride, width, height, config);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -309,16 +339,6 @@ public class ShadowBitmap {
       int width,
       int height,
       Config config) {
-    Bitmap bitmap = createBitmap(colors, offset, stride, width, height, config);
-    if (displayMetrics != null) {
-      bitmap.setDensity(displayMetrics.densityDpi);
-    }
-    return bitmap;
-  }
-
-  @Implementation
-  protected static Bitmap createBitmap(
-      int[] colors, int offset, int stride, int width, int height, Config config) {
     if (width <= 0) {
       throw new IllegalArgumentException("width must be > 0");
     }
@@ -343,6 +363,12 @@ public class ShadowBitmap {
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.setMutable(false);
     shadowBitmap.createdFromColors = colors;
+    if (displayMetrics != null) {
+      bitmap.setDensity(displayMetrics.densityDpi);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      shadowBitmap.colorSpace = ColorSpace.get(ColorSpace.Named.SRGB);
+    }
     return bitmap;
   }
 
@@ -394,6 +420,9 @@ public class ShadowBitmap {
           0,
           shadowBitmap.getWidth(),
           shadowBitmap.getHeight());
+    }
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      shadowBitmap.colorSpace = shadowSrcBitmap.colorSpace;
     }
     return scaledBitmap;
   }
@@ -524,7 +553,7 @@ public class ShadowBitmap {
 
   @Implementation
   protected final boolean hasAlpha() {
-    return hasAlpha;
+    return hasAlpha && config != Config.RGB_565;
   }
 
   @Implementation
@@ -704,12 +733,22 @@ public class ShadowBitmap {
 
   @Implementation(minSdk = KITKAT)
   protected void setPremultiplied(boolean isPremultiplied) {
-    this.isPremultiplied = isPremultiplied;
+    this.requestPremultiplied = isPremultiplied;
   }
 
   @Implementation(minSdk = KITKAT)
   protected boolean isPremultiplied() {
-    return isPremultiplied;
+    return requestPremultiplied && hasAlpha();
+  }
+
+  @Implementation(minSdk = O)
+  protected ColorSpace getColorSpace() {
+    return colorSpace;
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setColorSpace(ColorSpace colorSpace) {
+    this.colorSpace = checkNotNull(colorSpace);
   }
 
   @Implementation

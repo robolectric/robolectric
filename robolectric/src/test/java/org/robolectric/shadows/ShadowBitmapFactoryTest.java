@@ -136,7 +136,7 @@ public class ShadowBitmapFactoryTest {
     byte[] yummyBites = "Hi!".getBytes("UTF-8");
     Bitmap bitmap = BitmapFactory.decodeByteArray(yummyBites, 100, 100);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
-    assertEquals("Bitmap for Hi! bytes 100..100", shadowBitmap.getDescription());
+    assertEquals("Bitmap for 3 bytes 100..100", shadowBitmap.getDescription());
     assertEquals(yummyBites, shadowBitmap.getCreatedFromBytes());
     assertEquals(100, bitmap.getWidth());
     assertEquals(100, bitmap.getHeight());
@@ -148,7 +148,7 @@ public class ShadowBitmapFactoryTest {
     BitmapFactory.Options options = new BitmapFactory.Options();
     Bitmap bitmap = BitmapFactory.decodeByteArray(yummyBites, 100, 100, options);
     ShadowBitmap shadowBitmap = shadowOf(bitmap);
-    assertEquals("Bitmap for Hi! bytes 100..100", shadowBitmap.getDescription());
+    assertEquals("Bitmap for 3 bytes 100..100", shadowBitmap.getDescription());
     assertEquals(yummyBites, shadowBitmap.getCreatedFromBytes());
     assertEquals(100, bitmap.getWidth());
     assertEquals(100, bitmap.getHeight());
@@ -263,7 +263,7 @@ public class ShadowBitmapFactoryTest {
 
     byte[] bytes = data.getBytes(UTF_8);
     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    assertEquals("Bitmap for " + data, shadowOf(bitmap).getDescription());
+    assertEquals("Bitmap for " + bytes.length + " bytes", shadowOf(bitmap).getDescription());
     assertEquals(123, bitmap.getWidth());
     assertEquals(456, bitmap.getHeight());
   }
@@ -275,7 +275,7 @@ public class ShadowBitmapFactoryTest {
 
     byte[] bytes = data.getBytes(UTF_8);
     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 1, bytes.length - 2);
-    assertEquals("Bitmap for " + data + " bytes 1..13", shadowOf(bitmap).getDescription());
+    assertEquals("Bitmap for " + bytes.length + " bytes 1..13", shadowOf(bitmap).getDescription());
   }
 
   @Test

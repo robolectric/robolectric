@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.wifi.p2p.WifiP2pGroup;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Direct;
@@ -13,14 +14,17 @@ public class ShadowWifiP2pGroup {
 
   @RealObject private WifiP2pGroup realObject;
 
+  @Implementation
   public void setInterface(String intf) {
     reflector(WifiP2pGroupReflector.class, realObject).setInterface(intf);
   }
 
+  @Implementation
   public void setPassphrase(String passphrase) {
     reflector(WifiP2pGroupReflector.class, realObject).setInterface(passphrase);
   }
 
+  @Implementation
   public void setNetworkName(String networkName) {
     reflector(WifiP2pGroupReflector.class, realObject).setInterface(networkName);
   }

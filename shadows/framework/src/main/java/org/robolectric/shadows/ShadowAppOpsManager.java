@@ -232,12 +232,23 @@ public class ShadowAppOpsManager {
     return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
-  private int unsafeCheckOpRawNoThrow(int op, int uid, String packageName) {
+  @Implementation(minSdk = Q)
+  protected int unsafeCheckOpRawNoThrow(int op, int uid, String packageName) {
     Integer mode = appModeMap.get(Key.create(uid, packageName, op));
     if (mode == null) {
       return AppOpsManager.MODE_ALLOWED;
     }
     return mode;
+  }
+
+  /**
+   * Like {@link #unsafeCheckOpNoThrow(String, int, String)} but returns the <em>raw</em> mode
+   * associated with the op. Does not throw a security exception, does not translate {@link
+   * AppOpsManager#MODE_FOREGROUND}.
+   */
+  @Implementation(minSdk = Q)
+  public int unsafeCheckOpRawNoThrow(String op, int uid, String packageName) {
+    return unsafeCheckOpRawNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
   /** Stores a fake long-running operation. It does not throw if a wrong uid is passed. */
@@ -297,16 +308,6 @@ public class ShadowAppOpsManager {
   @Implementation(minSdk = R)
   public boolean isOpActive(String op, int uid, String packageName) {
     return longRunningOp.contains(Key.create(uid, packageName, AppOpsManager.strOpToOp(op)));
-  }
-
-  /**
-   * Like {@link #unsafeCheckOpNoThrow(String, int, String)} but returns the <em>raw</em> mode
-   * associated with the op. Does not throw a security exception, does not translate {@link
-   * AppOpsManager#MODE_FOREGROUND}.
-   */
-  @Implementation(minSdk = Q)
-  public int unsafeCheckOpRawNoThrow(String op, int uid, String packageName) {
-    return unsafeCheckOpRawNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
   @Implementation(minSdk = P)

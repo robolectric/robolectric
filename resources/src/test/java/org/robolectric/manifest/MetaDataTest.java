@@ -1,5 +1,7 @@
 package org.robolectric.manifest;
 
+import static org.junit.Assert.assertThrows;
+
 import com.google.common.collect.ImmutableList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,12 +29,13 @@ public class MetaDataTest {
     MockitoAnnotations.initMocks(this);
   }
 
-  @Test(expected = RoboNotFoundException.class)
+  @Test
   public void testNonExistantResource_throwsResourceNotFoundException() throws Exception {
     Element metaDataElement = createMetaDataNode("aName", "@xml/non_existant_resource");
 
     MetaData metaData = new MetaData(ImmutableList.<Node>of(metaDataElement));
-    metaData.init(resourceProvider, "a.package");
+
+    assertThrows(RoboNotFoundException.class, () -> metaData.init(resourceProvider, "a.package"));
   }
 
   private static Element createMetaDataNode(String name, String value) {

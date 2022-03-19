@@ -282,6 +282,7 @@ public class ShadowResources {
    * version of {@link Resources#getAttributeSetSourceResId(AttributeSet)}, passes through to the
    * underlying implementation on API levels where it is supported.
    */
+  @Implementation(minSdk = Q)
   public static int getAttributeSetSourceResId(AttributeSet attrs) {
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       return reflector(ResourcesReflector.class).getAttributeSetSourceResId(attrs);
@@ -334,14 +335,15 @@ public class ShadowResources {
     protected TypedArray obtainStyledAttributes(
         AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
       return getShadowAssetManager()
-          .attrsToTypedArray(getResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
+          .attrsToTypedArray(
+              innerGetResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
     }
 
     private ShadowLegacyAssetManager getShadowAssetManager() {
-      return legacyShadowOf(getResources().getAssets());
+      return legacyShadowOf(innerGetResources().getAssets());
     }
 
-    private Resources getResources() {
+    private Resources innerGetResources() {
       if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
         return realTheme.getResources();
       }

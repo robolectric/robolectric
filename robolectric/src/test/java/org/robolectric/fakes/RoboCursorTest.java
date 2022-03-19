@@ -2,6 +2,7 @@ package org.robolectric.fakes;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.ContentResolver;
@@ -48,7 +49,8 @@ public class RoboCursorTest {
 
   @Test
   public void query_shouldMakeQueryParamsAvailable() throws Exception {
-    contentResolver.query(uri, new String[]{"projection"}, "selection", new String[]{"selection"}, "sortOrder");
+    contentResolver.query(
+        uri, new String[] {"projection"}, "selection", new String[] {"selection"}, "sortOrder");
     assertThat(cursor.uri).isEqualTo(uri);
     assertThat(cursor.projection[0]).isEqualTo("projection");
     assertThat(cursor.selection).isEqualTo("selection");
@@ -144,7 +146,10 @@ public class RoboCursorTest {
 
   @Test
   public void moveToPosition_movesToAppropriateRow() throws Exception {
-    cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 41}, new Object[]{"anotherString", 5678L, 42}});
+    cursor.setResults(
+        new Object[][] {
+          new Object[] {"aString", 1234L, 41}, new Object[] {"anotherString", 5678L, 42}
+        });
 
     assertThat(cursor.moveToPosition(1)).isTrue();
     assertThat(cursor.getString(indexOf(STRING_COLUMN))).isEqualTo("anotherString");
@@ -159,14 +164,20 @@ public class RoboCursorTest {
 
   @Test
   public void moveToPosition_checksBounds() {
-    cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 41}, new Object[]{"anotherString", 5678L, 42}});
+    cursor.setResults(
+        new Object[][] {
+          new Object[] {"aString", 1234L, 41}, new Object[] {"anotherString", 5678L, 42}
+        });
     assertThat(cursor.moveToPosition(2)).isFalse();
     assertThat(cursor.moveToPosition(-1)).isFalse();
   }
 
   @Test
   public void getCount_shouldReturnNumberOfRows() {
-    cursor.setResults(new Object[][]{new Object[]{"aString", 1234L, 41}, new Object[]{"anotherString", 5678L, 42}});
+    cursor.setResults(
+        new Object[][] {
+          new Object[] {"aString", 1234L, 41}, new Object[] {"anotherString", 5678L, 42}
+        });
     assertThat(cursor.getCount()).isEqualTo(2);
   }
 
@@ -183,9 +194,10 @@ public class RoboCursorTest {
     assertThat(cursor.getColumnIndexOrThrow(STRING_COLUMN)).isEqualTo(0);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void getColumnIndexOrThrow_shouldThrowException() {
-    cursor.getColumnIndexOrThrow("invalidColumn");
+    assertThrows(
+        IllegalArgumentException.class, () -> cursor.getColumnIndexOrThrow("invalidColumn"));
   }
 
   @Test

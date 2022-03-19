@@ -259,6 +259,7 @@ public class ShadowTelephonyManager {
     deviceId = newDeviceId;
   }
 
+  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setNetworkOperatorName(String networkOperatorName) {
     this.networkOperatorName = networkOperatorName;
   }
@@ -312,6 +313,7 @@ public class ShadowTelephonyManager {
     return networkOperatorName;
   }
 
+  @Implementation(minSdk = LOLLIPOP_MR1, maxSdk = P)
   public void setNetworkCountryIso(String networkCountryIso) {
     this.networkCountryIso = networkCountryIso;
   }
@@ -355,6 +357,7 @@ public class ShadowTelephonyManager {
     return simOperatorName;
   }
 
+  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setSimOperatorName(String simOperatorName) {
     this.simOperatorName = simOperatorName;
   }
@@ -381,6 +384,7 @@ public class ShadowTelephonyManager {
     return simCountryIsoMap.get(subId);
   }
 
+  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setSimCountryIso(String simCountryIso) {
     setSimCountryIso(/* subId= */ 0, simCountryIso);
   }
@@ -402,6 +406,7 @@ public class ShadowTelephonyManager {
   }
 
   /** Sets the sim state of slot 0. */
+  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setSimState(int simState) {
     setSimState(/* slotIndex= */ 0, simState);
   }
@@ -449,6 +454,7 @@ public class ShadowTelephonyManager {
     return phoneType;
   }
 
+  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setPhoneType(int phoneType) {
     this.phoneType = phoneType;
   }
@@ -491,6 +497,7 @@ public class ShadowTelephonyManager {
    * correspond to one of the {@code NETWORK_TYPE_*} constants defined on {@link TelephonyManager},
    * but this is not enforced.
    */
+  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setDataNetworkType(int dataNetworkType) {
     this.dataNetworkType = dataNetworkType;
   }

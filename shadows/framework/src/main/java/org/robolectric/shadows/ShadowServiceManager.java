@@ -78,6 +78,7 @@ import android.permission.IPermissionManager;
 import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
+import android.view.contentcapture.IContentCaptureManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
@@ -175,6 +176,7 @@ public class ShadowServiceManager {
     }
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       addBinderService(Context.BIOMETRIC_SERVICE, IBiometricService.class);
+      addBinderService(Context.CONTENT_CAPTURE_MANAGER_SERVICE, IContentCaptureManager.class);
       addBinderService(Context.ROLE_SERVICE, IRoleManager.class);
       addBinderService(Context.ROLLBACK_SERVICE, IRollbackManager.class);
       addBinderService(Context.THERMAL_SERVICE, IThermalService.class);

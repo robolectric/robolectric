@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.PorterDuff;
@@ -29,9 +30,9 @@ public class ShadowPorterDuffColorFilter {
   }
 
   /**
-   * @return Returns the ARGB color used to tint the source pixels when this filter
-   * is applied.
+   * @return Returns the ARGB color used to tint the source pixels when this filter is applied.
    */
+  @Implementation(minSdk = LOLLIPOP)
   public int getColor() {
     if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
       return color;
@@ -41,9 +42,10 @@ public class ShadowPorterDuffColorFilter {
   }
 
   /**
-   * @return Returns the Porter-Duff mode used to composite this color filter's
-   * color with the source pixel when this filter is applied.
+   * @return Returns the Porter-Duff mode used to composite this color filter's color with the
+   *     source pixel when this filter is applied.
    */
+  @Implementation(minSdk = LOLLIPOP)
   public PorterDuff.Mode getMode() {
     if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
       return mode;

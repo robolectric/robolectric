@@ -35,6 +35,7 @@ public class ShadowStorageManager {
    *
    * @return volume list
    */
+  @Implementation
   public StorageVolume[] getVolumeList() {
     return getVolumeList(0, 0);
   }

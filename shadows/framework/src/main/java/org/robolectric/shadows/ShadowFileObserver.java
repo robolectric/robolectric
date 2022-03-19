@@ -52,6 +52,7 @@ public class ShadowFileObserver {
   }
 
   @Override
+  @Implementation
   protected void finalize() throws Throwable {
     stopWatching();
   }

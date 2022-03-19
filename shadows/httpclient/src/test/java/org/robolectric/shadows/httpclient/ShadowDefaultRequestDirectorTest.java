@@ -6,6 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.shadows.httpclient.Shadows.shadowOf;
 
@@ -390,11 +391,15 @@ public class ShadowDefaultRequestDirectorTest {
     fail("Exception should have been thrown");
   }
 
-  @Test(expected = IOException.class)
+  @Test
   public void shouldSupportRealHttpRequests() throws Exception {
     FakeHttp.getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
-    client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999"));
+
+    assertThrows(
+        IOException.class,
+        () ->
+            client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999")));
   }
 
   @Test
@@ -452,5 +457,4 @@ public class ShadowDefaultRequestDirectorTest {
   private static String getStringContent(HttpResponse response) throws IOException {
     return CharStreams.toString(new InputStreamReader(response.getEntity().getContent(), UTF_8));
   }
-
 }

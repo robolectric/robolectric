@@ -274,12 +274,12 @@ public class ShadowContextImpl {
 
   @Implementation
   protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-    return getShadowInstrumentation().registerReceiver(receiver, filter, realContextImpl);
+    return getShadowInstrumentation().registerReceiver(receiver, filter, 0, realContextImpl);
   }
 
   @Implementation(minSdk = O)
   protected Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter, int flags) {
-    return getShadowInstrumentation().registerReceiver(receiver, filter, realContextImpl);
+    return getShadowInstrumentation().registerReceiver(receiver, filter, flags, realContextImpl);
   }
 
   @Implementation
@@ -289,7 +289,18 @@ public class ShadowContextImpl {
       String broadcastPermission,
       Handler scheduler) {
     return getShadowInstrumentation()
-        .registerReceiver(receiver, filter, broadcastPermission, scheduler, realContextImpl);
+        .registerReceiver(receiver, filter, broadcastPermission, scheduler, 0, realContextImpl);
+  }
+
+  @Implementation(minSdk = O)
+  protected Intent registerReceiver(
+      BroadcastReceiver receiver,
+      IntentFilter filter,
+      String broadcastPermission,
+      Handler scheduler,
+      int flags) {
+    return getShadowInstrumentation()
+        .registerReceiver(receiver, filter, broadcastPermission, scheduler, flags, realContextImpl);
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -301,7 +312,7 @@ public class ShadowContextImpl {
       Handler scheduler) {
     return getShadowInstrumentation()
         .registerReceiverWithContext(
-            receiver, filter, broadcastPermission, scheduler, realContextImpl);
+            receiver, filter, broadcastPermission, scheduler, 0, realContextImpl);
   }
 
   @Implementation
@@ -345,7 +356,8 @@ public class ShadowContextImpl {
   }
 
   // This is a private method in ContextImpl so we copy the relevant portions of it here.
-  private void validateServiceIntent(Intent service) {
+  @Implementation(minSdk = KITKAT)
+  protected void validateServiceIntent(Intent service) {
     if (service.getComponent() == null
         && service.getPackage() == null
         && realContextImpl.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.LOLLIPOP) {

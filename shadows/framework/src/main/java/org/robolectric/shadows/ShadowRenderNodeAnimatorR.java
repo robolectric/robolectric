@@ -36,6 +36,7 @@ public class ShadowRenderNodeAnimatorR {
     reflector(RenderNodeAnimatorReflector.class).setAnimationHelper(new ThreadLocal<>());
   }
 
+  @Implementation
   public void moveToRunningState() {
     reflector(RenderNodeAnimatorReflector.class, realObject).moveToRunningState();
     if (!isEnding) {
