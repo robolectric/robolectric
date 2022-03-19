@@ -14,17 +14,16 @@ import java.lang.annotation.Target;
  * overridden by applying a @LooperMode(NewMode) annotation to a test package, test class, or test
  * method, or via the 'robolectric.looperMode' system property.
  *
- * @see {@link org.robolectric.plugins.LooperModeConfigurer}, {@link
- *     org.robolectric.util.Scheduler}, {@link org.robolectric.shadows.ShadowLooper}
+ * @see org.robolectric.plugins.LooperModeConfigurer
+ * @see org.robolectric.util.Scheduler
+ * @see org.robolectric.shadows.ShadowLooper
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 public @interface LooperMode {
 
-  /**
-   * Specifies the different supported Looper modes.
-   */
+  /** Specifies the different supported Looper modes. */
   enum Mode {
     /**
      * Robolectric's default threading model prior to 4.4.
@@ -126,8 +125,6 @@ public @interface LooperMode {
     // RUNNING
   }
 
-  /**
-   * Set the Looper mode.
-   */
+  /** Set the Looper mode. */
   Mode value();
 }
