@@ -16,9 +16,7 @@ import java.util.Properties;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-/**
- * Configuration settings that can be used on a per-class or per-test basis.
- */
+/** Configuration settings that can be used on a per-class or per-test basis. */
 @Documented
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
@@ -26,12 +24,13 @@ import javax.annotation.Nonnull;
 @SuppressWarnings(value = {"BadAnnotationImplementation", "ImmutableAnnotationChecker"})
 public @interface Config {
   /**
-   * TODO(vnayar): Create named constants for default values instead of magic numbers.
-   * Array named constants must be avoided in order to dodge a JDK 1.7 bug.
-   *   error: annotation Config is missing value for the attribute &lt;clinit&gt;
-   * See <a href="https://bugs.openjdk.java.net/browse/JDK-8013485">JDK-8013485</a>.
+   * TODO(vnayar): Create named constants for default values instead of magic numbers. Array named
+   * constants must be avoided in order to dodge a JDK 1.7 bug. error: annotation Config is missing
+   * value for the attribute &lt;clinit&gt; See <a
+   * href="https://bugs.openjdk.java.net/browse/JDK-8013485">JDK-8013485</a>.
    */
   String NONE = "--none";
+
   String DEFAULT_VALUE_STRING = "--default";
   int DEFAULT_VALUE_INT = -1;
 
@@ -47,44 +46,39 @@ public @interface Config {
   int OLDEST_SDK = -4;
   int NEWEST_SDK = -5;
 
-  /**
-   * The Android SDK level to emulate. This value will also be set as Build.VERSION.SDK_INT.
-   */
-  int[] sdk() default {};  // DEFAULT_SDK
+  /** The Android SDK level to emulate. This value will also be set as Build.VERSION.SDK_INT. */
+  int[] sdk() default {}; // DEFAULT_SDK
 
-  /**
-   * The minimum Android SDK level to emulate when running tests on multiple API versions.
-   */
+  /** The minimum Android SDK level to emulate when running tests on multiple API versions. */
   int minSdk() default -1;
 
-  /**
-   * The maximum Android SDK level to emulate when running tests on multiple API versions.
-   */
+  /** The maximum Android SDK level to emulate when running tests on multiple API versions. */
   int maxSdk() default -1;
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
    * Resources and assets will be loaded relative to the manifest.
    *
-   * If not specified, Robolectric defaults to {@code AndroidManifest.xml}.
+   * <p>If not specified, Robolectric defaults to {@code AndroidManifest.xml}.
    *
-   * If your project has no manifest or resources, use {@link Config#NONE}.
+   * <p>If your project has no manifest or resources, use {@link Config#NONE}.
+   *
    * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
-   * please migrate to the preferred way to configure
-   * builds http://robolectric.org/getting-started/
-   *
+   *     please migrate to the preferred way to configure builds
+   *     http://robolectric.org/getting-started/
    * @return The Android manifest file to load.
    */
   @Deprecated
   String manifest() default DEFAULT_VALUE_STRING;
 
   /**
-   * The {@link android.app.Application} class to use in the test, this takes precedence over any application
-   * specified in the AndroidManifest.xml.
+   * The {@link android.app.Application} class to use in the test, this takes precedence over any
+   * application specified in the AndroidManifest.xml.
    *
    * @return The {@link android.app.Application} class to use in the test.
    */
-  Class<? extends Application> application() default DefaultApplication.class;  // DEFAULT_APPLICATION
+  Class<? extends Application> application() default
+      DefaultApplication.class; // DEFAULT_APPLICATION
 
   /**
    * Java package name where the "R.class" file is located. This only needs to be specified if you
@@ -99,7 +93,8 @@ public @interface Config {
    *     name encoded in the arsc resources file. If you are looking to simulate another application
    *     you can create another applications Context using {@link
    *     android.content.Context#createPackageContext(String, int)}. Note that you must add this
-   *     package to {@link org.robolectric.shadows.ShadowPackageManager#addPackage(android.content.pm.PackageInfo)}
+   *     package to {@link
+   *     org.robolectric.shadows.ShadowPackageManager#addPackage(android.content.pm.PackageInfo)}
    *     first.
    */
   @Deprecated
@@ -118,24 +113,26 @@ public @interface Config {
   String qualifiers() default DEFAULT_QUALIFIERS;
 
   /**
-   * The directory from which to load resources.  This should be relative to the directory containing AndroidManifest.xml.
+   * The directory from which to load resources. This should be relative to the directory containing
+   * AndroidManifest.xml.
    *
-   * If not specified, Robolectric defaults to {@code res}.
+   * <p>If not specified, Robolectric defaults to {@code res}.
+   *
    * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
-   * please migrate to the preferred way to configure
-   *
+   *     please migrate to the preferred way to configure
    * @return Android resource directory.
    */
   @Deprecated
   String resourceDir() default DEFAULT_RES_FOLDER;
 
   /**
-   * The directory from which to load assets. This should be relative to the directory containing AndroidManifest.xml.
+   * The directory from which to load assets. This should be relative to the directory containing
+   * AndroidManifest.xml.
    *
-   * If not specified, Robolectric defaults to {@code assets}.
+   * <p>If not specified, Robolectric defaults to {@code assets}.
+   *
    * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
-   * please migrate to the preferred way to configure
-   *
+   *     please migrate to the preferred way to configure
    * @return Android asset directory.
    */
   @Deprecated
@@ -146,25 +143,24 @@ public @interface Config {
    *
    * @return A list of additional shadow classes to enable.
    */
-  Class<?>[] shadows() default {};  // DEFAULT_SHADOWS
+  Class<?>[] shadows() default {}; // DEFAULT_SHADOWS
 
   /**
    * A list of instrumented packages, in addition to those that are already instrumented.
    *
    * @return A list of additional instrumented packages.
    */
-  String[] instrumentedPackages() default {};  // DEFAULT_INSTRUMENTED_PACKAGES
+  String[] instrumentedPackages() default {}; // DEFAULT_INSTRUMENTED_PACKAGES
 
   /**
    * A list of folders containing Android Libraries on which this project depends.
    *
    * @deprecated If you are using at least Android Studio 3.0 alpha 5 or Bazel's android_local_test
-   * please migrate to the preferred way to configure
-   *
+   *     please migrate to the preferred way to configure
    * @return A list of Android Libraries.
    */
   @Deprecated
-  String[] libraries() default {};  // DEFAULT_LIBRARIES;
+  String[] libraries() default {}; // DEFAULT_LIBRARIES;
 
   class Implementation implements Config {
     private final int[] sdk;
@@ -255,8 +251,9 @@ public @interface Config {
 
     private static void validate(Config config) {
       //noinspection ConstantConditions
-      if (config.sdk() != null && config.sdk().length > 0 &&
-          (config.minSdk() != DEFAULT_VALUE_INT || config.maxSdk() != DEFAULT_VALUE_INT)) {
+      if (config.sdk() != null
+          && config.sdk().length > 0
+          && (config.minSdk() != DEFAULT_VALUE_INT || config.maxSdk() != DEFAULT_VALUE_INT)) {
         throw new IllegalArgumentException(
             "sdk and minSdk/maxSdk may not be specified together"
                 + " (sdk="
@@ -268,9 +265,16 @@ public @interface Config {
                 + ")");
       }
 
-      if (config.minSdk() > DEFAULT_VALUE_INT && config.maxSdk() > DEFAULT_VALUE_INT && config.minSdk() > config.maxSdk()) {
-        throw new IllegalArgumentException("minSdk may not be larger than maxSdk" +
-            " (minSdk=" + config.minSdk() + ", maxSdk=" + config.maxSdk() + ")");
+      if (config.minSdk() > DEFAULT_VALUE_INT
+          && config.maxSdk() > DEFAULT_VALUE_INT
+          && config.minSdk() > config.maxSdk()) {
+        throw new IllegalArgumentException(
+            "minSdk may not be larger than maxSdk"
+                + " (minSdk="
+                + config.minSdk()
+                + ", maxSdk="
+                + config.maxSdk()
+                + ")");
       }
     }
 
@@ -363,7 +367,8 @@ public @interface Config {
       return libraries;
     }
 
-    @Nonnull @Override
+    @Nonnull
+    @Override
     public Class<? extends Annotation> annotationType() {
       return Config.class;
     }
@@ -371,18 +376,35 @@ public @interface Config {
     @Override
     public String toString() {
       return "Implementation{"
-          + "sdk=" + Arrays.toString(sdk)
-          + ", minSdk=" + minSdk
-          + ", maxSdk=" + maxSdk
-          + ", manifest='" + manifest + '\''
-          + ", qualifiers='" + qualifiers + '\''
-          + ", resourceDir='" + resourceDir + '\''
-          + ", assetDir='" + assetDir + '\''
-          + ", packageName='" + packageName + '\''
-          + ", shadows=" + Arrays.toString(shadows)
-          + ", instrumentedPackages=" + Arrays.toString(instrumentedPackages)
-          + ", application=" + application
-          + ", libraries=" + Arrays.toString(libraries)
+          + "sdk="
+          + Arrays.toString(sdk)
+          + ", minSdk="
+          + minSdk
+          + ", maxSdk="
+          + maxSdk
+          + ", manifest='"
+          + manifest
+          + '\''
+          + ", qualifiers='"
+          + qualifiers
+          + '\''
+          + ", resourceDir='"
+          + resourceDir
+          + '\''
+          + ", assetDir='"
+          + assetDir
+          + '\''
+          + ", packageName='"
+          + packageName
+          + '\''
+          + ", shadows="
+          + Arrays.toString(shadows)
+          + ", instrumentedPackages="
+          + Arrays.toString(instrumentedPackages)
+          + ", application="
+          + application
+          + ", libraries="
+          + Arrays.toString(libraries)
           + '}';
     }
   }
@@ -401,8 +423,7 @@ public @interface Config {
     protected Class<? extends Application> application = DEFAULT_APPLICATION;
     protected String[] libraries = new String[0];
 
-    public Builder() {
-    }
+    public Builder() {}
 
     public Builder(Config config) {
       sdk = config.sdk();
@@ -480,8 +501,8 @@ public @interface Config {
     }
 
     /**
-     * This returns actual default values where they exist, in the sense that we could use
-     * the values, rather than markers like {@code -1} or {@code --default}.
+     * This returns actual default values where they exist, in the sense that we could use the
+     * values, rather than markers like {@code -1} or {@code --default}.
      */
     public static Builder defaults() {
       return new Builder()
@@ -521,7 +542,8 @@ public @interface Config {
       }
 
       this.packageName = pick(this.packageName, overlayConfig.packageName(), "");
-      this.resourceDir = pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
+      this.resourceDir =
+          pick(this.resourceDir, overlayConfig.resourceDir(), Config.DEFAULT_RES_FOLDER);
       this.assetDir = pick(this.assetDir, overlayConfig.assetDir(), Config.DEFAULT_ASSET_FOLDER);
 
       List<Class<?>> shadows = new ArrayList<>(Arrays.asList(this.shadows));
@@ -531,7 +553,8 @@ public @interface Config {
       Set<String> instrumentedPackages = new HashSet<>();
       instrumentedPackages.addAll(Arrays.asList(this.instrumentedPackages));
       instrumentedPackages.addAll(Arrays.asList(overlayConfig.instrumentedPackages()));
-      this.instrumentedPackages = instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
+      this.instrumentedPackages =
+          instrumentedPackages.toArray(new String[instrumentedPackages.size()]);
 
       this.application = pick(this.application, overlayConfig.application(), DEFAULT_APPLICATION);
 
@@ -544,7 +567,9 @@ public @interface Config {
     }
 
     private <T> T pick(T baseValue, T overlayValue, T nullValue) {
-      return overlayValue != null ? (overlayValue.equals(nullValue) ? baseValue : overlayValue) : null;
+      return overlayValue != null
+          ? (overlayValue.equals(nullValue) ? baseValue : overlayValue)
+          : null;
     }
 
     private int[] pickSdk(int[] baseValue, int[] overlayValue, int[] nullValue) {
@@ -568,7 +593,8 @@ public @interface Config {
     }
 
     public static boolean isDefaultApplication(Class<? extends Application> clazz) {
-      return clazz == null || clazz.getCanonicalName().equals(DEFAULT_APPLICATION.getCanonicalName());
+      return clazz == null
+          || clazz.getCanonicalName().equals(DEFAULT_APPLICATION.getCanonicalName());
     }
   }
 }
