@@ -29,4 +29,9 @@ public class ShadowThreadedRenderer {
     shadowBitmap.setMutable(false);
     return bitmap;
   }
+
+  @Implementation
+  protected static long nCreateTextureLayer(long nativeProxy) {
+    return ShadowVirtualRefBasePtr.put(nativeProxy);
+  }
 }
