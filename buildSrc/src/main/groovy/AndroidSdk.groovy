@@ -1,5 +1,5 @@
 class AndroidSdk implements Comparable<AndroidSdk> {
-    static final PREINSTRUMENTED_VERSION = 3
+    static final PREINSTRUMENTED_VERSION = 4
 
     static final JELLY_BEAN = new AndroidSdk(16, "4.1.2_r1", "r1")
     static final JELLY_BEAN_MR1 = new AndroidSdk(17, "4.2.2_r1.2", "r1")
