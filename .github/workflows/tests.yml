@@ -127,17 +127,10 @@ jobs:
         with:
           java-version: 11.0.8
 
-      # Determine what emulator image to use. We run all API 29+ emulators using
-      # the google_apis image
       - name: Determine emulator target
         id: determine-target
-        env:
-          API_LEVEL: ${{ matrix.api-level }}
         run: |
-          TARGET="default"
-          if [ "$API_LEVEL" -ge "26" ]; then
-            TARGET="google_apis"
-          fi
+          TARGET="google_apis"
           echo "::set-output name=TARGET::$TARGET"
 
       - name: Run device tests
