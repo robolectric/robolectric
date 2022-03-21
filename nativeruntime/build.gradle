@@ -107,7 +107,7 @@ task copyNativeRuntimeToResources {
   def os = osName()
   if (System.getenv('SKIP_NATIVERUNTIME_BUILD')) {
     println("Skipping the nativeruntime build");
-  } else if (!os.contains("linux") && !os.contains("mac")) {
+  } else if (!os.contains("linux") && !os.contains("mac") && !os.contains("win")) {
     println("Building the nativeruntime not supported for OS '${System.getProperty("os.name")}'")
   } else {
     dependsOn makeNativeRuntime
