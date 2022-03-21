@@ -44,12 +44,13 @@ jobs:
           make -j4
           make install
 
-      - name: Install Ninja (Linux)
-        if: runner.os =='Linux'
+      - name: Install Ninja
         run: sudo apt-get install ninja-build
 
       - name: Build
-        run: ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
+        run: |
+          ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
+          ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
     runs-on: ubuntu-18.04
@@ -86,12 +87,12 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
       - name: Install Ninja
-        if: runner.os =='Linux'
         run: sudo apt-get install ninja-build
 
       - name: Run unit tests
         run: |
-          ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test --info --stacktrace --continue \
+          ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
+          --info --stacktrace --continue \
           --parallel \
           --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
