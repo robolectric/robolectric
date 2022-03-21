@@ -43,6 +43,20 @@ public class ShadowSpeechRecognizerTest {
   }
 
   @Test
+  public void onReadyForSpeechCalled() {
+    startListening();
+    Bundle expectedBundle = new Bundle();
+    ArrayList<String> results = new ArrayList<>();
+    String result = "onReadyForSpeech";
+    results.add(result);
+    expectedBundle.putStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION, results);
+
+    shadowOf(speechRecognizer).triggerOnReadyForSpeech(expectedBundle);
+
+    assertThat(listener.bundleReceived).isEqualTo(expectedBundle);
+  }
+
+  @Test
   public void onPartialResultsCalled() {
     startListening();
     Bundle expectedBundle = new Bundle();
@@ -183,7 +197,9 @@ public class ShadowSpeechRecognizerTest {
     }
 
     @Override
-    public void onReadyForSpeech(Bundle params) {}
+    public void onReadyForSpeech(Bundle bundle) {
+      bundleReceived = bundle;
+    }
 
     @Override
     public void onResults(Bundle bundle) {

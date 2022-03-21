@@ -97,6 +97,10 @@ public class ShadowSpeechRecognizer {
     recognitionListener.onError(error);
   }
 
+  public void triggerOnReadyForSpeech(Bundle bundle) {
+    recognitionListener.onReadyForSpeech(bundle);
+  }
+
   public void triggerOnPartialResults(Bundle bundle) {
     recognitionListener.onPartialResults(bundle);
   }
