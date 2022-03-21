@@ -9,7 +9,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow of {@link android.view.displayhash.DisplayHashManager}. */
-@Implements(value = DisplayHashManager.class)
+@Implements(value = DisplayHashManager.class, isInAndroidSdk = false)
 public class ShadowDisplayHashManager {
 
   private static VerifiedDisplayHash verifyDisplayHashResult;
