@@ -73,8 +73,8 @@ public class ShadowUIModeManagerTest {
     uiModeManager.setNightMode(UiModeManager.MODE_NIGHT_NO);
     assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_NO);
 
-    uiModeManager.setNightMode(INVALID_NIGHT_MODE);
-    assertThat(uiModeManager.getNightMode()).isEqualTo(UiModeManager.MODE_NIGHT_AUTO);
+    assertThrows(
+        IllegalArgumentException.class, () -> uiModeManager.setNightMode(INVALID_NIGHT_MODE));
   }
 
   @Test
