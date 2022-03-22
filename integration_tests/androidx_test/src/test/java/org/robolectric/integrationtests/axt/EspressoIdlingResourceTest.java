@@ -88,7 +88,7 @@ public final class EspressoIdlingResourceTest {
     NamedIdleResource a = new NamedIdleResource("A", /* isIdle= */ true);
     NamedIdleResource b = new NamedIdleResource("B", /* isIdle= */ false);
     NamedIdleResource c = new NamedIdleResource("C", /* isIdle= */ false);
-    idlingRegistry.register(a, b);
+    idlingRegistry.register(a, b, c);
     executor.submit(
         () -> {
           a.setIdle(false);
