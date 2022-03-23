@@ -96,7 +96,7 @@ jobs:
           path: '**/build/test-results/**/TEST-*.xml'
 
   instrumentation-tests:
-    runs-on: macos-latest
+    runs-on: macos-11
     timeout-minutes: 60
     needs: build
 
@@ -104,7 +104,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 28, 30 ]
+        api-level: [ 29, 32 ]
 
     steps:
       - uses: actions/checkout@v3
@@ -139,6 +139,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
+          target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
@@ -150,8 +151,8 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
+          arch: x86_64
           profile: Nexus One
-          emulator-build: 7425822 # https://github.com/ReactiveCircus/android-emulator-runner/issues/160
           script: ./gradlew connectedCheck
 
       - name: Upload test results
