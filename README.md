@@ -58,8 +58,6 @@ Those software configurations are recommended and tested.
 - CMake 3.22.1+. Check it by `cmake --version`.
 - GCC 7.5.0+ on Linux or Apple clang 12.0.0+ on macOS. Check it by `gcc --version`.
 
-See [Building Robolectric](http://robolectric.org/building-robolectric/) for more details about setting up a build environment for Robolectric.
-
 ### build and test
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
