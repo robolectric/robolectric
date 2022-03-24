@@ -210,6 +210,7 @@ public class ShadowTelephonyManager {
   /** Call state may be specified via {@link #setCallState(int)}. */
   @Implementation
   protected int getCallState() {
+    checkReadPhoneStatePermission();
     return callState;
   }
 
@@ -461,6 +462,7 @@ public class ShadowTelephonyManager {
 
   @Implementation
   protected String getLine1Number() {
+    checkReadPhoneStatePermission();
     return line1Number;
   }
 
@@ -470,6 +472,7 @@ public class ShadowTelephonyManager {
 
   @Implementation
   protected int getNetworkType() {
+    checkReadPhoneStatePermission();
     return networkType;
   }
 
@@ -489,6 +492,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = N)
   protected int getDataNetworkType() {
+    checkReadPhoneStatePermission();
     return dataNetworkType;
   }
 
@@ -601,6 +605,7 @@ public class ShadowTelephonyManager {
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected String getGroupIdLevel1() {
+    checkReadPhoneStatePermission();
     return this.groupIdLevel1;
   }
 
@@ -644,7 +649,9 @@ public class ShadowTelephonyManager {
         });
   }
 
-  /** @return true by default, or the value specified via {@link #setIsSmsCapable(boolean)} */
+  /**
+   * @return true by default, or the value specified via {@link #setIsSmsCapable(boolean)}
+   */
   @Implementation
   protected boolean isSmsCapable() {
     return isSmsCapable;
@@ -661,6 +668,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = O)
   protected PersistableBundle getCarrierConfig() {
+    checkReadPhoneStatePermission();
     return carrierConfig != null ? carrierConfig : new PersistableBundle();
   }
 
@@ -679,6 +687,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getVoiceMailNumber() {
+    checkReadPhoneStatePermission();
     return voiceMailNumber;
   }
 
@@ -693,6 +702,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation
   protected String getVoiceMailAlphaTag() {
+    checkReadPhoneStatePermission();
     return voiceMailAlphaTag;
   }
 
@@ -814,6 +824,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = O)
   protected ServiceState getServiceState() {
+    checkReadPhoneStatePermission();
     return serviceState;
   }
 
@@ -907,6 +918,7 @@ public class ShadowTelephonyManager {
   /** Returns the value set by {@link #setVisualVoicemailPackageName(String)}. */
   @Implementation(minSdk = O)
   protected String getVisualVoicemailPackageName() {
+    checkReadPhoneStatePermission();
     return visualVoicemailPackageName;
   }
 
@@ -1007,6 +1019,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = Build.VERSION_CODES.O)
   protected boolean isDataEnabled() {
+    checkReadPhoneStatePermission();
     return dataEnabled;
   }
 
@@ -1100,6 +1113,7 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = R)
   @HiddenApi
   protected boolean isDataConnectionAllowed() {
+    checkReadPhoneStatePermission();
     return isDataConnectionAllowed;
   }
 
