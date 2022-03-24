@@ -166,12 +166,20 @@ public class ShadowWindowManagerGlobal {
   private abstract static class WindowSessionDelegate {
     // From WindowManagerGlobal (was WindowManagerImpl in JB).
     static final int ADD_FLAG_IN_TOUCH_MODE = 0x1;
+    static final int ADD_FLAG_APP_VISIBLE = 0x2;
 
     private boolean inTouchMode;
     @Nullable protected ClipData lastDragClipData;
 
     protected int getAddFlags() {
       int res = 0;
+      // Temporarily enable this based on a system property to allow for test migration. This will
+      // eventually be updated to default and true and eventually removed, Robolectric's previous
+      // behavior of not marking windows as visible by default is a bug. This flag should only be
+      // used as a temporary toggle during migration.
+      if ("true".equals(System.getProperty("robolectric.areWindowsMarkedVisible", "false"))) {
+        res |= ADD_FLAG_APP_VISIBLE;
+      }
       if (getInTouchMode()) {
         res |= ADD_FLAG_IN_TOUCH_MODE;
       }

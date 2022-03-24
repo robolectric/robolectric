@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.View.DragShadowBuilder;
 import androidx.annotation.Nullable;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -21,6 +22,11 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWindowManagerGlobalTest {
+
+  @Before
+  public void setup() {
+    System.setProperty("robolectric.areWindowsMarkedVisible", "true");
+  }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
@@ -45,6 +51,15 @@ public class ShadowWindowManagerGlobalTest {
         .dispatchTouchEvent(downEvent);
 
     assertThat(ShadowWindowManagerGlobal.getLastDragClipData()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void windowIsVisible() {
+    View decorView =
+        Robolectric.buildActivity(DragActivity.class).setup().get().getWindow().getDecorView();
+
+    assertThat(decorView.getWindowVisibility()).isEqualTo(View.VISIBLE);
   }
 
   static final class DragActivity extends Activity {
