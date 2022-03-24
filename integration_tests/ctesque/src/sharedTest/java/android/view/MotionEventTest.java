@@ -345,9 +345,10 @@ public class MotionEventTest {
   }
 
   @Test
-  public void testOffsetLocation() {
+  public void testOffsetLocationForPointerSource() {
     assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F);
     assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F);
+    motionEvent2.setSource(InputDevice.SOURCE_TOUCHSCREEN);
 
     float offsetX = 1.0f;
     float offsetY = 1.0f;
@@ -358,9 +359,10 @@ public class MotionEventTest {
   }
 
   @Test
-  public void testSetLocation() {
+  public void testSetLocationForPointerSource() {
     assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F);
     assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F);
+    motionEvent2.setSource(InputDevice.SOURCE_TOUCHSCREEN);
 
     motionEvent2.setLocation(2.0f, 2.0f);
 
