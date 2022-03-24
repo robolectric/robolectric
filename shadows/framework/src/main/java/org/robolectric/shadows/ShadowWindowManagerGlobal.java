@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Instrumentation;
@@ -27,6 +28,7 @@ import android.view.IWindowSession;
 import android.view.InputChannel;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
+import android.view.InsetsVisibilities;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -58,7 +60,9 @@ public class ShadowWindowManagerGlobal {
   private static synchronized WindowSessionDelegate getWindowSessionDelegate() {
     if (windowSessionDelegate == null) {
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel >= S) {
+      if (apiLevel >= S_V2) {
+        windowSessionDelegate = new WindowSessionDelegateSV2();
+      } else if (apiLevel >= S) {
         windowSessionDelegate = new WindowSessionDelegateS();
       } else if (apiLevel >= R) {
         windowSessionDelegate = new WindowSessionDelegateR();
@@ -348,7 +352,7 @@ public class ShadowWindowManagerGlobal {
   }
 
   private static class WindowSessionDelegateS extends WindowSessionDelegateR {
-    // @Implementation(minSdk = S)
+    // @Implementation(sdk = S)
     public int addToDisplayAsUser(
         IWindow window,
         WindowManager.LayoutParams attrs,
@@ -359,6 +363,22 @@ public class ShadowWindowManagerGlobal {
         InputChannel outInputChannel,
         InsetsState insetsState,
         InsetsSourceControl[] activeControls) {
+      return getAddFlags();
+    }
+  }
+
+  private static class WindowSessionDelegateSV2 extends WindowSessionDelegateS {
+    // @Implementation(minSdk = S_V2)
+    public int addToDisplayAsUser(
+        IWindow window,
+        WindowManager.LayoutParams attrs,
+        int viewVisibility,
+        int displayId,
+        int userId,
+        InsetsVisibilities requestedVisibilities,
+        InputChannel outInputChannel,
+        InsetsState outInsetsState,
+        InsetsSourceControl[] outActiveControls) {
       return getAddFlags();
     }
   }
