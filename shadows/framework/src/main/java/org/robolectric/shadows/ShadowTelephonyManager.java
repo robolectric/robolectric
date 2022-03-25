@@ -42,6 +42,7 @@ import android.telephony.TelephonyManager.CellInfoCallback;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import com.google.common.base.Ascii;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -319,9 +320,13 @@ public class ShadowTelephonyManager {
     this.networkCountryIso = networkCountryIso;
   }
 
+  /**
+   * Returns the SIM country lowercase. This matches the API this shadows:
+   * https://developer.android.com/reference/android/telephony/TelephonyManager#getNetworkCountryIso().
+   */
   @Implementation
   protected String getNetworkCountryIso() {
-    return networkCountryIso;
+    return networkCountryIso == null ? null : Ascii.toLowerCase(networkCountryIso);
   }
 
   /** Sets the sim locale returned by {@link #getSimLocale()}. */
@@ -374,9 +379,14 @@ public class ShadowTelephonyManager {
     this.simSerialNumber = simSerialNumber;
   }
 
+  /**
+   * Returns the SIM country lowercase. This matches the API it shadows:
+   * https://developer.android.com/reference/android/telephony/TelephonyManager#getSimCountryIso().
+   */
   @Implementation
   protected String getSimCountryIso() {
-    return simCountryIsoMap.get(/* subId= */ 0);
+    String simCountryIso = simCountryIsoMap.get(/* subId= */ 0);
+    return simCountryIso == null ? simCountryIso : Ascii.toLowerCase(simCountryIso);
   }
 
   @Implementation(minSdk = N, maxSdk = Q)
