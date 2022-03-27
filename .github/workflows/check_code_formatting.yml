@@ -22,6 +22,8 @@ jobs:
           distribution: 'zulu'
           java-version: 11.0.8
 
+      - uses: gradle/gradle-build-action@v2
+
       - name: Download google-java-format 1.9
         run: |
           curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v1.15.0/google-java-format-1.15.0-all-deps.jar

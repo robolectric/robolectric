@@ -15,20 +15,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle
-            ~/.m2
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Set up JDK 11.0.8
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 11.0.8
+
+      - uses: gradle/gradle-build-action@v2
 
       - name: Cache ICU build output
         id: cache-icu
@@ -65,21 +59,14 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle
-            ~/.m2
-            ~/sqlite
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Set up JDK 11.0.8
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: 11.0.8
+
+      - uses: gradle/gradle-build-action@v2
 
       - name: Cache ICU build output
         id: cache-icu
@@ -129,6 +116,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 11.0.8
+
+      - uses: gradle/gradle-build-action@v2
 
       - name: Determine emulator target
         id: determine-target
