@@ -4,10 +4,10 @@ apply plugin: RoboJavaModulePlugin
 
 dependencies {
     api project(":robolectric")
-    api "junit:junit:${junitVersion}"
+    api libs.junit
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
+    testImplementation libs.google.truth
+    testImplementation libs.google.libphonenumber
 }

@@ -7,9 +7,9 @@ apply plugin: DeployedRoboJavaModulePlugin
 dependencies {
     api project(":pluginapi")
     api project(":utils")
-    api "com.google.guava:guava:$guavaJREVersion"
+    api libs.google.guava
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+    testImplementation libs.google.truth
 }

@@ -8,12 +8,12 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.0'
-        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
-        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31"
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.42.0"
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.3.0"
+        classpath libs.gradlePlugin.android
+        classpath libs.gradlePlugin.kotlin
+        classpath libs.gradlePlugin.errorprone
+        classpath libs.gradlePlugin.versions
+        classpath libs.gradlePlugin.aggregateJavadoc
+        classpath libs.gradlePlugin.spotless
     }
 }
 

@@ -14,25 +14,25 @@ shadows {
 dependencies {
     compileOnly project(":shadows:framework")
     api project(":annotations")
-    api "com.google.guava:guava:$guavaJREVersion"
+    api libs.google.guava
 
-    compileOnly "com.android.support:support-fragment:28.0.0"
-    compileOnly "com.google.android.gms:play-services-base:8.4.0"
-    compileOnly "com.google.android.gms:play-services-basement:8.4.0"
+    compileOnly libs.android.support.fragment
+    compileOnly libs.google.gms.playService.base
+    compileOnly libs.google.gms.playService.basement
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
-    testCompileOnly "com.google.android.gms:play-services-base:8.4.0"
-    testCompileOnly "com.google.android.gms:play-services-basement:8.4.0"
+    testCompileOnly libs.google.gms.playService.base
+    testCompileOnly libs.google.gms.playService.basement
 
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testRuntimeOnly "com.android.support:support-fragment:28.0.0"
-    testRuntimeOnly "com.google.android.gms:play-services-base:8.4.0"
-    testRuntimeOnly "com.google.android.gms:play-services-basement:8.4.0"
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation libs.mockito.core
+    testRuntimeOnly libs.android.support.fragment
+    testRuntimeOnly libs.google.gms.playService.base
+    testRuntimeOnly libs.google.gms.playService.basement
 
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
 }

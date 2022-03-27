@@ -8,45 +8,43 @@ configurations {
     earlyTestRuntime
 }
 
-def supportLibraryVersions = "28.0.0"
-
 dependencies {
     compileOnly project(":robolectric")
     compileOnly project(":shadows:framework")
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "com.android.support:support-annotations:${supportLibraryVersions}"
-    compileOnly "com.android.support:support-v4:${supportLibraryVersions}"
-    compileOnly "com.android.support:support-compat:${supportLibraryVersions}"
-    compileOnly "com.android.support:support-core-ui:${supportLibraryVersions}"
-    compileOnly "com.android.support:support-core-utils:${supportLibraryVersions}"
-    compileOnly "com.android.support:support-fragment:${supportLibraryVersions}"
-    compileOnly "com.android.support:support-media-compat:${supportLibraryVersions}"
+    compileOnly libs.android.support.annotations
+    compileOnly libs.android.support.v4
+    compileOnly libs.android.support.compat
+    compileOnly libs.android.support.coreUI
+    compileOnly libs.android.support.coreUtils
+    compileOnly libs.android.support.fragment
+    compileOnly libs.android.support.mediaCompat
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
-    testCompileOnly "com.android.support:support-annotations:${supportLibraryVersions}"
-    testCompileOnly "com.android.support:support-v4:${supportLibraryVersions}"
-    testCompileOnly "com.android.support:support-compat:${supportLibraryVersions}"
-    testCompileOnly "com.android.support:support-core-ui:${supportLibraryVersions}"
-    testCompileOnly "com.android.support:support-core-utils:${supportLibraryVersions}"
-    testCompileOnly "com.android.support:support-fragment:${supportLibraryVersions}"
-    testCompileOnly "com.android.support:support-media-compat:${supportLibraryVersions}"
+    testCompileOnly libs.android.support.annotations
+    testCompileOnly libs.android.support.v4
+    testCompileOnly libs.android.support.compat
+    testCompileOnly libs.android.support.coreUI
+    testCompileOnly libs.android.support.coreUtils
+    testCompileOnly libs.android.support.fragment
+    testCompileOnly libs.android.support.mediaCompat
 
     testImplementation project(":robolectric")
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.junit
+    testImplementation libs.hamcrest
+    testImplementation libs.google.truth
+    testImplementation libs.mockito.core
 
-    earlyTestRuntime "org.hamcrest:hamcrest-junit:2.0.0.0"
+    earlyTestRuntime libs.hamcrest
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testRuntimeOnly "com.android.support:support-v4:${supportLibraryVersions}"
-    testRuntimeOnly "com.android.support:support-compat:${supportLibraryVersions}"
-    testRuntimeOnly "com.android.support:support-core-ui:${supportLibraryVersions}"
-    testRuntimeOnly "com.android.support:support-core-utils:${supportLibraryVersions}"
-    testRuntimeOnly "com.android.support:support-fragment:${supportLibraryVersions}"
-    testRuntimeOnly "com.android.support:support-media-compat:${supportLibraryVersions}"
+    testRuntimeOnly libs.android.support.v4
+    testRuntimeOnly libs.android.support.compat
+    testRuntimeOnly libs.android.support.coreUI
+    testRuntimeOnly libs.android.support.coreUtils
+    testRuntimeOnly libs.android.support.fragment
+    testRuntimeOnly libs.android.support.mediaCompat
 }
 
 // hamcrest needs to come before junit on runtime classpath; the gradle IntelliJ plugin

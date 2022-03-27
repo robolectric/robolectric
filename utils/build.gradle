@@ -7,19 +7,19 @@ apply plugin: DeployedRoboJavaModulePlugin
 dependencies {
     api project(":annotations")
     api project(":pluginapi")
-    api "javax.inject:javax.inject:1"
-    api "javax.annotation:javax.annotation-api:1.3.2"
+    api libs.javax.inject
+    api libs.javax.annotation
 
     // For @VisibleForTesting and ByteStreams
-    implementation "com.google.guava:guava:$guavaJREVersion"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    implementation libs.google.guava
+    compileOnly libs.google.findBugs
 
-    testCompileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
-    testAnnotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
-    testAnnotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
-    implementation "com.google.errorprone:error_prone_annotations:$errorproneVersion"
+    testCompileOnly libs.google.autoService.annotations
+    testAnnotationProcessor libs.google.autoService
+    testAnnotationProcessor libs.google.errorprone.core
+    implementation libs.google.errorprone.annotations
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation libs.mockito.core
 }

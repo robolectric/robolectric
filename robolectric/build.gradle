@@ -19,8 +19,8 @@ configurations {
 project.sourceSets.test.compileClasspath += configurations.shadow
 
 dependencies {
-    annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
-    annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
+    annotationProcessor libs.google.autoService
+    annotationProcessor libs.google.errorprone.core
 
     api project(":annotations")
     api project(":junit")
@@ -30,32 +30,32 @@ dependencies {
     api project(":utils")
     api project(":utils:reflector")
     api project(":plugins:maven-dependency-resolver")
-    api "javax.inject:javax.inject:1"
-    compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
-    api "javax.annotation:javax.annotation-api:1.3.2"
+    api libs.javax.inject
+    compileOnly libs.google.autoService.annotations
+    api libs.javax.annotation
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
     api project(":shadows:framework")
 
-    api "org.bouncycastle:bcprov-jdk15on:1.68"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    api libs.bouncycastle
+    compileOnly libs.google.findBugs
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "junit:junit:${junitVersion}"
-    implementation "androidx.test:monitor:$axtVersion"
-    implementation "androidx.test.espresso:espresso-idling-resource:3.4.0"
+    compileOnly libs.junit
+    implementation libs.androidx.test.monitor
+    implementation libs.androidx.test.espresso.idling.resource
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "com.google.truth.extensions:truth-java8-extension:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testImplementation "androidx.test:core:$axtVersion"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "androidx.test.ext:truth:$axtVersion"
-    testImplementation "androidx.test:runner:$axtVersion"
-    testImplementation("com.google.guava:guava:$guavaJREVersion")
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation libs.google.truth.java8Extension
+    testImplementation libs.mockito.core
+    testImplementation libs.hamcrest
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.androidx.test.truth
+    testImplementation libs.androidx.test.runner
+    testImplementation(libs.google.guava)
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }
@@ -71,14 +71,14 @@ project.apply plugin: CheckApiChangesPlugin
 
 checkApiChanges {
     from = [
-            "org.robolectric:robolectric:${apiCompatVersion}@jar",
-            "org.robolectric:annotations:${apiCompatVersion}@jar",
-            "org.robolectric:junit:${apiCompatVersion}@jar",
-            "org.robolectric:resources:${apiCompatVersion}@jar",
-            "org.robolectric:sandbox:${apiCompatVersion}@jar",
-            "org.robolectric:utils:${apiCompatVersion}@jar",
-            "org.robolectric:shadowapi:${apiCompatVersion}@jar",
-            "org.robolectric:shadows-framework:${apiCompatVersion}@jar",
+            libs.robolectric.robolectric.get(),
+            libs.robolectric.annotations.get(),
+            libs.robolectric.junit.get(),
+            libs.robolectric.resources.get(),
+            libs.robolectric.sandbox.get(),
+            libs.robolectric.utils.get(),
+            libs.robolectric.shadowapi.get(),
+            libs.robolectric.shadowsFramework.get(),
     ]
 
     to = [

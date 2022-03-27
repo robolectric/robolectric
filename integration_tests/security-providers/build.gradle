@@ -4,12 +4,11 @@ apply plugin: RoboJavaModulePlugin
 
 dependencies {
     api project(":robolectric")
-    api "junit:junit:${junitVersion}"
+    api libs.junit
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.conscrypt:conscrypt-openjdk-uber:2.4.0"
-    testImplementation "com.squareup.okhttp3:okhttp"
-    testImplementation platform("com.squareup.okhttp3:okhttp-bom:4.8.0")
+    testImplementation libs.okhttp
+    testImplementation libs.google.truth
+    testImplementation libs.conscrypt
 }

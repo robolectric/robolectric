@@ -27,23 +27,23 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:$appCompatVersion")
-    implementation("androidx.constraintlayout:constraintlayout:$constraintlayoutVersion")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.constraintlayout)
 
     // Testing dependencies
-    testImplementation("androidx.test:runner:$axtVersion")
+    testImplementation(libs.androidx.test.runner)
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation("androidx.test:rules:$axtVersion")
-    testImplementation("androidx.test.espresso:espresso-intents:$espressoVersion")
-    testImplementation("androidx.test.espresso:espresso-core:$espressoVersion")
-    testImplementation("androidx.test.ext:truth:$axtVersion")
-    testImplementation("androidx.test:core:$axtVersion")
-    testImplementation("androidx.fragment:fragment:$axtVersion")
-    testImplementation("androidx.fragment:fragment-testing:$axtVersion")
+    testImplementation libs.junit
+    testImplementation(libs.androidx.test.rules)
+    testImplementation(libs.androidx.test.espresso.intents)
+    testImplementation(libs.androidx.test.espresso.core)
+    testImplementation(libs.androidx.test.truth)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.fragment)
+    testImplementation(libs.androidx.fragment.testing)
 
     // TODO: this should be a transitive dependency of core...
-    testImplementation("androidx.lifecycle:lifecycle-common:$lifecycleVersion")
-    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    testImplementation("com.google.truth:truth:$truthVersion")
+    testImplementation(libs.androidx.lifecycle.common)
+    testImplementation(libs.androidx.test.junit)
+    testImplementation(libs.google.truth)
 }

@@ -25,21 +25,21 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:$appCompatVersion")
-    implementation("androidx.window:window:$windowVersion")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.window)
 
     // Testing dependencies
     testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation("androidx.test:core:$axtVersion")
-    testImplementation("androidx.core:core:$coreVersion")
-    testImplementation("androidx.test:runner:$axtVersion")
-    testImplementation("androidx.test:rules:$axtVersion")
-    testImplementation("androidx.test.espresso:espresso-intents:$espressoVersion")
-    testImplementation("androidx.test.ext:truth:$axtVersion")
+    testImplementation libs.junit
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.androidx.core)
+    testImplementation(libs.androidx.test.runner)
+    testImplementation(libs.androidx.test.rules)
+    testImplementation(libs.androidx.test.espresso.intents)
+    testImplementation(libs.androidx.test.truth)
     // TODO: this should be a transitive dependency of core...
-    testImplementation("androidx.lifecycle:lifecycle-common:$lifecycleVersion")
-    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    testImplementation("com.google.truth:truth:$truthVersion")
+    testImplementation(libs.androidx.lifecycle.common)
+    testImplementation(libs.androidx.test.junit)
+    testImplementation(libs.google.truth)
 }

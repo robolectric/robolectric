@@ -9,11 +9,11 @@ dependencies {
     api project(":annotations")
     api project(":pluginapi")
 
-    api "com.google.guava:guava:$guavaJREVersion"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    api libs.google.guava
+    compileOnly libs.google.findBugs
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "com.google.testing.compile:compile-testing:0.18"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation libs.google.compileTesting
+    testImplementation libs.mockito.core
 }

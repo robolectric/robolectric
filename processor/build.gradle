@@ -35,21 +35,21 @@ dependencies {
     api project(":annotations")
     api project(":shadowapi")
 
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    api "org.ow2.asm:asm:${asmVersion}"
-    api "org.ow2.asm:asm-commons:${asmVersion}"
-    api "com.google.guava:guava:$guavaJREVersion"
-    api "com.google.code.gson:gson:2.8.6"
-    implementation 'com.google.auto:auto-common:1.1.2'
+    compileOnly libs.google.findBugs
+    api libs.asm
+    api libs.asm.commons
+    api libs.google.guava
+    api libs.google.gson
+    implementation libs.google.autoCommon
 
     def toolsJar = Jvm.current().getToolsJar()
     if (toolsJar != null) {
         implementation files(toolsJar)
     }
 
-    testImplementation "javax.annotation:jsr250-api:1.0"
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "com.google.testing.compile:compile-testing:0.18"
-    testImplementation "com.google.truth:truth:${truthVersion}"
+    testImplementation libs.javax.jsr250
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+    testImplementation libs.google.compileTesting
+    testImplementation libs.google.truth
 }

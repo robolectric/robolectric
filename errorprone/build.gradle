@@ -20,14 +20,14 @@ dependencies {
     implementation project(":shadowapi")
 
     // Compile dependencies
-    implementation "com.google.errorprone:error_prone_annotation:$errorproneVersion"
-    implementation "com.google.errorprone:error_prone_refaster:$errorproneVersion"
-    implementation "com.google.errorprone:error_prone_check_api:$errorproneVersion"
-    compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
+    implementation libs.google.errorprone.annotation
+    implementation libs.google.errorprone.refaster
+    implementation libs.google.errorprone.checkApi
+    compileOnly libs.google.autoService.annotations
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
 
-    annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
-    annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
+    annotationProcessor libs.google.autoService
+    annotationProcessor libs.google.errorprone.core
 
     // in jdk 9, tools.jar disappears!
     def toolsJar = Jvm.current().getToolsJar()
@@ -36,9 +36,9 @@ dependencies {
     }
 
     // Testing dependencies
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation("com.google.errorprone:error_prone_test_helpers:${errorproneVersion}") {
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation(libs.google.errorprone.testHelpers) {
         exclude group: 'junit', module: 'junit' // because it depends on a snapshot!?
     }
     testCompileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }

@@ -64,24 +64,24 @@ dependencies {
     implementation project(path: ':shadowapi', configuration: 'default')
 
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:${junitVersion}"
+    testImplementation libs.junit
     // temporarily use a newer monitor version for HardwareRendererCompat
-    testImplementation("androidx.test:monitor:1.5.0-alpha03")
-    testImplementation("androidx.test:runner:$axtVersion")
-    testImplementation("androidx.test:rules:$axtVersion")
-    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    testImplementation("androidx.test.ext:truth:$axtVersion")
-    testImplementation("androidx.test:core:$axtVersion")
-    testImplementation("com.google.truth:truth:${truthVersion}")
-    testImplementation("com.google.guava:guava:$guavaJREVersion")
+    testImplementation(libs.androidx.test.monitor)
+    testImplementation(libs.androidx.test.runner)
+    testImplementation(libs.androidx.test.rules)
+    testImplementation(libs.androidx.test.junit)
+    testImplementation(libs.androidx.test.truth)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.google.truth)
+    testImplementation(libs.google.guava)
 
     // Testing dependencies
     // temporarily use a newer monitor version for HardwareRendererCompat
-    androidTestImplementation("androidx.test:monitor:1.5.0-alpha03")
-    androidTestImplementation("androidx.test:runner:$axtVersion")
-    androidTestImplementation("androidx.test:rules:$axtVersion")
-    androidTestImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    androidTestImplementation("androidx.test.ext:truth:$axtVersion")
-    androidTestImplementation("com.google.truth:truth:${truthVersion}")
-    androidTestImplementation("com.google.guava:guava:$guavaJREVersion")
+    androidTestImplementation(libs.androidx.test.monitor)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.androidx.test.truth)
+    androidTestImplementation(libs.google.truth)
+    androidTestImplementation(libs.google.guava)
 }

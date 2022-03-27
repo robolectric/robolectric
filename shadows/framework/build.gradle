@@ -15,16 +15,13 @@ configurations {
     sqlite4java
 }
 
-def sqlite4javaVersion = '1.0.392'
-def errorproneVersion = '2.9.0'
-
 task copySqliteNatives(type: Copy) {
     from project.configurations.sqlite4java {
         include '**/*.dll'
         include '**/*.so'
         include '**/*.dylib'
         rename { String filename ->
-            def filenameMatch = filename =~ /^([^\-]+)-(.+)-${sqlite4javaVersion}\.(.+)/
+            def filenameMatch = filename =~ /^([^\-]+)-(.+)-${libs.versions.sqlite4java.get()}\.(.+)/
             if (filenameMatch) {
                 def platformFilename = filenameMatch[0][1]
                 def platformFolder = filenameMatch[0][2]
@@ -50,20 +47,20 @@ dependencies {
     api project(":shadowapi")
     api project(":utils")
     api project(":utils:reflector")
-    api "androidx.test:monitor:$axtVersion@aar"
+    api libs.androidx.test.monitor
 
-    implementation "com.google.errorprone:error_prone_annotations:$errorproneVersion"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    api "com.almworks.sqlite4java:sqlite4java:$sqlite4javaVersion"
+    implementation libs.google.errorprone.annotations
+    compileOnly libs.google.findBugs
+    api libs.sqlite4java.sqlite4java
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
-    api "com.ibm.icu:icu4j:70.1"
-    api "androidx.annotation:annotation:1.1.0"
-    api "com.google.auto.value:auto-value-annotations:1.7.4"
-    annotationProcessor "com.google.auto.value:auto-value:1.6.2"
+    api libs.icu4j
+    api libs.androidx.annotation
+    api libs.google.autoValue.annotations
+    annotationProcessor libs.google.autoValue
 
-    sqlite4java "com.almworks.sqlite4java:libsqlite4java-osx:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-amd64:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x64:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-i386:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x86:$sqlite4javaVersion"
+    sqlite4java libs.sqlite4java.libsqlite4java.osx
+    sqlite4java libs.sqlite4java.libsqlite4java.linux64
+    sqlite4java libs.sqlite4java.libsqlite4java.linux86
+    sqlite4java libs.sqlite4java.libsqlite4java.win64
+    sqlite4java libs.sqlite4java.libsqlite4java.win86
 }

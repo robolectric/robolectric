@@ -17,8 +17,8 @@ dependencies {
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
-    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation libs.mockito.core
 }
