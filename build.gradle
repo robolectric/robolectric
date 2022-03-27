@@ -5,13 +5,9 @@ buildscript {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
     }
 
     dependencies {
-        gradle
         classpath 'com.android.tools.build:gradle:7.1.0'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
@@ -25,7 +21,6 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        gradlePluginPortal()
     }
 
     group = "org.robolectric"
