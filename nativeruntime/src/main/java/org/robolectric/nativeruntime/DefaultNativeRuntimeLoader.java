@@ -3,6 +3,7 @@ package org.robolectric.nativeruntime;
 import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
+import android.database.CursorWindow;
 import com.google.auto.service.AutoService;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
@@ -14,12 +15,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.inject.Injector;
 
 /** Loads the Robolectric native runtime. */
 @AutoService(NativeRuntimeLoader.class)
 @Priority(Integer.MIN_VALUE)
 public final class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
   private static final AtomicBoolean loaded = new AtomicBoolean(false);
+
+  static void injectAndLoad() {
+    Injector injector = new Injector.Builder(CursorWindow.class.getClassLoader()).build();
+    NativeRuntimeLoader loader = injector.getInstance(NativeRuntimeLoader.class);
+    loader.ensureLoaded();
+  }
 
   @Override
   public void ensureLoaded() {
