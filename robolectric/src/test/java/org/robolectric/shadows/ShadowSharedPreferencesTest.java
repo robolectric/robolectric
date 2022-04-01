@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -15,9 +16,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.LooperMode;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSharedPreferencesTest {
@@ -210,7 +214,7 @@ public class ShadowSharedPreferencesTest {
     assertThat(restored).isEqualTo("bar");
   }
 
-  /** Tests a sequence of operations in SharedPrefereces that would previously cause a deadlock. */
+  /** Tests a sequence of operations in SharedPreferences that would previously cause a deadlock. */
   @Test
   public void commit_multipleTimes() {
     SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -218,5 +222,24 @@ public class ShadowSharedPreferencesTest {
     sharedPreferences.edit().putBoolean("bar", true).commit();
     assertTrue(sharedPreferences.getBoolean("foo", false));
     assertTrue(sharedPreferences.getBoolean("bar", false));
+  }
+
+  /**
+   * Tests a sequence of operations in SharedPreferences that would previously cause a deadlock in
+   * Legacy LooperMode.
+   */
+  @Test
+  @LooperMode(LooperMode.Mode.LEGACY)
+  public void commit_inParallel_doesNotDeadlock() throws InterruptedException {
+    SharedPreferences sharedPreferences =
+        PreferenceManager.getDefaultSharedPreferences(ApplicationProvider.getApplicationContext());
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    executor.execute(() -> sharedPreferences.edit().putBoolean("bar", true).commit());
+    sharedPreferences.edit().putBoolean("bar", true).commit();
+
+    assertTrue(sharedPreferences.getBoolean("bar", true));
+    executor.shutdown();
+    executor.awaitTermination(10, SECONDS);
   }
 }
