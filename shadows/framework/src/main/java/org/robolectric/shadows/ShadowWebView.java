@@ -76,6 +76,7 @@ public class ShadowWebView extends ShadowViewGroup {
   private int historyIndex = -1;
   private ArrayList<String> history = new ArrayList<>();
   private String lastEvaluatedJavascript;
+  private ValueCallback<String> lastEvaluatedJavascriptCallback;
   // TODO: Delete this when setCanGoBack is deleted. This is only used to determine which "path" we
   // use when canGoBack or goBack is called.
   private boolean canGoBackIsSet;
@@ -544,10 +545,23 @@ public class ShadowWebView extends ShadowViewGroup {
   @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
   protected void evaluateJavascript(String script, ValueCallback<String> callback) {
     this.lastEvaluatedJavascript = script;
+    this.lastEvaluatedJavascriptCallback = callback;
   }
 
+  /**
+   * Returns the last evaluated Javascript value provided to {@link #evaluateJavascript(String,
+   * ValueCallback)} or null if the method has not been called.
+   */
   public String getLastEvaluatedJavascript() {
     return lastEvaluatedJavascript;
+  }
+
+  /**
+   * Returns the last callback value provided to {@link #evaluateJavascript(String, ValueCallback)}
+   * or null if the method has not been called.
+   */
+  public ValueCallback<String> getLastEvaluatedJavascriptCallback() {
+    return lastEvaluatedJavascriptCallback;
   }
 
   /**

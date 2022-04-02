@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.DownloadListener;
+import android.webkit.ValueCallback;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebMessagePort;
@@ -451,11 +452,15 @@ public class ShadowWebViewTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   @Config(minSdk = 19)
   public void evaluateJavascript() {
+    ValueCallback<String> callback = mock(ValueCallback.class);
     assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isNull();
-    webView.evaluateJavascript("myScript", null);
+    assertThat(shadowOf(webView).getLastEvaluatedJavascriptCallback()).isNull();
+    webView.evaluateJavascript("myScript", callback);
     assertThat(shadowOf(webView).getLastEvaluatedJavascript()).isEqualTo("myScript");
+    assertThat(shadowOf(webView).getLastEvaluatedJavascriptCallback()).isSameInstanceAs(callback);
   }
 
   @Test
