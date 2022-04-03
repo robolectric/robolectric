@@ -20,6 +20,10 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBufferInt;
@@ -856,6 +860,18 @@ public class ShadowBitmap {
     }
   }
 
+  void drawRect(RectF r, Paint paint) {
+    if (bufferedImage == null) {
+      return;
+    }
+
+    Graphics2D graphics2D = bufferedImage.createGraphics();
+    Rectangle2D r2d = new Rectangle2D.Float(r.left, r.top, r.right - r.left, r.bottom - r.top);
+    graphics2D.setColor(new Color(paint.getColor()));
+    graphics2D.draw(r2d);
+    graphics2D.dispose();
+  }
+
   void drawBitmap(Bitmap source, int left, int top) {
     ShadowBitmap shadowSource = Shadows.shadowOf(source);
     if (bufferedImage == null || shadowSource.bufferedImage == null) {
@@ -899,4 +915,5 @@ public class ShadowBitmap {
   BufferedImage getBufferedImage() {
     return bufferedImage;
   }
+
 }

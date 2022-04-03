@@ -61,6 +61,7 @@ Those software configurations are recommended and tested.
 See [Building Robolectric](http://robolectric.org/building-robolectric/) for more details about setting up a build environment for Robolectric.
 
 ### Building
+
 Robolectric supports running tests against multiple Android API levels. The work it must do to support each API level is slightly different, so its shadows are built separately for each. To build shadows for every API version, run:
 
     ./gradlew clean assemble testClasses --parallel

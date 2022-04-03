@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -528,5 +529,37 @@ public class ShadowCanvasTest {
     canvas.restoreToCount(save1);
 
     assertThat(canvas.getSaveCount()).isEqualTo(save1);
+  }
+
+  @Test
+  public void drawRect_toCanvas() {
+    Bitmap bitmap = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
+    bitmap.eraseColor(Color.BLACK);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.BLACK);
+
+    Canvas canvas = new Canvas(bitmap);
+    Paint paint = new Paint();
+    paint.setStyle(Paint.Style.FILL);
+    paint.setAntiAlias(true);
+    paint.setColor(Color.WHITE);
+    canvas.drawRect(0, 0, 10, 10, paint);
+    assertThat(bitmap.getPixel(0, 0)).isEqualTo(Color.WHITE);
+  }
+
+  @Test
+  public void draw_Rect() throws Exception {
+    Canvas canvas = new Canvas();
+    Paint paint = new Paint();
+    paint.setColor(Color.WHITE);
+    RectF rect = new RectF(2f, 4f, 10f, 10f);
+    canvas.drawRect(2f, 4f, 10f, 10f, paint);
+    ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+    assertThat(shadowCanvas.getDrawnRect(0).left).isEqualTo(2f);
+    assertThat(shadowCanvas.getDrawnRect(0).top).isEqualTo(4f);
+    assertThat(shadowCanvas.getDrawnRect(0).right).isEqualTo(10f);
+    assertThat(shadowCanvas.getDrawnRect(0).bottom).isEqualTo(10f);
+    assertThat(shadowCanvas.getDrawnRect(0).rect).isEqualTo(rect);
+    assertThat(shadowCanvas.getDrawnRect(0).paint.getColor()).isEqualTo(Color.WHITE);
   }
 }

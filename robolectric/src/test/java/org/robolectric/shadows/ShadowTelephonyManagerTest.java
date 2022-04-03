@@ -242,9 +242,9 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  public void shouldGiveNetworkCountryIso() {
+  public void shouldGiveNetworkCountryIsoInLowercase() {
     shadowOf(telephonyManager).setNetworkCountryIso("SomeIso");
-    assertEquals("SomeIso", telephonyManager.getNetworkCountryIso());
+    assertEquals("someiso", telephonyManager.getNetworkCountryIso());
   }
 
   @Test
@@ -506,7 +506,7 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = N, maxSdk = Q)
-  public void shouldGetSimIosWhenSetUsingSlotNumber() {
+  public void shouldGetSimIsoWhenSetUsingSlotNumber() {
     String expectedSimIso = "usa";
     int subId = 2;
     shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);

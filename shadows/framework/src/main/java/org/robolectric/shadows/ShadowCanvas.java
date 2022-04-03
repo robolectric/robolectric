@@ -243,6 +243,11 @@ public class ShadowCanvas {
   @Implementation
   protected void drawRect(float left, float top, float right, float bottom, Paint paint) {
     rectPaintEvents.add(new RectPaintHistoryEvent(left, top, right, bottom, paint));
+
+    if (targetBitmap != null) {
+      ShadowBitmap shadowTargetBitmap = Shadows.shadowOf(targetBitmap);
+      shadowTargetBitmap.drawRect(new RectF(left, top, right, bottom), paint);
+    }
   }
 
   @Implementation
