@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -31,7 +30,6 @@ import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,13 +50,7 @@ public class ShadowDefaultRequestDirectorTest {
     assertFalse(fakeHttpLayer.hasRequestInfos());
     assertFalse(fakeHttpLayer.hasResponseRules());
 
-    connectionKeepAliveStrategy =
-        new ConnectionKeepAliveStrategy() {
-          @Override
-          public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
-            return 0;
-          }
-        };
+    connectionKeepAliveStrategy = (httpResponse, httpContext) -> 0;
     requestDirector =
         new DefaultRequestDirector(
             null,
@@ -76,7 +68,7 @@ public class ShadowDefaultRequestDirectorTest {
   }
 
   @After
-  public void tearDown_EnsureStaticStateIsReset() throws Exception {
+  public void tearDown_EnsureStaticStateIsReset() {
     FakeHttp.addPendingHttpResponse(200, "a happy response body");
   }
 
@@ -213,12 +205,9 @@ public class ShadowDefaultRequestDirectorTest {
   public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
     FakeHttp.setDefaultHttpResponse(404, "no such page");
 
-    FakeHttp.addHttpResponseRule(new RequestMatcher() {
-      @Override
-      public boolean matches(HttpRequest request) {
-        return request.getRequestLine().getUri().equals("http://matching.uri");
-      }
-    }, new TestHttpResponse(200, "a cheery response body"));
+    FakeHttp.addHttpResponseRule(
+        request -> request.getRequestLine().getUri().equals("http://matching.uri"),
+        new TestHttpResponse(200, "a cheery response body"));
 
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://matching.uri"), null);
     assertNotNull(response);
@@ -392,7 +381,7 @@ public class ShadowDefaultRequestDirectorTest {
   }
 
   @Test
-  public void shouldSupportRealHttpRequests() throws Exception {
+  public void shouldSupportRealHttpRequests() {
     FakeHttp.getFakeHttpLayer().interceptHttpRequests(false);
     DefaultHttpClient client = new DefaultHttpClient();
 
@@ -441,12 +430,7 @@ public class ShadowDefaultRequestDirectorTest {
 
   @Test
   public void shouldReturnResponseFromHttpResponseGenerator() throws Exception {
-    FakeHttp.addPendingHttpResponse(new HttpResponseGenerator() {
-      @Override
-      public HttpResponse getResponse(HttpRequest request) {
-        return new TestHttpResponse(200, "a happy response body");
-      }
-    });
+    FakeHttp.addPendingHttpResponse(request -> new TestHttpResponse(200, "a happy response body"));
     HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
     assertNotNull(response);
