@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -79,6 +80,7 @@ import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.shadows.ShadowActivity.IntentSenderRequest;
 import org.robolectric.util.TestRunnable;
 
@@ -1374,6 +1376,26 @@ public class ShadowActivityTest {
         () -> {
           shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), (unused) -> {});
         });
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void splashScreen_setThemeId_succeeds() {
+    int splashScreenThemeId = 173;
+    Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
+
+    activity.getSplashScreen().setSplashScreenTheme(splashScreenThemeId);
+
+    RoboSplashScreen roboSplashScreen = (RoboSplashScreen) activity.getSplashScreen();
+    assertThat(roboSplashScreen.getSplashScreenTheme()).isEqualTo(splashScreenThemeId);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void splashScreen_instanceOfRoboSplashScreen_succeeds() {
+    Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
+
+    assertThat(activity.getSplashScreen()).isInstanceOf(RoboSplashScreen.class);
   }
 
   /////////////////////////////
