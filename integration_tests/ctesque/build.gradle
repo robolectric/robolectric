@@ -22,19 +22,19 @@ android {
             includeAndroidResources = true
         }
         devices {
-            // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi28DebugAndroidTest
-            nexusOneApi28(ManagedVirtualDevice) {
+            // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi29DebugAndroidTest
+            nexusOneApi29(ManagedVirtualDevice) {
                 device = "Nexus One"
-                apiLevel = 28
+                apiLevel = 29
                 systemImageSource = "aosp"
                 abi = "x86"
             }
-            // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi30DebugAndroidTest
-            nexusOneApi30(ManagedVirtualDevice) {
+            // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi32DebugAndroidTest
+            nexusOneApi32(ManagedVirtualDevice) {
                 device = "Nexus One"
-                apiLevel = 30
-                systemImageSource = "aosp-atd"
-                abi = "x86"
+                apiLevel = 32
+                systemImageSource = "google"
+                abi = "x86_64"
             }
         }
     }
