@@ -17,9 +17,6 @@
 package org.robolectric.nativeruntime;
 
 import android.database.CharArrayBuffer;
-import android.database.CursorWindow;
-import org.robolectric.pluginapi.NativeRuntimeLoader;
-import org.robolectric.util.inject.Injector;
 
 /**
  * Native methods for CursorWindow JNI registration.
@@ -29,9 +26,7 @@ import org.robolectric.util.inject.Injector;
  */
 public final class CursorWindowNatives {
   static {
-    Injector injector = new Injector.Builder(CursorWindow.class.getClassLoader()).build();
-    NativeRuntimeLoader loader = injector.getInstance(NativeRuntimeLoader.class);
-    loader.ensureLoaded();
+    DefaultNativeRuntimeLoader.injectAndLoad();
   }
 
   private CursorWindowNatives() {}

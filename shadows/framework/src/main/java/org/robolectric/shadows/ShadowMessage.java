@@ -2,10 +2,8 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Message;
-import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
@@ -32,7 +30,6 @@ public abstract class ShadowMessage {
   }
 
   /** Exposes the package-private {@link Message#recycleUnchecked()} */
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
   public abstract void recycleUnchecked();
 
   /**

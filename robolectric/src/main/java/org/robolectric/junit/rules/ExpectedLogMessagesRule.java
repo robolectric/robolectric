@@ -117,13 +117,27 @@ public final class ExpectedLogMessagesRule implements TestRule {
    * and {@link #expectLogMessage(int, String, String)} used instead.
    *
    * <p>This will also match any log statement which contain a throwable as well. For verifying the
-   * throwable, please see {@link #expectLogMessageWithThrowable(int, String, String, Throwable)}.
+   * throwable, please see {@link #expectLogMessagePatternWithThrowableMatcher}.
    *
    * <p>Do not use this to suppress failures. Use this to test that expected error cases in your
    * code cause log messages to be printed.
    */
   public void expectLogMessagePattern(int level, String tag, Pattern messagePattern) {
     expectedLogs.add(ExpectedLogItem.create(level, tag, messagePattern));
+  }
+
+  /**
+   * Adds an expected log statement using a regular expression, with an extra check of {@link
+   * Matcher<Throwable>}. If this log is not printed during test execution, the test case will fail.
+   * When possible, log output should be made deterministic and {@link #expectLogMessage(int,
+   * String, String)} used instead.
+   *
+   * <p>Do not use this to suppress failures. Use this to test that expected error cases in your
+   * code cause log messages to be printed.
+   */
+  public void expectLogMessagePatternWithThrowableMatcher(
+      int level, String tag, Pattern messagePattern, Matcher<Throwable> throwableMatcher) {
+    expectedLogs.add(ExpectedLogItem.create(level, tag, messagePattern, throwableMatcher));
   }
 
   /**
@@ -230,6 +244,11 @@ public final class ExpectedLogMessagesRule implements TestRule {
     static ExpectedLogItem create(
         int type, String tag, String msg, Matcher<Throwable> throwableMatcher) {
       return new ExpectedLogItem(type, tag, msg, null, throwableMatcher);
+    }
+
+    static ExpectedLogItem create(
+        int type, String tag, Pattern pattern, Matcher<Throwable> throwableMatcher) {
+      return new ExpectedLogItem(type, tag, null, pattern, throwableMatcher);
     }
 
     private ExpectedLogItem(

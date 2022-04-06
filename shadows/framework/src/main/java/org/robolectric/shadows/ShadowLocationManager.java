@@ -35,6 +35,7 @@ import android.os.Looper;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.os.WorkSource;
 import android.provider.Settings.Secure;
 import android.text.TextUtils;
 import androidx.annotation.GuardedBy;
@@ -882,8 +883,8 @@ public class ShadowLocationManager {
    * Clients compiled against the public Android SDK should only use this method on S+, clients
    * compiled against the system Android SDK may only use this method on Kitkat+.
    *
-   * <p>Prior to Kitkat, or for public clients prior to S, use {@link
-   * #getLegacyLocationRequests(String)} instead.
+   * <p>Prior to Android S {@link LocationRequest} equality is not well defined, so prefer using
+   * {@link #getLegacyLocationRequests(String)} instead if equality is required for testing.
    */
   @RequiresApi(VERSION_CODES.KITKAT)
   public List<LocationRequest> getLocationRequests(String provider) {
@@ -902,7 +903,7 @@ public class ShadowLocationManager {
    * Returns the list of {@link RoboLocationRequest} currently registered under the given provider.
    * Since {@link LocationRequest} was not publicly visible prior to S, and did not exist prior to
    * Kitkat, {@link RoboLocationRequest} allows querying the location requests prior to those
-   * platforms.
+   * platforms, and also implements proper equality comparisons for testing.
    */
   public List<RoboLocationRequest> getLegacyLocationRequests(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);
@@ -1644,7 +1645,7 @@ public class ShadowLocationManager {
     private final boolean singleShot;
 
     @RequiresApi(VERSION_CODES.KITKAT)
-    RoboLocationRequest(LocationRequest locationRequest) {
+    public RoboLocationRequest(LocationRequest locationRequest) {
       this.locationRequest = Objects.requireNonNull(locationRequest);
       intervalMillis = 0;
       minUpdateDistanceMeters = 0;
@@ -1667,7 +1668,7 @@ public class ShadowLocationManager {
     }
 
     @RequiresApi(VERSION_CODES.KITKAT)
-    LocationRequest getLocationRequest() {
+    public LocationRequest getLocationRequest() {
       return (LocationRequest) Objects.requireNonNull(locationRequest);
     }
 
@@ -1715,12 +1716,51 @@ public class ShadowLocationManager {
     public boolean equals(Object o) {
       if (o instanceof RoboLocationRequest) {
         RoboLocationRequest that = (RoboLocationRequest) o;
-        if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.KITKAT) {
+
+        // location request equality is not well-defined prior to S
+        if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
           return Objects.equals(locationRequest, that.locationRequest);
         } else {
-          return intervalMillis == that.intervalMillis
-              && singleShot == that.singleShot
-              && Float.compare(that.minUpdateDistanceMeters, minUpdateDistanceMeters) == 0;
+          if (intervalMillis != that.intervalMillis
+              || singleShot != that.singleShot
+              || Float.compare(that.minUpdateDistanceMeters, minUpdateDistanceMeters) != 0
+              || (locationRequest == null) != (that.locationRequest == null)) {
+            return false;
+          }
+
+          if (locationRequest != null) {
+            LocationRequest lr = (LocationRequest) locationRequest;
+            LocationRequest thatLr = (LocationRequest) that.locationRequest;
+
+            if (lr.getQuality() != thatLr.getQuality()
+                || lr.getInterval() != thatLr.getInterval()
+                || lr.getFastestInterval() != thatLr.getFastestInterval()
+                || lr.getExpireAt() != thatLr.getExpireAt()
+                || lr.getNumUpdates() != thatLr.getNumUpdates()
+                || lr.getSmallestDisplacement() != thatLr.getSmallestDisplacement()
+                || lr.getHideFromAppOps() != thatLr.getHideFromAppOps()
+                || !Objects.equals(lr.getProvider(), thatLr.getProvider())) {
+              return false;
+            }
+
+            // allow null worksource to match empty worksource
+            WorkSource workSource =
+                lr.getWorkSource() == null ? new WorkSource() : lr.getWorkSource();
+            WorkSource thatWorkSource =
+                thatLr.getWorkSource() == null ? new WorkSource() : thatLr.getWorkSource();
+            if (!workSource.equals(thatWorkSource)) {
+              return false;
+            }
+
+            if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.Q) {
+              if (lr.isLowPowerMode() != thatLr.isLowPowerMode()
+                  || lr.isLocationSettingsIgnored() != thatLr.isLocationSettingsIgnored()) {
+                return false;
+              }
+            }
+          }
+
+          return true;
         }
       }
 
@@ -1733,6 +1773,21 @@ public class ShadowLocationManager {
         return locationRequest.hashCode();
       } else {
         return Objects.hash(intervalMillis, singleShot, minUpdateDistanceMeters);
+      }
+    }
+
+    @Override
+    public String toString() {
+      if (locationRequest != null) {
+        return locationRequest.toString();
+      } else {
+        return "Request[interval="
+            + intervalMillis
+            + ", minUpdateDistance="
+            + minUpdateDistanceMeters
+            + ", singleShot="
+            + singleShot
+            + "]";
       }
     }
   }

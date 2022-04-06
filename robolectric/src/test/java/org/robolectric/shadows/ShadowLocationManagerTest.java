@@ -64,6 +64,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.shadows.ShadowLocationManager.ProviderProperties;
+import org.robolectric.shadows.ShadowLocationManager.RoboLocationRequest;
 
 /** Tests for {@link ShadowLocationManager}. */
 @SuppressWarnings("deprecation")
@@ -1461,6 +1462,75 @@ public class ShadowLocationManagerTest {
     shadowLocationManager.simulateGnssAntennaInfo(events1);
     inOrder1.verify(listener1, never()).onGnssAntennaInfoReceived(events1);
     inOrder2.verify(listener2, never()).onGnssAntennaInfoReceived(events1);
+  }
+
+  @Test
+  public void testRoboLocationRequest_legacyConstructor() {
+    RoboLocationRequest r = new RoboLocationRequest(GPS_PROVIDER, 0, 0, false);
+    assertThat(r.getIntervalMillis()).isEqualTo(0);
+    assertThat(r.getMinUpdateDistanceMeters()).isEqualTo(0);
+    assertThat(r.getMaxUpdates()).isEqualTo(Integer.MAX_VALUE);
+
+    r = new RoboLocationRequest(GPS_PROVIDER, 10000, 10, true);
+    assertThat(r.getIntervalMillis()).isEqualTo(10000);
+    assertThat(r.getMinUpdateDistanceMeters()).isEqualTo(10);
+    assertThat(r.getMaxUpdates()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testRoboLocationRequest_constructor() {
+    RoboLocationRequest r = new RoboLocationRequest(new LocationRequest.Builder(0).build());
+    assertThat(r.getIntervalMillis()).isEqualTo(0);
+    assertThat(r.getMinUpdateDistanceMeters()).isEqualTo(0);
+    assertThat(r.getMaxUpdates()).isEqualTo(Integer.MAX_VALUE);
+
+    r =
+        new RoboLocationRequest(
+            new LocationRequest.Builder(10000)
+                .setMinUpdateDistanceMeters(10)
+                .setMaxUpdates(1)
+                .build());
+    assertThat(r.getIntervalMillis()).isEqualTo(10000);
+    assertThat(r.getMinUpdateDistanceMeters()).isEqualTo(10);
+    assertThat(r.getMaxUpdates()).isEqualTo(1);
+  }
+
+  @Test
+  public void testRoboLocationRequest_legacyEquality() {
+    RoboLocationRequest r1 = new RoboLocationRequest(GPS_PROVIDER, 0, 0, false);
+    RoboLocationRequest r2 = new RoboLocationRequest(GPS_PROVIDER, 0, 0, false);
+    RoboLocationRequest r3 = new RoboLocationRequest(GPS_PROVIDER, 10000, 10, true);
+    RoboLocationRequest r4 = new RoboLocationRequest(GPS_PROVIDER, 10000, 10, true);
+
+    assertThat(r1).isEqualTo(r2);
+    assertThat(r3).isEqualTo(r4);
+    assertThat(r1).isNotEqualTo(r3);
+    assertThat(r4).isNotEqualTo(r2);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void testRoboLocationRequest_equality() {
+    RoboLocationRequest r1 = new RoboLocationRequest(new LocationRequest.Builder(0).build());
+    RoboLocationRequest r2 = new RoboLocationRequest(new LocationRequest.Builder(0).build());
+    RoboLocationRequest r3 =
+        new RoboLocationRequest(
+            new LocationRequest.Builder(10000)
+                .setMinUpdateDistanceMeters(10)
+                .setMaxUpdates(1)
+                .build());
+    RoboLocationRequest r4 =
+        new RoboLocationRequest(
+            new LocationRequest.Builder(10000)
+                .setMinUpdateDistanceMeters(10)
+                .setMaxUpdates(1)
+                .build());
+
+    assertThat(r1).isEqualTo(r2);
+    assertThat(r3).isEqualTo(r4);
+    assertThat(r1).isNotEqualTo(r3);
+    assertThat(r4).isNotEqualTo(r2);
   }
 
   private static final Random random = new Random(101);

@@ -16,11 +16,8 @@
 
 package org.robolectric.nativeruntime;
 
-import android.database.sqlite.SQLiteConnection;
 import java.util.function.BinaryOperator;
 import java.util.function.UnaryOperator;
-import org.robolectric.pluginapi.NativeRuntimeLoader;
-import org.robolectric.util.inject.Injector;
 
 /**
  * Native methods for SQLiteConnection JNI registration.
@@ -31,9 +28,7 @@ import org.robolectric.util.inject.Injector;
 public class SQLiteConnectionNatives {
 
   static {
-    Injector injector = new Injector.Builder(SQLiteConnection.class.getClassLoader()).build();
-    NativeRuntimeLoader loader = injector.getInstance(NativeRuntimeLoader.class);
-    loader.ensureLoaded();
+    DefaultNativeRuntimeLoader.injectAndLoad();
   }
 
   private SQLiteConnectionNatives() {}
