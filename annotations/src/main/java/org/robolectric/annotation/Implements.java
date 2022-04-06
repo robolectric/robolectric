@@ -67,5 +67,9 @@ public @interface Implements {
    */
   Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
+  /**
+   * An interface used as the default for the {@code picker} param. Indicates that no custom {@link
+   * ShadowPicker} is being used.
+   */
   interface DefaultShadowPicker extends ShadowPicker<Object> {}
 }
