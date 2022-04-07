@@ -1,5 +1,6 @@
 package android.content.res;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
@@ -7,6 +8,7 @@ import android.content.res.Resources.Theme;
 import android.graphics.Color;
 import android.util.TypedValue;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SdkSuppress;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Before;
 import org.junit.Test;
@@ -151,6 +153,7 @@ public class ThemeTest {
     assertThat(value.data).isEqualTo(R.style.Widget_AnotherTheme_Button);
   }
 
+  @SdkSuppress(minSdkVersion = O)
   @Test
   public void forStylesWithImplicitParents_shouldInheritValuesNotDefinedInChild() {
     Resources.Theme theme = resources.newTheme();
@@ -168,6 +171,7 @@ public class ThemeTest {
     assertThat(theme.obtainStyledAttributes(new int[] {R.attr.string1}).hasValue(0)).isFalse();
   }
 
+  @SdkSuppress(minSdkVersion = O)
   @Test
   public void shouldApplyParentStylesFromAttrs() {
     Resources.Theme theme = resources.newTheme();
@@ -178,6 +182,7 @@ public class ThemeTest {
         .isEqualTo("string 3 from Theme.Robolectric");
   }
 
+  @SdkSuppress(minSdkVersion = O)
   @Test
   public void setTo_shouldCopyAllAttributesToEmptyTheme() {
     Resources.Theme theme1 = resources.newTheme();
@@ -192,6 +197,7 @@ public class ThemeTest {
         .isEqualTo("string 1 from Theme.Robolectric");
   }
 
+  @SdkSuppress(minSdkVersion = O)
   @Test
   public void setTo_whenDestThemeIsModified_sourceThemeShouldNotMutate() {
     Resources.Theme sourceTheme = resources.newTheme();
@@ -207,6 +213,7 @@ public class ThemeTest {
         .isEqualTo("string 1 from Theme.Robolectric");
   }
 
+  @SdkSuppress(minSdkVersion = O)
   @Test
   public void setTo_whenSourceThemeIsModified_destThemeShouldNotMutate() {
     Resources.Theme sourceTheme = resources.newTheme();
@@ -223,6 +230,7 @@ public class ThemeTest {
   }
 
   @Test
+  @SdkSuppress(minSdkVersion = O)
   public void applyStyle_withForceFalse_shouldApplyButNotOverwriteExistingAttributeValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
@@ -237,6 +245,7 @@ public class ThemeTest {
   }
 
   @Test
+  @SdkSuppress(minSdkVersion = O)
   public void applyStyle_withForceTrue_shouldApplyAndOverwriteExistingAttributeValues() {
     Resources.Theme theme = resources.newTheme();
     theme.applyStyle(R.style.Theme_Robolectric, false);
