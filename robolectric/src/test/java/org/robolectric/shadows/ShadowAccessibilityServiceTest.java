@@ -2,18 +2,25 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.GestureResultCallback;
+import android.accessibilityservice.AccessibilityService.ScreenshotResult;
+import android.accessibilityservice.AccessibilityService.TakeScreenshotCallback;
 import android.accessibilityservice.GestureDescription;
 import android.accessibilityservice.GestureDescription.StrokeDescription;
 import android.graphics.Path;
+import android.view.Display;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityWindowInfo;
+import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -125,6 +132,81 @@ public class ShadowAccessibilityServiceTest {
     assertThat(
             service.dispatchGesture(gestureDescription, gestureResultCallback, /*handler=*/ null))
         .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void takeScreenshot_byDefault_immediatelyReturnsSuccessfully() {
+    AtomicReference<ScreenshotResult> screenshotResultAtomicReference = new AtomicReference<>(null);
+    TakeScreenshotCallback takeScreenshotCallback =
+        new TakeScreenshotCallback() {
+          @Override
+          public void onSuccess(@NonNull ScreenshotResult screenshotResult) {
+            screenshotResultAtomicReference.set(screenshotResult);
+          }
+
+          @Override
+          public void onFailure(int i) {}
+        };
+
+    service.takeScreenshot(
+        /*displayId=*/ Display.DEFAULT_DISPLAY,
+        MoreExecutors.directExecutor(),
+        takeScreenshotCallback);
+
+    assertThat(screenshotResultAtomicReference.get()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void takeScreenshot_afterSettingErrorCode_returnsErrorCode() {
+    shadow.setTakeScreenshotErrorCode(
+        AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT);
+    AtomicReference<Integer> errorCodeAtomicReference = new AtomicReference<>(-1);
+    TakeScreenshotCallback takeScreenshotCallback =
+        new TakeScreenshotCallback() {
+          @Override
+          public void onSuccess(@NonNull ScreenshotResult screenshotResult) {}
+
+          @Override
+          public void onFailure(int errorCode) {
+            errorCodeAtomicReference.set(errorCode);
+          }
+        };
+
+    service.takeScreenshot(
+        /*displayId=*/ Display.DEFAULT_DISPLAY,
+        MoreExecutors.directExecutor(),
+        takeScreenshotCallback);
+
+    assertThat(errorCodeAtomicReference.get())
+        .isEqualTo(AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void takeScreenshot_afterUnsettingErrorCode_immediatelyReturnsSuccessfully() {
+    AtomicReference<ScreenshotResult> screenshotResultAtomicReference = new AtomicReference<>(null);
+    TakeScreenshotCallback takeScreenshotCallback =
+        new TakeScreenshotCallback() {
+          @Override
+          public void onSuccess(@NonNull ScreenshotResult screenshotResult) {
+            screenshotResultAtomicReference.set(screenshotResult);
+          }
+
+          @Override
+          public void onFailure(int i) {}
+        };
+    shadow.setTakeScreenshotErrorCode(
+        AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERVAL_TIME_SHORT);
+    shadow.unsetTakeScreenshotErrorCode();
+
+    service.takeScreenshot(
+        /*displayId=*/ Display.DEFAULT_DISPLAY,
+        MoreExecutors.directExecutor(),
+        takeScreenshotCallback);
+
+    assertThat(screenshotResultAtomicReference.get()).isNotNull();
   }
 
   /**
