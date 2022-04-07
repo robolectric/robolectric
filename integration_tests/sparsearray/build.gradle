@@ -13,11 +13,11 @@ spotless {
 }
 
 android {
-    compileSdk 32
+    compileSdk 31
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 32
+        targetSdkVersion 31
     }
 
     compileOptions {

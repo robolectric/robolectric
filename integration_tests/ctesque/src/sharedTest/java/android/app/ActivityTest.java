@@ -33,7 +33,8 @@ public class ActivityTest {
   }
 
   @Test
-  public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() {
+  public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest()
+      throws Exception {
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
     Button theButton = activity.findViewById(R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
@@ -41,8 +42,8 @@ public class ActivityTest {
   }
 
   @Test
-  public void
-      whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() {
+  public void whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest()
+      throws Exception {
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
     activity.setTheme(R.style.Theme_Robolectric);
     Button theButton = activity.findViewById(R.id.button);
@@ -51,7 +52,8 @@ public class ActivityTest {
   }
 
   @Test
-  public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() {
+  public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme()
+      throws Exception {
     ActivityWithAnotherTheme.setThemeBeforeContentView = R.style.Theme_Robolectric;
     Activity activity = activityWithAnotherThemeRule.launchActivity(null);
     Button theButton = activity.findViewById(R.id.button);
@@ -60,10 +62,12 @@ public class ActivityTest {
   }
 
   @Test
-  public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() {
+  public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest()
+      throws Exception {
     Activity activity = activityWithoutThemeRule.launchActivity(null);
     Button theButton = activity.findViewById(R.id.button);
     ColorDrawable background = (ColorDrawable) theButton.getBackground();
     assertThat(background.getColor()).isEqualTo(0xff00ff00);
   }
+
 }

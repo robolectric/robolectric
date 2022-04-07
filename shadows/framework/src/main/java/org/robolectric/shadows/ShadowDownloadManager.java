@@ -7,11 +7,16 @@ import android.os.Build;
 import android.os.Environment;
 import android.util.Pair;
 import com.android.internal.util.ArrayUtils;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -24,6 +29,9 @@ public class ShadowDownloadManager {
 
   private long queueCounter = -1; // First request starts at 0 just like in the real DownloadManager
   private Map<Long, DownloadManager.Request> requestMap = new TreeMap<>();
+
+  private long completedCounter = -1;
+  private Map<Long, CompletedDownload> completedDownloadsMap = new HashMap<>();
 
   @Implementation
   protected long enqueue(DownloadManager.Request request) {
@@ -62,12 +70,67 @@ public class ShadowDownloadManager {
     return result;
   }
 
+  protected long addCompletedDownload(
+      String title,
+      String description,
+      boolean isMediaScannerScannable,
+      String mimeType,
+      String path,
+      long length,
+      boolean showNotification) {
+    return addCompletedDownload(
+        title,
+        description,
+        isMediaScannerScannable,
+        mimeType,
+        path,
+        length,
+        showNotification,
+        /* uri= */ null,
+        /* referrer= */ null);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  protected long addCompletedDownload(
+      String title,
+      String description,
+      boolean isMediaScannerScannable,
+      String mimeType,
+      String path,
+      long length,
+      boolean showNotification,
+      Uri uri,
+      Uri referrer) {
+    completedCounter++;
+    completedDownloadsMap.put(
+        completedCounter,
+        new CompletedDownload(
+            title,
+            description,
+            isMediaScannerScannable,
+            mimeType,
+            path,
+            length,
+            showNotification,
+            uri,
+            referrer));
+    return completedCounter;
+  }
+
   public DownloadManager.Request getRequest(long id) {
     return requestMap.get(id);
   }
 
   public int getRequestCount() {
     return requestMap.size();
+  }
+
+  public CompletedDownload getCompletedDownload(long id) {
+    return completedDownloadsMap.get(id);
+  }
+
+  public int getCompletedDownloadsCount() {
+    return completedDownloadsMap.size();
   }
 
   @Implements(DownloadManager.Request.class)
@@ -337,6 +400,131 @@ public class ShadowDownloadManager {
       if (closed) {
         throw new IllegalStateException("Cursor is already closed.");
       }
+    }
+  }
+
+  /**
+   * Value class to represent a "completed download" sent to {@link DownloadManager} using the
+   * addCompletedDownload APIs.
+   */
+  public static class CompletedDownload {
+    private final String title;
+    private final String description;
+    private final boolean isMediaScannerScannable;
+    private final String mimeType;
+    private final String path;
+    private final long length;
+    private final boolean showNotification;
+    private final Uri uri;
+    private final Uri referrer;
+
+    public CompletedDownload(
+        String title,
+        String description,
+        boolean isMediaScannerScannable,
+        String mimeType,
+        String path,
+        long length,
+        boolean showNotification) {
+      this(
+          title,
+          description,
+          isMediaScannerScannable,
+          mimeType,
+          path,
+          length,
+          showNotification,
+          /* uri= */ null,
+          /* referrer= */ null);
+    }
+
+    public CompletedDownload(
+        String title,
+        String description,
+        boolean isMediaScannerScannable,
+        String mimeType,
+        String path,
+        long length,
+        boolean showNotification,
+        @Nullable Uri uri,
+        @Nullable Uri referrer) {
+      Preconditions.checkArgument(!Strings.isNullOrEmpty(title), "title can't be null");
+      Preconditions.checkArgument(!Strings.isNullOrEmpty(description), "description can't be null");
+      Preconditions.checkArgument(!Strings.isNullOrEmpty(path), "path can't be null");
+      Preconditions.checkArgument(!Strings.isNullOrEmpty(mimeType), "mimeType can't be null");
+      if (length < 0) {
+        throw new IllegalArgumentException("invalid value for param: length");
+      }
+      this.title = title;
+      this.description = description;
+      this.isMediaScannerScannable = isMediaScannerScannable;
+      this.mimeType = mimeType;
+      this.path = path;
+      this.length = length;
+      this.showNotification = showNotification;
+      this.uri = uri;
+      this.referrer = referrer;
+    }
+
+    public String getTitle() {
+      return title;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public boolean isMediaScannerScannable() {
+      return isMediaScannerScannable;
+    }
+
+    public String getMimeType() {
+      return mimeType;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+    public long getLength() {
+      return length;
+    }
+
+    public boolean showNotification() {
+      return showNotification;
+    }
+
+    @Nullable
+    public Uri getUri() {
+      return uri;
+    }
+
+    @Nullable
+    public Uri getReferrer() {
+      return referrer;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof CompletedDownload)) {
+        return false;
+      }
+      CompletedDownload other = (CompletedDownload) o;
+      return this.title.equals(other.getTitle())
+          && this.description.equals(other.getDescription())
+          && this.isMediaScannerScannable == other.isMediaScannerScannable()
+          && this.mimeType.equals(other.getMimeType())
+          && this.path.equals(other.getPath())
+          && this.length == other.getLength()
+          && this.showNotification == other.showNotification()
+          && Objects.equals(this.uri, other.getUri())
+          && Objects.equals(this.referrer, other.getReferrer());
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(
+          title, description, mimeType, path, length, showNotification, uri, referrer);
     }
   }
 

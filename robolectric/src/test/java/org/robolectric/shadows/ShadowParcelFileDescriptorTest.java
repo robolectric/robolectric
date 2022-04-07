@@ -8,7 +8,6 @@ import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,7 +16,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowParcelFileDescriptorTest {
@@ -263,12 +261,7 @@ public class ShadowParcelFileDescriptorTest {
     pfd = ParcelFileDescriptor.open(readOnlyFile, ParcelFileDescriptor.MODE_READ_ONLY);
     int fd = pfd.getFd();
     assertThat(fd).isGreaterThan(0);
-
-    final FileDescriptor fileDescriptor = pfd.getFileDescriptor();
-    assertThat(fileDescriptor.valid()).isTrue();
-    assertThat(fd).isEqualTo(ReflectionHelpers.getField(fileDescriptor, "fd"));
-
-    FileInputStream is = new FileInputStream(fileDescriptor);
+    FileInputStream is = new FileInputStream(new File("/proc/self/fd/" + fd));
     assertThat(is.read()).isEqualTo(READ_ONLY_FILE_CONTENTS);
     is.close();
   }

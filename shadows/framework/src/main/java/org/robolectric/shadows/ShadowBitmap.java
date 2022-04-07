@@ -20,9 +20,6 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBufferInt;
@@ -48,12 +45,14 @@ public class ShadowBitmap {
   /** Number of bytes used internally to represent each pixel */
   private static final int INTERNAL_BYTES_PER_PIXEL = 4;
 
+  @RealObject
+  private Bitmap realBitmap;
+
   int createdFromResId = -1;
   String createdFromPath;
   InputStream createdFromStream;
   FileDescriptor createdFromFileDescriptor;
   byte[] createdFromBytes;
-  @RealObject private Bitmap realBitmap;
   private Bitmap createdFromBitmap;
   private Bitmap scaledFromBitmap;
   private int createdFromX = -1;
@@ -85,6 +84,126 @@ public class ShadowBitmap {
   public static String visualize(Bitmap bitmap) {
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
     return shadowBitmap.getDescription();
+  }
+
+  /**
+   * Reference to original Bitmap from which this Bitmap was created. {@code null} if this Bitmap
+   * was not copied from another instance.
+   *
+   * @return Original Bitmap from which this Bitmap was created.
+   */
+  public Bitmap getCreatedFromBitmap() {
+    return createdFromBitmap;
+  }
+
+  /**
+   * Resource ID from which this Bitmap was created. {@code 0} if this Bitmap was not created
+   * from a resource.
+   *
+   * @return Resource ID from which this Bitmap was created.
+   */
+  public int getCreatedFromResId() {
+    return createdFromResId;
+  }
+
+  /**
+   * Path from which this Bitmap was created. {@code null} if this Bitmap was not create from a
+   * path.
+   *
+   * @return Path from which this Bitmap was created.
+   */
+  public String getCreatedFromPath() {
+    return createdFromPath;
+  }
+
+  /**
+   * {@link InputStream} from which this Bitmap was created. {@code null} if this Bitmap was not
+   * created from a stream.
+   *
+   * @return InputStream from which this Bitmap was created.
+   */
+  public InputStream getCreatedFromStream() {
+    return createdFromStream;
+  }
+
+  /**
+   * Bytes from which this Bitmap was created. {@code null} if this Bitmap was not created from
+   * bytes.
+   *
+   * @return Bytes from which this Bitmap was created.
+   */
+  public byte[] getCreatedFromBytes() {
+    return createdFromBytes;
+  }
+
+  /**
+   * Horizontal offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
+   *
+   * @return Horizontal offset within {@link #getCreatedFromBitmap()}.
+   */
+  public int getCreatedFromX() {
+    return createdFromX;
+  }
+
+  /**
+   * Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
+   *
+   * @return Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
+   */
+  public int getCreatedFromY() {
+    return createdFromY;
+  }
+
+  /**
+   * Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+   * content, or -1.
+   *
+   * @return Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+   * content, or -1.
+   */
+  public int getCreatedFromWidth() {
+    return createdFromWidth;
+  }
+
+  /**
+   * Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+   * content, or -1.
+   * @return Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
+   * content, or -1.
+   */
+  public int getCreatedFromHeight() {
+    return createdFromHeight;
+  }
+
+  /**
+   * Color array from which this Bitmap was created. {@code null} if this Bitmap was not created
+   * from a color array.
+   * @return Color array from which this Bitmap was created.
+   */
+  public int[] getCreatedFromColors() {
+    return createdFromColors;
+  }
+
+  /**
+   * Matrix from which this Bitmap's content was transformed, or {@code null}.
+   * @return Matrix from which this Bitmap's content was transformed, or {@code null}.
+   */
+  public Matrix getCreatedFromMatrix() {
+    return createdFromMatrix;
+  }
+
+  /**
+   * {@code true} if this Bitmap was created with filtering.
+   * @return {@code true} if this Bitmap was created with filtering.
+   */
+  public boolean getCreatedFromFilter() {
+    return createdFromFilter;
+  }
+
+  @Implementation
+  protected boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
+    appendDescription(" compressed as " + format + " with quality " + quality);
+    return ImageUtil.writeToStream(realBitmap, format, quality, stream);
   }
 
   @Implementation
@@ -309,162 +428,6 @@ public class ShadowBitmap {
   }
 
   @Implementation
-  protected static Bitmap nativeCreateFromParcel(Parcel p) {
-    int parceledWidth = p.readInt();
-    int parceledHeight = p.readInt();
-    Bitmap.Config parceledConfig = (Bitmap.Config) p.readSerializable();
-
-    int[] parceledColors = new int[parceledHeight * parceledWidth];
-    p.readIntArray(parceledColors);
-
-    return createBitmap(
-        parceledColors, 0, parceledWidth, parceledWidth, parceledHeight, parceledConfig);
-  }
-
-  public static int getBytesPerPixel(Bitmap.Config config) {
-    if (config == null) {
-      throw new NullPointerException("Bitmap config was null.");
-    }
-    switch (config) {
-      case RGBA_F16:
-        return 8;
-      case ARGB_8888:
-        return 4;
-      case RGB_565:
-      case ARGB_4444:
-        return 2;
-      case ALPHA_8:
-        return 1;
-      default:
-        throw new IllegalArgumentException("Unknown bitmap config: " + config);
-    }
-  }
-
-  /**
-   * Reference to original Bitmap from which this Bitmap was created. {@code null} if this Bitmap
-   * was not copied from another instance.
-   *
-   * @return Original Bitmap from which this Bitmap was created.
-   */
-  public Bitmap getCreatedFromBitmap() {
-    return createdFromBitmap;
-  }
-
-  /**
-   * Resource ID from which this Bitmap was created. {@code 0} if this Bitmap was not created from a
-   * resource.
-   *
-   * @return Resource ID from which this Bitmap was created.
-   */
-  public int getCreatedFromResId() {
-    return createdFromResId;
-  }
-
-  /**
-   * Path from which this Bitmap was created. {@code null} if this Bitmap was not create from a
-   * path.
-   *
-   * @return Path from which this Bitmap was created.
-   */
-  public String getCreatedFromPath() {
-    return createdFromPath;
-  }
-
-  /**
-   * {@link InputStream} from which this Bitmap was created. {@code null} if this Bitmap was not
-   * created from a stream.
-   *
-   * @return InputStream from which this Bitmap was created.
-   */
-  public InputStream getCreatedFromStream() {
-    return createdFromStream;
-  }
-
-  /**
-   * Bytes from which this Bitmap was created. {@code null} if this Bitmap was not created from
-   * bytes.
-   *
-   * @return Bytes from which this Bitmap was created.
-   */
-  public byte[] getCreatedFromBytes() {
-    return createdFromBytes;
-  }
-
-  /**
-   * Horizontal offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
-   *
-   * @return Horizontal offset within {@link #getCreatedFromBitmap()}.
-   */
-  public int getCreatedFromX() {
-    return createdFromX;
-  }
-
-  /**
-   * Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
-   *
-   * @return Vertical offset within {@link #getCreatedFromBitmap()} of this Bitmap's content, or -1.
-   */
-  public int getCreatedFromY() {
-    return createdFromY;
-  }
-
-  /**
-   * Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
-   * content, or -1.
-   *
-   * @return Width from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this
-   *     Bitmap's content, or -1.
-   */
-  public int getCreatedFromWidth() {
-    return createdFromWidth;
-  }
-
-  /**
-   * Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this Bitmap's
-   * content, or -1.
-   *
-   * @return Height from {@link #getCreatedFromX()} within {@link #getCreatedFromBitmap()} of this
-   *     Bitmap's content, or -1.
-   */
-  public int getCreatedFromHeight() {
-    return createdFromHeight;
-  }
-
-  /**
-   * Color array from which this Bitmap was created. {@code null} if this Bitmap was not created
-   * from a color array.
-   *
-   * @return Color array from which this Bitmap was created.
-   */
-  public int[] getCreatedFromColors() {
-    return createdFromColors;
-  }
-
-  /**
-   * Matrix from which this Bitmap's content was transformed, or {@code null}.
-   *
-   * @return Matrix from which this Bitmap's content was transformed, or {@code null}.
-   */
-  public Matrix getCreatedFromMatrix() {
-    return createdFromMatrix;
-  }
-
-  /**
-   * {@code true} if this Bitmap was created with filtering.
-   *
-   * @return {@code true} if this Bitmap was created with filtering.
-   */
-  public boolean getCreatedFromFilter() {
-    return createdFromFilter;
-  }
-
-  @Implementation
-  protected boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
-    appendDescription(" compressed as " + format + " with quality " + quality);
-    return ImageUtil.writeToStream(realBitmap, format, quality, stream);
-  }
-
-  @Implementation
   protected void setPixels(
       int[] pixels, int offset, int stride, int x, int y, int width, int height) {
     checkBitmapMutable();
@@ -580,12 +543,12 @@ public class ShadowBitmap {
     description += s;
   }
 
-  public String getDescription() {
-    return description;
-  }
-
   public void setDescription(String s) {
     description = s;
+  }
+
+  public String getDescription() {
+    return description;
   }
 
   @Implementation
@@ -625,24 +588,24 @@ public class ShadowBitmap {
     this.hasMipMap = hasMipMap;
   }
 
-  @Implementation
-  protected int getWidth() {
-    return width;
-  }
-
   @Implementation(minSdk = KITKAT)
   protected void setWidth(int width) {
     this.width = width;
   }
 
   @Implementation
-  protected int getHeight() {
-    return height;
+  protected int getWidth() {
+    return width;
   }
 
   @Implementation(minSdk = KITKAT)
   protected void setHeight(int height) {
     this.height = height;
+  }
+
+  @Implementation
+  protected int getHeight() {
+    return height;
   }
 
   @Implementation
@@ -677,6 +640,20 @@ public class ShadowBitmap {
     p.writeIntArray(pixels);
   }
 
+
+  @Implementation
+  protected static Bitmap nativeCreateFromParcel(Parcel p) {
+    int parceledWidth = p.readInt();
+    int parceledHeight = p.readInt();
+    Bitmap.Config parceledConfig = (Bitmap.Config) p.readSerializable();
+
+    int[] parceledColors = new int[parceledHeight * parceledWidth];
+    p.readIntArray(parceledColors);
+
+    return createBitmap(
+        parceledColors, 0, parceledWidth, parceledWidth, parceledHeight, parceledConfig);
+  }
+
   @Implementation
   protected void copyPixelsFromBuffer(Buffer dst) {
     if (isRecycled()) {
@@ -685,9 +662,7 @@ public class ShadowBitmap {
 
     // See the related comment in #copyPixelsToBuffer(Buffer).
     if (getBytesPerPixel(config) != INTERNAL_BYTES_PER_PIXEL) {
-      throw new RuntimeException(
-          "Not implemented: only Bitmaps with "
-              + INTERNAL_BYTES_PER_PIXEL
+      throw new RuntimeException("Not implemented: only Bitmaps with " + INTERNAL_BYTES_PER_PIXEL
               + " bytes per pixel are supported");
     }
     if (!(dst instanceof ByteBuffer) && !(dst instanceof IntBuffer)) {
@@ -723,9 +698,7 @@ public class ShadowBitmap {
     // getByteCount(), but if we don't enforce this restriction then for RGB_4444 and other
     // configs that value would be smaller then the buffer size we actually need.
     if (getBytesPerPixel(config) != INTERNAL_BYTES_PER_PIXEL) {
-      throw new RuntimeException(
-          "Not implemented: only Bitmaps with "
-              + INTERNAL_BYTES_PER_PIXEL
+      throw new RuntimeException("Not implemented: only Bitmaps with " + INTERNAL_BYTES_PER_PIXEL
               + " bytes per pixel are supported");
     }
 
@@ -759,13 +732,13 @@ public class ShadowBitmap {
   }
 
   @Implementation(minSdk = KITKAT)
-  protected boolean isPremultiplied() {
-    return requestPremultiplied && hasAlpha();
+  protected void setPremultiplied(boolean isPremultiplied) {
+    this.requestPremultiplied = isPremultiplied;
   }
 
   @Implementation(minSdk = KITKAT)
-  protected void setPremultiplied(boolean isPremultiplied) {
-    this.requestPremultiplied = isPremultiplied;
+  protected boolean isPremultiplied() {
+    return requestPremultiplied && hasAlpha();
   }
 
   @Implementation(minSdk = O)
@@ -817,6 +790,25 @@ public class ShadowBitmap {
     return realBitmap;
   }
 
+  public static int getBytesPerPixel(Bitmap.Config config) {
+    if (config == null) {
+      throw new NullPointerException("Bitmap config was null.");
+    }
+    switch (config) {
+      case RGBA_F16:
+        return 8;
+      case ARGB_8888:
+        return 4;
+      case RGB_565:
+      case ARGB_4444:
+        return 2;
+      case ALPHA_8:
+        return 1;
+      default:
+        throw new IllegalArgumentException("Unknown bitmap config: " + config);
+    }
+  }
+
   public void setCreatedFromResId(int resId, String description) {
     this.createdFromResId = resId;
     appendDescription(" for resource:" + description);
@@ -864,18 +856,6 @@ public class ShadowBitmap {
     }
   }
 
-  void drawRect(RectF r, Paint paint) {
-    if (bufferedImage == null) {
-      return;
-    }
-
-    Graphics2D graphics2D = bufferedImage.createGraphics();
-    Rectangle2D r2d = new Rectangle2D.Float(r.left, r.top, r.right - r.left, r.bottom - r.top);
-    graphics2D.setColor(new Color(paint.getColor()));
-    graphics2D.draw(r2d);
-    graphics2D.dispose();
-  }
-
   void drawBitmap(Bitmap source, int left, int top) {
     ShadowBitmap shadowSource = Shadows.shadowOf(source);
     if (bufferedImage == null || shadowSource.bufferedImage == null) {
@@ -912,11 +892,11 @@ public class ShadowBitmap {
     }
   }
 
-  BufferedImage getBufferedImage() {
-    return bufferedImage;
-  }
-
   void setBufferedImage(BufferedImage bufferedImage) {
     this.bufferedImage = bufferedImage;
+  }
+
+  BufferedImage getBufferedImage() {
+    return bufferedImage;
   }
 }

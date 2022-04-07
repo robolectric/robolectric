@@ -33,7 +33,7 @@ public class ShadowBiometricManager {
 
   @SuppressWarnings("deprecation")
   @RequiresPermission(USE_BIOMETRIC)
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected int canAuthenticate() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
       return reflector(BiometricManagerReflector.class, realBiometricManager).canAuthenticate();

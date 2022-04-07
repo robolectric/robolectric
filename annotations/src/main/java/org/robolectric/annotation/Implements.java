@@ -8,9 +8,10 @@ import java.lang.annotation.Target;
 import org.robolectric.shadow.api.ShadowPicker;
 
 /**
- * Indicates that a class declaration is intended to shadow an Android class declaration. The
- * Robolectric runtime searches classes with this annotation for methods with the {@link
- * Implementation} annotation and calls them in place of the methods on the Android class.
+ * Indicates that a class declaration is intended to shadow an Android class declaration.
+ * The Robolectric runtime searches classes with this annotation for methods with the
+ * {@link Implementation} annotation and calls them in place of the methods on the Android
+ * class.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -54,10 +55,14 @@ public @interface Implements {
    */
   boolean looseSignatures() default false;
 
-  /** If specified, the shadow class will be applied only for this SDK or greater. */
+  /**
+   * If specified, the shadow class will be applied only for this SDK or greater.
+   */
   int minSdk() default -1;
 
-  /** If specified, the shadow class will be applied only for this SDK or lesser. */
+  /**
+   * If specified, the shadow class will be applied only for this SDK or lesser.
+   */
   int maxSdk() default -1;
 
   /**
@@ -67,9 +72,6 @@ public @interface Implements {
    */
   Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
-  /**
-   * An interface used as the default for the {@code picker} param. Indicates that no custom {@link
-   * ShadowPicker} is being used.
-   */
-  interface DefaultShadowPicker extends ShadowPicker<Object> {}
+  interface DefaultShadowPicker extends ShadowPicker<Object> {
+  }
 }

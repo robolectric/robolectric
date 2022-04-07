@@ -12,9 +12,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-18.04, macos-latest, self-hosted, windows-2019 ]
+        os: [ubuntu-18.04, macos-latest, self-hosted, windows-2019]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
           submodules: recursive
@@ -34,9 +34,8 @@ jobs:
             mingw-w64-x86_64-make
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v1
         with:
-          distribution: 'zulu'
           java-version: 11
 
       - name: Install build tools (Mac OS)
@@ -49,7 +48,7 @@ jobs:
 
       - name: Cache ICU build output (Non Windows)
         id: cache-icu
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         if: runner.os == 'Linux' || runner.os == 'macOS'
         with:
           path: ~/icu-bin
@@ -57,7 +56,7 @@ jobs:
 
       - name: Cache ICU build output (Windows)
         id: cache-icu-windows
-        uses: actions/cache@v3
+        uses: actions/cache@v2
         if: runner.os == 'Windows'
         with:
           path: D:\msys64\home\runneradmin\icu-bin
@@ -127,7 +126,7 @@ jobs:
 
       - name: Upload libnativeruntime (Non Windows)
         if: runner.os == 'Linux' || runner.os == 'macOS'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: ${{env.NATIVERUNTIME_ARTIFACT_FILE}}
           path: |
@@ -135,7 +134,7 @@ jobs:
 
       - name: Upload libnativeruntime (Windows)
         if: runner.os == 'Windows'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: robolectric-nativeruntime-windows-x86_64.dll
           path: |
