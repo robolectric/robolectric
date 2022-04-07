@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.app.DownloadManager.Request;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
 import android.app.DownloadManager;
 import android.database.Cursor;
@@ -16,6 +16,8 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowDownloadManager.CompletedDownload;
+import org.robolectric.shadows.ShadowDownloadManager.ShadowRequest;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDownloadManagerTest {
@@ -201,5 +203,195 @@ public class ShadowDownloadManagerTest {
   public void request_shouldNotSetDestinationInExternalPublicDir_privateDirectories()
       throws Exception {
     shadow.setDestinationInExternalPublicDir("bar", "foo.mp4");
+  }
+
+  @Test
+  public void getRequest_doesNotReturnRemovedRequests() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    long id = manager.enqueue(request);
+
+    manager.remove(id);
+
+    assertThat(manager.getRequest(id)).isNull();
+  }
+
+  @Test
+  public void addCompletedDownload_requiresNonNullNonEmptyTitle() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                null,
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                "//storage/path/to/Title.pdf",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "",
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                "//storage/path/to/Title.pdf",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+  }
+
+  @Test
+  public void addCompletedDownload_requiresNonNullNonEmptyDescription() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                null,
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                "//storage/path/to/Title.pdf",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                "",
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                "//storage/path/to/Title.pdf",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+  }
+
+  @Test
+  public void addCompletedDownload_requiresNonNullNonEmptyPath() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                null,
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                "",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+  }
+
+  @Test
+  public void addCompletedDownload_requiresNonNullNonEmptyMimeType() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                null,
+                "//storage/path/to/Title.pdf",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                "",
+                "//storage/path/to/Title.pdf",
+                /* length= */ 1024L,
+                /* showNotification= */ true));
+  }
+
+  @Test
+  public void addCompletedDownload_requiresPositiveLength() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            manager.addCompletedDownload(
+                "Title",
+                "Description",
+                /* isMediaScannerScannable= */ true,
+                "application/pdf",
+                "//storage/path/to/Title.pdf",
+                /* length= */ -1L,
+                /* showNotification= */ true));
+  }
+
+  @Test
+  public void getCompletedDownload_returnsExactCompletedDownload() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    long id =
+        manager.addCompletedDownload(
+            "Title",
+            "Description",
+            /* isMediaScannerScannable= */ true,
+            "application/pdf",
+            "//storage/path/to/Title.pdf",
+            /* length= */ 1024L,
+            /* showNotification= */ true);
+
+    CompletedDownload capturedDownload = manager.getCompletedDownload(id);
+
+    assertThat(capturedDownload.getTitle()).isEqualTo("Title");
+    assertThat(capturedDownload.getDescription()).isEqualTo("Description");
+    assertThat(capturedDownload.isMediaScannerScannable()).isTrue();
+    assertThat(capturedDownload.getMimeType()).isEqualTo("application/pdf");
+    assertThat(capturedDownload.getPath()).isEqualTo("//storage/path/to/Title.pdf");
+    assertThat(capturedDownload.getLength()).isEqualTo(1024L);
+    assertThat(capturedDownload.showNotification()).isTrue();
+  }
+
+  @Test
+  public void getRequestCount_doesNotIncludeCompletedDownloads() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    manager.addCompletedDownload(
+        "Title",
+        "Description",
+        /* isMediaScannerScannable= */ true,
+        "application/pdf",
+        "//storage/path/to/Title.pdf",
+        /* length= */ 1024L,
+        /* showNotification= */ true);
+
+    assertThat(manager.getRequestCount()).isEqualTo(0);
+  }
+
+  @Test
+  public void getCompletedDownloadsCount_doesNotIncludeRequests() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    manager.enqueue(request);
+
+    assertThat(manager.getCompletedDownloadsCount()).isEqualTo(0);
   }
 }
