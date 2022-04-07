@@ -1,4 +1,2 @@
-/**
- * Package containing Robolectric annotations.
- */
+/** Package containing Robolectric annotations. */
 package org.robolectric.annotation;

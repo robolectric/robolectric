@@ -16,7 +16,7 @@ Here's an example of a simple test written using Robolectric:
 public class MyActivityTest {
 
   @Test
-  public void clickingButton_shouldChangeResultsViewText() throws Exception {
+  public void clickingButton_shouldChangeResultsViewText() {
     Activity activity = Robolectric.setupActivity(MyActivity.class);
 
     Button button = (Button) activity.findViewById(R.id.press_me_button);

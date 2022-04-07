@@ -1,6 +1,5 @@
 package android.graphics;
 
-import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Resources;
@@ -8,10 +7,10 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory.Options;
 import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.truth.TruthJUnit;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import org.junit.Before;
@@ -33,7 +32,7 @@ public class BitmapFactoryTest {
 
   @Before
   public void setUp() {
-    resources = getTargetContext().getResources();
+    resources = InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
   }
 
   @Test
@@ -88,7 +87,7 @@ public class BitmapFactoryTest {
    * can be enabled for Robolectric.
    */
   @Test
-  public void decodeStream_options_setsOutWidthToMinusOne() throws IOException {
+  public void decodeStream_options_setsOutWidthToMinusOne() {
     TruthJUnit.assume().that(Build.FINGERPRINT).isNotEqualTo("robolectric");
     byte[] invalidBitmapPixels = "invalid bitmap pixels".getBytes(Charset.defaultCharset());
     ByteArrayInputStream inputStream = new ByteArrayInputStream(invalidBitmapPixels);
