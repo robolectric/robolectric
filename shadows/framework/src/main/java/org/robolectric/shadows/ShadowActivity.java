@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -43,7 +42,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.window.SplashScreen;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +57,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.fakes.RoboMenuItem;
-import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
@@ -98,7 +95,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean throwIntentSenderException;
   private boolean hasReportedFullyDrawn = false;
   private boolean isInPictureInPictureMode = false;
-  private final SplashScreen splashScreen = new RoboSplashScreen();
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -359,14 +355,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
 
     return window;
-  }
-
-  /**
-   * @return fake SplashScreen
-   */
-  @Implementation(minSdk = S)
-  protected SplashScreen getSplashScreen() {
-    return splashScreen;
   }
 
   public void setWindow(Window window) {
