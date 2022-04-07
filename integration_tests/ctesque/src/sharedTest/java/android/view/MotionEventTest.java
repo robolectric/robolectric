@@ -1,5 +1,6 @@
 package android.view;
 
+import static android.os.Build.VERSION_CODES.N;
 import static androidx.test.ext.truth.view.MotionEventSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerCoordsSubject.assertThat;
 import static androidx.test.ext.truth.view.PointerPropertiesSubject.assertThat;
@@ -17,12 +18,12 @@ import android.view.MotionEvent.PointerProperties;
 import androidx.test.core.view.PointerCoordsBuilder;
 import androidx.test.core.view.PointerPropertiesBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SdkSuppress;
 import com.google.common.truth.FailureMetadata;
 import com.google.common.truth.Subject;
 import com.google.common.truth.Truth;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
@@ -322,7 +323,7 @@ public class MotionEventTest {
   }
 
   @Test
-  @Ignore // doesn't actually fail when expected on emulator API 23
+  @SdkSuppress(minSdkVersion = N)
   public void testReadFromParcelWithInvalidSampleSize() {
     Parcel parcel = Parcel.obtain();
     motionEvent2.writeToParcel(parcel, Parcelable.PARCELABLE_WRITE_RETURN_VALUE);
@@ -347,9 +348,10 @@ public class MotionEventTest {
   }
 
   @Test
-  public void testOffsetLocation() {
+  public void testOffsetLocationForPointerSource() {
     assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F);
     assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F);
+    motionEvent2.setSource(InputDevice.SOURCE_TOUCHSCREEN);
 
     float offsetX = 1.0f;
     float offsetY = 1.0f;
@@ -360,9 +362,10 @@ public class MotionEventTest {
   }
 
   @Test
-  public void testSetLocation() {
+  public void testSetLocationForPointerSource() {
     assertThat(motionEvent2).x().isWithin(TOLERANCE).of(X_3F);
     assertThat(motionEvent2).y().isWithin(TOLERANCE).of(Y_4F);
+    motionEvent2.setSource(InputDevice.SOURCE_TOUCHSCREEN);
 
     motionEvent2.setLocation(2.0f, 2.0f);
 

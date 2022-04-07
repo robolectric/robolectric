@@ -7,8 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that a method declaration is intended to shadow a method with the same signature
- * on the associated Android class.
+ * Indicates that a method declaration is intended to shadow a method with the same signature on the
+ * associated Android class.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -16,13 +16,9 @@ import java.lang.annotation.Target;
 public @interface Implementation {
   int DEFAULT_SDK = -1;
 
-  /**
-   * The annotated shadow method will be invoked only for the specified SDK or greater.
-   */
+  /** The annotated shadow method will be invoked only for the specified SDK or greater. */
   int minSdk() default DEFAULT_SDK;
 
-  /**
-   * The annotated shadow method will be invoked only for the specified SDK or lesser.
-   */
+  /** The annotated shadow method will be invoked only for the specified SDK or lesser. */
   int maxSdk() default DEFAULT_SDK;
 }
