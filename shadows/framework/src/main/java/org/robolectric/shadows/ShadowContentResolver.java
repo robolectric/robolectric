@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.OperationApplicationException;
 import android.content.PeriodicSync;
 import android.content.SyncAdapterType;
+import android.content.SyncInfo;
 import android.content.UriPermission;
 import android.content.pm.ProviderInfo;
 import android.database.ContentObserver;
@@ -528,6 +529,23 @@ public class ShadowContentResolver {
     ShadowContentResolver.Status status = getStatus(account, authority);
     // TODO: this means a sync is *perpetually* active after one request
     return status != null && status.syncRequests > 0;
+  }
+
+  @Implementation
+  protected static List<SyncInfo> getCurrentSyncs() {
+    List<SyncInfo> list = new ArrayList<>();
+    for (Map.Entry<String, Map<Account, Status>> map : syncableAccounts.entrySet()) {
+      if (map.getValue() == null) {
+        continue;
+      }
+      for (Map.Entry<Account, Status> mp : map.getValue().entrySet()) {
+        if (isSyncActive(mp.getKey(), map.getKey())) {
+          SyncInfo si = new SyncInfo(0, mp.getKey(), map.getKey(), 0);
+          list.add(si);
+        }
+      }
+    }
+    return list;
   }
 
   @Implementation
