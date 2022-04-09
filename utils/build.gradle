@@ -2,6 +2,7 @@ import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
+apply plugin: 'kotlin'
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
