@@ -4,7 +4,6 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.integrationtests.memoryleaks">
-    <uses-sdk android:targetSdkVersion="30"/>
 
     <application>
     </application>
