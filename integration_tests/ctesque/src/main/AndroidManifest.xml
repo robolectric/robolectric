@@ -5,7 +5,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.ctesque">
 
-  <uses-sdk android:targetSdkVersion="27"/>
-
   <application />
 </manifest>
