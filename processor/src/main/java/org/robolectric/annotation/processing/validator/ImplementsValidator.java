@@ -3,6 +3,7 @@ package org.robolectric.annotation.processing.validator;
 import static org.robolectric.annotation.processing.validator.ImplementationValidator.METHODS_ALLOWED_TO_BE_PUBLIC;
 
 import com.google.auto.common.AnnotationValues;
+import com.google.auto.common.MoreElements;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
@@ -210,7 +211,7 @@ public class ImplementsValidator extends Validator {
   private void validateShadowMethods(TypeElement sdkClassElem, TypeElement shadowClassElem,
       int classMinSdk, int classMaxSdk, boolean looseSignatures) {
     for (Element memberElement : ElementFilter.methodsIn(shadowClassElem.getEnclosedElements())) {
-      ExecutableElement methodElement = (ExecutableElement) memberElement;
+      ExecutableElement methodElement = MoreElements.asExecutable(memberElement);
 
       // equals, hashCode, and toString are exempt, because of Robolectric's weird special behavior
       if (METHODS_ALLOWED_TO_BE_PUBLIC.contains(methodElement.getSimpleName().toString())) {
@@ -218,6 +219,11 @@ public class ImplementsValidator extends Validator {
       }
 
       verifySdkMethod(sdkClassElem, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+      if (shadowClassElem.getQualifiedName().toString().startsWith("org.robolectric")
+          && !methodElement.getModifiers().contains(Modifier.ABSTRACT)) {
+        checkForMissingImplementationAnnotation(
+            sdkClassElem, methodElement, classMinSdk, classMaxSdk, looseSignatures);
+      }
 
       String methodName = methodElement.getSimpleName().toString();
       if (methodName.equals(CONSTRUCTOR_METHOD_NAME)
@@ -248,6 +254,40 @@ public class ImplementsValidator extends Validator {
         String problem = sdk.verifyMethod(sdkClassElem, methodElement, looseSignatures);
         if (problem != null) {
           problems.add(problem, sdk.sdkInt);
+        }
+      }
+
+      if (problems.any()) {
+        problems.recount(messager, methodElement);
+      }
+    }
+  }
+
+  /**
+   * For the given {@link ExecutableElement}, check to see if it should have a {@link
+   * Implementation} tag but is missing one
+   */
+  private void checkForMissingImplementationAnnotation(
+      TypeElement sdkClassElem,
+      ExecutableElement methodElement,
+      int classMinSdk,
+      int classMaxSdk,
+      boolean looseSignatures) {
+
+    if (sdkCheckMode == SdkCheckMode.OFF) {
+      return;
+    }
+
+    Implementation implementation = methodElement.getAnnotation(Implementation.class);
+    if (implementation == null) {
+      Kind kind = sdkCheckMode == SdkCheckMode.WARN ? Kind.WARNING : Kind.ERROR;
+      Problems problems = new Problems(kind);
+
+      for (SdkStore.Sdk sdk : sdkStore.sdksMatching(implementation, classMinSdk, classMaxSdk)) {
+        String problem = sdk.verifyMethod(sdkClassElem, methodElement, looseSignatures);
+        if (problem == null) {
+          problems.add(
+              "Missing @Implementation on method " + methodElement.getSimpleName(), sdk.sdkInt);
         }
       }
 
