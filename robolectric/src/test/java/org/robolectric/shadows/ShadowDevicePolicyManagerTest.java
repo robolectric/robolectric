@@ -20,6 +20,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -212,6 +213,34 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN DevicePolicyManager#getProfileOwner is called without a profile owner
     // THEN the method should return null
     assertThat(devicePolicyManager.getProfileOwner()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void transferOwnershipShouldTransferOwnership() {
+    ComponentName otherComponent = new ComponentName("new.owner", "Receiver");
+    shadowOf(packageManager).addReceiverIfNotPresent(otherComponent);
+    shadowOf(devicePolicyManager).setActiveAdmin(otherComponent);
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    devicePolicyManager.transferOwnership(testComponent, otherComponent, null);
+
+    devicePolicyManager.isProfileOwnerApp("new.owner");
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void transferOwnershipShouldFailForNotOwner() {
+    ComponentName otherComponent = new ComponentName("new.owner", "Receiver");
+    shadowOf(packageManager).addReceiverIfNotPresent(otherComponent);
+    shadowOf(devicePolicyManager).setActiveAdmin(otherComponent);
+
+    try {
+      devicePolicyManager.transferOwnership(testComponent, otherComponent, null);
+      fail("Should throw");
+    } catch (SecurityException e) {
+      // expected
+    }
   }
 
   @Test
