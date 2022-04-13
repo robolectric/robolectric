@@ -51,6 +51,7 @@ public class ShadowParcelFileDescriptorTest {
     if (pfd != null) {
       pfd.close();
     }
+    pfd = null;
   }
 
   @Test
