@@ -48,6 +48,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -62,6 +63,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowView {
 
   @RealObject protected View realView;
+  @ReflectorObject protected _View_ viewReflector;
   private static final List<View.OnClickListener> globalClickListeners =
       new CopyOnWriteArrayList<>();
   private static final List<View.OnLongClickListener> globalLongClickListeners =
@@ -665,6 +667,17 @@ public class ShadowView {
     }
   }
 
+  @Implementation
+  protected boolean initialAwakenScrollBars() {
+    // Temporarily allow disabling initial awaken of scroll bars to aid in migration of tests to
+    // default to window's being marked visible, this will be removed once migration is complete.
+    if (Boolean.getBoolean("robolectric.disableInitialAwakenScrollBars")) {
+      return false;
+    } else {
+      return viewReflector.initialAwakenScrollBars();
+    }
+  }
+
   private class AnimationRunner implements Runnable {
     private final Animation animation;
     private long startTime, startOffset, elapsedTime;
@@ -830,6 +843,9 @@ public class ShadowView {
 
     @Direct
     int getSourceLayoutResId();
+
+    @Direct
+    boolean initialAwakenScrollBars();
   }
 
   public void callOnAttachedToWindow() {
