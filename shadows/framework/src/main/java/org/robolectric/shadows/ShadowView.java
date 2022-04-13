@@ -72,6 +72,7 @@ public class ShadowView {
   private View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener;
   private final HashSet<View.OnAttachStateChangeListener> onAttachStateChangeListeners =
       new HashSet<>();
+  private final HashSet<View.OnLayoutChangeListener> onLayoutChangeListeners = new HashSet<>();
   private boolean wasInvalidated;
   private View.OnTouchListener onTouchListener;
   protected AttributeSet attributeSet;
@@ -215,6 +216,18 @@ public class ShadowView {
     onAttachStateChangeListeners.remove(onAttachStateChangeListener);
     reflector(_View_.class, realView)
         .removeOnAttachStateChangeListener(onAttachStateChangeListener);
+  }
+
+  @Implementation
+  protected void addOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener) {
+    onLayoutChangeListeners.add(onLayoutChangeListener);
+    reflector(_View_.class, realView).addOnLayoutChangeListener(onLayoutChangeListener);
+  }
+
+  @Implementation
+  protected void removeOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener) {
+    onLayoutChangeListeners.remove(onLayoutChangeListener);
+    reflector(_View_.class, realView).removeOnLayoutChangeListener(onLayoutChangeListener);
   }
 
   @Implementation
@@ -497,6 +510,13 @@ public class ShadowView {
     return onAttachStateChangeListeners;
   }
 
+  /**
+   * @return Returns the layout change listeners, or the empty set if none are present.
+   */
+  public Set<View.OnLayoutChangeListener> getOnLayoutChangeListeners() {
+    return onLayoutChangeListeners;
+  }
+
   // @Implementation
   // protected Bitmap getDrawingCache() {
   //   return ReflectionHelpers.callConstructor(Bitmap.class);
@@ -746,6 +766,12 @@ public class ShadowView {
     @Direct
     void removeOnAttachStateChangeListener(
         View.OnAttachStateChangeListener onAttachStateChangeListener);
+
+    @Direct
+    void addOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener);
+
+    @Direct
+    void removeOnLayoutChangeListener(View.OnLayoutChangeListener onLayoutChangeListener);
 
     @Direct
     void requestLayout();
