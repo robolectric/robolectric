@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
 import com.google.common.base.Strings;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -58,12 +59,16 @@ import org.robolectric.util.reflector.Static;
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
-  private ContentResolver contentResolver;
 
   @RealObject private Context realContextImpl;
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
+  private final Object contentResolverLock = new Object();
+
+  @GuardedBy("contentResolverLock")
+  private ContentResolver contentResolver;
+
   private Integer userId;
 
   /**
@@ -124,34 +129,36 @@ public class ShadowContextImpl {
 
   @Implementation
   protected ContentResolver getContentResolver() {
-    if (contentResolver == null) {
-      contentResolver =
-          new ContentResolver(realContextImpl) {
-            @Override
-            protected IContentProvider acquireProvider(Context c, String name) {
-              return null;
-            }
+    synchronized (contentResolverLock) {
+      if (contentResolver == null) {
+        contentResolver =
+            new ContentResolver(realContextImpl) {
+              @Override
+              protected IContentProvider acquireProvider(Context c, String name) {
+                return null;
+              }
 
-            @Override
-            public boolean releaseProvider(IContentProvider icp) {
-              return false;
-            }
+              @Override
+              public boolean releaseProvider(IContentProvider icp) {
+                return false;
+              }
 
-            @Override
-            protected IContentProvider acquireUnstableProvider(Context c, String name) {
-              return null;
-            }
+              @Override
+              protected IContentProvider acquireUnstableProvider(Context c, String name) {
+                return null;
+              }
 
-            @Override
-            public boolean releaseUnstableProvider(IContentProvider icp) {
-              return false;
-            }
+              @Override
+              public boolean releaseUnstableProvider(IContentProvider icp) {
+                return false;
+              }
 
-            @Override
-            public void unstableProviderDied(IContentProvider icp) {}
-          };
+              @Override
+              public void unstableProviderDied(IContentProvider icp) {}
+            };
+      }
+      return contentResolver;
     }
-    return contentResolver;
   }
 
   @Implementation
