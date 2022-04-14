@@ -121,9 +121,10 @@ public class ShadowTelecomManagerTest {
   @Test
   public void getPhoneAccountsSupportingScheme() {
     PhoneAccountHandle handleMatchingScheme = createHandle("id1");
-    telecomService.registerPhoneAccount(PhoneAccount.builder(handleMatchingScheme, "some_scheme")
-        .addSupportedUriScheme("some_scheme")
-        .build());
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(handleMatchingScheme, "some_scheme")
+            .addSupportedUriScheme("some_scheme")
+            .build());
     PhoneAccountHandle handleNotMatchingScheme = createHandle("id2");
     telecomService.registerPhoneAccount(
         PhoneAccount.builder(handleNotMatchingScheme, "another_scheme")
@@ -152,6 +153,23 @@ public class ShadowTelecomManagerTest {
     List<PhoneAccountHandle> callCapablePhoneAccounts = telecomService.getCallCapablePhoneAccounts();
     assertThat(callCapablePhoneAccounts).contains(callCapableHandle);
     assertThat(callCapablePhoneAccounts).doesNotContain(notCallCapableHandler);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getSelfManagedPhoneAccounts() {
+    PhoneAccountHandle selfManagedPhoneAccountHandle = createHandle("id1");
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(selfManagedPhoneAccountHandle, "self-managed")
+            .setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED)
+            .build());
+    PhoneAccountHandle nonSelfManagedPhoneAccountHandle = createHandle("id2");
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(nonSelfManagedPhoneAccountHandle, "not-self-managed").build());
+
+    List<PhoneAccountHandle> selfManagedPhoneAccounts =
+        telecomService.getSelfManagedPhoneAccounts();
+    assertThat(selfManagedPhoneAccounts).containsExactly(selfManagedPhoneAccountHandle);
   }
 
   @Test
