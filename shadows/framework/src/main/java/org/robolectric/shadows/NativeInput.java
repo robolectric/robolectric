@@ -601,7 +601,10 @@ public class NativeInput {
       mXPrecision = other.mXPrecision;
       mYPrecision = other.mYPrecision;
       mDownTime = other.mDownTime;
-      mPointerProperties = other.mPointerProperties;
+      mPointerProperties.clear();
+      for (PointerProperties pointerProperties : other.mPointerProperties) {
+        mPointerProperties.add(new PointerProperties(pointerProperties));
+      }
       mSampleEventTimes.clear();
       mSamplePointerCoords.clear();
       if (keepHistory) {

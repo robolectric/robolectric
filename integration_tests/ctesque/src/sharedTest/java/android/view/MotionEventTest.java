@@ -167,6 +167,73 @@ public class MotionEventTest {
   }
 
   @Test
+  public void testObtainFromRecycledEvent() {
+    PointerCoords coords0 =
+        PointerCoordsBuilder.newBuilder()
+            .setCoords(X_3F, Y_4F)
+            .setPressure(PRESSURE_1F)
+            .setSize(SIZE_1F)
+            .setTool(1.2f, 1.4f)
+            .build();
+    PointerProperties properties0 =
+        PointerPropertiesBuilder.newBuilder()
+            .setId(0)
+            .setToolType(MotionEvent.TOOL_TYPE_FINGER)
+            .build();
+    motionEventDynamic =
+        MotionEvent.obtain(
+            downTime,
+            eventTime,
+            MotionEvent.ACTION_MOVE,
+            1,
+            new PointerProperties[] {properties0},
+            new PointerCoords[] {coords0},
+            META_STATE,
+            0,
+            X_PRECISION_3F,
+            Y_PRECISION_4F,
+            DEVICE_ID_1,
+            EDGE_FLAGS,
+            InputDevice.SOURCE_TOUCHSCREEN,
+            0);
+    MotionEvent motionEventDynamicCopy = MotionEvent.obtain(motionEventDynamic);
+    assertThat(motionEventDynamic.getToolType(0)).isEqualTo(MotionEvent.TOOL_TYPE_FINGER);
+    assertThat(motionEventDynamicCopy.getToolType(0)).isEqualTo(MotionEvent.TOOL_TYPE_FINGER);
+    motionEventDynamic.recycle();
+
+    PointerCoords coords1 =
+        PointerCoordsBuilder.newBuilder()
+            .setCoords(X_3F + 1.0f, Y_4F - 2.0f)
+            .setPressure(PRESSURE_1F + 0.2f)
+            .setSize(SIZE_1F + 0.5f)
+            .setTouch(2.2f, 0.6f)
+            .build();
+    PointerProperties properties1 =
+        PointerPropertiesBuilder.newBuilder()
+            .setId(0)
+            .setToolType(MotionEvent.TOOL_TYPE_MOUSE)
+            .build();
+    motionEventDynamic =
+        MotionEvent.obtain(
+            downTime,
+            eventTime,
+            MotionEvent.ACTION_MOVE,
+            1,
+            new PointerProperties[] {properties1},
+            new PointerCoords[] {coords1},
+            META_STATE,
+            0,
+            X_PRECISION_3F,
+            Y_PRECISION_4F,
+            DEVICE_ID_1,
+            EDGE_FLAGS,
+            InputDevice.SOURCE_TOUCHSCREEN,
+            0);
+    assertThat(motionEventDynamicCopy.getToolType(0)).isEqualTo(MotionEvent.TOOL_TYPE_FINGER);
+    assertThat(motionEventDynamic.getToolType(0)).isEqualTo(MotionEvent.TOOL_TYPE_MOUSE);
+  }
+
+  @Test
   public void testObtainFromPropertyArrays() {
     PointerCoords coords0 =
         PointerCoordsBuilder.newBuilder()
