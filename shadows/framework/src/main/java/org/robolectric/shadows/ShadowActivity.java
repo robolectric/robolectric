@@ -43,7 +43,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.window.SplashScreen;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +68,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
-@Implements(Activity.class)
+@Implements(value = Activity.class, looseSignatures = true)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @RealObject protected Activity realActivity;
@@ -98,7 +97,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean throwIntentSenderException;
   private boolean hasReportedFullyDrawn = false;
   private boolean isInPictureInPictureMode = false;
-  private final SplashScreen splashScreen = new RoboSplashScreen();
+  private Object splashScreen = null;
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -365,7 +364,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return fake SplashScreen
    */
   @Implementation(minSdk = S)
-  protected SplashScreen getSplashScreen() {
+  protected synchronized Object getSplashScreen() {
+    if (splashScreen == null) {
+      splashScreen = new RoboSplashScreen();
+    }
     return splashScreen;
   }
 
