@@ -1,7 +1,8 @@
-import org.robolectric.gradle.RoboJavaModulePlugin
+import org.robolectric.gradle.AndroidProjectConfigPlugin
 
-apply plugin: RoboJavaModulePlugin
-apply plugin: 'kotlin'
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+apply plugin: 'kotlin-android'
 apply plugin: "com.diffplug.spotless"
 
 spotless {
@@ -11,16 +12,28 @@ spotless {
     }
 }
 
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+android {
+    compileSdk 29
+
+    defaultConfig {
+        minSdkVersion 16
+        // We must keep targetSdk to 29 for compatibility testing purpose
+        targetSdkVersion 29
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions.unitTests.includeAndroidResources true
 }
 
 dependencies {
-    api project(":robolectric")
-    compileOnly AndroidSdk.Q.coordinates
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotilnVersion"
 
-    testCompileOnly AndroidSdk.Q.coordinates
-    testRuntime AndroidSdk.Q.coordinates
+    testImplementation project(path: ':testapp')
+    testImplementation project(":robolectric")
     testImplementation "androidx.test:core:$axtVersion"
     testImplementation "junit:junit:$junitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
