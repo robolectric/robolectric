@@ -4,7 +4,7 @@ apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
 
 android {
-    compileSdkVersion 32
+    compileSdk 32
 
     defaultConfig {
         minSdkVersion 16
