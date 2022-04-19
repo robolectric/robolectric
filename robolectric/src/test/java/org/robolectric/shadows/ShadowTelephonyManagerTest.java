@@ -35,9 +35,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.withSettings;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
@@ -54,6 +56,13 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyCallback;
+import android.telephony.TelephonyCallback.CallStateListener;
+import android.telephony.TelephonyCallback.CellInfoListener;
+import android.telephony.TelephonyCallback.CellLocationListener;
+import android.telephony.TelephonyCallback.DisplayInfoListener;
+import android.telephony.TelephonyCallback.ServiceStateListener;
+import android.telephony.TelephonyCallback.SignalStrengthsListener;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.AuthenticationFailureReason;
@@ -63,6 +72,7 @@ import android.telephony.UiccSlotInfo;
 import android.telephony.gba.UaSecurityProtocolIdentifier;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -100,6 +110,37 @@ public class ShadowTelephonyManagerTest {
     if (VERSION.SDK_INT >= JELLY_BEAN_MR1) {
       verify(listener).onCellInfoChanged(Collections.emptyList());
     }
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void registerTelephonyCallback_shouldInitCallback() {
+    TelephonyCallback callback =
+        mock(
+            TelephonyCallback.class,
+            withSettings()
+                .extraInterfaces(
+                    CallStateListener.class, CellInfoListener.class, CellLocationListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    assertThat(shadowTelephonyManager.getLastTelephonyCallback()).isEqualTo(callback);
+    verify((CallStateListener) callback).onCallStateChanged(CALL_STATE_IDLE);
+    verify((CellInfoListener) callback).onCellInfoChanged(ImmutableList.of());
+    verify((CellLocationListener) callback).onCellLocationChanged(null);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void unregisterTelephonyCallback_shouldRemoveCallback() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(CallStateListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+    reset(callback);
+    telephonyManager.unregisterTelephonyCallback(callback);
+
+    shadowOf(telephonyManager).setCallState(CALL_STATE_RINGING, "123");
+
+    verifyNoMoreInteractions(callback);
   }
 
   @Test
@@ -215,6 +256,19 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void shouldGiveAllCellInfo_toCallback() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(CellInfoListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    List<CellInfo> allCellInfo = Collections.singletonList(mock(CellInfo.class));
+    shadowOf(telephonyManager).setAllCellInfo(allCellInfo);
+    assertEquals(allCellInfo, telephonyManager.getAllCellInfo());
+    verify((CellInfoListener) callback).onCellInfoChanged(allCellInfo);
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void shouldGiveCellInfoUpdate() throws Exception {
     List<CellInfo> callbackCellInfo = Collections.singletonList(mock(CellInfo.class));
@@ -300,6 +354,19 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void shouldGiveCellLocation_toCallback() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(CellLocationListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    CellLocation mockCellLocation = mock(CellLocation.class);
+    shadowOf(telephonyManager).setCellLocation(mockCellLocation);
+    assertEquals(mockCellLocation, telephonyManager.getCellLocation());
+    verify((CellLocationListener) callback).onCellLocationChanged(mockCellLocation);
+  }
+
+  @Test
   public void shouldGiveCallState() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
     telephonyManager.listen(listener, LISTEN_CALL_STATE);
@@ -311,6 +378,22 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setCallState(CALL_STATE_OFFHOOK, "911");
     assertEquals(CALL_STATE_OFFHOOK, telephonyManager.getCallState());
     verify(listener).onCallStateChanged(CALL_STATE_OFFHOOK, null);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void shouldGiveCallState_toCallback() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(CallStateListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    shadowOf(telephonyManager).setCallState(CALL_STATE_RINGING, "911");
+    assertEquals(CALL_STATE_RINGING, telephonyManager.getCallState());
+    verify((CallStateListener) callback).onCallStateChanged(CALL_STATE_RINGING);
+
+    shadowOf(telephonyManager).setCallState(CALL_STATE_OFFHOOK, "911");
+    assertEquals(CALL_STATE_OFFHOOK, telephonyManager.getCallState());
+    verify((CallStateListener) callback).onCallStateChanged(CALL_STATE_OFFHOOK);
   }
 
   @Test
@@ -455,6 +538,21 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void shouldSetServiceState_toCallback() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(ServiceStateListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+    ServiceState serviceState = new ServiceState();
+    serviceState.setState(ServiceState.STATE_OUT_OF_SERVICE);
+
+    shadowOf(telephonyManager).setServiceState(serviceState);
+
+    assertEquals(serviceState, telephonyManager.getServiceState());
+    verify((ServiceStateListener) callback).onServiceStateChanged(serviceState);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void listen_doesNotNotifyListenerOfCurrentServiceStateIfUninitialized() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
@@ -462,6 +560,17 @@ public class ShadowTelephonyManagerTest {
     telephonyManager.listen(listener, LISTEN_SERVICE_STATE);
 
     verifyNoMoreInteractions(listener);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void register_doesNotNotifyCallbackOfCurrentServiceStateIfUninitialized() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(ServiceStateListener.class));
+
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    verifyNoMoreInteractions(callback);
   }
 
   @Test
@@ -475,6 +584,20 @@ public class ShadowTelephonyManagerTest {
     telephonyManager.listen(listener, LISTEN_SERVICE_STATE);
 
     verify(listener, times(1)).onServiceStateChanged(serviceState);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void register_notifiesCallbackOfCurrentServiceStateIfInitialized() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(ServiceStateListener.class));
+    ServiceState serviceState = new ServiceState();
+    serviceState.setState(ServiceState.STATE_OUT_OF_SERVICE);
+    shadowOf(telephonyManager).setServiceState(serviceState);
+
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    verify((ServiceStateListener) callback, times(1)).onServiceStateChanged(serviceState);
   }
 
   @Test
@@ -636,6 +759,20 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void shouldGiveSignalStrength_toCallback() {
+    TelephonyCallback callback =
+        mock(
+            TelephonyCallback.class, withSettings().extraInterfaces(SignalStrengthsListener.class));
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+    SignalStrength ss = Shadow.newInstanceOf(SignalStrength.class);
+
+    shadowOf(telephonyManager).setSignalStrength(ss);
+
+    verify((SignalStrengthsListener) callback).onSignalStrengthsChanged(ss);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void setDataEnabledChangesIsDataEnabled() {
     shadowOf(telephonyManager).setDataEnabled(false);
@@ -705,6 +842,17 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void register_doesNotNotifyCallbackOfCurrentTelephonyDisplayInfoIfUninitialized() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(DisplayInfoListener.class));
+
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
   @Config(minSdk = R)
   public void listen_notifiesListenerOfCurrentTelephonyDisplayInfoIfInitialized() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
@@ -719,6 +867,21 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void register_notifiesCallbackOfCurrentTelephonyDisplayInfoIfInitialized() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(DisplayInfoListener.class));
+    TelephonyDisplayInfo displayInfo =
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_EVDO_0, OVERRIDE_NETWORK_TYPE_NONE);
+    shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
+
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    verify((DisplayInfoListener) callback, times(1)).onDisplayInfoChanged(displayInfo);
+  }
+
+  @Test
   @Config(minSdk = R)
   public void setTelephonyDisplayInfo_notifiesListeners() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
@@ -730,6 +893,21 @@ public class ShadowTelephonyManagerTest {
     shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
 
     verify(listener, times(1)).onDisplayInfoChanged(displayInfo);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setTelephonyDisplayInfo_notifiesCallback() {
+    TelephonyCallback callback =
+        mock(TelephonyCallback.class, withSettings().extraInterfaces(DisplayInfoListener.class));
+    TelephonyDisplayInfo displayInfo =
+        (TelephonyDisplayInfo)
+            createTelephonyDisplayInfo(NETWORK_TYPE_LTE, OVERRIDE_NETWORK_TYPE_NR_NSA);
+    shadowTelephonyManager.setTelephonyDisplayInfo(displayInfo);
+
+    telephonyManager.registerTelephonyCallback(directExecutor(), callback);
+
+    verify((DisplayInfoListener) callback, times(1)).onDisplayInfoChanged(displayInfo);
   }
 
   @Test(expected = NullPointerException.class)
