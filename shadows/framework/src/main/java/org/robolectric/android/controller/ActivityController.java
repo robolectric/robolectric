@@ -326,7 +326,7 @@ public class ActivityController<T extends Activity>
    * @param savedInstanceState Saved instance state.
    * @return Activity controller instance.
    */
-  public ActivityController<T> setup(@Nullable Bundle savedInstanceState) {
+  public ActivityController<T> setup(Bundle savedInstanceState) {
     return create(savedInstanceState)
         .start()
         .restoreInstanceState(savedInstanceState)
