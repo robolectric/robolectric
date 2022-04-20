@@ -24,9 +24,13 @@ import org.robolectric.shadows.ShadowLog.LogItem;
  * explicitly expected into test failures.
  */
 public final class ExpectedLogMessagesRule implements TestRule {
-  /** Tags that apps can't prevent. We whitelist them globally. */
+  /** Tags that apps can't prevent. We exempt them globally. */
   private static final ImmutableSet<String> UNPREVENTABLE_TAGS =
-      ImmutableSet.of("Typeface", "RingtoneManager");
+      ImmutableSet.of(
+          "Typeface",
+          "RingtoneManager",
+          // Fails when attempting to preload classes by name
+          "PhonePolicy");
 
   private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();
