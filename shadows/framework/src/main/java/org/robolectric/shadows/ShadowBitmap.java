@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Integer.max;
@@ -456,6 +457,12 @@ public class ShadowBitmap {
    */
   public boolean getCreatedFromFilter() {
     return createdFromFilter;
+  }
+
+  @Implementation(minSdk = S)
+  public Bitmap asShared() {
+    setMutable(false);
+    return realBitmap;
   }
 
   @Implementation
