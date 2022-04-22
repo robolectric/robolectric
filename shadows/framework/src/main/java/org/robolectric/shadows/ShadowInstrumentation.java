@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
@@ -666,7 +667,19 @@ public class ShadowInstrumentation {
   }
 
   protected boolean bindService(
-      final Intent intent, final ServiceConnection serviceConnection, int i) {
+      Intent intent, int flags, Executor executor, ServiceConnection serviceConnection) {
+    return bindService(intent, serviceConnection, new ExecutorServiceCallbackScheduler(executor));
+  }
+
+  protected boolean bindService(
+      final Intent intent, final ServiceConnection serviceConnection, int flags) {
+    return bindService(intent, serviceConnection, new HandlerCallbackScheduler());
+  }
+
+  private boolean bindService(
+      final Intent intent,
+      final ServiceConnection serviceConnection,
+      ServiceCallbackScheduler serviceCallbackScheduler) {
     boundServiceConnections.add(serviceConnection);
     unboundServiceConnections.remove(serviceConnection);
     if (exceptionForBindService != null) {
@@ -682,7 +695,6 @@ public class ShadowInstrumentation {
       return false;
     }
     startedServices.add(filterComparison);
-    Handler handler = new Handler(Looper.getMainLooper());
     Runnable onServiceConnectedRunnable =
         () -> {
           serviceConnectionDataForServiceConnection.put(
@@ -695,7 +707,7 @@ public class ShadowInstrumentation {
     if (bindServiceCallsOnServiceConnectedInline) {
       onServiceConnectedRunnable.run();
     } else {
-      handler.post(onServiceConnectedRunnable);
+      serviceCallbackScheduler.schedule(onServiceConnectedRunnable);
     }
     return true;
   }
@@ -1076,6 +1088,33 @@ public class ShadowInstrumentation {
         ComponentName componentNameForBindService, IBinder binderForBindService) {
       this.componentNameForBindService = componentNameForBindService;
       this.binderForBindService = binderForBindService;
+    }
+  }
+
+  /** Handles thread on which service lifecycle callbacks are run. */
+  private interface ServiceCallbackScheduler {
+    void schedule(Runnable runnable);
+  }
+
+  private static final class ExecutorServiceCallbackScheduler implements ServiceCallbackScheduler {
+    private final Executor executor;
+
+    ExecutorServiceCallbackScheduler(Executor executor) {
+      this.executor = executor;
+    }
+
+    @Override
+    public void schedule(Runnable runnable) {
+      executor.execute(runnable);
+    }
+  }
+
+  private static final class HandlerCallbackScheduler implements ServiceCallbackScheduler {
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    @Override
+    public void schedule(Runnable runnable) {
+      mainHandler.post(runnable);
     }
   }
 
