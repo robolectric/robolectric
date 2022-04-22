@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -42,6 +43,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -342,6 +344,12 @@ public class ShadowContextImpl {
   protected boolean stopService(Intent name) {
     validateServiceIntent(name);
     return getShadowInstrumentation().stopService(name);
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean bindService(
+      Intent service, int flags, Executor executor, ServiceConnection conn) {
+    return getShadowInstrumentation().bindService(service, flags, executor, conn);
   }
 
   @Implementation

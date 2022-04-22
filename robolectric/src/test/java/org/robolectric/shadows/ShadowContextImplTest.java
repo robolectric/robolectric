@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -32,6 +33,7 @@ import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.android.util.concurrent.PausedExecutorService;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -39,6 +41,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowContextImplTest {
   private final Application context = ApplicationProvider.getApplicationContext();
   private final ShadowContextImpl shadowContext = Shadow.extract(context.getBaseContext());
+  private final PausedExecutorService executorService = new PausedExecutorService();
 
   @Test
   @Config(minSdk = N)
@@ -256,6 +259,36 @@ public class ShadowContextImplTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void bindService_withExecutor_callsServiceConnectedOnExecutor() {
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    TestServiceConnection serviceConnection = buildServiceConnection();
+    int flags = 0;
+
+    assertThat(context.bindService(serviceIntent, flags, executorService, serviceConnection))
+        .isTrue();
+    assertThat(serviceConnection.isConnected).isFalse();
+    executorService.runAll();
+
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+    assertThat(serviceConnection.isConnected).isTrue();
+  }
+
+  @Test
+  public void bindService_noSpecifiedExecutor_callsServiceConnectedOnHandler() {
+    Intent serviceIntent = new Intent().setPackage("dummy.package");
+    TestServiceConnection serviceConnection = buildServiceConnection();
+    int flags = 0;
+
+    assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isTrue();
+    assertThat(serviceConnection.isConnected).isFalse();
+    ShadowLooper.idleMainLooper();
+
+    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
+    assertThat(serviceConnection.isConnected).isTrue();
+  }
+
+  @Test
   public void startService_shouldAllowImplicitIntentPreLollipop() {
     context.getApplicationInfo().targetSdkVersion = KITKAT;
     context.startService(new Intent("dummy_action"));
@@ -360,13 +393,21 @@ public class ShadowContextImplTest {
     assertThat(context.getUserId()).isEqualTo(userId);
   }
 
-  private ServiceConnection buildServiceConnection() {
-    return new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName name, IBinder service) {}
+  private TestServiceConnection buildServiceConnection() {
+    return new TestServiceConnection();
+  }
 
-      @Override
-      public void onServiceDisconnected(ComponentName name) {}
-    };
+  private static class TestServiceConnection implements ServiceConnection {
+    boolean isConnected;
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+      isConnected = true;
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      isConnected = false;
+    }
   }
 }
