@@ -497,14 +497,17 @@ public class ShadowViewTest {
   @Test
   public void startAnimation() {
     AlphaAnimation animation = new AlphaAnimation(0, 1);
-
     Animation.AnimationListener listener = mock(Animation.AnimationListener.class);
     animation.setAnimationListener(listener);
+
     view.startAnimation(animation);
     shadowMainLooper().idle();
 
     verify(listener).onAnimationStart(animation);
     verify(listener).onAnimationEnd(animation);
+    assertThat(animation.isInitialized()).isTrue();
+    assertThat(view.getAnimation()).isNull();
+    assertThat(shadowOf(view).getAnimations()).contains(animation);
   }
 
   @Test
