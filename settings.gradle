@@ -37,4 +37,5 @@ include ":integration_tests:mockk"
 include ':integration_tests:compat-target29'
 include ":integration_tests:multidex"
 include ":integration_tests:sparsearray"
+include ":integration_tests:play-services"
 include ':testapp'
