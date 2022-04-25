@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
@@ -238,6 +239,31 @@ public class ShadowPendingIntent {
   @Implementation
   protected IntentSender getIntentSender() {
     return new RoboIntentSender(realPendingIntent);
+  }
+
+  @Implementation(minSdk = S)
+  public boolean isActivity() {
+    return isActivityIntent();
+  }
+
+  @Implementation(minSdk = S)
+  public boolean isBroadcast() {
+    return isBroadcastIntent();
+  }
+
+  @Implementation(minSdk = S)
+  public boolean isForegroundService() {
+    return isForegroundServiceIntent();
+  }
+
+  @Implementation(minSdk = S)
+  public boolean isService() {
+    return isServiceIntent();
+  }
+
+  @Implementation(minSdk = S)
+  public boolean isImmutable() {
+    return (flags & FLAG_IMMUTABLE) > 0;
   }
 
   /**
