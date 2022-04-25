@@ -518,6 +518,80 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isActivity_activityPendingIntent_returnsTrue() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getActivity(context, 99, intent, 100).isActivity()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isActivity_broadcastPendingIntent_returnsFalse() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getBroadcast(context, 99, intent, 100).isActivity()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isBroadcast_broadcastPendingIntent_returnsTrue() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getBroadcast(context, 99, intent, 100).isBroadcast()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isBroadcast_activityPendingIntent_returnsFalse() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getActivity(context, 99, intent, 100).isBroadcast()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isForegroundService_foregroundServicePendingIntent_returnsTrue() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getForegroundService(context, 99, intent, 100).isForegroundService())
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isForegroundService_normalServicePendingIntent_returnsFalse() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getService(context, 99, intent, 100).isForegroundService()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isService_servicePendingIntent_returnsTrue() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getService(context, 99, intent, 100).isService()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isService_foregroundServicePendingIntent_returnsFalse() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getForegroundService(context, 99, intent, 100).isService()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isImmutable_pendingIntentWithImmutableFlag_returnsTrue() {
+    Intent intent = new Intent();
+    assertThat(
+            PendingIntent.getActivity(context, 99, intent, PendingIntent.FLAG_IMMUTABLE)
+                .isImmutable())
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.S)
+  public void isImmutable_pendingIntentWithoutImmutableFlag_returnsFalse() {
+    Intent intent = new Intent();
+    assertThat(PendingIntent.getActivity(context, 99, intent, 0).isActivity()).isTrue();
+  }
+
+  @Test
   public void send_canceledPendingIntent_throwsCanceledException() throws CanceledException {
     Intent intent = new Intent().setPackage("dummy.package");
     PendingIntent canceled = PendingIntent.getService(context, 99, intent, 100);
