@@ -15,6 +15,7 @@ import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.HandlerActionQueue;
 import android.view.IWindowSession;
+import android.view.InsetsState;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -64,7 +65,30 @@ public class ShadowViewRootImpl {
   }
 
   public void callDispatchResized() {
-    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.R) {
+    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.S_V2) {
+      Display display = getDisplay();
+      Rect frame = new Rect();
+      display.getRectSize(frame);
+
+      ClientWindowFrames frames = new ClientWindowFrames();
+      // set the final field
+      ReflectionHelpers.setField(frames, "frame", frame);
+
+      ReflectionHelpers.callInstanceMethod(
+          ViewRootImpl.class,
+          realObject,
+          "dispatchResized",
+          ClassParameter.from(ClientWindowFrames.class, frames),
+          ClassParameter.from(boolean.class, true), /* reportDraw */
+          ClassParameter.from(
+              MergedConfiguration.class, new MergedConfiguration()), /* mergedConfiguration */
+          ClassParameter.from(InsetsState.class, new InsetsState()), /* insetsState */
+          ClassParameter.from(boolean.class, false), /* forceLayout */
+          ClassParameter.from(boolean.class, false), /* alwaysConsumeSystemBars */
+          ClassParameter.from(int.class, 0), /* displayId */
+          ClassParameter.from(int.class, 0), /* syncSeqId */
+          ClassParameter.from(int.class, 0) /* resizeMode */);
+    } else if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.R) {
       Display display = getDisplay();
       Rect frame = new Rect();
       display.getRectSize(frame);

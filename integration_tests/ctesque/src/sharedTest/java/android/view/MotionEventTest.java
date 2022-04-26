@@ -702,7 +702,7 @@ public class MotionEventTest {
             0,
             0,
             0,
-            0,
+            InputDevice.SOURCE_TOUCHSCREEN,
             0);
     final float originalRawX = 0 + 3;
     final float originalRawY = -radius + 2;

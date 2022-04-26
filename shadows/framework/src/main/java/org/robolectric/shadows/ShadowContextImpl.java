@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -35,12 +36,14 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.UserHandle;
 import com.google.common.base.Strings;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -58,12 +61,16 @@ import org.robolectric.util.reflector.Static;
 public class ShadowContextImpl {
 
   public static final String CLASS_NAME = "android.app.ContextImpl";
-  private ContentResolver contentResolver;
 
   @RealObject private Context realContextImpl;
 
   private Map<String, Object> systemServices = new HashMap<String, Object>();
   private final Set<String> removedSystemServices = new HashSet<>();
+  private final Object contentResolverLock = new Object();
+
+  @GuardedBy("contentResolverLock")
+  private ContentResolver contentResolver;
+
   private Integer userId;
 
   /**
@@ -124,34 +131,36 @@ public class ShadowContextImpl {
 
   @Implementation
   protected ContentResolver getContentResolver() {
-    if (contentResolver == null) {
-      contentResolver =
-          new ContentResolver(realContextImpl) {
-            @Override
-            protected IContentProvider acquireProvider(Context c, String name) {
-              return null;
-            }
+    synchronized (contentResolverLock) {
+      if (contentResolver == null) {
+        contentResolver =
+            new ContentResolver(realContextImpl) {
+              @Override
+              protected IContentProvider acquireProvider(Context c, String name) {
+                return null;
+              }
 
-            @Override
-            public boolean releaseProvider(IContentProvider icp) {
-              return false;
-            }
+              @Override
+              public boolean releaseProvider(IContentProvider icp) {
+                return false;
+              }
 
-            @Override
-            protected IContentProvider acquireUnstableProvider(Context c, String name) {
-              return null;
-            }
+              @Override
+              protected IContentProvider acquireUnstableProvider(Context c, String name) {
+                return null;
+              }
 
-            @Override
-            public boolean releaseUnstableProvider(IContentProvider icp) {
-              return false;
-            }
+              @Override
+              public boolean releaseUnstableProvider(IContentProvider icp) {
+                return false;
+              }
 
-            @Override
-            public void unstableProviderDied(IContentProvider icp) {}
-          };
+              @Override
+              public void unstableProviderDied(IContentProvider icp) {}
+            };
+      }
+      return contentResolver;
     }
-    return contentResolver;
   }
 
   @Implementation
@@ -335,6 +344,12 @@ public class ShadowContextImpl {
   protected boolean stopService(Intent name) {
     validateServiceIntent(name);
     return getShadowInstrumentation().stopService(name);
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean bindService(
+      Intent service, int flags, Executor executor, ServiceConnection conn) {
+    return getShadowInstrumentation().bindService(service, flags, executor, conn);
   }
 
   @Implementation

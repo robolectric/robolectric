@@ -156,7 +156,7 @@ public class ShadowTelecomManager {
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
       PhoneAccount phoneAccount = accounts.get(handle);
-      if(phoneAccount.getSupportedUriSchemes().contains(uriScheme)) {
+      if (phoneAccount.getSupportedUriSchemes().contains(uriScheme)) {
         result.add(handle);
       }
     }
@@ -175,10 +175,24 @@ public class ShadowTelecomManager {
 
     for (PhoneAccountHandle handle : accounts.keySet()) {
       PhoneAccount phoneAccount = accounts.get(handle);
-      if(!phoneAccount.isEnabled() && !includeDisabledAccounts) {
+      if (!phoneAccount.isEnabled() && !includeDisabledAccounts) {
         continue;
       }
       result.add(handle);
+    }
+    return result;
+  }
+
+  @Implementation(minSdk = O)
+  public List<PhoneAccountHandle> getSelfManagedPhoneAccounts() {
+    List<PhoneAccountHandle> result = new ArrayList<>();
+
+    for (PhoneAccountHandle handle : accounts.keySet()) {
+      PhoneAccount phoneAccount = accounts.get(handle);
+      if ((phoneAccount.getCapabilities() & PhoneAccount.CAPABILITY_SELF_MANAGED)
+          == PhoneAccount.CAPABILITY_SELF_MANAGED) {
+        result.add(handle);
+      }
     }
     return result;
   }
@@ -237,7 +251,6 @@ public class ShadowTelecomManager {
   public void clearAccounts() {
     accounts.clear();
   }
-
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   @HiddenApi

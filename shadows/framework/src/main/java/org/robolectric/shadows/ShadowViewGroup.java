@@ -84,6 +84,8 @@ public class ShadowViewGroup extends ShadowView {
 
   @Implementation
   protected void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+    reflector(ViewGroupReflector.class, realViewGroup)
+        .requestDisallowInterceptTouchEvent(disallowIntercept);
     disallowInterceptTouchEvent = disallowIntercept;
   }
 
@@ -113,5 +115,8 @@ public class ShadowViewGroup extends ShadowView {
 
     @Direct
     void addView(View child, int index, ViewGroup.LayoutParams params);
+
+    @Direct
+    void requestDisallowInterceptTouchEvent(boolean disallowIntercept);
   }
 }

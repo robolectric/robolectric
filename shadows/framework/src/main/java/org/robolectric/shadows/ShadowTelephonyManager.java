@@ -36,6 +36,13 @@ import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
 import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyCallback;
+import android.telephony.TelephonyCallback.CallStateListener;
+import android.telephony.TelephonyCallback.CellInfoListener;
+import android.telephony.TelephonyCallback.CellLocationListener;
+import android.telephony.TelephonyCallback.DisplayInfoListener;
+import android.telephony.TelephonyCallback.ServiceStateListener;
+import android.telephony.TelephonyCallback.SignalStrengthsListener;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.CellInfoCallback;
@@ -67,6 +74,7 @@ public class ShadowTelephonyManager {
   @RealObject protected TelephonyManager realTelephonyManager;
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
+  private final List<TelephonyCallback> telephonyCallbackRegistrations = new ArrayList<>();
   private final Map<Integer, String> slotIndexToDeviceId = new HashMap<>();
   private final Map<Integer, String> slotIndexToImei = new HashMap<>();
   private final Map<Integer, String> slotIndexToMeid = new HashMap<>();
@@ -76,6 +84,7 @@ public class ShadowTelephonyManager {
       new HashMap<>();
 
   private PhoneStateListener lastListener;
+  private TelephonyCallback lastTelephonyCallback;
   private int lastEventFlags;
 
   private String deviceId;
@@ -208,6 +217,23 @@ public class ShadowTelephonyManager {
     return lastEventFlags;
   }
 
+  @Implementation(minSdk = S)
+  public void registerTelephonyCallback(Executor executor, TelephonyCallback callback) {
+    lastTelephonyCallback = callback;
+    initTelephonyCallback(callback);
+    telephonyCallbackRegistrations.add(callback);
+  }
+
+  @Implementation(minSdk = S)
+  public void unregisterTelephonyCallback(TelephonyCallback callback) {
+    telephonyCallbackRegistrations.remove(callback);
+  }
+
+  /** Returns the most recent callback passed to #registerTelephonyCallback(). */
+  public TelephonyCallback getLastTelephonyCallback() {
+    return lastTelephonyCallback;
+  }
+
   /** Call state may be specified via {@link #setCallState(int)}. */
   @Implementation
   protected int getCallState() {
@@ -234,6 +260,11 @@ public class ShadowTelephonyManager {
 
     for (PhoneStateListener listener : getListenersForFlags(LISTEN_CALL_STATE)) {
       listener.onCallStateChanged(callState, incomingPhoneNumber);
+    }
+    if (VERSION.SDK_INT >= S) {
+      for (CallStateListener listener : getCallbackForListener(CallStateListener.class)) {
+        listener.onCallStateChanged(callState);
+      }
     }
   }
 
@@ -550,6 +581,11 @@ public class ShadowTelephonyManager {
         listener.onCellInfoChanged(allCellInfo);
       }
     }
+    if (VERSION.SDK_INT >= S) {
+      for (CellInfoListener listener : getCallbackForListener(CellInfoListener.class)) {
+        listener.onCellInfoChanged(allCellInfo);
+      }
+    }
   }
 
   /**
@@ -611,6 +647,11 @@ public class ShadowTelephonyManager {
     for (PhoneStateListener listener : getListenersForFlags(LISTEN_CELL_LOCATION)) {
       listener.onCellLocationChanged(cellLocation);
     }
+    if (VERSION.SDK_INT >= S) {
+      for (CellLocationListener listener : getCallbackForListener(CellLocationListener.class)) {
+        listener.onCellLocationChanged(cellLocation);
+      }
+    }
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -647,6 +688,30 @@ public class ShadowTelephonyManager {
     }
   }
 
+  @CallSuper
+  protected void initTelephonyCallback(TelephonyCallback callback) {
+    if (VERSION.SDK_INT < S) {
+      return;
+    }
+
+    if (callback instanceof CallStateListener) {
+      ((CallStateListener) callback).onCallStateChanged(callState);
+    }
+    if (callback instanceof CellInfoListener) {
+      ((CellInfoListener) callback).onCellInfoChanged(allCellInfo);
+    }
+    if (callback instanceof CellLocationListener) {
+      ((CellLocationListener) callback).onCellLocationChanged(cellLocation);
+    }
+    if (telephonyDisplayInfo != null && callback instanceof DisplayInfoListener) {
+      ((DisplayInfoListener) callback)
+          .onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
+    }
+    if (serviceState != null && callback instanceof ServiceStateListener) {
+      ((ServiceStateListener) callback).onServiceStateChanged(serviceState);
+    }
+  }
+
   protected Iterable<PhoneStateListener> getListenersForFlags(int flags) {
     return Iterables.filter(
         phoneStateRegistrations.keySet(),
@@ -657,6 +722,15 @@ public class ShadowTelephonyManager {
             return (phoneStateRegistrations.get(input) & flags) != 0;
           }
         });
+  }
+
+  /**
+   * Returns a view of {@code telephonyCallbackRegistrations} containing all elements that are of
+   * the type {@code clazz}.
+   */
+  protected <T> Iterable<T> getCallbackForListener(Class<T> clazz) {
+    // Only selects TelephonyCallback with matching class.
+    return Iterables.filter(telephonyCallbackRegistrations, clazz);
   }
 
   /**
@@ -845,6 +919,11 @@ public class ShadowTelephonyManager {
     for (PhoneStateListener listener : getListenersForFlags(LISTEN_SERVICE_STATE)) {
       listener.onServiceStateChanged(serviceState);
     }
+    if (VERSION.SDK_INT >= S) {
+      for (ServiceStateListener listener : getCallbackForListener(ServiceStateListener.class)) {
+        listener.onServiceStateChanged(serviceState);
+      }
+    }
   }
 
   /**
@@ -948,6 +1027,12 @@ public class ShadowTelephonyManager {
     for (PhoneStateListener listener :
         getListenersForFlags(PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)) {
       listener.onSignalStrengthsChanged(signalStrength);
+    }
+    if (VERSION.SDK_INT >= S) {
+      for (SignalStrengthsListener listener :
+          getCallbackForListener(SignalStrengthsListener.class)) {
+        listener.onSignalStrengthsChanged(signalStrength);
+      }
     }
   }
 
@@ -1117,6 +1202,11 @@ public class ShadowTelephonyManager {
     for (PhoneStateListener listener :
         getListenersForFlags(PhoneStateListener.LISTEN_DISPLAY_INFO_CHANGED)) {
       listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
+    }
+    if (VERSION.SDK_INT >= S) {
+      for (DisplayInfoListener listener : getCallbackForListener(DisplayInfoListener.class)) {
+        listener.onDisplayInfoChanged((TelephonyDisplayInfo) telephonyDisplayInfo);
+      }
     }
   }
 

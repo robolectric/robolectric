@@ -8,7 +8,9 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
+import static org.robolectric.shadows.ShadowLooper.idleMainLooper;
 
+import android.app.Activity;
 import android.app.Application;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
+import org.robolectric.Robolectric;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowViewGroupTest {
@@ -382,6 +385,65 @@ public class ShadowViewGroupTest {
     viewGroup.setOnHierarchyChangeListener(testListener);
     viewGroup.removeAllViews();
     assertTrue(testListener.wasCalled());
+  }
+
+  @Test
+  public void requestDisallowInterceptTouchEvent_storedOnShadow() {
+    child3.requestDisallowInterceptTouchEvent(true);
+
+    assertTrue(shadowOf(child3).getDisallowInterceptTouchEvent());
+  }
+
+  @Test
+  public void requestDisallowInterceptTouchEvent_bubblesUp() {
+    child3.requestDisallowInterceptTouchEvent(true);
+
+    assertTrue(shadowOf(child3).getDisallowInterceptTouchEvent());
+    assertTrue(shadowOf(root).getDisallowInterceptTouchEvent());
+  }
+
+  @Test
+  public void requestDisallowInterceptTouchEvent_isReflected() {
+    // Set up an Activity to accurately dispatch touch events.
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    activity.setContentView(root);
+    idleMainLooper();
+    // Set a no-op click listener so we collect all the touch events.
+    child3a.setOnClickListener(view -> {});
+    // Request our parent not intercept our touch events.
+    // This must be _during the initial down MotionEvent_ and not before.
+    // The down event will reset this state (and so we do not need to reset it).
+    // The value in getDisallowInterceptTouchEvent() is not in-sync with the flag and
+    // only records the last call to requestDisallowInterceptTouchEvent().
+    child3a.setOnTouchListener(
+        (view, event) -> {
+          if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            view.getParent().requestDisallowInterceptTouchEvent(true);
+          }
+          return false;
+        });
+
+    MotionEvent downEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
+    MotionEvent moveEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE, 0, 0, 0);
+    MotionEvent upEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_UP, 0, 0, 0);
+
+    root.dispatchTouchEvent(downEvent);
+    // Down event is _always_ intercepted by the root.
+    assertTrue(shadowOf(root).getDisallowInterceptTouchEvent());
+    assertSame(shadowOf(root).getInterceptedTouchEvent(), downEvent);
+    assertSame(shadowOf(child3a).getLastTouchEvent(), downEvent);
+
+    root.dispatchTouchEvent(moveEvent);
+    // Subsequent event types are _not_ intercepted:
+    assertTrue(shadowOf(root).getDisallowInterceptTouchEvent());
+    assertSame(shadowOf(root).getInterceptedTouchEvent(), downEvent);
+    assertSame(shadowOf(child3a).getLastTouchEvent(), moveEvent);
+
+    root.dispatchTouchEvent(upEvent);
+    // Subsequent event types are _not_ intercepted:
+    assertTrue(shadowOf(root).getDisallowInterceptTouchEvent());
+    assertSame(shadowOf(root).getInterceptedTouchEvent(), downEvent);
+    assertSame(shadowOf(child3a).getLastTouchEvent(), upEvent);
   }
 
   private void makeFocusable(View... views) {

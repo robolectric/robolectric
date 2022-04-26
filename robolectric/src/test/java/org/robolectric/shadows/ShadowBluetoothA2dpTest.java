@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.bluetooth.BluetoothA2dp;
@@ -10,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -95,5 +97,45 @@ public class ShadowBluetoothA2dpTest {
 
     assertThat(bluetoothA2dp.getConnectionState(bluetoothDevice))
         .isEqualTo(BluetoothProfile.STATE_DISCONNECTED);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getDynamicBufferSupport_defaultIsNone() {
+    assertThat(bluetoothA2dp.getDynamicBufferSupport())
+        .isEqualTo(BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_NONE);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getDynamicBufferSupport_returnValueFromSetter() {
+    shadowBluetoothA2dp.setDynamicBufferSupport(BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_A2DP_OFFLOAD);
+
+    assertThat(bluetoothA2dp.getDynamicBufferSupport())
+        .isEqualTo(BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_A2DP_OFFLOAD);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getBufferLengthMillisArray_defaultIsZero() {
+    for (int i = 0; i < 6; i++) {
+      assertThat(shadowBluetoothA2dp.getBufferLengthMillis(i)).isEqualTo(0);
+    }
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getBufferLengthMillisArray_returnValueFromSetter() {
+    assertThat(bluetoothA2dp.setBufferLengthMillis(0, 123)).isTrue();
+
+    assertThat(shadowBluetoothA2dp.getBufferLengthMillis(0)).isEqualTo(123);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setBufferLengthMillis_invalidValue_shouldReturnFalse() {
+    assertThat(bluetoothA2dp.setBufferLengthMillis(1, -1)).isFalse();
+
+    assertThat(shadowBluetoothA2dp.getBufferLengthMillis(1)).isEqualTo(0);
   }
 }

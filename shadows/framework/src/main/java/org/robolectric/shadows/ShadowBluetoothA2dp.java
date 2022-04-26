@@ -1,6 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S;
+
 import android.bluetooth.BluetoothA2dp;
+import android.bluetooth.BluetoothCodecConfig;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import com.google.common.collect.ImmutableList;
@@ -15,6 +18,8 @@ import org.robolectric.annotation.Implements;
 @Implements(BluetoothA2dp.class)
 public class ShadowBluetoothA2dp {
   private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();
+  private int dynamicBufferSupportType = BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_NONE;
+  private final int[] bufferLengthMillisArray = new int[6];
 
   /* Adds the given bluetoothDevice with connectionState to the list of devices
    * returned by {@link ShadowBluetoothA2dp#getConnectedDevices} and
@@ -73,5 +78,35 @@ public class ShadowBluetoothA2dp {
     return bluetoothDevices.containsKey(device)
         ? bluetoothDevices.get(device)
         : BluetoothProfile.STATE_DISCONNECTED;
+  }
+
+  /*
+   * Sets {@link @BluetoothA2dp.Type} which will return by {@link getDynamicBufferSupport).
+   */
+  public void setDynamicBufferSupport(@BluetoothA2dp.Type int type) {
+    this.dynamicBufferSupportType = type;
+  }
+
+  @Implementation(minSdk = S)
+  @BluetoothA2dp.Type
+  protected int getDynamicBufferSupport() {
+    return dynamicBufferSupportType;
+  }
+
+  @Implementation(minSdk = S)
+  protected boolean setBufferLengthMillis(
+      @BluetoothCodecConfig.SourceCodecType int codec, int value) {
+    if (codec >= bufferLengthMillisArray.length || codec < 0 || value < 0) {
+      return false;
+    }
+    bufferLengthMillisArray[codec] = value;
+    return true;
+  }
+
+  /*
+   * Gets the buffer length with given codec type which set by #setBufferLengthMillis.
+   */
+  public int getBufferLengthMillis(@BluetoothCodecConfig.SourceCodecType int codec) {
+    return bufferLengthMillisArray[codec];
   }
 }

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -156,8 +157,9 @@ public class ShadowBitmapTest {
 
     ShadowBitmap shadowBitmap = shadowOf(newBitmap);
     assertThat(shadowBitmap.getDescription())
-        .isEqualTo("Original bitmap at (0,0) with width 100 and height 50" +
-            " using matrix Matrix[pre=[], set={}, post=[rotate 90.0]] with filter");
+        .isEqualTo(
+            "Original bitmap at (0,0) with width 100 and height 50"
+                + " using matrix Matrix[pre=[], set={}, post=[rotate 90.0]] with filter");
     assertThat(shadowBitmap.getCreatedFromBitmap()).isEqualTo(originalBitmap);
     assertThat(shadowBitmap.getCreatedFromX()).isEqualTo(0);
     assertThat(shadowBitmap.getCreatedFromY()).isEqualTo(0);
@@ -227,9 +229,10 @@ public class ShadowBitmapTest {
     canvas.drawBitmap(bitmap2, new Matrix(), paint);
 
     assertThat(shadowOf(bitmap1).getDescription())
-        .isEqualTo("Bitmap One\n" +
-            "Bitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>" +
-            " transformed by Matrix[pre=[], set={}, post=[]]");
+        .isEqualTo(
+            "Bitmap One\n"
+                + "Bitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>"
+                + " transformed by Matrix[pre=[], set={}, post=[]]");
   }
 
   @Test
@@ -322,7 +325,7 @@ public class ShadowBitmapTest {
 
   @Test(expected = IllegalStateException.class)
   public void shouldThrowExceptionForSetPixelOnImmutableBitmap() {
-    Bitmap bitmap = Bitmap.createBitmap(new int[] { 1 }, 1, 1, Bitmap.Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(new int[] {1}, 1, 1, Bitmap.Config.ARGB_8888);
     bitmap.setPixel(0, 0, 2);
   }
 
@@ -357,12 +360,12 @@ public class ShadowBitmapTest {
     Bitmap b = Bitmap.createBitmap(10, 20, Bitmap.Config.ARGB_8888);
     Bitmap.createBitmap(b, 0, 0, 20, 10, null, false);
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForNegativeWidth() {
     Bitmap.createBitmap(-100, 10, Bitmap.Config.ARGB_8888);
   }
-  
+
   @Test(expected = IllegalArgumentException.class)
   public void throwsExceptionForZeroHeight() {
     Bitmap.createBitmap(100, 0, Bitmap.Config.ARGB_8888);
@@ -776,6 +779,14 @@ public class ShadowBitmapTest {
     scaled.eraseColor(Color.BLUE);
     description = Shadows.shadowOf(scaled).getDescription();
     assertThat(description).isEqualTo("Bitmap (200, 200) erased with 0xff0000ff");
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void asShared_shouldReturnImmutableInstance() {
+    Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+
+    assertThat(original.asShared().isMutable()).isFalse();
   }
 
   private static Bitmap create(String name) {

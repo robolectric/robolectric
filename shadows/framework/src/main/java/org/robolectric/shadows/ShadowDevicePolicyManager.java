@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -40,9 +41,11 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.text.TextUtils;
+import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -339,6 +343,25 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   protected String getProfileOwnerNameAsUser(int userId) {
     return profileOwnerNamesMap.get(userId);
+  }
+
+  @Implementation(minSdk = P)
+  protected void transferOwnership(
+      ComponentName admin, ComponentName target, PersistableBundle bundle) {
+    Objects.requireNonNull(admin, "ComponentName is null");
+    Objects.requireNonNull(target, "Target cannot be null.");
+    Preconditions.checkArgument(
+        !admin.equals(target), "Provided administrator and target are the same object.");
+    Preconditions.checkArgument(
+        !admin.getPackageName().equals(target.getPackageName()),
+        "Provided administrator and target have the same package name.");
+    if (admin.equals(deviceOwner)) {
+      deviceOwner = target;
+    } else if (admin.equals(profileOwner)) {
+      profileOwner = target;
+    } else {
+      throw new SecurityException("Calling identity is not authorized");
+    }
   }
 
   private ShadowUserManager getShadowUserManager() {
