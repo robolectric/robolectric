@@ -14,6 +14,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.MessageQueue;
 import android.os.SystemClock;
+import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
@@ -23,7 +24,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -34,6 +34,19 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Reflector;
 import org.robolectric.util.reflector.WithType;
 
+/**
+ * Shadow of {@link DisplayEventReceiver}. The {@link Choreographer} is a subclass of {@link
+ * DisplayEventReceiver}, and receives vsync events from the display indicating the frequency that
+ * frames should be generated.
+ *
+ * <p>The {@code ShadowDisplayEventReceiver} can run in either a paused mode or a non-paused mode,
+ * see {@link ShadowChoreographer#isPaused()} and {@link ShadowChoreographer#setPaused(boolean)}. By
+ * default it runs unpaused, and each time a frame callback is scheduled with the {@link
+ * Choreographer} the clock is advanced to the next frame, configured by {@link
+ * ShadowChoreographer#setFrameDelay(Duration)}. In paused mode the clock is not auto advanced and
+ * the next frame will only trigger when the clock is advance manually or via the {@link
+ * ShadowLooper}.
+ */
 @Implements(
     className = "android.view.DisplayEventReceiver",
     isInAndroidSdk = false,
@@ -42,11 +55,8 @@ public class ShadowDisplayEventReceiver {
 
   private static NativeObjRegistry<NativeDisplayEventReceiver> nativeObjRegistry =
       new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
-  private static volatile int asyncVsyncDelay;
 
   @RealObject protected DisplayEventReceiver realReceiver;
-
-  private static final Duration VSYNC_DELAY = Duration.ofMillis(1);
 
   @Implementation(minSdk = O, maxSdk = Q)
   protected static long nativeInit(
@@ -117,15 +127,6 @@ public class ShadowDisplayEventReceiver {
       closeGuard.close();
     }
     reflector(DisplayEventReceiverReflector.class, realReceiver).dispose(finalized);
-  }
-
-  static void setAsyncVsync(int delayMillis) {
-    asyncVsyncDelay = delayMillis;
-  }
-
-  @Resetter
-  public static void reset() {
-    asyncVsyncDelay = 0;
   }
 
   protected void onVsync() {
@@ -206,14 +207,14 @@ public class ShadowDisplayEventReceiver {
     }
 
     public void scheduleVsync() {
-      int asyncVsyncDelay = ShadowDisplayEventReceiver.asyncVsyncDelay;
-      if (asyncVsyncDelay > 0) {
+      Duration frameDelay = ShadowChoreographer.getFrameDelay();
+      if (ShadowChoreographer.isPaused()) {
         synchronized (this) {
-          nextVsyncTime = SystemClock.uptimeMillis() + asyncVsyncDelay;
+          nextVsyncTime = SystemClock.uptimeMillis() + frameDelay.toMillis();
         }
       } else {
         // simulate an immediate callback
-        ShadowSystemClock.advanceBy(VSYNC_DELAY);
+        ShadowSystemClock.advanceBy(frameDelay);
         doVsync();
       }
     }
