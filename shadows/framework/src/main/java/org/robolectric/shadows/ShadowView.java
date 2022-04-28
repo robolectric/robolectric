@@ -36,7 +36,6 @@ import android.view.WindowId;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import android.widget.ImageView;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -237,18 +236,12 @@ public class ShadowView {
     Drawable background = realView.getBackground();
     if (background != null) {
       ShadowCanvas shadowCanvas = Shadow.extract(canvas);
-      shadowCanvas.appendDescription("background:");
-      background.draw(canvas);
-    }
-    // Because ImageView does not override the draw(Canvas) method, this logic has to
-    // be here, otherwise there will be a ClassCastException if there is a custom View shadow,
-    // which is one of the more commonly occurring shadows.
-    if (realView instanceof ImageView) {
-      Drawable drawable = ((ImageView) realView).getDrawable();
-      if (drawable != null) {
-        drawable.draw(canvas);
+      // Check that Canvas is not a Mockito mock
+      if (shadowCanvas != null) {
+        shadowCanvas.appendDescription("background:");
       }
     }
+    reflector(_View_.class, realView).draw(canvas);
   }
 
   @Implementation
@@ -748,6 +741,9 @@ public class ShadowView {
   /** Reflector interface for {@link View}'s internals. */
   @ForType(View.class)
   private interface _View_ {
+
+    @Direct
+    void draw(Canvas canvas);
 
     @Direct
     void onLayout(boolean changed, int left, int top, int right, int bottom);
