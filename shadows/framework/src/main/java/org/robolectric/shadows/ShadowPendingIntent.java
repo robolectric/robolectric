@@ -205,7 +205,7 @@ public class ShadowPendingIntent {
 
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     ShadowInstrumentation shadowInstrumentation = Shadow.extract(activityThread.getInstrumentation());
-    if (isActivityIntent()) {
+    if (isActivity()) {
       for (Intent intentToSend : intentsToSend) {
         shadowInstrumentation.execStartActivity(
             context,
@@ -216,16 +216,16 @@ public class ShadowPendingIntent {
             0,
             (Bundle) null);
       }
-    } else if (isBroadcastIntent()) {
+    } else if (isBroadcast()) {
       for (Intent intentToSend : intentsToSend) {
         shadowInstrumentation.sendBroadcastWithPermission(
             intentToSend, requiredPermission, context, options, code);
       }
-    } else if (isServiceIntent()) {
+    } else if (isService()) {
       for (Intent intentToSend : intentsToSend) {
         context.startService(intentToSend);
       }
-    } else if (isForegroundServiceIntent()) {
+    } else if (isForegroundService()) {
       for (Intent intentToSend : intentsToSend) {
         context.startForegroundService(intentToSend);
       }
@@ -241,26 +241,59 @@ public class ShadowPendingIntent {
     return new RoboIntentSender(realPendingIntent);
   }
 
+  /**
+   * Returns {@code true} if this {@code PendingIntent} was created with {@link #getActivity} or
+   * {@link getActivities}.
+   *
+   * <p>This method is intentionally left {@code public} rather than {@code protected} because it
+   * serves a secondary purpose as a utility shadow method for API levels < 31.
+   */
   @Implementation(minSdk = S)
   public boolean isActivity() {
-    return isActivityIntent();
+    return type == Type.ACTIVITY;
   }
 
+  /**
+   * Returns {@code true} if this {@code PendingIntent} was created with {@link #getBroadcast}.
+   *
+   * <p>This method is intentionally left {@code public} rather than {@code protected} because it
+   * serves a secondary purpose as a utility shadow method for API levels < 31.
+   */
   @Implementation(minSdk = S)
   public boolean isBroadcast() {
-    return isBroadcastIntent();
+    return type == Type.BROADCAST;
   }
 
+  /**
+   * Returns {@code true} if this {@code PendingIntent} was created with {@link
+   * #getForegroundService}.
+   *
+   * <p>This method is intentionally left {@code public} rather than {@code protected} because it
+   * serves a secondary purpose as a utility shadow method for API levels < 31.
+   */
   @Implementation(minSdk = S)
   public boolean isForegroundService() {
-    return isForegroundServiceIntent();
+    return type == Type.FOREGROUND_SERVICE;
   }
 
+  /**
+   * Returns {@code true} if this {@code PendingIntent} was created with {@link #getService}.
+   *
+   * <p>This method is intentionally left {@code public} rather than {@code protected} because it
+   * serves a secondary purpose as a utility shadow method for API levels < 31.
+   */
   @Implementation(minSdk = S)
   public boolean isService() {
-    return isServiceIntent();
+    return type == Type.SERVICE;
   }
 
+  /**
+   * Returns {@code true} if this {@code PendingIntent} is marked with {@link
+   * PendingIntent#FLAG_IMMUTABLE}.
+   *
+   * <p>This method is intentionally left {@code public} rather than {@code protected} because it
+   * serves a secondary purpose as a utility shadow method for API levels < 31.
+   */
   @Implementation(minSdk = S)
   public boolean isImmutable() {
     return (flags & FLAG_IMMUTABLE) > 0;
@@ -268,26 +301,40 @@ public class ShadowPendingIntent {
 
   /**
    * @return {@code true} iff sending this PendingIntent will start an activity
+   * @deprecated prefer {@link #isActivity} which was added to {@link PendingIntent} in API 31
+   *     (Android S).
    */
+  @Deprecated
   public boolean isActivityIntent() {
     return type == Type.ACTIVITY;
   }
 
   /**
    * @return {@code true} iff sending this PendingIntent will broadcast an Intent
+   * @deprecated prefer {@link #isBroadcast} which was added to {@link PendingIntent} in API 31
+   *     (Android S).
    */
+  @Deprecated
   public boolean isBroadcastIntent() {
     return type == Type.BROADCAST;
   }
 
   /**
    * @return {@code true} iff sending this PendingIntent will start a service
+   * @deprecated prefer {@link #isService} which was added to {@link PendingIntent} in API 31
+   *     (Android S).
    */
+  @Deprecated
   public boolean isServiceIntent() {
     return type == Type.SERVICE;
   }
 
-  /** @return {@code true} iff sending this PendingIntent will start a foreground service */
+  /**
+   * @return {@code true} iff sending this PendingIntent will start a foreground service
+   * @deprecated prefer {@link #isForegroundService} which was added to {@link PendingIntent} in API
+   *     31 (Android S).
+   */
+  @Deprecated
   public boolean isForegroundServiceIntent() {
     return type == Type.FOREGROUND_SERVICE;
   }
