@@ -405,6 +405,18 @@ public class ShadowCanvas {
     return height;
   }
 
+  @Implementation
+  protected boolean getClipBounds(Rect bounds) {
+    if (targetBitmap == null) {
+      return false;
+    }
+    if (bounds != null) {
+      bounds.set(0, 0, targetBitmap.getWidth(), targetBitmap.getHeight());
+      return !bounds.isEmpty();
+    }
+    return targetBitmap.getWidth() > 0 && targetBitmap.getHeight() > 0;
+  }
+
   public TextHistoryEvent getDrawnTextEvent(int i) {
     return drawnTextEventHistory.get(i);
   }
