@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -53,11 +54,13 @@ public abstract class ShadowChoreographer {
    * <p>Only works in {@link LooperMode.Mode#PAUSED} looper mode.
    */
   public static void setFrameDelay(Duration delay) {
+    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
     frameDelay = delay;
   }
 
   /** See {@link #setFrameDelay(Duration)}. */
   public static Duration getFrameDelay() {
+    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
     return frameDelay;
   }
 
@@ -69,11 +72,13 @@ public abstract class ShadowChoreographer {
    * <p>Only works in {@link LooperMode.Mode#PAUSED} looper mode.
    */
   public static void setPaused(boolean paused) {
+    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
     isPaused = paused;
   }
 
   /** See {@link #setPaused(boolean)}. */
   public static boolean isPaused() {
+    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
     return isPaused;
   }
 
@@ -89,6 +94,7 @@ public abstract class ShadowChoreographer {
    */
   @Deprecated
   public static void setPostCallbackDelay(int delayMillis) {
+    checkState(ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper must be %s", Mode.LEGACY);
     ShadowLegacyChoreographer.setPostCallbackDelay(delayMillis);
   }
 
@@ -122,6 +128,7 @@ public abstract class ShadowChoreographer {
    */
   @Deprecated
   public static long getFrameInterval() {
+    checkState(ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper must be %s", Mode.LEGACY);
     return ShadowLegacyChoreographer.getFrameInterval();
   }
 
@@ -136,6 +143,7 @@ public abstract class ShadowChoreographer {
    */
   @Deprecated
   public static void setFrameInterval(long frameInterval) {
+    checkState(ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper must be %s", Mode.LEGACY);
     ShadowLegacyChoreographer.setFrameInterval(frameInterval);
   }
 
