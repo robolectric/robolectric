@@ -22,6 +22,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
@@ -407,14 +408,12 @@ public class ShadowCanvas {
 
   @Implementation
   protected boolean getClipBounds(Rect bounds) {
+    Preconditions.checkNotNull(bounds);
     if (targetBitmap == null) {
       return false;
     }
-    if (bounds != null) {
-      bounds.set(0, 0, targetBitmap.getWidth(), targetBitmap.getHeight());
-      return !bounds.isEmpty();
-    }
-    return targetBitmap.getWidth() > 0 && targetBitmap.getHeight() > 0;
+    bounds.set(0, 0, targetBitmap.getWidth(), targetBitmap.getHeight());
+    return !bounds.isEmpty();
   }
 
   public TextHistoryEvent getDrawnTextEvent(int i) {
