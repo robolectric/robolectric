@@ -200,8 +200,7 @@ public class ShadowBitmapFactory {
 
   @Implementation
   protected static Bitmap decodeByteArray(byte[] data, int offset, int length) {
-    Bitmap bitmap = decodeByteArray(data, offset, length, new BitmapFactory.Options());
-    return bitmap;
+    return decodeByteArray(data, offset, length, new BitmapFactory.Options());
   }
 
   @Implementation
