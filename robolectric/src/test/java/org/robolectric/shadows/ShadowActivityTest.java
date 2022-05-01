@@ -62,6 +62,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewRootImpl;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
@@ -1396,6 +1397,43 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
 
     assertThat(activity.getSplashScreen()).isInstanceOf(RoboSplashScreen.class);
+  }
+
+  @Test
+  public void applicationWindow_hasCorrectWindowTokens() {
+    Activity activity = Robolectric.buildActivity(TestActivity.class).setup().get();
+    View activityView = activity.getWindow().getDecorView();
+    WindowManager.LayoutParams activityLp =
+        (WindowManager.LayoutParams) activityView.getLayoutParams();
+
+    View windowView = new View(activity);
+    WindowManager.LayoutParams windowViewLp = new WindowManager.LayoutParams();
+    windowViewLp.type = WindowManager.LayoutParams.TYPE_APPLICATION;
+    ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
+        .addView(windowView, windowViewLp);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(activityLp.token).isNotNull();
+    assertThat(windowViewLp.token).isEqualTo(activityLp.token);
+  }
+
+  @Test
+  public void subWindow_hasCorrectWindowTokens() {
+    Activity activity = Robolectric.buildActivity(TestActivity.class).setup().get();
+    View activityView = activity.getWindow().getDecorView();
+    WindowManager.LayoutParams activityLp =
+        (WindowManager.LayoutParams) activityView.getLayoutParams();
+
+    View windowView = new View(activity);
+    WindowManager.LayoutParams windowViewLp = new WindowManager.LayoutParams();
+    windowViewLp.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+    ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
+        .addView(windowView, windowViewLp);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(activityLp.token).isNotNull();
+    assertThat(windowViewLp.token).isEqualTo(activityView.getWindowToken());
+    assertThat(windowView.getApplicationWindowToken()).isEqualTo(activityView.getWindowToken());
   }
 
   /////////////////////////////

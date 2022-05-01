@@ -142,7 +142,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       ShadowActivity shadowActivity = extract(target);
       postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
-    return ar;
+    return null;
   }
 
   /** This API was added in Android API 23 (M) */
@@ -166,7 +166,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       ShadowActivity shadowActivity = extract(who);
       postDispatchActivityResult(shadowActivity, target, requestCode, ar);
     }
-    return ar;
+    return null;
   }
 
   /** This API was added in Android API 17 (JELLY_BEAN_MR1) */
@@ -192,7 +192,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       ShadowActivity shadowActivity = extract(target);
       postDispatchActivityResult(shadowActivity, null, requestCode, ar);
     }
-    return ar;
+    return null;
   }
 
   private void postDispatchActivityResult(
