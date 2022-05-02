@@ -15,7 +15,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link BackdropFrameRenderer} */
-@Implements(value = BackdropFrameRenderer.class, minSdk = S)
+@Implements(value = BackdropFrameRenderer.class, minSdk = S, isInAndroidSdk = false)
 public class ShadowBackdropFrameRenderer {
 
   // Updated to the real value in the generated Shadow constructor
