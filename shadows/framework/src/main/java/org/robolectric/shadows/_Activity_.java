@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -179,116 +180,9 @@ public interface _Activity_ {
       CharSequence activityTitle,
       @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
+    Binder token = new Binder();
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel <= Build.VERSION_CODES.KITKAT) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          null,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          "id",
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration());
-    } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          null,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          "id",
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
-          null);
-    } else if (apiLevel <= Build.VERSION_CODES.M) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          null,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          "id",
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
-          "referrer",
-          null);
-    } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          null,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          "id",
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
-          "referrer",
-          null,
-          null);
-    } else if (apiLevel <= Build.VERSION_CODES.P) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          null,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          "id",
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
-          "referrer",
-          null,
-          null,
-          null);
-    } else if (apiLevel <= VERSION_CODES.R) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          null,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          "id",
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration(),
-          "referrer",
-          null,
-          null,
-          null,
-          null);
-    } else if (apiLevel > Build.VERSION_CODES.R) {
-      ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
-      IBinder token =
-          shadowActivityThread.registerActivityLaunch(intent, activityInfo, realActivity);
       attach(
           baseContext,
           activityThread,
@@ -300,7 +194,112 @@ public interface _Activity_ {
           activityInfo,
           activityTitle,
           null,
-          "id",
+          null,
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration());
+    } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          null,
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          null);
+    } else if (apiLevel <= Build.VERSION_CODES.M) {
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          null,
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          "referrer",
+          null);
+    } else if (apiLevel <= Build.VERSION_CODES.N_MR1) {
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          null,
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          "referrer",
+          null,
+          null);
+    } else if (apiLevel <= Build.VERSION_CODES.P) {
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          null,
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          "referrer",
+          null,
+          null,
+          null);
+    } else if (apiLevel <= VERSION_CODES.R) {
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          null,
+          lastNonConfigurationInstances,
+          application.getResources().getConfiguration(),
+          "referrer",
+          null,
+          null,
+          null,
+          null);
+    } else if (apiLevel > Build.VERSION_CODES.R) {
+      attach(
+          baseContext,
+          activityThread,
+          instrumentation,
+          token,
+          0,
+          application,
+          intent,
+          activityInfo,
+          activityTitle,
+          null,
+          null,
           lastNonConfigurationInstances,
           application.getResources().getConfiguration(),
           "referrer",
@@ -310,6 +309,8 @@ public interface _Activity_ {
           null,
           null);
     }
+    Shadow.<ShadowActivityThread>extract(activityThread)
+        .registerActivityLaunch(intent, activityInfo, realActivity, token);
   }
 
   void performCreate(Bundle icicle);
