@@ -33,6 +33,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -83,6 +84,7 @@ public class ShadowMediaCodec {
   }
 
   /** Clears any previously added encoders and decoders. */
+  @Resetter
   public static void clearCodecs() {
     encoders.clear();
     decoders.clear();
