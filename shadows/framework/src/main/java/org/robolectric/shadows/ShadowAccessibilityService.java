@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityService.GestureResultCallback;
@@ -15,6 +16,7 @@ import android.graphics.ColorSpace.Named;
 import android.hardware.HardwareBuffer;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowAccessibilityService extends ShadowService {
 
   private final List<Integer> globalActionsPerformed = new ArrayList<>();
+  private List<AccessibilityNodeInfo.AccessibilityAction> systemActions;
   private final List<AccessibilityWindowInfo> windows = new ArrayList<>();
   private final List<GestureDispatch> gesturesDispatched = new ArrayList<>();
 
@@ -50,6 +53,16 @@ public class ShadowAccessibilityService extends ShadowService {
 
   public List<Integer> getGlobalActionsPerformed() {
     return globalActionsPerformed;
+  }
+
+  @Implementation(minSdk = S)
+  protected final List<AccessibilityNodeInfo.AccessibilityAction> getSystemActions() {
+    return systemActions;
+  }
+
+  public final void setSystemActions(
+      List<AccessibilityNodeInfo.AccessibilityAction> systemActions) {
+    this.systemActions = systemActions;
   }
 
   /**
