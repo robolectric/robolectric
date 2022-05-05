@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.NetworkCapabilities;
+import android.net.TransportInfo;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -54,6 +56,14 @@ public class ShadowNetworkCapabilities {
         .removeCapability(capability);
   }
 
+  /** Sets the {@code transportInfo} of the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  public NetworkCapabilities setTransportInfo(TransportInfo transportInfo) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setTransportInfo(transportInfo);
+  }
+
   @ForType(NetworkCapabilities.class)
   interface NetworkCapabilitiesReflector {
 
@@ -68,5 +78,8 @@ public class ShadowNetworkCapabilities {
 
     @Direct
     NetworkCapabilities removeCapability(int capability);
+
+    @Direct
+    NetworkCapabilities setTransportInfo(TransportInfo transportInfo);
   }
 }
