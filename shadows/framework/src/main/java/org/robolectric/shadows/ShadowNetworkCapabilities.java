@@ -64,6 +64,14 @@ public class ShadowNetworkCapabilities {
         .setTransportInfo(transportInfo);
   }
 
+  /** Sets the LinkDownstreamBandwidthKbps of the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  public NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setLinkDownstreamBandwidthKbps(kbps);
+  }
+
   @ForType(NetworkCapabilities.class)
   interface NetworkCapabilitiesReflector {
 
@@ -81,5 +89,8 @@ public class ShadowNetworkCapabilities {
 
     @Direct
     NetworkCapabilities setTransportInfo(TransportInfo transportInfo);
+
+    @Direct
+    NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps);
   }
 }
