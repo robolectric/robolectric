@@ -99,11 +99,11 @@ public class Util {
   }
 
   public static List<Integer> intArrayToList(int[] ints) {
-    List<Integer> youSuckJava = new ArrayList<>();
-    for (int attr1 : ints) {
-      youSuckJava.add(attr1);
+    List<Integer> list = new ArrayList<>();
+    for (int value : ints) {
+      list.add(value);
     }
-    return youSuckJava;
+    return list;
   }
 
   public static int parseInt(String valueFor) {
