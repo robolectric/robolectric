@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import android.uwb.IUwbAdapter;
 import android.uwb.RangingSession;
 import android.uwb.SessionHandle;
