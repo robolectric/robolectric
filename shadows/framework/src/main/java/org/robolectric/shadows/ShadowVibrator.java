@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
 
+import android.media.AudioAttributes;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -9,6 +10,7 @@ import android.os.vibrator.VibrationEffectSegment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -20,8 +22,10 @@ public class ShadowVibrator {
   long milliseconds;
   protected long[] pattern;
   protected final List<VibrationEffectSegment> vibrationEffectSegments = new ArrayList<>();
+  protected final List<PrimitiveEffect> primitiveEffects = new ArrayList<>();
   protected final List<Integer> supportedPrimitives = new ArrayList<>();
   @Nullable protected VibrationAttributes vibrationAttributesFromLastVibration;
+  @Nullable protected AudioAttributes audioAttributesFromLastVibration;
   int repeat;
   boolean hasVibrator = true;
   boolean hasAmplitudeControl = false;
@@ -81,6 +85,12 @@ public class ShadowVibrator {
     return vibrationEffectSegments;
   }
 
+  /** Returns the last list of {@link PrimitiveEffect}. */
+  @Nullable
+  public List<PrimitiveEffect> getPrimitiveEffects() {
+    return primitiveEffects;
+  }
+
   @Implementation(minSdk = R)
   protected boolean areAllPrimitivesSupported(int... primitiveIds) {
     for (int i = 0; i < primitiveIds.length; i++) {
@@ -101,5 +111,49 @@ public class ShadowVibrator {
   @Nullable
   public VibrationAttributes getVibrationAttributesFromLastVibration() {
     return vibrationAttributesFromLastVibration;
+  }
+
+  /** Returns the {@link AudioAttributes} from the last vibration. */
+  @Nullable
+  public AudioAttributes getAudioAttributesFromLastVibration() {
+    return audioAttributesFromLastVibration;
+  }
+
+  /**
+   * A data class for exposing {@link VibrationEffect.Composition$PrimitiveEffect}, which is a
+   * hidden non TestApi class introduced in Android R.
+   */
+  public static class PrimitiveEffect {
+    public final int id;
+    public final float scale;
+    public final int delay;
+
+    public PrimitiveEffect(int id, float scale, int delay) {
+      this.id = id;
+      this.scale = scale;
+      this.delay = delay;
+    }
+
+    @Override
+    public String toString() {
+      return "PrimitiveEffect{" + "id=" + id + ", scale=" + scale + ", delay=" + delay + '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || !getClass().isInstance(o)) {
+        return false;
+      }
+      PrimitiveEffect that = (PrimitiveEffect) o;
+      return id == that.id && Float.compare(that.scale, scale) == 0 && delay == that.delay;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id, scale, delay);
+    }
   }
 }
