@@ -67,4 +67,13 @@ public class ShadowAppWidgetHostTest {
     AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
     assertThat(shadowOf(hostView).getHost()).isSameInstanceAs(appWidgetHost);
   }
+
+  @Test
+  public void shouldKnowIfItIsListening() {
+    assertThat(shadowAppWidgetHost.isListening()).isFalse();
+    appWidgetHost.startListening();
+    assertThat(shadowAppWidgetHost.isListening()).isTrue();
+    appWidgetHost.stopListening();
+    assertThat(shadowAppWidgetHost.isListening()).isFalse();
+  }
 }
