@@ -1,9 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.NetworkCapabilities;
+import android.net.NetworkSpecifier;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -54,6 +58,26 @@ public class ShadowNetworkCapabilities {
         .removeCapability(capability);
   }
 
+  /**
+   * Changes {@link NetworkSpecifier} for this network capabilities. Works only on Android O and
+   * higher. For lower versions use {@link #setNetworkSpecifier(String)}
+   */
+  @Implementation(minSdk = O)
+  public NetworkCapabilities setNetworkSpecifier(NetworkSpecifier networkSpecifier) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setNetworkSpecifier(networkSpecifier);
+  }
+
+  /**
+   * Changes {@link NetworkSpecifier} for this network capabilities. Works only on Android N_MR1 and
+   * lower. For higher versions use {@link #setNetworkSpecifier(NetworkSpecifier)}
+   */
+  @Implementation(minSdk = N, maxSdk = N_MR1)
+  public NetworkCapabilities setNetworkSpecifier(String networkSpecifier) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setNetworkSpecifier(networkSpecifier);
+  }
+
   @ForType(NetworkCapabilities.class)
   interface NetworkCapabilitiesReflector {
 
@@ -68,5 +92,11 @@ public class ShadowNetworkCapabilities {
 
     @Direct
     NetworkCapabilities removeCapability(int capability);
+
+    @Direct
+    NetworkCapabilities setNetworkSpecifier(NetworkSpecifier networkSpecifier);
+
+    @Direct
+    NetworkCapabilities setNetworkSpecifier(String networkSpecifier);
   }
 }
