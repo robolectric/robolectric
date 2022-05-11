@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowVibrator.PrimitiveEffect;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowVibratorTest {
@@ -75,6 +76,7 @@ public class ShadowVibratorTest {
     assertThat(shadowOf(vibrator).isVibrating()).isTrue();
     assertThat(shadowOf(vibrator).getPattern()).isEqualTo(pattern);
     assertThat(shadowOf(vibrator).getRepeat()).isEqualTo(1);
+    assertThat(shadowOf(vibrator).getPrimitiveEffects()).isEmpty();
   }
 
   @Config(minSdk = Q)
@@ -83,6 +85,49 @@ public class ShadowVibratorTest {
     vibrator.vibrate(VibrationEffect.createPredefined(EFFECT_CLICK));
 
     assertThat(shadowOf(vibrator).getEffectId()).isEqualTo(EFFECT_CLICK);
+    assertThat(shadowOf(vibrator).getPrimitiveEffects()).isEmpty();
+  }
+
+  @Config(sdk = R)
+  @Test
+  public void getPrimitiveEffects_composeOnce_shouldReturnSamePrimitiveEffects() {
+    vibrator.vibrate(
+        VibrationEffect.startComposition()
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.5f, /* delay= */ 20)
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.7f, /* delay= */ 50)
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)
+            .compose());
+
+    assertThat(shadowOf(vibrator).getPrimitiveEffects())
+        .isEqualTo(
+            ImmutableList.of(
+                new PrimitiveEffect(EFFECT_CLICK, /* scale= */ 0.5f, /* delay= */ 20),
+                new PrimitiveEffect(EFFECT_CLICK, /* scale= */ 0.7f, /* delay= */ 50),
+                new PrimitiveEffect(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)));
+  }
+
+  @Config(sdk = R)
+  @Test
+  public void getPrimitiveEffects_composeTwice_shouldReturnTheLastComposition() {
+    vibrator.vibrate(
+        VibrationEffect.startComposition()
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.5f, /* delay= */ 20)
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.7f, /* delay= */ 50)
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)
+            .compose());
+    vibrator.vibrate(
+        VibrationEffect.startComposition()
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.4f, /* delay= */ 120)
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)
+            .addPrimitive(EFFECT_CLICK, /* scale= */ 1f, /* delay= */ 2150)
+            .compose());
+
+    assertThat(shadowOf(vibrator).getPrimitiveEffects())
+        .isEqualTo(
+            ImmutableList.of(
+                new PrimitiveEffect(EFFECT_CLICK, /* scale= */ 0.4f, /* delay= */ 120),
+                new PrimitiveEffect(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150),
+                new PrimitiveEffect(EFFECT_CLICK, /* scale= */ 1f, /* delay= */ 2150)));
   }
 
   @Config(minSdk = S)
@@ -192,5 +237,21 @@ public class ShadowVibratorTest {
                 .setAudioAttributes(audioAttributes)
                 .setVibrationEffect(VibrationEffect.createPredefined(EFFECT_CLICK))
                 .build());
+  }
+
+  @Config(minSdk = O, maxSdk = R)
+  @Test
+  public void getAudioAttribues_vibrateWithAudioAttributes_shouldReturnAudioAttributes() {
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION_COMMUNICATION_REQUEST)
+            .setFlags(AudioAttributes.FLAG_BYPASS_INTERRUPTION_POLICY)
+            .build();
+
+    vibrator.vibrate(/* delay= */ 200, audioAttributes);
+
+    AudioAttributes actualAudioAttriubes = shadowOf(vibrator).getAudioAttributesFromLastVibration();
+    assertThat(actualAudioAttriubes.getAllFlags()).isEqualTo(audioAttributes.getAllFlags());
+    assertThat(actualAudioAttriubes.getUsage()).isEqualTo(audioAttributes.getUsage());
   }
 }

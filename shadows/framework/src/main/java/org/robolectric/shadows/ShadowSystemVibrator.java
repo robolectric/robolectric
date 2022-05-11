@@ -19,6 +19,7 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.vibrator.VibrationEffectSegment;
 import java.util.List;
+import java.util.Optional;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -84,6 +85,10 @@ public class ShadowSystemVibrator extends ShadowVibrator {
       Class<?> waveformClass = Class.forName("android.os.VibrationEffect$Waveform");
       Class<?> prebakedClass = Class.forName("android.os.VibrationEffect$Prebaked");
       Class<?> oneShotClass = Class.forName("android.os.VibrationEffect$OneShot");
+      Optional<Class<?>> composedClass = Optional.empty();
+      if (RuntimeEnvironment.getApiLevel() == R) {
+        composedClass = Optional.of(Class.forName("android.os.VibrationEffect$Composed"));
+      }
 
       if (waveformClass.isInstance(effect)) {
         recordVibratePattern(
@@ -103,10 +108,23 @@ public class ShadowSystemVibrator extends ShadowVibrator {
         }
 
         recordVibrate(timing);
+      } else if (composedClass.isPresent() && composedClass.get().isInstance(effect)) {
+        VibrationEffect.Composed composed = (VibrationEffect.Composed) effect;
+        List<Object> effects =
+            ReflectionHelpers.callInstanceMethod(composed, "getPrimitiveEffects");
+        primitiveEffects.clear();
+        for (Object primitiveEffect : effects) {
+          primitiveEffects.add(
+              new PrimitiveEffect(
+                  /* id= */ ReflectionHelpers.getField(primitiveEffect, "id"),
+                  /* scale= */ ReflectionHelpers.getField(primitiveEffect, "scale"),
+                  /* delay= */ ReflectionHelpers.getField(primitiveEffect, "delay")));
+        }
       } else {
         throw new UnsupportedOperationException(
             "unrecognized effect type " + effect.getClass().getName());
       }
+      audioAttributesFromLastVibration = attributes;
     } catch (ClassNotFoundException e) {
       throw new UnsupportedOperationException(
           "unrecognized effect type " + effect.getClass().getName(), e);
