@@ -11,7 +11,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaMetadata;
 import android.media.Rating;
 import android.media.session.ISessionController;
@@ -123,6 +125,16 @@ public final class ShadowMediaControllerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
+  public void setAndGetSessionActivity() {
+    Context context = ApplicationProvider.getApplicationContext();
+    Intent intent = new Intent("testIntent");
+    PendingIntent pi = PendingIntent.getActivity(context, 555, intent, 0);
+    shadowMediaController.setSessionActivity(pi);
+    assertEquals(pi, mediaController.getSessionActivity());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
   public void registerAndGetCallback() {
     List<Callback> mockCallbacks = new ArrayList<>();
     assertEquals(mockCallbacks, shadowMediaController.getCallbacks());
@@ -194,9 +206,7 @@ public final class ShadowMediaControllerTest {
   }
 
   private static PlaybackState createPlaybackState() {
-       return new PlaybackState.Builder()
-        .setState(PlaybackState.STATE_PLAYING, 0L, 0f)
-        .build();
+    return new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0L, 0f).build();
   }
 
   private static MediaMetadata createMetadata(String title) {

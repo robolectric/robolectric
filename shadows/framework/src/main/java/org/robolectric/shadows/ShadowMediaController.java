@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
+import android.app.PendingIntent;
 import android.media.MediaMetadata;
 import android.media.Rating;
 import android.media.session.MediaController;
@@ -21,15 +22,15 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-/**
- * Implementation of {@link android.media.session.MediaController}.
- */
+/** Implementation of {@link android.media.session.MediaController}. */
 @Implements(value = MediaController.class, minSdk = LOLLIPOP)
 public class ShadowMediaController {
   @RealObject private MediaController realMediaController;
   private PlaybackState playbackState;
   private PlaybackInfo playbackInfo;
   private MediaMetadata mediaMetadata;
+  private PendingIntent sessionActivity;
+
   /**
    * A value of RATING_NONE for ratingType indicates that rating media is not supported by the media
    * session associated with the media controller
@@ -105,6 +106,20 @@ public class ShadowMediaController {
   @Implementation
   protected int getRatingType() {
     return ratingType;
+  }
+
+  /**
+   * Saves the sessionActivty to control the return value of {@link
+   * MediaController#getSessionActivity()}.
+   */
+  public void setSessionActivity(PendingIntent sessionActivity) {
+    this.sessionActivity = sessionActivity;
+  }
+
+  /** Gets the playbackState set via {@link #setSessionActivity}. */
+  @Implementation
+  protected PendingIntent getSessionActivity() {
+    return sessionActivity;
   }
 
   /**
