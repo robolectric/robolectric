@@ -14,6 +14,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
@@ -88,6 +89,8 @@ public class ShadowAudioManager {
   private int audioSessionIdCounter = 1;
   private final Map<AudioAttributes, ImmutableList<Object>> devicesForAttributes = new HashMap<>();
   private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
+  private List<AudioDeviceInfo> inputDevices = new ArrayList<>();
+  private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -412,6 +415,34 @@ public class ShadowAudioManager {
   /** Sets the devices to use as default for all audio streams. */
   public void setDefaultDevicesForAttributes(@NonNull ImmutableList<Object> devices) {
     defaultDevicesForAttributes = devices;
+  }
+
+  public void setInputDevices(List<AudioDeviceInfo> inputDevices) {
+    this.inputDevices = inputDevices;
+  }
+
+  public void setOutputDevices(List<AudioDeviceInfo> outputDevices) {
+    this.outputDevices = outputDevices;
+  }
+
+  private List<AudioDeviceInfo> getInputDevices() {
+    return inputDevices;
+  }
+
+  private List<AudioDeviceInfo> getOutputDevices() {
+    return outputDevices;
+  }
+
+  @Implementation(minSdk = M)
+  public AudioDeviceInfo[] getDevices(int flags) {
+    List<AudioDeviceInfo> result = new ArrayList<>();
+    if ((flags & AudioManager.GET_DEVICES_INPUTS) == AudioManager.GET_DEVICES_INPUTS) {
+      result.addAll(getInputDevices());
+    }
+    if ((flags & AudioManager.GET_DEVICES_OUTPUTS) == AudioManager.GET_DEVICES_OUTPUTS) {
+      result.addAll(getOutputDevices());
+    }
+    return result.toArray(new AudioDeviceInfo[0]);
   }
 
   /**
