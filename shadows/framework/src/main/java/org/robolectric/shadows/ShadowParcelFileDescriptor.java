@@ -283,7 +283,7 @@ public class ShadowParcelFileDescriptor {
           throw new IOException(
               "Can not find the opened file item from the table by given fd: " + fd);
         }
-        openedFileItems.remove(entry.getKey());
+        entry.getValue().closed = true;
       }
     }
   }
@@ -292,11 +292,13 @@ public class ShadowParcelFileDescriptor {
     final RandomAccessFile file;
     final int mode;
     final int fd;
+    boolean closed;
 
     OpenedFileItem(RandomAccessFile file, int mode, int fd) {
       this.file = file;
       this.mode = mode;
       this.fd = fd;
+      this.closed = false;
     }
   }
 }
