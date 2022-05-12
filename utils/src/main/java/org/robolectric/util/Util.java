@@ -98,6 +98,7 @@ public class Util {
     }
   }
 
+  @Deprecated
   public static List<Integer> intArrayToList(int[] ints) {
     List<Integer> list = new ArrayList<>();
     for (int value : ints) {
