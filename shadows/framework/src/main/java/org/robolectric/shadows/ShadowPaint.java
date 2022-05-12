@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -12,6 +13,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 
 import android.graphics.ColorFilter;
@@ -48,6 +50,10 @@ public class ShadowPaint {
   private boolean dither;
   private int flags;
   private PathEffect pathEffect;
+  private float letterSpacing;
+  private float textScaleX = 1f;
+  private float textSkewX;
+  private float wordSpacing;
 
   @RealObject Paint paint;
   private Typeface typeface;
@@ -73,6 +79,10 @@ public class ShadowPaint {
     this.dither = otherShadowPaint.dither;
     this.flags = otherShadowPaint.flags;
     this.pathEffect = otherShadowPaint.pathEffect;
+    this.letterSpacing = otherShadowPaint.letterSpacing;
+    this.textScaleX = otherShadowPaint.textScaleX;
+    this.textSkewX = otherShadowPaint.textSkewX;
+    this.wordSpacing = otherShadowPaint.wordSpacing;
 
     Shadow.invokeConstructor(Paint.class, paint, ClassParameter.from(Paint.class, otherPaint));
   }
@@ -202,6 +212,46 @@ public class ShadowPaint {
   }
 
   @Implementation
+  protected float getTextScaleX() {
+    return textScaleX;
+  }
+
+  @Implementation
+  protected void setTextScaleX(float scaleX) {
+    this.textScaleX = scaleX;
+  }
+
+  @Implementation
+  protected float getTextSkewX() {
+    return textSkewX;
+  }
+
+  @Implementation
+  protected void setTextSkewX(float skewX) {
+    this.textSkewX = skewX;
+  }
+
+  @Implementation(minSdk = L)
+  protected float getLetterSpacing() {
+    return letterSpacing;
+  }
+
+  @Implementation(minSdk = L)
+  protected void setLetterSpacing(float letterSpacing) {
+    this.letterSpacing = letterSpacing;
+  }
+
+  @Implementation(minSdk = Q)
+  protected float getWordSpacing() {
+    return wordSpacing;
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setWordSpacing(float wordSpacing) {
+    this.wordSpacing = wordSpacing;
+  }
+
+  @Implementation
   protected void setTextAlign(Paint.Align align) {
     textAlign = align;
   }
@@ -295,22 +345,26 @@ public class ShadowPaint {
 
   @Implementation
   protected float measureText(String text) {
-    return text.length();
+    return applyTextScaleX(text.length());
   }
 
   @Implementation
   protected float measureText(CharSequence text, int start, int end) {
-    return end - start;
+    return applyTextScaleX(end - start);
   }
 
   @Implementation
   protected float measureText(String text, int start, int end) {
-    return end - start;
+    return applyTextScaleX(end - start);
   }
 
   @Implementation
   protected float measureText(char[] text, int index, int count) {
-    return count;
+    return applyTextScaleX(count);
+  }
+
+  private float applyTextScaleX(float textWidth) {
+    return Math.max(0f, textScaleX) * textWidth;
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
