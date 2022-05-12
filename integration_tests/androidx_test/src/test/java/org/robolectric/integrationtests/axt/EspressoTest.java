@@ -15,6 +15,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.view.KeyEvent;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -115,6 +116,42 @@ public final class EspressoTest {
               assertThat(view.getHeight()).isGreaterThan(0);
             });
     onView(withText("Text View")).check(matches(isCompletelyDisplayed()));
+  }
+
+  @Test
+  public void textViewWithPositiveScaleX() {
+    onView(withId(R.id.text_view_positive_scale_x))
+        .check(
+            (view, noViewFoundException) -> {
+              TextView textView = (TextView) view;
+              float expectedTextScaleX = 1.5f;
+              assertThat(textView.getTextScaleX()).isEqualTo(expectedTextScaleX);
+              float expectedTextWidth = ((float) textView.length()) * expectedTextScaleX;
+              assertThat(textView.getPaint().measureText(textView.getText().toString()))
+                  .isEqualTo(expectedTextWidth);
+            });
+  }
+
+  @Test
+  public void textViewWithNegativeScaleX() {
+    onView(withId(R.id.text_view_negative_scale_x))
+        .check(
+            (view, noViewFoundException) -> {
+              TextView textView = (TextView) view;
+              assertThat(textView.getTextScaleX()).isEqualTo(-1.5f);
+              assertThat(textView.getPaint().measureText(textView.getText().toString()))
+                  .isEqualTo(0f);
+            });
+  }
+
+  @Test
+  public void textViewWithLetterSpacing() {
+    onView(withId(R.id.text_view_letter_spacing))
+        .check(
+            (view, noViewFoundException) -> {
+              TextView textView = (TextView) view;
+              assertThat(textView.getLetterSpacing()).isEqualTo(0.05f);
+            });
   }
 
   @Test

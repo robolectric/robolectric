@@ -25,6 +25,27 @@
       android:layout_width="wrap_content"
       android:text="Text View"/>
 
+  <TextView
+      android:id="@+id/text_view_positive_scale_x"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:textScaleX="1.5"
+      android:text="Text View with positive textScaleX"/>
+
+  <TextView
+      android:id="@+id/text_view_negative_scale_x"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:textScaleX="-1.5"
+      android:text="Text View with negative textScaleX"/>
+
+  <TextView
+      android:id="@+id/text_view_letter_spacing"
+      android:layout_height="wrap_content"
+      android:layout_width="wrap_content"
+      android:letterSpacing="0.05"
+      android:text="Text View with letterSpacing"/>
+
   <EditText
       android:id="@+id/edit_text_phone"
       android:layout_height="wrap_content"

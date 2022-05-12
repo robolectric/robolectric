@@ -79,6 +79,24 @@ public class ShadowPaintTest {
   }
 
   @Test
+  public void measureTextUsesTextScaleX() {
+    Paint paint = new Paint();
+    paint.setTextScaleX(1.5f);
+    assertThat(paint.measureText("Hello")).isEqualTo(7.5f);
+    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(3.0f);
+    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(4.5f);
+  }
+
+  @Test
+  public void textWidthWithNegativeScaleXIsZero() {
+    Paint paint = new Paint();
+    paint.setTextScaleX(-1.5f);
+    assertThat(paint.measureText("Hello")).isEqualTo(0f);
+    assertThat(paint.measureText("Hello", 1, 3)).isEqualTo(0f);
+    assertThat(paint.measureText(new StringBuilder("Hello"), 1, 4)).isEqualTo(0f);
+  }
+
+  @Test
   public void createPaintFromPaint() {
     Paint origPaint = new Paint();
     assertThat(new Paint(origPaint).getTextLocale()).isSameInstanceAs(origPaint.getTextLocale());
@@ -111,5 +129,11 @@ public class ShadowPaintTest {
                 /*maxWidth=*/ 100,
                 /*measuredWidth=*/ null))
         .isGreaterThan(0);
+  }
+
+  @Test
+  public void defaultTextScaleXIsOne() {
+    Paint paint = new Paint();
+    assertThat(paint.getTextScaleX()).isEqualTo(1f);
   }
 }
