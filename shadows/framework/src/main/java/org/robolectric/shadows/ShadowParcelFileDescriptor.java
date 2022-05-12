@@ -262,7 +262,7 @@ public class ShadowParcelFileDescriptor {
             continue;
           }
 
-          if (entry.getValue().fd == fd) {
+          if (entry.getValue().fd == fd && !entry.getValue().closed) {
             matchedEntriesCount++;
             targetEntry = entry;
           }
