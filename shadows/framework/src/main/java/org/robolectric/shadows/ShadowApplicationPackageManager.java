@@ -106,7 +106,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.GetInstallerPackageNameMode;
 import org.robolectric.annotation.HiddenApi;
@@ -1517,6 +1519,21 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       return packageInfosWithPermissions;
     }
+  }
+
+  @Implementation(minSdk = S)
+  public void getGroupOfPlatformPermission(
+      String permissionName, Executor executor, Consumer<String> callback) {
+    String permissionGroup = null;
+    try {
+      PermissionInfo permissionInfo =
+          getPermissionInfo(permissionName, PackageManager.GET_META_DATA);
+      permissionGroup = permissionInfo.group;
+    } catch (NameNotFoundException ignored) {
+      // fall through
+    }
+    final String finalPermissionGroup = permissionGroup;
+    executor.execute(() -> callback.accept(finalPermissionGroup));
   }
 
   /** Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId. */
