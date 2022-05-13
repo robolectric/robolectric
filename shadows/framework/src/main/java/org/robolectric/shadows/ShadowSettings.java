@@ -17,14 +17,16 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
+import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -38,136 +40,92 @@ public class ShadowSettings {
 
   @Implements(value = Settings.System.class)
   public static class ShadowSystem {
-    private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap = new WeakHashMap<ContentResolver, Map<String, Object>>();
+    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>();
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.System.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static int getInt(ContentResolver cr, String name, int def) {
-      if (get(cr).get(name) instanceof Integer) {
-        return (Integer) get(cr).get(name);
-      } else {
-        return def;
-      }
+      return get(Integer.class, name).orElse(def);
     }
 
     @Implementation
-    protected static int getInt(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Integer) {
-        return (Integer) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+    protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
+      return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.System.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static String getString(ContentResolver cr, String name) {
-      if (get(cr).get(name) instanceof String) {
-        return (String) get(cr).get(name);
-      } else {
-        return null;
-      }
+      return get(String.class, name).orElse(null);
     }
 
     @Implementation(minSdk = JELLY_BEAN_MR1)
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
-      return getString(cr, name);
+      return get(String.class, name).orElse(null);
     }
 
     @Implementation
     protected static boolean putLong(ContentResolver cr, String name, long value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.System.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static long getLong(ContentResolver cr, String name, long def) {
-      if (get(cr).get(name) instanceof Long) {
-        return (Long) get(cr).get(name);
-      } else {
-        return def;
-      }
+      return get(Long.class, name).orElse(def);
     }
 
     @Implementation
-    protected static long getLong(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Long) {
-        return (Long) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+    protected static long getLong(ContentResolver cr, String name) throws SettingNotFoundException {
+      return get(Long.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.System.getUriFor(name), null);
-        }
-      }
-      get(cr).put(name, value);
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static float getFloat(ContentResolver cr, String name, float def) {
-      if (get(cr).get(name) instanceof Float) {
-        return (Float) get(cr).get(name);
-      } else {
-        return def;
-      }
+      return get(Float.class, name).orElse(def);
     }
 
     @Implementation
     protected static float getFloat(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Float) {
-        return (Float) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+        throws SettingNotFoundException {
+      return get(Float.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
-    private static Map<String, Object> get(ContentResolver cr) {
-      Map<String, Object> map = dataMap.get(cr);
-      if (map == null) {
-        map = new HashMap<>();
-        dataMap.put(cr, map);
+    private static boolean put(ContentResolver cr, String name, Object value) {
+      if (!Objects.equals(
+          settings.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
+        if (cr != null) {
+          cr.notifyChange(Settings.System.getUriFor(name), null);
+        }
       }
-      return map;
+      return true;
+    }
+
+    private static <T> Optional<T> get(Class<T> type, String name) {
+      return settings.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
+    }
+
+    @Resetter
+    public static void reset() {
+      settings.clear();
     }
   }
 
   @Implements(value = Settings.Secure.class)
   public static class ShadowSecure {
-    private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap =
-        new WeakHashMap<ContentResolver, Map<String, Object>>();
-
-    private static final HashMap<String, Object> SECURE_DEFAULTS = new HashMap<>();
+    private static final HashMap<String, Optional<Object>> SECURE_DEFAULTS = new HashMap<>();
 
     // source of truth for initial location state
     static final boolean INITIAL_GPS_PROVIDER_STATE = true;
@@ -175,18 +133,21 @@ public class ShadowSettings {
 
     static {
       if (INITIAL_GPS_PROVIDER_STATE && INITIAL_NETWORK_PROVIDER_STATE) {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_HIGH_ACCURACY);
-        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "gps,network");
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(Secure.LOCATION_MODE_HIGH_ACCURACY));
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of("gps,network"));
       } else if (INITIAL_GPS_PROVIDER_STATE) {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_SENSORS_ONLY);
-        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "gps");
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(Secure.LOCATION_MODE_SENSORS_ONLY));
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of("gps"));
       } else if (INITIAL_NETWORK_PROVIDER_STATE) {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Secure.LOCATION_MODE_BATTERY_SAVING);
-        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, "network");
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(Secure.LOCATION_MODE_BATTERY_SAVING));
+        SECURE_DEFAULTS.put(Secure.LOCATION_PROVIDERS_ALLOWED, Optional.of("network"));
       } else {
-        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, LOCATION_MODE_OFF);
+        SECURE_DEFAULTS.put(Secure.LOCATION_MODE, Optional.of(LOCATION_MODE_OFF));
       }
     }
+
+    private static final Map<String, Optional<Object>> dataMap =
+        new ConcurrentHashMap<>(SECURE_DEFAULTS);
 
     @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = P)
     @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
@@ -239,7 +200,7 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      boolean changed = !Objects.equals(get(cr).put(name, value), value);
+      boolean changed = !Objects.equals(dataMap.put(name, Optional.of(value)), Optional.of(value));
 
       if (Settings.Secure.LOCATION_MODE.equals(name)) {
         if (RuntimeEnvironment.getApiLevel() <= P) {
@@ -285,14 +246,13 @@ public class ShadowSettings {
 
     @Implementation(minSdk = JELLY_BEAN_MR1)
     protected static int getIntForUser(ContentResolver cr, String name, int userHandle)
-        throws Settings.SettingNotFoundException {
+        throws SettingNotFoundException {
       // ignore userhandle
       return getInt(cr, name);
     }
 
     @Implementation
-    protected static int getInt(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
+    protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
       if (Settings.Secure.LOCATION_MODE.equals(name)
           && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
@@ -304,11 +264,7 @@ public class ShadowSettings {
             ClassParameter.from(int.class, 0));
       }
 
-      if (get(cr).get(name) instanceof Integer) {
-        return (Integer) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+      return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     @Implementation
@@ -323,31 +279,18 @@ public class ShadowSettings {
             ClassParameter.from(ContentResolver.class, cr),
             ClassParameter.from(int.class, 0));
       }
-      Integer v = (Integer) get(cr).get(name);
-      try {
-        return v != null ? v : def;
-      } catch (NumberFormatException e) {
-        return def;
-      }
+
+      return get(Integer.class, name).orElse(def);
     }
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.Secure.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static String getString(ContentResolver cr, String name) {
-      if (get(cr).get(name) instanceof String) {
-        return (String) get(cr).get(name);
-      } else {
-        return null;
-      }
+      return get(String.class, name).orElse(null);
     }
 
     @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -357,36 +300,38 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putLong(ContentResolver cr, String name, long value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.Secure.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static long getLong(ContentResolver cr, String name, long def) {
-      if (get(cr).get(name) instanceof Long) {
-        return (Long) get(cr).get(name);
-      } else {
-        return def;
-      }
+      return get(Long.class, name).orElse(def);
     }
 
     @Implementation
-    protected static long getLong(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Long) {
-        return (Long) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+    protected static long getLong(ContentResolver cr, String name) throws SettingNotFoundException {
+      return get(Long.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
+      return put(cr, name, value);
+    }
+
+    @Implementation
+    protected static float getFloat(ContentResolver cr, String name, float def) {
+      return get(Float.class, name).orElse(def);
+    }
+
+    @Implementation
+    protected static float getFloat(ContentResolver cr, String name)
+        throws SettingNotFoundException {
+      return get(Float.class, name).orElseThrow(() -> new SettingNotFoundException(name));
+    }
+
+    private static boolean put(ContentResolver cr, String name, Object value) {
+      if (!Objects.equals(
+          dataMap.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
         if (cr != null) {
           cr.notifyChange(Settings.Secure.getUriFor(name), null);
         }
@@ -394,86 +339,44 @@ public class ShadowSettings {
       return true;
     }
 
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name, float def) {
-      if (get(cr).get(name) instanceof Float) {
-        return (Float) get(cr).get(name);
-      } else {
-        return def;
-      }
+    private static <T> Optional<T> get(Class<T> type, String name) {
+      return dataMap.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Float) {
-        return (Float) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
-    }
-
-    private static Map<String, Object> get(ContentResolver cr) {
-      Map<String, Object> map = dataMap.get(cr);
-      if (map == null) {
-        map = new HashMap<>(SECURE_DEFAULTS);
-        dataMap.put(cr, map);
-      }
-      return map;
+    @Resetter
+    public static void reset() {
+      dataMap.clear();
+      dataMap.putAll(SECURE_DEFAULTS);
     }
   }
 
   @Implements(value = Settings.Global.class, minSdk = JELLY_BEAN_MR1)
   public static class ShadowGlobal {
-    private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap =
-        new WeakHashMap<ContentResolver, Map<String, Object>>();
+    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>();
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.Global.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static int getInt(ContentResolver cr, String name, int def) {
-      if (get(cr).get(name) instanceof Integer) {
-        return (Integer) get(cr).get(name);
-      } else {
-        return def;
-      }
+      return get(Integer.class, name).orElse(def);
     }
 
     @Implementation
-    protected static int getInt(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Integer) {
-        return (Integer) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+    protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
+      return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     @Implementation
     protected static boolean putString(ContentResolver cr, String name, String value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.Global.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static String getString(ContentResolver cr, String name) {
-      if (get(cr).get(name) instanceof String) {
-        return (String) get(cr).get(name);
-      } else {
-        return null;
-      }
+      return get(String.class, name).orElse(null);
     }
 
     @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -483,36 +386,38 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putLong(ContentResolver cr, String name, long value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
-        if (cr != null) {
-          cr.notifyChange(Settings.Global.getUriFor(name), null);
-        }
-      }
-      return true;
+      return put(cr, name, value);
     }
 
     @Implementation
     protected static long getLong(ContentResolver cr, String name, long def) {
-      if (get(cr).get(name) instanceof Long) {
-        return (Long) get(cr).get(name);
-      } else {
-        return def;
-      }
+      return get(Long.class, name).orElse(def);
     }
 
     @Implementation
-    protected static long getLong(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Long) {
-        return (Long) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
+    protected static long getLong(ContentResolver cr, String name) throws SettingNotFoundException {
+      return get(Long.class, name).orElseThrow(() -> new SettingNotFoundException(name));
     }
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      if (!Objects.equals(get(cr).put(name, value), value)) {
+      return put(cr, name, value);
+    }
+
+    @Implementation
+    protected static float getFloat(ContentResolver cr, String name, float def) {
+      return get(Float.class, name).orElse(def);
+    }
+
+    @Implementation
+    protected static float getFloat(ContentResolver cr, String name)
+        throws SettingNotFoundException {
+      return get(Float.class, name).orElseThrow(() -> new SettingNotFoundException(name));
+    }
+
+    private static boolean put(ContentResolver cr, String name, Object value) {
+      if (!Objects.equals(
+          settings.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
         if (cr != null) {
           cr.notifyChange(Settings.Global.getUriFor(name), null);
         }
@@ -520,32 +425,13 @@ public class ShadowSettings {
       return true;
     }
 
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name, float def) {
-      if (get(cr).get(name) instanceof Float) {
-        return (Float) get(cr).get(name);
-      } else {
-        return def;
-      }
+    private static <T> Optional<T> get(Class<T> type, String name) {
+      return settings.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
-    @Implementation
-    protected static float getFloat(ContentResolver cr, String name)
-        throws Settings.SettingNotFoundException {
-      if (get(cr).get(name) instanceof Float) {
-        return (Float) get(cr).get(name);
-      } else {
-        throw new Settings.SettingNotFoundException(name);
-      }
-    }
-
-    private static Map<String, Object> get(ContentResolver cr) {
-      Map<String, Object> map = dataMap.get(cr);
-      if (map == null) {
-        map = new HashMap<>();
-        dataMap.put(cr, map);
-      }
-      return map;
+    @Resetter
+    public static void reset() {
+      settings.clear();
     }
   }
 
@@ -595,7 +481,9 @@ public class ShadowSettings {
 
   private static boolean canDrawOverlays = false;
 
-  /** @return false by default, or the value specified via {@link #setCanDrawOverlays(boolean)} */
+  /**
+   * @return false by default, or the value specified via {@link #setCanDrawOverlays(boolean)}
+   */
   @Implementation(minSdk = M)
   protected static boolean canDrawOverlays(Context context) {
     return canDrawOverlays;
