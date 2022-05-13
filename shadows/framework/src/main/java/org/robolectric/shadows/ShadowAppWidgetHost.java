@@ -17,6 +17,7 @@ public class ShadowAppWidgetHost {
   private Context context;
   private int hostId;
   private int appWidgetIdToAllocate;
+  private boolean listening = false;
 
   @Implementation
   protected void __constructor__(Context context, int hostId) {
@@ -34,6 +35,11 @@ public class ShadowAppWidgetHost {
 
   public void setAppWidgetIdToAllocate(int idToAllocate) {
     appWidgetIdToAllocate = idToAllocate;
+  }
+
+  /** Returns true if this host is listening for updates. */
+  public boolean isListening() {
+    return listening;
   }
 
   @Implementation
@@ -56,5 +62,15 @@ public class ShadowAppWidgetHost {
     ShadowAppWidgetHostView shadowAppWidgetHostView = Shadow.extract(hostView);
     shadowAppWidgetHostView.setHost(realAppWidgetHost);
     return hostView;
+  }
+
+  @Implementation
+  protected void startListening() {
+    listening = true;
+  }
+
+  @Implementation
+  protected void stopListening() {
+    listening = false;
   }
 }
