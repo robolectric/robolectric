@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -15,9 +16,11 @@ import android.accessibilityservice.GestureDescription.StrokeDescription;
 import android.graphics.Path;
 import android.view.Display;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -224,6 +227,27 @@ public class ShadowAccessibilityServiceTest {
     shadow.setWindows(Arrays.asList(w1, w2, w3));
     assertThat(service.getWindows()).hasSize(3);
     assertThat(service.getWindows()).containsExactly(w1, w2, w3).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getSystemActions_returnsNull() {
+    assertThat(service.getSystemActions()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getSystemActions_returnsSetValue() {
+    ImmutableList<AccessibilityNodeInfo.AccessibilityAction> actions =
+        ImmutableList.of(
+            new AccessibilityNodeInfo.AccessibilityAction(
+                AccessibilityService.GLOBAL_ACTION_BACK, "Go back"),
+            new AccessibilityNodeInfo.AccessibilityAction(
+                AccessibilityService.GLOBAL_ACTION_ACCESSIBILITY_ALL_APPS, "All apps"));
+
+    shadow.setSystemActions(actions);
+
+    assertThat(service.getSystemActions()).isEqualTo(actions);
   }
 
   private static GestureDescription createTestGesture() {
