@@ -1,4 +1,4 @@
-package org.robolectric.integration.compat.target29
+package org.robolectric.integration.compat.target28
 
 import android.content.Context
 import android.os.Build
@@ -11,8 +11,13 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.testapp.TestActivity
 
 @RunWith(RobolectricTestRunner::class)
-class Target29CompatibilityTest {
+class NormalCompatibilityTest {
   private val application = ApplicationProvider.getApplicationContext<Context>()
+
+  @Test
+  fun `Environment SDK is 28`() {
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.P)
+  }
 
   @Test
   fun `Initialize LocationManager succeed`() {
@@ -29,10 +34,5 @@ class Target29CompatibilityTest {
   @Test
   fun `Initialize Activity succeed`() {
     ActivityScenario.launch(TestActivity::class.java).use { assertThat(true).isTrue() }
-  }
-
-  @Test
-  fun `Environment SDK is 29`() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.Q)
   }
 }
