@@ -1,5 +1,6 @@
 package org.robolectric.integrationtests.axt;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
@@ -19,10 +20,12 @@ import android.widget.TextView;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SdkSuppress;
 import androidx.test.rule.ActivityTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
@@ -126,9 +129,10 @@ public final class EspressoTest {
               TextView textView = (TextView) view;
               float expectedTextScaleX = 1.5f;
               assertThat(textView.getTextScaleX()).isEqualTo(expectedTextScaleX);
-              float expectedTextWidth = ((float) textView.length()) * expectedTextScaleX;
-              assertThat(textView.getPaint().measureText(textView.getText().toString()))
-                  .isEqualTo(expectedTextWidth);
+              float scaledWidth = textView.getPaint().measureText(textView.getText().toString());
+              textView.setTextScaleX(1f);
+              float unscaledWidth = textView.getPaint().measureText(textView.getText().toString());
+              assertThat(scaledWidth).isGreaterThan(unscaledWidth);
             });
   }
 
@@ -139,11 +143,15 @@ public final class EspressoTest {
             (view, noViewFoundException) -> {
               TextView textView = (TextView) view;
               assertThat(textView.getTextScaleX()).isEqualTo(-1.5f);
-              assertThat(textView.getPaint().measureText(textView.getText().toString()))
-                  .isEqualTo(0f);
+              float scaledWidth = textView.getPaint().measureText(textView.getText().toString());
+              textView.setTextScaleX(1f);
+              float unscaledWidth = textView.getPaint().measureText(textView.getText().toString());
+              assertThat(scaledWidth).isLessThan(unscaledWidth);
             });
   }
 
+  @Config(minSdk = LOLLIPOP)
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Test
   public void textViewWithLetterSpacing() {
     onView(withId(R.id.text_view_letter_spacing))
