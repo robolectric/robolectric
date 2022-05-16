@@ -2,11 +2,15 @@ package org.robolectric.integrationtests.axt;
 
 import static androidx.test.core.app.ActivityScenario.launch;
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.Gravity;
@@ -23,6 +27,7 @@ import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Tap;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -93,6 +98,28 @@ public class EspressoWithWindowLayersTest {
 
       scenario.onActivity(activity -> assertThat(activity.buttonClicked).isTrue());
       assertThat(popupTouchOutside).isTrue();
+    }
+  }
+
+  @Test
+  public void click_twoDialogs_clicksOnTopMost() {
+    AtomicBoolean clicked = new AtomicBoolean();
+    try (ActivityScenario<EspressoActivity> scenario = launch(EspressoActivity.class)) {
+      scenario.onActivity(
+          activity -> {
+            new AlertDialog.Builder(activity)
+                .setPositiveButton("Hello", (dialog, which) -> {})
+                .create()
+                .show();
+            new AlertDialog.Builder(activity)
+                .setPositiveButton("Hello", (dialog, which) -> clicked.set(true))
+                .create()
+                .show();
+          });
+
+      onView(withText("Hello")).inRoot(isDialog()).perform(click());
+
+      assertThat(clicked.get()).isTrue();
     }
   }
 

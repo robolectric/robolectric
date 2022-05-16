@@ -10,13 +10,16 @@ import static java.util.Comparator.comparingInt;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
@@ -31,6 +34,9 @@ import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.platform.ui.InjectEventSecurityException;
 import androidx.test.platform.ui.UiController;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -324,18 +330,25 @@ public class LocalUiController implements UiController {
 
   private ArrayList<Root> getViewRoots() {
     List<ViewRootImpl> viewRootImpls = getViewRootImpls();
-    if (viewRootImpls.isEmpty()) {
-      throw new IllegalStateException("no view roots!");
-    }
     List<LayoutParams> params = getRootLayoutParams();
-    if (params.size() != viewRootImpls.size()) {
-      throw new IllegalStateException("number params is not consistent with number of view roots!");
-    }
+    checkState(!viewRootImpls.isEmpty(), "no view roots!");
+    checkState(
+        params.size() == viewRootImpls.size(),
+        "number params is not consistent with number of view roots!");
+    Set<IBinder> startedActivityTokens = getStartedActivityTokens();
     ArrayList<Root> roots = new ArrayList<>();
     for (int i = 0; i < viewRootImpls.size(); i++) {
-      roots.add(new Root(viewRootImpls.get(i), params.get(i), i));
+      Root root = new Root(viewRootImpls.get(i), params.get(i), i);
+      // TODO: Should we also filter out sub-windows of non-started application windows?
+      if (root.getType() != LayoutParams.TYPE_BASE_APPLICATION
+          || startedActivityTokens.contains(root.impl.getView().getApplicationWindowToken())) {
+        roots.add(root);
+      }
     }
-    roots.sort(comparingInt(Root::getType).reversed().thenComparingInt(Root::getIndex));
+    roots.sort(
+        comparingInt(Root::getType)
+            .reversed()
+            .thenComparing(comparingInt(Root::getIndex).reversed()));
     return roots;
   }
 
@@ -373,6 +386,17 @@ public class LocalUiController implements UiController {
     } else {
       return WindowManagerGlobal.getInstance();
     }
+  }
+
+  private static Set<IBinder> getStartedActivityTokens() {
+    ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
+    return ImmutableSet.<Activity>builder()
+        .addAll(monitor.getActivitiesInStage(Stage.STARTED))
+        .addAll(monitor.getActivitiesInStage(Stage.RESUMED))
+        .build()
+        .stream()
+        .map(activity -> activity.getWindow().getDecorView().getApplicationWindowToken())
+        .collect(toSet());
   }
 
   private static Predicate<Root> hasLayoutFlag(int flag) {

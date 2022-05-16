@@ -15,6 +15,8 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Application;
 import android.content.ContentResolver;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
@@ -273,5 +275,24 @@ public class ShadowSettingsTest {
     assertThat(
             Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, /* def= */ 0))
         .isEqualTo(0.01f);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void differentContentResolver() {
+    Context context = ApplicationProvider.getApplicationContext();
+    ContentResolver contentResolver1 =
+        context.createConfigurationContext(new Configuration()).getContentResolver();
+    ContentResolver contentResolver2 =
+        context.createConfigurationContext(new Configuration()).getContentResolver();
+
+    Settings.System.putString(contentResolver1, "setting", "system");
+    Settings.Secure.putString(contentResolver1, "setting", "secure");
+    Settings.Global.putString(contentResolver1, "setting", "global");
+
+    assertThat(contentResolver1).isNotSameInstanceAs(contentResolver2);
+    assertThat(Settings.System.getString(contentResolver2, "setting")).isEqualTo("system");
+    assertThat(Settings.Secure.getString(contentResolver2, "setting")).isEqualTo("secure");
+    assertThat(Settings.Global.getString(contentResolver2, "setting")).isEqualTo("global");
   }
 }

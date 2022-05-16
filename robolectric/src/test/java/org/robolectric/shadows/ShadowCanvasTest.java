@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 
@@ -581,5 +582,10 @@ public class ShadowCanvasTest {
     assertThat(drawRect.bottom).isEqualTo(10f);
     assertThat(drawRect.rect).isEqualTo(rect);
     assertThat(drawRect.paint.getColor()).isEqualTo(Color.WHITE);
+  }
+
+  @Test
+  public void getClipBounds_nullBounds_throwsNPE() {
+    assertThrows(NullPointerException.class, () -> new Canvas().getClipBounds(null));
   }
 }

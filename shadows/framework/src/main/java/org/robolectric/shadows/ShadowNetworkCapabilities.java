@@ -4,10 +4,12 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.NetworkCapabilities;
 import android.net.NetworkSpecifier;
+import android.net.TransportInfo;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -78,6 +80,22 @@ public class ShadowNetworkCapabilities {
         .setNetworkSpecifier(networkSpecifier);
   }
 
+  /** Sets the {@code transportInfo} of the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  public NetworkCapabilities setTransportInfo(TransportInfo transportInfo) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setTransportInfo(transportInfo);
+  }
+
+  /** Sets the LinkDownstreamBandwidthKbps of the NetworkCapabilities. */
+  @HiddenApi
+  @Implementation(minSdk = Q)
+  public NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps) {
+    return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
+        .setLinkDownstreamBandwidthKbps(kbps);
+  }
+
   @ForType(NetworkCapabilities.class)
   interface NetworkCapabilitiesReflector {
 
@@ -98,5 +116,11 @@ public class ShadowNetworkCapabilities {
 
     @Direct
     NetworkCapabilities setNetworkSpecifier(String networkSpecifier);
+
+    @Direct
+    NetworkCapabilities setTransportInfo(TransportInfo transportInfo);
+
+    @Direct
+    NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps);
   }
 }

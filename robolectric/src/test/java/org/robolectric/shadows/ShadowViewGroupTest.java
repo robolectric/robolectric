@@ -12,6 +12,10 @@ import static org.robolectric.shadows.ShadowLooper.idleMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -446,6 +450,17 @@ public class ShadowViewGroupTest {
     assertSame(shadowOf(child3a).getLastTouchEvent(), upEvent);
   }
 
+  @Test
+  public void draw_drawsChildren() {
+    DrawRecordView view = new DrawRecordView(context);
+    ViewGroup viewGroup = new FrameLayout(context);
+    viewGroup.addView(view);
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
+    Canvas canvas = new Canvas(bitmap);
+    viewGroup.draw(canvas);
+    assertThat(view.wasDrawn).isTrue();
+  }
+
   private void makeFocusable(View... views) {
     for (View view : views) {
       view.setFocusable(true);
@@ -466,6 +481,21 @@ public class ShadowViewGroupTest {
 
     public boolean wasCalled() {
       return wasCalled;
+    }
+  }
+
+  static class DrawRecordView extends View {
+
+    boolean wasDrawn;
+
+    public DrawRecordView(Context context) {
+      super(context);
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+      super.draw(canvas);
+      wasDrawn = true;
     }
   }
 }

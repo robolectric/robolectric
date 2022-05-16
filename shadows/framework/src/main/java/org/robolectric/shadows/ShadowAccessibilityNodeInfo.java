@@ -1225,10 +1225,6 @@ public class ShadowAccessibilityNodeInfo {
 
     @Implementation
     protected void __constructor__(int id, CharSequence label) {
-      if (((id & reflector(AccessibilityNodeInfoReflector.class).getActionTypeMask()) == 0)
-          && Integer.bitCount(id) != 1) {
-        throw new IllegalArgumentException("Invalid standard action id");
-      }
       this.id = id;
       this.label = label;
     }

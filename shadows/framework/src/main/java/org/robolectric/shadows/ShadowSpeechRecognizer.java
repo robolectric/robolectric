@@ -28,7 +28,7 @@ import org.robolectric.util.reflector.Static;
 public class ShadowSpeechRecognizer {
 
   @RealObject SpeechRecognizer realSpeechRecognizer;
-  private static SpeechRecognizer latestSpeechRecognizer;
+  protected static SpeechRecognizer latestSpeechRecognizer;
   private Intent recognizerIntent;
   private RecognitionListener recognitionListener;
 

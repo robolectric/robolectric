@@ -39,9 +39,11 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.eq;
@@ -108,6 +110,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
 import org.junit.After;
 import org.junit.Assert;
@@ -789,6 +793,42 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getPermissionGroupInfo(permission_group.CAMERA, 0).name)
         .isEqualTo(newCameraPermission.name);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getGroupOfPlatformPermission_fromManifest() throws Exception {
+    String permissionName = "org.robolectric.some_permission";
+    CountDownLatch waitForCallback = new CountDownLatch(1);
+    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
+    String[] permissionGroupArg = new String[1];
+    pm.getGroupOfPlatformPermission(
+        permissionName,
+        Executors.newSingleThreadExecutor(),
+        (group) -> {
+          permissionGroupArg[0] = group;
+          waitForCallback.countDown();
+        });
+    assertThat(waitForCallback.await(2, SECONDS)).isTrue();
+    assertThat(permissionGroupArg[0]).isEqualTo("my_permission_group");
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getGroupOfPlatformPermission_unknown() throws Exception {
+    String permissionName = "unknown_permission";
+    CountDownLatch waitForCallback = new CountDownLatch(1);
+    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
+    String[] permissionGroupArg = new String[1];
+    pm.getGroupOfPlatformPermission(
+        permissionName,
+        Executors.newSingleThreadExecutor(),
+        (group) -> {
+          permissionGroupArg[0] = group;
+          waitForCallback.countDown();
+        });
+    assertThat(waitForCallback.await(2, SECONDS)).isTrue();
+    assertThat(permissionGroupArg[0]).isNull();
   }
 
   @Test

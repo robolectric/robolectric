@@ -36,9 +36,10 @@ import android.view.WindowId;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
-import android.widget.ImageView;
+import com.google.common.collect.ImmutableList;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -86,6 +87,7 @@ public class ShadowView {
   private View.OnCreateContextMenuListener onCreateContextMenuListener;
   private Rect globalVisibleRect;
   private int layerType;
+  private final ArrayList<Animation> animations = new ArrayList<>();
   private AnimationRunner animationRunner;
 
   /**
@@ -237,18 +239,12 @@ public class ShadowView {
     Drawable background = realView.getBackground();
     if (background != null) {
       ShadowCanvas shadowCanvas = Shadow.extract(canvas);
-      shadowCanvas.appendDescription("background:");
-      background.draw(canvas);
-    }
-    // Because ImageView does not override the draw(Canvas) method, this logic has to
-    // be here, otherwise there will be a ClassCastException if there is a custom View shadow,
-    // which is one of the more commonly occurring shadows.
-    if (realView instanceof ImageView) {
-      Drawable drawable = ((ImageView) realView).getDrawable();
-      if (drawable != null) {
-        drawable.draw(canvas);
+      // Check that Canvas is not a Mockito mock
+      if (shadowCanvas != null) {
+        shadowCanvas.appendDescription("background:");
       }
     }
+    reflector(_View_.class, realView).draw(canvas);
   }
 
   @Implementation
@@ -648,12 +644,27 @@ public class ShadowView {
     return this.layerType;
   }
 
+  /** Returns a list of all animations that have been set on this view. */
+  public ImmutableList<Animation> getAnimations() {
+    return ImmutableList.copyOf(animations);
+  }
+
+  /** Resets the list returned by {@link #getAnimations()} to an empty list. */
+  public void clearAnimations() {
+    animations.clear();
+  }
+
   @Implementation
   protected void setAnimation(final Animation animation) {
     reflector(_View_.class, realView).setAnimation(animation);
 
     if (animation != null) {
-      new AnimationRunner(animation);
+      animations.add(animation);
+      if (animationRunner != null) {
+        animationRunner.cancel();
+      }
+      animationRunner = new AnimationRunner(animation);
+      animationRunner.start();
     }
   }
 
@@ -680,59 +691,75 @@ public class ShadowView {
 
   private class AnimationRunner implements Runnable {
     private final Animation animation;
-    private long startTime, startOffset, elapsedTime;
+    private final Transformation transformation = new Transformation();
+    private long startTime;
+    private long elapsedTime;
     private boolean canceled;
 
     AnimationRunner(Animation animation) {
       this.animation = animation;
-      start();
     }
 
     private void start() {
       startTime = animation.getStartTime();
-      startOffset = animation.getStartOffset();
-      Choreographer choreographer = Choreographer.getInstance();
-      if (animationRunner != null) {
-        choreographer.removeCallbacks(Choreographer.CALLBACK_ANIMATION, animationRunner, null);
+      long startOffset = animation.getStartOffset();
+      long startDelay =
+          startTime == Animation.START_ON_FIRST_FRAME
+              ? startOffset
+              : (startTime + startOffset) - SystemClock.uptimeMillis();
+      Choreographer.getInstance()
+          .postCallbackDelayed(Choreographer.CALLBACK_ANIMATION, this, null, startDelay);
+    }
+
+    private boolean step() {
+      long animationTime =
+          animation.getStartTime() == Animation.START_ON_FIRST_FRAME
+              ? SystemClock.uptimeMillis()
+              : (animation.getStartTime() + animation.getStartOffset() + elapsedTime);
+      // Note in real android the parent is non-nullable, retain legacy robolectric behavior which
+      // allows detached views to animate.
+      if (!animation.isInitialized() && realView.getParent() != null) {
+        View parent = (View) realView.getParent();
+        animation.initialize(
+            realView.getWidth(), realView.getHeight(), parent.getWidth(), parent.getHeight());
       }
-      animationRunner = this;
-      int startDelay;
-      if (startTime == Animation.START_ON_FIRST_FRAME) {
-        startDelay = (int) startOffset;
-      } else {
-        startDelay = (int) ((startTime + startOffset) - SystemClock.uptimeMillis());
+      boolean next = animation.getTransformation(animationTime, transformation);
+      // Note in real view implementation it doesn't check the animation equality before clearing,
+      // but in the real implementation the animation listeners are posted so it doesn't race with
+      // chained animations.
+      if (realView.getAnimation() == animation && !next) {
+        if (!animation.getFillAfter()) {
+          realView.clearAnimation();
+        }
       }
-      choreographer.postCallbackDelayed(Choreographer.CALLBACK_ANIMATION, this, null, startDelay);
+      // We can't handle infinitely repeating animations in the current scheduling model, so abort
+      // after one iteration.
+      return next
+          && (animation.getRepeatCount() != Animation.INFINITE
+              || elapsedTime < animation.getDuration());
     }
 
     @Override
     public void run() {
       // Abort if start time has been messed with, as this simulation is only designed to handle
       // standard situations.
-      if (!canceled
-          && (animation.getStartTime() == startTime && animation.getStartOffset() == startOffset)
-          && animation.getTransformation(
-              startTime == Animation.START_ON_FIRST_FRAME
-                  ? SystemClock.uptimeMillis()
-                  : (startTime + startOffset + elapsedTime),
-              new Transformation())
-          &&
-          // We can't handle infinitely repeating animations in the current scheduling model,
-          // so abort after one iteration.
-          !(animation.getRepeatCount() == Animation.INFINITE
-              && elapsedTime >= animation.getDuration())) {
-        // Update startTime if it had a value of Animation.START_ON_FIRST_FRAME
+      if (!canceled && animation.getStartTime() == startTime && step()) {
+        // Start time updates for repeating animations and if START_ON_FIRST_FRAME.
         startTime = animation.getStartTime();
-        // TODO: get the correct value for ShadowPausedLooper mode
-        elapsedTime += ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS;
+        elapsedTime +=
+            ShadowLooper.looperMode().equals(LooperMode.Mode.LEGACY)
+                ? ShadowChoreographer.getFrameInterval() / TimeUtils.NANOS_PER_MS
+                : ShadowChoreographer.getFrameDelay().toMillis();
         Choreographer.getInstance().postCallback(Choreographer.CALLBACK_ANIMATION, this, null);
-      } else {
+      } else if (animationRunner == this) {
         animationRunner = null;
       }
     }
 
     public void cancel() {
       this.canceled = true;
+      Choreographer.getInstance()
+          .removeCallbacks(Choreographer.CALLBACK_ANIMATION, animationRunner, null);
     }
   }
 
@@ -748,6 +775,9 @@ public class ShadowView {
   /** Reflector interface for {@link View}'s internals. */
   @ForType(View.class)
   private interface _View_ {
+
+    @Direct
+    void draw(Canvas canvas);
 
     @Direct
     void onLayout(boolean changed, int left, int top, int right, int bottom);

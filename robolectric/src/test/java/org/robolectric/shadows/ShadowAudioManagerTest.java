@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth8.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,6 +17,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
@@ -25,6 +27,7 @@ import android.media.audiopolicy.AudioPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAudioManagerTest {
@@ -393,6 +397,42 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void getDevices_criteriaInputs_getsAllInputDevices() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    AudioDeviceInfo a2dpDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP);
+    shadowOf(audioManager).setInputDevices(ImmutableList.of(scoDevice));
+    shadowOf(audioManager).setOutputDevices(ImmutableList.of(a2dpDevice));
+
+    assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_INPUTS)))
+        .containsExactly(scoDevice);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getDevices_criteriaOutputs_getsAllOutputDevices() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    AudioDeviceInfo a2dpDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP);
+    shadowOf(audioManager).setInputDevices(ImmutableList.of(scoDevice));
+    shadowOf(audioManager).setOutputDevices(ImmutableList.of(a2dpDevice));
+
+    assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_OUTPUTS)))
+        .containsExactly(a2dpDevice);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getDevices_criteriaInputsAndOutputs_getsAllDevices() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    AudioDeviceInfo a2dpDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP);
+    shadowOf(audioManager).setInputDevices(ImmutableList.of(scoDevice));
+    shadowOf(audioManager).setOutputDevices(ImmutableList.of(a2dpDevice));
+
+    assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_ALL)))
+        .containsExactly(scoDevice, a2dpDevice);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getActivePlaybackConfigurations() {
     assertThat(audioManager.getActivePlaybackConfigurations()).isEmpty();
@@ -692,5 +732,19 @@ public class ShadowAudioManagerTest {
     int audioSessionId2 = audioManager.generateAudioSessionId();
 
     assertThat(audioSessionId).isNotEqualTo(audioSessionId2);
+  }
+
+  private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {
+    AudioDeviceInfo info = Shadow.newInstanceOf(AudioDeviceInfo.class);
+    Field portField = AudioDeviceInfo.class.getDeclaredField("mPort");
+    portField.setAccessible(true);
+    Object port = Shadow.newInstanceOf("android.media.AudioDevicePort");
+    portField.set(info, port);
+
+    Field typeField = port.getClass().getDeclaredField("mType");
+    typeField.setAccessible(true);
+    typeField.set(port, type);
+
+    return info;
   }
 }
