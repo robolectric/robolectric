@@ -43,6 +43,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.collect.Iterables;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -686,13 +687,13 @@ public class ShadowContentResolverTest {
     List<SyncInfo> syncs = ContentResolver.getCurrentSyncs();
     assertThat(syncs.size()).isEqualTo(2);
 
-    SyncInfo first = syncs.get(0);
-    assertThat(first.account).isEqualTo(a);
-    assertThat(first.authority).isEqualTo(AUTHORITY);
+    SyncInfo syncA = Iterables.find(syncs, s -> s.account.equals(a));
+    assertThat(syncA.account).isEqualTo(a);
+    assertThat(syncA.authority).isEqualTo(AUTHORITY);
 
-    SyncInfo second = syncs.get(1);
-    assertThat(second.account).isEqualTo(b);
-    assertThat(second.authority).isEqualTo(AUTHORITY);
+    SyncInfo syncB = Iterables.find(syncs, s -> s.account.equals(b));
+    assertThat(syncB.account).isEqualTo(b);
+    assertThat(syncB.authority).isEqualTo(AUTHORITY);
 
     ContentResolver.cancelSync(a, AUTHORITY);
     List<SyncInfo> syncsAgain = ContentResolver.getCurrentSyncs();
