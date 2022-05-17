@@ -94,6 +94,7 @@ import android.util.Log;
 import android.util.Pair;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -138,7 +139,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   public List<PackageInfo> getInstalledPackages(int flags) {
     List<PackageInfo> result = new ArrayList<>();
     synchronized (lock) {
-      for (String packageName : packageInfos.keySet()) {
+      Set<String> packageNames = null;
+      if ((flags & MATCH_UNINSTALLED_PACKAGES) == 0) {
+        packageNames = packageInfos.keySet();
+      } else {
+        packageNames = Sets.union(packageInfos.keySet(), deletedPackages);
+      }
+      for (String packageName : packageNames) {
         try {
           PackageInfo packageInfo = getPackageInfo(packageName, flags);
           result.add(packageInfo);
@@ -949,20 +956,24 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected String getInstallerPackageName(String packageName) {
-    if (ConfigurationRegistry.get(GetInstallerPackageNameMode.Mode.class) == REALISTIC
-        && !packageInstallerMap.containsKey(packageName)) {
-      throw new IllegalArgumentException("Package is not installed: " + packageName);
-    } else if (!packageInstallerMap.containsKey(packageName)) {
-      Log.w(
-          TAG,
-          String.format(
-              "Call to getInstallerPackageName returns null for package: '%s'. Please run"
-                  + " setInstallerPackageName to set installer package name before making the"
-                  + " call.",
-              packageName));
+    synchronized (lock) {
+      // In REALISTIC mode, throw exception if the package is not installed or installed but
+      // later uninstalled
+      if (ConfigurationRegistry.get(GetInstallerPackageNameMode.Mode.class) == REALISTIC
+          && (!packageInstallerMap.containsKey(packageName)
+              || !packageInfos.containsKey(packageName))) {
+        throw new IllegalArgumentException("Package is not installed: " + packageName);
+      } else if (!packageInstallerMap.containsKey(packageName)) {
+        Log.w(
+            TAG,
+            String.format(
+                "Call to getInstallerPackageName returns null for package: '%s'. Please run"
+                    + " setInstallerPackageName to set installer package name before making the"
+                    + " call.",
+                packageName));
+      }
+      return packageInstallerMap.get(packageName);
     }
-
-    return packageInstallerMap.get(packageName);
   }
 
   @Implementation(minSdk = R)
@@ -1266,7 +1277,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return 0;
   }
 
-  /** @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo) */
+  /**
+   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
+   */
   @Implementation
   protected PermissionGroupInfo getPermissionGroupInfo(String name, int flags)
       throws NameNotFoundException {
@@ -1277,7 +1290,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     throw new NameNotFoundException(name);
   }
 
-  /** @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo) */
+  /**
+   * @see ShadowPackageManager#addPermissionGroupInfo(android.content.pm.PermissionGroupInfo)
+   */
   @Implementation
   protected List<PermissionGroupInfo> getAllPermissionGroups(int flags) {
     ArrayList<PermissionGroupInfo> allPermissionGroups = new ArrayList<PermissionGroupInfo>();
@@ -1315,8 +1330,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         (appInfo.enabled && stateOverride == COMPONENT_ENABLED_STATE_DEFAULT)
             || stateOverride == COMPONENT_ENABLED_STATE_ENABLED;
 
-    if (deletedPackages.contains(packageName)) {
-      appInfo.flags &= ~FLAG_INSTALLED;
+    synchronized (lock) {
+      if (deletedPackages.contains(packageName)) {
+        appInfo.flags &= ~FLAG_INSTALLED;
+      }
     }
 
     if ((flags & MATCH_ALL) != 0 && Build.VERSION.SDK_INT >= 23) {
