@@ -913,12 +913,6 @@ public class ShadowPackageManager {
     }
   }
 
-  /** @deprecated Use {@link #getInternalMutablePackageInfo} instead. It has better name. */
-  @Deprecated
-  public PackageInfo getPackageInfoForTesting(String packageName) {
-    return getInternalMutablePackageInfo(packageName);
-  }
-
   public void addPermissionInfo(PermissionInfo permissionInfo) {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
