@@ -5,6 +5,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.animation.AnimationHandler;
 import android.animation.ValueAnimator;
+import android.app.UiAutomation;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -67,11 +68,12 @@ public class ShadowValueAnimator {
   }
 
   /**
-   * Sets the duration scale for value animator. Calling this method with {@code duration} set to
-   * zero will make all {@link ValueAnimator} based animations have zero duration.
+   * Sets the duration scale for value animator. To set this value use {@link
+   * UiAutomation#setAnimationScale(float)} or {@link
+   * ShadowUiAutomation#setAnimationScaleCompat(float)}.
    */
   @Implementation
-  public static void setDurationScale(float duration) {
+  protected static void setDurationScale(float duration) {
     reflector(ValueAnimatorReflector.class, null).setDurationScale(duration);
   }
 

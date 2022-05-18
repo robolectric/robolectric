@@ -4,9 +4,11 @@ import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -15,12 +17,13 @@ import static com.google.common.util.concurrent.Futures.immediateFuture;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityThread;
 import android.app.Fragment;
+import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityResult;
+import android.app.UiAutomation;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -38,6 +41,7 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.text.TextUtils;
 import android.util.Pair;
+import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
@@ -64,6 +68,8 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
 import org.robolectric.shadows.ShadowApplication.Wrapper;
 import org.robolectric.util.Logger;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
@@ -116,6 +122,7 @@ public class ShadowInstrumentation {
   private boolean checkActivities;
   // This will default to False in the future to correctly mirror real Android behavior.
   private boolean unbindServiceCallsOnServiceDisconnected = true;
+  @Nullable private UiAutomation uiAutomation;
 
   @Implementation(minSdk = P)
   protected Activity startActivitySync(Intent intent, Bundle options) {
@@ -230,6 +237,28 @@ public class ShadowInstrumentation {
   @Implementation
   protected void setInTouchMode(boolean inTouchMode) {
     ShadowWindowManagerGlobal.setInTouchMode(inTouchMode);
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
+  protected UiAutomation getUiAutomation() {
+    return getUiAutomation(0);
+  }
+
+  @Implementation(minSdk = N)
+  protected UiAutomation getUiAutomation(int flags) {
+    if (uiAutomation == null) {
+      // Create a new automation using reflection, the real code just connects through the
+      // automation connection and to the accessibility service, neither of which exist in
+      // Robolectric.
+      uiAutomation =
+          ReflectionHelpers.callConstructor(
+              UiAutomation.class,
+              ClassParameter.from(Looper.class, Looper.getMainLooper()),
+              ClassParameter.from(
+                  IUiAutomationConnection.class,
+                  ReflectionHelpers.createNullProxy(IUiAutomationConnection.class)));
+    }
+    return uiAutomation;
   }
 
   private void logStartedActivity(Intent intent, String target, int requestCode, Bundle options) {
