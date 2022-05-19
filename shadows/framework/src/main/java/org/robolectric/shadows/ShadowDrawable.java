@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.Resources;
@@ -40,7 +39,6 @@ public class ShadowDrawable {
 
   private int intrinsicWidth = defaultIntrinsicWidth;
   private int intrinsicHeight = defaultIntrinsicHeight;
-  private int alpha;
   private boolean wasInvalidated;
 
   @Implementation
@@ -149,20 +147,9 @@ public class ShadowDrawable {
   }
 
   @Implementation
-  protected void setAlpha(int alpha) {
-    this.alpha = alpha;
-    reflector(DrawableReflector.class, realDrawable).setAlpha(alpha);
-  }
-
-  @Implementation
   protected void invalidateSelf() {
     wasInvalidated = true;
     reflector(DrawableReflector.class, realDrawable).invalidateSelf();
-  }
-
-  @Implementation(minSdk = KITKAT)
-  protected int getAlpha() {
-    return alpha;
   }
 
   public int getCreatedFromResId() {
@@ -182,8 +169,5 @@ public class ShadowDrawable {
 
     @Direct
     void invalidateSelf();
-
-    @Direct
-    void setAlpha(int alpha);
   }
 }
