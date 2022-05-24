@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -198,6 +199,15 @@ public class ShadowAccessibilityNodeInfoTest {
     shadowOf(clone).setText("test");
 
     assertThat(node).isEqualTo(clone);
+  }
+
+  @Config(minSdk = O)
+  @Test
+  public void shouldRecordHintText() {
+    node = AccessibilityNodeInfo.obtain();
+    node.setHintText("exampleHintText");
+
+    assertThat(node.getHintText().toString().contentEquals("exampleHintText")).isTrue();
   }
 
   @Config(minSdk = KITKAT)
