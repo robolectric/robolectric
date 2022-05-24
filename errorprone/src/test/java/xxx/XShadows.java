@@ -10,6 +10,8 @@ import android.os.Looper;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Fake {@link org.robolectric.internal.ShadowProvider} for testing
@@ -60,7 +62,7 @@ public class XShadows implements org.robolectric.internal.ShadowProvider {
   public void reset() {}
 
   @Override
-  public java.util.Map<String, String> getShadowMap() {
+  public Collection<Map.Entry<String, String>> getShadows() {
     return null;
   }
 

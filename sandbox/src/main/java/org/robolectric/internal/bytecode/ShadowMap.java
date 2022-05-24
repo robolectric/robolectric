@@ -1,5 +1,8 @@
 package org.robolectric.internal.bytecode;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -24,35 +27,40 @@ import org.robolectric.shadow.api.ShadowPicker;
 @SuppressWarnings("NewApi")
 public class ShadowMap {
 
-  static final ShadowMap EMPTY = new ShadowMap(ImmutableMap.of(), ImmutableMap.of());
+  static final ShadowMap EMPTY = new ShadowMap(ImmutableListMultimap.of(), ImmutableMap.of());
 
-  private final ImmutableMap<String, String> defaultShadows;
+  private final ImmutableListMultimap<String, String> defaultShadows;
   private final ImmutableMap<String, ShadowInfo> overriddenShadows;
   private final ImmutableMap<String, String> shadowPickers;
 
   @SuppressWarnings("AndroidJdkLibsChecker")
   public static ShadowMap createFromShadowProviders(List<ShadowProvider> sortedProviders) {
-    final Map<String, String> shadowMap = new HashMap<>();
+    final ArrayListMultimap<String, String> shadowMap = ArrayListMultimap.create();
     final Map<String, String> shadowPickerMap = new HashMap<>();
 
     for (ShadowProvider provider : sortedProviders) {
-       shadowMap.putAll(provider.getShadowMap());
-       shadowPickerMap.putAll(provider.getShadowPickerMap());
+      for (Map.Entry<String, String> entry : provider.getShadows()) {
+        shadowMap.put(entry.getKey(), entry.getValue());
+      }
+      shadowPickerMap.putAll(provider.getShadowPickerMap());
     }
-    return new ShadowMap(ImmutableMap.copyOf(shadowMap), Collections.emptyMap(),
+    return new ShadowMap(
+        ImmutableListMultimap.copyOf(shadowMap),
+        Collections.emptyMap(),
         ImmutableMap.copyOf(shadowPickerMap));
   }
 
   ShadowMap(
-      ImmutableMap<String, String> defaultShadows,
+      ImmutableListMultimap<String, String> defaultShadows,
       Map<String, ShadowInfo> overriddenShadows) {
     this(defaultShadows, overriddenShadows, Collections.emptyMap());
   }
 
-  private ShadowMap(ImmutableMap<String, String> defaultShadows,
+  private ShadowMap(
+      ImmutableListMultimap<String, String> defaultShadows,
       Map<String, ShadowInfo> overriddenShadows,
       Map<String, String> shadowPickers) {
-    this.defaultShadows = defaultShadows;
+    this.defaultShadows = ImmutableListMultimap.copyOf(defaultShadows);
     this.overriddenShadows = ImmutableMap.copyOf(overriddenShadows);
     this.shadowPickers = ImmutableMap.copyOf(shadowPickers);
   }
@@ -69,13 +77,18 @@ public class ShadowMap {
 
     if (shadowInfo == null && clazz.getClassLoader() != null) {
       try {
-        final String shadowName = defaultShadows.get(clazz.getCanonicalName());
-        if (shadowName != null) {
-          Class<?> shadowClass = clazz.getClassLoader().loadClass(shadowName);
-          shadowInfo = obtainShadowInfo(shadowClass);
-          if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
-            // somehow we got the wrong shadow class?
-            shadowInfo = null;
+        final ImmutableList<String> shadowNames = defaultShadows.get(clazz.getCanonicalName());
+        for (String shadowName : shadowNames) {
+          if (shadowName != null) {
+            Class<?> shadowClass = clazz.getClassLoader().loadClass(shadowName);
+            shadowInfo = obtainShadowInfo(shadowClass);
+            if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
+              // somehow we got the wrong shadow class?
+              shadowInfo = null;
+            }
+            if (shadowInfo != null && shadowMatcher.matches(shadowInfo)) {
+              return shadowInfo;
+            }
           }
         }
       } catch (ClassNotFoundException | IncompatibleClassChangeError e) {
@@ -206,12 +219,12 @@ public class ShadowMap {
   }
 
   public static class Builder {
-    private final ImmutableMap<String, String> defaultShadows;
+    private final ImmutableListMultimap<String, String> defaultShadows;
     private final Map<String, ShadowInfo> overriddenShadows;
     private final Map<String, String> shadowPickers;
 
     public Builder () {
-      defaultShadows = ImmutableMap.of();
+      defaultShadows = ImmutableListMultimap.of();
       overriddenShadows = new HashMap<>();
       shadowPickers = new HashMap<>();
     }

@@ -75,7 +75,7 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("public class " + GEN_CLASS + " implements ShadowProvider {");
 
     writer.println(
-        "  private static final Map<String, String> SHADOW_MAP = new HashMap<>("
+        "  private static final List<Map.Entry<String, String>> SHADOWS = new ArrayList<>("
             + (model.getAllShadowTypes().size() + model.getExtraShadowTypes().size())
             + ");");
     writer.println();
@@ -85,14 +85,24 @@ public class ShadowProviderGenerator extends Generator {
       final String shadow = shadowInfo.getShadowBinaryName();
       final String actual = shadowInfo.getActualName();
       if (shadowInfo.getShadowPickerBinaryName() == null) {
-        writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
+        writer.println(
+            "    SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(\""
+                + actual
+                + "\", \""
+                + shadow
+                + "\"));");
       }
     }
 
     for (Map.Entry<String, String> entry : model.getExtraShadowTypes().entrySet()) {
       final String shadow = entry.getKey();
       final String actual = entry.getValue();
-      writer.println("    SHADOW_MAP.put(\"" + actual + "\", \"" + shadow + "\");");
+      writer.println(
+          "    SHADOWS.add(new AbstractMap.SimpleImmutableEntry<>(\""
+              + actual
+              + "\", \""
+              + shadow
+              + "\"));");
     }
 
     writer.println("  }");
@@ -175,8 +185,8 @@ public class ShadowProviderGenerator extends Generator {
     writer.println();
 
     writer.println("  @Override");
-    writer.println("  public Map<String, String> getShadowMap() {");
-    writer.println("    return SHADOW_MAP;");
+    writer.println("  public Collection<Map.Entry<String, String>> getShadows() {");
+    writer.println("    return SHADOWS;");
     writer.println("  }");
     writer.println();
 
