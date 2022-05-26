@@ -274,6 +274,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     ResourcesMode resourcesMode = roboMethod.getResourcesMode();
 
     if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
+      System.err.println(
+          "Skip " + method.getName() + " because Robolectric doesn't support legacy mode after P");
       throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
     }
     LooperMode.Mode looperMode =
