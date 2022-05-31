@@ -3,7 +3,7 @@
 set -x
 
 rootDir=$(dirname $(dirname $0))
-projects=("robolectric" "shadows/supportv4")
+projects=("robolectric")
 
 for project in "${projects[@]}"
 do
