@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -110,7 +111,7 @@ public class ShadowAccessibilityNodeInfoTest {
     node.setClickable(false);
     shadow = shadowOf(node);
     shadow.setPasteable(false);
-    assertThat(shadow.isClickable()).isEqualTo(false);
+    assertThat(node.isClickable()).isEqualTo(false);
     assertThat(shadow.isPasteable()).isEqualTo(false);
     node.setText("Test");
     shadow.setTextSelectionSetable(true);
@@ -130,7 +131,7 @@ public class ShadowAccessibilityNodeInfoTest {
     node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
     assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
-    assertThat(shadow.isClickable()).isEqualTo(true);
+    assertThat(node.isClickable()).isEqualTo(true);
     node.setClickable(false);
     shadow.setPasteable(false);
     node.removeAction(AccessibilityNodeInfo.ACTION_PASTE);
@@ -218,6 +219,17 @@ public class ShadowAccessibilityNodeInfoTest {
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
 
     assertThat(clone.isImportantForAccessibility()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testIsHeading() {
+    AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    shadowOf(root).addChild(node);
+    node.setHeading(true);
+    assertThat(node.isHeading()).isTrue();
+    assertThat(root.getChild(0).isHeading()).isTrue();
   }
 
   @After

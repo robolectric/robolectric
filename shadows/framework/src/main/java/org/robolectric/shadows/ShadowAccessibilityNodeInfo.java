@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -34,6 +33,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -74,47 +74,10 @@ public class ShadowAccessibilityNodeInfo {
 
   private static int sAllocationCount = 0;
 
-  private static final int CLICKABLE_MASK = 0x00000001;
-
-  private static final int LONGCLICKABLE_MASK = 0x00000002;
-
-  private static final int FOCUSABLE_MASK = 0x00000004;
-
-  private static final int FOCUSED_MASK = 0x00000008;
-
-  private static final int VISIBLE_TO_USER_MASK = 0x00000010;
-
-  private static final int SCROLLABLE_MASK = 0x00000020;
-
   private static final int PASTEABLE_MASK = 0x00000040;
 
-  private static final int EDITABLE_MASK = 0x00000080;
 
   private static final int TEXT_SELECTION_SETABLE_MASK = 0x00000100;
-
-  private static final int CHECKABLE_MASK = 0x00001000; //14
-
-  private static final int CHECKED_MASK = 0x00002000; //14
-
-  private static final int ENABLED_MASK = 0x00010000; //14
-
-  private static final int PASSWORD_MASK = 0x00040000; //14
-
-  private static final int SELECTED_MASK = 0x00080000; //14
-
-  private static final int A11YFOCUSED_MASK = 0x00000800;  //16
-
-  private static final int MULTILINE_MASK = 0x00020000; //19
-
-  private static final int CONTENT_INVALID_MASK = 0x00004000; //19
-
-  private static final int DISMISSABLE_MASK = 0x00008000; //19
-
-  private static final int CAN_OPEN_POPUP_MASK = 0x00100000; //19
-
-  private static final int TEXT_ENTRY_KEY_MASK = 0x00200000; // 29
-
-  private static final int IMPORTANT_MASK = 0x00400000; // 24
 
   /**
    * Uniquely identifies the origin of the AccessibilityNodeInfo for equality
@@ -135,9 +98,6 @@ public class ShadowAccessibilityNodeInfo {
   // AccessibilityAction so custom actions can be supported.
   private ArrayList<AccessibilityAction> actionsArray;
   private int actionsMask;
-  // Storage of flags
-
-  private int propertyFlags;
 
   private AccessibilityNodeInfo parent;
 
@@ -191,6 +151,8 @@ public class ShadowAccessibilityNodeInfo {
 
   @RealObject
   private AccessibilityNodeInfo realAccessibilityNodeInfo;
+
+  @ReflectorObject AccessibilityNodeInfoReflector accessibilityNodeInfoReflector;
 
   @Implementation
   protected void __constructor__() {
@@ -367,225 +329,24 @@ public class ShadowAccessibilityNodeInfo {
     this.refreshReturnValue = refreshReturnValue;
   }
 
-  @Implementation
-  protected boolean isClickable() {
-    return ((propertyFlags & CLICKABLE_MASK) != 0);
-  }
-
-  @Implementation
-  protected boolean isLongClickable() {
-    return ((propertyFlags & LONGCLICKABLE_MASK) != 0);
-  }
-
-  @Implementation
-  protected boolean isFocusable() {
-    return ((propertyFlags & FOCUSABLE_MASK) != 0);
-  }
-
-  @Implementation
-  protected boolean isFocused() {
-    return ((propertyFlags & FOCUSED_MASK) != 0);
-  }
-
-  @Implementation
-  protected boolean isVisibleToUser() {
-    return ((propertyFlags & VISIBLE_TO_USER_MASK) != 0);
-  }
-
-  @Implementation
-  protected boolean isScrollable() {
-    return ((propertyFlags & SCROLLABLE_MASK) != 0);
-  }
-
   public boolean isPasteable() {
-    return ((propertyFlags & PASTEABLE_MASK) != 0);
-  }
-
-  @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected boolean isEditable() {
-    return ((propertyFlags & EDITABLE_MASK) != 0);
+    return (accessibilityNodeInfoReflector.getBooleanProperties() & PASTEABLE_MASK) != 0;
   }
 
   public boolean isTextSelectionSetable() {
-    return ((propertyFlags & TEXT_SELECTION_SETABLE_MASK) != 0);
-  }
-
-  @Implementation(minSdk = Q)
-  protected boolean isTextEntryKey() {
-    return ((propertyFlags & TEXT_ENTRY_KEY_MASK) != 0);
-  }
-
-  @Implementation
-  protected boolean isCheckable() {
-    return ((propertyFlags & CHECKABLE_MASK) != 0);
-  }
-
-  @Implementation
-  protected void setCheckable(boolean checkable) {
-    propertyFlags = (propertyFlags & ~CHECKABLE_MASK) |
-        (checkable ? CHECKABLE_MASK : 0);
-  }
-
-  @Implementation
-  protected void setChecked(boolean checked) {
-    propertyFlags = (propertyFlags & ~CHECKED_MASK) |
-        (checked ? CHECKED_MASK : 0);
-  }
-
-  @Implementation
-  protected boolean isChecked() {
-    return ((propertyFlags & CHECKED_MASK) != 0);
-  }
-
-  @Implementation
-  protected void setEnabled(boolean enabled) {
-    propertyFlags = (propertyFlags & ~ENABLED_MASK) |
-        (enabled ? ENABLED_MASK : 0);
-  }
-
-  @Implementation
-  protected boolean isEnabled() {
-    return ((propertyFlags & ENABLED_MASK) != 0);
-  }
-
-  @Implementation
-  protected void setPassword(boolean password) {
-    propertyFlags = (propertyFlags & ~PASSWORD_MASK) |
-        (password ? PASSWORD_MASK : 0);
-  }
-
-  @Implementation
-  protected boolean isPassword() {
-    return ((propertyFlags & PASSWORD_MASK) != 0);
-  }
-
-  @Implementation
-  protected void setSelected(boolean selected) {
-    propertyFlags = (propertyFlags & ~SELECTED_MASK) |
-        (selected ? SELECTED_MASK : 0);
-  }
-
-  @Implementation
-  protected boolean isSelected() {
-    return ((propertyFlags & SELECTED_MASK) != 0);
-  }
-
-  @Implementation
-  protected void setAccessibilityFocused(boolean focused) {
-    propertyFlags = (propertyFlags & ~A11YFOCUSED_MASK) |
-        (focused ? A11YFOCUSED_MASK : 0);
-  }
-
-  @Implementation
-  protected boolean isAccessibilityFocused() {
-    return ((propertyFlags & A11YFOCUSED_MASK) != 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void setMultiLine(boolean multiLine) {
-    propertyFlags = (propertyFlags & ~MULTILINE_MASK) |
-        (multiLine ? MULTILINE_MASK : 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isMultiLine() {
-    return ((propertyFlags & MULTILINE_MASK) != 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void setContentInvalid(boolean contentInvalid) {
-    propertyFlags = (propertyFlags & ~CONTENT_INVALID_MASK) |
-        (contentInvalid ? CONTENT_INVALID_MASK : 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isContentInvalid() {
-    return ((propertyFlags & CONTENT_INVALID_MASK) != 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void setDismissable(boolean dismissable) {
-    propertyFlags = (propertyFlags & ~DISMISSABLE_MASK) |
-        (dismissable ? DISMISSABLE_MASK : 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isDismissable() {
-    return ((propertyFlags & DISMISSABLE_MASK) != 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void setCanOpenPopup(boolean opensPopup) {
-    propertyFlags = (propertyFlags & ~CAN_OPEN_POPUP_MASK) |
-        (opensPopup ? CAN_OPEN_POPUP_MASK : 0);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean canOpenPopup() {
-    return ((propertyFlags & CAN_OPEN_POPUP_MASK) != 0);
+    return (accessibilityNodeInfoReflector.getBooleanProperties() & TEXT_SELECTION_SETABLE_MASK)
+        != 0;
   }
 
   public void setTextSelectionSetable(boolean isTextSelectionSetable) {
-    propertyFlags = (propertyFlags & ~TEXT_SELECTION_SETABLE_MASK) |
-        (isTextSelectionSetable ? TEXT_SELECTION_SETABLE_MASK : 0);
-  }
-
-  @Implementation
-  protected void setClickable(boolean isClickable) {
-    propertyFlags = (propertyFlags & ~CLICKABLE_MASK) | (isClickable ? CLICKABLE_MASK : 0);
-  }
-
-  @Implementation
-  protected void setLongClickable(boolean isLongClickable) {
-    propertyFlags =
-        (propertyFlags & ~LONGCLICKABLE_MASK) | (isLongClickable ? LONGCLICKABLE_MASK : 0);
-  }
-
-  @Implementation
-  protected void setFocusable(boolean isFocusable) {
-    propertyFlags = (propertyFlags & ~FOCUSABLE_MASK) | (isFocusable ? FOCUSABLE_MASK : 0);
-  }
-
-  @Implementation
-  protected void setFocused(boolean isFocused) {
-    propertyFlags = (propertyFlags & ~FOCUSED_MASK) | (isFocused ? FOCUSED_MASK : 0);
-  }
-
-  @Implementation
-  protected void setScrollable(boolean isScrollable) {
-    propertyFlags = (propertyFlags & ~SCROLLABLE_MASK) | (isScrollable ? SCROLLABLE_MASK : 0);
+    accessibilityNodeInfoReflector.setBooleanProperty(
+        TEXT_SELECTION_SETABLE_MASK, isTextSelectionSetable);
   }
 
   public void setPasteable(boolean isPasteable) {
-    propertyFlags = (propertyFlags & ~PASTEABLE_MASK) | (isPasteable ? PASTEABLE_MASK : 0);
+    accessibilityNodeInfoReflector.setBooleanProperty(PASTEABLE_MASK, isPasteable);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
-  protected void setEditable(boolean isEditable) {
-    propertyFlags = (propertyFlags & ~EDITABLE_MASK) | (isEditable ? EDITABLE_MASK : 0);
-  }
-
-  @Implementation
-  protected void setVisibleToUser(boolean isVisibleToUser) {
-    propertyFlags =
-        (propertyFlags & ~VISIBLE_TO_USER_MASK) | (isVisibleToUser ? VISIBLE_TO_USER_MASK : 0);
-  }
-
-  @Implementation(minSdk = Q)
-  protected void setTextEntryKey(boolean isTextEntrykey) {
-    propertyFlags =
-        (propertyFlags & ~TEXT_ENTRY_KEY_MASK) | (isTextEntrykey ? TEXT_ENTRY_KEY_MASK : 0);
-  }
-
-  @Implementation(minSdk = N)
-  protected void setImportantForAccessibility(boolean important) {
-    propertyFlags = (propertyFlags & ~IMPORTANT_MASK) | (important ? IMPORTANT_MASK : 0);
-  }
-
-  @Implementation(minSdk = N)
-  protected boolean isImportantForAccessibility() {
-    return ((propertyFlags & IMPORTANT_MASK) != 0);
-  }
 
   @Implementation
   protected void setContentDescription(CharSequence description) {
@@ -1122,7 +883,8 @@ public class ShadowAccessibilityNodeInfo {
 
     newShadow.mOriginNodeId = mOriginNodeId;
     newShadow.boundsInScreen = new Rect(boundsInScreen);
-    newShadow.propertyFlags = propertyFlags;
+    newShadow.accessibilityNodeInfoReflector.setBooleanProperties(
+        accessibilityNodeInfoReflector.getBooleanProperties());
     newShadow.contentDescription = contentDescription;
     newShadow.text = text;
     newShadow.performedActionAndArgsList = performedActionAndArgsList;
@@ -1342,5 +1104,13 @@ public class ShadowAccessibilityNodeInfo {
 
     @Static
     AccessibilityAction getActionSingleton(int id);
+
+    @Accessor("mBooleanProperties")
+    int getBooleanProperties();
+
+    @Accessor("mBooleanProperties")
+    void setBooleanProperties(int properties);
+
+    void setBooleanProperty(int property, boolean value);
   }
 }
