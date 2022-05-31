@@ -238,10 +238,10 @@ public class ShadowView {
   protected void draw(Canvas canvas) {
     Drawable background = realView.getBackground();
     if (background != null) {
-      ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+      Object shadowCanvas = Shadow.extract(canvas);
       // Check that Canvas is not a Mockito mock
-      if (shadowCanvas != null) {
-        shadowCanvas.appendDescription("background:");
+      if (shadowCanvas instanceof ShadowCanvas) {
+        ((ShadowCanvas) shadowCanvas).appendDescription("background:");
       }
     }
     reflector(_View_.class, realView).draw(canvas);
