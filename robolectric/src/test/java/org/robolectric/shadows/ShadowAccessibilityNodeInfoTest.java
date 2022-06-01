@@ -116,11 +116,11 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(shadow.isPasteable()).isEqualTo(false);
     node.setText("Test");
     shadow.setTextSelectionSetable(true);
-    shadow.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+    node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     node.setTextSelection(0, 1);
-    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
-    assertThat(shadow.getTextSelectionStart()).isEqualTo(0);
-    assertThat(shadow.getTextSelectionEnd()).isEqualTo(1);
+    assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+    assertThat(node.getTextSelectionStart()).isEqualTo(0);
+    assertThat(node.getTextSelectionEnd()).isEqualTo(1);
     AccessibilityWindowInfo window = ShadowAccessibilityWindowInfo.obtain();
     shadow.setAccessibilityWindowInfo(window);
     assertThat(node.getWindow()).isEqualTo(window);
@@ -130,14 +130,14 @@ public class ShadowAccessibilityNodeInfoTest {
     shadow.setPasteable(true);
     shadow.setTextSelectionSetable(false);
     node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
-    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
+    assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
     assertThat(node.isClickable()).isEqualTo(true);
     node.setClickable(false);
     shadow.setPasteable(false);
     node.removeAction(AccessibilityNodeInfo.ACTION_PASTE);
     node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
-    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+    assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
     node.removeAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
   }
 
@@ -164,8 +164,8 @@ public class ShadowAccessibilityNodeInfoTest {
   public void equalsTest_unrelatedNodesAreUnequal() {
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain();
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain();
-    shadowOf(nodeA).setText("test");
-    shadowOf(nodeB).setText("test");
+    nodeA.setText("test");
+    nodeB.setText("test");
 
     assertThat(nodeA).isNotEqualTo(nodeB);
   }
@@ -175,8 +175,8 @@ public class ShadowAccessibilityNodeInfoTest {
     View view = new View(ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(view);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(view);
-    shadowOf(nodeA).setText("tomato");
-    shadowOf(nodeB).setText("tomatoe");
+    nodeA.setText("tomato");
+    nodeB.setText("tomatoe");
 
     assertThat(nodeA).isEqualTo(nodeB);
   }
@@ -187,8 +187,8 @@ public class ShadowAccessibilityNodeInfoTest {
     View viewB = new View(ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(viewA);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(viewB);
-    shadowOf(nodeA).setText("test");
-    shadowOf(nodeB).setText("test");
+    nodeA.setText("test");
+    nodeB.setText("test");
 
     assertThat(nodeA).isNotEqualTo(nodeB);
   }
@@ -197,7 +197,7 @@ public class ShadowAccessibilityNodeInfoTest {
   public void equalsTest_nodeIsEqualToItsClone_evenWhenModified() {
     node = AccessibilityNodeInfo.obtain();
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
-    shadowOf(clone).setText("test");
+    clone.setText("test");
 
     assertThat(node).isEqualTo(clone);
   }
@@ -220,6 +220,16 @@ public class ShadowAccessibilityNodeInfoTest {
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
 
     assertThat(clone.isImportantForAccessibility()).isTrue();
+  }
+
+  @Test
+  public void testGetBoundsInScreen() {
+    AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
+    Rect expected = new Rect(0, 0, 100, 100);
+    root.setBoundsInScreen(expected);
+    Rect actual = new Rect();
+    root.getBoundsInScreen(actual);
+    assertThat(actual).isEqualTo(expected);
   }
 
   @Test
