@@ -157,6 +157,7 @@ public class ShadowAccessibilityNodeInfo {
   @Implementation
   protected void __constructor__() {
     reflector(AccessibilityNodeInfoReflector.class).setCreator(ShadowAccessibilityNodeInfo.CREATOR);
+    Shadow.invokeConstructor(AccessibilityNodeInfo.class, realAccessibilityNodeInfo);
   }
 
   @Implementation

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -230,6 +231,16 @@ public class ShadowAccessibilityNodeInfoTest {
     node.setHeading(true);
     assertThat(node.isHeading()).isTrue();
     assertThat(root.getChild(0).isHeading()).isTrue();
+  }
+
+  @Test
+  public void testConstructor() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    assertThat(node.getWindowId()).isEqualTo(AccessibilityWindowInfo.UNDEFINED_WINDOW_ID);
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      // This constant does not exists pre-O.
+      assertThat(node.getSourceNodeId()).isEqualTo(AccessibilityNodeInfo.UNDEFINED_NODE_ID);
+    }
   }
 
   @After
