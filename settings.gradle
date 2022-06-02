@@ -1,4 +1,4 @@
-rootProject.name = 'parent'
+rootProject.name = 'robolectric'
 
 include ":robolectric"
 include ":sandbox"
