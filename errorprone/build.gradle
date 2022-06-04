@@ -23,10 +23,10 @@ dependencies {
     implementation "com.google.errorprone:error_prone_annotation:$errorproneVersion"
     implementation "com.google.errorprone:error_prone_refaster:$errorproneVersion"
     implementation "com.google.errorprone:error_prone_check_api:$errorproneVersion"
-    compileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
+    compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
 
-    annotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
+    annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
     annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
 
     // in jdk 9, tools.jar disappears!
