@@ -117,7 +117,7 @@ public class ResStringPool {
 
     // The chunk must be at least the size of the string pool header.
     if (size < ResStringPool_header.SIZEOF) {
-      ALOGW("Bad string block: data size %zu is too small to be a string block", size);
+      ALOGW("Bad string block: data size %d is too small to be a string block", size);
       return (mError=BAD_TYPE);
     }
 

@@ -560,7 +560,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
     }
 
     if (newOffset < 0 || newOffset > maxPosn) {
-      ALOGW("seek out of range: want %ld, end=%ld\n",
+      ALOGW("seek out of range: want %d, end=%d\n",
           (long) newOffset, (long) maxPosn);
       return (long) -1;
     }
@@ -784,7 +784,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
         // if (ftell(mFp) != mStart + mOffset) {
         try {
           if (mFp.getFilePointer() != mStart + mOffset) {
-            ALOGE("Hosed: %ld != %ld+%ld\n",
+            ALOGE("Hosed: %d != %d+%d\n",
                 mFp.getFilePointer(), (long) mStart, (long) mOffset);
             assert(false);
           }
@@ -897,7 +897,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
         buf = new byte[allocLen];
         if (buf == null) {
-          ALOGE("alloc of %ld bytes failed\n", (long) allocLen);
+          ALOGE("alloc of %d bytes failed\n", (long) allocLen);
           return null;
         }
 
@@ -910,7 +910,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
             mFp.seek(mStart);
             // if (fread(buf, 1, mLength, mFp) != (size_t) mLength) {
             if (mFp.read(buf, 0, toIntExact(mLength)) != (int) mLength) {
-              ALOGE("failed reading %ld bytes\n", (long) mLength);
+              ALOGE("failed reading %d bytes\n", (long) mLength);
               // delete[] buf;
               return null;
             }
@@ -1280,8 +1280,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
 
       // compute new position within chunk
       newPosn = handleSeek(offset, whence, mOffset, mUncompressedLen);
-      if (newPosn == (long) -1)
-      return newPosn;
+      if (newPosn == -1) return newPosn;
 
       // if (mZipInflater) {
       //   mZipInflater.seekAbsolute(newPosn);
