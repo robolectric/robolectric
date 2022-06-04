@@ -91,7 +91,7 @@ public class AttributeResolution9 {
                                      int src_values_length, int[] attrs,
                                      int attrs_length, int[] out_values, int[] out_indices) {
     if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%p defStyleAttr=0x%x defStyleRes=0x%x", theme,
+      ALOGI("APPLY STYLE: theme=0x%s defStyleAttr=0x%x defStyleRes=0x%x", theme,
           def_style_attr, def_style_res);
     }
 

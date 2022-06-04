@@ -1,5 +1,7 @@
 package org.robolectric.res.android;
 
+import com.google.errorprone.annotations.FormatMethod;
+import com.google.errorprone.annotations.FormatString;
 import java.nio.ByteOrder;
 
 public class Util {
@@ -52,33 +54,39 @@ public class Util {
     return o != null;
   }
 
-  static void ALOGD(String message, Object... args) {
+  @FormatMethod
+  static void ALOGD(@FormatString String message, Object... args) {
     if (DEBUG) {
       System.out.println("DEBUG: " + String.format(message, args));
     }
   }
 
-  static void ALOGW(String message, Object... args) {
+  @FormatMethod
+  static void ALOGW(@FormatString String message, Object... args) {
     System.out.println("WARN: " + String.format(message, args));
   }
 
-  public static void ALOGV(String message, Object... args) {
+  @FormatMethod
+  public static void ALOGV(@FormatString String message, Object... args) {
     if (DEBUG) {
       System.out.println("VERBOSE: " + String.format(message, args));
     }
   }
 
-  public static void ALOGI(String message, Object... args) {
+  @FormatMethod
+  public static void ALOGI(@FormatString String message, Object... args) {
     if (DEBUG) {
       System.out.println("INFO: " + String.format(message, args));
     }
   }
 
-  static void ALOGE(String message, Object... args) {
+  @FormatMethod
+  static void ALOGE(@FormatString String message, Object... args) {
     System.out.println("ERROR: " + String.format(message, args));
   }
 
-  static void LOG_FATAL_IF(boolean assertion, String message, Object... args) {
+  @FormatMethod
+  static void LOG_FATAL_IF(boolean assertion, @FormatString String message, Object... args) {
     assert !assertion : String.format(message, args);
   }
 

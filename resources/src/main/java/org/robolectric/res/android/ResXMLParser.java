@@ -414,7 +414,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
           final String curNs = getAttributeNamespace8(i, curNsLen);
           final String curAttr = getAttributeName8(i, curAttrLen);
           if (kDebugStringPoolNoisy) {
-            ALOGI("  curNs=%s (0x%x), curAttr=%s (0x%x)", curNs, curNsLen, curAttr, curAttrLen);
+            ALOGI("  curNs=%s (0x%x), curAttr=%s (0x%x)", curNs, curNsLen.get(), curAttr, curAttrLen.get());
           }
           if (curAttr != null && curNsLen.get() == nsLen && curAttrLen.get() == attrLen
               && memcmp(attr8.string(), curAttr, attrLen) == 0) {
@@ -449,8 +449,8 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
                 final String curAttr = getAttributeName(i, curAttrLen);
           if (kDebugStringPoolNoisy) {
             ALOGI("  curNs=%s (0x%x), curAttr=%s (0x%x)",
-                curNs /*String8(curNs, curNsLen).string()*/, curNsLen,
-                curAttr /*String8(curAttr, curAttrLen).string()*/, curAttrLen);
+                curNs /*String8(curNs, curNsLen).string()*/, curNsLen.get(),
+                curAttr /*String8(curAttr, curAttrLen).string()*/, curAttrLen.get());
           }
           if (curAttr != null && curNsLen.get() == nsLen && curAttrLen.get() == attrLen
               && (memcmp(attr, curAttr, attrLen*SIZEOF_CHAR/*sizeof(char16_t)*/) == 0)) {

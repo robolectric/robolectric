@@ -251,7 +251,7 @@ public class ResTable {
     final boolean notDeviceEndian = htods((short) 0xf0) != 0xf0;
 
     if (kDebugLoadTableNoisy) {
-      ALOGV("Adding resources to ResTable: data=%s, size=0x%x, cookie=%d, copy=%d " +
+      ALOGV("Adding resources to ResTable: data=%s, size=0x%x, cookie=%d, copy=%b " +
           "idmap=%s\n", data, dataSize, cookie, copyData, idmapData);
     }
 
