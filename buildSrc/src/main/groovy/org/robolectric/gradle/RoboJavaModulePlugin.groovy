@@ -36,12 +36,6 @@ class RoboJavaModulePlugin implements Plugin<Project> {
                 encoding = "utf-8"                      // Make sure source encoding is UTF-8
             }
 
-            def noRebuild = System.getenv('NO_REBUILD') == "true"
-            if (noRebuild) {
-                println "[NO_REBUILD] $task will be skipped!"
-                task.outputs.upToDateWhen { true }
-                task.onlyIf { false }
-            }
         }
 
         ext.mavenArtifactName = project.path.substring(1).split(/:/).join("-")
