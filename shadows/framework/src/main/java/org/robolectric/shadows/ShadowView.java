@@ -172,6 +172,7 @@ public class ShadowView {
   @Implementation
   protected void setLayerType(int layerType, Paint paint) {
     this.layerType = layerType;
+    reflector(_View_.class, realView).setLayerType(layerType, paint);
   }
 
   @Implementation
@@ -787,6 +788,9 @@ public class ShadowView {
 
     @Direct
     void setOnFocusChangeListener(View.OnFocusChangeListener l);
+
+    @Direct
+    void setLayerType(int layerType, Paint paint);
 
     @Direct
     void setOnClickListener(View.OnClickListener onClickListener);
