@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,7 +43,12 @@ import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.Util;
 import org.robolectric.util.inject.Injector;
 
-@SuppressWarnings("NewApi")
+/**
+ * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically this
+ * runner should not be directly accessed, use {@link org.robolectric.RobolectricTestRunner}
+ * instead.
+ */
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
@@ -252,7 +258,12 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
               final Method bootstrappedMethod;
               try {
-                bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
+                Class<?>[] parameterTypes =
+                    stream(method.getMethod().getParameterTypes())
+                        .map(type -> type.isPrimitive() ? type : sandbox.bootstrappedClass(type))
+                        .toArray(Class[]::new);
+                bootstrappedMethod =
+                    bootstrappedTestClass.getMethod(method.getMethod().getName(), parameterTypes);
               } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }
