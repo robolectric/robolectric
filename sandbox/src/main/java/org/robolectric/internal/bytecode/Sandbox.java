@@ -20,6 +20,7 @@ public class Sandbox {
   private ShadowInvalidator shadowInvalidator;
   public ClassHandler classHandler; // todo not public
   private ShadowMap shadowMap = ShadowMap.EMPTY;
+  private ThreadLocal<Boolean> isMainThread = new ThreadLocal<>();
 
   public Sandbox(
       InstrumentationConfiguration config,
@@ -91,7 +92,24 @@ public class Sandbox {
   }
 
   public <T> T runOnMainThread(Callable<T> callable) {
-    Future<T> future = executorService.submit(callable);
+    if (Boolean.TRUE.equals(isMainThread.get())) {
+      try {
+        return callable.call();
+      } catch (Throwable throwable) {
+        Util.sneakyThrow(throwable);
+      }
+    }
+    Future<T> future =
+        executorService.submit(
+            () -> {
+              isMainThread.set(true);
+              try {
+                return callable.call();
+              } finally {
+                isMainThread.remove();
+                ;
+              }
+            });
     try {
       return future.get();
     } catch (InterruptedException e) {
