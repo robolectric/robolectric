@@ -115,7 +115,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private void invokeBeforeClass(final Class clazz, final Sandbox sandbox) throws Throwable {
+  private void invokeBeforeClass(final Class<?> clazz, final Sandbox sandbox) throws Throwable {
     if (!loadedTestClasses.containsKey(clazz)) {
       loadedTestClasses.put(clazz, sandbox);
 
@@ -245,14 +245,13 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
               ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
               Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-              Class bootstrappedTestClass =
+              Class<?> bootstrappedTestClass =
                   sandbox.bootstrappedClass(getTestClass().getJavaClass());
               HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
               helperTestRunner.frameworkMethod = method;
 
               final Method bootstrappedMethod;
               try {
-                //noinspection unchecked
                 bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
               } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
@@ -317,7 +316,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   protected void finallyAfterTest(FrameworkMethod method) {}
 
-  protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
+  protected HelperTestRunner getHelperTestRunner(Class<?> bootstrappedTestClass) {
     try {
       return new HelperTestRunner(bootstrappedTestClass);
     } catch (InitializationError initializationError) {
