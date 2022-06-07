@@ -105,11 +105,12 @@ public final class ResourceString {
   }
 
   /**
-   * Encodes a string in either UTF-8 or UTF-16 and returns the bytes of the encoded string.
-   * Strings are prefixed by 2 values. The first is the number of characters in the string.
-   * The second is the encoding length (number of bytes in the string).
+   * Encodes a string in either UTF-8 or UTF-16 and returns the bytes of the encoded string. Strings
+   * are prefixed by 2 values. The first is the number of characters in the string. The second is
+   * the encoding length (number of bytes in the string).
    *
    * <p>Here's an example UTF-8-encoded string of ab©:
+   *
    * <pre>03 04 61 62 C2 A9 00</pre>
    *
    * @param str The string to be encoded.
@@ -121,7 +122,7 @@ public final class ResourceString {
     // The extra 5 bytes is for metadata (character count + byte count) and the NULL terminator.
     ByteArrayDataOutput output = ByteStreams.newDataOutput(bytes.length + 5);
     encodeLength(output, str.length(), type);
-    if (type == Type.UTF8) {  // Only UTF-8 strings have the encoding length.
+    if (type == Type.UTF8) { // Only UTF-8 strings have the encoding length.
       encodeLength(output, bytes.length, type);
     }
     output.write(bytes);

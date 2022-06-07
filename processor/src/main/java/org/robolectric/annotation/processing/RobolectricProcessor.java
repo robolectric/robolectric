@@ -15,7 +15,6 @@ import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.robolectric.annotation.processing.RobolectricModel.Builder;
 import org.robolectric.annotation.processing.generator.Generator;
 import org.robolectric.annotation.processing.generator.JavadocJsonGenerator;
 import org.robolectric.annotation.processing.generator.ServiceLoaderGenerator;
@@ -45,7 +44,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   private static final String SDKS_FILE = "org.robolectric.annotation.processing.sdks";
   private static final String PRIORITY = "org.robolectric.annotation.processing.priority";
 
-  private Builder modelBuilder;
+  private RobolectricModel.Builder modelBuilder;
   private String shadowPackage;
   private boolean shouldInstrumentPackages;
   private int priority;
@@ -81,7 +80,7 @@ public class RobolectricProcessor extends AbstractProcessor {
   public synchronized void init(ProcessingEnvironment environment) {
     super.init(environment);
     processOptions(environment.getOptions());
-    modelBuilder = new Builder(environment);
+    modelBuilder = new RobolectricModel.Builder(environment);
 
     SdkStore sdkStore = new SdkStore(sdksFile);
 

@@ -18,7 +18,6 @@ import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Objects;
-import org.robolectric.res.android.ResourceString.Type;
 import org.robolectric.res.android.ResourceTypes.ResChunk_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header.Writer;
@@ -338,7 +337,7 @@ public class ResStringPool {
         if (!isUTF8) {
           final int strings = mStrings;
           final int str = strings+off*2;
-          return decodeString(buf, bufOffset + str, Type.UTF16);
+          return decodeString(buf, bufOffset + str, ResourceString.Type.UTF16);
 //          int u16len = decodeLengthUTF16(buf, bufOffset + str);
 //          if ((str+u16len*2-strings) < mStringPoolSize) {
 //            // Reject malformed (non null-terminated) strings
@@ -364,7 +363,7 @@ public class ResStringPool {
         } else {
           final int strings = mStrings;
           final int u8str = strings+off;
-          return decodeString(buf, bufOffset + u8str, Type.UTF8);
+          return decodeString(buf, bufOffset + u8str, ResourceString.Type.UTF8);
 
 //                *u16len = decodeLength(&u8str);
 //          size_t u8len = decodeLength(&u8str);
