@@ -64,6 +64,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
+  private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     this(klass, DEFAULT_INJECTOR);
@@ -253,7 +254,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
               Class<?> bootstrappedTestClass =
                   sandbox.bootstrappedClass(getTestClass().getJavaClass());
-              HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+              HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
               helperTestRunner.frameworkMethod = method;
 
               final Method bootstrappedMethod;
@@ -327,12 +328,21 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   protected void finallyAfterTest(FrameworkMethod method) {}
 
-  protected HelperTestRunner getHelperTestRunner(Class<?> bootstrappedTestClass) {
-    try {
-      return new HelperTestRunner(bootstrappedTestClass);
-    } catch (InitializationError initializationError) {
-      throw new RuntimeException(initializationError);
-    }
+  protected HelperTestRunner getHelperTestRunner(Class<?> bootstrappedTestClass)
+      throws InitializationError {
+    return new HelperTestRunner(bootstrappedTestClass);
+  }
+
+  private HelperTestRunner getCachedHelperTestRunner(Class<?> bootstrappedTestClass) {
+    return helperRunners.computeIfAbsent(
+        bootstrappedTestClass,
+        klass -> {
+          try {
+            return getHelperTestRunner(klass);
+          } catch (InitializationError e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   protected static class HelperTestRunner extends BlockJUnit4ClassRunner {
