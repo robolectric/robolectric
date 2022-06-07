@@ -1,7 +1,6 @@
 package org.robolectric.android.internal;
 
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
-import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.view.View;
 import android.view.ViewRootImpl;
@@ -25,8 +24,9 @@ public class LocalControlledLooper implements ControlledLooper {
       ReflectionHelpers.callInstanceMethod(
           viewRoot,
           "windowFocusChanged",
-          from(boolean.class, true), /* hasFocus */
-          from(boolean.class, ShadowWindowManagerGlobal.getInTouchMode()));
+          ReflectionHelpers.ClassParameter.from(boolean.class, true), /* hasFocus */
+          ReflectionHelpers.ClassParameter.from(
+              boolean.class, ShadowWindowManagerGlobal.getInTouchMode()));
     }
   }
 }

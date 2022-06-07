@@ -2,7 +2,6 @@ package org.robolectric.res.android;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.primitives.UnsignedBytes;
 import java.util.Map;
 
@@ -51,7 +50,7 @@ public enum DataType {
   private static final Map<Byte, DataType> FROM_BYTE;
 
   static {
-    Builder<Byte, DataType> builder = ImmutableMap.builder();
+    ImmutableMap.Builder<Byte, DataType> builder = ImmutableMap.builder();
     for (DataType type : values()) {
       builder.put(type.code(), type);
     }

@@ -41,7 +41,6 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
-import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
@@ -164,7 +163,8 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Configuration configuration = ((RobolectricFrameworkMethod) method).getConfiguration();
     Config config = configuration.get(Config.class);
 
-    Builder builder = new Builder(super.createClassLoaderConfig(method));
+    InstrumentationConfiguration.Builder builder =
+        new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
     androidConfigurer.configure(builder, getInterceptors());
     androidConfigurer.withConfig(builder, config);
     return builder.build();

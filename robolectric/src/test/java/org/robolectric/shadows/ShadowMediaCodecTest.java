@@ -16,7 +16,6 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.media.MediaCodec;
 import android.media.MediaCodec.BufferInfo;
-import android.media.MediaCodec.Callback;
 import android.media.MediaCodec.CodecException;
 import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCrypto;
@@ -47,7 +46,7 @@ public final class ShadowMediaCodecTest {
   private static final String AUDIO_ENCODER_NAME = "audio-fake.encoder";
   private static final int WITHOUT_TIMEOUT = -1;
 
-  private Callback callback;
+  private MediaCodec.Callback callback;
 
   @After
   public void tearDown() throws Exception {

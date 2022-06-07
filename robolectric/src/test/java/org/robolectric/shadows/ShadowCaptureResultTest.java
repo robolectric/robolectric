@@ -5,7 +5,6 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.hardware.camera2.CaptureResult;
-import android.hardware.camera2.CaptureResult.Key;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -17,7 +16,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowCaptureResultTest {
 
-  private final Key<Long> timestampKey = CaptureResult.SENSOR_TIMESTAMP;
+  private final CaptureResult.Key<Long> timestampKey = CaptureResult.SENSOR_TIMESTAMP;
   private final CaptureResult captureResult = ShadowCaptureResult.newCaptureResult();
 
   @Test
