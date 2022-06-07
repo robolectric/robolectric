@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 
+import android.annotation.Nullable;
 import android.os.PersistableBundle;
 import android.telephony.CarrierConfigManager;
 import java.util.HashMap;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -12,13 +15,18 @@ import org.robolectric.annotation.Implements;
 public class ShadowCarrierConfigManager {
 
   private final HashMap<Integer, PersistableBundle> bundles = new HashMap<>();
+  private final HashMap<Integer, PersistableBundle> overrideBundles = new HashMap<>();
 
   /**
-   * Returns {@link android.os.PersistableBundle} previously set by {@link #setConfigForSubId(int)},
-   * or default values for an invalid {@code subId}.
+   * Returns {@link android.os.PersistableBundle} previously set by {@link #overrideConfig} or
+   * {@link #setConfigForSubId(int, PersistableBundle)}, or default values for an invalid {@code
+   * subId}.
    */
   @Implementation
-  protected PersistableBundle getConfigForSubId(int subId) {
+  public PersistableBundle getConfigForSubId(int subId) {
+    if (overrideBundles.containsKey(subId) && overrideBundles.get(subId) != null) {
+      return overrideBundles.get(subId);
+    }
     if (bundles.containsKey(subId)) {
       return bundles.get(subId);
     }
@@ -31,5 +39,17 @@ public class ShadowCarrierConfigManager {
    */
   public void setConfigForSubId(int subId, PersistableBundle config) {
     bundles.put(subId, config);
+  }
+
+  /**
+   * Overrides the carrier config of the provided subscription ID with the provided values.
+   *
+   * <p>This method will NOT check if {@code overrideValues} contains valid values for specified
+   * config keys.
+   */
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected void overrideConfig(int subId, @Nullable PersistableBundle config) {
+    overrideBundles.put(subId, config);
   }
 }
