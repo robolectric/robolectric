@@ -571,36 +571,60 @@ public class ShadowView {
 
   @Implementation
   protected void scrollTo(int x, int y) {
-    reflector(_View_.class, realView)
-        .onScrollChanged(x, y, scrollToCoordinates.x, scrollToCoordinates.y);
-    scrollToCoordinates = new Point(x, y);
-    reflector(_View_.class, realView).setScrollX(x);
-    reflector(_View_.class, realView).setScrollY(y);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).scrollTo(x, y);
+    } else {
+      reflector(_View_.class, realView)
+          .onScrollChanged(x, y, scrollToCoordinates.x, scrollToCoordinates.y);
+      scrollToCoordinates = new Point(x, y);
+      reflector(_View_.class, realView).setMemberScrollX(x);
+      reflector(_View_.class, realView).setMemberScrollY(y);
+    }
   }
 
   @Implementation
   protected void scrollBy(int x, int y) {
-    scrollTo(getScrollX() + x, getScrollY() + y);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).scrollBy(x, y);
+    } else {
+      scrollTo(getScrollX() + x, getScrollY() + y);
+    }
   }
 
   @Implementation
   protected int getScrollX() {
-    return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    if (useRealGraphics()) {
+      return reflector(_View_.class, realView).getScrollX();
+    } else {
+      return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    }
   }
 
   @Implementation
   protected int getScrollY() {
-    return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    if (useRealGraphics()) {
+      return reflector(_View_.class, realView).getScrollY();
+    } else {
+      return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    }
   }
 
   @Implementation
   protected void setScrollX(int scrollX) {
-    scrollTo(scrollX, scrollToCoordinates.y);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).setScrollX(scrollX);
+    } else {
+      scrollTo(scrollX, scrollToCoordinates.y);
+    }
   }
 
   @Implementation
   protected void setScrollY(int scrollY) {
-    scrollTo(scrollToCoordinates.x, scrollY);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).setScrollY(scrollY);
+    } else {
+      scrollTo(scrollToCoordinates.x, scrollY);
+    }
   }
 
   @Implementation
@@ -877,9 +901,27 @@ public class ShadowView {
     boolean initialAwakenScrollBars();
 
     @Accessor("mScrollX")
-    void setScrollX(int value);
+    void setMemberScrollX(int value);
 
     @Accessor("mScrollY")
+    void setMemberScrollY(int value);
+
+    @Direct
+    void scrollTo(int x, int y);
+
+    @Direct
+    void scrollBy(int x, int y);
+
+    @Direct
+    int getScrollX();
+
+    @Direct
+    int getScrollY();
+
+    @Direct
+    void setScrollX(int value);
+
+    @Direct
     void setScrollY(int value);
   }
 
@@ -1007,5 +1049,9 @@ public class ShadowView {
 
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
+  }
+
+  boolean useRealGraphics() {
+    return Boolean.getBoolean("robolectric.useRealGraphics");
   }
 }
