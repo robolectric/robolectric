@@ -231,6 +231,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
   }
 
   @Override
+  @SuppressWarnings("CatchAndPrintStackTrace")
   protected Statement methodBlock(final FrameworkMethod method) {
     return new Statement() {
       @Override
@@ -305,6 +306,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
+  @SuppressWarnings("CatchAndPrintStackTrace")
   private void reportPerfStats(PerfStatsCollector perfStatsCollector) {
     if (perfStatsReporters.isEmpty()) {
       return;
