@@ -38,7 +38,6 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import com.google.common.collect.ImmutableList;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +51,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 import org.robolectric.util.reflector.Accessor;
@@ -485,7 +483,11 @@ public class ShadowView {
    */
   @Implementation(minSdk = R)
   public View.OnLongClickListener getOnLongClickListener() {
-    return onLongClickListener;
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return reflector(_View_.class, realView).getOnLongClickListener();
+    } else {
+      return onLongClickListener;
+    }
   }
 
   /**
@@ -515,11 +517,6 @@ public class ShadowView {
   public Set<View.OnLayoutChangeListener> getOnLayoutChangeListeners() {
     return onLayoutChangeListeners;
   }
-
-  // @Implementation
-  // protected Bitmap getDrawingCache() {
-  //   return ReflectionHelpers.callConstructor(Bitmap.class);
-  // }
 
   @Implementation
   protected boolean post(Runnable action) {
@@ -574,18 +571,11 @@ public class ShadowView {
 
   @Implementation
   protected void scrollTo(int x, int y) {
-    try {
-      Method method =
-          View.class.getDeclaredMethod(
-              "onScrollChanged", int.class, int.class, int.class, int.class);
-      method.setAccessible(true);
-      method.invoke(realView, x, y, scrollToCoordinates.x, scrollToCoordinates.y);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    reflector(_View_.class, realView)
+        .onScrollChanged(x, y, scrollToCoordinates.x, scrollToCoordinates.y);
     scrollToCoordinates = new Point(x, y);
-    ReflectionHelpers.setField(realView, "mScrollX", x);
-    ReflectionHelpers.setField(realView, "mScrollY", y);
+    reflector(_View_.class, realView).setScrollX(x);
+    reflector(_View_.class, realView).setScrollY(y);
   }
 
   @Implementation
@@ -799,6 +789,9 @@ public class ShadowView {
     void setOnLongClickListener(View.OnLongClickListener onLongClickListener);
 
     @Direct
+    View.OnLongClickListener getOnLongClickListener();
+
+    @Direct
     void setOnSystemUiVisibilityChangeListener(
         View.OnSystemUiVisibilityChangeListener onSystemUiVisibilityChangeListener);
 
@@ -869,6 +862,8 @@ public class ShadowView {
 
     void onDetachedFromWindow();
 
+    void onScrollChanged(int l, int t, int oldl, int oldt);
+
     @Direct
     void getLocationOnScreen(int[] outLocation);
 
@@ -880,6 +875,12 @@ public class ShadowView {
 
     @Direct
     boolean initialAwakenScrollBars();
+
+    @Accessor("mScrollX")
+    void setScrollX(int value);
+
+    @Accessor("mScrollY")
+    void setScrollY(int value);
   }
 
   public void callOnAttachedToWindow() {
