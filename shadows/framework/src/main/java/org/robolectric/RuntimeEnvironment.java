@@ -8,6 +8,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.util.DisplayMetrics;
 import com.google.common.base.Supplier;
 import java.nio.file.Path;
@@ -209,7 +210,11 @@ public class RuntimeEnvironment {
       // changes will be propagated once the application is finally loaded
       Bootstrap.updateDisplayResources(configuration, displayMetrics);
     }
+    if (Boolean.getBoolean("robolectric.useRealGraphics")) {
+      Bitmap.setDefaultDensity(displayMetrics.densityDpi);
+    }
   }
+
 
   public static int getApiLevel() {
     return apiLevel;

@@ -1051,7 +1051,7 @@ public class ShadowView {
     void setWindowId(WindowId windowId);
   }
 
-  boolean useRealGraphics() {
+  static boolean useRealGraphics() {
     return Boolean.getBoolean("robolectric.useRealGraphics");
   }
 }

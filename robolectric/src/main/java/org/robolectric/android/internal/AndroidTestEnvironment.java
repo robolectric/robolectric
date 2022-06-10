@@ -20,6 +20,7 @@ import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -156,6 +157,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration, displayMetrics);
 
+    if (Boolean.getBoolean("robolectric.useRealGraphics")) {
+      Bitmap.setDefaultDensity(displayMetrics.densityDpi);
+    }
     Locale locale =
         apiLevel >= VERSION_CODES.N
             ? androidConfiguration.getLocales().get(0)
