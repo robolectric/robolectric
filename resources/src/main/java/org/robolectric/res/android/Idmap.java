@@ -89,6 +89,7 @@ class Idmap {
       return (offset & 0x03) == 0;
     }
 
+    @SuppressWarnings("DoNotCallSuggester")
     static boolean IsValidIdmapHeader(StringPiece data) {
       throw new UnsupportedOperationException();
 //   if (!is_word_aligned(data.data())) {
