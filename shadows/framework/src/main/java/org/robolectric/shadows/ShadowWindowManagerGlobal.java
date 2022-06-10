@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Instrumentation;
@@ -44,8 +45,13 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false,
-    minSdk = JELLY_BEAN_MR1, looseSignatures = true)
+/** Shadow for {@link WindowManagerGlobal}. */
+@SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
+@Implements(
+    value = WindowManagerGlobal.class,
+    isInAndroidSdk = false,
+    minSdk = JELLY_BEAN_MR1,
+    looseSignatures = true)
 public class ShadowWindowManagerGlobal {
   private static WindowSessionDelegate windowSessionDelegate;
   private static IWindowSession windowSession;
@@ -168,7 +174,8 @@ public class ShadowWindowManagerGlobal {
     static final int ADD_FLAG_IN_TOUCH_MODE = 0x1;
     static final int ADD_FLAG_APP_VISIBLE = 0x2;
 
-    private boolean inTouchMode;
+    // TODO: Default to touch mode always.
+    private boolean inTouchMode = useRealGraphics();
     @Nullable protected ClipData lastDragClipData;
 
     protected int getAddFlags() {
@@ -177,7 +184,8 @@ public class ShadowWindowManagerGlobal {
       // eventually be updated to default and true and eventually removed, Robolectric's previous
       // behavior of not marking windows as visible by default is a bug. This flag should only be
       // used as a temporary toggle during migration.
-      if ("true".equals(System.getProperty("robolectric.areWindowsMarkedVisible", "false"))) {
+      if (useRealGraphics()
+          || "true".equals(System.getProperty("robolectric.areWindowsMarkedVisible", "false"))) {
         res |= ADD_FLAG_APP_VISIBLE;
       }
       if (getInTouchMode()) {
