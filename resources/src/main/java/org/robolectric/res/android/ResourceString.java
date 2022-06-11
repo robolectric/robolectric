@@ -60,6 +60,7 @@ public final class ResourceString {
    * followed by the actual string is located.
    *
    * <p>Here's an example UTF-8-encoded string of ab©:
+   *
    * <pre>
    * 03 04 61 62 C2 A9 00
    * ^ Offset should be here
@@ -70,6 +71,7 @@ public final class ResourceString {
    * @param type The encoding type that the {@link ResourceString} is encoded in.
    * @return The decoded string.
    */
+  @SuppressWarnings("ByteBufferBackingArray")
   public static String decodeString(ByteBuffer buffer, int offset, Type type) {
     int length;
     int characterCount = decodeLength(buffer, offset, type);
