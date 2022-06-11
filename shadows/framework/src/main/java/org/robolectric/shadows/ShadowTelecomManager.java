@@ -76,6 +76,8 @@ public class ShadowTelecomManager {
   private TelecomManager realObject;
 
   private final LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap<>();
+  private final LinkedHashMap<PhoneAccountHandle, String> voicemailNumbers = new LinkedHashMap<>();
+
   private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
   private final List<UnknownCallRecord> unknownCalls = new ArrayList<>();
@@ -306,14 +308,18 @@ public class ShadowTelecomManager {
     this.systemDefaultDialerPackageName = packageName;
   }
 
-  @Implementation(minSdk = LOLLIPOP_MR1)
+  public void setVoicemailNumber(PhoneAccountHandle accountHandle, String number) {
+    voicemailNumbers.put(accountHandle, number);
+  }
+
+  @Implementation(minSdk = M)
   protected boolean isVoiceMailNumber(PhoneAccountHandle accountHandle, String number) {
-    return false;
+    return TextUtils.equals(number, voicemailNumbers.get(accountHandle));
   }
 
   @Implementation(minSdk = M)
   protected String getVoiceMailNumber(PhoneAccountHandle accountHandle) {
-    return null;
+    return voicemailNumbers.get(accountHandle);
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)

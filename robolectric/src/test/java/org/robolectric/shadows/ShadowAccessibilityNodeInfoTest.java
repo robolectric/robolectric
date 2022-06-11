@@ -3,6 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -110,15 +112,15 @@ public class ShadowAccessibilityNodeInfoTest {
     node.setClickable(false);
     shadow = shadowOf(node);
     shadow.setPasteable(false);
-    assertThat(shadow.isClickable()).isEqualTo(false);
+    assertThat(node.isClickable()).isEqualTo(false);
     assertThat(shadow.isPasteable()).isEqualTo(false);
     node.setText("Test");
     shadow.setTextSelectionSetable(true);
-    shadow.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+    node.addAction(AccessibilityNodeInfo.ACTION_SET_SELECTION);
     node.setTextSelection(0, 1);
-    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
-    assertThat(shadow.getTextSelectionStart()).isEqualTo(0);
-    assertThat(shadow.getTextSelectionEnd()).isEqualTo(1);
+    assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_SET_SELECTION);
+    assertThat(node.getTextSelectionStart()).isEqualTo(0);
+    assertThat(node.getTextSelectionEnd()).isEqualTo(1);
     AccessibilityWindowInfo window = ShadowAccessibilityWindowInfo.obtain();
     shadow.setAccessibilityWindowInfo(window);
     assertThat(node.getWindow()).isEqualTo(window);
@@ -128,14 +130,14 @@ public class ShadowAccessibilityNodeInfoTest {
     shadow.setPasteable(true);
     shadow.setTextSelectionSetable(false);
     node.addAction(AccessibilityNodeInfo.ACTION_PASTE);
-    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
+    assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_PASTE);
     node.setClickable(true);
-    assertThat(shadow.isClickable()).isEqualTo(true);
+    assertThat(node.isClickable()).isEqualTo(true);
     node.setClickable(false);
     shadow.setPasteable(false);
     node.removeAction(AccessibilityNodeInfo.ACTION_PASTE);
     node.addAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
-    assertThat(shadow.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
+    assertThat(node.getActions()).isEqualTo(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
     node.removeAction(AccessibilityNodeInfo.ACTION_CLEAR_ACCESSIBILITY_FOCUS);
   }
 
@@ -162,8 +164,8 @@ public class ShadowAccessibilityNodeInfoTest {
   public void equalsTest_unrelatedNodesAreUnequal() {
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain();
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain();
-    shadowOf(nodeA).setText("test");
-    shadowOf(nodeB).setText("test");
+    nodeA.setText("test");
+    nodeB.setText("test");
 
     assertThat(nodeA).isNotEqualTo(nodeB);
   }
@@ -173,8 +175,8 @@ public class ShadowAccessibilityNodeInfoTest {
     View view = new View(ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(view);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(view);
-    shadowOf(nodeA).setText("tomato");
-    shadowOf(nodeB).setText("tomatoe");
+    nodeA.setText("tomato");
+    nodeB.setText("tomatoe");
 
     assertThat(nodeA).isEqualTo(nodeB);
   }
@@ -185,8 +187,8 @@ public class ShadowAccessibilityNodeInfoTest {
     View viewB = new View(ApplicationProvider.getApplicationContext());
     AccessibilityNodeInfo nodeA = AccessibilityNodeInfo.obtain(viewA);
     AccessibilityNodeInfo nodeB = AccessibilityNodeInfo.obtain(viewB);
-    shadowOf(nodeA).setText("test");
-    shadowOf(nodeB).setText("test");
+    nodeA.setText("test");
+    nodeB.setText("test");
 
     assertThat(nodeA).isNotEqualTo(nodeB);
   }
@@ -195,7 +197,7 @@ public class ShadowAccessibilityNodeInfoTest {
   public void equalsTest_nodeIsEqualToItsClone_evenWhenModified() {
     node = AccessibilityNodeInfo.obtain();
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
-    shadowOf(clone).setText("test");
+    clone.setText("test");
 
     assertThat(node).isEqualTo(clone);
   }
@@ -218,6 +220,37 @@ public class ShadowAccessibilityNodeInfoTest {
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
 
     assertThat(clone.isImportantForAccessibility()).isTrue();
+  }
+
+  @Test
+  public void testGetBoundsInScreen() {
+    AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
+    Rect expected = new Rect(0, 0, 100, 100);
+    root.setBoundsInScreen(expected);
+    Rect actual = new Rect();
+    root.getBoundsInScreen(actual);
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void testIsHeading() {
+    AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    shadowOf(root).addChild(node);
+    node.setHeading(true);
+    assertThat(node.isHeading()).isTrue();
+    assertThat(root.getChild(0).isHeading()).isTrue();
+  }
+
+  @Test
+  public void testConstructor() {
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    assertThat(node.getWindowId()).isEqualTo(AccessibilityWindowInfo.UNDEFINED_WINDOW_ID);
+    if (RuntimeEnvironment.getApiLevel() >= O) {
+      // This constant does not exists pre-O.
+      assertThat(node.getSourceNodeId()).isEqualTo(AccessibilityNodeInfo.UNDEFINED_NODE_ID);
+    }
   }
 
   @After

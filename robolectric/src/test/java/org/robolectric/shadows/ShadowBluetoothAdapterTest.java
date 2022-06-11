@@ -331,6 +331,18 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void insecureL2capChannel_notNull() throws Exception {
+    assertThat(bluetoothAdapter.listenUsingInsecureL2capChannel()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void l2capChannel_notNull() throws Exception {
+    assertThat(bluetoothAdapter.listenUsingL2capChannel()).isNotNull();
+  }
+
+  @Test
   public void canGetProfileConnectionState() throws Exception {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     assertThat(adapter.getProfileConnectionState(BluetoothProfile.HEADSET))

@@ -7,11 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow class for {@link CameraMetadataNative} */
-@Implements(
-    value = CameraMetadataNative.class,
-    minSdk = R,
-    isInAndroidSdk = false,
-    shadowPicker = ShadowCameraMetadataNativePicker.Picker.class)
+@Implements(value = CameraMetadataNative.class, minSdk = R, isInAndroidSdk = false)
 public class ShadowCameraMetadataNativeR {
   // This method was changed to static in R, but otherwise has the same signature.
   @Implementation(minSdk = R)

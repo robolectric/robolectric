@@ -974,4 +974,18 @@ public class ShadowTelephonyManagerTest {
 
     assertThat(shadowTelephonyManager.getBootstrapAuthenticationCallback()).isEqualTo(callback);
   }
+
+  @Test
+  @Config(minSdk = O)
+  public void sendVisualVoicemailSms_shouldStoreLastSendSmsParameters() {
+    telephonyManager.sendVisualVoicemailSms("destAddress", 0, "message", null);
+
+    ShadowTelephonyManager.VisualVoicemailSmsParams params =
+        shadowOf(telephonyManager).getLastSentVisualVoicemailSmsParams();
+
+    assertThat(params.getDestinationAddress()).isEqualTo("destAddress");
+    assertThat(params.getPort()).isEqualTo(0);
+    assertThat(params.getText()).isEqualTo("message");
+    assertThat(params.getSentIntent()).isNull();
+  }
 }

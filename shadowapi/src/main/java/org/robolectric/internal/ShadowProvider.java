@@ -1,7 +1,9 @@
 package org.robolectric.internal;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Interface implemented by packages that provide shadows to Robolectric.
@@ -22,11 +24,17 @@ public interface ShadowProvider {
   String[] getProvidedPackageNames();
 
   /**
-   * Return the mapping of class name to shadow name.
+   * Return a collection of Map.Entry objects representing the mapping of class name to shadow name.
+   *
+   * <p>This is a multimap instead of a regular map in order to support, for instance, multiple
+   * shadows per class that only differ by SDK level.
+   *
+   * <p>It also uses a {@code Collection<Entry<String, String>>} as the return value to avoid having
+   * a dependency on something like Guava Multimap.
    *
    * @return Shadow mapping.
    */
-  Map<String, String> getShadowMap();
+  Collection<Entry<String, String>> getShadows();
 
   /**
    * Map of framework classes which may be represented by more than one shadow, to be picked

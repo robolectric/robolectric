@@ -1945,6 +1945,15 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getInstalledPackages_uninstalledPackage_includeUninstalled() {
+    shadowOf(packageManager).deletePackage(context.getPackageName());
+
+    assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES)).isNotEmpty();
+    assertThat(packageManager.getInstalledPackages(MATCH_UNINSTALLED_PACKAGES).get(0).packageName)
+        .isEqualTo(context.getPackageName());
+  }
+
+  @Test
   public void getInstalledPackages_uninstalledPackage_dontIncludeUninstalled() {
     shadowOf(packageManager).deletePackage(context.getPackageName());
 
@@ -2798,6 +2807,19 @@ public class ShadowPackageManagerTest {
       fail("Exception expected");
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat().contains("target.package");
+    }
+  }
+
+  @Test
+  @GetInstallerPackageNameMode(Mode.REALISTIC)
+  public void installerPackageName_uninstalledAndRealisticSettings() {
+    try {
+      packageManager.setInstallerPackageName(context.getPackageName(), "installer.pkg");
+      shadowOf(packageManager).deletePackage(context.getPackageName());
+      packageManager.getInstallerPackageName(context.getPackageName());
+      fail("Exception expected");
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat().contains(context.getPackageName());
     }
   }
 

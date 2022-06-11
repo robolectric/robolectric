@@ -22,6 +22,18 @@ public final class ExpectedLogMessagesRuleTest {
   @Rule public RuleChain chain = RuleChain.outerRule(expectedException).around(rule);
 
   @Test
+  public void testExpectErrorLogDoesNotFail() throws Exception {
+    Log.e("Mytag", "What's up");
+    rule.expectLogMessage(Log.ERROR, "Mytag", "What's up");
+  }
+
+  @Test
+  public void testExpectWarnLogDoesNotFail() throws Exception {
+    Log.w("Mytag", "What's up");
+    rule.expectLogMessage(Log.WARN, "Mytag", "What's up");
+  }
+
+  @Test
   public void testAndroidExpectedLogMessagesFailsWithMessage() throws Exception {
     expectedException.expect(AssertionError.class);
     Log.e("Mytag", "What's up");

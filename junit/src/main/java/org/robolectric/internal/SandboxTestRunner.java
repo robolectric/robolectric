@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -42,7 +43,12 @@ import org.robolectric.util.PerfStatsCollector.Event;
 import org.robolectric.util.Util;
 import org.robolectric.util.inject.Injector;
 
-@SuppressWarnings("NewApi")
+/**
+ * Sandbox test runner that runs each test in a sandboxed class loader environment. Typically this
+ * runner should not be directly accessed, use {@link org.robolectric.RobolectricTestRunner}
+ * instead.
+ */
+@SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private static final Injector DEFAULT_INJECTOR = defaultInjector().build();
@@ -58,6 +64,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   private final List<PerfStatsReporter> perfStatsReporters;
   private final HashMap<Class<?>, Sandbox> loadedTestClasses = new HashMap<>();
+  private final HashMap<Class<?>, HelperTestRunner> helperRunners = new HashMap<>();
 
   public SandboxTestRunner(Class<?> klass) throws InitializationError {
     this(klass, DEFAULT_INJECTOR);
@@ -115,7 +122,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
     };
   }
 
-  private void invokeBeforeClass(final Class clazz, final Sandbox sandbox) throws Throwable {
+  private void invokeBeforeClass(final Class<?> clazz, final Sandbox sandbox) throws Throwable {
     if (!loadedTestClasses.containsKey(clazz)) {
       loadedTestClasses.put(clazz, sandbox);
 
@@ -245,15 +252,19 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
               ClassLoader priorContextClassLoader = Thread.currentThread().getContextClassLoader();
               Thread.currentThread().setContextClassLoader(sandbox.getRobolectricClassLoader());
 
-              Class bootstrappedTestClass =
+              Class<?> bootstrappedTestClass =
                   sandbox.bootstrappedClass(getTestClass().getJavaClass());
-              HelperTestRunner helperTestRunner = getHelperTestRunner(bootstrappedTestClass);
+              HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
               helperTestRunner.frameworkMethod = method;
 
               final Method bootstrappedMethod;
               try {
-                //noinspection unchecked
-                bootstrappedMethod = bootstrappedTestClass.getMethod(method.getMethod().getName());
+                Class<?>[] parameterTypes =
+                    stream(method.getMethod().getParameterTypes())
+                        .map(type -> type.isPrimitive() ? type : sandbox.bootstrappedClass(type))
+                        .toArray(Class[]::new);
+                bootstrappedMethod =
+                    bootstrappedTestClass.getMethod(method.getMethod().getName(), parameterTypes);
               } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }
@@ -317,12 +328,21 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
   protected void finallyAfterTest(FrameworkMethod method) {}
 
-  protected HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
-    try {
-      return new HelperTestRunner(bootstrappedTestClass);
-    } catch (InitializationError initializationError) {
-      throw new RuntimeException(initializationError);
-    }
+  protected HelperTestRunner getHelperTestRunner(Class<?> bootstrappedTestClass)
+      throws InitializationError {
+    return new HelperTestRunner(bootstrappedTestClass);
+  }
+
+  private HelperTestRunner getCachedHelperTestRunner(Class<?> bootstrappedTestClass) {
+    return helperRunners.computeIfAbsent(
+        bootstrappedTestClass,
+        klass -> {
+          try {
+            return getHelperTestRunner(klass);
+          } catch (InitializationError e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   protected static class HelperTestRunner extends BlockJUnit4ClassRunner {

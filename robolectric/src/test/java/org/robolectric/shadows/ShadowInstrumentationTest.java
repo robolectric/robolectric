@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -142,5 +143,11 @@ public class ShadowInstrumentationTest {
         Robolectric.buildActivity(Activity.class).setup().get().getWindow().getDecorView();
 
     assertThat(decorView.isInTouchMode()).isTrue();
+  }
+
+  @Config(minSdk = JELLY_BEAN_MR2)
+  @Test
+  public void getUiAutomation() {
+    assertThat(InstrumentationRegistry.getInstrumentation().getUiAutomation()).isNotNull();
   }
 }

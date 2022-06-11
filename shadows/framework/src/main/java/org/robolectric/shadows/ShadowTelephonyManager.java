@@ -20,6 +20,7 @@ import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
 import android.annotation.CallSuper;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -138,6 +139,8 @@ public class ShadowTelephonyManager {
   private Object telephonyDisplayInfo;
   private boolean isDataConnectionAllowed;
   private static int callComposerStatus = 0;
+  private VisualVoicemailSmsParams lastVisualVoicemailSmsParams;
+
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
    * introduced in Android S, so we are using Object to avoid breaking other SDKs
@@ -1219,5 +1222,47 @@ public class ShadowTelephonyManager {
 
   public void setIsDataConnectionAllowed(boolean isDataConnectionAllowed) {
     this.isDataConnectionAllowed = isDataConnectionAllowed;
+  }
+
+  @Implementation(minSdk = O)
+  public void sendVisualVoicemailSms(
+      String number, int port, String text, PendingIntent sentIntent) {
+    lastVisualVoicemailSmsParams = new VisualVoicemailSmsParams(number, port, text, sentIntent);
+  }
+
+  public VisualVoicemailSmsParams getLastSentVisualVoicemailSmsParams() {
+    return lastVisualVoicemailSmsParams;
+  }
+
+  /** Testable parameters from calls to {@link #sendVisualVoicemailSms}. */
+  public static class VisualVoicemailSmsParams {
+    private final String destinationAddress;
+    private final int port;
+    private final String text;
+    private final PendingIntent sentIntent;
+
+    public VisualVoicemailSmsParams(
+        String destinationAddress, int port, String text, PendingIntent sentIntent) {
+      this.destinationAddress = destinationAddress;
+      this.port = port;
+      this.text = text;
+      this.sentIntent = sentIntent;
+    }
+
+    public String getDestinationAddress() {
+      return destinationAddress;
+    }
+
+    public int getPort() {
+      return port;
+    }
+
+    public String getText() {
+      return text;
+    }
+
+    public PendingIntent getSentIntent() {
+      return sentIntent;
+    }
   }
 }

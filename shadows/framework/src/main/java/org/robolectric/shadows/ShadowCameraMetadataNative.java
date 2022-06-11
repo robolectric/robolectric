@@ -12,8 +12,7 @@ import org.robolectric.annotation.Implements;
     value = CameraMetadataNative.class,
     minSdk = LOLLIPOP,
     maxSdk = Q,
-    isInAndroidSdk = false,
-    shadowPicker = ShadowCameraMetadataNativePicker.Picker.class)
+    isInAndroidSdk = false)
 public class ShadowCameraMetadataNative {
   @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
   protected long nativeAllocate() {

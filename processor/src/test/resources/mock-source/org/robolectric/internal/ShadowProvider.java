@@ -1,5 +1,6 @@
 package org.robolectric.internal;
 
+import java.util.Collection;
 import java.util.Map;
 
 public interface ShadowProvider {
@@ -8,5 +9,5 @@ public interface ShadowProvider {
 
   String[] getProvidedPackageNames();
 
-  Map<String, String> getShadowMap();
+  Collection<Map.Entry<String, String>> getShadows();
 }

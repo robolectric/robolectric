@@ -112,6 +112,8 @@ public class ShadowPackageManager {
 
   @RealObject PackageManager realPackageManager;
 
+  // The big-lock to control concurrency in this class.
+  // Note: not all APIs in this class have been made thread safe yet.
   static final Object lock = new Object();
   static Map<String, Boolean> permissionRationaleMap = new HashMap<>();
   static List<FeatureInfo> systemAvailableFeatures = new ArrayList<>();
@@ -171,7 +173,10 @@ public class ShadowPackageManager {
   public static Map<String, Resources> resources = new HashMap<>();
   static final Map<Intent, List<ResolveInfo>> resolveInfoForIntent =
       new TreeMap<>(new IntentComparator());
+
+  @GuardedBy("lock")
   static Set<String> deletedPackages = new HashSet<>();
+
   static Map<String, IPackageDeleteObserver> pendingDeleteCallbacks = new HashMap<>();
   static Set<String> hiddenPackages = new HashSet<>();
   static Multimap<Integer, String> sequenceNumberChangedPackagesMap = HashMultimap.create();
@@ -908,12 +913,6 @@ public class ShadowPackageManager {
     }
   }
 
-  /** @deprecated Use {@link #getInternalMutablePackageInfo} instead. It has better name. */
-  @Deprecated
-  public PackageInfo getPackageInfoForTesting(String packageName) {
-    return getInternalMutablePackageInfo(packageName);
-  }
-
   public void addPermissionInfo(PermissionInfo permissionInfo) {
     extraPermissions.put(permissionInfo.name, permissionInfo);
   }
@@ -1180,7 +1179,9 @@ public class ShadowPackageManager {
    * must have {@link android.Manifest.permission#DELETE_PACKAGES} permission set.
    */
   public Set<String> getDeletedPackages() {
-    return deletedPackages;
+    synchronized (lock) {
+      return deletedPackages;
+    }
   }
 
   protected List<ResolveInfo> queryOverriddenIntents(Intent intent, int flags) {

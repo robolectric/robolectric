@@ -214,8 +214,12 @@ public class RobolectricModel {
       }
 
       // Other imports that the generated class needs
-      imports.add("java.util.Map");
+      imports.add("java.util.AbstractMap");
+      imports.add("java.util.ArrayList");
+      imports.add("java.util.Collection");
       imports.add("java.util.HashMap");
+      imports.add("java.util.List");
+      imports.add("java.util.Map");
       imports.add("javax.annotation.Generated");
       imports.add("org.robolectric.internal.ShadowProvider");
       imports.add("org.robolectric.shadow.api.Shadow");

@@ -135,6 +135,18 @@ public class ShadowBluetoothAdapter {
         BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ true, new ParcelUuid(uuid));
   }
 
+  @Implementation(minSdk = Q)
+  protected BluetoothServerSocket listenUsingInsecureL2capChannel() throws IOException {
+    return ShadowBluetoothServerSocket.newInstance(
+        BluetoothSocket.TYPE_L2CAP, /*auth=*/ false, /*encrypt=*/ true, /*uuid=*/ null);
+  }
+
+  @Implementation(minSdk = Q)
+  protected BluetoothServerSocket listenUsingL2capChannel() throws IOException {
+    return ShadowBluetoothServerSocket.newInstance(
+        BluetoothSocket.TYPE_L2CAP, /*auth=*/ false, /*encrypt=*/ true, /*uuid=*/ null);
+  }
+
   @Implementation
   protected boolean startDiscovery() {
     isDiscovering = true;

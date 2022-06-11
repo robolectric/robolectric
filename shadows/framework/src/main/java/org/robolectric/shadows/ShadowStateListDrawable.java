@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.util.StateSet;
@@ -9,23 +11,21 @@ import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @Implements(StateListDrawable.class)
 public class ShadowStateListDrawable extends ShadowDrawable {
-  private final Map<Integer, Integer> stateToResource = new HashMap<>();
+
+  @RealObject StateListDrawable realStateListDrawable;
+
   private final Map<List<Integer>, Drawable> stateToDrawable = new HashMap<>();
-
-  public void addState(int stateId, int resId) {
-    stateToResource.put(stateId, resId);
-  }
-
-  public int getResourceIdForState(int stateId) {
-    return stateToResource.get(stateId);
-  }
 
   @Implementation
   protected void addState(int[] stateSet, Drawable drawable) {
     stateToDrawable.put(createStateList(stateSet), drawable);
+    reflector(StateListDrawableReflector.class, realStateListDrawable).addState(stateSet, drawable);
   }
 
   /**
@@ -49,5 +49,11 @@ public class ShadowStateListDrawable extends ShadowDrawable {
     }
 
     return stateList;
+  }
+
+  @ForType(StateListDrawable.class)
+  interface StateListDrawableReflector {
+    @Direct
+    void addState(int[] stateSet, Drawable drawable);
   }
 }

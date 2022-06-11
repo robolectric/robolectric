@@ -362,12 +362,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
   }
 
   @Override
-  protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class bootstrappedTestClass) {
-    try {
-      return new HelperTestRunner(bootstrappedTestClass);
-    } catch (InitializationError initializationError) {
-      throw new RuntimeException(initializationError);
-    }
+  protected SandboxTestRunner.HelperTestRunner getHelperTestRunner(Class<?> bootstrappedTestClass)
+      throws InitializationError {
+    return new HelperTestRunner(bootstrappedTestClass);
   }
 
   /**
@@ -615,6 +612,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     private final int id;
 
+    private final int apiLevel;
     @Nonnull private final AndroidManifest appManifest;
     @Nonnull private final Configuration configuration;
     @Nonnull private final ResourcesMode resourcesMode;
@@ -648,6 +646,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         boolean alwaysIncludeVariantMarkersInName) {
       super(method);
 
+      this.apiLevel = sdk.getApiLevel();
       this.appManifest = appManifest;
       this.configuration = configuration;
       this.resourcesMode = resourcesMode;
@@ -735,13 +734,13 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
       RobolectricFrameworkMethod that = (RobolectricFrameworkMethod) o;
 
-      return getSdk().equals(that.getSdk()) && resourcesMode == that.resourcesMode;
+      return apiLevel == that.apiLevel && resourcesMode == that.resourcesMode;
     }
 
     @Override
     public int hashCode() {
       int result = super.hashCode();
-      result = 31 * result + getSdk().hashCode();
+      result = 31 * result + apiLevel;
       result = 31 * result + resourcesMode.ordinal();
       return result;
     }

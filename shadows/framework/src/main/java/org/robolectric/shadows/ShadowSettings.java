@@ -19,6 +19,7 @@ import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
+import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +41,11 @@ public class ShadowSettings {
 
   @Implements(value = Settings.System.class)
   public static class ShadowSystem {
-    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>();
+    private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
+        ImmutableMap.<String, Optional<Object>>builder()
+            .put(Settings.System.ANIMATOR_DURATION_SCALE, Optional.of(1))
+            .build();
+    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
@@ -89,7 +94,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      return put(cr, name, value);
+      boolean result = put(cr, name, value);
+      if (Settings.System.WINDOW_ANIMATION_SCALE.equals(name)) {
+        ShadowValueAnimator.setDurationScale(value);
+      }
+      return result;
     }
 
     @Implementation
@@ -120,6 +129,7 @@ public class ShadowSettings {
     @Resetter
     public static void reset() {
       settings.clear();
+      settings.putAll(DEFAULTS);
     }
   }
 
@@ -352,7 +362,11 @@ public class ShadowSettings {
 
   @Implements(value = Settings.Global.class, minSdk = JELLY_BEAN_MR1)
   public static class ShadowGlobal {
-    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>();
+    private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
+        ImmutableMap.<String, Optional<Object>>builder()
+            .put(Settings.Global.ANIMATOR_DURATION_SCALE, Optional.of(1))
+            .build();
+    private static final Map<String, Optional<Object>> settings = new ConcurrentHashMap<>(DEFAULTS);
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
@@ -401,7 +415,11 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putFloat(ContentResolver cr, String name, float value) {
-      return put(cr, name, value);
+      boolean result = put(cr, name, value);
+      if (Settings.Global.ANIMATOR_DURATION_SCALE.equals(name)) {
+        ShadowValueAnimator.setDurationScale(value);
+      }
+      return result;
     }
 
     @Implementation
@@ -432,6 +450,7 @@ public class ShadowSettings {
     @Resetter
     public static void reset() {
       settings.clear();
+      settings.putAll(DEFAULTS);
     }
   }
 

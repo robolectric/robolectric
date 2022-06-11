@@ -500,6 +500,38 @@ public class ShadowTelecomManagerTest {
     assertThat(initialIntent).isEqualTo(targetIntent);
   }
 
+  @Test
+  @Config(minSdk = M)
+  public void isVoicemailNumber() {
+    // Check initial state
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    assertThat(telecomService.isVoiceMailNumber(phoneAccountHandle, "123")).isFalse();
+
+    // After setting
+    shadowOf(telecomService).setVoicemailNumber(phoneAccountHandle, "123");
+    assertThat(telecomService.isVoiceMailNumber(phoneAccountHandle, "123")).isTrue();
+
+    // After reset
+    shadowOf(telecomService).setVoicemailNumber(phoneAccountHandle, null);
+    assertThat(telecomService.isVoiceMailNumber(phoneAccountHandle, "123")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getVoicemailNumber() {
+    // Check initial state
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    assertThat(telecomService.getVoiceMailNumber(phoneAccountHandle)).isNull();
+
+    // After setting
+    shadowOf(telecomService).setVoicemailNumber(phoneAccountHandle, "123");
+    assertThat(telecomService.getVoiceMailNumber(phoneAccountHandle)).isEqualTo("123");
+
+    // After reset
+    shadowOf(telecomService).setVoicemailNumber(phoneAccountHandle, null);
+    assertThat(telecomService.getVoiceMailNumber(phoneAccountHandle)).isNull();
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return new PhoneAccountHandle(
         new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),

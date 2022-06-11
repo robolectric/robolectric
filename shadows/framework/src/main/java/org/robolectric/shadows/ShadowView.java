@@ -38,7 +38,6 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 import com.google.common.collect.ImmutableList;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +51,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 import org.robolectric.util.reflector.Accessor;
@@ -172,6 +170,7 @@ public class ShadowView {
   @Implementation
   protected void setLayerType(int layerType, Paint paint) {
     this.layerType = layerType;
+    reflector(_View_.class, realView).setLayerType(layerType, paint);
   }
 
   @Implementation
@@ -238,10 +237,10 @@ public class ShadowView {
   protected void draw(Canvas canvas) {
     Drawable background = realView.getBackground();
     if (background != null) {
-      ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+      Object shadowCanvas = Shadow.extract(canvas);
       // Check that Canvas is not a Mockito mock
-      if (shadowCanvas != null) {
-        shadowCanvas.appendDescription("background:");
+      if (shadowCanvas instanceof ShadowCanvas) {
+        ((ShadowCanvas) shadowCanvas).appendDescription("background:");
       }
     }
     reflector(_View_.class, realView).draw(canvas);
@@ -484,7 +483,11 @@ public class ShadowView {
    */
   @Implementation(minSdk = R)
   public View.OnLongClickListener getOnLongClickListener() {
-    return onLongClickListener;
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      return reflector(_View_.class, realView).getOnLongClickListener();
+    } else {
+      return onLongClickListener;
+    }
   }
 
   /**
@@ -514,11 +517,6 @@ public class ShadowView {
   public Set<View.OnLayoutChangeListener> getOnLayoutChangeListeners() {
     return onLayoutChangeListeners;
   }
-
-  // @Implementation
-  // protected Bitmap getDrawingCache() {
-  //   return ReflectionHelpers.callConstructor(Bitmap.class);
-  // }
 
   @Implementation
   protected boolean post(Runnable action) {
@@ -573,43 +571,60 @@ public class ShadowView {
 
   @Implementation
   protected void scrollTo(int x, int y) {
-    try {
-      Method method =
-          View.class.getDeclaredMethod(
-              "onScrollChanged", int.class, int.class, int.class, int.class);
-      method.setAccessible(true);
-      method.invoke(realView, x, y, scrollToCoordinates.x, scrollToCoordinates.y);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).scrollTo(x, y);
+    } else {
+      reflector(_View_.class, realView)
+          .onScrollChanged(x, y, scrollToCoordinates.x, scrollToCoordinates.y);
+      scrollToCoordinates = new Point(x, y);
+      reflector(_View_.class, realView).setMemberScrollX(x);
+      reflector(_View_.class, realView).setMemberScrollY(y);
     }
-    scrollToCoordinates = new Point(x, y);
-    ReflectionHelpers.setField(realView, "mScrollX", x);
-    ReflectionHelpers.setField(realView, "mScrollY", y);
   }
 
   @Implementation
   protected void scrollBy(int x, int y) {
-    scrollTo(getScrollX() + x, getScrollY() + y);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).scrollBy(x, y);
+    } else {
+      scrollTo(getScrollX() + x, getScrollY() + y);
+    }
   }
 
   @Implementation
   protected int getScrollX() {
-    return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    if (useRealGraphics()) {
+      return reflector(_View_.class, realView).getScrollX();
+    } else {
+      return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    }
   }
 
   @Implementation
   protected int getScrollY() {
-    return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    if (useRealGraphics()) {
+      return reflector(_View_.class, realView).getScrollY();
+    } else {
+      return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    }
   }
 
   @Implementation
   protected void setScrollX(int scrollX) {
-    scrollTo(scrollX, scrollToCoordinates.y);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).setScrollX(scrollX);
+    } else {
+      scrollTo(scrollX, scrollToCoordinates.y);
+    }
   }
 
   @Implementation
   protected void setScrollY(int scrollY) {
-    scrollTo(scrollToCoordinates.x, scrollY);
+    if (useRealGraphics()) {
+      reflector(_View_.class, realView).setScrollY(scrollY);
+    } else {
+      scrollTo(scrollToCoordinates.x, scrollY);
+    }
   }
 
   @Implementation
@@ -789,10 +804,16 @@ public class ShadowView {
     void setOnFocusChangeListener(View.OnFocusChangeListener l);
 
     @Direct
+    void setLayerType(int layerType, Paint paint);
+
+    @Direct
     void setOnClickListener(View.OnClickListener onClickListener);
 
     @Direct
     void setOnLongClickListener(View.OnLongClickListener onLongClickListener);
+
+    @Direct
+    View.OnLongClickListener getOnLongClickListener();
 
     @Direct
     void setOnSystemUiVisibilityChangeListener(
@@ -865,6 +886,8 @@ public class ShadowView {
 
     void onDetachedFromWindow();
 
+    void onScrollChanged(int l, int t, int oldl, int oldt);
+
     @Direct
     void getLocationOnScreen(int[] outLocation);
 
@@ -876,6 +899,30 @@ public class ShadowView {
 
     @Direct
     boolean initialAwakenScrollBars();
+
+    @Accessor("mScrollX")
+    void setMemberScrollX(int value);
+
+    @Accessor("mScrollY")
+    void setMemberScrollY(int value);
+
+    @Direct
+    void scrollTo(int x, int y);
+
+    @Direct
+    void scrollBy(int x, int y);
+
+    @Direct
+    int getScrollX();
+
+    @Direct
+    int getScrollY();
+
+    @Direct
+    void setScrollX(int value);
+
+    @Direct
+    void setScrollY(int value);
   }
 
   public void callOnAttachedToWindow() {
@@ -1002,5 +1049,9 @@ public class ShadowView {
 
     @Accessor("mWindowId")
     void setWindowId(WindowId windowId);
+  }
+
+  static boolean useRealGraphics() {
+    return Boolean.getBoolean("robolectric.useRealGraphics");
   }
 }

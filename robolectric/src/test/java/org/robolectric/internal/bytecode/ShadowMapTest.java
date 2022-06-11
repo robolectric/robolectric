@@ -2,6 +2,9 @@ package org.robolectric.internal.bytecode;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.android.AndroidSdkShadowMatcher;
+import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadows.ShadowActivity;
@@ -31,21 +36,22 @@ public class ShadowMapTest {
 
   @Before
   public void setUp() throws Exception {
-    List<ShadowProvider> shadowProviders = Collections.singletonList(new ShadowProvider() {
-      @Override
-      public void reset() {
-      }
+    List<ShadowProvider> shadowProviders =
+        Collections.singletonList(
+            new ShadowProvider() {
+              @Override
+              public void reset() {}
 
-      @Override
-      public String[] getProvidedPackageNames() {
-        return new String[0];
-      }
+              @Override
+              public String[] getProvidedPackageNames() {
+                return new String[0];
+              }
 
-      @Override
-      public Map<String, String> getShadowMap() {
-        return Collections.emptyMap();
-      }
-    });
+              @Override
+              public List<Map.Entry<String, String>> getShadows() {
+                return Collections.emptyList();
+              }
+            });
     baseShadowMap = ShadowMap.createFromShadowProviders(shadowProviders);
   }
 
@@ -101,6 +107,39 @@ public class ShadowMapTest {
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }
 
+  @Test
+  public void builtinShadowsForSameClass_differentSdkVersions() {
+    ImmutableMultimap<String, String> builtinShadows =
+        ImmutableMultimap.of(
+            Activity.class.getCanonicalName(),
+            ShadowActivity29.class.getName(),
+            Activity.class.getCanonicalName(),
+            ShadowActivity30.class.getName());
+    ImmutableList<ShadowProvider> shadowProviders =
+        ImmutableList.of(
+            new ShadowProvider() {
+              @Override
+              public void reset() {}
+
+              @Override
+              public String[] getProvidedPackageNames() {
+                return new String[0];
+              }
+
+              @Override
+              public List<Map.Entry<String, String>> getShadows() {
+                return new ArrayList<>(builtinShadows.entries());
+              }
+            });
+    ShadowMatcher sdk29 = new AndroidSdkShadowMatcher(29);
+    ShadowMatcher sdk30 = new AndroidSdkShadowMatcher(30);
+    ShadowMap map = ShadowMap.createFromShadowProviders(shadowProviders);
+    assertThat(map.getShadowInfo(Activity.class, sdk29).shadowClassName)
+        .isEqualTo(ShadowActivity29.class.getName());
+    assertThat(map.getShadowInfo(Activity.class, sdk30).shadowClassName)
+        .isEqualTo(ShadowActivity30.class.getName());
+  }
+
   static class Activity {}
 
   static class A {}
@@ -114,4 +153,9 @@ public class ShadowMapTest {
   static class C3 {}
   static class X {}
 
+  @Implements(value = Activity.class, maxSdk = 29)
+  static class ShadowActivity29 {}
+
+  @Implements(value = Activity.class, minSdk = 30)
+  static class ShadowActivity30 {}
 }

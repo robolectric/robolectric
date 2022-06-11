@@ -12,11 +12,14 @@ import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
 import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
 import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.shadows.ShadowLooper.idleMainLooper;
 
+import android.animation.ValueAnimator;
 import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.provider.Settings.Secure;
@@ -294,5 +297,24 @@ public class ShadowSettingsTest {
     assertThat(Settings.System.getString(contentResolver2, "setting")).isEqualTo("system");
     assertThat(Settings.Secure.getString(contentResolver2, "setting")).isEqualTo("secure");
     assertThat(Settings.Global.getString(contentResolver2, "setting")).isEqualTo("global");
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void global_animatorDurationScale() {
+    long startTime = SystemClock.uptimeMillis();
+    ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);
+
+    Settings.Global.putFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 0);
+    valueAnimator.setDuration(100);
+    valueAnimator.start();
+    idleMainLooper();
+
+    assertThat(valueAnimator.isRunning()).isFalse();
+    assertThat(valueAnimator.getAnimatedFraction()).isEqualTo(1);
+    // Expect to complete in one frame when the scale is 0 (animator on M runs a post-start "commit"
+    // frame, so expect no more than 2 frame callbacks).
+    assertThat(SystemClock.uptimeMillis() - startTime)
+        .isAtMost(ShadowChoreographer.getFrameDelay().toMillis() * 2);
   }
 }
