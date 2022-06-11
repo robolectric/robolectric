@@ -21,6 +21,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewParent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -64,9 +65,9 @@ public class RobolectricTest {
     new Handler().postDelayed(() -> wasRun[0] = true, 2000);
 
     assertFalse(wasRun[0]);
-    ShadowLooper.idleMainLooper(1999);
+    ShadowLooper.idleMainLooper(1999, TimeUnit.MILLISECONDS);
     assertFalse(wasRun[0]);
-    ShadowLooper.idleMainLooper(1);
+    ShadowLooper.idleMainLooper(1, TimeUnit.MILLISECONDS);
     assertTrue(wasRun[0]);
   }
 

@@ -13,6 +13,7 @@ import android.os.Message;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -255,7 +256,7 @@ public class ShadowHandlerTest {
     handler.sendEmptyMessage(123);
     assertThat(handler.hasMessages(456)).isFalse();
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowLooper.idleMainLooper(0);
+    ShadowLooper.idleMainLooper(0, TimeUnit.MILLISECONDS);
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
@@ -265,9 +266,9 @@ public class ShadowHandlerTest {
     Handler handler = new Handler();
     handler.sendEmptyMessageDelayed(123, 500);
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowLooper.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100, TimeUnit.MILLISECONDS);
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowLooper.idleMainLooper(400);
+    ShadowLooper.idleMainLooper(400, TimeUnit.MILLISECONDS);
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
@@ -278,9 +279,9 @@ public class ShadowHandlerTest {
     Message message = handler.obtainMessage(123);
     handler.sendMessageAtTime(message, 500);
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowLooper.idleMainLooper(100);
+    ShadowLooper.idleMainLooper(100, TimeUnit.MILLISECONDS);
     assertThat(handler.hasMessages(123)).isTrue();
-    ShadowLooper.idleMainLooper(400);
+    ShadowLooper.idleMainLooper(400, TimeUnit.MILLISECONDS);
     assertThat(handler.hasMessages(123)).isFalse();
   }
 
