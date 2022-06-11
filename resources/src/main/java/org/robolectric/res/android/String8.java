@@ -424,7 +424,7 @@ public String getPathExtension()
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof String8)) {
       return false;
     }
 
