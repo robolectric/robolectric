@@ -88,7 +88,7 @@ public class Scheduler {
     this.idleState = idleState;
     switch (idleState) {
       case UNPAUSED:
-        advanceBy(0);
+        advanceBy(0, TimeUnit.MILLISECONDS);
         break;
       case CONSTANT_IDLE:
         advanceToLastPostedRunnable();
