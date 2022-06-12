@@ -14,14 +14,12 @@ class GradleManagedDevicePlugin implements Plugin<Project> {
                     device = "Nexus One"
                     apiLevel = 29
                     systemImageSource = "aosp"
-                    abi = "x86"
                 }
                 // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi32DebugAndroidTest
                 nexusOneApi32(ManagedVirtualDevice) {
                     device = "Nexus One"
                     apiLevel = 32
                     systemImageSource = "google"
-                    abi = "x86_64"
                 }
             }
         }
