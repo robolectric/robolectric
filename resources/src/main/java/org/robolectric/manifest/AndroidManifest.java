@@ -829,9 +829,12 @@ public class AndroidManifest implements UsesSdk {
     return apkFile;
   }
 
-  /** @deprecated Do not use. */
+  /**
+   * @deprecated Do not use.
+   */
   @Deprecated
-  public boolean supportsLegacyResourcesMode() {
+  @SuppressWarnings("InlineMeSuggester")
+  public final boolean supportsLegacyResourcesMode() {
     return true;
   }
 

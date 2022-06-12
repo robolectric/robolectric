@@ -511,6 +511,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    *     details.
    */
   @Deprecated
+  @SuppressWarnings("InlineMeSuggester")
   protected Config buildGlobalConfig() {
     return new Config.Builder().build();
   }

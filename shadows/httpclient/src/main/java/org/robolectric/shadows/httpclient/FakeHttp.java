@@ -1,5 +1,6 @@
 package org.robolectric.shadows.httpclient;
 
+import com.google.errorprone.annotations.InlineMe;
 import java.util.List;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -25,13 +26,19 @@ public class FakeHttp {
   /**
    * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
    *
-   * @param statusCode   the status code of the response
+   * @param statusCode the status code of the response
    * @param responseBody the body of the response
-   * @param contentType  the contentType of the response
+   * @param contentType the contentType of the response
    * @deprecated use {@link #addPendingHttpResponse(int, String, org.apache.http.Header...)} instead
    */
   @Deprecated
-  public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
+  @InlineMe(
+      replacement =
+          "FakeHttp.getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody,"
+              + " contentType)",
+      imports = "org.robolectric.shadows.httpclient.FakeHttp")
+  public static final void addPendingHttpResponseWithContentType(
+      int statusCode, String responseBody, Header contentType) {
     getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
   }
 
