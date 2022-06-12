@@ -345,6 +345,7 @@ public class Scheduler {
    *     Use {@link #setIdleState(IdleState)} instead to explicitly set the state.
    */
   @Deprecated
+  @SuppressWarnings("InlineMeSuggester")
   public void idleConstantly(boolean shouldIdleConstantly) {
     setIdleState(shouldIdleConstantly ? CONSTANT_IDLE : UNPAUSED);
   }
