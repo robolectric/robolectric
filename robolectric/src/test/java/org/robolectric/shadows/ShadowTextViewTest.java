@@ -471,7 +471,6 @@ public class ShadowTextViewTest {
 
   @Test
   public void getPaintFlagsAndSetPaintFlags_shouldWork() {
-    assertThat(textView.getPaintFlags()).isEqualTo(0);
     textView.setPaintFlags(100);
     assertThat(textView.getPaintFlags()).isEqualTo(100);
   }
@@ -551,11 +550,9 @@ public class ShadowTextViewTest {
 
   private static class TestMovementMethod implements MovementMethod {
     public MotionEvent event;
-    public boolean touchEventWasCalled;
 
     @Override
-    public void initialize(TextView widget, Spannable text) {
-    }
+    public void initialize(TextView widget, Spannable text) {}
 
     @Override
     public boolean onKeyDown(TextView widget, Spannable text, int keyCode, KeyEvent event) {
@@ -584,7 +581,6 @@ public class ShadowTextViewTest {
     @Override
     public boolean onTouchEvent(TextView widget, Spannable text, MotionEvent event) {
       this.event = event;
-      touchEventWasCalled = true;
       return false;
     }
 

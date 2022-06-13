@@ -3,15 +3,9 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
-import android.graphics.Typeface;
-import android.text.InputFilter;
-import android.text.TextPaint;
 import android.text.TextWatcher;
-import android.text.method.MovementMethod;
-import android.text.method.TransformationMethod;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -29,35 +23,14 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowTextView extends ShadowView {
   @RealObject TextView realTextView;
 
-  private CharSequence text = "";
-  private TextView.BufferType bufferType = TextView.BufferType.NORMAL;
-  private Integer textColorHexValue;
-  private Integer hintColorHexValue;
-  private float textSize = 14.0f;
-  private boolean autoLinkPhoneNumbers;
-  private int autoLinkMask;
-  private CharSequence hintText;
-  private CharSequence errorText;
-  private int compoundDrawablePadding;
-  private MovementMethod movementMethod;
-  private boolean linksClickable;
-  private int gravity;
-  private int imeOptions = EditorInfo.IME_NULL;
   private TextView.OnEditorActionListener onEditorActionListener;
   private int textAppearanceId;
-  private TransformationMethod transformationMethod;
-  private int inputType;
-  private int lines;
   protected int selectionStart = -1;
   protected int selectionEnd = -1;
-  private Typeface typeface;
-  private InputFilter[] inputFilters;
-  private TextPaint textPaint = new TextPaint();
 
   private List<TextWatcher> watchers = new ArrayList<>();
   private List<Integer> previousKeyCodes = new ArrayList<>();
   private List<KeyEvent> previousKeyEvents = new ArrayList<>();
-  private int paintFlags;
   private int compoundDrawablesWithIntrinsicBoundsLeft;
   private int compoundDrawablesWithIntrinsicBoundsTop;
   private int compoundDrawablesWithIntrinsicBoundsRight;
@@ -137,16 +110,6 @@ public class ShadowTextView extends ShadowView {
     if (text != null && text.length() > 0) {
       dumpAttribute(out, "text", text.toString());
     }
-  }
-
-  @Implementation
-  protected int getPaintFlags() {
-    return paintFlags;
-  }
-
-  @Implementation
-  protected void setPaintFlags(int paintFlags) {
-    this.paintFlags = paintFlags;
   }
 
   @Implementation
