@@ -222,6 +222,17 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(clone.isImportantForAccessibility()).isTrue();
   }
 
+  @Config(minSdk = O)
+  @Test
+  public void clone_preservesHintText() {
+    String hintText = "shiba bonchon";
+    node.setHintText(hintText);
+
+    AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(clone.getHintText().toString()).isEqualTo(hintText);
+  }
+
   @Test
   public void testGetBoundsInScreen() {
     AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
