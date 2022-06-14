@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -181,6 +182,15 @@ public class ShadowViewRootImpl {
     viewRootImplStatic.setConfigCallbacks(new ArrayList<>());
   }
 
+  public void callWindowFocusChanged(boolean hasFocus) {
+    if (RuntimeEnvironment.getApiLevel() <= S_V2) {
+      reflector(ViewRootImplReflector.class, realObject)
+          .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
+    } else {
+      reflector(ViewRootImplReflector.class, realObject).windowFocusChanged(hasFocus);
+    }
+  }
+
   /** Reflector interface for {@link ViewRootImpl}'s internals. */
   @ForType(ViewRootImpl.class)
   protected interface ViewRootImplReflector {
@@ -358,5 +368,11 @@ public class ShadowViewRootImpl {
             new android.view.DisplayCutout.ParcelableWrapper());
       }
     }
+
+    // SDK <= S_V2
+    void windowFocusChanged(boolean hasFocus, boolean inTouchMode);
+
+    // SDK >= T
+    void windowFocusChanged(boolean hasFocus);
   }
 }
