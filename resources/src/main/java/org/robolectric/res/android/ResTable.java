@@ -532,7 +532,7 @@ public class ResTable {
 
     ResTable_type bestType = null;
     int bestOffset = ResTable_type.NO_ENTRY;
-    Package bestPackage = null;
+    ResTablePackage bestPackage = null;
     int specFlags = 0;
     byte actualTypeIndex = (byte) typeIndex;
     ResTable_config bestConfig = null;
@@ -780,7 +780,7 @@ public class ResTable {
     }
 
     PackageGroup group = null;
-    Package _package = new Package(this, header, pkg);
+    ResTablePackage _package = new ResTablePackage(this, header, pkg);
     if (_package == NULL) {
     return (mError=NO_MEMORY);
   }
@@ -1241,7 +1241,7 @@ public class ResTable {
         }
         continue;
       }
-      for (Package pkg : group.packages) {
+      for (ResTablePackage pkg : group.packages) {
         String targetType = type;
 
         do {
@@ -2568,7 +2568,7 @@ public class ResTable {
     // This is mainly used to keep track of the loaded packages
     // and to clean them up properly. Accessing resources happens from
     // the 'types' array.
-    List<Package> packages = new ArrayList<>();
+    List<ResTablePackage> packages = new ArrayList<>();
 
     public final Map<Integer, List<Type>> types = new HashMap<>();
 
@@ -2636,7 +2636,7 @@ public class ResTable {
     ResTable_entry entry;
     ResTable_type type;
     int specFlags;
-    Package _package_;
+    ResTablePackage _package_;
 
     StringPoolRef typeStr;
     StringPoolRef keyStr;
@@ -2646,17 +2646,17 @@ public class ResTable {
   public static class Type {
 
     final Header header;
-    final Package _package_;
+    final ResTablePackage _package_;
     public final int entryCount;
     public ResTable_typeSpec typeSpec;
     public int[] typeSpecFlags;
     public IdmapEntries idmapEntries = new IdmapEntries();
     public List<ResTable_type> configs;
 
-    public Type(final Header _header, final Package _package, int count)
-  //        : header(_header), package(_package), entryCount(count),
-  //  typeSpec(NULL), typeSpecFlags(NULL) { }
-    {
+    public Type(final Header _header, final ResTablePackage _package, int count)
+          //        : header(_header), package(_package), entryCount(count),
+          //  typeSpec(NULL), typeSpecFlags(NULL) { }
+        {
       this.header = _header;
       _package_ = _package;
       this.entryCount = count;
@@ -2666,17 +2666,17 @@ public class ResTable {
     }
   }
 
-//  struct ResTable::Package
-  public static class Package {
-//    Package(ResTable* _owner, final Header* _header, final ResTable_package* _package)
-//        : owner(_owner), header(_header), package(_package), typeIdOffset(0) {
-//    if (dtohs(package.header.headerSize) == sizeof(package)) {
-//      // The package structure is the same size as the definition.
-//      // This means it contains the typeIdOffset field.
-//      typeIdOffset = package.typeIdOffset;
-//    }
+  //  struct ResTable::Package
+  public static class ResTablePackage {
+    //    Package(ResTable* _owner, final Header* _header, final ResTable_package* _package)
+    //        : owner(_owner), header(_header), package(_package), typeIdOffset(0) {
+    //    if (dtohs(package.header.headerSize) == sizeof(package)) {
+    //      // The package structure is the same size as the definition.
+    //      // This means it contains the typeIdOffset field.
+    //      typeIdOffset = package.typeIdOffset;
+    //    }
 
-    public Package(ResTable owner, Header header, ResTable_package _package) {
+    public ResTablePackage(ResTable owner, Header header, ResTable_package _package) {
       this.owner = owner;
       this.header = header;
       this._package_ = _package;

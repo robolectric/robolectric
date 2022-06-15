@@ -1372,7 +1372,7 @@ public class CppAssetManager2 {
     private final CppAssetManager2 asset_manager_;
     private int type_spec_flags_ = 0;
     //  std.array<std.unique_ptr<Package>, kPackageCount> packages_;
-    private Package[] packages_ = new Package[kPackageCount];
+    private ThemePackage[] packages_ = new ThemePackage[kPackageCount];
 
     public Theme(CppAssetManager2 cppAssetManager2) {
       asset_manager_ = cppAssetManager2;
@@ -1398,7 +1398,7 @@ public class CppAssetManager2 {
     //  static final int kTypeCount = std.numeric_limits<byte>.max() + 1;
     static final int kTypeCount = 256;
 
-    private static class Package {
+    private static class ThemePackage {
       // Each element of Type will be a dynamically sized object
       // allocated to have the entries stored contiguously with the Type.
       // std::array<util::unique_cptr<ThemeType>, kTypeCount> types;
@@ -1425,7 +1425,7 @@ public class CppAssetManager2 {
 
       int last_type_idx = -1;
       int last_package_idx = -1;
-      Package last_package = null;
+      ThemePackage last_package = null;
       ThemeType last_type = null;
 
       // Iterate backwards, because each bag is sorted in ascending key ID order, meaning we will only
@@ -1454,9 +1454,9 @@ public class CppAssetManager2 {
         int entry_idx = get_entry_id(attr_resid);
 
         if (last_package_idx != package_idx) {
-          Package package_ = packages_[package_idx];
+          ThemePackage package_ = packages_[package_idx];
           if (package_ == null) {
-            package_ = packages_[package_idx] = new Package();
+            package_ = packages_[package_idx] = new ThemePackage();
           }
           last_package_idx = package_idx;
           last_package = package_;
@@ -1527,7 +1527,7 @@ public class CppAssetManager2 {
 
       do {
         int package_idx = get_package_id(resid);
-        Package package_ = packages_[package_idx];
+        ThemePackage package_ = packages_[package_idx];
         if (package_ != null) {
           // The themes are constructed with a 1-based type ID, so no need to decrement here.
           int type_idx = get_type_id(resid);
@@ -1618,16 +1618,16 @@ public class CppAssetManager2 {
       // for (int p = 0; p < packages_.size(); p++) {
       //   final Package package_ = o.packages_[p].get();
       for (int p = 0; p < packages_.length; p++) {
-        Package package_ = o.packages_[p];
+        ThemePackage package_ = o.packages_[p];
         if (package_ == null || (copy_only_system && p != 0x01)) {
           // The other theme doesn't have this package, clear ours.
-          packages_[p] = new Package();
+          packages_[p] = new ThemePackage();
           continue;
         }
 
         if (packages_[p] == null) {
           // The other theme has this package, but we don't. Make one.
-          packages_[p] = new Package();
+          packages_[p] = new ThemePackage();
         }
 
         // for (int t = 0; t < package_.types.size(); t++) {
