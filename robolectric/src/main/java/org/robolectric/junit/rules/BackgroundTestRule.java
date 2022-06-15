@@ -12,6 +12,7 @@ import org.junit.runners.model.Statement;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.BackgroundExecutor;
 
+@SuppressWarnings("InvalidBlockTag")
 /**
  * Let tests to run on background thread, if it has annotation {@link BackgroundTest}.
  *
