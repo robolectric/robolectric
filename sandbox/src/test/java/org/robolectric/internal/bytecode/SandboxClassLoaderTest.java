@@ -515,20 +515,6 @@ public class SandboxClassLoaderTest {
     assertEquals("yess? forget this: null", output);
   }
 
-  private Object invokeInterceptedMethodOnAClassToForget(String methodName) throws Exception {
-    setClassLoader(
-        new SandboxClassLoader(
-            configureBuilder()
-                .addInterceptedMethod(new MethodRef(AClassToForget.class, "*"))
-                .build()));
-    Class<?> theClass =
-        loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
-    Object instance = theClass.getDeclaredConstructor().newInstance();
-    Method m = theClass.getDeclaredMethod(methodName);
-    m.setAccessible(true);
-    return m.invoke(shadow.directlyOn(instance, (Class<Object>) theClass));
-  }
-
   @Nonnull
   private InstrumentationConfiguration.Builder configureBuilder() {
     InstrumentationConfiguration.Builder builder = InstrumentationConfiguration.newBuilder();
