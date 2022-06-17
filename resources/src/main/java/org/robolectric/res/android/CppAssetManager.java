@@ -1766,20 +1766,20 @@ public class CppAssetManager {
   public List<AssetPath> getAssetPaths() {
     synchronized (mLock) {
       ArrayList<AssetPath> assetPaths = new ArrayList<>(mAssetPaths.size());
-      for (asset_path asset_path : mAssetPaths) {
+      for (asset_path assetPath : mAssetPaths) {
         Path path;
-        switch (asset_path.type) {
+        switch (assetPath.type) {
           case kFileTypeDirectory:
-            path = Fs.fromUrl(asset_path.path.string());
+            path = Fs.fromUrl(assetPath.path.string());
             break;
           case kFileTypeRegular:
-            path = Fs.fromUrl(asset_path.path.string());
+            path = Fs.fromUrl(assetPath.path.string());
             break;
           default:
-            throw new IllegalStateException("Unsupported type " + asset_path.type + " for + "
-                + asset_path.path.string());
+            throw new IllegalStateException(
+                "Unsupported type " + assetPath.type + " for + " + assetPath.path.string());
         }
-        assetPaths.add(new AssetPath(path, asset_path.isSystemAsset));
+        assetPaths.add(new AssetPath(path, assetPath.isSystemAsset));
       }
       return assetPaths;
     }
