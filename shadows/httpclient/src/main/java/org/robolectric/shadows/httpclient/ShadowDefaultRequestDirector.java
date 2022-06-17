@@ -135,6 +135,8 @@ public class ShadowDefaultRequestDirector {
   }
 
   /**
+   * Get the sent {@link HttpRequest} for the given index.
+   *
    * @param index The index
    * @deprecated Use {@link FakeHttp#getSentHttpRequestInfo(int)} instead.)
    * @return HttpRequest
@@ -154,6 +156,8 @@ public class ShadowDefaultRequestDirector {
   }
 
   /**
+   * Get the sent {@link HttpRequestInfo} for the given index.
+   *
    * @param index The index
    * @deprecated Use {@link FakeHttp#getSentHttpRequest(int)} instead.)
    * @return HttpRequestInfo
