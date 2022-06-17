@@ -2546,20 +2546,16 @@ public class ResTable {
 //      }
     }
 
-    private void printf(String message, Object... arguments) {
-      System.out.print(String.format(message, arguments));
-    }
-
-//    long findType16(final String type, int len) {
-//      final int N = packages.size();
-//      for (int i = 0; i < N; i++) {
-//        sint index = packages[i].typeStrings.indexOfString(type, len);
-//        if (index >= 0) {
-//          return index + packages[i].typeIdOffset;
-//        }
-//      }
-//      return -1;
-//    }
+    //    long findType16(final String type, int len) {
+    //      final int N = packages.size();
+    //      for (int i = 0; i < N; i++) {
+    //        sint index = packages[i].typeStrings.indexOfString(type, len);
+    //        if (index >= 0) {
+    //          return index + packages[i].typeIdOffset;
+    //        }
+    //      }
+    //      return -1;
+    //    }
 
     final ResTable owner;
     final String name;
