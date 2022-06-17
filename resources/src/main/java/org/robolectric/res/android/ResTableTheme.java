@@ -195,8 +195,8 @@ public class ResTableTheme {
     final int end = N;
     int bagIndex = 0;
     while (bagIndex < end) {
-      bag_entry bag_entry = bag.get()[bagIndex];
-      final int attrRes = bag_entry.map.name.ident;
+      bag_entry bagEntry = bag.get()[bagIndex];
+      final int attrRes = bagEntry.map.name.ident;
       final int p = Res_GETPACKAGE(attrRes);
       final int t = Res_GETTYPE(attrRes);
       final int e = Res_GETENTRY(attrRes);
@@ -251,7 +251,7 @@ public class ResTableTheme {
       if (styleDebug) {
         ResourceName outName = new ResourceName();
         mTable.getResourceName(attrRes, true, outName);
-        System.out.println("  " + outName + "(" + attrRes + ")" + " := " + bag_entry.map.value);
+        System.out.println("  " + outName + "(" + attrRes + ")" + " := " + bagEntry.map.value);
       }
 
       if (kDebugTableNoisy) {
@@ -261,9 +261,9 @@ public class ResTableTheme {
       }
       if (force || (curEntry.value.dataType == TYPE_NULL
           && curEntry.value.data != Res_value.DATA_NULL_EMPTY)) {
-        curEntry.stringBlock = bag_entry.stringBlock;
+        curEntry.stringBlock = bagEntry.stringBlock;
         curEntry.typeSpecFlags |= bagTypeSpecFlags.get();
-        curEntry.value = new Res_value(bag_entry.map.value);
+        curEntry.value = new Res_value(bagEntry.map.value);
       }
 
       bagIndex++;
