@@ -30,7 +30,9 @@ public final class ExpectedLogMessagesRule implements TestRule {
           "Typeface",
           "RingtoneManager",
           // Fails when attempting to preload classes by name
-          "PhonePolicy");
+          "PhonePolicy",
+          // Ignore MultiDex log messages
+          "MultiDex");
 
   private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();
