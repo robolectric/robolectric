@@ -542,7 +542,7 @@ public class AndroidManifest implements UsesSdk {
   }
 
   private String resolveClassRef(String maybePartialClassName) {
-    return (maybePartialClassName.startsWith("."))
+    return maybePartialClassName.startsWith(".")
         ? packageName + maybePartialClassName
         : maybePartialClassName;
   }
