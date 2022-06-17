@@ -297,7 +297,7 @@ public class ShadowBluetoothDeviceTest {
       Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAlias");
       assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
     } catch (ReflectiveOperationException e) {
-      throw new AssertionError("Failure accessing getAlias via reflection", e);
+      throw new LinkageError("Failure accessing getAlias via reflection", e);
     }
   }
 
@@ -313,7 +313,7 @@ public class ShadowBluetoothDeviceTest {
       Method getAliasName = android.bluetooth.BluetoothDevice.class.getMethod("getAliasName");
       assertThat((String) getAliasName.invoke(device)).isEqualTo(aliasName);
     } catch (ReflectiveOperationException e) {
-      throw new AssertionError("Failure accessing getAliasName via reflection", e);
+      throw new LinkageError("Failure accessing getAliasName via reflection", e);
     }
   }
 
@@ -481,7 +481,7 @@ public class ShadowBluetoothDeviceTest {
       // Expect the name if alias is null.
       assertThat((String) getAliasName.invoke(device)).isEqualTo(deviceName);
     } catch (ReflectiveOperationException e) {
-      throw new AssertionError("Failure accessing getAliasName via reflection", e);
+      throw new LinkageError("Failure accessing getAliasName via reflection", e);
     }
   }
 }
