@@ -24,6 +24,7 @@ public class UnsafeAccess {
     return DANGER.defineClass(iClass, reflectorClassName, bytecode);
   }
 
+  @SuppressWarnings("RethrowReflectiveOperationExceptionAsLinkageError")
   private static class DangerPre11 implements Danger {
     private final Unsafe unsafe;
     private final Method defineClassMethod;
@@ -48,7 +49,7 @@ public class UnsafeAccess {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "RethrowReflectiveOperationExceptionAsLinkageError"})
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
       // use reflection to call since this method does not exist on JDK11
       try {

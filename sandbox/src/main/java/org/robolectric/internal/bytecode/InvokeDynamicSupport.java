@@ -20,6 +20,7 @@ import java.lang.invoke.SwitchPoint;
 import java.lang.invoke.WrongMethodTypeException;
 import org.robolectric.util.ReflectionHelpers;
 
+@SuppressWarnings("RethrowReflectiveOperationExceptionAsLinkageError")
 public class InvokeDynamicSupport {
   @SuppressWarnings("unused")
   private static Interceptors INTERCEPTORS;

@@ -1479,7 +1479,7 @@ public class ShadowMediaPlayerTest {
       idField.setAccessible(true);
       idField.setInt(handle, /* id= */ 1);
     } catch (ReflectiveOperationException e) {
-      throw new AssertionError(e);
+      throw new LinkageError(e.getMessage(), e);
     }
     return info;
   }
