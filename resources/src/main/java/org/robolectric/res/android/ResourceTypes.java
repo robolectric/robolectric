@@ -1603,6 +1603,4 @@ public static class ResTable_ref
       buf.putShort(position, value);
     }
   }
-
-  private static final Runnable NO_OP = () -> {};
 }
