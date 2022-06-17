@@ -262,7 +262,7 @@ public class ResStringPool {
 //      if (((const uint8_t*)mEntryStyles-(const uint8_t*)mHeader) > (int)size) {
       if ((mEntryStyles.myOffset() - mHeader.myOffset()) > (int)size) {
         ALOGW("Bad string block: entry of %d styles extends past data size %d\n",
-            (int)(mEntryStyles.myOffset()),
+            (int)mEntryStyles.myOffset(),
         (int)size);
         return (mError=BAD_TYPE);
       }

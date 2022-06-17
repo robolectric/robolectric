@@ -198,7 +198,7 @@ final String getElementName(Ref<Integer> outLen)
   public int getAttributeCount()
   {
     if (mEventCode == START_TAG) {
-      return dtohs((new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt)).attributeCount);
+      return dtohs(new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt).attributeCount);
     }
     return 0;
   }
@@ -492,7 +492,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   public int indexOfID()
   {
     if (mEventCode == START_TAG) {
-        final int idx = dtohs((new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt)).idIndex);
+        final int idx = dtohs(new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt).idIndex);
       if (idx > 0) return (idx-1);
     }
     return NAME_NOT_FOUND;
@@ -501,7 +501,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   public int indexOfClass()
   {
     if (mEventCode == START_TAG) {
-        final int idx = dtohs((new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt)).classIndex);
+        final int idx = dtohs(new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt).classIndex);
       if (idx > 0) return (idx-1);
     }
     return NAME_NOT_FOUND;
@@ -510,7 +510,7 @@ final String getAttributeStringValue(int idx, Ref<Integer> outLen)
   public int indexOfStyle()
   {
     if (mEventCode == START_TAG) {
-        final int idx = dtohs((new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt)).styleIndex);
+        final int idx = dtohs(new ResXMLTree_attrExt(mTree.mBuffer.buf, mCurExt).styleIndex);
       if (idx > 0) return (idx-1);
     }
     return NAME_NOT_FOUND;
