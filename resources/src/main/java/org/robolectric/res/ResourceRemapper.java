@@ -73,7 +73,10 @@ class ResourceRemapper {
         for (Field field : innerClass.getFields()) {
           try {
             if (!isPrimary && Modifier.isFinal(field.getModifiers())) {
-              throw new IllegalArgumentException(rClass + " contains final fields, these will be inlined by the compiler and cannot be remapped.");
+              throw new IllegalArgumentException(
+                  rClass
+                      + " contains final fields, these will be inlined by the compiler and cannot"
+                      + " be remapped.");
             }
 
             String resourceName = resourceType + "/" + field.getName();
