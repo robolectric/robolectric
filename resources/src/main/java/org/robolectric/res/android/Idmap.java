@@ -173,8 +173,7 @@ class Idmap {
         }
 
         // Make sure there is enough space for the entries declared in the header.
-        if ((data_size - SIZEOF_CPTR) / SIZEOF_INT <
-            dtohs(entry_header.entry_count)) {
+        if ((data_size - SIZEOF_CPTR) / SIZEOF_INT < dtohs(entry_header.entry_count)) {
           logError(String.format("Idmap too small for the number of entries (%d)",
               (int) dtohs(entry_header.entry_count)));
           return emptyBraces();
