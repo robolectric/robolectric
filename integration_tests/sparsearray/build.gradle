@@ -16,8 +16,8 @@ android {
     compileSdk 32
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 32
+        minSdk 16
+        targetSdk 32
     }
 
     compileOptions {

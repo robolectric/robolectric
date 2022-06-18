@@ -16,9 +16,9 @@ android {
     compileSdk 28
 
     defaultConfig {
-        minSdkVersion 16
+        minSdk 16
         // We must keep targetSdk to 28 for compatibility testing purpose
-        targetSdkVersion 28
+        targetSdk 28
     }
 
     compileOptions {
