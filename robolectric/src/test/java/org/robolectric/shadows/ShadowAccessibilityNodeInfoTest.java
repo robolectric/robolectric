@@ -233,6 +233,17 @@ public class ShadowAccessibilityNodeInfoTest {
     assertThat(clone.getHintText().toString()).isEqualTo(hintText);
   }
 
+  @Config(minSdk = P)
+  @Test
+  public void clone_preservesTooltipText() {
+    String tooltipText = "tooltip text";
+    node.setTooltipText(tooltipText);
+
+    AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(clone.getTooltipText().toString()).isEqualTo(tooltipText);
+  }
+
   @Test
   public void testGetBoundsInScreen() {
     AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
