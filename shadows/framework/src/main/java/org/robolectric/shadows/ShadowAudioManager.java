@@ -14,6 +14,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -74,6 +75,7 @@ public class ShadowAudioManager {
       new HashSet<>();
   private final HashSet<AudioManager.AudioPlaybackCallback> audioPlaybackCallbacks =
       new HashSet<>();
+  private final HashSet<AudioDeviceCallback> audioDeviceCallbacks = new HashSet<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
   private boolean bluetoothA2dpOn;
@@ -389,6 +391,21 @@ public class ShadowAudioManager {
   }
 
   /**
+   * Registers callback that will receive changes made to list of active audio devices by using
+   * {@link setDevicesForAttributes}.
+   */
+  @Implementation(minSdk = O)
+  protected void registerAudioDeviceCallback(AudioDeviceCallback cb, Handler handler) {
+    audioDeviceCallbacks.add(cb);
+  }
+
+  /** Unregisters callback listening to changes made to list of active audio devices. */
+  @Implementation(minSdk = O)
+  protected void unregisterAudioDeviceCallback(AudioDeviceCallback cb) {
+    audioDeviceCallbacks.remove(cb);
+  }
+
+  /**
    * Returns the devices associated with the given audio stream.
    *
    * <p>In this shadow-implementation the devices returned are either
@@ -409,7 +426,39 @@ public class ShadowAudioManager {
   /** Sets the devices associated with the given audio stream. */
   public void setDevicesForAttributes(
       @NonNull AudioAttributes attributes, @NonNull ImmutableList<Object> devices) {
+    setDevicesForAttributes(attributes, devices, /* notifyListeners= */ false);
+  }
+
+  /**
+   * Sets the devices associated with the given audio stream, and notifies all listeners registered
+   * with {@link registerAudioDeviceCallback}.
+   */
+  public void setDevicesForAttributes(
+      @NonNull AudioAttributes attributes,
+      @NonNull ImmutableList<Object> devices,
+      boolean notifyListeners) {
+    List<Object> existingDevices;
+    if (devicesForAttributes.containsKey(attributes)) {
+      existingDevices = devicesForAttributes.get(attributes);
+    } else {
+      existingDevices = new ArrayList<>();
+    }
+
     devicesForAttributes.put(attributes, devices);
+    if (notifyListeners) {
+      Object[] addedDevices =
+          devices.stream().filter(device -> !existingDevices.contains(device)).toArray();
+      Object[] removedDevices =
+          existingDevices.stream().filter(device -> !devices.contains(device)).toArray();
+      for (AudioDeviceCallback cb : audioDeviceCallbacks) {
+        if (addedDevices.length > 0) {
+          cb.onAudioDevicesAdded(new AudioDeviceInfo[] {});
+        }
+        if (removedDevices.length > 0) {
+          cb.onAudioDevicesRemoved(new AudioDeviceInfo[] {});
+        }
+      }
+    }
   }
 
   /** Sets the devices to use as default for all audio streams. */

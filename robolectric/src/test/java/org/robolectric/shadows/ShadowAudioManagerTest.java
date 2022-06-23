@@ -17,6 +17,7 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -394,6 +395,60 @@ public class ShadowAudioManagerTest {
 
     assertThat(shadowOf(audioManager).getDevicesForAttributes(movieAttribute))
         .isEqualTo(newDevices);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setDevicesForAttributesAndNotifyListeners_addsDevice_notifiesListeners() {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    Object defaultDevice = new Object();
+    shadowOf(audioManager).setDevicesForAttributes(movieAttribute, ImmutableList.of(defaultDevice));
+    Object newDevice = new Object();
+    ImmutableList<Object> newDevices = ImmutableList.of(defaultDevice, newDevice);
+
+    shadowOf(audioManager)
+        .setDevicesForAttributes(movieAttribute, newDevices, /* notifyListeners= */ true);
+
+    verify(callback).onAudioDevicesAdded(any());
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setDevicesForAttributesAndNotifyListeners_removesDevice_notifiesListeners() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    Object device1 = new Object();
+    Object device2 = new Object();
+    shadowOf(audioManager)
+        .setDevicesForAttributes(movieAttribute, ImmutableList.of(device1, device2));
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+
+    ImmutableList<Object> newDevices = ImmutableList.of(device2);
+    shadowOf(audioManager)
+        .setDevicesForAttributes(movieAttribute, newDevices, /* notifyListeners= */ true);
+
+    verify(callback).onAudioDevicesRemoved(any());
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setDevicesForAttributesDontNotifyListeners_addsDevice_doesntNotifyListeners() {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    Object defaultDevice = new Object();
+    shadowOf(audioManager).setDefaultDevicesForAttributes(ImmutableList.of(defaultDevice));
+    Object newDevice = new Object();
+    ImmutableList<Object> newDevices = ImmutableList.of(defaultDevice, newDevice);
+
+    shadowOf(audioManager).setDevicesForAttributes(movieAttribute, newDevices);
+
+    verifyNoMoreInteractions(callback);
   }
 
   @Test
