@@ -21,7 +21,7 @@ public class SQLiteOpenHelperTest {
   private TestOpenHelper helper;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     helper = new TestOpenHelper(ApplicationProvider.getApplicationContext(), "path", null, 1);
   }
 
@@ -149,6 +149,7 @@ public class SQLiteOpenHelperTest {
         "testVal INTEGER DEFAULT 0" +
         ");");
   }
+
   private void insertData(SQLiteDatabase db, String table, int[] values) {
     for (int i : values) {
       ContentValues cv = new ContentValues();
@@ -246,7 +247,7 @@ public class SQLiteOpenHelperTest {
     }
 
     @Override
-      public void onCreate(SQLiteDatabase database) {
+    public void onCreate(SQLiteDatabase database) {
         onCreateCalled = true;
       }
 
