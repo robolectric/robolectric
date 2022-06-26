@@ -69,7 +69,7 @@ task configureICU {
         } else if (os.contains("mac")) {
           commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
         } else if (os.contains("win")) {
-          commandLine './runConfigureICU', 'MinGW', '--enable-static', '--disable-shared'
+          commandLine 'sh', './runConfigureICU', 'MinGW', '--enable-static', '--disable-shared'
         } else {
           println("ICU configure not supported for OS '${System.getProperty("os.name")}'")
         }
