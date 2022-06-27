@@ -69,6 +69,7 @@ import android.telephony.TelephonyManager.AuthenticationFailureReason;
 import android.telephony.TelephonyManager.BootstrapAuthenticationCallback;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.UiccSlotInfo;
+import android.telephony.VisualVoicemailSmsFilterSettings;
 import android.telephony.gba.UaSecurityProtocolIdentifier;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -987,5 +988,32 @@ public class ShadowTelephonyManagerTest {
     assertThat(params.getPort()).isEqualTo(0);
     assertThat(params.getText()).isEqualTo("message");
     assertThat(params.getSentIntent()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setVisualVoicemailSmsFilterSettings_shouldStoreSettings() {
+    VisualVoicemailSmsFilterSettings settings =
+        new VisualVoicemailSmsFilterSettings.Builder()
+            .setClientPrefix("clientPrefix")
+            .setDestinationPort(100)
+            .build();
+
+    telephonyManager.setVisualVoicemailSmsFilterSettings(settings);
+
+    assertThat(shadowOf(telephonyManager).getVisualVoicemailSmsFilterSettings())
+        .isEqualTo(settings);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setVisualVoicemailSmsFilterSettings_setNullSettings_clearsSettings() {
+    VisualVoicemailSmsFilterSettings settings =
+        new VisualVoicemailSmsFilterSettings.Builder().build();
+
+    telephonyManager.setVisualVoicemailSmsFilterSettings(settings);
+    telephonyManager.setVisualVoicemailSmsFilterSettings(null);
+
+    assertThat(shadowOf(telephonyManager).getVisualVoicemailSmsFilterSettings()).isNull();
   }
 }
