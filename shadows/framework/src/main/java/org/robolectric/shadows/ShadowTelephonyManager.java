@@ -47,6 +47,7 @@ import android.telephony.TelephonyCallback.SignalStrengthsListener;
 import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.CellInfoCallback;
+import android.telephony.VisualVoicemailSmsFilterSettings;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -140,6 +141,7 @@ public class ShadowTelephonyManager {
   private boolean isDataConnectionAllowed;
   private static int callComposerStatus = 0;
   private VisualVoicemailSmsParams lastVisualVoicemailSmsParams;
+  private VisualVoicemailSmsFilterSettings visualVoicemailSmsFilterSettings;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -1232,6 +1234,22 @@ public class ShadowTelephonyManager {
 
   public VisualVoicemailSmsParams getLastSentVisualVoicemailSmsParams() {
     return lastVisualVoicemailSmsParams;
+  }
+
+  /**
+   * Implementation for {@link
+   * TelephonyManager#setVisualVoicemailSmsFilterSettings(VisualVoicemailSmsFilterSettings)}.
+   *
+   * @param settings The settings for the filter, or null to disable the filter.
+   */
+  @Implementation(minSdk = O)
+  public void setVisualVoicemailSmsFilterSettings(VisualVoicemailSmsFilterSettings settings) {
+    visualVoicemailSmsFilterSettings = settings;
+  }
+
+  /** Returns the last set {@link VisualVoicemailSmsFilterSettings}. */
+  public VisualVoicemailSmsFilterSettings getVisualVoicemailSmsFilterSettings() {
+    return visualVoicemailSmsFilterSettings;
   }
 
   /** Testable parameters from calls to {@link #sendVisualVoicemailSms}. */
