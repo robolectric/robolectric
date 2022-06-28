@@ -21,9 +21,11 @@ import android.view.accessibility.AccessibilityManager.TouchExplorationStateChan
 import android.view.accessibility.IAccessibilityManager;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.annotation.Nullable;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -44,9 +46,9 @@ public class ShadowAccessibilityManager {
   @RealObject AccessibilityManager realAccessibilityManager;
   private final List<AccessibilityEvent> sentAccessibilityEvents = new ArrayList<>();
   private boolean enabled;
-  private List<AccessibilityServiceInfo> installedAccessibilityServiceList;
-  private List<AccessibilityServiceInfo> enabledAccessibilityServiceList;
-  private List<ServiceInfo> accessibilityServiceList;
+  private List<AccessibilityServiceInfo> installedAccessibilityServiceList = new ArrayList<>();
+  private List<AccessibilityServiceInfo> enabledAccessibilityServiceList = new ArrayList<>();
+  private List<ServiceInfo> accessibilityServiceList = new ArrayList<>();
   private final HashMap<AccessibilityStateChangeListener, Handler>
       onAccessibilityStateChangeListeners = new HashMap<>();
   private boolean touchExplorationEnabled;
@@ -123,32 +125,40 @@ public class ShadowAccessibilityManager {
 
   @Implementation
   protected List<ServiceInfo> getAccessibilityServiceList() {
-    return accessibilityServiceList;
+    return Collections.unmodifiableList(accessibilityServiceList);
   }
 
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
-    this.accessibilityServiceList = accessibilityServiceList;
+    this.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
   }
 
+  @Nullable
   @Implementation
   protected List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
       int feedbackTypeFlags) {
-    return enabledAccessibilityServiceList;
+    // TODO(hoisie): prohibit null values for enabledAccessibilityServiceList
+    if (enabledAccessibilityServiceList == null) {
+      return null;
+    }
+    return Collections.unmodifiableList(enabledAccessibilityServiceList);
   }
 
   public void setEnabledAccessibilityServiceList(
       List<AccessibilityServiceInfo> enabledAccessibilityServiceList) {
-    this.enabledAccessibilityServiceList = enabledAccessibilityServiceList;
+    this.enabledAccessibilityServiceList =
+        enabledAccessibilityServiceList == null
+            ? null
+            : new ArrayList<>(enabledAccessibilityServiceList);
   }
 
   @Implementation
   protected List<AccessibilityServiceInfo> getInstalledAccessibilityServiceList() {
-    return installedAccessibilityServiceList;
+    return Collections.unmodifiableList(installedAccessibilityServiceList);
   }
 
   public void setInstalledAccessibilityServiceList(
       List<AccessibilityServiceInfo> installedAccessibilityServiceList) {
-    this.installedAccessibilityServiceList = installedAccessibilityServiceList;
+    this.installedAccessibilityServiceList = new ArrayList<>(installedAccessibilityServiceList);
   }
 
   @Implementation

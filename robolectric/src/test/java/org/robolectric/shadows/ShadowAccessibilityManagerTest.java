@@ -213,4 +213,14 @@ public class ShadowAccessibilityManagerTest {
       return enabled;
     }
   }
+
+  @Test
+  public void getAccessibilityServiceList_doesNotNPE() {
+    assertThat(accessibilityManager.getAccessibilityServiceList()).isEmpty();
+    assertThat(accessibilityManager.getInstalledAccessibilityServiceList()).isEmpty();
+    assertThat(
+            accessibilityManager.getEnabledAccessibilityServiceList(
+                AccessibilityServiceInfo.FEEDBACK_SPOKEN))
+        .isEmpty();
+  }
 }
