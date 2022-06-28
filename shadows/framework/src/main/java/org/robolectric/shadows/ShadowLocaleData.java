@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -19,7 +20,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric only supports en_US regardless of the default locale set in the JVM. */
-@Implements(value = LocaleData.class, isInAndroidSdk = false)
+@Implements(value = LocaleData.class, isInAndroidSdk = false, maxSdk = S_V2)
 public class ShadowLocaleData {
   public static final String REAL_CLASS_NAME = "libcore.icu.LocaleData";
 
