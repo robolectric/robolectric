@@ -190,9 +190,7 @@ public class ShadowKeyCharacterMap {
     if (character == null) {
       return 0;
     } else if (metaShiftOn) {
-      return KEY_CODE_TO_CHAR_SHIFT_ON.containsKey(keyCode)
-          ? KEY_CODE_TO_CHAR_SHIFT_ON.get(keyCode)
-          : character;
+      return KEY_CODE_TO_CHAR_SHIFT_ON.getOrDefault(keyCode, character);
     } else {
       return Character.toLowerCase(character);
     }
@@ -220,6 +218,26 @@ public class ShadowKeyCharacterMap {
         getMetaState(a),
         KeyCharacterMap.VIRTUAL_KEYBOARD,
         0);
+  }
+
+  @Implementation
+  protected char getDisplayLabel(int keyCode) {
+    return KEY_CODE_TO_CHAR.getOrDefault(keyCode, (char) 0);
+  }
+
+  @Implementation
+  protected boolean isPrintingKey(int keyCode) {
+    int type = Character.getType(getDisplayLabel(keyCode));
+    switch (type) {
+      case Character.SPACE_SEPARATOR:
+      case Character.LINE_SEPARATOR:
+      case Character.PARAGRAPH_SEPARATOR:
+      case Character.CONTROL:
+      case Character.FORMAT:
+        return false;
+      default:
+        return true;
+    }
   }
 
   @Implementation(minSdk = KITKAT_WATCH)
