@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [ master, google ]
 
+permissions:
+  contents: read
+
 jobs:
   build_native_runtime:
     runs-on: ${{ matrix.os }}
