@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.os.Build;
 import android.view.SurfaceHolder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -193,6 +194,10 @@ public class ShadowCamera {
     Camera.CameraInfo foundCam = cameras.get(cameraId);
     cameraInfo.facing = foundCam.facing;
     cameraInfo.orientation = foundCam.orientation;
+    // canDisableShutterSound was added in API 17.
+    if (Build.VERSION.SDK_INT >= JELLY_BEAN_MR1) {
+      cameraInfo.canDisableShutterSound = foundCam.canDisableShutterSound;
+    }
   }
 
   @Implementation

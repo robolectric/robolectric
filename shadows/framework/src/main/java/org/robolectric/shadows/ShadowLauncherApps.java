@@ -11,11 +11,13 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ComponentName;
 import android.content.IntentSender;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
 import android.content.pm.LauncherApps.ShortcutQuery;
 import android.content.pm.PackageInstaller.SessionCallback;
 import android.content.pm.PackageInstaller.SessionInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -31,7 +33,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -48,6 +52,7 @@ public class ShadowLauncherApps {
   private final Multimap<UserHandle, LauncherActivityInfo> shortcutActivityList =
       HashMultimap.create();
   private final Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
+  private final Map<UserHandle, Map<String, ApplicationInfo>> applicationInfoList = new HashMap<>();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
 
@@ -128,6 +133,22 @@ public class ShadowLauncherApps {
     }
   }
 
+  /**
+   * Adds a {@link ApplicationInfo} to be retrieved by {@link #getApplicationInfo(String, int,
+   * UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param packageName the package name to be added.
+   * @param applicationInfo the application info to be added.
+   */
+  public void addApplicationInfo(
+      UserHandle userHandle, String packageName, ApplicationInfo applicationInfo) {
+    if (!applicationInfoList.containsKey(userHandle)) {
+      applicationInfoList.put(userHandle, new HashMap<>());
+    }
+    applicationInfoList.get(userHandle).put(packageName, applicationInfo);
+  }
+
   @Implementation(minSdk = Q)
   protected void startPackageInstallerSessionDetailsActivity(
       @NonNull SessionInfo sessionInfo, @Nullable Rect sourceBounds, @Nullable Bundle opts) {
@@ -167,6 +188,20 @@ public class ShadowLauncherApps {
     return activityList.get(user).stream()
         .filter(matchesPackage(packageName))
         .collect(Collectors.toList());
+  }
+
+  @Implementation(minSdk = O)
+  protected ApplicationInfo getApplicationInfo(
+      @NonNull String packageName, int flags, @NonNull UserHandle user)
+      throws NameNotFoundException {
+    if (applicationInfoList.containsKey(user)) {
+      Map<String, ApplicationInfo> map = applicationInfoList.get(user);
+      if (map.containsKey(packageName)) {
+        return map.get(packageName);
+      }
+    }
+    throw new NameNotFoundException(
+        "Package " + packageName + " not found for user " + user.getIdentifier());
   }
 
   @Implementation(minSdk = P)

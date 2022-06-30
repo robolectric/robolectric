@@ -245,6 +245,6 @@ public abstract class ShadowNotificationBuilderTestBase {
         .bigLargeIcon(bigLargeIcon))
         .build();
 
-    assertThat(shadowOf(notification).getBigPicture()).isEqualTo(bigPicture);
+    assertThat(shadowOf(notification).getBigPicture().sameAs(bigPicture)).isTrue();
   }
 }

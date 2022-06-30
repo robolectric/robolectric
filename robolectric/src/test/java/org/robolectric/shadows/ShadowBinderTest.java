@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -71,7 +73,7 @@ public class ShadowBinderTest {
     testThrowingBinder.transact(2, data, reply, 3);
     try {
       reply.readException();
-      fail();  // Expect thrown
+      fail(); // Expect thrown
     } catch (SecurityException e) {
       assertThat(e.getMessage()).isEqualTo("Halt! Who goes there?");
     }
@@ -116,6 +118,24 @@ public class ShadowBinderTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void testGetCallingUidOrThrowWithValueSet() {
+    ShadowBinder.setCallingUid(123);
+    assertThat(Binder.getCallingUidOrThrow()).isEqualTo(123);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testGetCallingUidOrThrowWithValueNotSet() {
+    ShadowBinder.reset();
+    IllegalStateException ex =
+        assertThrows(IllegalStateException.class, () -> Binder.getCallingUidOrThrow());
+
+    // Typo in "transaction" is intentional to match platform
+    assertThat(ex).hasMessageThat().isEqualTo("Thread is not in a binder transcation");
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void testGetCallingUserHandleShouldUseThatOfProcessByDefault() {
     assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
@@ -128,6 +148,15 @@ public class ShadowBinderTest {
     ShadowBinder.reset();
     assertThat(Binder.getCallingPid()).isEqualTo(android.os.Process.myPid());
     assertThat(Binder.getCallingUid()).isEqualTo(android.os.Process.myUid());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void testResetUpdatesGetCallingUidOrThrow() {
+    ShadowBinder.setCallingUid(123);
+    ShadowBinder.reset();
+
+    assertThrows(IllegalStateException.class, () -> Binder.getCallingUidOrThrow());
   }
 
   @Test

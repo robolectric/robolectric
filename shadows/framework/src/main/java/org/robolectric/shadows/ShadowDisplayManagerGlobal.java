@@ -116,13 +116,18 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // @Override // todo: use @Implements/@Implementation for signature checking
-    public int[] getDisplayIds() throws RemoteException {
+    public int[] getDisplayIds() {
       int[] ids = new int[displayInfos.size()];
       int i = 0;
       for (Integer displayId : displayInfos.keySet()) {
         ids[i++] = displayId;
       }
       return ids;
+    }
+
+    // Added in Android T
+    public int[] getDisplayIds(boolean ignoredIncludeDisabled) {
+      return getDisplayIds();
     }
 
     // @Override

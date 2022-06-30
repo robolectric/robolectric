@@ -48,6 +48,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -1041,6 +1042,10 @@ public class ShadowUserManager {
     Application application = (Application) context.getApplicationContext();
     ShadowContextImpl shadowContext = Shadow.extract(application.getBaseContext());
     shadowContext.setUserId(userId);
+
+    if (RuntimeEnvironment.getApiLevel() >= R) {
+      reflector(UserManagerReflector.class, realObject).setUserId(userId);
+    }
   }
 
   /**
@@ -1137,5 +1142,8 @@ public class ShadowUserManager {
 
     @Direct
     boolean isSystemUser();
+
+    @Accessor("mUserId")
+    void setUserId(int userId);
   }
 }

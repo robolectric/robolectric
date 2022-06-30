@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -16,10 +17,12 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherActivityInfoInternal;
 import android.content.pm.LauncherApps;
 import android.content.pm.LauncherApps.ShortcutQuery;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.os.Handler;
@@ -258,6 +261,47 @@ public class ShadowLauncherAppsTest {
 
     assertThat(launcherApps.getActivityList(null, USER_HANDLE))
         .containsExactly(launcherActivityInfo, launcherActivityInfo2);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void testGetApplicationInfo_packageNotFound() throws Exception {
+    Throwable throwable =
+        assertThrows(
+            NameNotFoundException.class,
+            () -> launcherApps.getApplicationInfo(TEST_PACKAGE_NAME, 0, USER_HANDLE));
+
+    assertThat(throwable)
+        .hasMessageThat()
+        .isEqualTo(
+            "Package " + TEST_PACKAGE_NAME + " not found for user " + USER_HANDLE.getIdentifier());
+  }
+
+  @Test
+  public void testGetApplicationInfo_incorrectPackage() throws Exception {
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.name = "Test app";
+    shadowOf(launcherApps).addApplicationInfo(USER_HANDLE, TEST_PACKAGE_NAME_2, applicationInfo);
+
+    Throwable throwable =
+        assertThrows(
+            NameNotFoundException.class,
+            () -> launcherApps.getApplicationInfo(TEST_PACKAGE_NAME, 0, USER_HANDLE));
+
+    assertThat(throwable)
+        .hasMessageThat()
+        .isEqualTo(
+            "Package " + TEST_PACKAGE_NAME + " not found for user " + USER_HANDLE.getIdentifier());
+  }
+
+  @Test
+  public void testGetApplicationInfo_findsApplicationInfo() throws Exception {
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.name = "Test app";
+    shadowOf(launcherApps).addApplicationInfo(USER_HANDLE, TEST_PACKAGE_NAME, applicationInfo);
+
+    assertThat(launcherApps.getApplicationInfo(TEST_PACKAGE_NAME, 0, USER_HANDLE))
+        .isEqualTo(applicationInfo);
   }
 
   @Test

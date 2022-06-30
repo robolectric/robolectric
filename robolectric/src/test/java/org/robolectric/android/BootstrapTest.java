@@ -34,6 +34,7 @@ import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.view.Surface.ROTATION_0;
@@ -50,6 +51,7 @@ import android.os.LocaleList;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
@@ -340,6 +342,15 @@ public class BootstrapTest {
 
     assertThat(configuration.locale.getScript()).isEqualTo("Latn");
     assertThat(outQualifiers).contains("b+sr+Latn");
+  }
+
+  @Test
+  @Config(sdk = JELLY_BEAN_MR1)
+  public void applyQualifiers_rtlPseudoLocale_shouldSetLayoutDirection() {
+    Bootstrap.applyQualifiers(
+        "ar-rXB", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
+
+    assertThat(configuration.getLayoutDirection()).isEqualTo(View.LAYOUT_DIRECTION_RTL);
   }
 
   @Test

@@ -564,6 +564,16 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void switchToSecondaryUser_system() {
+    assertThat(userManager.isSystemUser()).isTrue();
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    shadowOf(userManager).switchUser(10);
+
+    assertThat(userManager.isSystemUser()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = N)
   public void canSwitchUsers() {
     shadowOf(userManager).setCanSwitchUser(false);

@@ -39,13 +39,6 @@ public final class KeyCharacterMapTest {
         IllegalArgumentException.class, () -> keyCharacterMap.getMatch(KeyEvent.KEYCODE_0, null));
   }
 
-  private int getCharacterKeyCode(char oneChar) {
-    // Lowercase the character to avoid getting modifiers in the KeyEvent array.
-    char[] chars = new char[] {Character.toLowerCase(oneChar)};
-    KeyEvent[] events = keyCharacterMap.getEvents(chars);
-    return events[0].getKeyCode();
-  }
-
   @Test
   public void testGetMatchMetaStateNull() {
     assertThrows(
@@ -104,5 +97,16 @@ public final class KeyCharacterMapTest {
   @Test
   public void testGetNumber() {
     assertThat(keyCharacterMap.getNumber(KeyEvent.KEYCODE_1)).isEqualTo('1');
+  }
+
+  @Test
+  public void testGetDisplayLabel() {
+    assertThat(keyCharacterMap.getDisplayLabel(KeyEvent.KEYCODE_W)).isEqualTo('W');
+  }
+
+  @Test
+  public void testIsPrintingKey() {
+    assertThat(keyCharacterMap.isPrintingKey(KeyEvent.KEYCODE_W)).isTrue();
+    assertThat(keyCharacterMap.isPrintingKey(KeyEvent.KEYCODE_ALT_LEFT)).isFalse();
   }
 }

@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
-import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -29,7 +28,6 @@ import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowViewRootImpl;
-import org.robolectric.shadows.ShadowWindowManagerGlobal;
 import org.robolectric.shadows._Activity_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -234,12 +232,8 @@ public class ActivityController<T extends Activity>
       callDispatchResized(root);
     }
 
-    if (RuntimeEnvironment.getApiLevel() <= S_V2) {
-      reflector(ViewRootImplActivityControllerReflector.class, root)
-          .windowFocusChanged(hasFocus, ShadowWindowManagerGlobal.getInTouchMode());
-    } else {
-      reflector(ViewRootImplActivityControllerReflector.class, root).windowFocusChanged(hasFocus);
-    }
+    ((ShadowViewRootImpl) extract(root)).callWindowFocusChanged(hasFocus);
+
     shadowMainLooper.idleIfPaused();
     return this;
   }
@@ -614,13 +608,5 @@ public class ActivityController<T extends Activity>
     Object getActivity();
   }
 
-  @ForType(ViewRootImpl.class)
-  interface ViewRootImplActivityControllerReflector {
-    // SDK <= S_V2
-    void windowFocusChanged(boolean hasFocus, boolean inTouchMode);
-
-    // SDK >= T
-    void windowFocusChanged(boolean hasFocus);
-  }
 }
 

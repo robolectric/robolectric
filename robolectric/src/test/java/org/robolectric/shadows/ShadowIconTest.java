@@ -56,7 +56,7 @@ public class ShadowIconTest {
     Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
     Icon icon = Icon.createWithBitmap(bitmap);
     assertThat(shadowOf(icon).getType()).isEqualTo(TYPE_BITMAP);
-    assertThat(shadowOf(icon).getBitmap()).isEqualTo(bitmap);
+    assertThat(shadowOf(icon).getBitmap().sameAs(bitmap)).isTrue();
   }
 
   @Test

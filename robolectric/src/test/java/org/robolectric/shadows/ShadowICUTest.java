@@ -34,6 +34,12 @@ public class ShadowICUTest {
   }
 
   @Test
+  @Config(maxSdk = M)
+  public void addLikelySubtags_preN_ar_shouldReturnExpandedLocale() {
+    assertThat(ICU.addLikelySubtags("ar-XB")).isEqualTo("ar-Arab-XB");
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void getBestDateTimePattern_returnsReasonableValue() {
     assertThat(ICU.getBestDateTimePattern("hm", null)).isEqualTo("hm");

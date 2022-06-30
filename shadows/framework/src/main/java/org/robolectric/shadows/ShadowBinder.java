@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.os.Binder;
 import android.os.Parcel;
@@ -59,6 +60,24 @@ public class ShadowBinder {
       return callingUid;
     }
     return android.os.Process.myUid();
+  }
+
+  /**
+   * See {@link Binder#getCallingUidOrThrow()}. Whether or not this returns a value is controlled by
+   * {@link #setCallingUid(int)} (to set the value to be returned) or by {@link #reset()} (to
+   * trigger the exception).
+   *
+   * @return the value set by {@link #setCallingUid(int)}
+   * @throws IllegalStateException if no UID has been set
+   */
+  @Implementation(minSdk = Q)
+  protected static final int getCallingUidOrThrow() {
+    if (callingUid != null) {
+      return callingUid;
+    }
+
+    // Typo in "transaction" intentional to match platform
+    throw new IllegalStateException("Thread is not in a binder transcation");
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)

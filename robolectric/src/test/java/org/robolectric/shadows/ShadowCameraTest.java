@@ -279,6 +279,26 @@ public class ShadowCameraTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void testCameraInfoShutterSound() {
+    Camera.CameraInfo cameraQueryCannotDisable = new Camera.CameraInfo();
+    Camera.CameraInfo cameraInfoCannotDisable = new Camera.CameraInfo();
+    cameraInfoCannotDisable.canDisableShutterSound = false;
+    ShadowCamera.addCameraInfo(0, cameraInfoCannotDisable);
+
+    Camera.CameraInfo cameraQueryCanDisable = new Camera.CameraInfo();
+    Camera.CameraInfo cameraInfoCanDisable = new Camera.CameraInfo();
+    cameraInfoCanDisable.canDisableShutterSound = true;
+    ShadowCamera.addCameraInfo(1, cameraInfoCanDisable);
+
+    assertThat(Camera.getNumberOfCameras()).isEqualTo(2);
+    Camera.getCameraInfo(0, cameraQueryCannotDisable);
+    assertThat(cameraQueryCannotDisable.canDisableShutterSound).isFalse();
+    Camera.getCameraInfo(1, cameraQueryCanDisable);
+    assertThat(cameraQueryCanDisable.canDisableShutterSound).isTrue();
+  }
+
+  @Test
   public void testTakePicture() {
     camera.takePicture(null, null, null);
 
