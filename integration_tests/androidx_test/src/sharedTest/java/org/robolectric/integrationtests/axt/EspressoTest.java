@@ -22,6 +22,7 @@ import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,15 +80,17 @@ public final class EspressoTest {
   /** Perform the equivalent of click except using espresso APIs */
   @Test
   public void buttonClick_espresso() {
-    activityRule
-        .getScenario()
-        .onActivity(
-            activity -> {
-              onView(withId(R.id.button)).check(matches(isCompletelyDisplayed()));
-              onView(withId(R.id.button)).perform(click());
-
-              assertThat(activity.buttonClicked).isTrue();
-            });
+    // All methods within ActivityScenario are blocking calls, so the API requires us to run
+    // them in the instrumentation thread. But ActivityScenario ActivityAction runs on main
+    // thread, we should run Espresso checking in instrumentation thread.
+    AtomicReference<EspressoActivity> activityRef = new AtomicReference<>();
+    activityRule.getScenario().onActivity(activityRef::set);
+    onView(withId(R.id.button)).check(matches(isCompletelyDisplayed()));
+    onView(withId(R.id.button)).perform(click());
+    // If we have clicked the button of EspressoActivity, we can get correct Activity
+    // instance from ActivityScenario safely.
+    assertThat(activityRef.get()).isNotNull();
+    assertThat(activityRef.get().buttonClicked).isTrue();
   }
 
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
