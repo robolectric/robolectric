@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.objectweb.asm.ClassWriter;
@@ -32,17 +34,66 @@ import sun.misc.Unsafe;
 @Deprecated
 public class ProxyMaker {
   private static final String TARGET_FIELD = "__proxy__";
+  private static final Class UNSAFE_CLASS = Unsafe.class;
+  private static final Class LOOKUP_CLASS = MethodHandles.Lookup.class;
   private static final Unsafe UNSAFE;
+  private static final java.lang.reflect.Method DEFINE_ANONYMOUS_CLASS;
+
+  private static final MethodHandles.Lookup LOOKUP;
+  private static final java.lang.reflect.Method HIDDEN_DEFINE_METHOD;
+  private static final Object HIDDEN_CLASS_OPTIONS;
+
   private static final boolean DEBUG = false;
 
   static {
     try {
-      Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
+      Field unsafeField = UNSAFE_CLASS.getDeclaredField("theUnsafe");
       unsafeField.setAccessible(true);
       UNSAFE = (Unsafe) unsafeField.get(null);
-    } catch (NoSuchFieldException | IllegalAccessException e) {
+
+      // Unsafe.defineAnonymousClass() has been deprecated in Java 15 and removed in Java 17. Its
+      // usage should be replace by MethodHandles.Lookup.defineHiddenClass() which was introduced in
+      // Java 15. For now, try and support both older and newer Java versions.
+      DEFINE_ANONYMOUS_CLASS = getDefineAnonymousClass();
+      if (DEFINE_ANONYMOUS_CLASS == null) {
+        LOOKUP = getTrustedLookup();
+
+        Class classOptionClass = Class.forName(LOOKUP_CLASS.getName() + "$ClassOption");
+        HIDDEN_CLASS_OPTIONS = Array.newInstance(classOptionClass, 1);
+        Array.set(HIDDEN_CLASS_OPTIONS, 0, Enum.valueOf(classOptionClass, "NESTMATE"));
+        HIDDEN_DEFINE_METHOD =
+            LOOKUP_CLASS.getMethod(
+                "defineHiddenClass", byte[].class, boolean.class, HIDDEN_CLASS_OPTIONS.getClass());
+      } else {
+        LOOKUP = null;
+        HIDDEN_DEFINE_METHOD = null;
+        HIDDEN_CLASS_OPTIONS = null;
+      }
+    } catch (ReflectiveOperationException e) {
       throw new LinkageError(e.getMessage(), e);
     }
+  }
+
+  private static java.lang.reflect.Method getDefineAnonymousClass() {
+    try {
+      return UNSAFE_CLASS.getMethod(
+          "defineAnonymousClass", Class.class, byte[].class, Object[].class);
+    } catch (NoSuchMethodException e) {
+      return null;
+    }
+  }
+
+  private static MethodHandles.Lookup getTrustedLookup() throws ReflectiveOperationException {
+    Field trustedLookupField = LOOKUP_CLASS.getDeclaredField("IMPL_LOOKUP");
+    java.lang.reflect.Method baseMethod = UNSAFE_CLASS.getMethod("staticFieldBase", Field.class);
+    Object lookupBase = baseMethod.invoke(UNSAFE, trustedLookupField);
+    java.lang.reflect.Method offsetMethod =
+        UNSAFE_CLASS.getMethod("staticFieldOffset", Field.class);
+    Object lookupOffset = offsetMethod.invoke(UNSAFE, trustedLookupField);
+
+    java.lang.reflect.Method getObjectMethod =
+        UNSAFE_CLASS.getMethod("getObject", Object.class, long.class);
+    return (MethodHandles.Lookup) getObjectMethod.invoke(UNSAFE, lookupBase, lookupOffset);
   }
 
   private final MethodMapper methodMapper;
@@ -118,9 +169,8 @@ public class ProxyMaker {
       }
     }
 
-    final Class<?> proxyClass = UNSAFE.defineAnonymousClass(targetClass, bytecode, null);
-
     try {
+      final Class<?> proxyClass = defineHiddenClass(targetClass, writer.toByteArray());
       final Field field = proxyClass.getDeclaredField(TARGET_FIELD);
       return new Factory() {
         @Override public <E> E createProxy(Class<E> targetClass, E target) {
@@ -135,8 +185,21 @@ public class ProxyMaker {
           }
         }
       };
-    } catch (NoSuchFieldException e) {
+    } catch (ReflectiveOperationException e) {
       throw new AssertionError(e);
+    }
+  }
+
+  private static Class<?> defineHiddenClass(Class<?> targetClass, byte[] bytes)
+      throws ReflectiveOperationException {
+    if (DEFINE_ANONYMOUS_CLASS != null) {
+      return (Class<?>) DEFINE_ANONYMOUS_CLASS.invoke(UNSAFE, targetClass, bytes, (Object[]) null);
+    } else {
+      MethodHandles.Lookup lookup = (MethodHandles.Lookup) LOOKUP.in(targetClass);
+      MethodHandles.Lookup definedLookup =
+          (MethodHandles.Lookup)
+              HIDDEN_DEFINE_METHOD.invoke(lookup, bytes, false, HIDDEN_CLASS_OPTIONS);
+      return definedLookup.lookupClass();
     }
   }
 
