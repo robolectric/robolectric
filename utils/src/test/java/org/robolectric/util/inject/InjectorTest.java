@@ -16,6 +16,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.robolectric.util.inject.Injector.Builder;
 
 @RunWith(JUnit4.class)
 public class InjectorTest {
@@ -216,7 +217,7 @@ public class InjectorTest {
 
   @Test public void shouldPreferPluginsOverConcreteClass() throws Exception {
     PluginFinder pluginFinder = new PluginFinder(new MyServiceFinderAdapter(pluginClasses));
-    Injector injector = new Injector.Builder(null, pluginFinder).build();
+    Injector injector = new Builder(null, pluginFinder).build();
     pluginClasses.add(SubclassOfConcreteThing.class);
     ConcreteThing instance = injector.getInstance(ConcreteThing.class);
     assertThat(instance.getClass()).isEqualTo(SubclassOfConcreteThing.class);

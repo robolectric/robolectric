@@ -16,43 +16,43 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public final class ExpectedLogMessagesRuleTest {
 
-  private final ExpectedLogMessagesRule rule = new ExpectedLogMessagesRule();
-  private final ExpectedException expectedException = ExpectedException.none();
+  private ExpectedLogMessagesRule rule = new ExpectedLogMessagesRule();
+  private ExpectedException expectedException = ExpectedException.none();
 
   @Rule public RuleChain chain = RuleChain.outerRule(expectedException).around(rule);
 
   @Test
-  public void testExpectErrorLogDoesNotFail() {
+  public void testExpectErrorLogDoesNotFail() throws Exception {
     Log.e("Mytag", "What's up");
     rule.expectLogMessage(Log.ERROR, "Mytag", "What's up");
   }
 
   @Test
-  public void testExpectWarnLogDoesNotFail() {
+  public void testExpectWarnLogDoesNotFail() throws Exception {
     Log.w("Mytag", "What's up");
     rule.expectLogMessage(Log.WARN, "Mytag", "What's up");
   }
 
   @Test
-  public void testAndroidExpectedLogMessagesFailsWithMessage() {
+  public void testAndroidExpectedLogMessagesFailsWithMessage() throws Exception {
     expectedException.expect(AssertionError.class);
     Log.e("Mytag", "What's up");
   }
 
   @Test
-  public void testAndroidExpectedLogMessagesDoesNotFailWithExpected() {
+  public void testAndroidExpectedLogMessagesDoesNotFailWithExpected() throws Exception {
     rule.expectErrorsForTag("Mytag");
     Log.e("Mytag", "What's up");
   }
 
   @Test
-  public void testNoExpectedMessageFailsTest() {
+  public void testNoExpectedMessageFailsTest() throws Exception {
     expectedException.expect(AssertionError.class);
     rule.expectLogMessage(Log.ERROR, "Mytag", "What's up");
   }
 
   @Test
-  public void testNoExpectedTagFailsTest() {
+  public void testNoExpectedTagFailsTest() throws Exception {
     expectedException.expect(AssertionError.class);
     rule.expectErrorsForTag("Mytag");
   }
@@ -124,7 +124,7 @@ public final class ExpectedLogMessagesRuleTest {
                             + "\\s+tag='Mytag'"
                             + "\\s+msg='message1'"
                             + "\\s+throwable=null"
-                            + "\\s+}]"
+                            + "\\s+\\}\\]"
                             + "[\\s\\S]*")
                 && error
                     .getMessage()
@@ -135,12 +135,12 @@ public final class ExpectedLogMessagesRuleTest {
                             + "\\s+tag='Mytag'"
                             + "\\s+msg='message2'"
                             + "\\s+throwable=null"
-                            + "\\s+}][\\s\\S]*")
+                            + "\\s+\\}\\][\\s\\S]*")
                 && error
                     .getMessage()
                     .matches(
                         "[\\s\\S]*Expected, but not observed: \\[ExpectedLogItem\\{timeString='.+',"
-                            + " type=6, tag='Mytag', msg='message3'}]"
+                            + " type=6, tag='Mytag', msg='message3'\\}\\]"
                             + "[\\s\\S]*");
           }
 
@@ -169,7 +169,7 @@ public final class ExpectedLogMessagesRuleTest {
             + "\\s+tag='Mytag'"
             + "\\s+msg='message1'"
             + "\\s+throwable=null"
-            + "\\s+}]"
+            + "\\s+\\}\\]"
             + "[\\s\\S]*";
     String observedAndNotExpectedPattern =
         "[\\s\\S]*Observed, but not expected:\\s+\\[LogItem\\{"
@@ -179,12 +179,12 @@ public final class ExpectedLogMessagesRuleTest {
             + "\\s+msg='message2'"
             + "\\s+throwable=java.lang.IllegalArgumentException"
             + "(\\s+at .*\\)\\n)+"
-            + "\\s+}][\\s\\S]*";
+            + "\\s+\\}\\][\\s\\S]*";
     String expectedNotObservedPattern =
         "[\\s\\S]*Expected, but not observed:"
             + " \\[ExpectedLogItem\\{timeString='.+',"
             + " type=6, tag='Mytag', msg='message2', throwable="
-            + ".*UnsupportedOperationException.*}][\\s\\S]*";
+            + ".*UnsupportedOperationException.*\\}\\][\\s\\S]*";
     expectedException.expect(
         new TypeSafeMatcher<AssertionError>() {
           @Override

@@ -415,11 +415,11 @@ public class CppAssetManager {
 //  }
 
   void setLocaleLocked(final String locale) {
-    //      if (mLocale != null) {
-    //          delete[] mLocale;
-    //      }
+//      if (mLocale != null) {
+//          delete[] mLocale;
+//      }
 
-    mLocale = /*strdupNew*/ locale;
+    mLocale = /*strdupNew*/(locale);
     updateResourceParamsLocked();
   }
 

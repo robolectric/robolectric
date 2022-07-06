@@ -2,16 +2,7 @@ import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
-apply plugin: 'kotlin'
 apply plugin: DeployedRoboJavaModulePlugin
-apply plugin: "com.diffplug.spotless"
-
-spotless {
-    kotlin {
-        target '**/*.kt'
-        ktfmt('0.34').googleStyle()
-    }
-}
 
 dependencies {
     api project(":annotations")
@@ -23,8 +14,8 @@ dependencies {
     implementation "com.google.guava:guava:$guavaJREVersion"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
-    testCompileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
-    testAnnotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
+    testCompileOnly "com.google.auto.service:auto-service-annotations:1.0-rc6"
+    testAnnotationProcessor "com.google.auto.service:auto-service:1.0-rc6"
     testAnnotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
     implementation "com.google.errorprone:error_prone_annotations:$errorproneVersion"
 

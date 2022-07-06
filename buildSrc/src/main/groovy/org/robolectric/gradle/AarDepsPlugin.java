@@ -1,14 +1,7 @@
 package org.robolectric.gradle;
 
-import static org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE;
-
 import com.android.build.gradle.internal.dependency.ExtractAarTransform;
 import com.google.common.base.Joiner;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.inject.Inject;
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
@@ -18,6 +11,14 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.compile.JavaCompile;
 import org.jetbrains.annotations.NotNull;
 
+import javax.inject.Inject;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static org.gradle.api.internal.artifacts.ArtifactAttributes.ARTIFACT_FORMAT;
+
 /**
  * Resolve aar dependencies into jars for non-Android projects.
  */
@@ -26,13 +27,11 @@ public class AarDepsPlugin implements Plugin<Project> {
   public void apply(Project project) {
     project
         .getDependencies()
-        .registerTransform(
-            ClassesJarExtractor.class,
-            reg -> {
-              reg.getParameters().getProjectName().set(project.getName());
-              reg.getFrom().attribute(ARTIFACT_TYPE_ATTRIBUTE, "aar");
-              reg.getTo().attribute(ARTIFACT_TYPE_ATTRIBUTE, "jar");
-            });
+        .registerTransform(ClassesJarExtractor.class, reg -> {
+          reg.getParameters().getProjectName().set(project.getName());
+          reg.getFrom().attribute(ARTIFACT_FORMAT, "aar");
+          reg.getTo().attribute(ARTIFACT_FORMAT, "jar");
+        });
 
     project.afterEvaluate(
         p ->
@@ -43,8 +42,7 @@ public class AarDepsPlugin implements Plugin<Project> {
                       // I suspect we're meant to use the org.gradle.usage attribute, but this
                       // works.
                       if (c.getName().endsWith("Classpath")) {
-                        c.attributes(
-                            cfgAttrs -> cfgAttrs.attribute(ARTIFACT_TYPE_ATTRIBUTE, "jar"));
+                        c.attributes(cfgAttrs -> cfgAttrs.attribute(ARTIFACT_FORMAT, "jar"));
                       }
                     }));
 

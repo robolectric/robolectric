@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.After;
@@ -136,9 +135,9 @@ public class ShadowLegacyLooperTest {
             2000);
 
     assertWithMessage("first").that(wasRun[0]).isFalse();
-    ShadowLooper.idleMainLooper(1999, TimeUnit.MILLISECONDS);
+    ShadowLooper.idleMainLooper(1999);
     assertWithMessage("second").that(wasRun[0]).isFalse();
-    ShadowLooper.idleMainLooper(1, TimeUnit.MILLISECONDS);
+    ShadowLooper.idleMainLooper(1);
     assertWithMessage("last").that(wasRun[0]).isTrue();
   }
 

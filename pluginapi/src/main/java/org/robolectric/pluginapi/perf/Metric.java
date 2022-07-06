@@ -69,7 +69,7 @@ public class Metric {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Metric)) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
 

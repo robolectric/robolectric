@@ -19,10 +19,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.espresso.Espresso;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
-import java.util.concurrent.atomic.AtomicReference;
+import androidx.test.rule.ActivityTestRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,8 +33,8 @@ import org.robolectric.integration.axt.R;
 public final class EspressoTest {
 
   @Rule
-  public ActivityScenarioRule<EspressoActivity> activityRule =
-      new ActivityScenarioRule<>(EspressoActivity.class);
+  public ActivityTestRule<EspressoActivity> activityRule =
+      new ActivityTestRule<>(EspressoActivity.class, false, true);
 
   @Test
   public void onIdle_doesnt_block() {
@@ -44,15 +43,12 @@ public final class EspressoTest {
 
   @Test
   public void launchActivityAndFindView_ById() {
-    activityRule
-        .getScenario()
-        .onActivity(
-            activity -> {
-              EditText editText = activity.findViewById(R.id.edit_text);
+    EspressoActivity activity = activityRule.getActivity();
 
-              assertThat(editText).isNotNull();
-              assertThat(editText.isEnabled()).isTrue();
-            });
+    EditText editText = activity.findViewById(R.id.edit_text);
+
+    assertThat(editText).isNotNull();
+    assertThat(editText.isEnabled()).isTrue();
   }
 
   /** Perform the equivalent of launchActivityAndFindView_ById except using espresso APIs */
@@ -65,48 +61,35 @@ public final class EspressoTest {
   @Test
   @UiThreadTest
   public void buttonClick() {
-    activityRule
-        .getScenario()
-        .onActivity(
-            activity -> {
-              Button button = activity.findViewById(R.id.button);
+    EspressoActivity activity = activityRule.getActivity();
+    Button button = activity.findViewById(R.id.button);
 
-              button.performClick();
+    button.performClick();
 
-              assertThat(activity.buttonClicked).isTrue();
-            });
+    assertThat(activity.buttonClicked).isTrue();
   }
 
   /** Perform the equivalent of click except using espresso APIs */
   @Test
   public void buttonClick_espresso() {
-    // All methods within ActivityScenario are blocking calls, so the API requires us to run
-    // them in the instrumentation thread. But ActivityScenario ActivityAction runs on main
-    // thread, we should run Espresso checking in instrumentation thread.
-    AtomicReference<EspressoActivity> activityRef = new AtomicReference<>();
-    activityRule.getScenario().onActivity(activityRef::set);
+    EspressoActivity activity = activityRule.getActivity();
+
     onView(withId(R.id.button)).check(matches(isCompletelyDisplayed()));
     onView(withId(R.id.button)).perform(click());
-    // If we have clicked the button of EspressoActivity, we can get correct Activity
-    // instance from ActivityScenario safely.
-    assertThat(activityRef.get()).isNotNull();
-    assertThat(activityRef.get().buttonClicked).isTrue();
+
+    assertThat(activity.buttonClicked).isTrue();
   }
 
   /** Perform the 'traditional' mechanism of setting contents of a text view using findViewById */
   @Test
   @UiThreadTest
   public void typeText_findView() {
-    activityRule
-        .getScenario()
-        .onActivity(
-            activity -> {
-              EditText editText = activity.findViewById(R.id.edit_text);
-              editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
+    EspressoActivity activity = activityRule.getActivity();
+    EditText editText = activity.findViewById(R.id.edit_text);
+    editText.setText("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
 
-              assertThat(editText.getText().toString())
-                  .isEqualTo("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
-            });
+    assertThat(editText.getText().toString())
+        .isEqualTo("\"new TEXT!#$%&'*+-/=?^_`{|}~@robolectric.org");
   }
 
   /** Perform the equivalent of setText except using espresso APIs */

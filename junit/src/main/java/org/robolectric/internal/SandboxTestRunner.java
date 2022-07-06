@@ -3,7 +3,6 @@ package org.robolectric.internal;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 
-import com.google.common.base.Splitter;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -175,7 +174,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
             .doNotAcquirePackage("org.junit");
 
     String customPackages = System.getProperty("org.robolectric.packagesToNotAcquire", "");
-    for (String pkg : Splitter.on(',').split(customPackages)) {
+    for (String pkg : customPackages.split(",")) {
       if (!pkg.isEmpty()) {
         builder.doNotAcquirePackage(pkg);
       }

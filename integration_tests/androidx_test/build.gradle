@@ -1,18 +1,14 @@
 import org.robolectric.gradle.AndroidProjectConfigPlugin
-import org.robolectric.gradle.GradleManagedDevicePlugin
 
 apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
-apply plugin: GradleManagedDevicePlugin
 
 android {
     compileSdk 32
 
     defaultConfig {
-        minSdk 16
-        targetSdk 32
-        multiDexEnabled true
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdkVersion 16
+        targetSdkVersion 32
     }
 
     compileOptions {
@@ -26,48 +22,28 @@ android {
                 includeAndroidResources = true
             }
         }
-        sourceSets {
-            String sharedTestDir = 'src/sharedTest/'
-            String sharedTestSourceDir = sharedTestDir + 'java'
-            String sharedTestResourceDir = sharedTestDir + 'resources'
-            String sharedAndroidManifest = sharedTestDir + "AndroidManifest.xml"
-            test.resources.srcDirs += sharedTestResourceDir
-            test.java.srcDirs += sharedTestSourceDir
-            test.manifest.srcFile sharedAndroidManifest
-            androidTest.resources.srcDirs += sharedTestResourceDir
-            androidTest.java.srcDirs += sharedTestSourceDir
-            androidTest.manifest.srcFile sharedAndroidManifest
-        }
     }
+
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
-    implementation "androidx.multidex:multidex:$multidexVersion"
-    implementation project(path: ':shadowapi', configuration: 'default')
+    implementation("androidx.appcompat:appcompat:$appCompatVersion")
+    implementation("androidx.constraintlayout:constraintlayout:$constraintlayoutVersion")
 
     // Testing dependencies
+    testImplementation("androidx.test:runner:$axtVersion")
     testImplementation project(":robolectric")
-    testImplementation "androidx.test:runner:$axtVersion"
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "androidx.test:rules:$axtVersion"
-    testImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-    testImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    testImplementation "androidx.test.ext:truth:$axtVersion"
-    testImplementation "androidx.test:core:$axtVersion"
-    testImplementation "androidx.fragment:fragment:$axtVersion"
-    testImplementation "androidx.fragment:fragment-testing:$axtVersion"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation("androidx.test:rules:$axtVersion")
+    testImplementation("androidx.test.espresso:espresso-intents:$espressoVersion")
+    testImplementation("androidx.test.espresso:espresso-core:$espressoVersion")
+    testImplementation("androidx.test.ext:truth:$axtVersion")
+    testImplementation("androidx.test:core:$axtVersion")
+    testImplementation("androidx.fragment:fragment:$axtVersion")
+    testImplementation("androidx.fragment:fragment-testing:$axtVersion")
 
-    androidTestImplementation "androidx.test:runner:$axtVersion"
-    androidTestImplementation "junit:junit:$junitVersion"
-    androidTestImplementation "androidx.test:rules:$axtVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    androidTestImplementation "androidx.test.ext:truth:$axtVersion"
-    androidTestImplementation "androidx.test:core:$axtVersion"
-    androidTestImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    androidTestImplementation "com.google.truth:truth:$truthVersion"
+    // TODO: this should be a transitive dependency of core...
+    testImplementation("androidx.lifecycle:lifecycle-common:$lifecycleVersion")
+    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
+    testImplementation("com.google.truth:truth:$truthVersion")
 }

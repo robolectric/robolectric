@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import org.robolectric.res.android.ResTable.PackageGroup;
 import org.robolectric.res.android.ResTable.ResourceName;
+import org.robolectric.res.android.ResTable.Type;
 import org.robolectric.res.android.ResTable.bag_entry;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 
@@ -227,7 +228,7 @@ public class ResTableTheme {
         curEntries = curPI.types[t] != null ? curPI.types[t].entries: null;
         if (curEntries == null) {
           final PackageGroup grp = mTable.mPackageGroups.get(curPackageIndex);
-          final List<ResTable.Type> typeList = getOrDefault(grp.types, t, Collections.emptyList());
+          final List<Type> typeList = getOrDefault(grp.types, t, Collections.emptyList());
           int cnt = typeList.isEmpty() ? 0 : typeList.get(0).entryCount;
           curEntries = new theme_entry[cnt];
           // memset(curEntries, Res_value::TYPE_NULL, buff_size);

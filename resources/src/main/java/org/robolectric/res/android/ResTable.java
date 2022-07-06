@@ -274,15 +274,15 @@ public class ResTable {
     }
     if (dtohs(header.header.header.headerSize) > header.size
         || header.size > dataSize) {
-      ALOGW(
-          "Bad resource table: header size 0x%x or total size 0x%x is larger than data size 0x%x\n",
-          (int) dtohs(header.header.header.headerSize), (int) header.size, (int) dataSize);
+      ALOGW("Bad resource table: header size 0x%x or total size 0x%x is larger than data size 0x%x\n",
+          (int)dtohs(header.header.header.headerSize),
+          (int)header.size, (int)dataSize);
       return (mError=BAD_TYPE);
     }
     if (((dtohs(header.header.header.headerSize)|header.size)&0x3) != 0) {
-      ALOGW(
-          "Bad resource table: header size 0x%x or total size 0x%x is not on an integer boundary\n",
-          (int) dtohs(header.header.header.headerSize), (int) header.size);
+      ALOGW("Bad resource table: header size 0x%x or total size 0x%x is not on an integer boundary\n",
+          (int)dtohs(header.header.header.headerSize),
+          (int)header.size);
       return (mError=BAD_TYPE);
     }
 //    header->dataEnd = ((const uint8_t*)header->header) + header->size;
@@ -296,20 +296,16 @@ public class ResTable {
 //    + dtohs(header->header->header.headerSize));
     ResChunk_header chunk =
       new ResChunk_header(buf, dtohs(header.header.header.headerSize));
-    while (chunk != null
-        && (chunk.myOffset() <= (header.dataEnd - ResChunk_header.SIZEOF)
-            && chunk.myOffset() <= (header.dataEnd - dtohl(chunk.size)))) {
+    while (chunk != null && (chunk.myOffset()) <= (header.dataEnd -ResChunk_header.SIZEOF) &&
+      (chunk.myOffset()) <= (header.dataEnd -dtohl(chunk.size))) {
     int err = validate_chunk(chunk, ResChunk_header.SIZEOF, header.dataEnd, "ResTable");
     if (err != NO_ERROR) {
       return (mError=err);
     }
     if (kDebugTableNoisy) {
-        ALOGV(
-            "Chunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
-            dtohs(chunk.type),
-            dtohs(chunk.headerSize),
-            dtohl(chunk.size),
-            (Object) (chunk.myOffset() - header.header.myOffset()));
+      ALOGV("Chunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
+          dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
+          (Object)((chunk.myOffset()) - (header.header.myOffset())));
     }
     final int csize = dtohl(chunk.size);
     final int ctype = dtohs(chunk.type);
@@ -337,9 +333,9 @@ public class ResTable {
       }
       curPackage++;
     } else {
-        ALOGW(
-            "Unknown chunk type 0x%x in table at 0x%x.\n",
-            ctype, chunk.myOffset() - header.header.myOffset());
+      ALOGW("Unknown chunk type 0x%x in table at 0x%x.\n",
+          ctype,
+          (chunk.myOffset()) - (header.header.myOffset()));
     }
     chunk = chunk.myOffset() + csize < header.dataEnd
         ? new ResChunk_header(chunk.myBuf(), chunk.myOffset() + csize)
@@ -846,20 +842,16 @@ public class ResTable {
     // Iterate through all chunks.
     ResChunk_header chunk =
       new ResChunk_header(pkg.myBuf(), pkg.myOffset() + dtohs(pkg.header.headerSize));
-    //      const uint8_t* endPos = ((const uint8_t*)pkg) + dtohs(pkg->header.size);
-    final int endPos = pkg.myOffset() + pkg.header.size;
-    //    while (((const uint8_t*)chunk) <= (endPos-sizeof(ResChunk_header)) &&
-    //      ((const uint8_t*)chunk) <= (endPos-dtohl(chunk->size))) {
-    while (chunk != null
-        && chunk.myOffset() <= (endPos - ResChunk_header.SIZEOF)
-        && chunk.myOffset() <= (endPos - dtohl(chunk.size))) {
+//      const uint8_t* endPos = ((const uint8_t*)pkg) + dtohs(pkg->header.size);
+    final int endPos = (pkg.myOffset()) + pkg.header.size;
+//    while (((const uint8_t*)chunk) <= (endPos-sizeof(ResChunk_header)) &&
+//      ((const uint8_t*)chunk) <= (endPos-dtohl(chunk->size))) {
+    while (chunk != null && (chunk.myOffset()) <= (endPos-ResChunk_header.SIZEOF) &&
+      (chunk.myOffset()) <= (endPos-dtohl(chunk.size))) {
     if (kDebugTableNoisy) {
-        ALOGV(
-            "PackageChunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
-            dtohs(chunk.type),
-            dtohs(chunk.headerSize),
-            dtohl(chunk.size),
-            (chunk.myOffset() - header.header.myOffset()));
+      ALOGV("PackageChunk: type=0x%x, headerSize=0x%x, size=0x%x, pos=%s\n",
+          dtohs(chunk.type), dtohs(chunk.headerSize), dtohl(chunk.size),
+          ((chunk.myOffset()) - (header.header.myOffset())));
     }
         final int csize = dtohl(chunk.size);
         final short ctype = dtohs(chunk.type);
@@ -2915,7 +2907,7 @@ public class ResTable {
         curEntry++;
       }
 
-      if (!isInside || oldName != newName.get()) {
+      if ((!isInside) || oldName != newName.get()) {
         // This is a new attribute...  figure out what to do with it.
         if (set.numAttrs >= set.availAttrs) {
           // Need to alloc more memory...

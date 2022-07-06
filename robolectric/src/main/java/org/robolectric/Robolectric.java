@@ -117,8 +117,7 @@ public class Robolectric {
    * @deprecated use {@link androidx.test.core.app.ActivityScenario}
    */
   @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
-  public static final <T extends Activity> T setupActivity(Class<T> activityClass) {
+  public static <T extends Activity> T setupActivity(Class<T> activityClass) {
     return buildActivity(activityClass).setup().get();
   }
 

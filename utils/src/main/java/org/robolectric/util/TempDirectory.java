@@ -107,7 +107,6 @@ public class TempDirectory {
       clearDirectory(basePath);
       Files.delete(basePath);
     } catch (IOException ignored) {
-      Logger.error("Failed to destroy temp directory", ignored);
     }
   }
 

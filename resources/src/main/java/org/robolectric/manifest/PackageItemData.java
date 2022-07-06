@@ -1,7 +1,5 @@
 package org.robolectric.manifest;
 
-import com.google.errorprone.annotations.InlineMe;
-
 public class PackageItemData {
   protected final String name;
   protected final MetaData metaData;
@@ -15,12 +13,9 @@ public class PackageItemData {
     return name;
   }
 
-  /**
-   * @deprecated - Use {@link #getName()} instead.
-   */
+  /** @deprecated - Use {@link #getName()} instead. */
   @Deprecated
-  @InlineMe(replacement = "this.getName()")
-  public final String getClassName() {
+  public String getClassName() {
     return getName();
   }
 

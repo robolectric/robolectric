@@ -37,7 +37,7 @@ public class ResourceTypes {
     if (headerSize >= minSize) {
       if (headerSize <= size) {
         if (((headerSize|size)&0x3) == 0) {
-          if (size <= dataLen) {
+          if (size <= (dataLen)) {
             return NO_ERROR;
           }
           ALOGW("%s data size 0x%x extends beyond resource end.",

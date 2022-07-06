@@ -1204,7 +1204,6 @@ public class CppAssetManager2 {
     }
   }
 
-  @SuppressWarnings("DoNotCallSuggester")
   static boolean Utf8ToUtf16(final String str, Ref<String> out) {
     throw new UnsupportedOperationException();
     // ssize_t len =

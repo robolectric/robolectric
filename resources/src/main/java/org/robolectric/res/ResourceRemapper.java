@@ -73,10 +73,7 @@ class ResourceRemapper {
         for (Field field : innerClass.getFields()) {
           try {
             if (!isPrimary && Modifier.isFinal(field.getModifiers())) {
-              throw new IllegalArgumentException(
-                  rClass
-                      + " contains final fields, these will be inlined by the compiler and cannot"
-                      + " be remapped.");
+              throw new IllegalArgumentException(rClass + " contains final fields, these will be inlined by the compiler and cannot be remapped.");
             }
 
             String resourceName = resourceType + "/" + field.getName();
@@ -113,7 +110,7 @@ class ResourceRemapper {
         for (Field field : innerClass.getFields()) {
           if (field.getType().equals(int[].class)) {
             try {
-              int[] styleableArray = (int[]) field.get(null);
+              int[] styleableArray = (int[]) (field.get(null));
               for (int k = 0; k < styleableArray.length; k++) {
                 Integer value = resIds.get("attr/" + localAttributeIds.get(styleableArray[k]));
                 if (value != null) {

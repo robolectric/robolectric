@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.callStaticMethod;
 import static org.robolectric.util.ReflectionHelpers.loadClass;
@@ -17,7 +18,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Android-Q only test for {@code RenderNode}'s shadow for both pre-Q & Q (where the latter's {@code
@@ -697,17 +697,13 @@ public final class ShadowRenderNodeTest {
           callStaticMethod(
               renderNodeClass,
               "create",
-              ReflectionHelpers.ClassParameter.from(String.class, name),
-              ReflectionHelpers.ClassParameter.from(View.class, /* val= */ null));
+              from(String.class, name),
+              from(View.class, /* val= */ null));
     }
 
     @Override
     public boolean setAlpha(float alpha) {
-      return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setAlpha",
-          ReflectionHelpers.ClassParameter.from(float.class, alpha));
+      return callInstanceMethod(renderNodeClass, renderNode, "setAlpha", from(float.class, alpha));
     }
 
     @Override
@@ -718,10 +714,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setCameraDistance(float cameraDistance) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setCameraDistance",
-          ReflectionHelpers.ClassParameter.from(float.class, cameraDistance));
+          renderNodeClass, renderNode, "setCameraDistance", from(float.class, cameraDistance));
     }
 
     @Override
@@ -732,10 +725,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setClipToOutline(boolean clipToOutline) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setClipToOutline",
-          ReflectionHelpers.ClassParameter.from(boolean.class, clipToOutline));
+          renderNodeClass, renderNode, "setClipToOutline", from(boolean.class, clipToOutline));
     }
 
     @Override
@@ -746,10 +736,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setElevation(float lift) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setElevation",
-          ReflectionHelpers.ClassParameter.from(float.class, lift));
+          renderNodeClass, renderNode, "setElevation", from(float.class, lift));
     }
 
     @Override
@@ -763,7 +750,7 @@ public final class ShadowRenderNodeTest {
           renderNodeClass,
           renderNode,
           "setHasOverlappingRendering",
-          ReflectionHelpers.ClassParameter.from(boolean.class, overlappingRendering));
+          from(boolean.class, overlappingRendering));
     }
 
     @Override
@@ -774,10 +761,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setRotationZ(float rotationZ) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setRotation",
-          ReflectionHelpers.ClassParameter.from(float.class, rotationZ));
+          renderNodeClass, renderNode, "setRotation", from(float.class, rotationZ));
     }
 
     @Override
@@ -788,10 +772,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setRotationX(float rotationX) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setRotationX",
-          ReflectionHelpers.ClassParameter.from(float.class, rotationX));
+          renderNodeClass, renderNode, "setRotationX", from(float.class, rotationX));
     }
 
     @Override
@@ -802,10 +783,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setRotationY(float rotationY) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setRotationY",
-          ReflectionHelpers.ClassParameter.from(float.class, rotationY));
+          renderNodeClass, renderNode, "setRotationY", from(float.class, rotationY));
     }
 
     @Override
@@ -816,10 +794,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setScaleX(float scaleX) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setScaleX",
-          ReflectionHelpers.ClassParameter.from(float.class, scaleX));
+          renderNodeClass, renderNode, "setScaleX", from(float.class, scaleX));
     }
 
     @Override
@@ -830,10 +805,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setScaleY(float scaleY) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setScaleY",
-          ReflectionHelpers.ClassParameter.from(float.class, scaleY));
+          renderNodeClass, renderNode, "setScaleY", from(float.class, scaleY));
     }
 
     @Override
@@ -844,28 +816,19 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setTranslationX(float translationX) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setTranslationX",
-          ReflectionHelpers.ClassParameter.from(float.class, translationX));
+          renderNodeClass, renderNode, "setTranslationX", from(float.class, translationX));
     }
 
     @Override
     public boolean setTranslationY(float translationY) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setTranslationY",
-          ReflectionHelpers.ClassParameter.from(float.class, translationY));
+          renderNodeClass, renderNode, "setTranslationY", from(float.class, translationY));
     }
 
     @Override
     public boolean setTranslationZ(float translationZ) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setTranslationZ",
-          ReflectionHelpers.ClassParameter.from(float.class, translationZ));
+          renderNodeClass, renderNode, "setTranslationZ", from(float.class, translationZ));
     }
 
     @Override
@@ -891,10 +854,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setPivotX(float pivotX) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setPivotX",
-          ReflectionHelpers.ClassParameter.from(float.class, pivotX));
+          renderNodeClass, renderNode, "setPivotX", from(float.class, pivotX));
     }
 
     @Override
@@ -905,10 +865,7 @@ public final class ShadowRenderNodeTest {
     @Override
     public boolean setPivotY(float pivotY) {
       return callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "setPivotY",
-          ReflectionHelpers.ClassParameter.from(float.class, pivotY));
+          renderNodeClass, renderNode, "setPivotY", from(float.class, pivotY));
     }
 
     @Override
@@ -923,20 +880,13 @@ public final class ShadowRenderNodeTest {
 
     @Override
     public void getMatrix(Matrix outMatrix) {
-      callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "getMatrix",
-          ReflectionHelpers.ClassParameter.from(Matrix.class, outMatrix));
+      callInstanceMethod(renderNodeClass, renderNode, "getMatrix", from(Matrix.class, outMatrix));
     }
 
     @Override
     public void getInverseMatrix(Matrix outMatrix) {
       callInstanceMethod(
-          renderNodeClass,
-          renderNode,
-          "getInverseMatrix",
-          ReflectionHelpers.ClassParameter.from(Matrix.class, outMatrix));
+          renderNodeClass, renderNode, "getInverseMatrix", from(Matrix.class, outMatrix));
     }
   }
 

@@ -7,9 +7,6 @@ on:
   pull_request:
     branches: [ master, google ]
 
-permissions:
-  contents: read
-
 jobs:
   validation:
     name: Validation

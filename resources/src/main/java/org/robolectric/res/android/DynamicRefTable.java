@@ -109,7 +109,7 @@ public class DynamicRefTable
       // Or if app resource is loaded as shared library, the resource which has
       // app package Id is local resources.
       // so we fix up those resources with the calling package ID.
-      resId.set((0xFFFFFF & resId.get()) | (((int) mAssignedPackageId) << 24));
+      resId.set((0xFFFFFF & (resId.get())) | (((int) mAssignedPackageId) << 24));
       return NO_ERROR;
     }
 

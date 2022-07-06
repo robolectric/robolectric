@@ -409,7 +409,7 @@ public class SdkStore {
       if (this == o) {
         return true;
       }
-      if (!(o instanceof MethodInfo)) {
+      if (o == null || getClass() != o.getClass()) {
         return false;
       }
       MethodInfo that = (MethodInfo) o;
@@ -453,7 +453,7 @@ public class SdkStore {
       if (this == o) {
         return true;
       }
-      if (!(o instanceof MethodExtraInfo)) {
+      if (o == null || getClass() != o.getClass()) {
         return false;
       }
       MethodExtraInfo that = (MethodExtraInfo) o;

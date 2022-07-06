@@ -10,14 +10,14 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVisitor;
 import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.tools.Diagnostic.Kind;
-import org.robolectric.annotation.processing.RobolectricModel;
+import org.robolectric.annotation.processing.RobolectricModel.Builder;
 
 /**
  * Validator that checks usages of {@link org.robolectric.annotation.RealObject}.
  */
 public class RealObjectValidator extends FoundOnImplementsValidator {
 
-  public RealObjectValidator(RobolectricModel.Builder modelBuilder, ProcessingEnvironment env) {
+  public RealObjectValidator(Builder modelBuilder, ProcessingEnvironment env) {
     super(modelBuilder, env, "org.robolectric.annotation.RealObject");
   }
 
@@ -33,34 +33,28 @@ public class RealObjectValidator extends FoundOnImplementsValidator {
     }
     return retval.toString();
   }
+  
+  TypeVisitor<Void,VariableElement> typeVisitor = new SimpleTypeVisitor6<Void,VariableElement>() {
+    @Override
+    public Void visitDeclared(DeclaredType t, VariableElement v) {
+      List<? extends TypeMirror> typeParams = t.getTypeArguments();
+      List<? extends TypeParameterElement> parentTypeParams = parent.getTypeParameters();
 
-  TypeVisitor<Void, VariableElement> typeVisitor =
-      new SimpleTypeVisitor6<Void, VariableElement>() {
-        @Override
-        public Void visitDeclared(DeclaredType t, VariableElement v) {
-          List<? extends TypeMirror> typeParams = t.getTypeArguments();
-          List<? extends TypeParameterElement> parentTypeParams = parent.getTypeParameters();
-
-          if (!parentTypeParams.isEmpty() && typeParams.isEmpty()) {
-            messager.printMessage(Kind.ERROR, "@RealObject is missing type parameters", v);
-          } else {
-            String typeString = join(typeParams);
-            String parentString = join(parentTypeParams);
-            if (!typeString.equals(parentString)) {
-              messager.printMessage(
-                  Kind.ERROR,
-                  "Parameter type mismatch: expecting <"
-                      + parentString
-                      + ">, was <"
-                      + typeString
-                      + '>',
-                  v);
-            }
-          }
-          return null;
+      if (!parentTypeParams.isEmpty() && typeParams.isEmpty()) {
+        messager.printMessage(Kind.ERROR, "@RealObject is missing type parameters", v);
+      } else {
+        String typeString = join(typeParams);
+        String parentString = join(parentTypeParams);
+        if (!typeString.equals(parentString)) {
+          messager.printMessage(Kind.ERROR, "Parameter type mismatch: expecting <" + parentString + ">, was <" + typeString + '>', v);
         }
-      };
-
+      }
+      return null;
+    }
+    
+    
+  };
+  
   TypeElement parent;
   
   @Override

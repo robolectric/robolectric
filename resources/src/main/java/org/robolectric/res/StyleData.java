@@ -45,7 +45,7 @@ public class StyleData implements Style {
     // scheme.
     if (attributeResource == null && !"android".equals(resName.packageName) && !"android".equals(packageName)) {
       attributeResource = items.get(resName.withPackageName(packageName));
-      if (attributeResource != null && !"android".equals(attributeResource.contextPackageName)) {
+      if (attributeResource != null && (!"android".equals(attributeResource.contextPackageName))) {
         attributeResource = new AttributeResource(resName, attributeResource.value, resName.packageName);
       }
     }

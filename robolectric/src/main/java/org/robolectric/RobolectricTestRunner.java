@@ -41,6 +41,7 @@ import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.TestEnvironment;
 import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
+import org.robolectric.internal.bytecode.InstrumentationConfiguration.Builder;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Sandbox;
 import org.robolectric.internal.bytecode.SandboxClassLoader;
@@ -163,8 +164,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     Configuration configuration = ((RobolectricFrameworkMethod) method).getConfiguration();
     Config config = configuration.get(Config.class);
 
-    InstrumentationConfiguration.Builder builder =
-        new InstrumentationConfiguration.Builder(super.createClassLoaderConfig(method));
+    Builder builder = new Builder(super.createClassLoaderConfig(method));
     androidConfigurer.configure(builder, getInterceptors());
     androidConfigurer.withConfig(builder, config);
     return builder.build();
@@ -274,8 +274,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     ResourcesMode resourcesMode = roboMethod.getResourcesMode();
 
     if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
-      System.err.println(
-          "Skip " + method.getName() + " because Robolectric doesn't support legacy mode after P");
       throw new AssumptionViolatedException("Robolectric doesn't support legacy mode after P");
     }
     LooperMode.Mode looperMode =
@@ -511,7 +509,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
    *     details.
    */
   @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
   protected Config buildGlobalConfig() {
     return new Config.Builder().build();
   }

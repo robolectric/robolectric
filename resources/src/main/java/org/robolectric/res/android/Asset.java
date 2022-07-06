@@ -394,14 +394,16 @@ public abstract class Asset {
     //   return pAsset;
   }
 
+
   /*
    * Create a new Asset from a compressed file on disk.  There is a fair chance
    * that the file doesn't actually exist.
    *
    * We currently support gzip files.  We might want to handle .bz2 someday.
    */
-  @SuppressWarnings("DoNotCallSuggester")
-  static Asset createFromCompressedFile(final String fileName, AccessMode mode) {
+  static Asset createFromCompressedFile(final String fileName,
+      AccessMode mode)
+  {
     throw new UnsupportedOperationException();
     // _CompressedAsset pAsset;
     // int result;
@@ -1007,7 +1009,6 @@ static Asset createFromCompressedMap(FileMap dataMap,
       }
     }
 
-    @SuppressWarnings("DoNotCallSuggester")
     final byte[] ensureAlignment(FileMap map) {
       throw new UnsupportedOperationException();
       //   void* data = map.getDataPtr();

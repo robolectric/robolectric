@@ -7,9 +7,6 @@ on:
   pull_request:
     branches: [ master, google ]
 
-permissions:
-  contents: read
-
 jobs:
   check_code_formatting:
     runs-on: ubuntu-18.04
@@ -23,7 +20,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 11
+          java-version: 11.0.14
 
       - uses: gradle/gradle-build-action@v2
 

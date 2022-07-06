@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import android.os.Handler;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,7 +59,7 @@ public class LooperDelegatingSchedulerTest {
     new Handler(getMainLooper()).postDelayed(runnable, 100);
     verify(runnable, times(0)).run();
 
-    assertThat(scheduler.advanceBy(100, TimeUnit.MILLISECONDS)).isTrue();
+    assertThat(scheduler.advanceBy(100)).isTrue();
     verify(runnable, times(1)).run();
   }
 
@@ -71,7 +70,7 @@ public class LooperDelegatingSchedulerTest {
     Runnable runnable = mock(Runnable.class);
     new Handler(getMainLooper()).post(runnable);
     assertThat(scheduler.size()).isEqualTo(1);
-    assertThat(scheduler.advanceBy(0, TimeUnit.MILLISECONDS)).isTrue();
+    assertThat(scheduler.advanceBy(0)).isTrue();
     assertThat(scheduler.size()).isEqualTo(0);
   }
 }

@@ -88,7 +88,7 @@ public class Scheduler {
     this.idleState = idleState;
     switch (idleState) {
       case UNPAUSED:
-        advanceBy(0, TimeUnit.MILLISECONDS);
+        advanceBy(0);
         break;
       case CONSTANT_IDLE:
         advanceToLastPostedRunnable();
@@ -315,12 +315,12 @@ public class Scheduler {
     return runnables.size();
   }
 
-  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
+  @SuppressWarnings("AndroidJdkLibsChecker")
   public synchronized Duration getNextScheduledTaskTime() {
     return runnables.isEmpty() ? Duration.ZERO : Duration.ofMillis(runnables.peek().scheduledTime);
   }
 
-  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
+  @SuppressWarnings("AndroidJdkLibsChecker")
   public synchronized Duration getLastScheduledTaskTime() {
     if (runnables.isEmpty()) {
       return Duration.ZERO;
@@ -345,7 +345,6 @@ public class Scheduler {
    *     Use {@link #setIdleState(IdleState)} instead to explicitly set the state.
    */
   @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
   public void idleConstantly(boolean shouldIdleConstantly) {
     setIdleState(shouldIdleConstantly ? CONSTANT_IDLE : UNPAUSED);
   }

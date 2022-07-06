@@ -28,7 +28,7 @@ public class SQLiteDatabaseTest {
   private File databasePath;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     databasePath = ApplicationProvider.getApplicationContext().getDatabasePath("database.db");
     databasePath.getParentFile().mkdirs();
 
@@ -44,7 +44,7 @@ public class SQLiteDatabaseTest {
   }
 
   @After
-  public void tearDown() {
+  public void tearDown() throws Exception {
     database.close();
     assertThat(databasePath.delete()).isTrue();
   }
@@ -130,7 +130,7 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  public void shouldThrowsExceptionWhenQueryingUsingExecSQL() {
+  public void query_using_execSQL_throwsException() {
     SQLiteException e = assertThrows(SQLiteException.class, () -> database.execSQL("select 1"));
     assertThat(e)
         .hasMessageThat()

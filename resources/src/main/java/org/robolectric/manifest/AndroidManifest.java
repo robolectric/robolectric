@@ -542,7 +542,7 @@ public class AndroidManifest implements UsesSdk {
   }
 
   private String resolveClassRef(String maybePartialClassName) {
-    return maybePartialClassName.startsWith(".")
+    return (maybePartialClassName.startsWith("."))
         ? packageName + maybePartialClassName
         : maybePartialClassName;
   }
@@ -739,7 +739,7 @@ public class AndroidManifest implements UsesSdk {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof AndroidManifest)) {
+    if (o == null || getClass() != o.getClass()) {
       return false;
     }
 
@@ -829,12 +829,9 @@ public class AndroidManifest implements UsesSdk {
     return apkFile;
   }
 
-  /**
-   * @deprecated Do not use.
-   */
+  /** @deprecated Do not use. */
   @Deprecated
-  @SuppressWarnings("InlineMeSuggester")
-  public final boolean supportsLegacyResourcesMode() {
+  public boolean supportsLegacyResourcesMode() {
     return true;
   }
 

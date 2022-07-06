@@ -7,9 +7,6 @@ on:
   pull_request:
     branches: [ master, google ]
 
-permissions:
-  contents: read
-
 jobs:
   check_aggregateDocs:
     runs-on: ubuntu-18.04

@@ -131,10 +131,10 @@ public class CppApkAssets {
   // data.
   // If `system` is true, the package is marked as a system package, and allows some functions to
   // filter out this package when computing what configurations/resources are available.
-  // std::unique_ptr<const ApkAssets> ApkAssets::LoadOverlay(const std::string& idmap_path,
-  //                                                         bool system) {
-  @SuppressWarnings("DoNotCallSuggester")
-  public static CppApkAssets LoadOverlay(String idmap_path, boolean system) {
+// std::unique_ptr<const ApkAssets> ApkAssets::LoadOverlay(const std::string& idmap_path,
+//                                                         bool system) {
+  public static CppApkAssets LoadOverlay(String idmap_path,
+      boolean system) {
     throw new UnsupportedOperationException();
     // Asset idmap_asset = CreateAssetFromFile(idmap_path);
     // if (idmap_asset == null) {
@@ -159,18 +159,17 @@ public class CppApkAssets {
   // If `system` is true, the package is marked as a system package, and allows some functions to
   // filter out this package when computing what configurations/resources are available.
   // If `force_shared_lib` is true, any package with ID 0x7f is loaded as a shared library.
-  // std::unique_ptr<const ApkAssets> ApkAssets::LoadFromFd(unique_fd fd,
-  //                                                        const std::string& friendly_name,
-  //                                                        bool system, bool force_shared_lib) {
-  //   public static ApkAssets LoadFromFd(unique_fd fd,
-  //       String friendly_name,
-  //       boolean system, boolean force_shared_lib) {
-  //     return LoadImpl(std.move(fd), friendly_name, null /*idmap_asset*/, null /*loaded_idmap*/,
-  //         system, force_shared_lib);
-  //   }
+// std::unique_ptr<const ApkAssets> ApkAssets::LoadFromFd(unique_fd fd,
+//                                                        const std::string& friendly_name,
+//                                                        bool system, bool force_shared_lib) {
+//   public static ApkAssets LoadFromFd(unique_fd fd,
+//       String friendly_name,
+//       boolean system, boolean force_shared_lib) {
+//     return LoadImpl(std.move(fd), friendly_name, null /*idmap_asset*/, null /*loaded_idmap*/,
+//         system, force_shared_lib);
+//   }
 
   // std::unique_ptr<Asset> ApkAssets::CreateAssetFromFile(const std::string& path) {
-  @SuppressWarnings("DoNotCallSuggester")
   static Asset CreateAssetFromFile(String path) {
     throw new UnsupportedOperationException();
     // unique_fd fd(base.utf8.open(path.c_str(), O_RDONLY | O_BINARY | O_CLOEXEC));

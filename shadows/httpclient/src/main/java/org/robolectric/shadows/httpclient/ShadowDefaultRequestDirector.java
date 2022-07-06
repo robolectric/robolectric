@@ -1,6 +1,5 @@
 package org.robolectric.shadows.httpclient;
 
-import com.google.errorprone.annotations.InlineMe;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -159,10 +158,7 @@ public class ShadowDefaultRequestDirector {
    * @return HttpRequestInfo
    */
   @Deprecated
-  @InlineMe(
-      replacement = "FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index)",
-      imports = "org.robolectric.shadows.httpclient.FakeHttp")
-  public static final HttpRequestInfo getSentHttpRequestInfo(int index) {
+  public static HttpRequestInfo getSentHttpRequestInfo(int index) {
     return FakeHttp.getFakeHttpLayer().getSentHttpRequestInfo(index);
   }
 

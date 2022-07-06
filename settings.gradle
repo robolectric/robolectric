@@ -1,4 +1,4 @@
-rootProject.name = 'robolectric'
+rootProject.name = 'parent'
 
 include ":robolectric"
 include ":sandbox"
@@ -16,6 +16,7 @@ include ":shadows:framework"
 include ":shadows:httpclient"
 include ":shadows:multidex"
 include ":shadows:playservices"
+include ":shadows:supportv4"
 include ":shadowapi"
 include ":errorprone"
 include ":nativeruntime"
@@ -33,7 +34,7 @@ include ':integration_tests:androidx_test'
 include ':integration_tests:ctesque'
 include ':integration_tests:security-providers'
 include ":integration_tests:mockk"
-include ':integration_tests:compat-target28'
+include ':integration_tests:compat-target29'
 include ":integration_tests:multidex"
 include ":integration_tests:sparsearray"
 include ':testapp'

@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraCharacteristics.Key;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -16,8 +17,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraCharacteristicsTest {
 
-  private final CameraCharacteristics.Key key0 =
-      new CameraCharacteristics.Key("key0", Integer.class);
+  private final Key key0 = new Key("key0", Integer.class);
   private final CameraCharacteristics cameraCharacteristics =
       ShadowCameraCharacteristics.newCameraCharacteristics();
 

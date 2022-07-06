@@ -38,8 +38,7 @@ public class ResName {
     name = matcher.group(NAME).trim();
 
     hashCode = computeHashCode();
-    if (packageName.equals("xmlns"))
-      throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
+    if (packageName.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
   }
 
   /**
@@ -116,7 +115,7 @@ public class ResName {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof ResName)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
 
     ResName resName = (ResName) o;
 
@@ -154,8 +153,7 @@ public class ResName {
 
   public void mustBe(String expectedType) {
     if (!type.equals(expectedType)) {
-      throw new RuntimeException(
-          "expected " + getFullyQualifiedName() + " to be a " + expectedType + ", is a " + type);
+      throw new RuntimeException("expected " + getFullyQualifiedName() + " to be a " + expectedType + ", is a " + type);
     }
   }
 
