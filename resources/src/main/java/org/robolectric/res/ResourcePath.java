@@ -48,14 +48,24 @@ public class ResourcePath {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof ResourcePath)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ResourcePath)) {
+      return false;
+    }
 
     ResourcePath that = (ResourcePath) o;
 
-    if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) return false;
-    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) return false;
-    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) return false;
+    if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) {
+      return false;
+    }
+    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) {
+      return false;
+    }
+    if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) {
+      return false;
+    }
     return internalRClass != null ? internalRClass.equals(that.internalRClass) : that.internalRClass == null;
 
   }

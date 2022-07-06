@@ -115,16 +115,28 @@ public class ResName {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof ResName)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof ResName)) {
+      return false;
+    }
 
     ResName resName = (ResName) o;
 
-    if (hashCode() != resName.hashCode()) return false;
+    if (hashCode() != resName.hashCode()) {
+      return false;
+    }
 
-    if (!packageName.equals(resName.packageName)) return false;
-    if (!type.equals(resName.type)) return false;
-    if (!name.equals(resName.name)) return false;
+    if (!packageName.equals(resName.packageName)) {
+      return false;
+    }
+    if (!type.equals(resName.type)) {
+      return false;
+    }
+    if (!name.equals(resName.name)) {
+      return false;
+    }
 
     return true;
   }
@@ -148,7 +160,9 @@ public class ResName {
   }
 
   public ResName withPackageName(String packageName) {
-    if (packageName.equals(this.packageName)) return this;
+    if (packageName.equals(this.packageName)) {
+      return this;
+    }
     return new ResName(packageName, type, name);
   }
 
