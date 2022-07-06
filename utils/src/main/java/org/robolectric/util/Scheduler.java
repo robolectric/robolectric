@@ -315,12 +315,12 @@ public class Scheduler {
     return runnables.size();
   }
 
-  @SuppressWarnings("AndroidJdkLibsChecker")
+  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
   public synchronized Duration getNextScheduledTaskTime() {
     return runnables.isEmpty() ? Duration.ZERO : Duration.ofMillis(runnables.peek().scheduledTime);
   }
 
-  @SuppressWarnings("AndroidJdkLibsChecker")
+  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
   public synchronized Duration getLastScheduledTaskTime() {
     if (runnables.isEmpty()) {
       return Duration.ZERO;
