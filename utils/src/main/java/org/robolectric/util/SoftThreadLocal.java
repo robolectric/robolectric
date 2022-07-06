@@ -1,5 +1,6 @@
 package org.robolectric.util;
 
+import java.lang.SuppressWarnings;
 import java.lang.ref.SoftReference;
 
 /**
@@ -9,6 +10,7 @@ import java.lang.ref.SoftReference;
  */
 public abstract class SoftThreadLocal<T> {
 
+  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"})
   private final ThreadLocal<SoftReference<T>> threadLocal =
       ThreadLocal.withInitial(() -> new SoftReference<>(create()));
 
