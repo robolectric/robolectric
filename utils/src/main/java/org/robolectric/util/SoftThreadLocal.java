@@ -1,6 +1,5 @@
 package org.robolectric.util;
 
-import java.lang.SuppressWarnings;
 import java.lang.ref.SoftReference;
 
 /**
