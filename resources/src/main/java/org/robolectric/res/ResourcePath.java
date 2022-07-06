@@ -60,7 +60,9 @@ public class ResourcePath {
     if (rClass != null ? !rClass.equals(that.rClass) : that.rClass != null) {
       return false;
     }
-    if (resourceBase != null ? !resourceBase.equals(that.resourceBase) : that.resourceBase != null) {
+    if (resourceBase != null
+        ? !resourceBase.equals(that.resourceBase)
+        : that.resourceBase != null) {
       return false;
     }
     if (assetsDir != null ? !assetsDir.equals(that.assetsDir) : that.assetsDir != null) {
