@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S_V2;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -219,12 +221,18 @@ public class ShadowNfcAdapterTest {
   }
 
   private static Tag createMockTag() {
-    return ReflectionHelpers.callStaticMethod(
-        Tag.class,
-        "createMockTag",
-        ClassParameter.from(byte[].class, new byte[0]),
-        ClassParameter.from(int[].class, new int[0]),
-        ClassParameter.from(Bundle[].class, new Bundle[0]));
+    if (RuntimeEnvironment.getApiLevel() <= S_V2) {
+      return Tag.createMockTag(new byte[0], new int[0], new Bundle[0]);
+    } else {
+      // Android T and above.
+      return ReflectionHelpers.callStaticMethod(
+          Tag.class,
+          "createMockTag",
+          ClassParameter.from(byte[].class, new byte[0]),
+          ClassParameter.from(int[].class, new int[0]),
+          ClassParameter.from(Bundle[].class, new Bundle[0]),
+          ClassParameter.from(long.class, 0));
+    }
   }
 
   private void createActivity(ActivityScenario.ActivityAction<Activity> activityAction) {
