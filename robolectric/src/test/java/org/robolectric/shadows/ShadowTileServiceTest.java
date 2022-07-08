@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Test for {@link org.robolectric.shadows.ShadowTileService}. */
@@ -66,6 +67,12 @@ public final class ShadowTileServiceTest {
             shadowOf((Application) ApplicationProvider.getApplicationContext())
                 .getNextStartedActivity())
         .hasComponent(new ComponentName("foo.bar", "Activity"));
+  }
+
+  @Test
+  public void requestListeningState_doesNotCrash() {
+    TileService.requestListeningState(
+        RuntimeEnvironment.getApplication(), ComponentName.createRelative("pkg", "cls"));
   }
 
   /**
