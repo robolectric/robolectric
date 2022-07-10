@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -46,6 +47,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import androidx.annotation.RequiresApi;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,6 +104,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private boolean hasReportedFullyDrawn = false;
   private boolean isInPictureInPictureMode = false;
   private Object splashScreen = null;
+  private boolean showWhenLocked = false;
+  private boolean turnScreenOn = false;
 
   public void setApplication(Application application) {
     reflector(_Activity_.class, realActivity).setApplication(application);
@@ -251,6 +255,26 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
   public int getDefaultKeymode() {
     return mDefaultKeyMode;
+  }
+
+  @Implementation(minSdk = O_MR1)
+  protected void setShowWhenLocked(boolean showWhenLocked) {
+    this.showWhenLocked = showWhenLocked;
+  }
+
+  @RequiresApi(api = O_MR1)
+  public boolean getShowWhenLocked() {
+    return showWhenLocked;
+  }
+
+  @Implementation(minSdk = O_MR1)
+  protected void setTurnScreenOn(boolean turnScreenOn) {
+    this.turnScreenOn = turnScreenOn;
+  }
+
+  @RequiresApi(api = O_MR1)
+  public boolean getTurnScreenOn() {
+    return turnScreenOn;
   }
 
   @Implementation

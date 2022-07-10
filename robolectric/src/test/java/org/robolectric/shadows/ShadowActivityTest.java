@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Looper.getMainLooper;
@@ -565,6 +566,34 @@ public class ShadowActivityTest {
       assertWithMessage("Unexpected key mode")
           .that(shadowOf(activity).getDefaultKeymode())
           .isEqualTo(mode);
+    }
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void setShowWhenLocked_shouldSetShowWhenLocked() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.create().get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+      assertThat(shadowActivity.getShowWhenLocked()).isFalse();
+      activity.setShowWhenLocked(true);
+      assertThat(shadowActivity.getShowWhenLocked()).isTrue();
+      activity.setShowWhenLocked(false);
+      assertThat(shadowActivity.getShowWhenLocked()).isFalse();
+    }
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void setTurnScreenOn_shouldSetTurnScreenOn() {
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      activity = controller.create().get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+      assertThat(shadowActivity.getTurnScreenOn()).isFalse();
+      activity.setTurnScreenOn(true);
+      assertThat(shadowActivity.getTurnScreenOn()).isTrue();
+      activity.setTurnScreenOn(false);
+      assertThat(shadowActivity.getTurnScreenOn()).isFalse();
     }
   }
 
