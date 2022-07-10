@@ -240,8 +240,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity()
-      throws Exception {
+  public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() {
     TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
@@ -257,8 +256,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException()
-      throws Exception {
+  public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() {
     ThrowOnResultActivity activity = Robolectric.buildActivity(ThrowOnResultActivity.class).get();
     activity.startActivityForResult(new Intent().setType("audio/*"), 123);
     activity.startActivityForResult(new Intent().setType("image/*"), 456);
@@ -282,7 +280,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldSupportStartActivityForResult() throws Exception {
+  public void shouldSupportStartActivityForResult() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
     assertThat(shadowOf(activity).getNextStartedActivity()).isNull();
@@ -295,7 +293,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldSupportGetStartedActivitiesForResult() throws Exception {
+  public void shouldSupportGetStartedActivitiesForResult() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
@@ -311,7 +309,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldSupportPeekStartedActivitiesForResult() throws Exception {
+  public void shouldSupportPeekStartedActivitiesForResult() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
@@ -338,13 +336,13 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldRetrievePackageNameFromTheManifest() throws Exception {
+  public void shouldRetrievePackageNameFromTheManifest() {
     assertThat(Robolectric.setupActivity(Activity.class).getPackageName())
         .isEqualTo(ApplicationProvider.getApplicationContext().getPackageName());
   }
 
   @Test
-  public void shouldRunUiTasksImmediatelyByDefault() throws Exception {
+  public void shouldRunUiTasksImmediatelyByDefault() {
     TestRunnable runnable = new TestRunnable();
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     activity.runOnUiThread(runnable);
@@ -353,7 +351,7 @@ public class ShadowActivityTest {
 
   @Test
   @LooperMode(LEGACY)
-  public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
+  public void shouldQueueUiTasksWhenUiThreadIsPaused() {
     shadowOf(getMainLooper()).pause();
 
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
@@ -371,7 +369,7 @@ public class ShadowActivityTest {
    */
   @Test
   @LooperMode(Mode.PAUSED)
-  public void shouldExecutePostedUiTasksInRealisticLooper() throws Exception {
+  public void shouldExecutePostedUiTasksInRealisticLooper() {
     activity = Robolectric.setupActivity(DialogLifeCycleActivity.class);
     TestRunnable runnable = new TestRunnable();
     activity.runOnUiThread(runnable);
@@ -449,7 +447,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void showDialog_shouldShowDialog() throws Exception {
+  public void showDialog_shouldShowDialog() {
     final DialogCreatingActivity activity = Robolectric.setupActivity(DialogCreatingActivity.class);
     activity.showDialog(1);
     Dialog dialog = ShadowDialog.getLatestDialog();
@@ -457,7 +455,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void dismissDialog_shouldDismissPreviouslyShownDialog() throws Exception {
+  public void dismissDialog_shouldDismissPreviouslyShownDialog() {
     final DialogCreatingActivity activity = Robolectric.setupActivity(DialogCreatingActivity.class);
     activity.showDialog(1);
     activity.dismissDialog(1);
@@ -466,7 +464,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void dismissDialog_shouldThrowExceptionIfDialogWasNotPreviouslyShown() throws Exception {
+  public void dismissDialog_shouldThrowExceptionIfDialogWasNotPreviouslyShown() {
     final DialogCreatingActivity activity = Robolectric.setupActivity(DialogCreatingActivity.class);
     try {
       activity.dismissDialog(1);
@@ -571,7 +569,7 @@ public class ShadowActivityTest {
   }
 
   @Test // unclear what the correct behavior should be here...
-  public void shouldPopulateWindowDecorViewWithMergeLayoutContents() throws Exception {
+  public void shouldPopulateWindowDecorViewWithMergeLayoutContents() {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     activity.setContentView(R.layout.toplevel_merge);
 
@@ -580,7 +578,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void setContentView_shouldReplaceOldContentView() throws Exception {
+  public void setContentView_shouldReplaceOldContentView() {
     View view1 = new View(getApplication());
     view1.setId(R.id.burritos);
     View view2 = new View(getApplication());
@@ -596,7 +594,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() throws Exception {
+  public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() {
     OnBackPressedActivity activity = buildActivity(OnBackPressedActivity.class).setup().get();
     boolean downConsumed =
         activity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
@@ -610,7 +608,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldGiveSharedPreferences() throws Exception {
+  public void shouldGiveSharedPreferences() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
     assertNotNull(preferences);
@@ -620,7 +618,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldFindContentViewContainerWithChild() throws Exception {
+  public void shouldFindContentViewContainerWithChild() {
     Activity activity = buildActivity(Activity.class).create().get();
     View contentView = new View(activity);
     activity.setContentView(contentView);
@@ -630,7 +628,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldFindContentViewContainerWithoutChild() throws Exception {
+  public void shouldFindContentViewContainerWithoutChild() {
     Activity activity = buildActivity(Activity.class).create().get();
 
     FrameLayout contentViewContainer = (FrameLayout) activity.findViewById(android.R.id.content);
@@ -638,7 +636,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void recreateGoesThroughFullLifeCycle() throws Exception {
+  public void recreateGoesThroughFullLifeCycle() {
     ActivityController<TestActivity> activityController =
         buildActivity(TestActivity.class).create();
     TestActivity oldActivity = activityController.get();
@@ -667,7 +665,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_resumed() throws Exception {
+  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_resumed() {
     ActivityController<TestActivity> activityController = buildActivity(TestActivity.class).setup();
     TestActivity oldActivity = activityController.get();
 
@@ -695,7 +693,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_paused() throws Exception {
+  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_paused() {
     ActivityController<TestActivity> activityController = buildActivity(TestActivity.class).setup();
     TestActivity oldActivity = activityController.get();
 
@@ -724,7 +722,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_stopped() throws Exception {
+  public void recreateBringsBackTheOriginalLifeCycleStateAfterRecreate_stopped() {
     ActivityController<TestActivity> activityController = buildActivity(TestActivity.class).setup();
     TestActivity oldActivity = activityController.get();
 
@@ -759,7 +757,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void startAndStopManagingCursorTracksCursors() throws Exception {
+  public void startAndStopManagingCursorTracksCursors() {
     TestActivity activity = new TestActivity();
 
     assertThat(shadowOf(activity).getManagedCursors()).isNotNull();
@@ -918,7 +916,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
+  public void getAndSetParentActivity_shouldWorkForTestingPurposes() {
     Activity parentActivity = new Activity();
     Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
@@ -926,14 +924,14 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
+  public void getAndSetRequestedOrientation_shouldRemember() {
     Activity activity = new Activity();
     activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
     assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
   }
 
   @Test
-  public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
+  public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() {
     Activity parentActivity = new Activity();
     Activity activity = new Activity();
     shadowOf(activity).setParent(parentActivity);
@@ -946,7 +944,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void shouldSupportIsTaskRoot() throws Exception {
+  public void shouldSupportIsTaskRoot() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     assertTrue(
         activity.isTaskRoot()); // as implemented, Activities are considered task roots by default
@@ -957,7 +955,7 @@ public class ShadowActivityTest {
 
   @Test
   @Config(minSdk = N)
-  public void shouldSupportIsInMultiWindowMode() throws Exception {
+  public void shouldSupportIsInMultiWindowMode() {
     Activity activity = Robolectric.setupActivity(Activity.class);
 
     assertThat(activity.isInMultiWindowMode())
@@ -968,21 +966,21 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void getPendingTransitionEnterAnimationResourceId_should() throws Exception {
+  public void getPendingTransitionEnterAnimationResourceId_should() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionEnterAnimationResourceId()).isEqualTo(15);
   }
 
   @Test
-  public void getPendingTransitionExitAnimationResourceId_should() throws Exception {
+  public void getPendingTransitionExitAnimationResourceId_should() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
   }
 
   @Test
-  public void getActionBar_shouldWorkIfActivityHasAnAppropriateTheme() throws Exception {
+  public void getActionBar_shouldWorkIfActivityHasAnAppropriateTheme() {
     ActionBarThemedActivity myActivity =
         Robolectric.buildActivity(ActionBarThemedActivity.class).create().get();
     ActionBar actionBar = myActivity.getActionBar();
@@ -1000,7 +998,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void canGetOptionsMenu() throws Exception {
+  public void canGetOptionsMenu() {
     Activity activity = buildActivity(OptionsMenuActivity.class).create().visible().get();
     Menu optionsMenu = shadowOf(activity).getOptionsMenu();
     assertThat(optionsMenu).isNotNull();
@@ -1008,7 +1006,7 @@ public class ShadowActivityTest {
   }
 
   @Test
-  public void canGetOptionsMenuWithActionMenu() throws Exception {
+  public void canGetOptionsMenuWithActionMenu() {
     ActionMenuActivity activity = buildActivity(ActionMenuActivity.class).create().visible().get();
 
     SearchView searchView = activity.mSearchView;
@@ -1370,7 +1368,7 @@ public class ShadowActivityTest {
 
   @Test
   @Config(minSdk = Q)
-  public void callOnGetDirectActions_succeeds() throws Exception {
+  public void callOnGetDirectActions_succeeds() {
     ActivityController<TestActivity> controller = Robolectric.buildActivity(TestActivity.class);
     TestActivity testActivity = controller.setup().get();
     Consumer<List<DirectAction>> testConsumer =
@@ -1386,7 +1384,7 @@ public class ShadowActivityTest {
 
   @Test
   @Config(minSdk = Q)
-  public void callOnGetDirectActions_malformedDirectAction_fails() throws Exception {
+  public void callOnGetDirectActions_malformedDirectAction_fails() {
     ActivityController<TestActivity> controller = Robolectric.buildActivity(TestActivity.class);
     TestActivity testActivity = controller.setup().get();
     // malformed DirectAction has missing LocusId
