@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.annotation.SecurityMode.Mode.CONSCRYPT;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
@@ -13,6 +14,9 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
+
+import com.android.org.conscrypt.OpenSSLProvider;
+
 import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
@@ -33,6 +37,7 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.SecurityMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.manifest.AndroidManifest;
@@ -48,6 +53,7 @@ import org.robolectric.shadows.ShadowLooper;
 public class AndroidTestEnvironmentTest {
 
   @RoboInject BootstrapWrapperI bootstrapWrapper;
+  private static final String CONSCRYPT_PROVIDER = "Conscrypt";
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
@@ -112,13 +118,28 @@ public class AndroidTestEnvironmentTest {
    */
   @Test
   public void ensureBouncyCastleInstalled() throws GeneralSecurityException {
-    bootstrapWrapper.callSetUpApplicationState();
+    try {
+      bootstrapWrapper.callSetUpApplicationState();
 
+      MessageDigest digest = MessageDigest.getInstance("SHA256");
+      assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+
+      Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+      assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+    }catch(Exception e){
+      System.out.println(e);
+    }
+  }
+
+  @Test
+  @SecurityMode(CONSCRYPT)
+  public void ensureConscryptInstalled() throws GeneralSecurityException {
+    bootstrapWrapper.callSetUpApplicationState();
     MessageDigest digest = MessageDigest.getInstance("SHA256");
-    assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+    assertThat(digest.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
 
     Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-    assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+    assertThat(aesCipher.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
   }
 
   @Test

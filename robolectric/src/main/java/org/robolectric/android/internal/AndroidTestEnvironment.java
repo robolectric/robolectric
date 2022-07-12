@@ -28,7 +28,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
 import android.util.DisplayMetrics;
+import android.util.Log;
+
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import com.android.org.conscrypt.OpenSSLProvider;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -46,6 +50,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.SecurityMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ResourcesMode;
@@ -89,6 +94,7 @@ import org.robolectric.util.TempDirectory;
 @SuppressLint("NewApi")
 public class AndroidTestEnvironment implements TestEnvironment {
 
+  private static final String CONSCRYPT_PROVIDER = "Conscrypt";
   private final Sdk runtimeSdk;
   private final Sdk compileSdk;
 
@@ -147,9 +153,22 @@ public class AndroidTestEnvironment implements TestEnvironment {
       loggingInitialized = true;
     }
 
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+    SecurityMode.Mode securityMode = configuration.get(SecurityMode.Mode.class);
+    if (securityMode == SecurityMode.Mode.BOUNCY_CASTLE) {
+      if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+        Security.addProvider(new BouncyCastleProvider());
+        Log.e("Bouncy Castle", "Bouncy Castle's if condition");
+
+      }
     }
+    else{
+      if(Security.getProvider(CONSCRYPT_PROVIDER) == null){
+        Security.insertProviderAt(new OpenSSLProvider(), 1);
+        Log.e("Conscrypt","Conscrypt's if condition");
+
+      }
+    }
+
 
     android.content.res.Configuration androidConfiguration =
         new android.content.res.Configuration();
