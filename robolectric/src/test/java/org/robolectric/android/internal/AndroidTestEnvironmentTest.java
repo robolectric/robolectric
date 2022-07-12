@@ -15,17 +15,19 @@ import android.os.Build;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.android.org.conscrypt.OpenSSLProvider;
-
 import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.conscrypt.OpenSSLMessageDigestJDK;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
@@ -133,13 +135,16 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   @SecurityMode(CONSCRYPT)
-  public void ensureConscryptInstalled() throws GeneralSecurityException {
-    bootstrapWrapper.callSetUpApplicationState();
-    MessageDigest digest = MessageDigest.getInstance("SHA256");
-    assertThat(digest.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
+  public void ensureConscryptInstalled() throws CertificateException {
+//    bootstrapWrapper.callSetUpApplicationState();
+//    MessageDigest digest = MessageDigest.getInstance("SHA256");
+//    assertThat(digest.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
+//
+//    Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+//    assertThat(aesCipher.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    assertThat(factory.getProvider().getName()).isEqualTo("Conscrypt");
 
-    Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-    assertThat(aesCipher.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
   }
 
   @Test
