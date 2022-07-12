@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.bluetooth.BluetoothAdapter.STATE_ON;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothAdapter;
@@ -14,6 +16,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
@@ -22,6 +25,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.ParcelUuid;
 import android.provider.Settings;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,7 +62,7 @@ public class ShadowBluetoothAdapter {
   private int state;
   private String name = "DefaultBluetoothDeviceName";
   private int scanMode = BluetoothAdapter.SCAN_MODE_NONE;
-  private int discoverableTimeout = 0;
+  private Duration discoverableTimeout;
   private boolean isBleScanAlwaysAvailable = true;
   private boolean isMultipleAdvertisementSupported = true;
   private boolean isLeExtendedAdvertisingSupported = true;
@@ -305,14 +309,35 @@ public class ShadowBluetoothAdapter {
     return scanMode;
   }
 
+  /**
+   * Needs looseSignatures because the return value changed from {@code int} to {@link Duration}
+   * starting in T.
+   */
   @Implementation
-  protected int getDiscoverableTimeout() {
-    return discoverableTimeout;
+  protected Object getDiscoverableTimeout() {
+    if (RuntimeEnvironment.getApiLevel() <= S_V2) {
+      return (int) discoverableTimeout.toSeconds();
+    } else {
+      return discoverableTimeout;
+    }
   }
 
-  @Implementation
+  @Implementation(maxSdk = S_V2)
   protected void setDiscoverableTimeout(int timeout) {
-    discoverableTimeout = timeout;
+    discoverableTimeout = Duration.ofSeconds(timeout);
+  }
+
+  @Implementation(minSdk = 33)
+  protected int setDiscoverableTimeout(Duration timeout) {
+    if (getState() != STATE_ON) {
+      return BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED;
+    }
+    if (timeout.toSeconds() > Integer.MAX_VALUE) {
+      throw new IllegalArgumentException(
+          "Timeout in seconds must be less or equal to " + Integer.MAX_VALUE);
+    }
+    this.discoverableTimeout = timeout;
+    return BluetoothStatusCodes.SUCCESS;
   }
 
   @Implementation(minSdk = LOLLIPOP)
