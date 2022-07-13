@@ -32,7 +32,7 @@ import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.org.conscrypt.OpenSSLProvider;
+import org.conscrypt.OpenSSLProvider;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
