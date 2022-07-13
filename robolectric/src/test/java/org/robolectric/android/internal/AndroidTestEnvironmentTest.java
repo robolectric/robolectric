@@ -120,7 +120,7 @@ public class AndroidTestEnvironmentTest {
    */
   @Test
   public void ensureBouncyCastleInstalled() throws GeneralSecurityException {
-    try {
+
       bootstrapWrapper.callSetUpApplicationState();
 
       MessageDigest digest = MessageDigest.getInstance("SHA256");
@@ -128,22 +128,6 @@ public class AndroidTestEnvironmentTest {
 
       Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
       assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
-    }catch(Exception e){
-      System.out.println(e);
-    }
-  }
-
-  @Test
-  @SecurityMode(CONSCRYPT)
-  public void ensureConscryptInstalled() throws CertificateException {
-//    bootstrapWrapper.callSetUpApplicationState();
-//    MessageDigest digest = MessageDigest.getInstance("SHA256");
-//    assertThat(digest.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
-//
-//    Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-//    assertThat(aesCipher.getProvider().getName()).isEqualTo(CONSCRYPT_PROVIDER);
-    CertificateFactory factory = CertificateFactory.getInstance("X.509");
-    assertThat(factory.getProvider().getName()).isEqualTo("Conscrypt");
 
   }
 
