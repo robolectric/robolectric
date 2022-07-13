@@ -28,6 +28,7 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = SubscriptionManager.class, minSdk = LOLLIPOP_MR1)
 public class ShadowSubscriptionManager {
 
+  private boolean readPhoneStatePermission = true;
   public static final int INVALID_PHONE_INDEX =
       ReflectionHelpers.getStaticField(SubscriptionManager.class, "INVALID_PHONE_INDEX");
 
@@ -134,6 +135,7 @@ public class ShadowSubscriptionManager {
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected List<SubscriptionInfo> getActiveSubscriptionInfoList() {
+    checkReadPhoneStatePermission();
     return subscriptionList;
   }
 
@@ -152,6 +154,7 @@ public class ShadowSubscriptionManager {
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected int getActiveSubscriptionInfoCount() {
+    checkReadPhoneStatePermission();
     return subscriptionList == null ? 0 : subscriptionList.size();
   }
 
@@ -194,6 +197,7 @@ public class ShadowSubscriptionManager {
    */
   @Implementation(minSdk = N)
   protected SubscriptionInfo getActiveSubscriptionInfoForSimSlotIndex(int slotIndex) {
+    checkReadPhoneStatePermission();
     if (subscriptionList == null) {
       return null;
     }
@@ -356,6 +360,21 @@ public class ShadowSubscriptionManager {
       return phoneIds.get(subId);
     }
     return INVALID_PHONE_INDEX;
+  }
+
+  /**
+   * When set to false methods requiring {@link android.Manifest.permission.READ_PHONE_STATE}
+   * permission will throw a {@link SecurityException}. By default it's set to true for backwards
+   * compatibility.
+   */
+  public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
+    this.readPhoneStatePermission = readPhoneStatePermission;
+  }
+
+  private void checkReadPhoneStatePermission() {
+    if (!readPhoneStatePermission) {
+      throw new SecurityException();
+    }
   }
 
   @Resetter

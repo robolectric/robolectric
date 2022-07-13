@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.telephony.SubscriptionInfo;
@@ -105,6 +106,24 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void getActiveSubscriptionInfoList_shouldReturnInfoList() {
+    SubscriptionInfo expectedSubscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
+    shadowOf(subscriptionManager).setActiveSubscriptionInfos(expectedSubscriptionInfo);
+
+    assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfoList())
+        .containsExactly(expectedSubscriptionInfo);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoList_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+    assertThrows(
+        SecurityException.class,
+        () -> shadowOf(subscriptionManager).getActiveSubscriptionInfoList());
+  }
+
+  @Test
   public void getActiveSubscriptionInfoForSimSlotIndex_shouldReturnInfoWithSlotIndex() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setSimSlotIndex(123).buildSubscriptionInfo();
@@ -112,6 +131,14 @@ public class ShadowSubscriptionManagerTest {
 
     assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfoForSimSlotIndex(123))
         .isSameInstanceAs(expectedSubscriptionInfo);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoForSimSlotIndex_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+    assertThrows(
+        SecurityException.class,
+        () -> shadowOf(subscriptionManager).getActiveSubscriptionInfoForSimSlotIndex(123));
   }
 
   @Test
@@ -188,6 +215,13 @@ public class ShadowSubscriptionManagerTest {
     shadowOf(subscriptionManager).setActiveSubscriptionInfoList(null);
 
     assertThat(subscriptionManager.getActiveSubscriptionInfoCountMax()).isEqualTo(0);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfoCountMax_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+    assertThrows(
+        SecurityException.class, () -> subscriptionManager.getActiveSubscriptionInfoCountMax());
   }
 
   @Test
