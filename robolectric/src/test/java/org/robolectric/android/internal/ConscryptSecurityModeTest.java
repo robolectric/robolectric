@@ -13,6 +13,8 @@ import org.robolectric.annotation.SecurityMode;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
+@RunWith(BootstrapDeferringRobolectricTestRunner.class)
+@LooperMode(LEGACY)
 public class ConscryptSecurityModeTest {
 
     @Test
