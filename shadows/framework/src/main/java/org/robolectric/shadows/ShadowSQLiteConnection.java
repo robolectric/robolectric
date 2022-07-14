@@ -49,24 +49,15 @@ public class ShadowSQLiteConnection {
    * process crashes. However, this is not a requirement for Robolectric processes, where all
    * database files are temporary and get deleted after each test.
    *
+   * <p>This also updates the default sync mode used when SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
+   * (WAL) is used.
+   *
    * <p>If your test expects SQLite files being synced to disk, such as having multiple processes
    * interact with the database, or deleting SQLite files while connections are open and having this
    * reflected in the open connection, use "FULL" mode.
    */
   public static void setDefaultSyncMode(String value) {
     SystemProperties.set("debug.sqlite.syncmode", value);
-  }
-
-  /**
-   * Sets the default sync mode for SQLite databases when SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
-   * is used. Robolectric uses "OFF" by default in order to improve SQLite performance. The Android
-   * default is "FULL" for SDKs < 28 and "NORMAL" for SDKs >= 28.
-   *
-   * <p>If your test expects SQLite files being synced to disk, such as having multiple processes
-   * interact with the database, or deleting SQLite files while connections are open and having this
-   * reflected in the open connection, use "FULL" mode.
-   */
-  public static void setDefaultWALSyncMode(String value) {
     SystemProperties.set("debug.sqlite.wal.syncmode", value);
   }
 
