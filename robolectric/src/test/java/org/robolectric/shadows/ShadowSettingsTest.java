@@ -317,4 +317,38 @@ public class ShadowSettingsTest {
     assertThat(SystemClock.uptimeMillis() - startTime)
         .isAtMost(ShadowChoreographer.getFrameDelay().toMillis() * 2);
   }
+
+  @Test
+  public void testSetLockScreenShowNotifications_settingsSecure_true() {
+    ShadowSettings.setLockScreenShowNotifications(true);
+    assertThat(
+            Secure.getInt(context.getContentResolver(), Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, 0))
+        .isEqualTo(1);
+  }
+
+  @Test
+  public void testSetLockScreenShowNotifications_settingsSecure_false() {
+    ShadowSettings.setLockScreenShowNotifications(false);
+    assertThat(
+            Secure.getInt(context.getContentResolver(), Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, 0))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void testSetLockScreenAllowPrivateNotifications_settingsSecure_true() {
+    ShadowSettings.setLockScreenAllowPrivateNotifications(true);
+    assertThat(
+            Secure.getInt(
+                context.getContentResolver(), Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 0))
+        .isEqualTo(1);
+  }
+
+  @Test
+  public void testSetLockScreenAllowPrivateNotifications_settingsSecure_false() {
+    ShadowSettings.setLockScreenAllowPrivateNotifications(false);
+    assertThat(
+            Secure.getInt(
+                context.getContentResolver(), Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 0))
+        .isEqualTo(0);
+  }
 }
