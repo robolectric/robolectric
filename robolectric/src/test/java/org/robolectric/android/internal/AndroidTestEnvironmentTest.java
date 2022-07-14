@@ -5,7 +5,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
-import static org.robolectric.annotation.SecurityMode.Mode.CONSCRYPT;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
@@ -19,15 +18,12 @@ import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.crypto.Cipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.conscrypt.OpenSSLMessageDigestJDK;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.BootstrapDeferringRobolectricTestRunner;
@@ -39,7 +35,6 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.SecurityMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.manifest.AndroidManifest;
@@ -55,7 +50,7 @@ import org.robolectric.shadows.ShadowLooper;
 public class AndroidTestEnvironmentTest {
 
   @RoboInject BootstrapWrapperI bootstrapWrapper;
-  private static final String CONSCRYPT_PROVIDER = "Conscrypt";
+//  private static final String CONSCRYPT_PROVIDER = "Conscrypt";
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
