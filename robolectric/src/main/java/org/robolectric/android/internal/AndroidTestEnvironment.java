@@ -154,7 +154,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     SecurityMode.Mode securityMode = configuration.get(SecurityMode.Mode.class);
-    if (securityMode == SecurityMode.Mode.BOUNCY_CASTLE) {
+    if (securityMode == SecurityMode.Mode.BOUNCY_CASTLE || securityMode == null) {
+
       if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
         Security.addProvider(new BouncyCastleProvider());
         Log.e("Bouncy Castle", "Bouncy Castle's if condition");
