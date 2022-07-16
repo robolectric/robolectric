@@ -123,50 +123,19 @@ jobs:
           distribution: 'zulu'
           java-version: 11
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
       - uses: gradle/gradle-build-action@v2
 
-      - name: Determine emulator target
-        id: determine-target
+      - name: Run instrumentation tests
+        # We can't run tests by UTP with multi workers in GitHub Actions,
+        # see https://issuetracker.google.com/issues/193118030.
         run: |
-          TARGET="google_apis"
-          echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
-          
-      - name: AVD cache
-        uses: actions/cache@v3
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ env.cache-version }}
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-
-      - name: Run device tests
-        # See https://github.com/orgs/community/discussions/27121
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          disable-spellchecker: true
-
-          profile: Nexus One
-          script: |
-            ./gradlew cAT || ./gradlew cAT || ./gradlew cAT || exit 1
+          ./gradlew nexusOneApi${{ matrix.api-level }}DebugAndroidTest \
+            -Dorg.gradle.workers.max=2 \
+            -Pandroid.sdk.channel=3 \
+            -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
 
       - name: Upload test results
         if: always()

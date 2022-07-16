@@ -23,6 +23,13 @@ class GradleManagedDevicePlugin implements Plugin<Project> {
                     systemImageSource = "google"
                 }
             }
+            // Disable Emulator snapshots to ensure that we can run tests with UTP on
+            // GitHub CI.
+            // See https://issuetracker.google.com/issues/198509760.
+            emulatorSnapshots {
+                enableForTestFailures false
+                maxSnapshotsForTestFailures 0
+            }
         }
     }
 }
