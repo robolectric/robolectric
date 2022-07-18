@@ -6,20 +6,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
 public @interface SecurityMode {
 
-    /** Specifies the different supported Security modes. */
-    enum Mode {
+  /** Specifies the different supported Security modes. */
+  enum Mode {
+    BOUNCY_CASTLE,
 
-        BOUNCY_CASTLE,
+    CONSCRYPT,
+  }
 
-        CONSCRYPT,
-    }
-
-    Mode value();
+  Mode value();
 }
-

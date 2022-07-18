@@ -13,11 +13,9 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
-
 import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -115,14 +113,13 @@ public class AndroidTestEnvironmentTest {
   @Test
   public void ensureBouncyCastleInstalled() throws GeneralSecurityException {
 
-      bootstrapWrapper.callSetUpApplicationState();
+    bootstrapWrapper.callSetUpApplicationState();
 
-      MessageDigest digest = MessageDigest.getInstance("SHA256");
-      assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+    MessageDigest digest = MessageDigest.getInstance("SHA256");
+    assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
 
-      Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
-      assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
-
+    Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+    assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
   }
 
   @Test
