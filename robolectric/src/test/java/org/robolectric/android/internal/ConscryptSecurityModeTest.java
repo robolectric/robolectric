@@ -14,7 +14,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 
 @RunWith(RobolectricTestRunner.class)
-@LooperMode(LEGACY)
 public class ConscryptSecurityModeTest {
 
     @Test

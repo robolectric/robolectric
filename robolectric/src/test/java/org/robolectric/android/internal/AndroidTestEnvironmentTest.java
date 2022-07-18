@@ -50,7 +50,6 @@ import org.robolectric.shadows.ShadowLooper;
 public class AndroidTestEnvironmentTest {
 
   @RoboInject BootstrapWrapperI bootstrapWrapper;
-//  private static final String CONSCRYPT_PROVIDER = "Conscrypt";
 
   @Test
   public void setUpApplicationState_configuresGlobalScheduler() {
