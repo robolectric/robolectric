@@ -28,11 +28,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.provider.FontsContract;
 import android.util.DisplayMetrics;
-import android.util.Log;
-
 import androidx.test.platform.app.InstrumentationRegistry;
-
-import org.conscrypt.OpenSSLProvider;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -45,6 +41,7 @@ import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.conscrypt.OpenSSLProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
@@ -158,16 +155,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
       if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
         Security.addProvider(new BouncyCastleProvider());
-
       }
-    }
-    else{
-      if(Security.getProvider(CONSCRYPT_PROVIDER) == null){
+    } else {
+      if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         Security.insertProviderAt(new OpenSSLProvider(), 1);
-
       }
     }
-
 
     android.content.res.Configuration androidConfiguration =
         new android.content.res.Configuration();
