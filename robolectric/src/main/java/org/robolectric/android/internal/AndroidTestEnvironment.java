@@ -158,14 +158,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
       if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
         Security.addProvider(new BouncyCastleProvider());
-        Log.e("Bouncy Castle", "Bouncy Castle's if condition");
 
       }
     }
     else{
       if(Security.getProvider(CONSCRYPT_PROVIDER) == null){
         Security.insertProviderAt(new OpenSSLProvider(), 1);
-        Log.e("Conscrypt","Conscrypt's if condition");
 
       }
     }
