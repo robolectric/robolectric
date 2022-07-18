@@ -325,7 +325,7 @@ public class ShadowMediaCodec {
     releaseOutputBuffer(index);
   }
 
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected void releaseOutputBuffer(int index, long renderTimestampNs) {
     releaseOutputBuffer(index);
   }

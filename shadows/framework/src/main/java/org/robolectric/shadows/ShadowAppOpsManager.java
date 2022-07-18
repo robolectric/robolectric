@@ -232,7 +232,7 @@ public class ShadowAppOpsManager {
     return checkOpNoThrow(AppOpsManager.strOpToOp(op), uid, packageName);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = R)
   protected int unsafeCheckOpRawNoThrow(int op, int uid, String packageName) {
     Integer mode = appModeMap.get(Key.create(uid, packageName, op));
     if (mode == null) {

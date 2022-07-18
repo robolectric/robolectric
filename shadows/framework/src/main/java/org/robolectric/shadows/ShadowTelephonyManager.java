@@ -453,7 +453,6 @@ public class ShadowTelephonyManager {
   }
 
   /** Sets the sim state of slot 0. */
-  @Implementation(minSdk = LOLLIPOP_MR1)
   public void setSimState(int simState) {
     setSimState(/* slotIndex= */ 0, simState);
   }

@@ -1865,26 +1865,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
-  protected Object getKeySetByAlias(String packageName, String alias) {
-    return null;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected Object getSigningKeySet(String packageName) {
-    return null;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isSignedBy(String packageName, Object ks) {
-    return false;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isSignedByExactly(String packageName, Object ks) {
-    return false;
-  }
-
   @Implementation
   protected VerifierDeviceIdentity getVerifierDeviceIdentity() {
     return null;

@@ -5,7 +5,6 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -140,12 +139,6 @@ public class ShadowInstrumentation {
     for (Intent intent : intents) {
       execStartActivity(who, contextThread, token, target, intent, -1, options);
     }
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void execStartActivityFromAppTask(
-      Context who, IBinder contextThread, Object appTask, Intent intent, Bundle options) {
-    throw new UnsupportedOperationException("Implement me!!");
   }
 
   @Implementation

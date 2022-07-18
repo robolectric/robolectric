@@ -105,9 +105,6 @@ public class ShadowUsbManager {
   }
 
   /** Grants permission for the accessory. */
-  // Note: This is not an actual implementation. However, because this method is overloaded with
-  // #grantPermission(UsbDevice), the linter wrongly assumes this method exists on UsbManager.
-  @Implementation(minSdk = N)
   public void grantPermission(UsbAccessory accessory) {
     String packageName = RuntimeEnvironment.getApplication().getPackageName();
     List<UsbAccessory> usbAccessories = grantedAccessoryPermissions.get(packageName);
@@ -258,7 +255,6 @@ public class ShadowUsbManager {
    * portId} if present; otherwise returns {@code null}.
    */
   @Nullable
-  @Implementation(minSdk = M)
   public /* UsbPortStatus */ Object getPortStatus(String portId) {
     return usbPortStatuses.get(usbPorts.get(portId));
   }
