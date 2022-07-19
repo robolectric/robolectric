@@ -210,7 +210,7 @@ public class RuntimeEnvironment {
       // changes will be propagated once the application is finally loaded
       Bootstrap.updateDisplayResources(configuration, displayMetrics);
     }
-    if (Boolean.getBoolean("robolectric.useRealGraphics")) {
+    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
   }

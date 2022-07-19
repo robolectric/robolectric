@@ -157,7 +157,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration, displayMetrics);
 
-    if (Boolean.getBoolean("robolectric.useRealGraphics")) {
+    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
     Locale locale =

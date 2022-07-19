@@ -36,7 +36,7 @@ public class ShadowScrollViewTest {
   @Test
   public void realCode_shouldSmoothScrollTo() {
     try {
-      System.setProperty("robolectric.useRealGraphics", "true");
+      System.setProperty("robolectric.nativeruntime.enableGraphics", "true");
       Activity activity = Robolectric.setupActivity(Activity.class);
       ScrollView scrollView = new ScrollView(activity);
       View view = new View(activity);
@@ -51,14 +51,14 @@ public class ShadowScrollViewTest {
       assertEquals(7, scrollView.getScrollX());
       assertEquals(6, scrollView.getScrollY());
     } finally {
-      System.clearProperty("robolectric.useRealGraphics");
+      System.clearProperty("robolectric.nativeruntime.enableGraphics");
     }
   }
 
   @Test
   public void realCode_shouldSmoothScrollBy() {
     try {
-      System.setProperty("robolectric.useRealGraphics", "true");
+      System.setProperty("robolectric.nativeruntime.enableGraphics", "true");
       Activity activity = Robolectric.setupActivity(Activity.class);
       ScrollView scrollView = new ScrollView(activity);
       View view = new View(activity);
@@ -74,7 +74,7 @@ public class ShadowScrollViewTest {
       assertEquals(17, scrollView.getScrollX());
       assertEquals(26, scrollView.getScrollY());
     } finally {
-      System.clearProperty("robolectric.useRealGraphics");
+      System.clearProperty("robolectric.nativeruntime.enableGraphics");
     }
   }
 }
