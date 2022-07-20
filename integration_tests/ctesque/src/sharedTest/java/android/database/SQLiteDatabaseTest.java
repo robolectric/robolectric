@@ -136,4 +136,16 @@ public class SQLiteDatabaseTest {
         .hasMessageThat()
         .contains("Queries can be performed using SQLiteDatabase query or rawQuery methods only.");
   }
+
+  @Test
+  public void close_withExclusiveLockingMode() {
+    database.rawQuery("PRAGMA locking_mode = EXCLUSIVE", new String[0]);
+    ContentValues values = new ContentValues();
+    values.put("first_column", "");
+    database.insert("table_name", null, values);
+    database.close();
+
+    database = SQLiteDatabase.openOrCreateDatabase(databasePath, null);
+    database.insert("table_name", null, values);
+  }
 }
