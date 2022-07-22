@@ -61,9 +61,12 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  public void getActivity_shouldCreateIntentForBroadcast() {
+  public void getActivity_withBundle_shouldCreateIntentForBroadcast() {
     Intent intent = new Intent();
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100);
+    Bundle bundle = new Bundle();
+    bundle.putInt("weight", 741);
+    bundle.putString("name", "Ada");
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, intent, 100, bundle);
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.isActivityIntent()).isTrue();
@@ -74,6 +77,8 @@ public class ShadowPendingIntentTest {
     assertThat(context).isEqualTo(shadow.getSavedContext());
     assertThat(shadow.getRequestCode()).isEqualTo(99);
     assertThat(shadow.getFlags()).isEqualTo(100);
+    assertThat(shadow.getOptions().getInt("weight")).isEqualTo(741);
+    assertThat(shadow.getOptions().getString("name")).isEqualTo("Ada");
   }
 
   @Test
@@ -94,8 +99,10 @@ public class ShadowPendingIntentTest {
   @Test
   public void getActivities_withBundle_shouldCreateIntentForBroadcast() throws Exception {
     Intent[] intents = {new Intent(Intent.ACTION_VIEW), new Intent(Intent.ACTION_PICK)};
-    PendingIntent pendingIntent =
-        PendingIntent.getActivities(context, 99, intents, 100, Bundle.EMPTY);
+    Bundle bundle = new Bundle();
+    bundle.putInt("weight", 741);
+    bundle.putString("name", "Ada");
+    PendingIntent pendingIntent = PendingIntent.getActivities(context, 99, intents, 100, bundle);
 
     ShadowPendingIntent shadow = shadowOf(pendingIntent);
     assertThat(shadow.getSavedIntents()).isEqualTo(intents);
@@ -105,6 +112,8 @@ public class ShadowPendingIntentTest {
         shadowOf((Application) ApplicationProvider.getApplicationContext());
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[1]);
     assertThat(application.getNextStartedActivity()).isEqualTo(intents[0]);
+    assertThat(shadow.getOptions().getInt("weight")).isEqualTo(741);
+    assertThat(shadow.getOptions().getString("name")).isEqualTo("Ada");
   }
 
   @Test
