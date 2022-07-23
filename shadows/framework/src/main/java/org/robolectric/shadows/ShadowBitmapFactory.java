@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static java.lang.Math.round;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.shadows.ImageUtil.getImageFromStream;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -291,17 +292,32 @@ public class ShadowBitmapFactory {
       p.y = p.y == 0 ? 1 : p.y;
     }
 
-    shadowBitmap.setWidth(p.x);
-    shadowBitmap.setHeight(p.y);
+    // Prior to KitKat the density scale will be applied by finishDecode below.
+    float scale =
+        RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
+                && options != null
+                && options.inScaled
+                && options.inDensity != 0
+                && options.inTargetDensity != 0
+                && options.inDensity != options.inScreenDensity
+            ? (float) options.inTargetDensity / options.inDensity
+            : 1;
+    int scaledWidth = round(p.x * scale);
+    int scaledHeight = round(p.y * scale);
+
+    shadowBitmap.setWidth(scaledWidth);
+    shadowBitmap.setHeight(scaledHeight);
     if (image != null) {
-      BufferedImage bufferedImage = new BufferedImage(p.x, p.y, BufferedImage.TYPE_INT_ARGB);
+      BufferedImage bufferedImage =
+          new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_ARGB);
       // Copy the image as TYPE_INT_ARGB for fast comparison (sameAs).
       Graphics2D g = bufferedImage.createGraphics();
       g.drawImage(image.getBufferedImage(), 0, 0, null);
       g.dispose();
       shadowBitmap.setBufferedImage(bufferedImage);
     } else {
-      shadowBitmap.setPixelsInternal(new int[p.x * p.y], 0, 0, 0, 0, p.x, p.y);
+      shadowBitmap.setPixelsInternal(
+          new int[scaledWidth * scaledHeight], 0, 0, 0, 0, scaledWidth, scaledHeight);
     }
     if (options != null) {
       options.outWidth = p.x;
@@ -327,13 +343,17 @@ public class ShadowBitmapFactory {
     return bitmap;
   }
 
-  /** @deprecated Use any of the BitmapFactory.decode methods with real image data. */
+  /**
+   * @deprecated Use any of the BitmapFactory.decode methods with real image data.
+   */
   @Deprecated
   public static void provideWidthAndHeightHints(Uri uri, int width, int height) {
     widthAndHeightMap.put(uri.toString(), new Point(width, height));
   }
 
-  /** @deprecated Use any of the BitmapFactory.decode methods with real image data. */
+  /**
+   * @deprecated Use any of the BitmapFactory.decode methods with real image data.
+   */
   @Deprecated
   public static void provideWidthAndHeightHints(int resourceId, int width, int height) {
     widthAndHeightMap.put(
@@ -342,13 +362,17 @@ public class ShadowBitmapFactory {
         new Point(width, height));
   }
 
-  /** @deprecated Use any of the BitmapFactory.decode methods with real image data. */
+  /**
+   * @deprecated Use any of the BitmapFactory.decode methods with real image data.
+   */
   @Deprecated
   public static void provideWidthAndHeightHints(String file, int width, int height) {
     widthAndHeightMap.put("file:" + file, new Point(width, height));
   }
 
-  /** @deprecated Use any of the BitmapFactory.decode methods with real image data. */
+  /**
+   * @deprecated Use any of the BitmapFactory.decode methods with real image data.
+   */
   @Deprecated
   @SuppressWarnings("ObjectToString")
   public static void provideWidthAndHeightHints(FileDescriptor fd, int width, int height) {
