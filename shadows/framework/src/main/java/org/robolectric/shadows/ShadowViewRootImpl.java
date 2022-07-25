@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.annotation.TextLayoutMode.Mode.REALISTIC;
@@ -17,6 +18,7 @@ import android.view.Display;
 import android.view.HandlerActionQueue;
 import android.view.IWindowSession;
 import android.view.InsetsState;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -30,6 +32,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
@@ -61,6 +64,13 @@ public class ShadowViewRootImpl {
     int result = 0;
     if (ShadowWindowManagerGlobal.getInTouchMode()) {
       result |= WindowManagerGlobal.RELAYOUT_RES_IN_TOUCH_MODE;
+    }
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      // Simulate initializing the SurfaceControl member object, which happens during this method.
+      SurfaceControl surfaceControl =
+          reflector(ViewRootImplReflector.class, realObject).getSurfaceControl();
+      ShadowSurfaceControl shadowSurfaceControl = Shadow.extract(surfaceControl);
+      shadowSurfaceControl.initializeNativeObject();
     }
     return result;
   }
@@ -226,6 +236,9 @@ public class ShadowViewRootImpl {
 
     @Accessor("mDisplay")
     Display getDisplay();
+
+    @Accessor("mSurfaceControl")
+    SurfaceControl getSurfaceControl();
 
     // <= JELLY_BEAN
     void dispatchResized(

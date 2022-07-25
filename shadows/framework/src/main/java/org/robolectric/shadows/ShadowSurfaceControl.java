@@ -80,10 +80,17 @@ public class ShadowSurfaceControl {
     return nativeObject.incrementAndGet();
   }
 
+  void initializeNativeObject() {
+    surfaceControlReflector.setNativeObject(nativeObject.incrementAndGet());
+  }
+
   @ForType(SurfaceControl.class)
   interface SurfaceControlReflector {
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();
+
+    @Accessor("mNativeObject")
+    void setNativeObject(long nativeObject);
 
     @Direct
     void finalize();

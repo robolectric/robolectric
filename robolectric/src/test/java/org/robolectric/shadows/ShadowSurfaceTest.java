@@ -1,15 +1,20 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.content.ClipData;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.os.Looper;
 import android.view.Surface;
+import android.view.SurfaceControl;
+import android.view.SurfaceSession;
+import android.view.View.DragShadowBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import dalvik.system.CloseGuard;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,7 +72,8 @@ public class ShadowSurfaceTest {
   @Test
   @Config(minSdk = M)
   public void lockHardwareCanvas_returnsCanvas() {
-    assertThat(surface.lockHardwareCanvas()).isInstanceOf(Canvas.class);
+    Canvas canvas = surface.lockHardwareCanvas();
+    assertThat(canvas.isHardwareAccelerated()).isTrue();
   }
 
   @Test
@@ -110,6 +116,36 @@ public class ShadowSurfaceTest {
     shadowOf(Looper.getMainLooper()).idle();
 
     assertThat(listenerCallBackCalled.get()).isTrue();
+  }
+
+  @Config(minSdk = M)
+  @Test
+  public void unlockCanvasAndPost_triggersFrameUpdateInSurfaceTexture_hardwareCanvas() {
+    AtomicBoolean listenerCallBackCalled = new AtomicBoolean(false);
+
+    texture.setOnFrameAvailableListener((surfaceTexture) -> listenerCallBackCalled.set(true));
+    Canvas canvas = surface.lockHardwareCanvas();
+    surface.unlockCanvasAndPost(canvas);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(listenerCallBackCalled.get()).isTrue();
+  }
+
+  /**
+   * This test simulates what occurs in {@link android.view.View#startDragAndDrop(ClipData,
+   * DragShadowBuilder, Object, int)}..
+   */
+  @Config(minSdk = Q)
+  @Test
+  public void copyFrom_surfaceControl_lockHardwareCavnvas() {
+    SurfaceSession session = new SurfaceSession();
+    SurfaceControl surfaceControl =
+        new SurfaceControl.Builder(session).setBufferSize(100, 100).setName("").build();
+    Surface surface2 = new Surface();
+    surface2.copyFrom(surfaceControl);
+    Canvas canvas = surface2.lockHardwareCanvas();
+    assertThat(canvas).isNotNull();
+    surface2.release();
   }
 
   /** Used to expose the finalize method for testing purposes. */
