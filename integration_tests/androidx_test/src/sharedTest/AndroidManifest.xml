@@ -11,6 +11,8 @@
     <activity android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
               android:exported="true"/>
     <activity android:name=".EspressoActivity" android:exported="true"/>
+    <activity android:name=".EspressoScrollingActivity" android:exported="true"/>
+
     <activity android:name=".ActivityScenarioTest$LifecycleOwnerActivity" android:exported="true"/>
     <activity android:name=".ActivityScenarioTest$TranscriptActivity" android:exported = "true"/>
     <activity-alias
