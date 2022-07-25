@@ -30,7 +30,9 @@ public class SecurityModeConfigurer implements Configurer<SecurityMode.Mode> {
   @Nonnull
   @Override
   public SecurityMode.Mode defaultConfig() {
-    String defaultValue = "BOUNCY_CASTLE";
+
+    String defaultValue = "CONSCRYPT";
+
     String os = systemProperties.getProperty(OS_NAME.key(), "").toLowerCase(Locale.US);
     String arch = systemProperties.getProperty(OS_ARCH.key(), "").toLowerCase(Locale.US);
     if (os.contains("mac") && arch.equals("aarch64")) {

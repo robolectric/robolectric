@@ -5,6 +5,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
+import static org.robolectric.annotation.SecurityMode.Mode.BOUNCY_CASTLE;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
@@ -33,6 +34,7 @@ import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.SecurityMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.manifest.AndroidManifest;
@@ -111,6 +113,7 @@ public class AndroidTestEnvironmentTest {
    * in Robolectric via {@link BouncyCastleProvider}.
    */
   @Test
+  @SecurityMode(BOUNCY_CASTLE)
   public void ensureBouncyCastleInstalled() throws GeneralSecurityException {
 
     bootstrapWrapper.callSetUpApplicationState();

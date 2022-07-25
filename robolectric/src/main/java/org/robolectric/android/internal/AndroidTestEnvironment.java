@@ -151,14 +151,18 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     SecurityMode.Mode securityMode = configuration.get(SecurityMode.Mode.class);
-    if (securityMode == SecurityMode.Mode.BOUNCY_CASTLE || securityMode == null) {
+    if (securityMode == SecurityMode.Mode.CONSCRYPT || securityMode == null) {
 
-      if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-        Security.addProvider(new BouncyCastleProvider());
-      }
-    } else {
+      Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         Security.insertProviderAt(new OpenSSLProvider(), 1);
+        System.out.println("Conscrypt Inserted.");
+      }
+    } else {
+      Security.removeProvider(CONSCRYPT_PROVIDER);
+      if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+        Security.addProvider(new BouncyCastleProvider());
+        System.out.println("BouncyCastle Inserted.");
       }
     }
 
