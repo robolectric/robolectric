@@ -13,6 +13,7 @@ import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import dalvik.system.CloseGuard;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -22,6 +23,11 @@ import org.robolectric.annotation.Config;
 public class ShadowSurfaceTest {
   private final SurfaceTexture texture = new SurfaceTexture(0);
   private final Surface surface = new Surface(texture);
+
+  @After
+  public void tearDown() {
+    surface.release();
+  }
 
   @Test
   public void getSurfaceTexture_returnsSurfaceTexture() {
@@ -47,6 +53,7 @@ public class ShadowSurfaceTest {
       MySurface surface = new MySurface();
       surface.finalize();
       assertThat(closeGuardWarned.get()).isFalse();
+      surface.release();
     } finally {
       CloseGuard.setReporter(originalReporter);
     }
