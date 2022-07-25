@@ -9,13 +9,16 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
-public @interface SecurityMode {
+public @interface ConscryptMode {
 
-  /** Specifies the different supported Security modes. */
+  /**
+   * Specifies the different supported Conscrypt modes. If ConscryptMode is ON, it will install
+   * Conscrypt. If it is OFF, it won't do that but either way BouncyCastle is still installed.
+   */
   enum Mode {
-    BOUNCY_CASTLE,
+    ON,
 
-    CONSCRYPT,
+    OFF,
   }
 
   Mode value();

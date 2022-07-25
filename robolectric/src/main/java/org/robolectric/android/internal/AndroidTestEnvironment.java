@@ -46,8 +46,8 @@ import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.SecurityMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ResourcesMode;
@@ -150,16 +150,18 @@ public class AndroidTestEnvironment implements TestEnvironment {
       loggingInitialized = true;
     }
 
-    SecurityMode.Mode securityMode = configuration.get(SecurityMode.Mode.class);
-    if (securityMode == SecurityMode.Mode.BOUNCY_CASTLE || securityMode == null) {
+    ConscryptMode.Mode conscryptMode = configuration.get(ConscryptMode.Mode.class);
+    Security.removeProvider(CONSCRYPT_PROVIDER);
+    if (conscryptMode != ConscryptMode.Mode.OFF) {
 
-      if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-        Security.addProvider(new BouncyCastleProvider());
-      }
-    } else {
+      Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         Security.insertProviderAt(new OpenSSLProvider(), 1);
       }
+    }
+
+    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleProvider());
     }
 
     android.content.res.Configuration androidConfiguration =
