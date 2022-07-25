@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -381,11 +382,24 @@ public class ShadowInstrumentation {
   /** A null {@code requiredPermission} indicates that no permission is required. */
   private static boolean hasRequiredPermissionForBroadcast(
       Context context, @Nullable String requiredPermission) {
-    return requiredPermission == null
-        || RuntimeEnvironment.getApplication()
-                .getPackageManager()
-                .checkPermission(requiredPermission, context.getPackageName())
-            == PERMISSION_GRANTED;
+    if (requiredPermission == null) {
+      return true;
+    }
+    // Check manifest-based permissions from PackageManager.
+    Context applicationContext = RuntimeEnvironment.getApplication();
+    if (applicationContext
+            .getPackageManager()
+            .checkPermission(requiredPermission, context.getPackageName())
+        == PERMISSION_GRANTED) {
+      return true;
+    }
+    // Check dynamically-granted permissions from here in ShadowInstrumentation.
+    if (Objects.equals(context.getPackageName(), applicationContext.getPackageName())
+        && applicationContext.checkPermission(requiredPermission, Process.myPid(), Process.myUid())
+            == PERMISSION_GRANTED) {
+      return true;
+    }
+    return false;
   }
 
   private void postIntent(

@@ -762,6 +762,30 @@ public class ShadowApplicationTest {
   }
 
   @Test
+  public void sendBroadcastWithPermission() {
+    Intent broadcastIntent = new Intent("Foo");
+    String permission = "org.robolectric.SOME_PERMISSION";
+
+    TestBroadcastReceiver receiverWithoutPermission = new TestBroadcastReceiver();
+    context.registerReceiver(receiverWithoutPermission, new IntentFilter("Foo"));
+    TestBroadcastReceiver receiverWithPermission = new TestBroadcastReceiver();
+    context.registerReceiver(
+        receiverWithPermission, new IntentFilter("Foo"), permission, /* scheduler= */ null);
+
+    context.sendBroadcast(broadcastIntent);
+    shadowMainLooper().idle();
+    assertThat(receiverWithoutPermission.intent).isEqualTo(broadcastIntent);
+    assertThat(receiverWithPermission.intent).isNull();
+    receiverWithoutPermission.intent = null;
+
+    shadowOf(context).grantPermissions(permission);
+    context.sendBroadcast(broadcastIntent);
+    shadowMainLooper().idle();
+    assertThat(receiverWithoutPermission.intent).isEqualTo(broadcastIntent);
+    assertThat(receiverWithPermission.intent).isEqualTo(broadcastIntent);
+  }
+
+  @Test
   public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
     assertSame(context.getResources(), context.getResources());
   }
