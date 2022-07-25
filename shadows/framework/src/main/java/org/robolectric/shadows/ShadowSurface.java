@@ -16,6 +16,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowSurfaceTexture.SurfaceTextureReflector;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -29,6 +30,8 @@ public class ShadowSurface {
   private SurfaceTexture surfaceTexture;
   private Canvas canvas;
   @RealObject private Surface realSurface;
+  @ReflectorObject private SurfaceReflector surfaceReflector;
+
   private final AtomicBoolean valid = new AtomicBoolean(true);
   private final AtomicBoolean canvasLocked = new AtomicBoolean(false);
 
@@ -46,11 +49,11 @@ public class ShadowSurface {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected void finalize() throws Throwable {
     // Suppress noisy CloseGuard errors that may exist in SDK 17+.
-    CloseGuard closeGuard = reflector(SurfaceReflector.class, realSurface).getCloseGuard();
+    CloseGuard closeGuard = surfaceReflector.getCloseGuard();
     if (closeGuard != null) {
       closeGuard.close();
     }
-    reflector(SurfaceReflector.class, realSurface).finalize();
+    surfaceReflector.finalize();
   }
 
   @Implementation
@@ -61,7 +64,7 @@ public class ShadowSurface {
   @Implementation
   protected void release() {
     valid.set(false);
-    reflector(SurfaceReflector.class, realSurface).release();
+    surfaceReflector.release();
   }
 
   private void checkNotReleased() {
