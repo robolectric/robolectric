@@ -22,7 +22,9 @@ import android.os.Handler;
 import android.os.ParcelUuid;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -65,6 +67,7 @@ public class ShadowBluetoothDevice {
   private boolean shouldThrowOnGetAliasName = false;
   private BluetoothClass bluetoothClass = null;
   private boolean shouldThrowSecurityExceptions = false;
+  private final Map<Integer, byte[]> metadataMap = new HashMap<>();
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -372,6 +375,19 @@ public class ShadowBluetoothDevice {
   /** Sets the return value for {@link BluetoothDevice#getBluetoothClass}. */
   public void setBluetoothClass(BluetoothClass bluetoothClass) {
     this.bluetoothClass = bluetoothClass;
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean setMetadata(int key, byte[] value) {
+    checkForBluetoothConnectPermission();
+    metadataMap.put(key, value);
+    return true;
+  }
+
+  @Implementation(minSdk = Q)
+  protected byte[] getMetadata(int key) {
+    checkForBluetoothConnectPermission();
+    return metadataMap.get(key);
   }
 
   @ForType(BluetoothDevice.class)
