@@ -66,6 +66,10 @@ public class ShadowDrawable {
     return drawable;
   }
 
+  protected void setCreatedFromResId(int createdFromResId, String resourceName) {
+    this.createdFromResId = createdFromResId;
+  }
+
   @Implementation
   protected int getIntrinsicWidth() {
     return intrinsicWidth;

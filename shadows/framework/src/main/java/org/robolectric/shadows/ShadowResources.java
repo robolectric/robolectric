@@ -17,8 +17,6 @@ import android.content.res.Resources.NotFoundException;
 import android.content.res.ResourcesImpl;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
@@ -355,22 +353,15 @@ public class ShadowResources {
     // todo: this kinda sucks, find some better way...
     if (drawable != null && Shadow.extract(drawable) instanceof ShadowDrawable) {
       ShadowDrawable shadowDrawable = Shadow.extract(drawable);
-      shadowDrawable.createdFromResId = id;
-      if (drawable instanceof BitmapDrawable) {
-        Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-        if (bitmap != null && Shadow.extract(bitmap) instanceof ShadowBitmap) {
-          ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
-          if (shadowBitmap.createdFromResId == -1) {
-            String resourceName;
-            try {
-              resourceName = resources.getResourceName(id);
-            } catch (NotFoundException e) {
-              resourceName = "Unknown resource #0x" + Integer.toHexString(id);
-            }
-            shadowBitmap.setCreatedFromResId(id, resourceName);
-          }
-        }
+
+      String resourceName;
+      try {
+        resourceName = resources.getResourceName(id);
+      } catch (NotFoundException e) {
+        resourceName = "Unknown resource #0x" + Integer.toHexString(id);
       }
+
+      shadowDrawable.setCreatedFromResId(id, resourceName);
     }
   }
 
