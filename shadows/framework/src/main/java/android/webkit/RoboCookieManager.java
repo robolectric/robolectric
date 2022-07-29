@@ -34,9 +34,11 @@ public class RoboCookieManager extends CookieManager {
   }
 
   @Override
-  public void setCookie(String url, String value, ValueCallback<Boolean> valueCallback) {
+  public void setCookie(String url, String value, @Nullable ValueCallback<Boolean> valueCallback) {
     setCookie(url, value);
-    valueCallback.onReceiveValue(true);
+    if (valueCallback != null) {
+      valueCallback.onReceiveValue(true);
+    }
   }
 
   @Override
@@ -48,7 +50,7 @@ public class RoboCookieManager extends CookieManager {
   }
 
   @Override
-  public void removeAllCookies(ValueCallback<Boolean> valueCallback) {
+  public void removeAllCookies(@Nullable ValueCallback<Boolean> valueCallback) {
     store.clear();
     if (valueCallback != null) {
       valueCallback.onReceiveValue(Boolean.TRUE);
@@ -59,12 +61,14 @@ public class RoboCookieManager extends CookieManager {
   public void flush() {}
 
   @Override
-  public void removeSessionCookies(ValueCallback<Boolean> valueCallback) {
+  public void removeSessionCookies(@Nullable ValueCallback<Boolean> valueCallback) {
     boolean value;
     synchronized (store) {
       value = clearAndAddPersistentCookies();
     }
-    valueCallback.onReceiveValue(value);
+    if (valueCallback != null) {
+      valueCallback.onReceiveValue(value);
+    }
   }
 
   @Override
