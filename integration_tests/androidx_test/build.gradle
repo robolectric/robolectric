@@ -20,24 +20,22 @@ android {
         targetCompatibility = '1.8'
     }
 
-    android {
-        testOptions {
-            unitTests {
-                includeAndroidResources = true
-            }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
         }
-        sourceSets {
-            String sharedTestDir = 'src/sharedTest/'
-            String sharedTestSourceDir = sharedTestDir + 'java'
-            String sharedTestResourceDir = sharedTestDir + 'resources'
-            String sharedAndroidManifest = sharedTestDir + "AndroidManifest.xml"
-            test.resources.srcDirs += sharedTestResourceDir
-            test.java.srcDirs += sharedTestSourceDir
-            test.manifest.srcFile sharedAndroidManifest
-            androidTest.resources.srcDirs += sharedTestResourceDir
-            androidTest.java.srcDirs += sharedTestSourceDir
-            androidTest.manifest.srcFile sharedAndroidManifest
-        }
+    }
+    sourceSets {
+        String sharedTestDir = 'src/sharedTest/'
+        String sharedTestSourceDir = sharedTestDir + 'java'
+        String sharedTestResourceDir = sharedTestDir + 'resources'
+        String sharedAndroidManifest = sharedTestDir + "AndroidManifest.xml"
+        test.resources.srcDirs += sharedTestResourceDir
+        test.java.srcDirs += sharedTestSourceDir
+        test.manifest.srcFile sharedAndroidManifest
+        androidTest.resources.srcDirs += sharedTestResourceDir
+        androidTest.java.srcDirs += sharedTestSourceDir
+        androidTest.manifest.srcFile sharedAndroidManifest
     }
 }
 
