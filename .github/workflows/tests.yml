@@ -135,7 +135,8 @@ jobs:
           ./gradlew nexusOneApi${{ matrix.api-level }}DebugAndroidTest \
             -Dorg.gradle.workers.max=2 \
             -Pandroid.sdk.channel=3 \
-            -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect"
+            -Pandroid.testoptions.manageddevices.emulator.gpu="swiftshader_indirect" \
+            --info
 
       - name: Upload test results
         if: always()
@@ -145,3 +146,4 @@ jobs:
           path: |
             **/build/reports/*
             **/build/outputs/*/connected/*
+            **/build/outputs/*/managedDevice/*
