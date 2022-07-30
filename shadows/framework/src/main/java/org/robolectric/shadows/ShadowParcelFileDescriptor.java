@@ -13,7 +13,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.UUID;
+import java.util.WeakHashMap;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -30,7 +32,9 @@ public class ShadowParcelFileDescriptor {
   // level
   private static final String PIPE_TMP_DIR = "ShadowParcelFileDescriptor";
   private static final String PIPE_FILE_NAME = "pipe";
+  private static final OpenedFileTable openedFileTable = new OpenedFileTable();
   private RandomAccessFile file;
+  private int fd;
   private boolean closed;
   @RealObject ParcelFileDescriptor realParcelFd;
 
@@ -43,11 +47,17 @@ public class ShadowParcelFileDescriptor {
     if (wrapped != null) {
       ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(wrapped);
       this.file = shadowParcelFileDescriptor.file;
+      this.fd = shadowParcelFileDescriptor.fd;
     }
   }
 
   @Implementation
   protected static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
+    return openInternal(new RandomAccessFile(file, getFileMode(mode)), mode);
+  }
+
+  private static ParcelFileDescriptor openInternal(RandomAccessFile randomAccessFile, int mode)
+      throws FileNotFoundException {
     ParcelFileDescriptor pfd;
     try {
       Constructor<ParcelFileDescriptor> constructor =
@@ -56,8 +66,11 @@ public class ShadowParcelFileDescriptor {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
     ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
-    shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));
+    shadowParcelFileDescriptor.file = randomAccessFile;
+    int fd = shadowParcelFileDescriptor.getFd();
+    shadowParcelFileDescriptor.fd = fd;
     if ((mode & ParcelFileDescriptor.MODE_TRUNCATE) != 0) {
       try {
         shadowParcelFileDescriptor.file.setLength(0);
@@ -76,7 +89,31 @@ public class ShadowParcelFileDescriptor {
         throw fnfe;
       }
     }
+
+    try {
+      openedFileTable.open(shadowParcelFileDescriptor.file, mode, fd);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     return pfd;
+  }
+
+  @Implementation
+  protected static ParcelFileDescriptor adoptFd(int fd) {
+    // For some limitation, the given fd must be opened from PFD.
+    // The behavior is different from AOSP, it must be checked early. While AOSP throws IOException
+    // in later attempt I/O on the stream of the file descriptor.
+    OpenedFileItem item = openedFileTable.getItem(fd);
+    if (item == null) {
+      throw new IllegalStateException(
+          "Only the given fd opened and tracked by PFD can be adopted as a new PFD.");
+    }
+
+    try {
+      return openInternal(item.file, item.mode);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static String getFileMode(int mode) {
@@ -123,6 +160,16 @@ public class ShadowParcelFileDescriptor {
   }
 
   @Implementation
+  protected int detachFd() {
+    if (closed) {
+      throw new IllegalStateException("Already closed");
+    }
+    int fd = getFd();
+    closed = true;
+    return fd;
+  }
+
+  @Implementation
   protected long getStatSize() {
     try {
       return file.length();
@@ -152,9 +199,22 @@ public class ShadowParcelFileDescriptor {
       return;
     }
 
+    // MUST get the fd before the close status was updated and the file was closed.
+    int fd = getFd();
+
+    // The file descriptor can be closed in another way before it was closed by the attached PFD.
+    // But it still need to be untracked from opened file table.
+    if (fd != -1) {
+      openedFileTable.close(fd);
+    } else {
+      openedFileTable.close(this.fd);
+    }
+
+    // MUST update close status as early as possible. Avoid multiple closes being called as a chain
+    // when the file descriptor was attached to multiple parents.
+    closed = true;
     file.close();
     reflector(ParcelFileDescriptorReflector.class, realParcelFd).close();
-    closed = true;
   }
 
   @ForType(ParcelFileDescriptor.class)
@@ -162,5 +222,83 @@ public class ShadowParcelFileDescriptor {
 
     @Direct
     void close();
+  }
+
+  /**
+   * Tracks all the opened files opened by {@link ShadowParcelFileDescriptor#open(File, int)}.
+   *
+   * <p>Only for internal used by PFD.
+   *
+   * <p>The concept of "OpenedFileTable" is quite similar to *nix.
+   *
+   * <p>Note that is not supposed to be run on Windows, for the key `fd` is only available in *nix.
+   * In Windows the `handle` should be used instead of the `fd`.
+   */
+  private static class OpenedFileTable {
+    private final Map<FileDescriptor, OpenedFileItem> openedFileItems = new WeakHashMap<>();
+
+    void open(RandomAccessFile file, int mode, int fd) throws IOException {
+      synchronized (openedFileItems) {
+        openedFileItems.put(file.getFD(), new OpenedFileItem(file, mode, fd));
+      }
+    }
+
+    OpenedFileItem getItem(int fd) {
+      Map.Entry<FileDescriptor, OpenedFileItem> entry = this.getEntry(fd);
+      if (entry == null) {
+        return null;
+      } else {
+        return entry.getValue();
+      }
+    }
+
+    private Map.Entry<FileDescriptor, OpenedFileItem> getEntry(int fd) {
+      synchronized (openedFileItems) {
+        int matchedEntriesCount = 0;
+        Map.Entry<FileDescriptor, OpenedFileItem> targetEntry = null;
+        for (Map.Entry<FileDescriptor, OpenedFileItem> entry : openedFileItems.entrySet()) {
+          OpenedFileItem item = openedFileItems.get(entry.getKey());
+          if (item == null) {
+            continue;
+          }
+
+          if (entry.getValue().fd == fd && !entry.getValue().closed) {
+            matchedEntriesCount++;
+            targetEntry = entry;
+          }
+        }
+
+        if (matchedEntriesCount > 1) {
+          throw new RuntimeException("Exactly one opened file item should be matched.");
+        } else {
+          return targetEntry;
+        }
+      }
+    }
+
+    void close(int fd) throws IOException {
+      synchronized (openedFileItems) {
+        Map.Entry<FileDescriptor, OpenedFileItem> entry = this.getEntry(fd);
+        if (entry == null) {
+          throw new IOException(
+              "Can not find the opened file item from the table by given fd: " + fd);
+        }
+        entry.getValue().closed = true;
+      }
+    }
+  }
+
+  private static class OpenedFileItem {
+    final RandomAccessFile file;
+    final int mode;
+    final int fd;
+    boolean closed;
+
+    OpenedFileItem(RandomAccessFile file, int mode, int fd) {
+      this.file = file;
+      this.mode = mode;
+      this.fd = fd;
+      this.closed = false;
+    }
   }
 }
