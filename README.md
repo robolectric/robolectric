@@ -16,14 +16,14 @@ Here's an example of a simple test written using Robolectric:
 public class MyActivityTest {
 
   @Test
-  public void clickingButton_shouldChangeResultsViewText() {
-    Activity activity = Robolectric.setupActivity(MyActivity.class);
+  public void clickingButton_shouldChangeMessage() {
+    try (ActivityController<MyActivity> controller = Robolectric.buildActivity(MyActivity.class)) {
+      controller.setup(); // Moves Activity to RESUMED state
+      MyActivity activity = controller.get();
 
-    Button button = (Button) activity.findViewById(R.id.press_me_button);
-    TextView results = (TextView) activity.findViewById(R.id.results_text_view);
-
-    button.performClick();
-    assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
+      activity.findViewById(R.id.button).performClick();
+      assertEquals(((TextView) activity.findViewById(R.id.text)).getText(), "Robolectric Rocks!");
+    }
   }
 }
 ```
@@ -41,6 +41,7 @@ If you'd like to start a new project with Robolectric tests, you can refer to `d
 ```groovy
 testImplementation "junit:junit:4.13.2"
 testImplementation "org.robolectric:robolectric:4.14.1"
+testImplementation "androidx.test.ext:junit:1.2.1"
 ```
 
 ## Building and Contributing
