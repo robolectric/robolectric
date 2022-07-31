@@ -12,18 +12,18 @@ Robolectric supports running unit tests for *16* different versions of Android, 
 Here's an example of a simple test written using Robolectric:
 
 ```java
-@RunWith(AndroidJUnit4.class)
+@RunWith(RobolectricTestRunner.class)
 public class MyActivityTest {
 
   @Test
-  public void clickingButton_shouldChangeResultsViewText() {
-    Activity activity = Robolectric.setupActivity(MyActivity.class);
+  public void clickingButton_shouldChangeMessage() {
+    try (ActivityController<MyActvitiy> controller = Robolectric.buildActivity(MyActvitiy.class)) {
+      controller.setup(); // Moves Activity to RESUMED state
+      MyActvitiy activity = controller.get();
 
-    Button button = (Button) activity.findViewById(R.id.press_me_button);
-    TextView results = (TextView) activity.findViewById(R.id.results_text_view);
-
-    button.performClick();
-    assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
+      activity.findViewById(R.id.button).performClick();
+      assertEquals(((TextView) activity.findViewById(R.id.text)).getText(), "Robolectric Rocks!");
+    }
   }
 }
 ```
