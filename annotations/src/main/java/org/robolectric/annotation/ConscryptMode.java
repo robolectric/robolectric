@@ -9,13 +9,13 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PACKAGE, ElementType.TYPE, ElementType.METHOD})
-public @interface SecurityMode {
+public @interface ConscryptMode {
 
   /** Specifies the different supported Security modes. */
   enum Mode {
-    BOUNCY_CASTLE,
+    ON,
 
-    CONSCRYPT,
+    OFF,
   }
 
   Mode value();

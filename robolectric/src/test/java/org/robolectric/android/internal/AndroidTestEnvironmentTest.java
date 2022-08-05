@@ -4,8 +4,9 @@ import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
+import static org.robolectric.annotation.ConscryptMode.Mode.OFF;
+import static org.robolectric.annotation.ConscryptMode.Mode.ON;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
-import static org.robolectric.annotation.SecurityMode.Mode.BOUNCY_CASTLE;
 
 import android.app.Application;
 import android.content.pm.ApplicationInfo;
@@ -17,6 +18,9 @@ import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -33,8 +37,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.DeviceConfig.ScreenSize;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.LooperMode;
-import org.robolectric.annotation.SecurityMode;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.manifest.AndroidManifest;
@@ -113,15 +117,49 @@ public class AndroidTestEnvironmentTest {
    * in Robolectric via {@link BouncyCastleProvider}.
    */
   @Test
-  @SecurityMode(BOUNCY_CASTLE)
-  public void ensureBouncyCastleInstalled() throws GeneralSecurityException {
+  @ConscryptMode(ON)
+  public void testWhenConscryptModeOn_ConscryptInstalled()
+      throws CertificateException, NoSuchAlgorithmException {
 
     bootstrapWrapper.callSetUpApplicationState();
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    assertThat(factory.getProvider().getName()).isEqualTo("Conscrypt");
 
+    MessageDigest digest = MessageDigest.getInstance("SHA256");
+    assertThat(digest.getProvider().getName()).isEqualTo("Conscrypt");
+  }
+
+  @Test
+  @ConscryptMode(ON)
+  public void testWhenConscryptModeOn_BouncyCastleInstalled() throws GeneralSecurityException {
+
+    bootstrapWrapper.callSetUpApplicationState();
+    Cipher aesCipher = Cipher.getInstance("RSA/None/OAEPWithSHA-256AndMGF1Padding");
+    assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
+  }
+
+  @Test
+  @ConscryptMode(OFF)
+  public void testWhenConscryptModeOff_ConscryptInstalled()
+      throws CertificateException, NoSuchAlgorithmException {
+
+    bootstrapWrapper.callSetUpApplicationState();
+    CertificateFactory factory = CertificateFactory.getInstance("X.509");
+    assertThat(factory.getProvider().getName()).isNotEqualTo("Conscrypt");
+
+    MessageDigest digest = MessageDigest.getInstance("SHA256");
+    assertThat(digest.getProvider().getName()).isNotEqualTo("Conscrypt");
+  }
+
+  @Test
+  @ConscryptMode(OFF)
+  public void testWhenConscryptModeOff_BouncyCastleInstalled() throws GeneralSecurityException {
+
+    bootstrapWrapper.callSetUpApplicationState();
     MessageDigest digest = MessageDigest.getInstance("SHA256");
     assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
 
-    Cipher aesCipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+    Cipher aesCipher = Cipher.getInstance("RSA/None/OAEPWithSHA-256AndMGF1Padding");
     assertThat(aesCipher.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
   }
 
