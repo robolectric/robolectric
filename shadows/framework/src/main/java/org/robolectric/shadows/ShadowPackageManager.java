@@ -799,6 +799,9 @@ public class ShadowPackageManager {
     if (appInfo.processName == null) {
       appInfo.processName = appInfo.packageName;
     }
+    if (appInfo.targetSdkVersion == 0) {
+      appInfo.targetSdkVersion = RuntimeEnvironment.getApiLevel();
+    }
     appInfo.flags |= ApplicationInfo.FLAG_INSTALLED;
     ComponentInfo[][] componentInfoArrays =
         new ComponentInfo[][] {
