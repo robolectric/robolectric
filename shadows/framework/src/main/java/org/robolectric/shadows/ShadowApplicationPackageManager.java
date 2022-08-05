@@ -587,7 +587,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ResolveInfo resolveInfo = iterator.next();
         I componentInfo = componentInResolveInfo.apply(resolveInfo);
         if (hasSomeComponentInfo(resolveInfo) && componentInfo == null) {
-          Log.d(TAG, "ResolveInfo for different component type");
+          Log.d(TAG, "ResolveInfo for different component type: " + resolveInfo);
           // different component type
           iterator.remove();
           continue;
@@ -662,6 +662,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         }
         I componentInfo = findMatchingComponent(component, componentsInPackage.apply(appPackage));
         if (componentInfo != null) {
+          List<IntentFilter> componentFilters = filters.get(component);
+          PackageInfo targetPackage = packageInfos.get(component.getPackageName());
+          if (!passesFiltersCheck(intent, component, targetPackage, componentFilters)) {
+            Log.w(
+                TAG,
+                "Component "
+                    + componentInfo
+                    + " doesn't have required intent filters for "
+                    + intent);
+            return Collections.emptyList();
+          }
           ResolveInfo resolveInfo = buildResolveInfo(componentInfo);
           componentSetter.accept(resolveInfo, componentInfo);
           return new ArrayList<>(Collections.singletonList(resolveInfo));
@@ -703,6 +714,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
     return queryIntentActivities(intent, flags);
+  }
+
+  /**
+   * Returns if the intent matches any of the filters for the purpose of intent checks on T+.
+   *
+   * @see https://developer.android.com/about/versions/13/behavior-changes-13#intent-filters
+   */
+  protected boolean passesFiltersCheck(
+      Intent intent,
+      ComponentName component,
+      PackageInfo targetPackage,
+      @Nullable List<IntentFilter> filters) {
+    return true;
   }
 
   /** Returns true if intent has specified a specific component. */
@@ -827,7 +851,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ActivityInfo::new);
   }
 
-  private static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
+  protected static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
     return intentFilter.match(
         intent.getAction(),
         intent.getType(),
@@ -2144,7 +2168,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return new String[0];
   }
 
-  private Context getContext() {
+  protected Context getContext() {
     return reflector(ReflectorApplicationPackageManager.class, realObject).getContext();
   }
 
