@@ -9,6 +9,8 @@ import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
+import android.content.pm.PackageInstaller.SessionInfo;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -24,11 +26,24 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
+/** Shadow for PackageInstaller. */
 @Implements(value = PackageInstaller.class, minSdk = LOLLIPOP)
 @SuppressLint("NewApi")
 public class ShadowPackageInstaller {
+  /** Shadow for PackageInstaller.SessionInfo. */
+  @Implements(value = PackageInstaller.SessionInfo.class, minSdk = LOLLIPOP)
+  public static class ShadowSessionInfo {
+    @RealObject private SessionInfo sessionInfo;
+
+    /** Real method makes a system call not available in tests. */
+    @Implementation
+    protected Bitmap getAppIcon() {
+      return sessionInfo.appIcon;
+    }
+  }
 
   // According to the documentation, the session ID is always non-zero:
   // https://developer.android.com/reference/android/content/pm/PackageInstaller#createSession(android.content.pm.PackageInstaller.SessionParams)
@@ -84,6 +99,9 @@ public class ShadowPackageInstaller {
     sessionInfo.sessionId = nextSessionId++;
     sessionInfo.active = true;
     sessionInfo.appPackageName = params.appPackageName;
+    sessionInfo.appLabel = params.appLabel;
+    sessionInfo.appIcon = params.appIcon;
+
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
@@ -127,7 +145,51 @@ public class ShadowPackageInstaller {
     return session;
   }
 
+  @Implementation
+  protected void updateSessionAppIcon(int sessionId, Bitmap appIcon) {
+    SessionInfo sessionInfo = sessionInfos.get(sessionId);
+    if (sessionInfo == null) {
+      throw new SecurityException("Invalid session Id: " + sessionId);
+    }
+    sessionInfo.appIcon = appIcon;
+
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
+      callbackInfo.handler.post(
+          new Runnable() {
+            @Override
+            public void run() {
+              callbackInfo.callback.onBadgingChanged(sessionId);
+            }
+          });
+    }
+  }
+
+  @Implementation
+  protected void updateSessionAppLabel(int sessionId, CharSequence appLabel) {
+    SessionInfo sessionInfo = sessionInfos.get(sessionId);
+    if (sessionInfo == null) {
+      throw new SecurityException("Invalid session Id: " + sessionId);
+    }
+    sessionInfo.appLabel = appLabel;
+
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
+      callbackInfo.handler.post(
+          new Runnable() {
+            @Override
+            public void run() {
+              callbackInfo.callback.onBadgingChanged(sessionId);
+            }
+          });
+    }
+  }
+
   public void setSessionProgress(final int sessionId, final float progress) {
+    SessionInfo sessionInfo = sessionInfos.get(sessionId);
+    if (sessionInfo == null) {
+      throw new SecurityException("Invalid session Id: " + sessionId);
+    }
+    sessionInfo.progress = progress;
+
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
       callbackInfo.handler.post(new Runnable() {
         @Override
