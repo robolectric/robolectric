@@ -17,11 +17,13 @@ import android.speech.tts.Voice;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableSet;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
@@ -191,15 +193,20 @@ public class ShadowTextToSpeechTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
-  public void synthesizeToFile_lastSynthesizeToFileTextStored() {
+  public void synthesizeToFile_lastSynthesizeToFileTextStored() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     Bundle bundle = new Bundle();
-    File file = new File("example.txt");
-
+    File file = createFile("example.txt");
     int result = textToSpeech.synthesizeToFile("text", bundle, file, "id");
 
     assertThat(result).isEqualTo(TextToSpeech.SUCCESS);
     assertThat(shadowOf(textToSpeech).getLastSynthesizeToFileText()).isEqualTo("text");
+  }
+
+  private static File createFile(String filename) throws IOException {
+    TemporaryFolder temporaryFolder = new TemporaryFolder();
+    temporaryFolder.create();
+    return temporaryFolder.newFile(filename);
   }
 
   @Test

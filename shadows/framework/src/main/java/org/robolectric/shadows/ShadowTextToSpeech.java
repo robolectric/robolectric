@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
@@ -14,6 +15,8 @@ import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import com.google.common.collect.ImmutableList;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +29,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowMediaPlayer.MediaInfo;
+import org.robolectric.shadows.util.DataSource;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
@@ -47,6 +52,7 @@ public class ShadowTextToSpeech {
   private boolean stopped = true;
   private int queueMode = -1;
   private Locale language = null;
+  private File lastSynthesizeToFile;
   private String lastSynthesizeToFileText;
   private Voice currentVoice = null;
 
@@ -171,8 +177,33 @@ public class ShadowTextToSpeech {
    * @see #getLastSynthesizeToFileText()
    */
   @Implementation(minSdk = LOLLIPOP)
-  protected int synthesizeToFile(CharSequence text, Bundle params, File file, String utteranceId) {
+  protected int synthesizeToFile(CharSequence text, Bundle params, File file, String utteranceId)
+      throws IOException {
     this.lastSynthesizeToFileText = text.toString();
+    this.lastSynthesizeToFile = file;
+
+    if (!Boolean.getBoolean("robolectric.enableShadowTtsSynthesisToFileWriteToFileSuppression")) {
+      try (PrintWriter writer = new PrintWriter(file, UTF_8.name())) {
+        writer.println(text);
+      }
+
+      ShadowMediaPlayer.addMediaInfo(
+          DataSource.toDataSource(file.getAbsolutePath()), new MediaInfo());
+    }
+
+    UtteranceProgressListener utteranceProgressListener = getUtteranceProgressListener();
+
+    /*
+     * The Java system property robolectric.shadowTtsEnableSynthesisToFileCallbackSuppression can be
+     * used by test targets that fail due to tests relying on previous behavior of this fake, where
+     * the listeners were not called.
+     */
+    if (utteranceProgressListener != null
+        && !Boolean.getBoolean("robolectric.enableShadowTtsSynthesisToFileCallbackSuppression")) {
+      utteranceProgressListener.onStart(utteranceId);
+      utteranceProgressListener.onDone(utteranceId);
+    }
+
     return TextToSpeech.SUCCESS;
   }
 
@@ -233,6 +264,14 @@ public class ShadowTextToSpeech {
    */
   public String getLastSynthesizeToFileText() {
     return lastSynthesizeToFileText;
+  }
+
+  /**
+   * Returns last file {@link File} written to by {@link TextToSpeech#synthesizeToFile(CharSequence,
+   * Bundle, File, String)}.
+   */
+  public File getLastSynthesizeToFile() {
+    return lastSynthesizeToFile;
   }
 
   /** Returns list of all the text spoken by {@link #speak}. */
