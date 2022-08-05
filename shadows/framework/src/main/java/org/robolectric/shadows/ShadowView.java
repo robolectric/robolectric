@@ -112,8 +112,12 @@ public class ShadowView {
   public static String visualize(View view) {
     Canvas canvas = new Canvas();
     view.draw(canvas);
-    ShadowCanvas shadowCanvas = Shadow.extract(canvas);
-    return shadowCanvas.getDescription();
+    if (!useRealGraphics()) {
+      ShadowCanvas shadowCanvas = Shadow.extract(canvas);
+      return shadowCanvas.getDescription();
+    } else {
+      return "";
+    }
   }
 
   /**
@@ -236,13 +240,14 @@ public class ShadowView {
   @Implementation
   protected void draw(Canvas canvas) {
     Drawable background = realView.getBackground();
-    if (background != null) {
+    if (background != null && !useRealGraphics()) {
       Object shadowCanvas = Shadow.extract(canvas);
       // Check that Canvas is not a Mockito mock
       if (shadowCanvas instanceof ShadowCanvas) {
         ((ShadowCanvas) shadowCanvas).appendDescription("background:");
       }
     }
+    System.err.println("JULIA THE CANVAS: " + canvas);
     reflector(_View_.class, realView).draw(canvas);
   }
 
