@@ -31,7 +31,6 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -950,15 +949,13 @@ public class ShadowMotionEvent {
     return nativeMotionEventRegistry.getNativeObject(nativePtr);
   }
 
-  // shadow this directly as opposed to nativeTransform because need access to ShadowMatrix
   @Implementation
   protected final void transform(Matrix matrix) {
     checkNotNull(matrix);
     NativeInput.MotionEvent event = getNativeMotionEvent();
-    ShadowMatrix shadowMatrix = Shadow.extract(matrix);
 
     float[] m = new float[9];
-    shadowMatrix.getValues(m);
+    matrix.getValues(m);
     event.transform(m);
   }
 
