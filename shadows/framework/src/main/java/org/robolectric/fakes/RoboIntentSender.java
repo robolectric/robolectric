@@ -42,4 +42,8 @@ public class RoboIntentSender extends IntentSender {
       throw new SendIntentException(e);
     }
   }
+
+  public PendingIntent getPendingIntent() {
+    return pendingIntent;
+  }
 }
