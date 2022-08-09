@@ -105,12 +105,7 @@ public class ShadowPackageInstaller {
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onCreated(sessionInfo.sessionId);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onCreated(sessionInfo.sessionId));
     }
 
     return sessionInfo.sessionId;
@@ -122,12 +117,7 @@ public class ShadowPackageInstaller {
     sessions.remove(sessionId);
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onFinished(sessionId, false);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onFinished(sessionId, false));
     }
   }
 
@@ -183,6 +173,10 @@ public class ShadowPackageInstaller {
     }
   }
 
+  public List<PackageInstaller.SessionCallback> getAllSessionCallbacks() {
+    return ImmutableList.copyOf(callbackInfos.stream().map(info -> info.callback).iterator());
+  }
+
   public void setSessionProgress(final int sessionId, final float progress) {
     SessionInfo sessionInfo = sessionInfos.get(sessionId);
     if (sessionInfo == null) {
@@ -191,18 +185,19 @@ public class ShadowPackageInstaller {
     sessionInfo.progress = progress;
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onProgressChanged(sessionId, progress);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onProgressChanged(sessionId, progress));
+    }
+  }
+
+  public void setSessionActiveState(final int sessionId, final boolean active) {
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
+      callbackInfo.handler.post(() -> callbackInfo.callback.onActiveChanged(sessionId, active));
     }
   }
 
   /**
-   * Prefer instead to use the Android APIs to close the session
-   * {@link android.content.pm.PackageInstaller.Session#commit(IntentSender)}
+   * Prefer instead to use the Android APIs to close the session {@link
+   * android.content.pm.PackageInstaller.Session#commit(IntentSender)}
    */
   @Deprecated
   public void setSessionSucceeds(int sessionId) {
@@ -215,12 +210,7 @@ public class ShadowPackageInstaller {
 
   private void setSessionFinishes(final int sessionId, final boolean success) {
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onFinished(sessionId, success);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onFinished(sessionId, success));
     }
 
     PackageInstaller.Session session = sessions.get(sessionId);
@@ -251,17 +241,16 @@ public class ShadowPackageInstaller {
     @NonNull
     protected OutputStream openWrite(@NonNull String name, long offsetBytes, long lengthBytes)
         throws IOException {
-      outputStream = new OutputStream() {
-        @Override
-        public void write(int aByte) throws IOException {
+      outputStream =
+          new OutputStream() {
+            @Override
+            public void write(int aByte) throws IOException {}
 
-        }
-
-        @Override
-        public void close() throws IOException {
-          outputStreamOpen = false;
-        }
-      };
+            @Override
+            public void close() throws IOException {
+              outputStreamOpen = false;
+            }
+          };
       outputStreamOpen = true;
       return outputStream;
     }
@@ -287,8 +276,8 @@ public class ShadowPackageInstaller {
       shadowPackageInstaller.abandonSession(sessionId);
     }
 
-    private void setShadowPackageInstaller(int sessionId,
-        ShadowPackageInstaller shadowPackageInstaller) {
+    private void setShadowPackageInstaller(
+        int sessionId, ShadowPackageInstaller shadowPackageInstaller) {
       this.sessionId = sessionId;
       this.shadowPackageInstaller = shadowPackageInstaller;
     }

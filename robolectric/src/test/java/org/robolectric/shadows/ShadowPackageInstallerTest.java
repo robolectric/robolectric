@@ -96,6 +96,21 @@ public class ShadowPackageInstallerTest {
     assertThat(session).isNotNull();
   }
 
+  @Test
+  public void shouldBeNoSessionCallbacksOnRobolectricStartup() {
+    assertThat(shadowOf(packageInstaller).getAllSessionCallbacks()).isEmpty();
+  }
+
+  @Test
+  public void shouldBeSessionCallbacksWhenRegistered() {
+    PackageInstaller.SessionCallback mockCallback = mock(PackageInstaller.SessionCallback.class);
+
+    packageInstaller.registerSessionCallback(mockCallback);
+    shadowMainLooper().idle();
+
+    assertThat(shadowOf(packageInstaller).getAllSessionCallbacks()).containsExactly(mockCallback);
+  }
+
   @Test(expected = SecurityException.class)
   public void packageInstallerOpenSession_nonExistantSessionThrowsException() throws Exception {
     packageInstaller.openSession(-99);
@@ -172,6 +187,19 @@ public class ShadowPackageInstallerTest {
     verify(mockCallback).onProgressChanged(sessionId, 50.0f);
 
     verify(mockCallback).onFinished(sessionId, true);
+  }
+
+  @Test
+  public void sessionActiveStateChanged_receivingOnActiveChangedCallback() throws Exception {
+    PackageInstaller.SessionCallback mockCallback = mock(PackageInstaller.SessionCallback.class);
+    packageInstaller.registerSessionCallback(mockCallback);
+    int sessionId = packageInstaller.createSession(createSessionParams("packageName"));
+    shadowMainLooper().idle();
+
+    shadowOf(packageInstaller).setSessionActiveState(sessionId, false);
+    shadowMainLooper().idle();
+
+    verify(mockCallback).onActiveChanged(sessionId, false);
   }
 
   @Test
