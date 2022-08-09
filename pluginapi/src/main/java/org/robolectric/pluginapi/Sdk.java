@@ -118,7 +118,6 @@ public abstract class Sdk implements Comparable<Sdk> {
    * throw org.junit.AssumptionViolatedException to just skip execution of tests on the SDK, with a
    * warning, or throw a RuntimeException to fail the test.
    *
-   * @param testClassName
    */
   public abstract void verifySupportedSdk(String testClassName);
 }

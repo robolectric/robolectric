@@ -322,12 +322,13 @@ public class ReflectionHelpers {
   /**
    * Helper method for calling a static method using a class from a custom class loader
    *
-   * @param classLoader
-   * @param fullyQualifiedClassName
-   * @param methodName
-   * @param classParameters
-   * @param <R>
-   * @return
+   * @param classLoader The ClassLoader used to load class
+   * @param fullyQualifiedClassName The full qualified class name with package name of the
+   *     ClassLoader will load
+   * @param methodName The method name will be called
+   * @param classParameters The input parameters will be used for method calling
+   * @param <R> Return type of the method
+   * @return Return the value of the method
    */
   public static <R> R callStaticMethod(
       ClassLoader classLoader,
