@@ -147,13 +147,15 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run device tests
+        # See https://github.com/orgs/community/discussions/27121
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
           profile: Nexus One
-          script: ./gradlew connectedCheck
+          script: |
+            ./gradlew cAT || ./gradlew cAT || ./gradlew cAT || exit 1
 
       - name: Upload test results
         if: always()

@@ -42,10 +42,11 @@ public class ResName {
       throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
   }
 
-  /**
-   * @return null if the resource could not be qualified.
-   */
-  public static String qualifyResourceName(@Nonnull String possiblyQualifiedResourceName, String defaultPackageName, String defaultType) {
+  /** Returns the fully qualified resource name if null if the resource could not be qualified. */
+  public static String qualifyResourceName(
+      @Nonnull String possiblyQualifiedResourceName,
+      String defaultPackageName,
+      String defaultType) {
     ResName resName = qualifyResName(possiblyQualifiedResourceName, defaultPackageName, defaultType);
     return resName != null ? resName.getFullyQualifiedName() : null;
   }

@@ -14,7 +14,7 @@ public interface ConfigurationStrategy {
   /**
    * Determine the configuration for the given test class and method.
    *
-   * Since a method may be run on multiple test subclasses, {@param testClass} indicates which
+   * <p>Since a method may be run on multiple test subclasses, {@code testClass} indicates which
    * test case is currently being evaluated.
    *
    * @param testClass the test class being evaluated; this might be a subclass of the method's
