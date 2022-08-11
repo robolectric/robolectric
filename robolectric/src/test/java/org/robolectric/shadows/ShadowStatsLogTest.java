@@ -11,6 +11,9 @@ import android.util.StatsLog;
 import com.google.common.collect.Range;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -116,6 +119,61 @@ public final class ShadowStatsLogTest {
     assertThat(statsEvent.getNumBytes()).isEqualTo(buffer.position());
 
     statsEvent.release();
+  }
+
+  @Test
+  public void testOnlyAtomIdMultipleAtoms() {
+    List<Integer> expectedAtomIds = Arrays.asList(109, 110, 111);
+    List<StatsEvent> statsEvents = new ArrayList<>();
+
+    long minTimestamp = SystemClock.elapsedRealtimeNanos();
+    for (Integer atomId : expectedAtomIds) {
+      final StatsEvent statsEvent =
+          StatsEvent.newBuilder().setAtomId(atomId).usePooledBuffer().build();
+      StatsLog.write(statsEvent);
+      statsEvents.add(statsEvent);
+    }
+    long maxTimestamp = SystemClock.elapsedRealtimeNanos();
+
+    assertThat(ShadowStatsLog.getStatsLogs()).hasSize(statsEvents.size());
+
+    for (int i = 0; i < statsEvents.size(); i++) {
+      assertEquals((int) expectedAtomIds.get(i), ShadowStatsLog.getStatsLogs().get(i).atomId());
+
+      final ByteBuffer buffer =
+          ByteBuffer.wrap(ShadowStatsLog.getStatsLogs().get(i).bytes())
+              .order(ByteOrder.LITTLE_ENDIAN);
+
+      assertWithMessage("Root element in buffer is not TYPE_OBJECT")
+          .that(buffer.get())
+          .isEqualTo(StatsEvent.TYPE_OBJECT);
+
+      assertWithMessage("Incorrect number of elements in root object")
+          .that(buffer.get())
+          .isEqualTo(2);
+
+      assertWithMessage("First element is not timestamp")
+          .that(buffer.get())
+          .isEqualTo(StatsEvent.TYPE_LONG);
+
+      assertWithMessage("Incorrect timestamp")
+          .that(buffer.getLong())
+          .isIn(Range.closed(minTimestamp, maxTimestamp));
+
+      assertWithMessage("Second element is not atom id")
+          .that(buffer.get())
+          .isEqualTo(StatsEvent.TYPE_INT);
+
+      assertWithMessage("Incorrect atom id")
+          .that(buffer.getInt())
+          .isEqualTo(expectedAtomIds.get(i));
+
+      assertThat(statsEvents.get(i).getNumBytes()).isEqualTo(buffer.position());
+    }
+
+    for (StatsEvent statsEvent : statsEvents) {
+      statsEvent.release();
+    }
   }
 
   @Test
