@@ -1,68 +1,69 @@
-package org.robolectric.res;
+package org.robolectric.res
 
-import static com.google.common.truth.Truth.assertThat;
+import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+import org.robolectric.res.android.ResTable_config
+import java.io.StringReader
+import java.nio.file.Paths
+import javax.xml.stream.XMLInputFactory
+import javax.xml.stream.XMLStreamException
 
-import java.io.StringReader;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.robolectric.res.android.ResTable_config;
-
-@RunWith(JUnit4.class)
+@RunWith(JUnit4::class)
 @SuppressWarnings("NewApi")
-public class StaxValueLoaderTest {
+class StaxValueLoaderTest {
 
-  private PackageResourceTable resourceTable;
-  private NodeHandler topLevelNodeHandler;
-  private StaxDocumentLoader staxDocumentLoader;
+    private var resourceTable: PackageResourceTable? = null
+    private var topLevelNodeHandler: NodeHandler? = null
+    private var staxDocumentLoader: StaxDocumentLoader? = null
 
-  @Before
-  public void setUp() throws Exception {
-    resourceTable = new PackageResourceTable("pkg");
+    @Before
+    @Throws(Exception::class)
+    fun setUp() {
+        resourceTable = PackageResourceTable("pkg")
 
-    topLevelNodeHandler = new NodeHandler();
-    staxDocumentLoader = new StaxDocumentLoader("pkg", null, topLevelNodeHandler);
-  }
+        topLevelNodeHandler = NodeHandler()
+        staxDocumentLoader = StaxDocumentLoader("pkg", null, topLevelNodeHandler)
+    }
 
-  @Test
-  public void ignoresXliffTags() throws Exception {
-    topLevelNodeHandler.addHandler("resources", new NodeHandler()
-        .addHandler("string", new StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
-    );
+    @Test
+    @Throws(Exception::class)
+    fun ignoresXliffTags() {
+        topLevelNodeHandler!!.addHandler("resources", NodeHandler()
+                .addHandler("string", StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
+        )
 
-    parse("<resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">" +
-        "<string name=\"preposition_for_date\">on <xliff:g id=\"date\" example=\"May 29\">%s</xliff:g></string>" +
-        "</resources>");
+        parse("<resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">" +
+                "<string name=\"preposition_for_date\">on <xliff:g id=\"date\" example=\"May 29\">%s</xliff:g></string>" +
+                "</resources>")
 
-    assertThat(resourceTable.getValue(new ResName("pkg:string/preposition_for_date"), new ResTable_config()).getData())
-        .isEqualTo("on %s");
-  }
+        assertThat(resourceTable!!.getValue(ResName("pkg:string/preposition_for_date"), ResTable_config()).data)
+                .isEqualTo("on %s")
+    }
 
-  @Test
-  public void ignoresBTags() throws Exception {
-    topLevelNodeHandler.addHandler("resources", new NodeHandler()
-        .addHandler("item[@type='string']", new StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
-    );
+    @Test
+    @Throws(Exception::class)
+    fun ignoresBTags() {
+        topLevelNodeHandler!!.addHandler("resources", NodeHandler()
+                .addHandler("item[@type='string']", StaxValueLoader(resourceTable, "string", ResType.CHAR_SEQUENCE))
+        )
 
-    parse("<resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">" +
-        "<item type=\"string\" name=\"sms_short_code_details\">This <b>may cause charges</b> on your mobile account.</item>" +
-        "</resources>");
+        parse("<resources xmlns:xliff=\"urn:oasis:names:tc:xliff:document:1.2\">" +
+                "<item type=\"string\" name=\"sms_short_code_details\">This <b>may cause charges</b> on your mobile account.</item>" +
+                "</resources>")
+        assertThat(resourceTable!!.getValue(ResName("pkg:string/sms_short_code_details"), ResTable_config()).data)
+                .isEqualTo("This may cause charges on your mobile account.")
+    }
 
-    assertThat(resourceTable.getValue(new ResName("pkg:string/sms_short_code_details"), new ResTable_config()).getData())
-        .isEqualTo("This may cause charges on your mobile account.");
-  }
-
-  private void parse(String xml) throws XMLStreamException {
-    XMLInputFactory factory = XMLInputFactory.newFactory();
-    XMLStreamReader xmlStreamReader = factory.createXMLStreamReader(new StringReader(xml));
-    Path path = Paths.get("/tmp/fake.txt");
-    Qualifiers qualifiers = Qualifiers.fromParentDir(path.getParent());
-    staxDocumentLoader.doParse(xmlStreamReader, new XmlContext("pkg", path, qualifiers));
-  }
+    @Throws(XMLStreamException::class)
+    private fun parse(xml: String) {
+        val factory = XMLInputFactory.newFactory()
+        val xmlStreamReader = factory.createXMLStreamReader(StringReader(xml))
+        val path = Paths.get("/tmp/fake.txt")
+        val qualifiers = Qualifiers.fromParentDir(path.parent)
+        staxDocumentLoader!!.doParse(xmlStreamReader, XmlContext("pkg", path, qualifiers))
+    }
 }
