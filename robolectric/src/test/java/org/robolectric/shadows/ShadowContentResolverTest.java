@@ -17,6 +17,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.annotation.Config.NONE;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentProviderOperation;
@@ -48,6 +49,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -57,7 +59,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.R;
@@ -69,6 +73,8 @@ import org.robolectric.util.NamedStream;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowContentResolverTest {
+  @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
   private static final String AUTHORITY = "org.robolectric";
 
   private ContentResolver contentResolver;
@@ -438,6 +444,20 @@ public class ShadowContentResolverTest {
                 .build());
     assertThat(inputStream).isNotNull();
     inputStream.read();
+  }
+
+  @SuppressLint("NewApi")
+  @Test
+  public void openInputStream_returnsFileUriStream() throws Exception {
+    File file = temporaryFolder.newFile();
+    try (FileOutputStream out = new FileOutputStream(file)) {
+      out.write("foo".getBytes(UTF_8));
+    }
+
+    InputStream inputStream = contentResolver.openInputStream(Uri.fromFile(file));
+
+    assertThat(inputStream).isNotNull();
+    assertThat(new String(inputStream.readAllBytes(), UTF_8)).isEqualTo("foo");
   }
 
   @Test

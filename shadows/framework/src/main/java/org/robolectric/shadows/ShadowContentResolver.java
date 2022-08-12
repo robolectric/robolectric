@@ -3,6 +3,9 @@ package org.robolectric.shadows;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
+import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
+import static android.content.ContentResolver.SCHEME_CONTENT;
+import static android.content.ContentResolver.SCHEME_FILE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
@@ -176,13 +179,11 @@ public class ShadowContentResolver {
         return inputStream;
       }
     }
-    if (ContentResolver.SCHEME_ANDROID_RESOURCE.equals(uri.getScheme())) {
+    String scheme = uri.getScheme();
+    if (SCHEME_ANDROID_RESOURCE.equals(scheme)
+        || SCHEME_FILE.equals(scheme)
+        || (SCHEME_CONTENT.equals(scheme) && getProvider(uri, getContext()) != null)) {
       return reflector(ContentResolverReflector.class, realContentResolver).openInputStream(uri);
-    } else if (getProvider(uri, getContext()) != null
-        && ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-      InputStream uriInputStream =
-          reflector(ContentResolverReflector.class, realContentResolver).openInputStream(uri);
-      return uriInputStream;
     }
     return new UnregisteredInputStream(uri);
   }
@@ -709,7 +710,7 @@ public class ShadowContentResolver {
   }
 
   private static ContentProvider getProvider(Uri uri, Context context) {
-    if (uri == null || !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+    if (uri == null || !SCHEME_CONTENT.equals(uri.getScheme())) {
       return null;
     }
     return getProvider(uri.getAuthority(), context);
