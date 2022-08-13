@@ -3,6 +3,15 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
+apply plugin: 'kotlin'
+apply plugin: "com.diffplug.spotless"
+
+spotless {
+    kotlin {
+        target '**/*.kt'
+        ktfmt('0.34').googleStyle()
+    }
+}
 
 dependencies {
     api project(":pluginapi")
