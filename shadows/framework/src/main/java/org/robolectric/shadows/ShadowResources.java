@@ -11,6 +11,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
@@ -29,8 +30,10 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.HiddenApi;
@@ -59,6 +62,7 @@ public class ShadowResources {
   private static List<LongSparseArray<?>> resettableArrays;
 
   @RealObject Resources realResources;
+  private final Set<OnConfigurationChangeListener> configurationChangeListeners = new HashSet<>();
 
   @Resetter
   public static void reset() {
@@ -292,6 +296,53 @@ public class ShadowResources {
     }
   }
 
+  /**
+   * Listener callback that's called when the configuration is updated for a resources. The callback
+   * receives the old and new configs (and can use {@link Configuration#diff(Configuration)} to
+   * produce a diff). The callback is called after the configuration has been applied to the
+   * underlying resources, so obtaining resources will use the new configuration in the callback.
+   */
+  public interface OnConfigurationChangeListener {
+    void onConfigurationChange(
+        Configuration oldConfig, Configuration newConfig, DisplayMetrics newMetrics);
+  }
+
+  /**
+   * Add a listener to observe resource configuration changes. See {@link
+   * OnConfigurationChangeListener}.
+   */
+  public void addConfigurationChangeListener(OnConfigurationChangeListener listener) {
+    configurationChangeListeners.add(listener);
+  }
+
+  /**
+   * Remove a listener to observe resource configuration changes. See {@link
+   * OnConfigurationChangeListener}.
+   */
+  public void removeConfigurationChangeListener(OnConfigurationChangeListener listener) {
+    configurationChangeListeners.remove(listener);
+  }
+
+  @Implementation
+  protected void updateConfiguration(
+      Configuration config, DisplayMetrics metrics, CompatibilityInfo compat) {
+    Configuration oldConfig;
+    try {
+      oldConfig = new Configuration(realResources.getConfiguration());
+    } catch (NullPointerException e) {
+      // In old versions of Android the resource constructor calls updateConfiguration, in the
+      // app compat ResourcesWrapper subclass the reference to the underlying resources hasn't been
+      // configured yet, so it'll throw an NPE, catch this to avoid crashing.
+      oldConfig = null;
+    }
+    reflector(ResourcesReflector.class, realResources).updateConfiguration(config, metrics, compat);
+    if (oldConfig != null && config != null) {
+      for (OnConfigurationChangeListener listener : configurationChangeListeners) {
+        listener.onConfigurationChange(oldConfig, config, metrics);
+      }
+    }
+  }
+
   /** Base class for shadows of {@link Resources.Theme}. */
   public abstract static class ShadowTheme {
 
@@ -426,5 +477,9 @@ public class ShadowResources {
 
     @Direct
     int getAttributeSetSourceResId(AttributeSet attrs);
+
+    @Direct
+    void updateConfiguration(
+        Configuration config, DisplayMetrics metrics, CompatibilityInfo compat);
   }
 }

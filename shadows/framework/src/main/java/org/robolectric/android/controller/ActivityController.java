@@ -15,9 +15,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ActivityInfo.Config;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
@@ -99,11 +102,8 @@ public class ActivityController<T extends Activity>
     ComponentName componentName =
         new ComponentName(context.getPackageName(), this.component.getClass().getName());
     ((ShadowPackageManager) extract(packageManager)).addActivityIfNotPresent(componentName);
-    packageManager
-        .setComponentEnabledSetting(
-            componentName,
-            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-            0);
+    packageManager.setComponentEnabledSetting(
+        componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
     ShadowActivity shadowActivity = Shadow.extract(component);
     shadowActivity.callAttach(getIntent(), activityOptions, lastNonConfigurationInstances);
     shadowActivity.attachController(this);
@@ -131,7 +131,8 @@ public class ActivityController<T extends Activity>
     return this;
   }
 
-  @Override public ActivityController<T> create() {
+  @Override
+  public ActivityController<T> create() {
     return create(null);
   }
 
@@ -305,7 +306,8 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Calls the same lifecycle methods on the Activity called by Android the first time the Activity is created.
+   * Calls the same lifecycle methods on the Activity called by Android the first time the Activity
+   * is created.
    *
    * @return Activity controller instance.
    */
@@ -335,20 +337,36 @@ public class ActivityController<T extends Activity>
   }
 
   /**
-   * Applies the current system configuration to the Activity.
+   * Performs a configuration change on the Activity. See {@link #configurationChange(Configuration,
+   * DisplayMetrics, int)}. The configuration is taken from the application's configuration.
    *
-   * <p>This can be used in conjunction with {@link RuntimeEnvironment#setQualifiers(String)} to
-   * simulate configuration changes.
-   *
-   * <p>If the activity is configured to handle changes without being recreated, {@link
-   * Activity#onConfigurationChanged(Configuration)} will be called. Otherwise, the activity is
-   * recreated as described <a
-   * href="https://developer.android.com/guide/topics/resources/runtime-changes.html">here</a>.
-   *
-   * @return ActivityController instance
+   * <p>Generally this method should be avoided due to the way Robolectric shares the application
+   * context with activitys by default, this will result in the configuration diff producing no
+   * indicated change and Robolectric will not recreate the activity. Instead prefer to use {@link
+   * #configurationChange(Configuration, DisplayMetrics, int)} and provide an explicit configuration
+   * and diff.
    */
   public ActivityController<T> configurationChange() {
     return configurationChange(component.getApplicationContext().getResources().getConfiguration());
+  }
+
+  /**
+   * Performs a configuration change on the Activity. See {@link #configurationChange(Configuration,
+   * DisplayMetrics, int)}. The changed configuration is calculated based on the activity's existing
+   * configuration.
+   *
+   * <p>When using {@link RuntimeEnvironment#setQualifiers(String)} prefer to use the {@link
+   * #configurationChange(Configuration, DisplayMetrics, int)} method and calculate the
+   * configuration diff manually, due to the way Robolectric uses the application context for
+   * activitys by default the configuration diff will otherwise be incorrectly calculated and the
+   * activity will not get recreqted if it doesn't handle configuration change.
+   */
+  public ActivityController<T> configurationChange(final Configuration newConfiguration) {
+    Resources resources = component.getResources();
+    return configurationChange(
+        newConfiguration,
+        resources.getDisplayMetrics(),
+        resources.getConfiguration().diff(newConfiguration));
   }
 
   /**
@@ -359,18 +377,39 @@ public class ActivityController<T extends Activity>
    * recreated as described <a
    * href="https://developer.android.com/guide/topics/resources/runtime-changes.html">here</a>.
    *
+   * <p>Typically configuration should be applied using {@link RuntimeEnvironment#setQualifiers} and
+   * then propagated to the activity controller, e.g.
+   *
+   * <pre>{@code
+   * Resources resources = RuntimeEnvironment.getApplication().getResources();
+   * Configuration oldConfig = new Configuration(resources.getConfiguration());
+   * RuntimeEnvironment.setQualifiers("+ar-rXB");
+   * Configuration newConfig = resources.getConfiguration();
+   * activityController.configurationChange(
+   *     newConfig, resources.getDisplayMetrics(), oldConfig.diff(newConfig));
+   * }</pre>
+   *
    * @param newConfiguration The new configuration to be set.
+   * @param changedConfig The changed configuration properties bitmask (e.g. the result of calling
+   *     {@link Configuration#diff(Configuration)}). This will be used to determine whether the
+   *     activity handles the configuration change or not, and whether it must be recreated.
    * @return ActivityController instance
    */
-  public ActivityController<T> configurationChange(final Configuration newConfiguration) {
-    final Configuration currentConfig = component.getResources().getConfiguration();
-    final int changedBits = currentConfig.diff(newConfiguration);
-    currentConfig.setTo(newConfiguration);
+  // TODO: Passing in the changed config explicitly should be unnecessary (i.e. the controller
+  //  should be able to diff against the current activity configuration), but due to the way
+  //  Robolectric uses the application context as the default activity context the application
+  //  context may be updated before entering this method (e.g. if RuntimeEnvironment#setQualifiers
+  //  was called before calling this method). When this issue is fixed this method should be
+  //  deprecated and removed.
+  public ActivityController<T> configurationChange(
+      Configuration newConfiguration, DisplayMetrics newMetrics, @Config int changedConfig) {
+    component.getResources().updateConfiguration(newConfiguration, newMetrics);
 
-    // TODO: throw on changedBits == 0 since it non-intuitively calls onConfigurationChanged
+    // TODO: throw on changedConfig == 0 since it non-intuitively calls onConfigurationChanged
 
     // Can the activity handle itself ALL configuration changes?
-    if ((getActivityInfo(component.getApplication()).configChanges & changedBits) == changedBits) {
+    if ((getActivityInfo(component.getApplication()).configChanges & changedConfig)
+        == changedConfig) {
       shadowMainLooper.runPaused(
           () -> {
             component.onConfigurationChanged(newConfiguration);
@@ -398,7 +437,7 @@ public class ActivityController<T extends Activity>
           () -> {
             // Set flags
             _component_.setChangingConfigurations(true);
-            _component_.setConfigChangeFlags(changedBits);
+            _component_.setConfigChangeFlags(changedConfig);
 
             // Perform activity destruction
             final Bundle outState = new Bundle();
@@ -409,7 +448,7 @@ public class ActivityController<T extends Activity>
             // See
             // https://developer.android.com/reference/android/app/Activity#onSaveInstanceState(android.os.Bundle) for documentation explained.
             // And see ActivityThread#callActivityOnStop for related code.
-            _component_.performPause();
+            getInstrumentation().callActivityOnPause(component);
             if (RuntimeEnvironment.getApiLevel() < P) {
               _component_.performSaveInstanceState(outState);
               if (RuntimeEnvironment.getApiLevel() <= M) {
@@ -432,7 +471,7 @@ public class ActivityController<T extends Activity>
                     ? null // No framework or user state.
                     : reflector(_NonConfigurationInstances_.class, nonConfigInstance).getActivity();
 
-            _component_.performDestroy();
+            getInstrumentation().callActivityOnDestroy(component);
             makeActivityEligibleForGc();
 
             // Restore theme in case it was set in the test manually.
@@ -445,6 +484,16 @@ public class ActivityController<T extends Activity>
             attached = false;
             component = recreatedActivity;
             _component_ = _recreatedActivity_;
+
+            // TODO: Because robolectric is currently not creating unique context objects per
+            //  activity and that the app copmat framework uses weak maps to cache resources per
+            //  context the caches end up with stale objects between activity creations (which would
+            //  typically be flushed by an onConfigurationChanged when running in real android). To
+            //  workaround this we can invoke a gc after running the configuration change and
+            //  destroying the old activity which will flush the object references from the weak
+            //  maps (the side effect otherwise is flaky tests that behave differently based on when
+            //  garbage collection last happened to run).
+            System.gc();
 
             // TODO: Pass nonConfigurationInstance here instead of setting
             // mLastNonConfigurationInstances directly below. This field must be set before
@@ -462,7 +511,7 @@ public class ActivityController<T extends Activity>
             shadowActivity.setLastNonConfigurationInstance(activityConfigInstance);
 
             // Create lifecycle
-            _recreatedActivity_.performCreate(outState);
+            getInstrumentation().callActivityOnCreate(recreatedActivity, outState);
 
             if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
 
@@ -472,7 +521,7 @@ public class ActivityController<T extends Activity>
               _recreatedActivity_.performStart("configurationChange");
             }
 
-            _recreatedActivity_.performRestoreInstanceState(outState);
+            getInstrumentation().callActivityOnRestoreInstanceState(recreatedActivity, outState);
             _recreatedActivity_.onPostCreate(outState);
             if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
               _recreatedActivity_.performResume();
@@ -607,6 +656,4 @@ public class ActivityController<T extends Activity>
     @Accessor("activity")
     Object getActivity();
   }
-
 }
-

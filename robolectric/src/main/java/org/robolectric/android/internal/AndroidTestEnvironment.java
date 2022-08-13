@@ -351,7 +351,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
 
       PerfStatsCollector.getInstance()
-          .measure("application onCreate()", () -> application.onCreate());
+          .measure(
+              "application onCreate()",
+              () -> androidInstrumentation.callApplicationOnCreate(application));
     }
 
     return application;
