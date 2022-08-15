@@ -457,7 +457,7 @@ public class ReflectionHelpers {
     // remove 'final' modifier if present
     if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
       try {
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        Field modifiersField = getDeclaredField(Field.class, "modifiers");
         modifiersField.setAccessible(true);
         try {
           modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
@@ -466,6 +466,31 @@ public class ReflectionHelpers {
         }
       } catch (NoSuchFieldException e) {
         // ignore missing fields
+      }
+    }
+  }
+
+  private static Field getDeclaredField(Class<?> clazz, String name) throws NoSuchFieldException {
+    try {
+      return clazz.getDeclaredField(name);
+    } catch (NoSuchFieldException e1) {
+      try {
+        Method getDeclaredFields0 =
+            Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+        getDeclaredFields0.setAccessible(true);
+        Field[] fields = (Field[]) getDeclaredFields0.invoke(clazz, false);
+        for (Field f : fields) {
+          if (f.getName().equals(name)) {
+            return f;
+          }
+        }
+        throw new NoSuchFieldException(name);
+      } catch (NoSuchMethodException e2) {
+        throw new NoSuchFieldException(name);
+      } catch (IllegalAccessException e2) {
+        throw new NoSuchFieldException(name);
+      } catch (InvocationTargetException e2) {
+        throw new NoSuchFieldException(name);
       }
     }
   }
