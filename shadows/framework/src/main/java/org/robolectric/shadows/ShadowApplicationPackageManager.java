@@ -681,15 +681,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             if (match > 0) {
               PackageInfo packageInfo = packageInfos.get(componentName.getPackageName());
               I[] componentInfoArray = componentsInPackage.apply(packageInfo);
-              for (I componentInfo : componentInfoArray) {
-                if (!componentInfo.name.equals(componentName.getClassName())) {
-                  continue;
+              if (componentInfoArray != null) {
+                for (I componentInfo : componentInfoArray) {
+                  if (!componentInfo.name.equals(componentName.getClassName())) {
+                    continue;
+                  }
+                  ResolveInfo resolveInfo = buildResolveInfo(componentInfo, filter);
+                  resolveInfo.match = match;
+                  componentSetter.accept(resolveInfo, componentInfo);
+                  resolveInfoList.add(resolveInfo);
+                  continue components;
                 }
-                ResolveInfo resolveInfo = buildResolveInfo(componentInfo, filter);
-                resolveInfo.match = match;
-                componentSetter.accept(resolveInfo, componentInfo);
-                resolveInfoList.add(resolveInfo);
-                continue components;
               }
             }
           }
