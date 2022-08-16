@@ -32,7 +32,9 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Parcel;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
@@ -693,7 +695,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   @Implementation
   protected void recreate() {
     if (controller != null) {
-      controller.recreate();
+      // Post the call to recreate to simulate ActivityThread behavior.
+      new Handler(Looper.getMainLooper()).post(controller::recreate);
     } else {
       throw new IllegalStateException(
           "Cannot use an Activity that is not managed by an ActivityController");
