@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -24,6 +25,7 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
@@ -193,6 +195,19 @@ public class ActivityController<T extends Activity>
     invokeWhilePaused(() -> _component_.onPostResume());
     return this;
   }
+  /**
+   * Calls the same lifecycle methods on the Activity called by Android when an Activity is the top
+   * most resumed activity on Q+.
+   */
+  @CanIgnoreReturnValue
+  public ActivityController<T> topActivityResumed(boolean isTop) {
+    if (RuntimeEnvironment.getApiLevel() < Q) {
+      return this;
+    }
+    invokeWhilePaused(
+        () -> _component_.performTopResumedActivityChanged(isTop, "topStateChangedWhenResumed"));
+    return this;
+  }
 
   public ActivityController<T> visible() {
     shadowMainLooper.runPaused(
@@ -312,7 +327,7 @@ public class ActivityController<T extends Activity>
    * @return Activity controller instance.
    */
   public ActivityController<T> setup() {
-    return create().start().postCreate(null).resume().visible();
+    return create().start().postCreate(null).resume().visible().topActivityResumed(true);
   }
 
   /**
@@ -328,7 +343,8 @@ public class ActivityController<T extends Activity>
         .restoreInstanceState(savedInstanceState)
         .postCreate(savedInstanceState)
         .resume()
-        .visible();
+        .visible()
+        .topActivityResumed(true);
   }
 
   public ActivityController<T> newIntent(Intent intent) {
@@ -530,6 +546,9 @@ public class ActivityController<T extends Activity>
             }
             _recreatedActivity_.onPostResume();
             // TODO: Call visible() too.
+            if (RuntimeEnvironment.getApiLevel() >= Q) {
+              _recreatedActivity_.performTopResumedActivityChanged(true, "configurationChange");
+            }
           });
     }
 
@@ -596,6 +615,7 @@ public class ActivityController<T extends Activity>
     postResume();
     visible();
     windowFocusChanged(true);
+    topActivityResumed(true);
 
     // Move back to the original stage. If the original stage was transient stage, it will bring it
     // to resumed state to match the on device behavior.

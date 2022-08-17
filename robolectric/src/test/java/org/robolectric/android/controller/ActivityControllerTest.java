@@ -2,6 +2,7 @@ package org.robolectric.android.controller;
 
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.robolectric.Shadows.shadowOf;
@@ -376,6 +377,20 @@ public class ActivityControllerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void onTopActivityResumedCalledWithSetup() {
+    controller.setup();
+    assertThat(transcript).contains("finishedOnTopResumedActivityChanged");
+  }
+
+  @Test
+  @Config(maxSdk = VERSION_CODES.P)
+  public void onTopActivityResumedNotCalledWithSetupPreQ() {
+    controller.setup();
+    assertThat(transcript).doesNotContain("finishedOnTopResumedActivityChanged");
+  }
+
+  @Test
   public void close_transitionsActivityStateToDestroyed() {
     Robolectric.buildActivity(MyActivity.class).close();
     assertThat(transcript).isEmpty();
@@ -400,24 +415,27 @@ public class ActivityControllerTest {
     transcript.clear();
 
     Robolectric.buildActivity(MyActivity.class).setup().close();
-    assertThat(transcript)
-        .containsExactly(
-            "onCreate",
-            "finishedOnCreate",
-            "onStart",
-            "finishedOnStart",
-            "onPostCreate",
-            "finishedOnPostCreate",
-            "onResume",
-            "finishedOnResume",
-            "onPostResume",
-            "finishedOnPostResume",
-            "onPause",
-            "finishedOnPause",
-            "onStop",
-            "finishedOnStop",
-            "onDestroy",
-            "finishedOnDestroy");
+    List<String> expectedStringList = new ArrayList<>();
+    expectedStringList.add("onCreate");
+    expectedStringList.add("finishedOnCreate");
+    expectedStringList.add("onStart");
+    expectedStringList.add("finishedOnStart");
+    expectedStringList.add("onPostCreate");
+    expectedStringList.add("finishedOnPostCreate");
+    expectedStringList.add("onResume");
+    expectedStringList.add("finishedOnResume");
+    expectedStringList.add("onPostResume");
+    expectedStringList.add("finishedOnPostResume");
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      expectedStringList.add("finishedOnTopResumedActivityChanged");
+    }
+    expectedStringList.add("onPause");
+    expectedStringList.add("finishedOnPause");
+    expectedStringList.add("onStop");
+    expectedStringList.add("finishedOnStop");
+    expectedStringList.add("onDestroy");
+    expectedStringList.add("finishedOnDestroy");
+    assertThat(transcript).containsExactly(expectedStringList.toArray());
   }
 
   @Test
@@ -426,24 +444,27 @@ public class ActivityControllerTest {
         Robolectric.buildActivity(MyActivity.class).setup()) {
       // no-op
     }
-    assertThat(transcript)
-        .containsExactly(
-            "onCreate",
-            "finishedOnCreate",
-            "onStart",
-            "finishedOnStart",
-            "onPostCreate",
-            "finishedOnPostCreate",
-            "onResume",
-            "finishedOnResume",
-            "onPostResume",
-            "finishedOnPostResume",
-            "onPause",
-            "finishedOnPause",
-            "onStop",
-            "finishedOnStop",
-            "onDestroy",
-            "finishedOnDestroy");
+    List<String> expectedStringList = new ArrayList<>();
+    expectedStringList.add("onCreate");
+    expectedStringList.add("finishedOnCreate");
+    expectedStringList.add("onStart");
+    expectedStringList.add("finishedOnStart");
+    expectedStringList.add("onPostCreate");
+    expectedStringList.add("finishedOnPostCreate");
+    expectedStringList.add("onResume");
+    expectedStringList.add("finishedOnResume");
+    expectedStringList.add("onPostResume");
+    expectedStringList.add("finishedOnPostResume");
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      expectedStringList.add("finishedOnTopResumedActivityChanged");
+    }
+    expectedStringList.add("onPause");
+    expectedStringList.add("finishedOnPause");
+    expectedStringList.add("onStop");
+    expectedStringList.add("finishedOnStop");
+    expectedStringList.add("onDestroy");
+    expectedStringList.add("finishedOnDestroy");
+    assertThat(transcript).containsExactly(expectedStringList.toArray());
   }
 
   private void configurationChange_callsLifecycleMethodsAndAppliesConfigWhenAnyNonManaged(
@@ -586,6 +607,12 @@ public class ActivityControllerTest {
     public void onWindowFocusChanged(boolean newFocus) {
       super.onWindowFocusChanged(newFocus);
       transcript.add("finishedOnWindowFocusChanged");
+    }
+
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {
+      super.onTopResumedActivityChanged(isTopResumedActivity);
+      transcript.add("finishedOnTopResumedActivityChanged");
     }
 
     private void transcribeWhilePaused(final String event) {

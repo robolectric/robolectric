@@ -74,10 +74,10 @@ public class LocalActivityInvoker implements ActivityInvoker {
       case RESUMED:
         return;
       case PAUSED:
-        controller.resume();
+        controller.resume().topActivityResumed(true);
         return;
       case STOPPED:
-        controller.restart().resume();
+        controller.restart().resume().topActivityResumed(true);
         return;
       default:
         throw new IllegalStateException(
@@ -93,7 +93,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        controller.pause();
+        controller.topActivityResumed(false).pause();
         return;
       case PAUSED:
         return;
@@ -110,7 +110,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        controller.pause().stop();
+        controller.topActivityResumed(false).pause().stop();
         return;
       case PAUSED:
         controller.stop();
@@ -139,7 +139,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        controller.pause().stop().destroy();
+        controller.topActivityResumed(false).pause().stop().destroy();
         return;
       case PAUSED:
         controller.stop().destroy();

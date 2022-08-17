@@ -329,6 +329,8 @@ public interface _Activity_ {
 
   void performResume(boolean followedByPause, String reason);
 
+  void performTopResumedActivityChanged(boolean isTopResumedActivity, String reason);
+
   void performSaveInstanceState(Bundle outState);
 
   void performStart();

@@ -90,8 +90,10 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       Intent intent, @Nullable Bundle activityOptions) {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     if (ai == null) {
-      throw new RuntimeException("Unable to resolve activity for " + intent
-          + " -- see https://github.com/robolectric/robolectric/pull/4736 for details");
+      throw new RuntimeException(
+          "Unable to resolve activity for "
+              + intent
+              + " -- see https://github.com/robolectric/robolectric/pull/4736 for details");
     }
 
     Class<? extends Activity> activityClass;
@@ -108,11 +110,13 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       controller.destroy();
     } else {
       createdActivities.add(controller);
-      controller.start()
+      controller
+          .start()
           .postCreate(null)
           .resume()
           .visible()
-          .windowFocusChanged(true);
+          .windowFocusChanged(true)
+          .topActivityResumed(true);
     }
     return controller;
   }
@@ -317,7 +321,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   }
 
   @Override
-  public void finish(int resultCode, Bundle bundle) { }
+  public void finish(int resultCode, Bundle bundle) {}
 
   @Override
   public Context getTargetContext() {
