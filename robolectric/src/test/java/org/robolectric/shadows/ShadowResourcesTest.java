@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.AssetFileDescriptor;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
@@ -17,6 +19,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.InputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -60,10 +63,12 @@ public class ShadowResourcesTest {
     int identifier_missing_from_r_file =
         resources.getIdentifier("secondary_text_material_dark", "color", "android");
 
-    // We expect Robolectric to generate a placeholder identifier where one was not generated in the android R files.
+    // We expect Robolectric to generate a placeholder identifier where one was not generated in the
+    // android R files.
     assertThat(identifier_missing_from_r_file).isNotEqualTo(0);
 
-    // We expect to be able to successfully android:color/secondary_text_material_dark to a ColorStateList.
+    // We expect to be able to successfully android:color/secondary_text_material_dark to a
+    // ColorStateList.
     assertThat(resources.getColorStateList(identifier_missing_from_r_file)).isNotNull();
   }
 
@@ -97,7 +102,8 @@ public class ShadowResourcesTest {
 
     theme.resolveAttribute(android.R.attr.windowBackground, out, true);
     assertThat(out.type).isNotEqualTo(TypedValue.TYPE_REFERENCE);
-    assertThat(out.type).isIn(Range.closed(TypedValue.TYPE_FIRST_COLOR_INT, TypedValue.TYPE_LAST_COLOR_INT));
+    assertThat(out.type)
+        .isIn(Range.closed(TypedValue.TYPE_FIRST_COLOR_INT, TypedValue.TYPE_LAST_COLOR_INT));
 
     int value = resources.getColor(android.R.color.black);
     assertThat(out.data).isEqualTo(value);
@@ -118,15 +124,17 @@ public class ShadowResourcesTest {
   @Test
   public void obtainStyledAttributes_shouldCheckXmlFirst_fromAttributeSetBuilder() {
 
-    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were introduced in API 21
-    // but the public ID values they are assigned clash with private com.android.internal.R values on older SDKs. This
-    // test ensures that even on older SDKs, on calls to obtainStyledAttributes() Robolectric will first check for matching
-    // resource ID values in the AttributeSet before checking the theme.
+    // This simulates a ResourceProvider built from a 21+ SDK as viewportHeight / viewportWidth were
+    // introduced in API 21 but the public ID values they are assigned clash with private
+    // com.android.internal.R values on older SDKs. This test ensures that even on older SDKs, on
+    // calls to obtainStyledAttributes() Robolectric will first check for matching resource ID
+    // values in the AttributeSet before checking the theme.
 
-    AttributeSet attributes = Robolectric.buildAttributeSet()
-        .addAttribute(android.R.attr.viewportWidth, "12.0")
-        .addAttribute(android.R.attr.viewportHeight, "24.0")
-        .build();
+    AttributeSet attributes =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.viewportWidth, "12.0")
+            .addAttribute(android.R.attr.viewportHeight, "24.0")
+            .build();
 
     TypedArray typedArray =
         ApplicationProvider.getApplicationContext()
@@ -150,8 +158,7 @@ public class ShadowResourcesTest {
         (XmlResourceParserImpl) resources.getXml(R.xml.preferences);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?org.robolectric:attr/ref");
 
-    xmlResourceParser =
-        (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
+    xmlResourceParser = (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
     assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
   }
 
@@ -231,5 +238,55 @@ public class ShadowResourcesTest {
     int sourceRedId = ShadowResources.getAttributeSetSourceResId(xmlResourceParser);
 
     assertThat(sourceRedId).isEqualTo(R.xml.preferences);
+  }
+
+  @Test
+  public void addConfigurationChangeListener_callsOnConfigurationChange() {
+    AtomicBoolean listenerWasCalled = new AtomicBoolean();
+    shadowOf(resources)
+        .addConfigurationChangeListener(
+            (oldConfig, newConfig, newMetrics) -> {
+              listenerWasCalled.set(true);
+              assertThat(newConfig.fontScale).isEqualTo(oldConfig.fontScale * 2);
+            });
+
+    Configuration newConfig = new Configuration(resources.getConfiguration());
+    newConfig.fontScale *= 2;
+    resources.updateConfiguration(newConfig, resources.getDisplayMetrics());
+
+    assertThat(listenerWasCalled.get()).isTrue();
+  }
+
+  @Test
+  public void removeConfigurationChangeListener_doesNotCallOnConfigurationChange() {
+    AtomicBoolean listenerWasCalled = new AtomicBoolean();
+    ShadowResources.OnConfigurationChangeListener listener =
+        (oldConfig, newConfig, newMetrics) -> listenerWasCalled.set(true);
+    Configuration newConfig = new Configuration(resources.getConfiguration());
+    newConfig.fontScale *= 2;
+
+    shadowOf(resources).addConfigurationChangeListener(listener);
+    shadowOf(resources).removeConfigurationChangeListener(listener);
+    resources.updateConfiguration(newConfig, resources.getDisplayMetrics());
+
+    assertThat(listenerWasCalled.get()).isFalse();
+  }
+
+  @Test
+  public void subclassWithNpeGetConfiguration_constructsCorrectly() {
+    // Simulate the behavior of ResourcesWrapper during construction which will throw an NPE if
+    // getConfiguration is called, on lower SDKs the Configuration constructor calls
+    // updateConfiguration(), the ShadowResources will attempt to call getConfiguration during this
+    // method call and shouldn't fail.
+    Resources resourcesSubclass =
+        new Resources(
+            resources.getAssets(), resources.getDisplayMetrics(), resources.getConfiguration()) {
+          @Override
+          public Configuration getConfiguration() {
+            throw new NullPointerException();
+          }
+        };
+
+    assertThat(resourcesSubclass).isNotNull();
   }
 }

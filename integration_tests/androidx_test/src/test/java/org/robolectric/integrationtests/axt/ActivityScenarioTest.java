@@ -1,10 +1,13 @@
 package org.robolectric.integrationtests.axt;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
+import android.app.UiAutomation;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import androidx.appcompat.R;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,11 +16,14 @@ import androidx.lifecycle.Lifecycle.State;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /**
  * Integration tests for {@link ActivityScenario} that verify it behaves consistently on device and
@@ -212,5 +218,24 @@ public class ActivityScenarioTest {
         activity ->
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
                 .isNotSameInstanceAs(fragment));
+  }
+
+  @Config(minSdk = JELLY_BEAN_MR2)
+  @Test
+  public void setRotation_recreatesActivity() {
+    UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();
+    try (ActivityScenario<?> scenario = ActivityScenario.launch(TranscriptActivity.class)) {
+      AtomicReference<Activity> originalActivity = new AtomicReference<>();
+      scenario.onActivity(originalActivity::set);
+
+      uiAutomation.setRotation(UiAutomation.ROTATION_FREEZE_90);
+
+      scenario.onActivity(
+          activity -> {
+            assertThat(activity.getResources().getConfiguration().orientation)
+                .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+            assertThat(activity).isNotSameInstanceAs(originalActivity);
+          });
+    }
   }
 }
