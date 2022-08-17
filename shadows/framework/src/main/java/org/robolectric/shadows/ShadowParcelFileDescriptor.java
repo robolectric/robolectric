@@ -6,6 +6,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import java.io.File;
 import java.io.FileDescriptor;
@@ -32,9 +33,11 @@ public class ShadowParcelFileDescriptor {
   private static final String PIPE_FILE_NAME = "pipe";
   private RandomAccessFile file;
   private boolean closed;
-  @RealObject ParcelFileDescriptor realParcelFd;
+  private Handler handler;
+  private ParcelFileDescriptor.OnCloseListener onCloseListener;
 
-  private @RealObject ParcelFileDescriptor realObject;
+  @RealObject private ParcelFileDescriptor realParcelFd;
+  @RealObject private ParcelFileDescriptor realObject;
 
   @Implementation
   protected void __constructor__(ParcelFileDescriptor wrapped) {
@@ -76,6 +79,23 @@ public class ShadowParcelFileDescriptor {
         throw fnfe;
       }
     }
+    return pfd;
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected static ParcelFileDescriptor open(
+      File file, int mode, Handler handler, ParcelFileDescriptor.OnCloseListener listener)
+      throws IOException {
+    if (handler == null) {
+      throw new IllegalArgumentException("Handler must not be null");
+    }
+    if (listener == null) {
+      throw new IllegalArgumentException("Listener must not be null");
+    }
+    ParcelFileDescriptor pfd = open(file, mode);
+    ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
+    shadowParcelFileDescriptor.handler = handler;
+    shadowParcelFileDescriptor.onCloseListener = listener;
     return pfd;
   }
 
@@ -155,6 +175,9 @@ public class ShadowParcelFileDescriptor {
     file.close();
     reflector(ParcelFileDescriptorReflector.class, realParcelFd).close();
     closed = true;
+    if (handler != null && onCloseListener != null) {
+      handler.post(() -> onCloseListener.onClose(null));
+    }
   }
 
   @ForType(ParcelFileDescriptor.class)
