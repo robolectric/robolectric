@@ -17,7 +17,7 @@ public class ShadowResolveInfo {
    * @return Resolve info instance.
    */
   public static ResolveInfo newResolveInfo(String displayName, String packageName) {
-    return newResolveInfo(displayName, packageName, null);
+    return newResolveInfo(displayName, packageName, packageName + ".TestActivity");
   }
 
   /**
