@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.P;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -110,6 +112,21 @@ public class ShadowBluetoothHeadset {
       throw new IllegalArgumentException("Command cannot be null");
     }
     return allowsSendVendorSpecificResultCode && connectedDevices.contains(device);
+  }
+
+  @Nullable
+  @Implementation(minSdk = P)
+  protected BluetoothDevice getActiveDevice() {
+    return activeBluetoothDevice;
+  }
+
+  @Implementation(minSdk = P)
+  protected boolean setActiveDevice(@Nullable BluetoothDevice bluetoothDevice) {
+    activeBluetoothDevice = bluetoothDevice;
+    Intent intent = new Intent(BluetoothHeadset.ACTION_ACTIVE_DEVICE_CHANGED);
+    intent.putExtra(BluetoothDevice.EXTRA_DEVICE, activeBluetoothDevice);
+    RuntimeEnvironment.getApplication().sendBroadcast(intent);
+    return true;
   }
 
   /**
