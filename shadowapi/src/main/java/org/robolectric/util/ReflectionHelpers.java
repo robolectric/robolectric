@@ -115,14 +115,17 @@ public class ReflectionHelpers {
   @SuppressWarnings("unchecked")
   public static <R> R getField(final Object object, final String fieldName) {
     try {
-      return traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<R>() {
-        @Override
-        public R run(Class<?> traversalClass) throws Exception {
-          Field field = traversalClass.getDeclaredField(fieldName);
-          field.setAccessible(true);
-          return (R) field.get(object);
-        }
-      });
+      return traverseClassHierarchy(
+          object.getClass(),
+          NoSuchFieldException.class,
+          new InsideTraversal<R>() {
+            @Override
+            public R run(Class<?> traversalClass) throws Exception {
+              Field field = getDeclaredField(traversalClass, fieldName);
+              field.setAccessible(true);
+              return (R) field.get(object);
+            }
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -137,15 +140,18 @@ public class ReflectionHelpers {
    */
   public static void setField(final Object object, final String fieldName, final Object fieldNewValue) {
     try {
-      traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<Void>() {
-        @Override
-        public Void run(Class<?> traversalClass) throws Exception {
-          Field field = traversalClass.getDeclaredField(fieldName);
-          field.setAccessible(true);
-          field.set(object, fieldNewValue);
-          return null;
-        }
-      });
+      traverseClassHierarchy(
+          object.getClass(),
+          NoSuchFieldException.class,
+          new InsideTraversal<Void>() {
+            @Override
+            public Void run(Class<?> traversalClass) throws Exception {
+              Field field = getDeclaredField(traversalClass, fieldName);
+              field.setAccessible(true);
+              field.set(object, fieldNewValue);
+              return null;
+            }
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -161,7 +167,7 @@ public class ReflectionHelpers {
    */
   public static void setField(Class<?> type, final Object object, final String fieldName, final Object fieldNewValue) {
     try {
-      Field field = type.getDeclaredField(fieldName);
+      Field field = getDeclaredField(type, fieldName);
       field.setAccessible(true);
       field.set(object, fieldNewValue);
     } catch (Exception e) {
@@ -196,7 +202,7 @@ public class ReflectionHelpers {
    */
   public static <R> R getStaticField(Class<?> clazz, String fieldName) {
     try {
-      return getStaticField(clazz.getDeclaredField(fieldName));
+      return getStaticField(getDeclaredField(clazz, fieldName));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -226,7 +232,7 @@ public class ReflectionHelpers {
    */
   public static void setStaticField(Class<?> clazz, String fieldName, Object fieldNewValue) {
     try {
-      setStaticField(clazz.getDeclaredField(fieldName), fieldNewValue);
+      setStaticField(getDeclaredField(clazz, fieldName), fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
