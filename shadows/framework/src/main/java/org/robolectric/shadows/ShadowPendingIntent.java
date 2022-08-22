@@ -75,6 +75,7 @@ public class ShadowPendingIntent {
   private int flags;
   @Nullable private Bundle options;
   private String creatorPackage;
+  private int creatorUid;
   private boolean canceled;
   @Nullable private PendingIntent.OnFinished lastOnFinished;
 
@@ -460,6 +461,15 @@ public class ShadowPendingIntent {
 
   public void setCreatorPackage(String creatorPackage) {
     this.creatorPackage = creatorPackage;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected int getCreatorUid() {
+    return creatorUid;
+  }
+
+  public void setCreatorUid(int uid) {
+    this.creatorUid = uid;
   }
 
   @Override

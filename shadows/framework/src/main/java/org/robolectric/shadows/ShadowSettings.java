@@ -557,6 +557,21 @@ public class ShadowSettings {
         installNonMarketApps ? 1 : 0);
   }
 
+  public static void setLockScreenShowNotifications(boolean lockScreenShowNotifications) {
+    Settings.Secure.putInt(
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS,
+        lockScreenShowNotifications ? 1 : 0);
+  }
+
+  public static void setLockScreenAllowPrivateNotifications(
+      boolean lockScreenAllowPrivateNotifications) {
+    Settings.Secure.putInt(
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS,
+        lockScreenAllowPrivateNotifications ? 1 : 0);
+  }
+
   @Resetter
   public static void reset() {
     canDrawOverlays = false;

@@ -5,7 +5,6 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -55,6 +54,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -140,12 +140,6 @@ public class ShadowInstrumentation {
     for (Intent intent : intents) {
       execStartActivity(who, contextThread, token, target, intent, -1, options);
     }
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected void execStartActivityFromAppTask(
-      Context who, IBinder contextThread, Object appTask, Intent intent, Bundle options) {
-    throw new UnsupportedOperationException("Implement me!!");
   }
 
   @Implementation
@@ -388,11 +382,24 @@ public class ShadowInstrumentation {
   /** A null {@code requiredPermission} indicates that no permission is required. */
   private static boolean hasRequiredPermissionForBroadcast(
       Context context, @Nullable String requiredPermission) {
-    return requiredPermission == null
-        || RuntimeEnvironment.getApplication()
-                .getPackageManager()
-                .checkPermission(requiredPermission, context.getPackageName())
-            == PERMISSION_GRANTED;
+    if (requiredPermission == null) {
+      return true;
+    }
+    // Check manifest-based permissions from PackageManager.
+    Context applicationContext = RuntimeEnvironment.getApplication();
+    if (applicationContext
+            .getPackageManager()
+            .checkPermission(requiredPermission, context.getPackageName())
+        == PERMISSION_GRANTED) {
+      return true;
+    }
+    // Check dynamically-granted permissions from here in ShadowInstrumentation.
+    if (Objects.equals(context.getPackageName(), applicationContext.getPackageName())
+        && applicationContext.checkPermission(requiredPermission, Process.myPid(), Process.myUid())
+            == PERMISSION_GRANTED) {
+      return true;
+    }
+    return false;
   }
 
   private void postIntent(

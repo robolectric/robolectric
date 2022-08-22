@@ -351,7 +351,7 @@ public class SdkStore {
 
       MethodExtraInfo methodExtraInfo = methods.get(methodInfo);
       if (looseSignatures && methodExtraInfo == null) {
-        methodExtraInfo = erasedParamTypesMethods.get(methodInfo.erase());
+        methodExtraInfo = erasedParamTypesMethods.get(methodInfo);
       }
       return methodExtraInfo;
     }

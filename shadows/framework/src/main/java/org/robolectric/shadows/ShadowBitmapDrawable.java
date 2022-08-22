@@ -58,6 +58,18 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     reflector(BitmapDrawableReflector.class, realBitmapDrawable).setColorFilter(colorFilter);
   }
 
+  @Override
+  protected void setCreatedFromResId(int createdFromResId, String resourceName) {
+    super.setCreatedFromResId(createdFromResId, resourceName);
+    Bitmap bitmap = realBitmapDrawable.getBitmap();
+    if (bitmap != null && Shadow.extract(bitmap) instanceof ShadowBitmap) {
+      ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+      if (shadowBitmap.createdFromResId == -1) {
+        shadowBitmap.setCreatedFromResId(createdFromResId, resourceName);
+      }
+    }
+  }
+
   /**
    * Returns the resource id that this {@code BitmapDrawable} was loaded from. This lets
    * your tests assert that the bitmap is correct without having to actually load the bitmap.

@@ -115,14 +115,17 @@ public class ReflectionHelpers {
   @SuppressWarnings("unchecked")
   public static <R> R getField(final Object object, final String fieldName) {
     try {
-      return traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<R>() {
-        @Override
-        public R run(Class<?> traversalClass) throws Exception {
-          Field field = traversalClass.getDeclaredField(fieldName);
-          field.setAccessible(true);
-          return (R) field.get(object);
-        }
-      });
+      return traverseClassHierarchy(
+          object.getClass(),
+          NoSuchFieldException.class,
+          new InsideTraversal<R>() {
+            @Override
+            public R run(Class<?> traversalClass) throws Exception {
+              Field field = getDeclaredField(traversalClass, fieldName);
+              field.setAccessible(true);
+              return (R) field.get(object);
+            }
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -137,15 +140,18 @@ public class ReflectionHelpers {
    */
   public static void setField(final Object object, final String fieldName, final Object fieldNewValue) {
     try {
-      traverseClassHierarchy(object.getClass(), NoSuchFieldException.class, new InsideTraversal<Void>() {
-        @Override
-        public Void run(Class<?> traversalClass) throws Exception {
-          Field field = traversalClass.getDeclaredField(fieldName);
-          field.setAccessible(true);
-          field.set(object, fieldNewValue);
-          return null;
-        }
-      });
+      traverseClassHierarchy(
+          object.getClass(),
+          NoSuchFieldException.class,
+          new InsideTraversal<Void>() {
+            @Override
+            public Void run(Class<?> traversalClass) throws Exception {
+              Field field = getDeclaredField(traversalClass, fieldName);
+              field.setAccessible(true);
+              field.set(object, fieldNewValue);
+              return null;
+            }
+          });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -161,7 +167,7 @@ public class ReflectionHelpers {
    */
   public static void setField(Class<?> type, final Object object, final String fieldName, final Object fieldNewValue) {
     try {
-      Field field = type.getDeclaredField(fieldName);
+      Field field = getDeclaredField(type, fieldName);
       field.setAccessible(true);
       field.set(object, fieldNewValue);
     } catch (Exception e) {
@@ -196,7 +202,7 @@ public class ReflectionHelpers {
    */
   public static <R> R getStaticField(Class<?> clazz, String fieldName) {
     try {
-      return getStaticField(clazz.getDeclaredField(fieldName));
+      return getStaticField(getDeclaredField(clazz, fieldName));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -226,7 +232,7 @@ public class ReflectionHelpers {
    */
   public static void setStaticField(Class<?> clazz, String fieldName, Object fieldNewValue) {
     try {
-      setStaticField(clazz.getDeclaredField(fieldName), fieldNewValue);
+      setStaticField(getDeclaredField(clazz, fieldName), fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -457,7 +463,7 @@ public class ReflectionHelpers {
     // remove 'final' modifier if present
     if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
       try {
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        Field modifiersField = getDeclaredField(Field.class, "modifiers");
         modifiersField.setAccessible(true);
         try {
           modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
@@ -466,6 +472,31 @@ public class ReflectionHelpers {
         }
       } catch (NoSuchFieldException e) {
         // ignore missing fields
+      }
+    }
+  }
+
+  private static Field getDeclaredField(Class<?> clazz, String name) throws NoSuchFieldException {
+    try {
+      return clazz.getDeclaredField(name);
+    } catch (NoSuchFieldException e1) {
+      try {
+        Method getDeclaredFields0 =
+            Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+        getDeclaredFields0.setAccessible(true);
+        Field[] fields = (Field[]) getDeclaredFields0.invoke(clazz, false);
+        for (Field f : fields) {
+          if (f.getName().equals(name)) {
+            return f;
+          }
+        }
+        throw new NoSuchFieldException(name);
+      } catch (NoSuchMethodException e2) {
+        throw new NoSuchFieldException(name);
+      } catch (IllegalAccessException e2) {
+        throw new NoSuchFieldException(name);
+      } catch (InvocationTargetException e2) {
+        throw new NoSuchFieldException(name);
       }
     }
   }

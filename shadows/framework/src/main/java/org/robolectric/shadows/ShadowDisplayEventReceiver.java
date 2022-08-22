@@ -10,7 +10,6 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -24,6 +23,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -31,7 +31,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.Reflector;
 import org.robolectric.util.reflector.WithType;
 
 /**
@@ -57,6 +56,7 @@ public class ShadowDisplayEventReceiver {
       new NativeObjRegistry<>(NativeDisplayEventReceiver.class);
 
   @RealObject protected DisplayEventReceiver realReceiver;
+  @ReflectorObject private DisplayEventReceiverReflector displayEventReceiverReflector;
 
   @Implementation(minSdk = O, maxSdk = Q)
   protected static long nativeInit(
@@ -120,25 +120,23 @@ public class ShadowDisplayEventReceiver {
 
   @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = R)
   protected void dispose(boolean finalized) {
-    CloseGuard closeGuard =
-        Reflector.reflector(DisplayEventReceiverReflector.class, realReceiver).getCloseGuard();
+    CloseGuard closeGuard = displayEventReceiverReflector.getCloseGuard();
     // Suppresses noisy CloseGuard warning
     if (closeGuard != null) {
       closeGuard.close();
     }
-    reflector(DisplayEventReceiverReflector.class, realReceiver).dispose(finalized);
+    displayEventReceiverReflector.dispose(finalized);
   }
 
   protected void onVsync() {
     if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN) {
-      reflector(DisplayEventReceiverReflector.class, realReceiver)
-          .onVsync(ShadowSystem.nanoTime(), 1);
+      displayEventReceiverReflector.onVsync(ShadowSystem.nanoTime(), 1);
     } else if (RuntimeEnvironment.getApiLevel() < Q) {
-      reflector(DisplayEventReceiverReflector.class, realReceiver)
-          .onVsync(ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
+      displayEventReceiverReflector.onVsync(
+          ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
     } else if (RuntimeEnvironment.getApiLevel() <= R) {
-      reflector(DisplayEventReceiverReflector.class, realReceiver)
-          .onVsync(ShadowSystem.nanoTime(), 0L, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
+      displayEventReceiverReflector.onVsync(
+          ShadowSystem.nanoTime(), 0L, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
     } else {
       try {
         // onVsync takes a package-private VSyncData class as a parameter, thus reflection
@@ -150,12 +148,11 @@ public class ShadowDisplayEventReceiver {
                 ClassParameter.from(long.class, 10), /* frameDeadline */
                 ClassParameter.from(long.class, 1)); /* frameInterval */
 
-        reflector(DisplayEventReceiverReflector.class, realReceiver)
-            .onVsync(
-                ShadowSystem.nanoTime(),
-                0L, /* physicalDisplayId currently ignored */
-                1, /* frame */
-                vsyncData /* VsyncEventData */);
+        displayEventReceiverReflector.onVsync(
+            ShadowSystem.nanoTime(),
+            0L, /* physicalDisplayId currently ignored */
+            /* frame= */ 1,
+            vsyncData /* VsyncEventData */);
       } catch (ClassNotFoundException e) {
         throw new LinkageError("Unable to construct VsyncEventData", e);
       }

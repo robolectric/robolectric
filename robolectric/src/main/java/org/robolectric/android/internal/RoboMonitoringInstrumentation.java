@@ -1,5 +1,6 @@
 package org.robolectric.android.internal;
 
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -9,11 +10,14 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.UserHandle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.test.internal.runner.intent.IntentMonitorImpl;
 import androidx.test.internal.runner.lifecycle.ActivityLifecycleMonitorImpl;
@@ -25,6 +29,8 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.ApplicationLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.ApplicationStage;
 import androidx.test.runner.lifecycle.Stage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -47,6 +53,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   private final ApplicationLifecycleMonitorImpl applicationMonitor =
       new ApplicationLifecycleMonitorImpl();
   private final IntentMonitorImpl intentMonitor = new IntentMonitorImpl();
+  private final List<ActivityController<?>> createdActivities = new ArrayList<>();
 
   /**
    * Sets up lifecycle monitoring, and argument registry.
@@ -60,6 +67,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     ActivityLifecycleMonitorRegistry.registerInstance(lifecycleMonitor);
     ApplicationLifecycleMonitorRegistry.registerInstance(applicationMonitor);
     IntentMonitorRegistry.registerInstance(intentMonitor);
+    shadowOf(Resources.getSystem()).addConfigurationChangeListener(this::updateConfiguration);
 
     super.onCreate(arguments);
   }
@@ -82,8 +90,10 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
       Intent intent, @Nullable Bundle activityOptions) {
     ActivityInfo ai = intent.resolveActivityInfo(getTargetContext().getPackageManager(), 0);
     if (ai == null) {
-      throw new RuntimeException("Unable to resolve activity for " + intent
-          + " -- see https://github.com/robolectric/robolectric/pull/4736 for details");
+      throw new RuntimeException(
+          "Unable to resolve activity for "
+              + intent
+              + " -- see https://github.com/robolectric/robolectric/pull/4736 for details");
     }
 
     Class<? extends Activity> activityClass;
@@ -99,11 +109,14 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     if (controller.get().isFinishing()) {
       controller.destroy();
     } else {
-      controller.start()
+      createdActivities.add(controller);
+      controller
+          .start()
           .postCreate(null)
           .resume()
           .visible()
-          .windowFocusChanged(true);
+          .windowFocusChanged(true)
+          .topActivityResumed(true);
     }
     return controller;
   }
@@ -263,6 +276,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   @Override
   public void callActivityOnDestroy(Activity activity) {
+    if (activity.isFinishing()) {
+      createdActivities.removeIf(controller -> controller.get() == activity);
+    }
     super.callActivityOnDestroy(activity);
     lifecycleMonitor.signalLifecycleChange(Stage.DESTROYED, activity);
   }
@@ -305,7 +321,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   }
 
   @Override
-  public void finish(int resultCode, Bundle bundle) { }
+  public void finish(int resultCode, Bundle bundle) {}
 
   @Override
   public Context getTargetContext() {
@@ -315,5 +331,23 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
   @Override
   public Context getContext() {
     return RuntimeEnvironment.getApplication();
+  }
+
+  private void updateConfiguration(
+      Configuration oldConfig, Configuration newConfig, DisplayMetrics newMetrics) {
+    int changedConfig = oldConfig.diff(newConfig);
+    List<ActivityController<?>> controllers = new ArrayList<>(createdActivities);
+    for (ActivityController<?> controller : controllers) {
+      if (createdActivities.contains(controller)) {
+        Activity activity = controller.get();
+        controller.configurationChange(newConfig, newMetrics, changedConfig);
+        // If the activity is recreated then make the new activity visible, this should be done by
+        // configurationChange but there's a pre-existing TODO to address this and it will require
+        // more work to make it function correctly.
+        if (controller.get() != activity) {
+          controller.visible();
+        }
+      }
+    }
   }
 }

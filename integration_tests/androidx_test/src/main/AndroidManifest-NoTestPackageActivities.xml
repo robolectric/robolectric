@@ -12,6 +12,8 @@
         <activity android:name="org.robolectric.integrationtests.axt.EspressoActivity"
                   android:label="Activity Label"
                   android:exported="true" />
+        <activity android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
+            android:exported="true" />
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithPlatformMenu"
             android:exported="true">
         </activity>

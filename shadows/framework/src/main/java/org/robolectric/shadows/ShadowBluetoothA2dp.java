@@ -1,16 +1,20 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothCodecConfig;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -20,6 +24,7 @@ public class ShadowBluetoothA2dp {
   private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();
   private int dynamicBufferSupportType = BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_NONE;
   private final int[] bufferLengthMillisArray = new int[6];
+  private BluetoothDevice activeBluetoothDevice;
 
   /* Adds the given bluetoothDevice with connectionState to the list of devices
    * returned by {@link ShadowBluetoothA2dp#getConnectedDevices} and
@@ -108,5 +113,20 @@ public class ShadowBluetoothA2dp {
    */
   public int getBufferLengthMillis(@BluetoothCodecConfig.SourceCodecType int codec) {
     return bufferLengthMillisArray[codec];
+  }
+
+  @Nullable
+  @Implementation(minSdk = P)
+  protected BluetoothDevice getActiveDevice() {
+    return activeBluetoothDevice;
+  }
+
+  @Implementation(minSdk = P)
+  protected boolean setActiveDevice(@Nullable BluetoothDevice bluetoothDevice) {
+    activeBluetoothDevice = bluetoothDevice;
+    Intent intent = new Intent(BluetoothA2dp.ACTION_ACTIVE_DEVICE_CHANGED);
+    intent.putExtra(BluetoothDevice.EXTRA_DEVICE, activeBluetoothDevice);
+    RuntimeEnvironment.getApplication().sendBroadcast(intent);
+    return true;
   }
 }

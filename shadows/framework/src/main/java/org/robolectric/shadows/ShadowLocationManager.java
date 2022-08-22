@@ -794,7 +794,7 @@ public class ShadowLocationManager {
         pendingIntent);
   }
 
-  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  @Implementation(minSdk = VERSION_CODES.R)
   protected void requestLocationUpdates(
       @Nullable LocationRequest request, Executor executor, LocationListener listener) {
     if (request == null) {

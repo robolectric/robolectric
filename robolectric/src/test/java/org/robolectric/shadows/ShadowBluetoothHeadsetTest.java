@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
@@ -32,7 +34,7 @@ public class ShadowBluetoothHeadsetTest {
   private BluetoothDevice device1;
   private BluetoothDevice device2;
   private BluetoothHeadset bluetoothHeadset;
-  private Context context;
+  private Application context;
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 
@@ -202,5 +204,28 @@ public class ShadowBluetoothHeadsetTest {
       fail();
     } catch (IllegalArgumentException expected) {
     }
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setActiveDevice_setNull_shouldSaveNull() {
+    assertThat(bluetoothHeadset.setActiveDevice(null)).isTrue();
+
+    assertThat(bluetoothHeadset.getActiveDevice()).isNull();
+    Intent intent = shadowOf(context).getBroadcastIntents().get(0);
+    assertThat(intent.getAction()).isEqualTo(BluetoothHeadset.ACTION_ACTIVE_DEVICE_CHANGED);
+    assertThat((BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getActiveDevice_returnValueFromSetter() {
+    assertThat(bluetoothHeadset.setActiveDevice(device1)).isTrue();
+
+    assertThat(bluetoothHeadset.getActiveDevice()).isEqualTo(device1);
+    Intent intent = shadowOf(context).getBroadcastIntents().get(0);
+    assertThat(intent.getAction()).isEqualTo(BluetoothHeadset.ACTION_ACTIVE_DEVICE_CHANGED);
+    assertThat((BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE))
+        .isEqualTo(device1);
   }
 }

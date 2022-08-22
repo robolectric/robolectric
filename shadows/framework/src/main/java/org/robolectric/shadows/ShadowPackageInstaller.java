@@ -9,6 +9,8 @@ import android.annotation.SuppressLint;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
+import android.content.pm.PackageInstaller.SessionInfo;
+import android.graphics.Bitmap;
 import android.os.Handler;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -24,11 +26,24 @@ import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 
+/** Shadow for PackageInstaller. */
 @Implements(value = PackageInstaller.class, minSdk = LOLLIPOP)
 @SuppressLint("NewApi")
 public class ShadowPackageInstaller {
+  /** Shadow for PackageInstaller.SessionInfo. */
+  @Implements(value = PackageInstaller.SessionInfo.class, minSdk = LOLLIPOP)
+  public static class ShadowSessionInfo {
+    @RealObject private SessionInfo sessionInfo;
+
+    /** Real method makes a system call not available in tests. */
+    @Implementation
+    protected Bitmap getAppIcon() {
+      return sessionInfo.appIcon;
+    }
+  }
 
   // According to the documentation, the session ID is always non-zero:
   // https://developer.android.com/reference/android/content/pm/PackageInstaller#createSession(android.content.pm.PackageInstaller.SessionParams)
@@ -84,15 +99,13 @@ public class ShadowPackageInstaller {
     sessionInfo.sessionId = nextSessionId++;
     sessionInfo.active = true;
     sessionInfo.appPackageName = params.appPackageName;
+    sessionInfo.appLabel = params.appLabel;
+    sessionInfo.appIcon = params.appIcon;
+
     sessionInfos.put(sessionInfo.getSessionId(), sessionInfo);
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onCreated(sessionInfo.sessionId);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onCreated(sessionInfo.sessionId));
     }
 
     return sessionInfo.sessionId;
@@ -104,12 +117,7 @@ public class ShadowPackageInstaller {
     sessions.remove(sessionId);
 
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onFinished(sessionId, false);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onFinished(sessionId, false));
     }
   }
 
@@ -127,20 +135,69 @@ public class ShadowPackageInstaller {
     return session;
   }
 
-  public void setSessionProgress(final int sessionId, final float progress) {
+  @Implementation
+  protected void updateSessionAppIcon(int sessionId, Bitmap appIcon) {
+    SessionInfo sessionInfo = sessionInfos.get(sessionId);
+    if (sessionInfo == null) {
+      throw new SecurityException("Invalid session Id: " + sessionId);
+    }
+    sessionInfo.appIcon = appIcon;
+
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onProgressChanged(sessionId, progress);
-        }
-      });
+      callbackInfo.handler.post(
+          new Runnable() {
+            @Override
+            public void run() {
+              callbackInfo.callback.onBadgingChanged(sessionId);
+            }
+          });
+    }
+  }
+
+  @Implementation
+  protected void updateSessionAppLabel(int sessionId, CharSequence appLabel) {
+    SessionInfo sessionInfo = sessionInfos.get(sessionId);
+    if (sessionInfo == null) {
+      throw new SecurityException("Invalid session Id: " + sessionId);
+    }
+    sessionInfo.appLabel = appLabel;
+
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
+      callbackInfo.handler.post(
+          new Runnable() {
+            @Override
+            public void run() {
+              callbackInfo.callback.onBadgingChanged(sessionId);
+            }
+          });
+    }
+  }
+
+  public List<PackageInstaller.SessionCallback> getAllSessionCallbacks() {
+    return ImmutableList.copyOf(callbackInfos.stream().map(info -> info.callback).iterator());
+  }
+
+  public void setSessionProgress(final int sessionId, final float progress) {
+    SessionInfo sessionInfo = sessionInfos.get(sessionId);
+    if (sessionInfo == null) {
+      throw new SecurityException("Invalid session Id: " + sessionId);
+    }
+    sessionInfo.progress = progress;
+
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
+      callbackInfo.handler.post(() -> callbackInfo.callback.onProgressChanged(sessionId, progress));
+    }
+  }
+
+  public void setSessionActiveState(final int sessionId, final boolean active) {
+    for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
+      callbackInfo.handler.post(() -> callbackInfo.callback.onActiveChanged(sessionId, active));
     }
   }
 
   /**
-   * Prefer instead to use the Android APIs to close the session
-   * {@link android.content.pm.PackageInstaller.Session#commit(IntentSender)}
+   * Prefer instead to use the Android APIs to close the session {@link
+   * android.content.pm.PackageInstaller.Session#commit(IntentSender)}
    */
   @Deprecated
   public void setSessionSucceeds(int sessionId) {
@@ -153,12 +210,7 @@ public class ShadowPackageInstaller {
 
   private void setSessionFinishes(final int sessionId, final boolean success) {
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
-      callbackInfo.handler.post(new Runnable() {
-        @Override
-        public void run() {
-          callbackInfo.callback.onFinished(sessionId, success);
-        }
-      });
+      callbackInfo.handler.post(() -> callbackInfo.callback.onFinished(sessionId, success));
     }
 
     PackageInstaller.Session session = sessions.get(sessionId);
@@ -189,17 +241,16 @@ public class ShadowPackageInstaller {
     @NonNull
     protected OutputStream openWrite(@NonNull String name, long offsetBytes, long lengthBytes)
         throws IOException {
-      outputStream = new OutputStream() {
-        @Override
-        public void write(int aByte) throws IOException {
+      outputStream =
+          new OutputStream() {
+            @Override
+            public void write(int aByte) throws IOException {}
 
-        }
-
-        @Override
-        public void close() throws IOException {
-          outputStreamOpen = false;
-        }
-      };
+            @Override
+            public void close() throws IOException {
+              outputStreamOpen = false;
+            }
+          };
       outputStreamOpen = true;
       return outputStream;
     }
@@ -225,8 +276,8 @@ public class ShadowPackageInstaller {
       shadowPackageInstaller.abandonSession(sessionId);
     }
 
-    private void setShadowPackageInstaller(int sessionId,
-        ShadowPackageInstaller shadowPackageInstaller) {
+    private void setShadowPackageInstaller(
+        int sessionId, ShadowPackageInstaller shadowPackageInstaller) {
       this.sessionId = sessionId;
       this.shadowPackageInstaller = shadowPackageInstaller;
     }

@@ -14,6 +14,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.Context;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
@@ -66,7 +67,7 @@ public class ShadowUsbManagerTest {
   }
 
   @Test
-  public void hasPermission() {
+  public void hasPermission_device() {
     assertThat(usbManager.hasPermission(usbDevice1)).isFalse();
 
     shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice1, false);
@@ -79,6 +80,18 @@ public class ShadowUsbManagerTest {
 
     assertThat(usbManager.hasPermission(usbDevice1)).isTrue();
     assertThat(usbManager.hasPermission(usbDevice2)).isFalse();
+  }
+
+  @Test
+  public void hasPermission_accessory() {
+    assertThat(usbManager.hasPermission(usbAccessory)).isFalse();
+    shadowOf(usbManager).setAttachedUsbAccessory(usbAccessory);
+    assertThat(usbManager.hasPermission(usbAccessory)).isFalse();
+    shadowOf(usbManager).grantPermission(usbAccessory);
+    assertThat(usbManager.hasPermission(usbAccessory)).isTrue();
+    shadowOf(usbManager)
+        .revokePermission(usbAccessory, RuntimeEnvironment.getApplication().getPackageName());
+    assertThat(usbManager.hasPermission(usbAccessory)).isFalse();
   }
 
   @Test
@@ -192,6 +205,13 @@ public class ShadowUsbManagerTest {
 
     shadowOf(usbManager).removeUsbDevice(usbDevice1);
     assertThat(usbManager.getDeviceList().values()).containsExactly(usbDevice2);
+  }
+
+  @Test
+  public void openDevice() throws Exception {
+    shadowOf(usbManager).addOrUpdateUsbDevice(usbDevice1, true);
+    UsbDeviceConnection connection = usbManager.openDevice(usbDevice1);
+    assertThat(connection).isNotNull();
   }
 
   @Test

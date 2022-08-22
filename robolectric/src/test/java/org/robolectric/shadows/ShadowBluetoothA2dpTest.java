@@ -1,12 +1,17 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +25,7 @@ public class ShadowBluetoothA2dpTest {
   private BluetoothDevice disConnectedBluetoothDevice;
   private BluetoothA2dp bluetoothA2dp;
   private ShadowBluetoothA2dp shadowBluetoothA2dp;
+  private Application applicationContext;
 
   @Before
   public void setUp() throws Exception {
@@ -29,6 +35,7 @@ public class ShadowBluetoothA2dpTest {
 
     bluetoothA2dp = Shadow.newInstanceOf(BluetoothA2dp.class);
     shadowBluetoothA2dp = Shadow.extract(bluetoothA2dp);
+    applicationContext = ApplicationProvider.getApplicationContext();
   }
 
   @Test
@@ -137,5 +144,28 @@ public class ShadowBluetoothA2dpTest {
     assertThat(bluetoothA2dp.setBufferLengthMillis(1, -1)).isFalse();
 
     assertThat(shadowBluetoothA2dp.getBufferLengthMillis(1)).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setActiveDevice_setNull_shouldSaveNull() {
+    assertThat(bluetoothA2dp.setActiveDevice(null)).isTrue();
+
+    assertThat(bluetoothA2dp.getActiveDevice()).isNull();
+    Intent intent = shadowOf(applicationContext).getBroadcastIntents().get(0);
+    assertThat(intent.getAction()).isEqualTo(BluetoothA2dp.ACTION_ACTIVE_DEVICE_CHANGED);
+    assertThat((BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getActiveDevice_returnValueFromSetter() {
+    assertThat(bluetoothA2dp.setActiveDevice(connectedBluetoothDevice)).isTrue();
+
+    assertThat(bluetoothA2dp.getActiveDevice()).isEqualTo(connectedBluetoothDevice);
+    Intent intent = shadowOf(applicationContext).getBroadcastIntents().get(0);
+    assertThat(intent.getAction()).isEqualTo(BluetoothA2dp.ACTION_ACTIVE_DEVICE_CHANGED);
+    assertThat((BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE))
+        .isEqualTo(connectedBluetoothDevice);
   }
 }

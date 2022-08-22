@@ -1,6 +1,7 @@
 package android.graphics;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.lang.Math.round;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
@@ -96,5 +97,17 @@ public class BitmapFactoryTest {
     assertThat(result).isEqualTo(null);
     assertThat(opts.outWidth).isEqualTo(-1);
     assertThat(opts.outHeight).isEqualTo(-1);
+  }
+
+  @Test
+  public void decodeFile_scaledDensity_shouldHaveCorrectWidthAndHeight() throws Exception {
+    BitmapFactory.Options opts = new BitmapFactory.Options();
+    opts.inScaled = true;
+    opts.inDensity = 2;
+    opts.inTargetDensity = 1;
+    Bitmap bitmap = BitmapFactory.decodeStream(new ByteArrayInputStream(obtainArray()), null, opts);
+
+    assertThat(bitmap.getWidth()).isEqualTo(round(START_WIDTH / 2f));
+    assertThat(bitmap.getHeight()).isEqualTo(round(START_HEIGHT / 2f));
   }
 }

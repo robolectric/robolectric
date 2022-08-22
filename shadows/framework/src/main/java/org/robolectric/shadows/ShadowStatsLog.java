@@ -49,7 +49,7 @@ public class ShadowStatsLog {
     public abstract byte[] bytes();
 
     public static StatsLogItem create(int atomId, int numBytes, byte[] bytes) {
-      return new AutoValue_ShadowStatsLog_StatsLogItem(atomId, numBytes, bytes);
+      return new AutoValue_ShadowStatsLog_StatsLogItem(atomId, numBytes, bytes.clone());
     }
   }
 }

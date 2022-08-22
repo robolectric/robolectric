@@ -681,15 +681,17 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             if (match > 0) {
               PackageInfo packageInfo = packageInfos.get(componentName.getPackageName());
               I[] componentInfoArray = componentsInPackage.apply(packageInfo);
-              for (I componentInfo : componentInfoArray) {
-                if (!componentInfo.name.equals(componentName.getClassName())) {
-                  continue;
+              if (componentInfoArray != null) {
+                for (I componentInfo : componentInfoArray) {
+                  if (!componentInfo.name.equals(componentName.getClassName())) {
+                    continue;
+                  }
+                  ResolveInfo resolveInfo = buildResolveInfo(componentInfo, filter);
+                  resolveInfo.match = match;
+                  componentSetter.accept(resolveInfo, componentInfo);
+                  resolveInfoList.add(resolveInfo);
+                  continue components;
                 }
-                ResolveInfo resolveInfo = buildResolveInfo(componentInfo, filter);
-                resolveInfo.match = match;
-                componentSetter.accept(resolveInfo, componentInfo);
-                resolveInfoList.add(resolveInfo);
-                continue components;
               }
             }
           }
@@ -1863,26 +1865,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       return hiddenPackages.contains(packageName);
     }
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected Object getKeySetByAlias(String packageName, String alias) {
-    return null;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected Object getSigningKeySet(String packageName) {
-    return null;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isSignedBy(String packageName, Object ks) {
-    return false;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  protected boolean isSignedByExactly(String packageName, Object ks) {
-    return false;
   }
 
   @Implementation

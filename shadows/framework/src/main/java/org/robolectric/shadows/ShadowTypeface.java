@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -45,13 +46,13 @@ public class ShadowTypeface {
   private FontDesc description;
 
   @HiddenApi
-  @Implementation
+  @Implementation(maxSdk = KITKAT)
   protected void __constructor__(int fontId) {
     description = findById((long) fontId);
   }
 
   @HiddenApi
-  @Implementation
+  @Implementation(minSdk = LOLLIPOP)
   protected void __constructor__(long fontId) {
     description = findById(fontId);
   }

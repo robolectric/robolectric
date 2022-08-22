@@ -484,4 +484,35 @@ public class ShadowBluetoothDeviceTest {
       throw new AssertionError("Failure accessing getAliasName via reflection", e);
     }
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void getMetadata_noPermission_throwsException() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    shadowOf(device).setShouldThrowSecurityExceptions(true);
+
+    assertThrows(SecurityException.class, () -> device.getMetadata(22));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void setMetadata_noPermission_throwsException() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    shadowOf(device).setShouldThrowSecurityExceptions(true);
+
+    assertThrows(SecurityException.class, () -> device.setMetadata(22, new byte[] {123}));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void setMetadata_shouldSaveToMap() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.setMetadata(22, new byte[] {123})).isTrue();
+    assertThat(device.getMetadata(22)).isEqualTo(new byte[] {123});
+    assertThat(device.getMetadata(11)).isNull();
+  }
 }

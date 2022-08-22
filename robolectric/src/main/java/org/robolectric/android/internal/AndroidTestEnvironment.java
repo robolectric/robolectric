@@ -170,7 +170,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration, displayMetrics);
 
-    if (Boolean.getBoolean("robolectric.useRealGraphics")) {
+    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
     Locale locale =
@@ -364,7 +364,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
 
       PerfStatsCollector.getInstance()
-          .measure("application onCreate()", () -> application.onCreate());
+          .measure(
+              "application onCreate()",
+              () -> androidInstrumentation.callApplicationOnCreate(application));
     }
 
     return application;

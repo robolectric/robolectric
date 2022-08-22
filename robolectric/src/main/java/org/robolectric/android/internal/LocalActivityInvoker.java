@@ -28,6 +28,8 @@ public class LocalActivityInvoker implements ActivityInvoker {
 
   @Nullable private ActivityController<? extends Activity> controller;
 
+  private boolean isActivityLaunchedForResult = false;
+
   @Override
   public void startActivity(Intent intent, @Nullable Bundle activityOptions) {
     controller = getInstrumentation().startActivitySyncInternal(intent, activityOptions);
@@ -38,8 +40,25 @@ public class LocalActivityInvoker implements ActivityInvoker {
     startActivity(intent, /* activityOptions= */ null);
   }
 
+  // TODO(paigemca): Omitting @Override until androidx.test.monitor version can be upgraded
+  public void startActivityForResult(Intent intent, @Nullable Bundle activityOptions) {
+    isActivityLaunchedForResult = true;
+    controller = getInstrumentation().startActivitySyncInternal(intent, activityOptions);
+  }
+
+  // TODO(paigemca): Omitting @Override until androidx.test.monitor version can be upgraded
+  public void startActivityForResult(Intent intent) {
+    isActivityLaunchedForResult = true;
+    startActivityForResult(intent, /* activityOptions= */ null);
+  }
+
   @Override
   public ActivityResult getActivityResult() {
+    if (!isActivityLaunchedForResult) {
+      throw new IllegalStateException(
+          "You must start Activity first. Make sure you are using launchActivityForResult() to"
+              + " launch an Activity.");
+    }
     checkNotNull(controller);
     checkState(controller.get().isFinishing(), "You must finish your Activity first");
     ShadowActivity shadowActivity = Shadow.extract(controller.get());
@@ -55,10 +74,10 @@ public class LocalActivityInvoker implements ActivityInvoker {
       case RESUMED:
         return;
       case PAUSED:
-        controller.resume();
+        controller.resume().topActivityResumed(true);
         return;
       case STOPPED:
-        controller.restart().resume();
+        controller.restart().resume().topActivityResumed(true);
         return;
       default:
         throw new IllegalStateException(
@@ -74,7 +93,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        controller.pause();
+        controller.topActivityResumed(false).pause();
         return;
       case PAUSED:
         return;
@@ -91,7 +110,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        controller.pause().stop();
+        controller.topActivityResumed(false).pause().stop();
         return;
       case PAUSED:
         controller.stop();
@@ -120,7 +139,7 @@ public class LocalActivityInvoker implements ActivityInvoker {
     Stage stage = ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(activity);
     switch (stage) {
       case RESUMED:
-        controller.pause().stop().destroy();
+        controller.topActivityResumed(false).pause().stop().destroy();
         return;
       case PAUSED:
         controller.stop().destroy();

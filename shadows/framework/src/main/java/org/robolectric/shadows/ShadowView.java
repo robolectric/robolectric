@@ -1052,6 +1052,6 @@ public class ShadowView {
   }
 
   static boolean useRealGraphics() {
-    return Boolean.getBoolean("robolectric.useRealGraphics");
+    return Boolean.getBoolean("robolectric.nativeruntime.enableGraphics");
   }
 }

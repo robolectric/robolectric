@@ -330,6 +330,7 @@ public class ShadowBitmap {
       case RGBA_F16:
         return 8;
       case ARGB_8888:
+      case HARDWARE:
         return 4;
       case RGB_565:
       case ARGB_4444:

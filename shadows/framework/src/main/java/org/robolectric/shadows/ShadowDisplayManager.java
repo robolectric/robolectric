@@ -235,7 +235,8 @@ public class ShadowDisplayManager {
 
   @Implementation(minSdk = P)
   @HiddenApi
-  protected void setBrightnessConfigurationForUser(Object config, int userId, String packageName) {
+  protected void setBrightnessConfigurationForUser(
+      Object config, Object userId, Object packageName) {
     getShadowDisplayManagerGlobal().setBrightnessConfigurationForUser(config, userId, packageName);
   }
 

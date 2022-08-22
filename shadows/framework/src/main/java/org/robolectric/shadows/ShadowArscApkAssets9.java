@@ -253,7 +253,7 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
   //                         jboolean force_shared_lib, jboolean overlay) {
 
-  @Implementation
+  @Implementation(maxSdk = Q)
   protected static long nativeLoad(
       String path, boolean system, boolean forceSharedLib, boolean overlay) throws IOException {
     if (path == null) {

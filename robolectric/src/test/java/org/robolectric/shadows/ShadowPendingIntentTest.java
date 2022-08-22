@@ -862,6 +862,17 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
+  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
+  public void testGetCreatorUid() {
+    int fakeUid = 123;
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(context, 99, new Intent("activity"), 100);
+    shadowOf(pendingIntent).setCreatorUid(fakeUid);
+
+    assertThat(pendingIntent.getCreatorUid()).isEqualTo(fakeUid);
+  }
+
+  @Test
   public void testHashCode() {
     Context ctx = ApplicationProvider.getApplicationContext();
     PendingIntent pendingIntent1 = PendingIntent.getActivity(ctx, 99, new Intent("activity"), 100);

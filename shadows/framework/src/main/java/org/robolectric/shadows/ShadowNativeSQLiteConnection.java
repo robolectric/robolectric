@@ -50,6 +50,17 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
+  protected static void nativeClose(int connectionPtr) {
+    nativeClose(PreLPointers.get(connectionPtr));
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static void nativeClose(long connectionPtr) {
+    PerfStatsCollector.getInstance()
+        .measure("androidsqlite", () -> SQLiteConnectionNatives.nativeClose(connectionPtr));
+  }
+
+  @Implementation(maxSdk = KITKAT_WATCH)
   protected static int nativePrepareStatement(int connectionPtr, String sql) {
     long statementPtr = nativePrepareStatement(PreLPointers.get(connectionPtr), sql);
     return PreLPointers.register(statementPtr);

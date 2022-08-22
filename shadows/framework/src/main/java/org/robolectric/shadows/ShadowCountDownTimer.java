@@ -4,6 +4,8 @@ import android.os.CountDownTimer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(CountDownTimer.class)
 public class ShadowCountDownTimer {
@@ -18,6 +20,11 @@ public class ShadowCountDownTimer {
     this.countDownInterval = countDownInterval;
     this.millisInFuture = millisInFuture;
     this.started = false;
+    Shadow.invokeConstructor(
+        CountDownTimer.class,
+        countDownTimer,
+        ClassParameter.from(long.class, millisInFuture),
+        ClassParameter.from(long.class, countDownInterval));
   }
 
   @Implementation

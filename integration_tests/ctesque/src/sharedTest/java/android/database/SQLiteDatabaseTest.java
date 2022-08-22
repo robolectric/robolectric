@@ -9,10 +9,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.SdkSuppress;
 import com.google.common.base.Ascii;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -135,5 +139,51 @@ public class SQLiteDatabaseTest {
     assertThat(e)
         .hasMessageThat()
         .contains("Queries can be performed using SQLiteDatabase query or rawQuery methods only.");
+  }
+
+  @Test
+  public void close_withExclusiveLockingMode() {
+    database.rawQuery("PRAGMA locking_mode = EXCLUSIVE", new String[0]);
+    ContentValues values = new ContentValues();
+    values.put("first_column", "");
+    database.insert("table_name", null, values);
+    database.close();
+
+    database = SQLiteDatabase.openOrCreateDatabase(databasePath, null);
+    database.insert("table_name", null, values);
+  }
+
+  static class MyCursorWindow extends CursorWindow {
+    public MyCursorWindow(String name) {
+      super(name);
+    }
+
+    /** Make the finalize method public */
+    @Override
+    public void finalize() throws Throwable {
+      super.finalize();
+    }
+  }
+
+  // TODO(hoisie): This test crashes in emulators, enable when it is fixed in Android.
+  @SdkSuppress(minSdkVersion = 34)
+  @Test
+  public void cursorWindow_finalize_concurrentStressTest() throws Throwable {
+    ExecutorService executor = Executors.newFixedThreadPool(4);
+    for (int i = 0; i < 1000; i++) {
+      final MyCursorWindow cursorWindow = new MyCursorWindow(String.valueOf(i));
+      for (int j = 0; j < 4; j++) {
+        executor.execute(
+            () -> {
+              try {
+                cursorWindow.finalize();
+              } catch (Throwable e) {
+                throw new AssertionError(e);
+              }
+            });
+      }
+    }
+    executor.shutdown();
+    executor.awaitTermination(100, TimeUnit.SECONDS);
   }
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -30,22 +31,23 @@ public class ShadowCloseGuard {
       Collections.synchronizedSet(new HashSet<>());
 
   @RealObject private CloseGuard realCloseGuard;
+  @ReflectorObject private CloseGuardReflector closeGuardReflector;
 
   @Implementation
   protected void open(String closer) {
-    reflector(CloseGuardReflector.class, realCloseGuard).open(closer);
+    closeGuardReflector.open(closer);
     openCloseGuards.add(realCloseGuard);
   }
 
   @Implementation
   protected void close() {
-    reflector(CloseGuardReflector.class, realCloseGuard).close();
+    closeGuardReflector.close();
     openCloseGuards.remove(realCloseGuard);
   }
 
   @Implementation
   protected void warnIfOpen() {
-    reflector(CloseGuardReflector.class, realCloseGuard).warnIfOpen();
+    closeGuardReflector.warnIfOpen();
     if (openCloseGuards.contains(realCloseGuard)) {
       warnedThrowables.add(createThrowableFromCloseGuard(realCloseGuard));
     }

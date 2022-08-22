@@ -32,7 +32,11 @@ public final class ExpectedLogMessagesRule implements TestRule {
           // Fails when attempting to preload classes by name
           "PhonePolicy",
           // Ignore MultiDex log messages
-          "MultiDex");
+          "MultiDex",
+          // Logged starting with Android 33 as:
+          // E/RippleDrawable: The RippleDrawable.STYLE_PATTERNED animation is not supported for a
+          // non-hardware accelerated Canvas. Skipping animation.
+          "RippleDrawable");
 
   private final Set<ExpectedLogItem> expectedLogs = new HashSet<>();
   private final Set<LogItem> observedLogs = new HashSet<>();

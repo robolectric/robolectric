@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.Q;
 
 import android.annotation.TargetApi;
 import dalvik.system.VMRuntime;
@@ -82,5 +83,14 @@ public class ShadowVMRuntime {
   public static void reset() {
     ShadowVMRuntime.is64Bit = true;
     ShadowVMRuntime.currentInstructionSet = null;
+  }
+
+  @Implementation(minSdk = Q)
+  protected static int getNotifyNativeInterval() {
+    // The value '384' is from
+    // https://cs.android.com/android/platform/superproject/+/android-12.0.0_r18:art/runtime/gc/heap.h;l=172
+    // Note that value returned is irrelevant for the JVM, it just has to be greater than zero to
+    // avoid a divide-by-zero error in VMRuntime.notifyNativeAllocation.
+    return 384; // must be greater than 0
   }
 }

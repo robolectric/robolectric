@@ -200,7 +200,11 @@ public class RuntimeEnvironment {
       configuration = new Configuration();
     }
     Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
+    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
+      Bitmap.setDefaultDensity(displayMetrics.densityDpi);
+    }
 
+    // Update the resources last so that listeners will have a consistent environment.
     Resources systemResources = Resources.getSystem();
     systemResources.updateConfiguration(configuration, displayMetrics);
     if (RuntimeEnvironment.application != null) {
@@ -209,9 +213,6 @@ public class RuntimeEnvironment {
       // if application is not yet loaded, update the configuration in Bootstrap so that the
       // changes will be propagated once the application is finally loaded
       Bootstrap.updateDisplayResources(configuration, displayMetrics);
-    }
-    if (Boolean.getBoolean("robolectric.useRealGraphics")) {
-      Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
   }
 

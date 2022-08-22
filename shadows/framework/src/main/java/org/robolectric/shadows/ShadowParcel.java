@@ -50,7 +50,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
  */
 @Implements(value = Parcel.class, looseSignatures = true)
 public class ShadowParcel {
-  private static final String TAG = "Parcel";
+  protected static final String TAG = "Parcel";
 
   @RealObject private Parcel realObject;
   private static final NativeObjRegistry<ByteBuffer> NATIVE_BYTE_BUFFER_REGISTRY =
