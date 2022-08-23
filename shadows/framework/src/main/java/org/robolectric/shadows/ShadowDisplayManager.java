@@ -17,6 +17,8 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
+import androidx.annotation.RequiresApi;
+import com.google.auto.value.AutoBuilder;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
@@ -173,6 +175,24 @@ public class ShadowDisplayManager {
   }
 
   /**
+   * Sets supported modes to the specified display with ID {@code displayId}.
+   *
+   * <p>Idles the main looper to ensure all listeners are notified.
+   *
+   * @param displayId the display id to change
+   * @param supportedModes the display's supported modes
+   */
+  public static void setSupportedModes(int displayId, Display.Mode... supportedModes) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+      throw new UnsupportedOperationException("multiple display modes not supported before M");
+    }
+    DisplayInfo displayInfo = DisplayManagerGlobal.getInstance().getDisplayInfo(displayId);
+    displayInfo.supportedModes = supportedModes;
+    getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
+    shadowMainLooper().idle();
+  }
+
+  /**
    * Changes properties of a simulated display. The original properties will be passed to the
    * {@param consumer}, which may modify them in place. The display will be updated with the new
    * properties.
@@ -256,6 +276,30 @@ public class ShadowDisplayManager {
     }
 
     return extract(DisplayManagerGlobal.getInstance());
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  static Display.Mode displayModeOf(int modeId, int width, int height, float refreshRate) {
+    return new Display.Mode(modeId, width, height, refreshRate);
+  }
+
+  /** Builder class for {@link Display.Mode} */
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  @AutoBuilder(callMethod = "displayModeOf")
+  public abstract static class ModeBuilder {
+    public static ModeBuilder modeBuilder(int modeId) {
+      return new AutoBuilder_ShadowDisplayManager_ModeBuilder().setModeId(modeId);
+    }
+
+    abstract ModeBuilder setModeId(int modeId);
+
+    public abstract ModeBuilder setWidth(int width);
+
+    public abstract ModeBuilder setHeight(int height);
+
+    public abstract ModeBuilder setRefreshRate(float refreshRate);
+
+    public abstract Display.Mode build();
   }
 
   @ForType(DisplayManager.class)
