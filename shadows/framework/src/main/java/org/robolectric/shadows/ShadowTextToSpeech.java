@@ -56,6 +56,13 @@ public class ShadowTextToSpeech {
   private String lastSynthesizeToFileText;
   private Voice currentVoice = null;
 
+  // This is not the value returned by synthesizeToFile, but rather controls the callbacks.
+  // See
+  // http://cs/android/frameworks/base/core/java/android/speech/tts/TextToSpeech.java?rcl=db6d9c1ced6b9af1de8f12e912a223f3c7f42ecd&l=1874.
+  private int synthesizeToFileResult = TextToSpeech.SUCCESS;
+
+  private boolean completeSynthesis = false;
+
   private final List<String> spokenTextList = new ArrayList<>();
 
   @Implementation
@@ -76,6 +83,19 @@ public class ShadowTextToSpeech {
         ClassParameter.from(String.class, engine),
         ClassParameter.from(String.class, packageName),
         ClassParameter.from(boolean.class, useFallback));
+  }
+
+  /**
+   * Sets up synthesizeToFile to succeed or fail in the synthesis operation.
+   *
+   * <p>This controls calls the relevant callbacks but does not set the return value of
+   * synthesizeToFile.
+   *
+   * @param result TextToSpeech enum (SUCCESS, ERROR, or one of the ERROR_ codes from TextToSpeech)
+   */
+  public void simulateSynthesizeToFileResult(int result) {
+    this.synthesizeToFileResult = result;
+    this.completeSynthesis = true;
   }
 
   @Implementation
@@ -180,9 +200,9 @@ public class ShadowTextToSpeech {
   protected int synthesizeToFile(CharSequence text, Bundle params, File file, String utteranceId)
       throws IOException {
     this.lastSynthesizeToFileText = text.toString();
-    this.lastSynthesizeToFile = file;
 
     if (!Boolean.getBoolean("robolectric.enableShadowTtsSynthesisToFileWriteToFileSuppression")) {
+      this.lastSynthesizeToFile = file;
       try (PrintWriter writer = new PrintWriter(file, UTF_8.name())) {
         writer.println(text);
       }
@@ -198,12 +218,25 @@ public class ShadowTextToSpeech {
      * used by test targets that fail due to tests relying on previous behavior of this fake, where
      * the listeners were not called.
      */
-    if (utteranceProgressListener != null
+    if (completeSynthesis
+        && utteranceProgressListener != null
         && !Boolean.getBoolean("robolectric.enableShadowTtsSynthesisToFileCallbackSuppression")) {
-      utteranceProgressListener.onStart(utteranceId);
-      utteranceProgressListener.onDone(utteranceId);
+      switch (synthesizeToFileResult) {
+          // Right now this only supports success an error though there are other possible
+          // situations.
+        case TextToSpeech.SUCCESS:
+          utteranceProgressListener.onStart(utteranceId);
+          utteranceProgressListener.onDone(utteranceId);
+          break;
+        default:
+          utteranceProgressListener.onError(utteranceId, synthesizeToFileResult);
+          break;
+      }
     }
 
+    // This refers to the result of the queueing operation.
+    // See
+    // http://cs/android/frameworks/base/core/java/android/speech/tts/TextToSpeech.java?rcl=db6d9c1ced6b9af1de8f12e912a223f3c7f42ecd&l=1890.
     return TextToSpeech.SUCCESS;
   }
 
