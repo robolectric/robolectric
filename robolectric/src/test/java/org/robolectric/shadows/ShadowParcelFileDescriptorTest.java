@@ -1,9 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
+import static org.robolectric.Shadows.shadowOf;
 
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -12,11 +16,13 @@ import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -72,6 +78,61 @@ public class ShadowParcelFileDescriptorTest {
     FileOutputStream os = new FileOutputStream(pfd.getFileDescriptor());
     os.write(5);
     os.close();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void testOpenWithOnCloseListener_nullHandler() throws Exception {
+    final AtomicBoolean onCloseCalled = new AtomicBoolean(false);
+    ParcelFileDescriptor.OnCloseListener onCloseListener =
+        new ParcelFileDescriptor.OnCloseListener() {
+          @Override
+          public void onClose(IOException e) {
+            onCloseCalled.set(true);
+          }
+        };
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            ParcelFileDescriptor.open(
+                file, ParcelFileDescriptor.MODE_READ_WRITE, null, onCloseListener));
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void testOpenWithOnCloseListener_nullOnCloseListener() throws Exception {
+    HandlerThread handlerThread = new HandlerThread("test");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE, handler, null));
+    handlerThread.quit();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void testOpenWithOnCloseListener_callsListenerOnClose() throws Exception {
+    HandlerThread handlerThread = new HandlerThread("test");
+    handlerThread.start();
+    Handler handler = new Handler(handlerThread.getLooper());
+    final AtomicBoolean onCloseCalled = new AtomicBoolean(false);
+    ParcelFileDescriptor.OnCloseListener onCloseListener =
+        new ParcelFileDescriptor.OnCloseListener() {
+          @Override
+          public void onClose(IOException e) {
+            onCloseCalled.set(true);
+          }
+        };
+    pfd =
+        ParcelFileDescriptor.open(
+            file, ParcelFileDescriptor.MODE_READ_WRITE, handler, onCloseListener);
+    assertThat(pfd).isNotNull();
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+    pfd.close();
+    shadowOf(handlerThread.getLooper()).idle();
+    assertThat(onCloseCalled.get()).isTrue();
+    handlerThread.quit();
   }
 
   @Test
