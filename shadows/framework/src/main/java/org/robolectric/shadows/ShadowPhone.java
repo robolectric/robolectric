@@ -36,6 +36,10 @@ public class ShadowPhone {
 
   @Implementation(minSdk = M)
   protected final CallAudioState getCallAudioState() {
+    CallAudioState callAudioState = reflector(ReflectorPhone.class, phone).getCallAudioState();
+    if (callAudioState != null) {
+      return callAudioState;
+    }
     InCallAdapter inCallAdapter = ReflectionHelpers.getField(phone, "mInCallAdapter");
     int audioRoute = ((ShadowInCallAdapter) Shadow.extract(inCallAdapter)).getAudioRoute();
 
@@ -70,5 +74,8 @@ public class ShadowPhone {
 
     @Accessor("mCalls")
     List<Call> getCalls();
+
+    @Accessor("mCallAudioState")
+    CallAudioState getCallAudioState();
   }
 }

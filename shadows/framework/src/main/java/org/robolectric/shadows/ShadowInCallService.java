@@ -26,17 +26,15 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.telecom.InCallService}. */
 @Implements(value = InCallService.class, minSdk = M)
 public class ShadowInCallService extends ShadowService {
   @RealObject private InCallService inCallService;
-  private static final int MSG_SET_IN_CALL_ADAPTER = 1;
   private static final int MSG_ADD_CALL = 2;
-  private static final int MSG_UPDATE_CALL = 3;
   private static final int MSG_SET_POST_DIAL_WAIT = 4;
-  private static final int MSG_ON_CALL_AUDIO_STATE_CHANGED = 5;
   private static final int MSG_ON_CONNECTION_EVENT = 9;
 
   private ShadowPhone shadowPhone;
@@ -65,14 +63,6 @@ public class ShadowInCallService extends ShadowService {
     shadowPhone = Shadow.extract(phone);
     ReflectionHelpers.setField(inCallService, "mPhone", phone);
     invokeConstructor(InCallService.class, inCallService);
-  }
-
-  public void updateCall(ParcelableCall parcelableCall) {
-    getHandler().obtainMessage(MSG_UPDATE_CALL, parcelableCall).sendToTarget();
-  }
-
-  public void setInCallAdapter(IInCallAdapter inCallAdapter) {
-    getHandler().obtainMessage(MSG_SET_IN_CALL_ADAPTER, inCallAdapter).sendToTarget();
   }
 
   public void addCall(Call call) {
@@ -123,22 +113,24 @@ public class ShadowInCallService extends ShadowService {
   @Implementation
   protected void setMuted(boolean muted) {
     this.muted = muted;
+    if (isInCallAdapterSet()) {
+      reflector(ReflectorInCallService.class, inCallService).setMuted(muted);
+    }
   }
 
   @Implementation
   protected void setAudioRoute(int audioRoute) {
     this.audioRoute = audioRoute;
-    CallAudioState previousCallAudioState = getCallAudioState();
-    CallAudioState callAudioState =
-        new CallAudioState(
-            previousCallAudioState.isMuted(),
-            audioRoute,
-            previousCallAudioState.getSupportedRouteMask());
-    getHandler().obtainMessage(MSG_ON_CALL_AUDIO_STATE_CHANGED, callAudioState).sendToTarget();
+    if (isInCallAdapterSet()) {
+      reflector(ReflectorInCallService.class, inCallService).setAudioRoute(audioRoute);
+    }
   }
 
   @Implementation
   protected CallAudioState getCallAudioState() {
+    if (isInCallAdapterSet()) {
+      return reflector(ReflectorInCallService.class, inCallService).getCallAudioState();
+    }
     return new CallAudioState(muted, audioRoute, supportedRouteMask);
   }
 
@@ -149,6 +141,9 @@ public class ShadowInCallService extends ShadowService {
   @Implementation(minSdk = P)
   protected void requestBluetoothAudio(BluetoothDevice bluetoothDevice) {
     this.bluetoothDevice = bluetoothDevice;
+    if (isInCallAdapterSet()) {
+      reflector(ReflectorInCallService.class, inCallService).requestBluetoothAudio(bluetoothDevice);
+    }
   }
 
   /** @return the last value provided to {@code requestBluetoothAudio()}. */
@@ -161,9 +156,54 @@ public class ShadowInCallService extends ShadowService {
     return reflector(ReflectorInCallService.class, inCallService).getHandler();
   }
 
+  /**
+   * Checks if the InCallService was bound using {@link
+   * com.android.internal.telecom.IInCallService#setInCallAdapter(IInCallAdapter)}.
+   *
+   * <p>If it was bound using this interface, the internal InCallAdapter will be set and it will
+   * forward invocations to FakeTelecomServer.
+   *
+   * <p>Otherwise, invoking these methods will yield NullPointerExceptions, so we will avoid
+   * forwarding the calls to the real objects.
+   */
+  private boolean isInCallAdapterSet() {
+    Phone phone = reflector(ReflectorInCallService.class, inCallService).getPhone();
+    InCallAdapter inCallAdapter = reflector(ReflectorPhone.class, phone).getInCallAdapter();
+    Object internalAdapter =
+        reflector(ReflectorInCallAdapter.class, inCallAdapter).getInternalInCallAdapter();
+    return internalAdapter != null;
+  }
+
   @ForType(InCallService.class)
   interface ReflectorInCallService {
     @Accessor("mHandler")
     Handler getHandler();
+
+    @Accessor("mPhone")
+    Phone getPhone();
+
+    @Direct
+    void requestBluetoothAudio(BluetoothDevice bluetoothDevice);
+
+    @Direct
+    void setAudioRoute(int audioRoute);
+
+    @Direct
+    void setMuted(boolean muted);
+
+    @Direct
+    CallAudioState getCallAudioState();
+  }
+
+  @ForType(Phone.class)
+  interface ReflectorPhone {
+    @Accessor("mInCallAdapter")
+    InCallAdapter getInCallAdapter();
+  }
+
+  @ForType(InCallAdapter.class)
+  interface ReflectorInCallAdapter {
+    @Accessor("mAdapter")
+    Object getInternalInCallAdapter();
   }
 }
