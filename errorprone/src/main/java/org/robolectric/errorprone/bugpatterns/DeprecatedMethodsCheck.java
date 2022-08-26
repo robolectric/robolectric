@@ -34,7 +34,11 @@ import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implements;
 
-/** @author christianw@google.com (Christian Williams) */
+/**
+ * Checks for the deprecated methods.
+ *
+ * @author christianw@google.com (Christian Williams)
+ */
 @AutoService(BugChecker.class)
 @BugPattern(
     name = "DeprecatedMethods",

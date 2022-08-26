@@ -41,10 +41,12 @@ import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.conscrypt.OpenSSLProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.ConscryptMode;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
@@ -89,6 +91,7 @@ import org.robolectric.util.TempDirectory;
 @SuppressLint("NewApi")
 public class AndroidTestEnvironment implements TestEnvironment {
 
+  private static final String CONSCRYPT_PROVIDER = "Conscrypt";
   private final Sdk runtimeSdk;
   private final Sdk compileSdk;
 
@@ -145,6 +148,16 @@ public class AndroidTestEnvironment implements TestEnvironment {
     if (!loggingInitialized) {
       ShadowLog.setupLogging();
       loggingInitialized = true;
+    }
+
+    ConscryptMode.Mode conscryptMode = configuration.get(ConscryptMode.Mode.class);
+    Security.removeProvider(CONSCRYPT_PROVIDER);
+    if (conscryptMode != ConscryptMode.Mode.OFF) {
+
+      Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+      if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
+        Security.insertProviderAt(new OpenSSLProvider(), 1);
+      }
     }
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
