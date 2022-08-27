@@ -5,9 +5,11 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.IntRange;
 import android.app.ActivityThread;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -68,6 +70,8 @@ public class ShadowBluetoothDevice {
   private BluetoothClass bluetoothClass = null;
   private boolean shouldThrowSecurityExceptions = false;
   private final Map<Integer, byte[]> metadataMap = new HashMap<>();
+  private int batteryLevel = BluetoothDevice.BATTERY_LEVEL_BLUETOOTH_OFF;
+  private boolean isInSilenceMode = false;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -388,6 +392,29 @@ public class ShadowBluetoothDevice {
   protected byte[] getMetadata(int key) {
     checkForBluetoothConnectPermission();
     return metadataMap.get(key);
+  }
+
+  public void setBatteryLevel(@IntRange(from = -100, to = 100) int batteryLevel) {
+    this.batteryLevel = batteryLevel;
+  }
+
+  @Implementation(minSdk = O_MR1)
+  protected int getBatteryLevel() {
+    checkForBluetoothConnectPermission();
+    return batteryLevel;
+  }
+
+  @Implementation(minSdk = Q)
+  public boolean setSilenceMode(boolean isInSilenceMode) {
+    checkForBluetoothConnectPermission();
+    this.isInSilenceMode = isInSilenceMode;
+    return true;
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean isInSilenceMode() {
+    checkForBluetoothConnectPermission();
+    return isInSilenceMode;
   }
 
   @ForType(BluetoothDevice.class)

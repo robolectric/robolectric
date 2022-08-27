@@ -515,4 +515,74 @@ public class ShadowBluetoothDeviceTest {
     assertThat(device.getMetadata(22)).isEqualTo(new byte[] {123});
     assertThat(device.getMetadata(11)).isNull();
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void getBatteryLevel_noPermission_throwsException() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    shadowOf(device).setShouldThrowSecurityExceptions(true);
+
+    assertThrows(SecurityException.class, device::getBatteryLevel);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void getBatteryLevel_default() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.getBatteryLevel()).isEqualTo(BluetoothDevice.BATTERY_LEVEL_BLUETOOTH_OFF);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O_MR1)
+  public void setBatteryLevel_shouldBeSaved() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setBatteryLevel(66);
+
+    assertThat(device.getBatteryLevel()).isEqualTo(66);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void isInSilenceMode_noPermission_throwsException() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    shadowOf(device).setShouldThrowSecurityExceptions(true);
+
+    assertThrows(SecurityException.class, device::isInSilenceMode);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void isInSilenceMode_defaultFalse() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.isInSilenceMode()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.S)
+  public void setSilenceMode_noPermission_throwsException() {
+    shadowOf(application).denyPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+    shadowOf(device).setShouldThrowSecurityExceptions(true);
+
+    assertThrows(SecurityException.class, () -> device.setSilenceMode(true));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.Q)
+  public void setSilenceMode_shouldBeSaved() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(shadowOf(device).setSilenceMode(true)).isTrue();
+
+    assertThat(device.isInSilenceMode()).isTrue();
+  }
 }
