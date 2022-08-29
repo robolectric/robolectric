@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
@@ -93,6 +94,58 @@ public class ShadowWallpaperManagerTest {
     assertThat(record1.y).isEqualTo(2);
     assertThat(record1.z).isEqualTo(3);
     assertThat(record1.extras.getString("key")).isEqualTo("value");
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void hasResourceWallpaper_wallpaperResourceNotSet_returnsFalse() {
+    assertThat(manager.hasResourceWallpaper(1)).isFalse();
+    assertThat(manager.hasResourceWallpaper(5)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void hasResourceWallpaper_wallpaperResourceSet_returnsTrue() throws IOException {
+    int resid = 5;
+    manager.setResource(resid);
+
+    assertThat(manager.hasResourceWallpaper(1)).isFalse();
+    assertThat(manager.hasResourceWallpaper(resid)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void setResource_multipleTimes_hasResourceWallpaperReturnsTrueForLastValue()
+      throws IOException {
+    manager.setResource(1);
+    manager.setResource(2);
+    manager.setResource(3);
+
+    assertThat(manager.hasResourceWallpaper(1)).isFalse();
+    assertThat(manager.hasResourceWallpaper(2)).isFalse();
+    assertThat(manager.hasResourceWallpaper(3)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setResource_invalidFlag_returnsZero() throws IOException {
+    assertThat(manager.setResource(1, 0)).isEqualTo(0);
+    assertThat(manager.hasResourceWallpaper(1)).isFalse();
+    assertThat(manager.hasResourceWallpaper(2)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setResource_lockScreenOnly_returnsNewId() throws IOException {
+    assertThat(manager.setResource(1, WallpaperManager.FLAG_LOCK)).isEqualTo(1);
+    assertThat(manager.hasResourceWallpaper(1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setResource_homeScreenOnly_returnsNewId() throws IOException {
+    assertThat(manager.setResource(1, WallpaperManager.FLAG_SYSTEM)).isEqualTo(1);
+    assertThat(manager.hasResourceWallpaper(1)).isTrue();
   }
 
   @Test
