@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.internal.Instrument;
 import org.robolectric.internal.SandboxTestRunner;
 import org.robolectric.internal.bytecode.SandboxConfig;
@@ -28,7 +27,6 @@ public class ClassicSuperHandlingTest {
 
   @Implements(Child.class)
   public static class ChildShadow extends ParentShadow {
-    private @RealObject Child realObject;
 
     @Override public String method(String value) {
       return "3s-" + super.method(value);
@@ -37,7 +35,6 @@ public class ClassicSuperHandlingTest {
 
   @Implements(Parent.class)
   public static class ParentShadow extends GrandparentShadow {
-    private @RealObject Parent realObject;
 
     @Override public String method(String value) {
       return "2s-" + super.method(value);
@@ -46,7 +43,6 @@ public class ClassicSuperHandlingTest {
 
   @Implements(Grandparent.class)
   public static class GrandparentShadow {
-    private @RealObject Grandparent realObject;
 
     public String method(String value) {
       return "1s-" + value;

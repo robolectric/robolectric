@@ -105,7 +105,6 @@ public class Util {
   }
 
   static String ReadUtf16StringFromDevice(char[] src, int len/*, std::string* out*/) {
-    char[] buf = new char[5];
     int i = 0;
     StringBuilder strBuf = new StringBuilder();
     while (src[i] != '\0' && len != 0) {

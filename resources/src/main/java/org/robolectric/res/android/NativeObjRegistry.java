@@ -86,7 +86,7 @@ public class NativeObjRegistry<T> {
     nativeId = nextId;
     if (debug) {
       System.out.printf("NativeObjRegistry %s: register %d -> %s%n", name, nativeId, o);
-      idToDebugInfoMap.put(nativeId, new DebugInfo(new Trace(o)));
+      idToDebugInfoMap.put(nativeId, new DebugInfo(new Trace()));
     }
     nativeObjToIdMap.put(nativeId, o);
     nextId++;
@@ -109,7 +109,7 @@ public class NativeObjRegistry<T> {
     if (o == null) {
       if (debug) {
         DebugInfo debugInfo = idToDebugInfoMap.get(nativeId);
-        debugInfo.unregistrationTraces.add(new Trace(o));
+        debugInfo.unregistrationTraces.add(new Trace());
         if (debugInfo.unregistrationTraces.size() > 1) {
           System.out.format("NativeObjRegistry %s: Too many unregistrations:%n", name);
           for (Trace unregistration : debugInfo.unregistrationTraces) {
@@ -156,7 +156,7 @@ public class NativeObjRegistry<T> {
     }
     if (debug) {
       System.out.printf("NativeObjRegistry %s: update %d -> %s%n", name, nativeId, o);
-      idToDebugInfoMap.put(nativeId, new DebugInfo(new Trace(o)));
+      idToDebugInfoMap.put(nativeId, new DebugInfo(new Trace()));
     }
     nativeObjToIdMap.put(nativeId, o);
   }
@@ -185,22 +185,7 @@ public class NativeObjRegistry<T> {
   }
 
   private static class Trace extends Throwable {
-    private int apiLevel;
-    private boolean useLegacyResources;
 
-    private Trace(Object o) {
-      try {
-        Class<?> runtimeEnvClass = o.getClass().getClassLoader()
-            .loadClass("org.robolectric.RuntimeEnvironment");
-        this.apiLevel = (int) runtimeEnvClass.getMethod("getApiLevel").invoke(null);
-        this.useLegacyResources = (boolean) runtimeEnvClass.getMethod("useLegacyResources")
-            .invoke(null);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-
-    private Trace(int apiLevel, boolean legacyResources) {
-    }
+    private Trace() {}
   }
 }

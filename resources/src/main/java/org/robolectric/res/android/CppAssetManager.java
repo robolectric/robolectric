@@ -1005,8 +1005,7 @@ public class CppAssetManager {
    */
   public AssetDir openDir(final String dirName) {
     synchronized (mLock) {
-
-      AssetDir pDir = null;
+      AssetDir pDir;
       final Ref<SortedVector<AssetDir.FileInfo>> pMergedInfo;
 
       LOG_FATAL_IF(mAssetPaths.isEmpty(), "No assets added to AssetManager");
@@ -1185,7 +1184,7 @@ public class CppAssetManager {
   SortedVector<AssetDir.FileInfo> scanDirLocked(final String8 path) {
 
     String8 pathCopy = new String8(path);
-    SortedVector<AssetDir.FileInfo> pContents = null;
+    SortedVector<AssetDir.FileInfo> pContents;
     //DIR* dir;
     File dir;
     FileType fileType;
@@ -1249,7 +1248,6 @@ public class CppAssetManager {
     List<String8> dirs = new ArrayList<>();
     //AssetDir.FileInfo info = new FileInfo();
     SortedVector<AssetDir.FileInfo> contents = new SortedVector<>();
-    String8 sourceName;
     String8 zipName;
     String8 dirName = new String8();
 
