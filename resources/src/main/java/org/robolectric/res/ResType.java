@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
-import org.robolectric.util.Logger;
 
 public enum ResType {
   DRAWABLE,
@@ -51,22 +50,30 @@ public enum ResType {
       return BOOLEAN;
     } else if (DIMEN_RE.matcher(value).find()) {
       return DIMEN;
+    } else if (isInteger(value)) {
+      return INTEGER;
+    } else if (isFloat(value)) {
+      return FRACTION;
     } else {
-      try {
-        Integer.parseInt(value);
-        return INTEGER;
-      } catch (NumberFormatException nfe) {
-        Logger.error("Failed to infer int from value", nfe);
-      }
-
-      try {
-        Float.parseFloat(value);
-        return FRACTION;
-      } catch (NumberFormatException nfe) {
-        Logger.error("Failed to infer float from value", nfe);
-      }
-
       return CHAR_SEQUENCE;
+    }
+  }
+
+  private static boolean isInteger(String value) {
+    try {
+      Integer.parseInt(value);
+      return true;
+    } catch (NumberFormatException nfe) {
+      return false;
+    }
+  }
+
+  private static boolean isFloat(String value) {
+    try {
+      Float.parseFloat(value);
+      return true;
+    } catch (NumberFormatException nfe) {
+      return false;
     }
   }
 }
