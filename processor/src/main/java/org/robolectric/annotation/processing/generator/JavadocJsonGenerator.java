@@ -6,6 +6,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.processing.Messager;
@@ -69,7 +70,8 @@ public class JavadocJsonGenerator extends Generator {
     try {
       file.getParentFile().mkdirs();
 
-      try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+      try (BufferedWriter writer =
+          new BufferedWriter(new FileWriter(file, StandardCharsets.UTF_8))) {
         gson.toJson(object, writer);
       }
     } catch (IOException e) {

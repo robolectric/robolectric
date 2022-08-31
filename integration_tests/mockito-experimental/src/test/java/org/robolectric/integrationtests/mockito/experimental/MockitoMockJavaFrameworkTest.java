@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import javax.crypto.Cipher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +24,7 @@ public class MockitoMockJavaFrameworkTest {
   @Test
   public void cipher_getIV_isMockable() {
     Cipher cipher = mock(Cipher.class);
-    doReturn("fake".getBytes()).when(cipher).getIV();
-    assertThat(cipher.getIV()).isEqualTo("fake".getBytes());
+    doReturn("fake".getBytes(StandardCharsets.UTF_8)).when(cipher).getIV();
+    assertThat(cipher.getIV()).isEqualTo("fake".getBytes(StandardCharsets.UTF_8));
   }
 }

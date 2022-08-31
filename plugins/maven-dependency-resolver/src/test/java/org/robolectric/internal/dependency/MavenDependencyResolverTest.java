@@ -234,12 +234,16 @@ public class MavenDependencyResolverTest {
     try {
       Files.createParentDirs(new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       String jarContents = mavenJarArtifact.toString() + " jar contents";
-      Files.write(jarContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
+      Files.write(
+          jarContents.getBytes(StandardCharsets.UTF_8),
+          new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       Files.write(
           sha512(jarContents).getBytes(),
           new File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path()));
       String pomContents = mavenJarArtifact.toString() + " pom contents";
-      Files.write(pomContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomPath()));
+      Files.write(
+          pomContents.getBytes(StandardCharsets.UTF_8),
+          new File(REPOSITORY_DIR, mavenJarArtifact.pomPath()));
       Files.write(
           sha512(pomContents).getBytes(),
           new File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path()));
@@ -272,6 +276,6 @@ public class MavenDependencyResolverTest {
   }
 
   static String readFile(File file) throws IOException {
-    return new String(Files.asByteSource(file).read());
+    return new String(Files.asByteSource(file).read(), StandardCharsets.UTF_8);
   }
 }
