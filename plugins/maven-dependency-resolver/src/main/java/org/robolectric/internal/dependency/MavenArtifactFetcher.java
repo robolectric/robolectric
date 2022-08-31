@@ -62,9 +62,9 @@ public class MavenArtifactFetcher {
     try {
       createArtifactSubdirectory(artifact, stagingRepositoryDir);
       Futures.whenAllSucceed(
-              fetchToStagingRepository(artifact.pomSha1Path()),
+              fetchToStagingRepository(artifact.pomSha512Path()),
               fetchToStagingRepository(artifact.pomPath()),
-              fetchToStagingRepository(artifact.jarSha1Path()),
+              fetchToStagingRepository(artifact.jarSha512Path()),
               fetchToStagingRepository(artifact.jarPath()))
           .callAsync(
               () -> {
@@ -74,21 +74,23 @@ public class MavenArtifactFetcher {
                   return Futures.immediateFuture(null);
                 }
                 createArtifactSubdirectory(artifact, localRepositoryDir);
-                boolean pomValid = validateStagedFiles(artifact.pomPath(), artifact.pomSha1Path());
+                boolean pomValid =
+                    validateStagedFiles(artifact.pomPath(), artifact.pomSha512Path());
                 if (!pomValid) {
-                  throw new AssertionError("SHA1 mismatch for POM file fetched in " + artifact);
+                  throw new AssertionError("SHA512 mismatch for POM file fetched in " + artifact);
                 }
-                boolean jarValid = validateStagedFiles(artifact.jarPath(), artifact.jarSha1Path());
+                boolean jarValid =
+                    validateStagedFiles(artifact.jarPath(), artifact.jarSha512Path());
                 if (!jarValid) {
-                  throw new AssertionError("SHA1 mismatch for JAR file fetched in " + artifact);
+                  throw new AssertionError("SHA512 mismatch for JAR file fetched in " + artifact);
                 }
                 Logger.info(
                     String.format(
                         "Checksums validated, moving artifact %s to local maven directory",
                         artifact));
-                commitFromStaging(artifact.pomSha1Path());
+                commitFromStaging(artifact.pomSha512Path());
                 commitFromStaging(artifact.pomPath());
-                commitFromStaging(artifact.jarSha1Path());
+                commitFromStaging(artifact.jarSha512Path());
                 commitFromStaging(artifact.jarPath());
                 removeArtifactFiles(stagingRepositoryDir, artifact);
                 return Futures.immediateFuture(null);
@@ -108,18 +110,19 @@ public class MavenArtifactFetcher {
 
   private void removeArtifactFiles(File repositoryDir, MavenJarArtifact artifact) {
     new File(repositoryDir, artifact.jarPath()).delete();
-    new File(repositoryDir, artifact.jarSha1Path()).delete();
+    new File(repositoryDir, artifact.jarSha512Path()).delete();
     new File(repositoryDir, artifact.pomPath()).delete();
-    new File(repositoryDir, artifact.pomSha1Path()).delete();
+    new File(repositoryDir, artifact.pomSha512Path()).delete();
   }
 
-  private boolean validateStagedFiles(String filePath, String sha1Path) throws IOException {
+  private boolean validateStagedFiles(String filePath, String sha512Path) throws IOException {
     File tempFile = new File(this.stagingRepositoryDir, filePath);
-    File sha1File = new File(this.stagingRepositoryDir, sha1Path);
+    File sha512File = new File(this.stagingRepositoryDir, sha512Path);
 
-    HashCode expected = HashCode.fromString(new String(Files.asByteSource(sha1File).read(), UTF_8));
+    HashCode expected =
+        HashCode.fromString(new String(Files.asByteSource(sha512File).read(), UTF_8));
 
-    HashCode actual = Files.asByteSource(tempFile).hash(Hashing.sha1());
+    HashCode actual = Files.asByteSource(tempFile).hash(Hashing.sha512());
     return expected.equals(actual);
   }
 

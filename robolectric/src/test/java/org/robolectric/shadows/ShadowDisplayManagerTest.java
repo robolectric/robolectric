@@ -15,6 +15,7 @@ import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
+import android.os.Build;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
@@ -182,6 +183,76 @@ public class ShadowDisplayManagerTest {
     assertThat(events).containsExactly(
         "Added " + displayId,
         "Changed " + displayId);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void modeBuilder_setsModeParameters() throws Exception {
+    int modeId = 5;
+    int width = 500;
+    int height = 1000;
+    float refreshRate = 60.f;
+    Display.Mode mode =
+        ShadowDisplayManager.ModeBuilder.modeBuilder(modeId)
+            .setWidth(width)
+            .setHeight(height)
+            .setRefreshRate(refreshRate)
+            .build();
+    assertThat(mode.getPhysicalWidth()).isEqualTo(width);
+    assertThat(mode.getPhysicalHeight()).isEqualTo(height);
+    assertThat(mode.getModeId()).isEqualTo(modeId);
+    assertThat(mode.getRefreshRate()).isEqualTo(refreshRate);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void setSupportedModes_addsOneDisplayMode() throws Exception {
+    List<String> events = new ArrayList<>();
+    instance.registerDisplayListener(new MyDisplayListener(events), /* handler= */ null);
+    int displayId = ShadowDisplayManager.addDisplay(/* qualifiersStr= */ "w100dp-h200dp");
+
+    Display.Mode mode =
+        ShadowDisplayManager.ModeBuilder.modeBuilder(0)
+            .setWidth(500)
+            .setHeight(500)
+            .setRefreshRate(60)
+            .build();
+    ShadowDisplayManager.setSupportedModes(displayId, mode);
+
+    Display.Mode[] modes = getGlobal().getRealDisplay(displayId).getSupportedModes();
+    assertThat(modes).hasLength(1);
+    assertThat(modes).asList().containsExactly(mode);
+
+    assertThat(events).containsExactly("Added " + displayId, "Changed " + displayId);
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.M)
+  public void setSupportedModes_addsMultipleDisplayModes() throws Exception {
+    List<String> events = new ArrayList<>();
+    instance.registerDisplayListener(new MyDisplayListener(events), /* handler= */ null);
+    int displayId = ShadowDisplayManager.addDisplay(/* qualifiersStr= */ "w100dp-h200dp");
+
+    Display.Mode[] modesToSet =
+        new Display.Mode[] {
+          ShadowDisplayManager.ModeBuilder.modeBuilder(0)
+              .setWidth(500)
+              .setHeight(500)
+              .setRefreshRate(60)
+              .build(),
+          ShadowDisplayManager.ModeBuilder.modeBuilder(0)
+              .setWidth(1000)
+              .setHeight(1500)
+              .setRefreshRate(120)
+              .build()
+        };
+    ShadowDisplayManager.setSupportedModes(displayId, modesToSet);
+
+    Display.Mode[] modes = getGlobal().getRealDisplay(displayId).getSupportedModes();
+    assertThat(modes).hasLength(modesToSet.length);
+    assertThat(modes).asList().containsExactlyElementsIn(modesToSet);
+
+    assertThat(events).containsExactly("Added " + displayId, "Changed " + displayId);
   }
 
   @Test

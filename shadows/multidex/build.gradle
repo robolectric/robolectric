@@ -15,8 +15,6 @@ dependencies {
     compileOnly project(":shadows:framework")
     api project(":annotations")
 
-    compileOnly "com.android.support:multidex:1.0.3"
-
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testImplementation project(":robolectric")

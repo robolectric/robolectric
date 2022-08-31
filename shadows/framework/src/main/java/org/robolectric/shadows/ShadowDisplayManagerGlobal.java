@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Point;
 import android.hardware.display.BrightnessChangeEvent;
@@ -11,6 +12,7 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
 import android.hardware.display.WifiDisplayStatus;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.util.SparseArray;
 import android.view.Display;
@@ -27,7 +29,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
 @Implements(
@@ -51,18 +54,35 @@ public class ShadowDisplayManagerGlobal {
   }
 
   @Implementation
+  protected void __constructor__(IDisplayManager dm) {
+    // No-op the constructor. The real constructor references the ColorSpace named constants, which
+    // require native calls to instantiate. This will cause native graphics libraries to be loaded
+    // any time an Application object is created. Instead override the constructor to avoid
+    // referencing the ColorSpace named constants, making application creation around 0.75s faster.
+  }
+
+  @Implementation
   public static synchronized DisplayManagerGlobal getInstance() {
     if (instance == null) {
       MyDisplayManager myIDisplayManager = new MyDisplayManager();
       IDisplayManager proxy =
           ReflectionHelpers.createDelegatingProxy(IDisplayManager.class, myIDisplayManager);
-      instance =
-          ReflectionHelpers.callConstructor(
-              DisplayManagerGlobal.class, ClassParameter.from(IDisplayManager.class, proxy));
+      instance = newDisplayManagerGlobal(proxy);
       ShadowDisplayManagerGlobal shadow = Shadow.extract(instance);
       shadow.mDm = myIDisplayManager;
       Bootstrap.setUpDisplay();
     }
+    return instance;
+  }
+
+  private static DisplayManagerGlobal newDisplayManagerGlobal(IDisplayManager displayManager) {
+    instance = Shadow.newInstanceOf(DisplayManagerGlobal.class);
+    DisplayManagerGlobalReflector displayManagerGlobal =
+        reflector(DisplayManagerGlobalReflector.class, instance);
+    displayManagerGlobal.setDm(displayManager);
+    displayManagerGlobal.setLock(new Object());
+    displayManagerGlobal.setDisplayListeners(new ArrayList<>());
+    displayManagerGlobal.setDisplayInfoCache(new SparseArray<>());
     return instance;
   }
 
@@ -227,5 +247,20 @@ public class ShadowDisplayManagerGlobal {
   void setBrightnessEvents(List<BrightnessChangeEvent> events) {
     brightnessChangeEvents.clear();
     brightnessChangeEvents.addAll(events);
+  }
+
+  @ForType(DisplayManagerGlobal.class)
+  interface DisplayManagerGlobalReflector {
+    @Accessor("mDm")
+    void setDm(IDisplayManager displayManager);
+
+    @Accessor("mLock")
+    void setLock(Object lock);
+
+    @Accessor("mDisplayListeners")
+    void setDisplayListeners(ArrayList<Handler> list);
+
+    @Accessor("mDisplayInfoCache")
+    void setDisplayInfoCache(SparseArray<DisplayInfo> displayInfoCache);
   }
 }

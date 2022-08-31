@@ -1,7 +1,10 @@
 package org.robolectric.integrationtests.memoryleaks;
 
+import static org.robolectric.Shadows.shadowOf;
+
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.os.Looper;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentContainerView;
@@ -71,6 +74,8 @@ public abstract class BaseMemoryLeaksTest {
               .replace(android.R.id.list_container, f)
               .commitNow();
           ac.pause().stop().destroy();
+          // Idle any potential Fragment animations.
+          shadowOf(Looper.getMainLooper()).idle();
           return f;
         });
   }

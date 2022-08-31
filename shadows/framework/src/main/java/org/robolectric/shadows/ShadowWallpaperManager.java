@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -40,11 +41,48 @@ public class ShadowWallpaperManager {
   private boolean isWallpaperSupported = true;
   private WallpaperInfo wallpaperInfo = null;
   private final List<WallpaperCommandRecord> wallpaperCommandRecords = new ArrayList<>();
+  private AtomicInteger wallpaperId = new AtomicInteger(0);
+  private int lockScreenId;
+  private int homeScreenId;
 
   @Implementation
   protected void sendWallpaperCommand(
       IBinder windowToken, String action, int x, int y, int z, Bundle extras) {
     wallpaperCommandRecords.add(new WallpaperCommandRecord(windowToken, action, x, y, z, extras));
+  }
+
+  /**
+   * Sets a resource id as the current wallpaper.
+   *
+   * <p>This only caches the resource id in memory. Calling this will override any previously set
+   * resource and does not differentiate between users.
+   */
+  @Implementation(maxSdk = VERSION_CODES.M)
+  protected void setResource(int resid) {
+    setResource(resid, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.N)
+  protected int setResource(int resid, int which) {
+    if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
+      return 0;
+    }
+    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
+      homeScreenId = resid;
+    }
+    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
+      lockScreenId = resid;
+    }
+    return wallpaperId.incrementAndGet();
+  }
+
+  /**
+   * Returns whether the current wallpaper has been set through {@link #setResource(int)} or {@link
+   * #setResource(int, int)} with the same resource id.
+   */
+  @Implementation(minSdk = VERSION_CODES.JELLY_BEAN_MR1)
+  protected boolean hasResourceWallpaper(int resid) {
+    return resid == this.lockScreenId || resid == this.homeScreenId;
   }
 
   /**

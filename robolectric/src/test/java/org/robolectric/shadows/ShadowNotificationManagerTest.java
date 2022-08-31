@@ -432,7 +432,7 @@ public class ShadowNotificationManagerTest {
             NotificationManager.INTERRUPTION_FILTER_ALL,
             /* enabled= */ false);
     try {
-      assertThat(notificationManager.updateAutomaticZenRule(nonexistentId, updatedRule));
+      assertThat(notificationManager.updateAutomaticZenRule(nonexistentId, updatedRule)).isTrue();
       fail("Should have thrown SecurityException");
     } catch (SecurityException expected) {
     }

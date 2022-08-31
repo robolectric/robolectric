@@ -58,8 +58,8 @@ dependencies {
     compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
     api "com.ibm.icu:icu4j:70.1"
     api "androidx.annotation:annotation:1.1.0"
-    api "com.google.auto.value:auto-value-annotations:1.7.4"
-    annotationProcessor "com.google.auto.value:auto-value:1.6.2"
+    api "com.google.auto.value:auto-value-annotations:1.9"
+    annotationProcessor "com.google.auto.value:auto-value:1.9"
 
     sqlite4java "com.almworks.sqlite4java:libsqlite4java-osx:$sqlite4javaVersion"
     sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-amd64:$sqlite4javaVersion"
