@@ -135,41 +135,40 @@ public class LoadedArsc {
   final ResStringPool global_string_pool_ = new ResStringPool();
   final List<LoadedPackage> packages_ = new ArrayList<>();
   boolean system_ = false;
-//};
-//
-//}  // namespace android
-//
-//#endif /* LOADEDARSC_H_ */
+  // };
+  //
+  // }  // namespace android
+  //
+  // #endif // LOADEDARSC_H_
 
-//  #define ATRACE_TAG ATRACE_TAG_RESOURCES
-//
-//  #include "androidfw/LoadedArsc.h"
-//
-//  #include <cstddef>
-//  #include <limits>
-//
-//  #include "android-base/logging.h"
-//  #include "android-base/stringprintf.h"
-//  #include "utils/ByteOrder.h"
-//  #include "utils/Trace.h"
-//
-//  #ifdef _WIN32
-//  #ifdef ERROR
-//  #undef ERROR
-//  #endif
-//  #endif
-//
-//  #include "androidfw/ByteBucketArray.h"
-//  #include "androidfw/Chunk.h"
-//  #include "androidfw/ResourceUtils.h"
-//  #include "androidfw/Util.h"
-//
-//  using android::base::StringPrintf;
-//
-//  namespace android {
+  //  #define ATRACE_TAG ATRACE_TAG_RESOURCES
+  //
+  //  #include "androidfw/LoadedArsc.h"
+  //
+  //  #include <cstddef>
+  //  #include <limits>
+  //
+  //  #include "android-base/logging.h"
+  //  #include "android-base/stringprintf.h"
+  //  #include "utils/ByteOrder.h"
+  //  #include "utils/Trace.h"
+  //
+  //  #ifdef _WIN32
+  //  #ifdef ERROR
+  //  #undef ERROR
+  //  #endif
+  //  #endif
+  //
+  //  #include "androidfw/ByteBucketArray.h"
+  //  #include "androidfw/Chunk.h"
+  //  #include "androidfw/ResourceUtils.h"
+  //  #include "androidfw/Util.h"
+  //
+  //  using android::base::StringPrintf;
+  //
+  //  namespace android {
 
   static final int kAppPackageId = 0x7f;
-
 
 //  namespace {
 

@@ -88,31 +88,31 @@ public class CppApkAssets {
   Asset idmap_asset_;
   private LoadedArsc loaded_arsc_;
   // };
-//
-// }  // namespace android
-//
-// #endif /* APKASSETS_H_ */
-//
-// #define ATRACE_TAG ATRACE_TAG_RESOURCES
-//
-// #include "androidfw/ApkAssets.h"
-//
-// #include <algorithm>
-//
-// #include "android-base/logging.h"
-// #include "utils/FileMap.h"
-// #include "utils/Trace.h"
-// #include "ziparchive/zip_archive.h"
-//
-// #include "androidfw/Asset.h"
-// #include "androidfw/Util.h"
-//
-// namespace android {
-//
-// Creates an ApkAssets.
-// If `system` is true, the package is marked as a system package, and allows some functions to
-// filter out this package when computing what configurations/resources are available.
-// std::unique_ptr<const ApkAssets> ApkAssets::Load(const String& path, bool system) {
+  //
+  // }  // namespace android
+  //
+  // #endif // APKASSETS_H_
+  //
+  // #define ATRACE_TAG ATRACE_TAG_RESOURCES
+  //
+  // #include "androidfw/ApkAssets.h"
+  //
+  // #include <algorithm>
+  //
+  // #include "android-base/logging.h"
+  // #include "utils/FileMap.h"
+  // #include "utils/Trace.h"
+  // #include "ziparchive/zip_archive.h"
+  //
+  // #include "androidfw/Asset.h"
+  // #include "androidfw/Util.h"
+  //
+  // namespace android {
+  //
+  // Creates an ApkAssets.
+  // If `system` is true, the package is marked as a system package, and allows some functions to
+  // filter out this package when computing what configurations/resources are available.
+  // std::unique_ptr<const ApkAssets> ApkAssets::Load(const String& path, bool system) {
   public static CppApkAssets Load(String path, boolean system) {
     return LoadImpl(/*{}*/-1 /*fd*/, path, null, null, system, false /*load_as_shared_library*/);
   }
