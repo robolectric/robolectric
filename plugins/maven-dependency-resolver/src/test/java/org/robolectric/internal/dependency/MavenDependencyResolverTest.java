@@ -27,7 +27,7 @@ public class MavenDependencyResolverTest {
   private static final String REPOSITORY_URL;
   private static final String REPOSITORY_USERNAME = "username";
   private static final String REPOSITORY_PASSWORD = "password";
-  private static final HashFunction SHA1 = Hashing.sha1();
+  private static final HashFunction SHA512 = Hashing.sha512();
 
   private static DependencyJar[] successCases =
       new DependencyJar[] {
@@ -120,16 +120,16 @@ public class MavenDependencyResolverTest {
   private void checkJarArtifact(MavenJarArtifact artifact) throws Exception {
     File jar = new File(localRepositoryDir, artifact.jarPath());
     File pom = new File(localRepositoryDir, artifact.pomPath());
-    File jarSha1 = new File(localRepositoryDir, artifact.jarSha1Path());
-    File pomSha1 = new File(localRepositoryDir, artifact.pomSha1Path());
+    File jarSha512 = new File(localRepositoryDir, artifact.jarSha512Path());
+    File pomSha512 = new File(localRepositoryDir, artifact.pomSha512Path());
     assertThat(jar.exists()).isTrue();
     assertThat(readFile(jar)).isEqualTo(artifact.toString() + " jar contents");
     assertThat(pom.exists()).isTrue();
     assertThat(readFile(pom)).isEqualTo(artifact.toString() + " pom contents");
-    assertThat(jarSha1.exists()).isTrue();
-    assertThat(readFile(jarSha1)).isEqualTo(sha1(artifact.toString() + " jar contents"));
+    assertThat(jarSha512.exists()).isTrue();
+    assertThat(readFile(jarSha512)).isEqualTo(sha512(artifact.toString() + " jar contents"));
     assertThat(pom.exists()).isTrue();
-    assertThat(readFile(pomSha1)).isEqualTo(sha1(artifact.toString() + " pom contents"));
+    assertThat(readFile(pomSha512)).isEqualTo(sha512(artifact.toString() + " pom contents"));
   }
 
   @Test
@@ -153,9 +153,9 @@ public class MavenDependencyResolverTest {
   }
 
   @Test
-  public void getLocalArtifactUrl_handlesInvalidSha1() throws Exception {
-    DependencyJar dependencyJar = new DependencyJar("group", "artifact-invalid-sha1", "1");
-    addTestArtifactInvalidSha1(dependencyJar);
+  public void getLocalArtifactUrl_handlesInvalidSha512() throws Exception {
+    DependencyJar dependencyJar = new DependencyJar("group", "artifact-invalid-sha512", "1");
+    addTestArtifactInvalidSha512(dependencyJar);
     assertThrows(
         AssertionError.class, () -> mavenDependencyResolver.getLocalArtifactUrl(dependencyJar));
   }
@@ -236,37 +236,39 @@ public class MavenDependencyResolverTest {
       String jarContents = mavenJarArtifact.toString() + " jar contents";
       Files.write(jarContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       Files.write(
-          sha1(jarContents).getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarSha1Path()));
+          sha512(jarContents).getBytes(),
+          new File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path()));
       String pomContents = mavenJarArtifact.toString() + " pom contents";
       Files.write(pomContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomPath()));
       Files.write(
-          sha1(pomContents).getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomSha1Path()));
+          sha512(pomContents).getBytes(),
+          new File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path()));
     } catch (MalformedURLException e) {
       throw new AssertionError(e);
     }
   }
 
-  static void addTestArtifactInvalidSha1(DependencyJar dependencyJar) throws IOException {
+  static void addTestArtifactInvalidSha512(DependencyJar dependencyJar) throws IOException {
     MavenJarArtifact mavenJarArtifact = new MavenJarArtifact(dependencyJar);
     try {
       Files.createParentDirs(new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       String jarContents = mavenJarArtifact.toString() + " jar contents";
       Files.write(jarContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.jarPath()));
       Files.write(
-          sha1("No the same content").getBytes(),
-          new File(REPOSITORY_DIR, mavenJarArtifact.jarSha1Path()));
+          sha512("No the same content").getBytes(),
+          new File(REPOSITORY_DIR, mavenJarArtifact.jarSha512Path()));
       String pomContents = mavenJarArtifact.toString() + " pom contents";
       Files.write(pomContents.getBytes(), new File(REPOSITORY_DIR, mavenJarArtifact.pomPath()));
       Files.write(
-          sha1("Really not the same content").getBytes(),
-          new File(REPOSITORY_DIR, mavenJarArtifact.pomSha1Path()));
+          sha512("Really not the same content").getBytes(),
+          new File(REPOSITORY_DIR, mavenJarArtifact.pomSha512Path()));
     } catch (MalformedURLException e) {
       throw new AssertionError(e);
     }
   }
 
-  static String sha1(String contents) {
-    return SHA1.hashString(contents, StandardCharsets.UTF_8).toString();
+  static String sha512(String contents) {
+    return SHA512.hashString(contents, StandardCharsets.UTF_8).toString();
   }
 
   static String readFile(File file) throws IOException {
