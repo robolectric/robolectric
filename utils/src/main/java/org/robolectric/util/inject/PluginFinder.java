@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -139,7 +140,8 @@ class PluginFinder {
                   while (urls.hasMoreElements()) {
                     URL url = urls.nextElement();
                     BufferedReader reader =
-                        new BufferedReader(new InputStreamReader(url.openStream()));
+                        new BufferedReader(
+                            new InputStreamReader(url.openStream(), StandardCharsets.UTF_8));
                     while (reader.ready()) {
                       String s = reader.readLine();
                       result.add(
