@@ -31,7 +31,10 @@ public class FileMap {
 
   private ZipFile zipFile;
   private ZipEntry zipEntry;
+
+  @SuppressWarnings("unused")
   private boolean readOnly;
+
   private int fd;
   private boolean isFromZip;
 
@@ -151,12 +154,6 @@ public class FileMap {
     isFromZip = true;
     this.zipFile = zipFile;
     this.zipEntry = entry;
-
-    int     prot, flags, adjust;
-    long adjOffset;
-    int  adjLength;
-
-    int ptr;
 
     assert(fd >= 0);
     assert(offset >= 0);

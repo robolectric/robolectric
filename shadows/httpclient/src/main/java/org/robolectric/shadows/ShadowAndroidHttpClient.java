@@ -21,7 +21,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 @Implements(AndroidHttpClient.class)
 public class ShadowAndroidHttpClient {
-  @RealObject private AndroidHttpClient client;
 
   private HttpClient httpClient = new DefaultHttpClient();
 

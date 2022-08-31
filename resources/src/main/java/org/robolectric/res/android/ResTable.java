@@ -51,8 +51,11 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 @SuppressWarnings("NewApi")
 public class ResTable {
 
-  private static final int IDMAP_MAGIC             = 0x504D4449;
-  private static final int IDMAP_CURRENT_VERSION   = 0x00000001;
+  @SuppressWarnings("unused")
+  private static final int IDMAP_MAGIC = 0x504D4449;
+
+  @SuppressWarnings("unused")
+  private static final int IDMAP_CURRENT_VERSION = 0x00000001;
 
   static final int APP_PACKAGE_ID      = 0x7f;
   static final int SYS_PACKAGE_ID      = 0x01;

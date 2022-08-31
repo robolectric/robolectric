@@ -48,7 +48,7 @@ public class ZipFileRO {
 //  ~ZipFileRO() {
   @Override
   protected void finalize() {
-    CloseArchive(mHandle);
+    CloseArchive();
 //    free(mFileName);
   }
 
@@ -66,7 +66,7 @@ public class ZipFileRO {
     }
   }
 
-  private static void CloseArchive(ZipArchiveHandle mHandle) {
+  private static void CloseArchive() {
     throw new UnsupportedOperationException();
   }
 
@@ -94,7 +94,7 @@ public class ZipFileRO {
     final int error = OpenArchive(zipFileName, handle);
     if (isTruthy(error)) {
       ALOGW("Error opening archive %s: %s", zipFileName, ErrorCodeString(error));
-      CloseArchive(handle.get());
+      CloseArchive();
       return null;
     }
 
@@ -280,7 +280,6 @@ public class ZipFileRO {
     // final _ZipEntryRO *zipEntry = reinterpret_cast<_ZipEntryRO*>(entry);
     // const ZipEntry& ze = zipEntry->entry;
     // int fd = GetFileDescriptor(mHandle);
-    int fd = -1;
 
     FileMap newMap = new FileMap();
     if (!newMap.createFromZip(

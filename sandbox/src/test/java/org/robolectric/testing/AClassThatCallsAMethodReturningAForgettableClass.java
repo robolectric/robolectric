@@ -6,6 +6,7 @@ import org.robolectric.annotation.internal.Instrument;
 @Instrument
 public class AClassThatCallsAMethodReturningAForgettableClass {
   public void callSomeMethod() {
+    @SuppressWarnings("unused")
     AClassToForget forgettableClass = getAForgettableClass();
   }
 

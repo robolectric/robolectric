@@ -612,7 +612,6 @@ public class CppAssetManager2 {
 //                            LoadedArscEntry* out_entry, ResTable_config out_selected_config,
 //                            int* out_flags);
   private ApkAssetsCookie FindEntry(int resid, short density_override,
-      boolean stop_at_first_match,
       final Ref<FindEntryResult> out_entry) {
     ATRACE_CALL();
 
@@ -773,8 +772,7 @@ public class CppAssetManager2 {
 //  boolean GetResourceName(int resid, ResourceName* out_name);
   public boolean GetResourceName(int resid, ResourceName out_name) {
     final Ref<FindEntryResult> entryRef = new Ref<>(null);
-    ApkAssetsCookie cookie =
-        FindEntry(resid, (short) 0 /* density_override */, true /* stop_at_first_match */, entryRef);
+    ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */, entryRef);
     if (cookie.intValue() == kInvalidCookie) {
       return false;
     }
@@ -819,8 +817,7 @@ public class CppAssetManager2 {
 //  boolean GetResourceFlags(int resid, int* out_flags);
   boolean GetResourceFlags(int resid, Ref<Integer> out_flags) {
     final Ref<FindEntryResult> entry = new Ref<>(null);
-    ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */,
-        false /* stop_at_first_match */, entry);
+    ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */, entry);
     if (cookie.intValue() != kInvalidCookie) {
       out_flags.set(entry.get().type_flags);
       // this makes no sense, not a boolean:
@@ -850,8 +847,7 @@ public class CppAssetManager2 {
       final Ref<ResTable_config> out_selected_config,
       final Ref<Integer> out_flags) {
     final Ref<FindEntryResult> entry = new Ref<>(null);
-    ApkAssetsCookie cookie =
-        FindEntry(resid, density_override, false /* stop_at_first_match */, entry);
+    ApkAssetsCookie cookie = FindEntry(resid, density_override, entry);
     if (cookie.intValue() == kInvalidCookie) {
       return K_INVALID_COOKIE;
     }
@@ -952,8 +948,7 @@ public class CppAssetManager2 {
     }
 
     final Ref<FindEntryResult> entryRef = new Ref<>(null);
-    ApkAssetsCookie cookie =
-        FindEntry(resid, (short) 0 /* density_override */, false /* stop_at_first_match */, entryRef);
+    ApkAssetsCookie cookie = FindEntry(resid, (short) 0 /* density_override */, entryRef);
     if (cookie.intValue() == kInvalidCookie) {
       return null;
     }

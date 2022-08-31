@@ -776,14 +776,12 @@ public static class ResTable_ref
 
     public static class Writer {
       private final ByteBuffer buf;
-      private final ResStringPool_header.Writer resStringPoolWriter;
       private final int ns;
       private final int name;
 
       public Writer(ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter,
           String ns, String name) {
         this.buf = buf;
-        this.resStringPoolWriter = resStringPoolWriter;
         this.ns = resStringPoolWriter.string(ns);
         this.name = resStringPoolWriter.string(name);
       }
@@ -852,7 +850,6 @@ public static class ResTable_ref
 
     public static class Writer {
       private final ByteBuffer buf;
-      private final ResStringPool_header.Writer resStringPoolWriter;
       private final int ns;
       private final int name;
 
@@ -865,7 +862,6 @@ public static class ResTable_ref
       public Writer(ByteBuffer buf, ResStringPool_header.Writer resStringPoolWriter,
           String ns, String name) {
         this.buf = buf;
-        this.resStringPoolWriter = resStringPoolWriter;
         this.ns = resStringPoolWriter.string(ns);
         this.name = resStringPoolWriter.string(name);
       }
