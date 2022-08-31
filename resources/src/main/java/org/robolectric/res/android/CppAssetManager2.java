@@ -205,36 +205,35 @@ public class CppAssetManager2 {
   // which involves some calculation.
 //  private std.unordered_map<int, util.unique_cptr<ResolvedBag>> cached_bags_;
   final private Map<Integer, ResolvedBag> cached_bags_ = new HashMap<>();
-//  };
+  //  };
 
-//final ResolvedBag.Entry* begin(final ResolvedBag* bag) { return bag.entries; }
-//
-//final ResolvedBag.Entry* end(final ResolvedBag* bag) {
-//  return bag.entries + bag.entry_count;
-//}
-//
-//}  // namespace android
-//
-//#endif /* ANDROIDFW_ASSETMANAGER2_H_ */
-
+  // final ResolvedBag.Entry* begin(final ResolvedBag* bag) { return bag.entries; }
+  //
+  // final ResolvedBag.Entry* end(final ResolvedBag* bag) {
+  //  return bag.entries + bag.entry_count;
+  // }
+  //
+  // }  // namespace android
+  //
+  // #endif // ANDROIDFW_ASSETMANAGER2_H_
 
   //
-//  #include <set>
-//
-//  #include "android-base/logging.h"
-//  #include "android-base/stringprintf.h"
-//  #include "utils/ByteOrder.h"
-//  #include "utils/Trace.h"
-//
-//  #ifdef _WIN32
-//  #ifdef ERROR
-//  #undef ERROR
-//  #endif
-//  #endif
-//
-//  #include "androidfw/ResourceUtils.h"
-//
-//  namespace android {
+  //  #include <set>
+  //
+  //  #include "android-base/logging.h"
+  //  #include "android-base/stringprintf.h"
+  //  #include "utils/ByteOrder.h"
+  //  #include "utils/Trace.h"
+  //
+  //  #ifdef _WIN32
+  //  #ifdef ERROR
+  //  #undef ERROR
+  //  #endif
+  //  #endif
+  //
+  //  #include "androidfw/ResourceUtils.h"
+  //
+  //  namespace android {
   static class FindEntryResult {
     // A pointer to the resource table entry for this resource.
     // If the size of the entry is > sizeof(ResTable_entry), it can be cast to
