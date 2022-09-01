@@ -25,11 +25,11 @@ public class ShadowRegion {
   @Implementation
   @SuppressWarnings("EqualsHashCode")
   public boolean equals(Object obj) {
-    if (!(obj instanceof Region)) {
-      return false;
-    }
     if (obj == realRegion) {
       return true;
+    }
+    if (!(obj instanceof Region)) {
+      return false;
     }
     return reflector(RegionReflector.class, realRegion).equals(obj);
   }
