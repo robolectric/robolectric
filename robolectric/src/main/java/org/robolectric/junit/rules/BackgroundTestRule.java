@@ -12,7 +12,6 @@ import org.junit.runners.model.Statement;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.util.concurrent.BackgroundExecutor;
 
-@SuppressWarnings("InvalidBlockTag")
 /**
  * Let tests to run on background thread, if it has annotation {@link BackgroundTest}.
  *
@@ -20,20 +19,20 @@ import org.robolectric.android.util.concurrent.BackgroundExecutor;
  *
  * <p>Example usage:
  *
- * <pre>{@code
- * @Rule public final BackgroundTestRule backgroundTestRule = new BackgroundTestRule();
+ * <pre>
+ * {@literal @}Rule public final BackgroundTestRule backgroundTestRule = new BackgroundTestRule();
  *
- * @Test
- * @BackgroundTest
+ * {@literal @}Test
+ * {@literal @}BackgroundTest
  * public void testInBackground() {
  *   assertThat(Looper.myLooper()).isNotEqualTo(Looper.getMainLooper());
  * }
  *
- * @Test
+ * {@literal @}Test
  * public void testInForeground() throws Exception {
  *   assertThat(Looper.myLooper()).isEqualTo(Looper.getMainLooper());
  * }
- * }</pre>
+ * </pre>
  */
 public final class BackgroundTestRule implements TestRule {
 
