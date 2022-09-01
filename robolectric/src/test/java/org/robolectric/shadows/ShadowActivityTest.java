@@ -1230,6 +1230,25 @@ public class ShadowActivityTest {
   }
 
   @Test
+  public void getLastIntentSenderRequest_sendWithRequestCode()
+      throws IntentSender.SendIntentException {
+    TranscriptActivity activity = Robolectric.setupActivity(TranscriptActivity.class);
+    int requestCode = 108;
+    Intent intent = new Intent("action");
+    Intent fillInIntent = new Intent();
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(getApplication(), requestCode, intent, 0);
+
+    IntentSender intentSender = pendingIntent.getIntentSender();
+    activity.startIntentSenderForResult(intentSender, requestCode, fillInIntent, 0, 0, 0, null);
+
+    shadowOf(activity).receiveResult(intent, Activity.RESULT_OK, intent);
+    assertThat(activity.transcript)
+        .containsExactly(
+            "onActivityResult called with requestCode 108, resultCode -1, intent data null");
+  }
+
+  @Test
   public void startIntentSenderForResult_throwsException() {
     Activity activity = Robolectric.setupActivity(Activity.class);
     shadowOf(activity).setThrowIntentSenderException(true);
