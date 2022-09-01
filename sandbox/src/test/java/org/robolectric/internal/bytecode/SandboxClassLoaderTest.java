@@ -48,7 +48,6 @@ import org.robolectric.testing.AClassThatExtendsAClassWithFinalEqualsHashCode;
 import org.robolectric.testing.AClassThatRefersToAForgettableClass;
 import org.robolectric.testing.AClassThatRefersToAForgettableClassInItsConstructor;
 import org.robolectric.testing.AClassThatRefersToAForgettableClassInMethodCalls;
-import org.robolectric.testing.AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive;
 import org.robolectric.testing.AClassToForget;
 import org.robolectric.testing.AClassToRemember;
 import org.robolectric.testing.AClassWithEqualsHashCodeToString;
