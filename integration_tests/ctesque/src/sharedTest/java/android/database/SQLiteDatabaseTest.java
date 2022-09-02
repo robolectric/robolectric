@@ -1,5 +1,6 @@
 package android.database;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -13,6 +14,7 @@ import androidx.test.filters.SdkSuppress;
 import com.google.common.base.Ascii;
 import com.google.common.base.Throwables;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -21,6 +23,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Compatibility test for {@link android.database.sqlite.SQLiteDatabase} */
@@ -185,5 +188,27 @@ public class SQLiteDatabaseTest {
     }
     executor.shutdown();
     executor.awaitTermination(100, TimeUnit.SECONDS);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
+  public void collate_unicode() {
+    String[] names = new String[] {"aaa", "abc", "ABC", "bbb"};
+    for (String name : names) {
+      ContentValues values = new ContentValues();
+      values.put("name", name);
+      database.insert("table_name", null, values);
+    }
+    Cursor c =
+        database.rawQuery("SELECT name from table_name ORDER BY name COLLATE UNICODE ASC", null);
+    c.moveToFirst();
+    ArrayList<String> sorted = new ArrayList<>();
+    while (!c.isAfterLast()) {
+      sorted.add(c.getString(0));
+      c.moveToNext();
+    }
+    c.close();
+    assertThat(sorted).containsExactly("aaa", "abc", "ABC", "bbb").inOrder();
   }
 }

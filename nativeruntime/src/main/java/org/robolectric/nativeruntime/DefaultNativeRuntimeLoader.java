@@ -46,6 +46,8 @@ public final class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
                 "loadNativeRuntime",
                 () -> {
                   String libraryName = System.mapLibraryName("robolectric-nativeruntime");
+                  System.setProperty(
+                      "robolectric.nativeruntime.languageTag", Locale.getDefault().toLanguageTag());
                   File tmpLibraryFile =
                       java.nio.file.Files.createTempFile("", libraryName).toFile();
                   tmpLibraryFile.deleteOnExit();
