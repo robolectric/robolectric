@@ -2,6 +2,7 @@ package android.database;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
 
 import android.content.ContentValues;
@@ -13,12 +14,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import com.google.common.base.Ascii;
 import com.google.common.base.Throwables;
+import com.google.common.io.ByteStreams;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,13 +66,14 @@ public class SQLiteDatabaseTest {
 
     database.insert("table_name", null, values);
 
-    Cursor data =
-        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null);
-    assertThat(data.getCount()).isEqualTo(1);
-    data.moveToFirst();
-    byte[] columnBytes = data.getBlob(0);
-    byte[] expected = Arrays.copyOf(s.getBytes(), s.length() + 1); // include zero-terminal
-    assertThat(columnBytes).isEqualTo(expected);
+    try (Cursor data =
+        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null)) {
+      assertThat(data.getCount()).isEqualTo(1);
+      data.moveToFirst();
+      byte[] columnBytes = data.getBlob(0);
+      byte[] expected = Arrays.copyOf(s.getBytes(), s.length() + 1); // include zero-terminal
+      assertThat(columnBytes).isEqualTo(expected);
+    }
   }
 
   @Test
@@ -79,11 +82,12 @@ public class SQLiteDatabaseTest {
     values.put("first_column", (String) null);
     database.insert("table_name", null, values);
 
-    Cursor data =
-        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null);
-    assertThat(data.getCount()).isEqualTo(1);
-    data.moveToFirst();
-    assertThat(data.getBlob(0)).isEqualTo(null);
+    try (Cursor data =
+        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null)) {
+      assertThat(data.getCount()).isEqualTo(1);
+      data.moveToFirst();
+      assertThat(data.getBlob(0)).isEqualTo(null);
+    }
   }
 
   @Test
@@ -92,11 +96,12 @@ public class SQLiteDatabaseTest {
     values.put("first_column", "");
     database.insert("table_name", null, values);
 
-    Cursor data =
-        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null);
-    assertThat(data.getCount()).isEqualTo(1);
-    data.moveToFirst();
-    assertThat(data.getBlob(0)).isEqualTo(new byte[] {0});
+    try (Cursor data =
+        database.query("table_name", new String[] {"first_column"}, null, null, null, null, null)) {
+      assertThat(data.getCount()).isEqualTo(1);
+      data.moveToFirst();
+      assertThat(data.getBlob(0)).isEqualTo(new byte[] {0});
+    }
   }
 
   @Test
@@ -146,7 +151,7 @@ public class SQLiteDatabaseTest {
 
   @Test
   public void close_withExclusiveLockingMode() {
-    database.rawQuery("PRAGMA locking_mode = EXCLUSIVE", new String[0]);
+    database.rawQuery("PRAGMA locking_mode = EXCLUSIVE", new String[0]).close();
     ContentValues values = new ContentValues();
     values.put("first_column", "");
     database.insert("table_name", null, values);
@@ -172,22 +177,29 @@ public class SQLiteDatabaseTest {
   @SdkSuppress(minSdkVersion = 34)
   @Test
   public void cursorWindow_finalize_concurrentStressTest() throws Throwable {
-    ExecutorService executor = Executors.newFixedThreadPool(4);
-    for (int i = 0; i < 1000; i++) {
-      final MyCursorWindow cursorWindow = new MyCursorWindow(String.valueOf(i));
-      for (int j = 0; j < 4; j++) {
-        executor.execute(
-            () -> {
-              try {
-                cursorWindow.finalize();
-              } catch (Throwable e) {
-                throw new AssertionError(e);
-              }
-            });
+    final PrintStream originalErr = System.err;
+    // discard stderr output for this test to prevent CloseGuard logspam.
+    System.setErr(new PrintStream(ByteStreams.nullOutputStream()));
+    try {
+      ExecutorService executor = Executors.newFixedThreadPool(4);
+      for (int i = 0; i < 1000; i++) {
+        final MyCursorWindow cursorWindow = new MyCursorWindow(String.valueOf(i));
+        for (int j = 0; j < 4; j++) {
+          executor.execute(
+              () -> {
+                try {
+                  cursorWindow.finalize();
+                } catch (Throwable e) {
+                  throw new AssertionError(e);
+                }
+              });
+        }
       }
+      executor.shutdown();
+      executor.awaitTermination(100, SECONDS);
+    } finally {
+      System.setErr(originalErr);
     }
-    executor.shutdown();
-    executor.awaitTermination(100, TimeUnit.SECONDS);
   }
 
   @Test
