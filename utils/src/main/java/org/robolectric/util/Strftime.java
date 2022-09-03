@@ -19,6 +19,7 @@ public class Strftime {
    * @param zone The timezone to use for formatting.
    * @return The formatted datetime.
    */
+  @SuppressWarnings("JavaUtilDate")
   public static String format(String format, final Date date, Locale locale, TimeZone zone) {
     StringBuilder buffer = new StringBuilder();
 

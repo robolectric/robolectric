@@ -243,6 +243,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @SuppressWarnings("JavaUtilDate")
   public void shouldSupportGetNextScheduledAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
 
@@ -257,6 +258,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @SuppressWarnings("JavaUtilDate")
   public void getNextScheduledAlarm_shouldReturnRepeatingAlarms() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
 
@@ -271,6 +273,7 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @SuppressWarnings("JavaUtilDate")
   public void peekNextScheduledAlarm_shouldReturnNextAlarm() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
 
