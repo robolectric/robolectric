@@ -31,9 +31,7 @@ public class PerfStatsCollectorTest {
     firstEvent.finished();
 
     Collection<Metric> metrics = collector.getMetrics();
-    assertThat(metrics).containsExactly(
-        new Metric("first event", 1, 20, true)
-    );
+    assertThat(metrics).containsExactly(new Metric("first event", 1, 20, true));
   }
 
   @Test
@@ -51,17 +49,19 @@ public class PerfStatsCollectorTest {
     thirdEvent.finished();
 
     Collection<Metric> metrics = collector.getMetrics();
-    assertThat(metrics).containsExactly(
-        new Metric("repeatable event", 3, 60, true)
-    );
+    assertThat(metrics).containsExactly(new Metric("repeatable event", 3, 60, true));
   }
 
   @Test
   public void shouldRunAndMeasureSuccessfulCallable() throws Exception {
-    assertThat(collector.measure("event", () -> {
-      fakeClock.delay(10);
-      return "return value";
-    })).isEqualTo("return value");
+    assertThat(
+            collector.measure(
+                "event",
+                () -> {
+                  fakeClock.delay(10);
+                  return "return value";
+                }))
+        .isEqualTo("return value");
 
     Collection<Metric> metrics = collector.getMetrics();
     assertThat(metrics).containsExactly(new Metric("event", 1, 10, true));
@@ -69,16 +69,20 @@ public class PerfStatsCollectorTest {
 
   @Test
   public void shouldRunAndMeasureExceptionThrowingCallable() throws Exception {
-    collector.measure("event", () -> {
-      fakeClock.delay(10);
-      return "return value";
-    });
+    collector.measure(
+        "event",
+        () -> {
+          fakeClock.delay(10);
+          return "return value";
+        });
 
     try {
-      collector.measure("event", () -> {
-        fakeClock.delay(5);
-        throw new RuntimeException("fake");
-      });
+      collector.measure(
+          "event",
+          () -> {
+            fakeClock.delay(5);
+            throw new RuntimeException("fake");
+          });
       fail("should have thrown");
     } catch (RuntimeException e) {
       assertThat(e.getMessage()).isEqualTo("fake");
@@ -92,18 +96,19 @@ public class PerfStatsCollectorTest {
   @Test
   public void shouldRunAndMeasureCheckedException() throws Exception {
     try {
-      collector.measure("event", () -> {
-        fakeClock.delay(5);
-        throw new IOException("fake");
-      });
+      collector.measure(
+          "event",
+          () -> {
+            fakeClock.delay(5);
+            throw new IOException("fake");
+          });
       fail("should have thrown");
     } catch (IOException e) {
       assertThat(e.getMessage()).isEqualTo("fake");
     }
 
     Collection<Metric> metrics = collector.getMetrics();
-    assertThat(metrics).contains(
-        new Metric("event", 1, 5, false));
+    assertThat(metrics).contains(new Metric("event", 1, 5, false));
   }
 
   @Test

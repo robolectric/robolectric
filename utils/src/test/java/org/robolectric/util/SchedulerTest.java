@@ -25,7 +25,7 @@ public class SchedulerTest {
   private final List<String> transcript = new ArrayList<>();
 
   private long startTime;
-  
+
   @Before
   public void setUp() throws Exception {
     scheduler.pause();
@@ -174,7 +174,7 @@ public class SchedulerTest {
 
     assertThat(transcript).containsExactly("one");
   }
-  
+
   @Test
   public void postDelayed_whileIdlingConstantly_advancesTime() {
     scheduler.setIdleState(CONSTANT_IDLE);
@@ -182,7 +182,7 @@ public class SchedulerTest {
 
     assertThat(scheduler.getCurrentTime()).isEqualTo(1000 + startTime);
   }
-  
+
   @Test
   public void postAtFrontOfQueue_addsJobAtFrontOfQueue() throws Exception {
     scheduler.post(new AddToTranscript("one"));
@@ -210,19 +210,23 @@ public class SchedulerTest {
 
   @Test
   public void postDelayed_whenMoreItemsAreAdded_runsJobs() throws Exception {
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        transcript.add("one");
-        scheduler.postDelayed(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            transcript.add("two");
-            scheduler.postDelayed(new AddToTranscript("three"), 1000);
+            transcript.add("one");
+            scheduler.postDelayed(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    transcript.add("two");
+                    scheduler.postDelayed(new AddToTranscript("three"), 1000);
+                  }
+                },
+                1000);
           }
-        }, 1000);
-      }
-    }, 1000);
+        },
+        1000);
 
     scheduler.advanceBy(1000);
     assertThat(transcript).containsExactly("one");
@@ -287,25 +291,30 @@ public class SchedulerTest {
   @Test
   public void nestedPost_whilePaused_doesntAutomaticallyExecute() {
     final List<Integer> order = new ArrayList<>();
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(1);
-        scheduler.post(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            order.add(4);
+            order.add(1);
+            scheduler.post(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    order.add(4);
+                  }
+                });
+            order.add(2);
           }
-        });
-        order.add(2);
-      }
-    }, 0);
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(3);
-      }
-    }, 0);
+        },
+        0);
+    scheduler.postDelayed(
+        new Runnable() {
+          @Override
+          public void run() {
+            order.add(3);
+          }
+        },
+        0);
     scheduler.runOneTask();
 
     assertWithMessage("order:first run").that(order).containsExactly(1, 2);
@@ -322,19 +331,22 @@ public class SchedulerTest {
   public void nestedPost_whileUnpaused_automaticallyExecutes3After() {
     final List<Integer> order = new ArrayList<>();
     scheduler.unPause();
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(1);
-        scheduler.post(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            order.add(3);
+            order.add(1);
+            scheduler.post(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    order.add(3);
+                  }
+                });
+            order.add(2);
           }
-        });
-        order.add(2);
-      }
-    }, 0);
+        },
+        0);
 
     assertWithMessage("order").that(order).containsExactly(1, 2, 3);
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0);
@@ -343,25 +355,30 @@ public class SchedulerTest {
   @Test
   public void nestedPostAtFront_whilePaused_runsBeforeSubsequentPost() {
     final List<Integer> order = new ArrayList<>();
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(1);
-        scheduler.postAtFrontOfQueue(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            order.add(3);
+            order.add(1);
+            scheduler.postAtFrontOfQueue(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    order.add(3);
+                  }
+                });
+            order.add(2);
           }
-        });
-        order.add(2);
-      }
-    }, 0);
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(4);
-      }
-    }, 0);
+        },
+        0);
+    scheduler.postDelayed(
+        new Runnable() {
+          @Override
+          public void run() {
+            order.add(4);
+          }
+        },
+        0);
     scheduler.advanceToLastPostedRunnable();
     assertWithMessage("order").that(order).containsExactly(1, 2, 3, 4);
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0);
@@ -371,19 +388,22 @@ public class SchedulerTest {
   public void nestedPostAtFront_whileUnpaused_runsAfter() {
     final List<Integer> order = new ArrayList<>();
     scheduler.unPause();
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(1);
-        scheduler.postAtFrontOfQueue(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            order.add(3);
+            order.add(1);
+            scheduler.postAtFrontOfQueue(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    order.add(3);
+                  }
+                });
+            order.add(2);
           }
-        });
-        order.add(2);
-      }
-    }, 0);
+        },
+        0);
     assertWithMessage("order").that(order).containsExactly(1, 2, 3);
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0);
   }
@@ -392,19 +412,23 @@ public class SchedulerTest {
   public void nestedPostDelayed_whileUnpaused_doesntAutomaticallyExecute3() {
     final List<Integer> order = new ArrayList<>();
     scheduler.unPause();
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(1);
-        scheduler.postDelayed(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            order.add(3);
+            order.add(1);
+            scheduler.postDelayed(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    order.add(3);
+                  }
+                },
+                1);
+            order.add(2);
           }
-        }, 1);
-        order.add(2);
-      }
-    }, 0);
+        },
+        0);
 
     assertWithMessage("order:before").that(order).containsExactly(1, 2);
     assertWithMessage("size:before").that(scheduler.size()).isEqualTo(1);
@@ -418,19 +442,23 @@ public class SchedulerTest {
   public void nestedPostDelayed_whenIdlingConstantly_automaticallyExecutes3After() {
     final List<Integer> order = new ArrayList<>();
     scheduler.setIdleState(CONSTANT_IDLE);
-    scheduler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        order.add(1);
-        scheduler.postDelayed(new Runnable() {
+    scheduler.postDelayed(
+        new Runnable() {
           @Override
           public void run() {
-            order.add(3);
+            order.add(1);
+            scheduler.postDelayed(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    order.add(3);
+                  }
+                },
+                1);
+            order.add(2);
           }
-        }, 1);
-        order.add(2);
-      }
-    }, 0);
+        },
+        0);
 
     assertWithMessage("order").that(order).containsExactly(1, 2, 3);
     assertWithMessage("size").that(scheduler.size()).isEqualTo(0);
@@ -440,24 +468,27 @@ public class SchedulerTest {
   @Test
   public void post_whenTheRunnableThrows_executesSubsequentRunnables() throws Exception {
     final List<Integer> runnablesThatWereRun = new ArrayList<>();
-    scheduler.post(new Runnable() {
-      @Override
-      public void run() {
-        runnablesThatWereRun.add(1);
-        throw new RuntimeException("foo");
-      }
-    });
+    scheduler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            runnablesThatWereRun.add(1);
+            throw new RuntimeException("foo");
+          }
+        });
 
     try {
       scheduler.unPause();
-    } catch (RuntimeException ignored) { }
+    } catch (RuntimeException ignored) {
+    }
 
-    scheduler.post(new Runnable() {
-      @Override
-      public void run() {
-        runnablesThatWereRun.add(2);
-      }
-    });
+    scheduler.post(
+        new Runnable() {
+          @Override
+          public void run() {
+            runnablesThatWereRun.add(2);
+          }
+        });
 
     assertThat(runnablesThatWereRun).containsExactly(1, 2);
   }
@@ -508,15 +539,16 @@ public class SchedulerTest {
     assertThat(actualOrder).isEqualTo(ImmutableList.copyOf(Iterables.concat(orderCheck.values())));
   }
 
-  @Test(timeout=1000)
+  @Test(timeout = 1000)
   public void schedulerAllowsConcurrentTimeRead_whileLockIsHeld() throws InterruptedException {
     final AtomicLong l = new AtomicLong();
-    Thread t = new Thread("schedulerAllowsConcurrentTimeRead") {
-      @Override
-      public void run() {
-        l.set(scheduler.getCurrentTime());
-      }
-    };
+    Thread t =
+        new Thread("schedulerAllowsConcurrentTimeRead") {
+          @Override
+          public void run() {
+            l.set(scheduler.getCurrentTime());
+          }
+        };
     // Grab the lock and then start a thread that tries to get the current time. The other thread
     // should not deadlock.
     synchronized (scheduler) {
@@ -527,12 +559,13 @@ public class SchedulerTest {
 
   @Test(timeout = 1000)
   public void schedulerAllowsConcurrentStateRead_whileLockIsHeld() throws InterruptedException {
-    Thread t = new Thread("schedulerAllowsConcurrentStateRead") {
-      @Override
-      public void run() {
-        scheduler.getIdleState();
-      }
-    };
+    Thread t =
+        new Thread("schedulerAllowsConcurrentStateRead") {
+          @Override
+          public void run() {
+            scheduler.getIdleState();
+          }
+        };
     // Grab the lock and then start a thread that tries to get the idle state. The other thread
     // should not deadlock.
     synchronized (scheduler) {
@@ -543,12 +576,13 @@ public class SchedulerTest {
 
   @Test(timeout = 1000)
   public void schedulerAllowsConcurrentIsPaused_whileLockIsHeld() throws InterruptedException {
-    Thread t = new Thread("schedulerAllowsConcurrentIsPaused") {
-      @Override
-      public void run() {
-        scheduler.isPaused();
-      }
-    };
+    Thread t =
+        new Thread("schedulerAllowsConcurrentIsPaused") {
+          @Override
+          public void run() {
+            scheduler.isPaused();
+          }
+        };
     // Grab the lock and then start a thread that tries to get the paused state. The other thread
     // should not deadlock.
     synchronized (scheduler) {
