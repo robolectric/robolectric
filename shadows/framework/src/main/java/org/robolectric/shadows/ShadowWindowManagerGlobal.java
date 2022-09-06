@@ -66,9 +66,7 @@ public class ShadowWindowManagerGlobal {
   private static synchronized WindowSessionDelegate getWindowSessionDelegate() {
     if (windowSessionDelegate == null) {
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel >= 33) {
-        windowSessionDelegate = new WindowSessionDelegateT();
-      } else if (apiLevel >= S_V2) {
+      if (apiLevel >= S_V2) {
         windowSessionDelegate = new WindowSessionDelegateSV2();
       } else if (apiLevel >= S) {
         windowSessionDelegate = new WindowSessionDelegateS();
@@ -397,24 +395,6 @@ public class ShadowWindowManagerGlobal {
         InputChannel outInputChannel,
         InsetsState outInsetsState,
         InsetsSourceControl[] outActiveControls) {
-      return getAddFlags();
-    }
-  }
-
-  private static class WindowSessionDelegateT extends WindowSessionDelegateSV2 {
-    // @Implementation(minSdk = T)
-    public int addToDisplayAsUser(
-        IWindow window,
-        WindowManager.LayoutParams attrs,
-        int viewVisibility,
-        int displayId,
-        int userId,
-        InsetsVisibilities requestedVisibilities,
-        InputChannel outInputChannel,
-        InsetsState outInsetsState,
-        InsetsSourceControl[] outActiveControls,
-        Rect outAttachedFrame)
-        throws RemoteException {
       return getAddFlags();
     }
   }
