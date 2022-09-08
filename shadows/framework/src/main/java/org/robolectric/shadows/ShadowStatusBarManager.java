@@ -2,10 +2,15 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.StatusBarManager;
+import androidx.annotation.VisibleForTesting;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 /** Robolectric implementation of {@link android.app.StatusBarManager}. */
 @Implements(value = StatusBarManager.class, isInAndroidSdk = false)
@@ -38,10 +43,18 @@ public class ShadowStatusBarManager {
 
   @Implementation(minSdk = Q)
   protected void setDisabledForSetup(boolean disabled) {
-    disable(
-        disabled ? StatusBarManager.DEFAULT_SETUP_DISABLE_FLAGS : StatusBarManager.DISABLE_NONE);
-    disable2(
-        disabled ? StatusBarManager.DEFAULT_SETUP_DISABLE2_FLAGS : StatusBarManager.DISABLE2_NONE);
+    disable(disabled ? getDefaultSetupDisableFlags() : StatusBarManager.DISABLE_NONE);
+    disable2(disabled ? getDefaultSetupDisable2Flags() : StatusBarManager.DISABLE2_NONE);
+  }
+
+  @VisibleForTesting
+  static int getDefaultSetupDisableFlags() {
+    return reflector(StatusBarManagerReflector.class).getDefaultSetupDisableFlags();
+  }
+
+  @VisibleForTesting
+  static int getDefaultSetupDisable2Flags() {
+    return reflector(StatusBarManagerReflector.class).getDefaultSetupDisable2Flags();
   }
 
   /** Returns the disable flags previously set in {@link #disable}. */
@@ -52,5 +65,16 @@ public class ShadowStatusBarManager {
   /** Returns the disable flags previously set in {@link #disable2}. */
   public int getDisable2Flags() {
     return disabled2;
+  }
+
+  @ForType(StatusBarManager.class)
+  interface StatusBarManagerReflector {
+    @Static
+    @Accessor("DEFAULT_SETUP_DISABLE_FLAGS")
+    int getDefaultSetupDisableFlags();
+
+    @Static
+    @Accessor("DEFAULT_SETUP_DISABLE2_FLAGS")
+    int getDefaultSetupDisable2Flags();
   }
 }
