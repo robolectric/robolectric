@@ -1330,6 +1330,22 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void testGetGnssHardwareModelName() {
+    assertThat(locationManager.getGnssHardwareModelName()).isNull();
+    shadowLocationManager.setGnssHardwareModelName("test");
+    assertThat(locationManager.getGnssHardwareModelName()).isEqualTo("test");
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void testGetGnssYearOfHardware() {
+    assertThat(locationManager.getGnssYearOfHardware()).isEqualTo(0);
+    shadowLocationManager.setGnssYearOfHardware(3000);
+    assertThat(locationManager.getGnssYearOfHardware()).isEqualTo(3000);
+  }
+
+  @Test
   @Config(maxSdk = VERSION_CODES.R)
   public void testGpsStatusListener() {
     GpsStatus.Listener listener = mock(GpsStatus.Listener.class);

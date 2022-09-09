@@ -306,6 +306,10 @@ public class ShadowLocationManager {
   private final CopyOnWriteArrayList<GnssAntennaInfoListenerTransport> gnssAntennaInfoTransports =
       new CopyOnWriteArrayList<>();
 
+  @Nullable private String gnssHardwareModelName;
+
+  private int gnssYearOfHardware;
+
   public ShadowLocationManager() {
     // create default providers
     providers.add(
@@ -918,6 +922,30 @@ public class ShadowLocationManager {
   @Implementation(minSdk = VERSION_CODES.P)
   protected boolean injectLocation(Location location) {
     return false;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  @Nullable
+  protected String getGnssHardwareModelName() {
+    return gnssHardwareModelName;
+  }
+
+  /**
+   * Sets the GNSS hardware model name returned by {@link
+   * LocationManager#getGnssHardwareModelName()}.
+   */
+  public void setGnssHardwareModelName(@Nullable String gnssHardwareModelName) {
+    this.gnssHardwareModelName = gnssHardwareModelName;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.P)
+  protected int getGnssYearOfHardware() {
+    return gnssYearOfHardware;
+  }
+
+  /** Sets the GNSS year of hardware returned by {@link LocationManager#getGnssYearOfHardware()}. */
+  public void setGnssYearOfHardware(int gnssYearOfHardware) {
+    this.gnssYearOfHardware = gnssYearOfHardware;
   }
 
   @Implementation
