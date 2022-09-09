@@ -162,6 +162,18 @@ public class ShadowMediaController {
         ClassParameter.from(Bundle.class, new Bundle()));
   }
 
+  /** Executes all registered onSessionDestroyed callbacks. */
+  public void executeOnSessionDestroyed() {
+    int messageId = ReflectionHelpers.getStaticField(MediaController.class, "MSG_DESTROYED");
+    ReflectionHelpers.callInstanceMethod(
+        MediaController.class,
+        realMediaController,
+        "postMessage",
+        ClassParameter.from(int.class, messageId),
+        ClassParameter.from(Object.class, null),
+        ClassParameter.from(Bundle.class, null));
+  }
+
   /** Executes all registered onMetadataChanged callbacks. */
   public void executeOnMetadataChanged(MediaMetadata metadata) {
     setMetadata(metadata);
