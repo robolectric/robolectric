@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.S_V2;
+
 import android.graphics.text.MeasuredText;
 import android.os.Build;
 import org.robolectric.annotation.Implementation;
@@ -19,7 +21,7 @@ public class ShadowMeasuredTextBuilder {
     return ++nativeCounter;
   }
 
-  @Implementation
+  @Implementation(maxSdk = S_V2)
   protected static long nBuildMeasuredText(
       long nativeBuilderPtr,
       long hintMtPtr,

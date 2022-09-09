@@ -89,10 +89,10 @@ public class ShadowLocaleData {
     localeData.longStandAloneWeekdayNames = localeData.longWeekdayNames;
     localeData.shortStandAloneWeekdayNames = localeData.shortWeekdayNames;
 
-    localeData.fullTimeFormat = "h:mm:ss a zzzz";
-    localeData.longTimeFormat = "h:mm:ss a z";
-    localeData.mediumTimeFormat = "h:mm:ss a";
-    localeData.shortTimeFormat = "h:mm a";
+    localDataReflector.setFullTimeFormat("h:mm:ss a zzzz");
+    localDataReflector.setLongTimeFormat("h:mm:ss a z");
+    localDataReflector.setMediumTimeFormat("h:mm:ss a");
+    localDataReflector.setShortTimeFormat("h:mm a");
 
     if (getApiLevel() >= M) {
       localeData.timeFormat_hm = "h:mm a";
@@ -102,22 +102,22 @@ public class ShadowLocaleData {
       localDataReflector.setTimeFormat24("HH:mm");
     }
 
-    localeData.fullDateFormat = "EEEE, MMMM d, y";
-    localeData.longDateFormat = "MMMM d, y";
-    localeData.mediumDateFormat = "MMM d, y";
-    localeData.shortDateFormat = "M/d/yy";
+    localDataReflector.setFullDateFormat("EEEE, MMMM d, y");
+    localDataReflector.setLongDateFormat("MMMM d, y");
+    localDataReflector.setMediumDateFormat("MMM d, y");
+    localDataReflector.setShortDateFormat("M/d/yy");
     if (getApiLevel() >= KITKAT && getApiLevel() < M) {
       localDataReflector.setShortDateFormat4("M/d/yyyy");
     }
 
     localeData.zeroDigit = '0';
-    localeData.decimalSeparator = '.';
-    localeData.groupingSeparator = ',';
-    localeData.patternSeparator = ';';
+    localDataReflector.setDecimalSeparator('.');
+    localDataReflector.setGroupingSeparator(',');
+    localDataReflector.setPatternSeparator(';');
 
     if (getApiLevel() >= LOLLIPOP_MR1) {
       // Lollipop MR1 uses a String
-      localeData.percent = "%";
+      localDataReflector.setPercent("%");
     } else {
       // Upto Lollipop was a char
       localDataReflector.setPercent('%');
@@ -125,35 +125,36 @@ public class ShadowLocaleData {
 
     if (getApiLevel() >= android.os.Build.VERSION_CODES.P) {
       // P uses a String
-      localeData.perMill = "\u2030"; // '‰'
+      localDataReflector.setPerMill("\u2030"); // '‰'
     } else {
       // Up to P was a char
       localDataReflector.setPerMill('\u2030'); // '‰'
     }
 
-    localeData.monetarySeparator = '.';
+    localDataReflector.setMonetarySeparator('.');
 
     if (getApiLevel() >= LOLLIPOP) {
       // Lollipop uses a String
-      localeData.minusSign = "-";
+      localDataReflector.setMinusSign("-");
     } else {
       // Upto KitKat was a char
       localDataReflector.setMinusSign('-');
     }
 
-    localeData.exponentSeparator = "E";
-    localeData.infinity = "\u221E";
-    localeData.NaN = "NaN";
+    localDataReflector.setExponentSeparator("E");
+    localDataReflector.setInfinity("\u221E");
+    localDataReflector.setNaN("NaN");
 
     if (getApiLevel() <= R) {
       localDataReflector.setCurrencySymbol("$");
       localDataReflector.setInternationalCurrencySymbol("USD");
     }
 
-    localeData.numberPattern = "\u0023,\u0023\u00230.\u0023\u0023\u0023";
-    localeData.integerPattern = "\u0023,\u0023\u00230";
-    localeData.currencyPattern = "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)";
-    localeData.percentPattern = "\u0023,\u0023\u00230%";
+    localDataReflector.setNumberPattern("\u0023,\u0023\u00230.\u0023\u0023\u0023");
+    localDataReflector.setIntegerPattern("\u0023,\u0023\u00230");
+    localDataReflector.setCurrencyPattern(
+        "\u00A4\u0023,\u0023\u00230.00;(\u00A4\u0023,\u0023\u00230.00)");
+    localDataReflector.setPercentPattern("\u0023,\u0023\u00230%");
   }
 
   /** Accessor interface for {@link LocaleData}'s internals. */
@@ -189,5 +190,94 @@ public class ShadowLocaleData {
     // <= R
     @Accessor("internationalCurrencySymbol")
     void setInternationalCurrencySymbol(String symbol);
+
+    // <= S_V2
+    @Accessor("fullTimeFormat")
+    void setFullTimeFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("longTimeFormat")
+    void setLongTimeFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("mediumTimeFormat")
+    void setMediumTimeFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("shortTimeFormat")
+    void setShortTimeFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("fullDateFormat")
+    void setFullDateFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("longDateFormat")
+    void setLongDateFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("mediumDateFormat")
+    void setMediumDateFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("shortDateFormat")
+    void setShortDateFormat(String symbol);
+
+    // <= S_V2
+    @Accessor("decimalSeparator")
+    void setDecimalSeparator(char symbol);
+
+    // <= S_V2
+    @Accessor("groupingSeparator")
+    void setGroupingSeparator(char symbol);
+
+    // <= S_V2
+    @Accessor("patternSeparator")
+    void setPatternSeparator(char symbol);
+
+    // <= S_V2
+    @Accessor("percent")
+    void setPercent(String symbol);
+
+    // <= S_V2
+    @Accessor("perMill")
+    void setPerMill(String symbol);
+
+    // <= S_V2
+    @Accessor("monetarySeparator")
+    void setMonetarySeparator(char symbol);
+
+    // <= S_V2
+    @Accessor("minusSign")
+    void setMinusSign(String symbol);
+
+    // <= S_V2
+    @Accessor("exponentSeparator")
+    void setExponentSeparator(String symbol);
+
+    // <= S_V2
+    @Accessor("infinity")
+    void setInfinity(String symbol);
+
+    // <= S_V2
+    @Accessor("NaN")
+    void setNaN(String symbol);
+
+    // <= S_V2
+    @Accessor("numberPattern")
+    void setNumberPattern(String symbol);
+
+    // <= S_V2
+    @Accessor("integerPattern")
+    void setIntegerPattern(String symbol);
+
+    // <= S_V2
+    @Accessor("currencyPattern")
+    void setCurrencyPattern(String symbol);
+
+    // <= S_V2
+    @Accessor("percentPattern")
+    void setPercentPattern(String symbol);
   }
 }
+

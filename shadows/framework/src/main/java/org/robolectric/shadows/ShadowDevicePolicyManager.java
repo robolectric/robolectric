@@ -12,6 +12,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -373,7 +374,7 @@ public class ShadowDevicePolicyManager {
    *
    * @see DevicePolicyManager#getDeviceOwner()
    */
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = S_V2)
   public boolean setDeviceOwner(ComponentName admin) {
     setActiveAdmin(admin);
     deviceOwner = admin;

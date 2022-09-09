@@ -15,6 +15,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 import org.robolectric.util.reflector.WithType;
 
 @Implements(WifiInfo.class)
@@ -48,9 +49,9 @@ public class ShadowWifiInfo {
   private static Object getWifiSsid(String ssid) {
     WifiSsid wifiSsid;
     if (ssid.startsWith("0x")) {
-      wifiSsid = WifiSsid.createFromHex(ssid);
+      wifiSsid = reflector(WifiSsidReflector.class).createFromHex(ssid);
     } else {
-      wifiSsid = WifiSsid.createFromAsciiEncoded(ssid);
+      wifiSsid = reflector(WifiSsidReflector.class).createFromAsciiEncoded(ssid);
     }
     return wifiSsid;
   }
@@ -117,5 +118,16 @@ public class ShadowWifiInfo {
 
     @Direct
     void setFrequency(int frequency);
+  }
+
+  @ForType(WifiSsid.class)
+  interface WifiSsidReflector {
+    // pre-T
+    @Static
+    WifiSsid createFromHex(String hexStr);
+
+    // pre-T
+    @Static
+    WifiSsid createFromAsciiEncoded(String asciiEncoded);
   }
 }

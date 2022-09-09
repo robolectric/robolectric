@@ -169,16 +169,25 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   @Config(maxSdk = S_V2)
-  public void scanMode_getAndSet_connectable() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE)).isTrue();
+  public void scanMode_getAndSet_connectable() {
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter,
+            "setScanMode",
+            ClassParameter.from(int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE));
+    assertThat(result).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
   }
 
   @Test
   @Config(maxSdk = S_V2)
-  public void scanMode_getAndSet_discoverable() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
-        .isTrue();
+  public void scanMode_getAndSet_discoverable() {
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter,
+            "setScanMode",
+            ClassParameter.from(int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE));
+    assertThat(result).isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
   }
@@ -186,14 +195,22 @@ public class ShadowBluetoothAdapterTest {
   @Test
   @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_none() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE)).isTrue();
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter,
+            "setScanMode",
+            ClassParameter.from(int.class, BluetoothAdapter.SCAN_MODE_NONE));
+    assertThat(result).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
   }
 
   @Test
   @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_invalid() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter, "setScanMode", ClassParameter.from(int.class, 9999));
+    assertThat(result).isFalse();
   }
 
   @Config(maxSdk = Q)
@@ -210,7 +227,8 @@ public class ShadowBluetoothAdapterTest {
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+    int result = ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getDiscoverableTimeout");
+    assertThat(result).isEqualTo(42);
   }
 
   @Config(minSdk = R, maxSdk = S_V2)
@@ -227,14 +245,19 @@ public class ShadowBluetoothAdapterTest {
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+    int result = ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getDiscoverableTimeout");
+    assertThat(result).isEqualTo(42);
   }
 
   @Test
   @Config(maxSdk = S)
   public void discoverableTimeout_getAndSet() {
-    bluetoothAdapter.setDiscoverableTimeout(60);
-    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(60);
+    ReflectionHelpers.callInstanceMethod(
+        bluetoothAdapter,
+        "setDiscoverableTimeout",
+        ClassParameter.from(int.class, 60 /* seconds */));
+    int result = ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getDiscoverableTimeout");
+    assertThat(result).isEqualTo(60);
   }
 
   @Test

@@ -297,7 +297,7 @@ public class ShadowBluetoothAdapter {
     return (boolean) setScanMode(scanMode);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = S_V2)
   protected boolean setScanMode(int scanMode, long durationMillis) {
     int durationSeconds = Math.toIntExact(durationMillis / 1000);
     setDiscoverableTimeout(durationSeconds);

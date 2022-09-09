@@ -22,7 +22,6 @@ import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
-import android.view.WindowManagerGlobal;
 import android.window.ClientWindowFrames;
 import java.util.ArrayList;
 import org.robolectric.RuntimeEnvironment;
@@ -44,7 +43,10 @@ import org.robolectric.util.reflector.WithType;
 @Implements(value = ViewRootImpl.class, isInAndroidSdk = false)
 public class ShadowViewRootImpl {
 
+  private static final int RELAYOUT_RES_IN_TOUCH_MODE = 0x1;
+
   @RealObject protected ViewRootImpl realObject;
+
 
   @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
   protected static IWindowSession getWindowSession(Looper mainLooper) {
@@ -62,8 +64,8 @@ public class ShadowViewRootImpl {
       throws RemoteException {
     // TODO(christianw): probably should return WindowManagerGlobal.RELAYOUT_RES_SURFACE_RESIZED?
     int result = 0;
-    if (ShadowWindowManagerGlobal.getInTouchMode()) {
-      result |= WindowManagerGlobal.RELAYOUT_RES_IN_TOUCH_MODE;
+    if (ShadowWindowManagerGlobal.getInTouchMode() && RuntimeEnvironment.getApiLevel() <= S_V2) {
+      result |= RELAYOUT_RES_IN_TOUCH_MODE;
     }
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       // Simulate initializing the SurfaceControl member object, which happens during this method.

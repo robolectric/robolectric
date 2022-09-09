@@ -4,6 +4,7 @@ import static android.app.UiAutomation.ROTATION_FREEZE_0;
 import static android.app.UiAutomation.ROTATION_FREEZE_180;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.UiAutomation;
@@ -37,8 +38,7 @@ public class ShadowUiAutomation {
     }
   }
 
-  // TODO: Add implementation once T support is added to Robolectric
-  // @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU)
   protected void setAnimationScale(float scale) {
     setAnimationScaleCompat(scale);
   }
