@@ -49,7 +49,7 @@ public class UnsafeAccess {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "RethrowReflectiveOperationExceptionAsLinkageError"})
+    @SuppressWarnings("unchecked")
     public <T> Class<?> defineClass(Class<T> iClass, String reflectorClassName, byte[] bytecode) {
       // use reflection to call since this method does not exist on JDK11
       try {
@@ -68,6 +68,7 @@ public class UnsafeAccess {
     }
   }
 
+  @SuppressWarnings("RethrowReflectiveOperationExceptionAsLinkageError")
   private static class Danger11Plus implements Danger {
     private final Method privateLookupInMethod;
     private final Method defineClassMethod;
