@@ -1,10 +1,15 @@
 package org.robolectric.shadows;
 
+import static java.util.stream.Collectors.toList;
+
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import androidx.annotation.Nullable;
+import com.google.auto.value.AutoValue;
+import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
 import java.util.HashSet;
 import java.util.List;
@@ -16,26 +21,33 @@ import org.robolectric.annotation.Implements;
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
 public class ShadowCompanionDeviceManager {
 
-  private final Set<String> associations = new HashSet<>();
-  private final Set<ComponentName> hasNotificationAccess = new HashSet<>();
-  private ComponentName lastRequestedNotificationAccess;
-  private AssociationRequest lastAssociationRequest;
-  private CompanionDeviceManager.Callback lastAssociationCallback;
+  protected final Set<RoboAssociationInfo> associations = new HashSet<>();
+  protected final Set<ComponentName> hasNotificationAccess = new HashSet<>();
+  protected ComponentName lastRequestedNotificationAccess;
+  protected AssociationRequest lastAssociationRequest;
+  protected CompanionDeviceManager.Callback lastAssociationCallback;
 
   @Implementation
+  @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
   protected List<String> getAssociations() {
-    return ImmutableList.copyOf(associations);
+    return ImmutableList.copyOf(
+        associations.stream().map(RoboAssociationInfo::deviceMacAddress).collect(toList()));
   }
 
   public void addAssociation(String newAssociation) {
-    associations.add(newAssociation);
+    associations.add(RoboAssociationInfo.builder().setDeviceMacAddress(newAssociation).build());
   }
 
   @Implementation
   protected void disassociate(String deviceMacAddress) {
-    if (!associations.remove(deviceMacAddress)) {
-      throw new IllegalArgumentException("Association does not exist");
-    }
+    RoboAssociationInfo associationInfo =
+        associations.stream()
+            .filter(
+                association ->
+                    Ascii.equalsIgnoreCase(deviceMacAddress, association.deviceMacAddress()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Association does not exist"));
+    associations.remove(associationInfo);
   }
 
   @Implementation
@@ -80,6 +92,98 @@ public class ShadowCompanionDeviceManager {
   private void checkHasAssociation() {
     if (associations.isEmpty()) {
       throw new IllegalStateException("App must have an association before calling this API");
+    }
+  }
+
+  /**
+   * This is a copy of frameworks/base/core/java/android/companion/AssociationInfo.java to store
+   * full AssociationInfo data without breaking existing Android test dependencies.
+   */
+  @AutoValue
+  protected abstract static class RoboAssociationInfo {
+    public abstract int id();
+
+    public abstract int userId();
+
+    @Nullable
+    public abstract String packageName();
+
+    @Nullable
+    public abstract String deviceMacAddress();
+
+    @Nullable
+    public abstract CharSequence displayName();
+
+    @Nullable
+    public abstract String deviceProfile();
+
+    public abstract boolean selfManaged();
+
+    public abstract boolean notifyOnDeviceNearby();
+
+    public abstract long timeApprovedMs();
+
+    public abstract long lastTimeConnectedMs();
+
+    public static Builder builder() {
+      return new AutoValue_ShadowCompanionDeviceManager_RoboAssociationInfo.Builder()
+          .setId(1)
+          .setUserId(1)
+          .setSelfManaged(false)
+          .setNotifyOnDeviceNearby(false)
+          .setTimeApprovedMs(0)
+          .setLastTimeConnectedMs(0);
+    }
+
+    public static RoboAssociationInfo create(
+        int id,
+        int userId,
+        String packageName,
+        String deviceMacAddress,
+        CharSequence displayName,
+        String deviceProfile,
+        boolean selfManaged,
+        boolean notifyOnDeviceNearby,
+        long timeApprovedMs,
+        long lastTimeConnectedMs) {
+      return RoboAssociationInfo.builder()
+          .setId(id)
+          .setUserId(userId)
+          .setPackageName(packageName)
+          .setDeviceMacAddress(deviceMacAddress)
+          .setDisplayName(displayName)
+          .setDeviceProfile(deviceProfile)
+          .setSelfManaged(selfManaged)
+          .setNotifyOnDeviceNearby(notifyOnDeviceNearby)
+          .setTimeApprovedMs(timeApprovedMs)
+          .setLastTimeConnectedMs(lastTimeConnectedMs)
+          .build();
+    }
+
+    /** Builder for {@link AssociationInfo}. */
+    @AutoValue.Builder
+    public abstract static class Builder {
+      public abstract Builder setId(int id);
+
+      public abstract Builder setUserId(int userId);
+
+      public abstract Builder setPackageName(String packageName);
+
+      public abstract Builder setDeviceMacAddress(String deviceMacAddress);
+
+      public abstract Builder setDisplayName(CharSequence displayName);
+
+      public abstract Builder setDeviceProfile(String deviceProfile);
+
+      public abstract Builder setSelfManaged(boolean selfManaged);
+
+      public abstract Builder setNotifyOnDeviceNearby(boolean notifyOnDeviceNearby);
+
+      public abstract Builder setTimeApprovedMs(long timeApprovedMs);
+
+      public abstract Builder setLastTimeConnectedMs(long lastTimeConnectedMs);
+
+      public abstract RoboAssociationInfo build();
     }
   }
 }
