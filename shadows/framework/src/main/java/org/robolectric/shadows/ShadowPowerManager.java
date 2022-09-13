@@ -25,6 +25,7 @@ import android.os.Binder;
 import android.os.Build.VERSION_CODES;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.SystemClock;
 import android.os.WorkSource;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -429,6 +431,7 @@ public class ShadowPowerManager {
     private WorkSource workSource = null;
     private int timesHeld = 0;
     private String tag = null;
+    private Optional<Long> timeoutTimestamp = Optional.empty();
 
     @Implementation
     protected void acquire() {
@@ -443,21 +446,36 @@ public class ShadowPowerManager {
       } else {
         locked = true;
       }
+      timeoutTimestamp = Optional.of(timeout + SystemClock.elapsedRealtime());
     }
 
     /** Releases the wake lock. The {@code flags} are ignored. */
     @Implementation
     protected synchronized void release(int flags) {
       if (refCounted) {
-        if (--refCount < 0) throw new RuntimeException("WakeLock under-locked");
+        if (--refCount < 0) {
+          throw new RuntimeException("WakeLock under-locked");
+        }
       } else {
         locked = false;
+        timeoutTimestamp = Optional.empty();
       }
     }
 
     @Implementation
     protected synchronized boolean isHeld() {
-      return refCounted ? refCount > 0 : locked;
+      if (refCounted) {
+        return refCount > 0;
+      } else {
+        if (!locked) {
+          return false;
+        }
+        if (timeoutTimestamp.isPresent()
+            && timeoutTimestamp.get() < SystemClock.elapsedRealtime()) {
+          return false;
+        }
+        return true;
+      }
     }
 
     /**
