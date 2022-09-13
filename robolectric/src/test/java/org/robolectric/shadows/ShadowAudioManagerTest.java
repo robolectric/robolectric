@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -430,6 +431,26 @@ public class ShadowAudioManagerTest {
 
     assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_ALL)))
         .containsExactly(scoDevice, a2dpDevice);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setCommunicationDevice_updatesCommunicationDevice() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager).setCommunicationDevice(scoDevice);
+
+    assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void clearCommunicationDevice_clearsCommunicationDevice() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager).setCommunicationDevice(scoDevice);
+    assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
+
+    shadowOf(audioManager).clearCommunicationDevice();
+    assertThat(audioManager.getCommunicationDevice()).isNull();
   }
 
   @Test

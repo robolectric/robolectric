@@ -91,6 +91,7 @@ public class ShadowAudioManager {
   private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
   private List<AudioDeviceInfo> inputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
+  private AudioDeviceInfo communicationDevice = null;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -431,6 +432,22 @@ public class ShadowAudioManager {
 
   private List<AudioDeviceInfo> getOutputDevices() {
     return outputDevices;
+  }
+
+  @Implementation(minSdk = S)
+  protected boolean setCommunicationDevice(AudioDeviceInfo communicationDevice) {
+    this.communicationDevice = communicationDevice;
+    return true;
+  }
+
+  @Implementation(minSdk = S)
+  protected AudioDeviceInfo getCommunicationDevice() {
+    return communicationDevice;
+  }
+
+  @Implementation(minSdk = S)
+  protected void clearCommunicationDevice() {
+    this.communicationDevice = null;
   }
 
   @Implementation(minSdk = M)
