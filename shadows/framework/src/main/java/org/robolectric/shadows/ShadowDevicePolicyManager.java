@@ -13,10 +13,12 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.accounts.Account;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
@@ -28,6 +30,7 @@ import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.NearbyStreamingPolicy;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
+import android.app.admin.DevicePolicyManager.UserProvisioningState;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
@@ -87,7 +90,6 @@ public class ShadowDevicePolicyManager {
   private int keyguardDisabledFeatures;
   private String lastSetPassword;
   private int requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
-  private int userProvisioningState = DevicePolicyManager.STATE_USER_UNMANAGED;
 
   private int passwordMinimumLength;
   private int passwordMinimumLetters = 1;
@@ -137,6 +139,11 @@ public class ShadowDevicePolicyManager {
   private int nearbyAppStreamingPolicy =
       DevicePolicyManager.NEARBY_STREAMING_NOT_CONTROLLED_BY_POLICY;
   private boolean isUsbDataSignalingEnabled = true;
+  @Nullable private String devicePolicyManagementRoleHolderPackage;
+  private final Map<UserHandle, Account> finalizedWorkProfileProvisioningMap = new HashMap<>();
+  private List<UserHandle> policyManagedProfiles = new ArrayList<>();
+  private final Map<Integer, Integer> userProvisioningStatesMap = new HashMap<>();
+
   private @RealObject DevicePolicyManager realObject;
 
   private static class PackageAndPermission {
@@ -1156,13 +1163,21 @@ public class ShadowDevicePolicyManager {
    * @param state to store provisioning state
    */
   public void setUserProvisioningState(int state) {
-    userProvisioningState = state;
+    setUserProvisioningState(state, Process.myUserHandle());
   }
 
-  /** @return Returns the provisioning state for the current user. */
+  @Implementation(minSdk = TIRAMISU)
+  protected void setUserProvisioningState(@UserProvisioningState int state, UserHandle userHandle) {
+    userProvisioningStatesMap.put(userHandle.getIdentifier(), state);
+  }
+
+  /**
+   * Returns the provisioning state set in {@link #setUserProvisioningState(int)}, or {@link
+   * DevicePolicyManager#STATE_USER_UNMANAGED} if none is set.
+   */
   @Implementation(minSdk = N)
   protected int getUserProvisioningState() {
-    return userProvisioningState;
+    return getUserProvisioningStateForUser(Process.myUserHandle().getIdentifier());
   }
 
   @Implementation
@@ -1363,5 +1378,59 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = S)
   protected void setNearbyAppStreamingPolicy(@NearbyStreamingPolicy int policy) {
     nearbyAppStreamingPolicy = policy;
+  }
+
+  @Nullable
+  @Implementation(minSdk = TIRAMISU)
+  protected String getDevicePolicyManagementRoleHolderPackage() {
+    return devicePolicyManagementRoleHolderPackage;
+  }
+
+  /**
+   * Sets the package name of the device policy management role holder.
+   *
+   * @see #getDevicePolicyManagementRoleHolderPackage()
+   */
+  public void setDevicePolicyManagementRoleHolderPackage(@Nullable String packageName) {
+    devicePolicyManagementRoleHolderPackage = packageName;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void finalizeWorkProfileProvisioning(
+      UserHandle managedProfileUser, @Nullable Account migratedAccount) {
+    finalizedWorkProfileProvisioningMap.put(managedProfileUser, migratedAccount);
+  }
+
+  /**
+   * Returns if {@link #finalizeWorkProfileProvisioning(UserHandle, Account)} was called with the
+   * provided parameters.
+   */
+  public boolean isWorkProfileProvisioningFinalized(
+      UserHandle userHandle, @Nullable Account migratedAccount) {
+    return finalizedWorkProfileProvisioningMap.containsKey(userHandle)
+        && Objects.equals(finalizedWorkProfileProvisioningMap.get(userHandle), migratedAccount);
+  }
+
+  /**
+   * Returns the managed profiles set in {@link #setPolicyManagedProfiles(List)}. This value does
+   * not take the user handle parameter into account.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected List<UserHandle> getPolicyManagedProfiles(UserHandle userHandle) {
+    return policyManagedProfiles;
+  }
+
+  /** Sets the value returned by {@link #getPolicyManagedProfiles(UserHandle)}. */
+  public void setPolicyManagedProfiles(List<UserHandle> policyManagedProfiles) {
+    this.policyManagedProfiles = policyManagedProfiles;
+  }
+
+  /**
+   * Returns the user provisioning state set by {@link #setUserProvisioningState(int, UserHandle)},
+   * or {@link DevicePolicyManager#STATE_USER_UNMANAGED} if none is set.
+   */
+  @UserProvisioningState
+  public int getUserProvisioningStateForUser(int userId) {
+    return userProvisioningStatesMap.getOrDefault(userId, DevicePolicyManager.STATE_USER_UNMANAGED);
   }
 }
