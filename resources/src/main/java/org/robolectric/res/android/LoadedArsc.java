@@ -395,15 +395,17 @@ public class LoadedArsc {
         // });
         ResTable_sparseTypeEntry result = null;
         for (int i = 0; i < entry_count; i++) {
-          ResTable_sparseTypeEntry entry = new ResTable_sparseTypeEntry(type_chunk.myBuf(),
-              type_chunk.myOffset() + offsets_offset);
-          if (entry.idxOrOffset >= entry_index) {
+          ResTable_sparseTypeEntry entry =
+              new ResTable_sparseTypeEntry(
+                  type_chunk.myBuf(),
+                  type_chunk.myOffset() + offsets_offset + i * ResTable_sparseTypeEntry.SIZEOF);
+          if (entry.idx >= entry_index) {
             result = entry;
             break;
           }
         }
 
-        if (result == null || dtohs(result.idxOrOffset) != entry_index) {
+        if (result == null || dtohs(result.idx) != entry_index) {
           // No entry found.
           return ResTable_type.NO_ENTRY;
         }
@@ -411,7 +413,7 @@ public class LoadedArsc {
         // Extract the offset from the entry. Each offset must be a multiple of 4 so we store it as
         // the real offset divided by 4.
         // return int{dtohs(result.offset)} * 4u;
-        return dtohs(result.idxOrOffset) * 4;
+        return dtohs(result.offset) * 4;
       }
 
       // This type is encoded as a dense array.
@@ -697,9 +699,11 @@ public class LoadedArsc {
             if (builder_ptr != null) {
               builder_ptr.AddType(type);
             } else {
-              logError(String.format(
-                  "RES_TABLE_TYPE_TYPE with ID %02x found without preceding RES_TABLE_TYPE_SPEC_TYPE.",
-                  type.id));
+                logError(
+                    String.format(
+                        "RES_TABLE_TYPE_TYPE with ID %02x found without preceding"
+                            + " RES_TABLE_TYPE_SPEC_TYPE.",
+                        type.id));
               return emptyBraces();
             }
           } break;

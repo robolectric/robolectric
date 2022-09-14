@@ -1249,12 +1249,13 @@ public static class ResTable_ref
    * An entry in a ResTable_type with the flag `FLAG_SPARSE` set.
    */
   static class ResTable_sparseTypeEntry extends WithOffset {
-    public static final int SIZEOF = 6;
+    public static final int SIZEOF = 4;
 
     // Holds the raw uint32_t encoded value. Do not read this.
-    int entry;
+    // int entry;
 
-    short idxOrOffset;
+    short idx;
+    short offset;
 //    struct {
       // The index of the entry.
 //      uint16_t idx;
@@ -1266,8 +1267,8 @@ public static class ResTable_ref
     public ResTable_sparseTypeEntry(ByteBuffer buf, int offset) {
       super(buf, offset);
 
-      entry = buf.getInt(offset);
-      idxOrOffset = buf.getShort(offset + 4);
+      this.idx = buf.getShort(offset);
+      this.offset = buf.getShort(offset + 2);
     }
   };
 
