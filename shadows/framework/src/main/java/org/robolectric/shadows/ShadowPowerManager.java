@@ -433,19 +433,24 @@ public class ShadowPowerManager {
     private String tag = null;
     private Optional<Long> timeoutTimestamp = Optional.empty();
 
-    @Implementation
-    protected void acquire() {
-      acquire(0);
-    }
-
-    @Implementation
-    protected synchronized void acquire(long timeout) {
+    private void acquireInternal() {
       ++timesHeld;
       if (refCounted) {
         refCount++;
       } else {
         locked = true;
       }
+    }
+
+    @Implementation
+    protected void acquire() {
+      acquireInternal();
+      timeoutTimestamp = Optional.empty();
+    }
+
+    @Implementation
+    protected synchronized void acquire(long timeout) {
+      acquireInternal();
       timeoutTimestamp = Optional.of(timeout + SystemClock.elapsedRealtime());
     }
 

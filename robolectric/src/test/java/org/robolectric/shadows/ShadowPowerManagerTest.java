@@ -555,4 +555,15 @@ public class ShadowPowerManagerTest {
 
     assertThat(lock.isHeld()).isTrue();
   }
+
+  @Test
+  public void isHeld_unlimitedWakeLockAcquired_returnsTrue() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    lock.setReferenceCounted(false);
+
+    lock.acquire();
+    RuntimeEnvironment.getMasterScheduler().advanceBy(1000, MILLISECONDS);
+
+    assertThat(lock.isHeld()).isTrue();
+  }
 }
