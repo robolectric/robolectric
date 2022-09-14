@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -25,6 +26,7 @@ import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -456,7 +458,7 @@ public class ShadowPowerManagerTest {
 
     lock.release(PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY);
 
-    assertThat(shadowOf(lock).isHeld()).isFalse();
+    assertThat(lock.isHeld()).isFalse();
   }
 
   @Test
@@ -466,7 +468,7 @@ public class ShadowPowerManagerTest {
 
     lock.release();
 
-    assertThat(shadowOf(lock).isHeld()).isFalse();
+    assertThat(lock.isHeld()).isFalse();
   }
 
   @Test
@@ -511,5 +513,46 @@ public class ShadowPowerManagerTest {
         ApplicationProvider.getApplicationContext().getSystemService(PowerManager.class);
     assertThat(powerManager.getBatteryDischargePrediction()).isNull();
     assertThat(powerManager.isBatteryDischargePredictionPersonalized()).isFalse();
+  }
+
+  @Test
+  public void isHeld_neverAcquired_returnsFalse() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    lock.setReferenceCounted(false);
+
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test
+  public void isHeld_wakeLockTimeout_returnsFalse() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    lock.setReferenceCounted(false);
+
+    lock.acquire(100);
+    RuntimeEnvironment.getMasterScheduler().advanceBy(200, MILLISECONDS);
+
+    assertThat(lock.isHeld()).isFalse();
+  }
+
+  @Test
+  public void isHeld_wakeLockJustTimeout_returnsTrue() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    lock.setReferenceCounted(false);
+
+    lock.acquire(100);
+    RuntimeEnvironment.getMasterScheduler().advanceBy(100, MILLISECONDS);
+
+    assertThat(lock.isHeld()).isTrue();
+  }
+
+  @Test
+  public void isHeld_wakeLockNotTimeout_returnsTrue() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+    lock.setReferenceCounted(false);
+
+    lock.acquire(100);
+    RuntimeEnvironment.getMasterScheduler().advanceBy(50, MILLISECONDS);
+
+    assertThat(lock.isHeld()).isTrue();
   }
 }
