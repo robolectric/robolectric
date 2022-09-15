@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -426,61 +427,60 @@ public class ShadowPowerManager {
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
     private boolean refCounted = true;
-    private int refCount = 0;
-    private boolean locked = false;
     private WorkSource workSource = null;
     private int timesHeld = 0;
     private String tag = null;
-    private Optional<Long> timeoutTimestamp = Optional.empty();
+    private List<Optional<Long>> timeoutTimestampList = new ArrayList<>();
 
-    private void acquireInternal() {
+    private void acquireInternal(Optional<Long> timeoutOptional) {
       ++timesHeld;
-      if (refCounted) {
-        refCount++;
-      } else {
-        locked = true;
-      }
+      timeoutTimestampList.add(timeoutOptional);
+    }
+
+    /** Iterate all the wake lock and remove those timeouted ones. */
+    private void refreshTimeoutTimestampList() {
+      timeoutTimestampList =
+          timeoutTimestampList.stream()
+              .filter(o -> !o.isPresent() || o.get() >= SystemClock.elapsedRealtime())
+              .collect(Collectors.toCollection(ArrayList::new));
     }
 
     @Implementation
     protected void acquire() {
-      acquireInternal();
-      timeoutTimestamp = Optional.empty();
+      acquireInternal(Optional.empty());
     }
 
     @Implementation
     protected synchronized void acquire(long timeout) {
-      acquireInternal();
-      timeoutTimestamp = Optional.of(timeout + SystemClock.elapsedRealtime());
+      acquireInternal(Optional.of(timeout + SystemClock.elapsedRealtime()));
     }
 
     /** Releases the wake lock. The {@code flags} are ignored. */
     @Implementation
     protected synchronized void release(int flags) {
+      refreshTimeoutTimestampList();
+
+      // Dequeue the wake lock with smallest timeout.
+      // Map the subtracted value to 1 and -1 to avoid long->int cast overflow.
+      Optional<Long> wakeLock =
+          timeoutTimestampList.stream()
+              .min((a, b) -> (a.orElse(Long.MAX_VALUE) - b.orElse(Long.MAX_VALUE)) > 0 ? 1 : -1)
+              .orElseThrow(
+                  () -> new RuntimeException("release() called when no wake lock available"));
+
       if (refCounted) {
-        if (--refCount < 0) {
-          throw new RuntimeException("WakeLock under-locked");
-        }
+        timeoutTimestampList.remove(wakeLock);
       } else {
-        locked = false;
-        timeoutTimestamp = Optional.empty();
+        // If a wake lock is not reference counted, then one call to release() is sufficient to undo
+        // the effect of all previous calls to acquire().
+        timeoutTimestampList = new ArrayList<>();
       }
     }
 
     @Implementation
     protected synchronized boolean isHeld() {
-      if (refCounted) {
-        return refCount > 0;
-      } else {
-        if (!locked) {
-          return false;
-        }
-        if (timeoutTimestamp.isPresent()
-            && timeoutTimestamp.get() < SystemClock.elapsedRealtime()) {
-          return false;
-        }
-        return true;
-      }
+      refreshTimeoutTimestampList();
+      return !timeoutTimestampList.isEmpty();
     }
 
     /**
