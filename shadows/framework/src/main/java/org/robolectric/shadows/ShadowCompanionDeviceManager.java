@@ -1,19 +1,24 @@
 package org.robolectric.shadows;
 
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
+import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
+import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import androidx.annotation.Nullable;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Ascii;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -38,6 +43,10 @@ public class ShadowCompanionDeviceManager {
     associations.add(RoboAssociationInfo.builder().setDeviceMacAddress(newAssociation).build());
   }
 
+  public void addAssociation(AssociationInfo info) {
+    associations.add(createShadowAssociationInfo(info));
+  }
+
   @Implementation
   protected void disassociate(String deviceMacAddress) {
     RoboAssociationInfo associationInfo =
@@ -45,6 +54,16 @@ public class ShadowCompanionDeviceManager {
             .filter(
                 association ->
                     Ascii.equalsIgnoreCase(deviceMacAddress, association.deviceMacAddress()))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Association does not exist"));
+    associations.remove(associationInfo);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void disassociate(int associationId) {
+    RoboAssociationInfo associationInfo =
+        associations.stream()
+            .filter(association -> associationId == association.id())
             .findFirst()
             .orElseThrow(() -> new IllegalArgumentException("Association does not exist"));
     associations.remove(associationInfo);
@@ -77,6 +96,12 @@ public class ShadowCompanionDeviceManager {
     lastAssociationCallback = callback;
   }
 
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void associate(
+      AssociationRequest request, Executor executor, CompanionDeviceManager.Callback callback) {
+    associate(request, callback, /* handler= */ null);
+  }
+
   public AssociationRequest getLastAssociationRequest() {
     return lastAssociationRequest;
   }
@@ -95,12 +120,48 @@ public class ShadowCompanionDeviceManager {
     }
   }
 
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected List<AssociationInfo> getMyAssociations() {
+    return this.associations.stream()
+        .map(this::createAssociationInfo)
+        .collect(toCollection(ArrayList::new));
+  }
+
+  /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
+  private AssociationInfo createAssociationInfo(RoboAssociationInfo info) {
+    return new AssociationInfo(
+        info.id(),
+        info.userId(),
+        info.packageName(),
+        MacAddress.fromString(info.deviceMacAddress()),
+        info.displayName(),
+        info.deviceProfile(),
+        info.selfManaged(),
+        info.notifyOnDeviceNearby(),
+        info.timeApprovedMs(),
+        info.lastTimeConnectedMs());
+  }
+
+  private RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
+    return RoboAssociationInfo.create(
+        info.getId(),
+        info.getUserId(),
+        info.getPackageName(),
+        info.getDeviceMacAddress().toString(),
+        info.getDisplayName(),
+        info.getDeviceProfile(),
+        info.isSelfManaged(),
+        info.isNotifyOnDeviceNearby(),
+        info.getTimeApprovedMs(),
+        info.getLastTimeConnectedMs());
+  }
+
   /**
    * This is a copy of frameworks/base/core/java/android/companion/AssociationInfo.java to store
    * full AssociationInfo data without breaking existing Android test dependencies.
    */
   @AutoValue
-  protected abstract static class RoboAssociationInfo {
+  abstract static class RoboAssociationInfo {
     public abstract int id();
 
     public abstract int userId();

@@ -7,11 +7,15 @@ import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.IntentSender;
+import android.net.MacAddress;
+import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,5 +107,94 @@ public class ShadowCompanionDeviceManagerTest {
     assertThat(shadowCompanionDeviceManager.getLastAssociationRequest()).isSameInstanceAs(request);
     assertThat(shadowCompanionDeviceManager.getLastAssociationCallback())
         .isSameInstanceAs(callback);
+  }
+
+  @Test
+  public void testAddAssociation_byMacAddress() {
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    assertThat(companionDeviceManager.getAssociations()).contains(MAC_ADDRESS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAddAssociation_byAssociationInfo() {
+    AssociationInfo info =
+        new AssociationInfo(
+            /* id= */ 1,
+            /* userId= */ 1,
+            "packageName",
+            MacAddress.fromString(MAC_ADDRESS),
+            "displayName",
+            "deviceProfile",
+            /* selfManaged= */ false,
+            /* notifyOnDeviceNearby= */ false,
+            /* timeApprovedMs= */ 0,
+            /* lastTimeConnectedMs= */ 0);
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+    shadowCompanionDeviceManager.addAssociation(info);
+    assertThat(companionDeviceManager.getMyAssociations()).contains(info);
+  }
+
+  @Test
+  public void testDisassociate_byMacAddress() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    companionDeviceManager.disassociate(MAC_ADDRESS);
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testDisassociate_byId() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+    // default ID is 1
+    companionDeviceManager.disassociate(1);
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+    assertThat(companionDeviceManager.getMyAssociations()).isEmpty();
+  }
+
+  @Test
+  public void testDisassociate_byMacAddress_throwsIfNotFound() {
+    assertThrows(Exception.class, () -> companionDeviceManager.disassociate(MAC_ADDRESS));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testDisassociate_byId_throwsIfNotFound() {
+    assertThrows(Exception.class, () -> companionDeviceManager.disassociate(0));
+  }
+
+  @Test
+  public void testAssociate_handlerVariant_updatesShadow() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    CompanionDeviceManager.Callback callback = createCallback();
+
+    companionDeviceManager.associate(request, callback, null);
+
+    assertThat(shadowCompanionDeviceManager.getLastAssociationRequest()).isSameInstanceAs(request);
+    assertThat(shadowCompanionDeviceManager.getLastAssociationCallback())
+        .isSameInstanceAs(callback);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_executorVariant_updatesShadow() {
+    AssociationRequest request = new AssociationRequest.Builder().build();
+    CompanionDeviceManager.Callback callback = createCallback();
+    companionDeviceManager.associate(request, Executors.newSingleThreadExecutor(), callback);
+
+    assertThat(shadowCompanionDeviceManager.getLastAssociationRequest()).isSameInstanceAs(request);
+    assertThat(shadowCompanionDeviceManager.getLastAssociationCallback())
+        .isSameInstanceAs(callback);
+  }
+
+  private CompanionDeviceManager.Callback createCallback() {
+    return new CompanionDeviceManager.Callback() {
+      @Override
+      public void onDeviceFound(IntentSender chooserLauncher) {}
+
+      @Override
+      public void onFailure(CharSequence error) {}
+    };
   }
 }
