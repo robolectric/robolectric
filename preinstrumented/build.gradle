@@ -23,7 +23,7 @@ task instrumentAll {
     doLast {
         def androidAllMavenLocal = "${System.getProperty('user.home')}/.m2/repository/org/robolectric/android-all"
 
-        AndroidSdk.ALL_SDKS.each { androidSdk ->
+        sdksToInstrument().each { androidSdk ->
             println("Instrumenting ${androidSdk.coordinates}")
             def inputPath = "${androidAllMavenLocal}/${androidSdk.version}/${androidSdk.jarFileName}"
             def outputPath = "${buildDir}/${androidSdk.preinstrumentedJarFileName}"
@@ -55,7 +55,7 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
 
     publishing {
         publications {
-            AndroidSdk.ALL_SDKS.each { androidSdk ->
+            sdksToInstrument().each { androidSdk ->
                 "sdk${androidSdk.apiLevel}"(MavenPublication) {
                     artifact "${buildDir}/${androidSdk.preinstrumentedJarFileName}"
                     artifactId 'android-all-instrumented'
@@ -105,10 +105,19 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
     }
 
     signing {
-        AndroidSdk.ALL_SDKS.each { androidSdk ->
+        sdksToInstrument().each { androidSdk ->
             sign publishing.publications."sdk${androidSdk.apiLevel}"
         }
     }
+}
+
+def sdksToInstrument() {
+  var result = AndroidSdk.ALL_SDKS
+  var sdkFilter = (System.getenv('PREINSTRUMENTED_SDK_VERSIONS') ?: "").split(",").collect { it as Integer }
+  if (sdkFilter.size > 0) {
+    result = result.findAll { sdkFilter.contains(it.apiLevel) }
+  }
+  return result
 }
 
 clean.doFirst {
