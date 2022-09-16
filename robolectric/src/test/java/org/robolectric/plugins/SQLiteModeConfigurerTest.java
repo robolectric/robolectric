@@ -14,11 +14,10 @@ import org.robolectric.annotation.SQLiteMode.Mode;
 public class SQLiteModeConfigurerTest {
 
   @Test
-  public void defaultConfig() {
+  public void defaultConfigWithPrePopulatedSQLiteMode() {
     Properties systemProperties = new Properties();
     SQLiteModeConfigurer configurer = new SQLiteModeConfigurer(systemProperties);
-    assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
-
+    
     systemProperties.setProperty("robolectric.sqliteMode", "LEGACY");
     assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
 
@@ -30,14 +29,12 @@ public class SQLiteModeConfigurerTest {
   public void osArchSpecificConfig() {
     Properties systemProperties = new Properties();
     SQLiteModeConfigurer configurer = new SQLiteModeConfigurer(systemProperties);
-    assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
 
     systemProperties.setProperty("os.name", "Mac OS X");
-    systemProperties.setProperty("os.arch", "aarch64");
 
     assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.NATIVE);
 
-    systemProperties.setProperty("os.arch", "amd64");
+    systemProperties.setProperty("os.name", "Windows 7");
 
     assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
   }
