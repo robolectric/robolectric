@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Canvas;
@@ -44,7 +46,7 @@ public class ShadowImageReader {
     openedImages.clear();
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation(minSdk = KITKAT, maxSdk = S_V2)
   protected int nativeImageSetup(Image image) {
     if (!readerValid.get()) {
       throw new IllegalStateException("ImageReader closed.");
@@ -60,6 +62,11 @@ public class ShadowImageReader {
     ShadowSurfaceImage shadowSurfaceImage = Shadow.extract(image);
     shadowSurfaceImage.setTimeStamp(imageCount.get());
     return ACQUIRE_SUCCESS;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected int nativeImageSetup(Image image, boolean useLegacyImageFormat) {
+    return nativeImageSetup(image);
   }
 
   @Implementation(minSdk = KITKAT)

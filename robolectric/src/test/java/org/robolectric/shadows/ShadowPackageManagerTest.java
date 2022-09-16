@@ -40,6 +40,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
@@ -77,6 +78,7 @@ import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
+import android.content.pm.PackageManager.PackageInfoFlags;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
@@ -210,6 +212,13 @@ public class ShadowPackageManagerTest {
   public void packageInstallerAndGetPackageInfo() throws NameNotFoundException {
     shadowOf(packageManager).installPackage(generateTestPackageInfo());
     verifyTestPackageInfo(packageManager.getPackageInfo(TEST_PACKAGE_NAME, 0));
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void packageInstallerAndGetPackageInfo_T() throws NameNotFoundException {
+    shadowOf(packageManager).installPackage(generateTestPackageInfo());
+    verifyTestPackageInfo(packageManager.getPackageInfo(TEST_PACKAGE_NAME, PackageInfoFlags.of(0)));
   }
 
   @Test

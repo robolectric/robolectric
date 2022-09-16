@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
@@ -7,6 +8,7 @@ import android.annotation.Nullable;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
+import android.app.usage.BroadcastResponseStats;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
@@ -43,7 +45,10 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link UsageStatsManager}. */
-@Implements(value = UsageStatsManager.class, minSdk = Build.VERSION_CODES.LOLLIPOP)
+@Implements(
+    value = UsageStatsManager.class,
+    minSdk = Build.VERSION_CODES.LOLLIPOP,
+    looseSignatures = true)
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
@@ -63,6 +68,10 @@ public class ShadowUsageStatsManager {
       Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
   private static final Map<String, Integer> appStandbyBuckets = Maps.newConcurrentMap();
+
+  /** Used with T APIs for {@link BroadcastResponseStats}. */
+  private final Map<String, Map<Long, Object /*BroadcastResponseStats */>> appBroadcastStats =
+      Maps.newConcurrentMap();
 
   /**
    * App usage observer registered via {@link UsageStatsManager#registerAppUsageObserver(int,
@@ -578,6 +587,62 @@ public class ShadowUsageStatsManager {
   @TargetApi(Build.VERSION_CODES.Q)
   public void setUsageSource(@UsageSource int usageSource) {
     currentUsageSource = usageSource;
+  }
+
+  /**
+   * Requires loose signatures because return value is a list of {@link BroadcastResponseStats},
+   * which is a hidden class introduced in Android T.
+   */
+  @SuppressWarnings("unchecked")
+  @Implementation(minSdk = TIRAMISU)
+  protected Object /* List<BroadcastResponseStats> */ queryBroadcastResponseStats(
+      @Nullable Object packageName, Object id) {
+    List<BroadcastResponseStats> result = new ArrayList<>();
+    for (Map.Entry<String, Map<Long, Object /*BroadcastResponseStats*/>> entry :
+        appBroadcastStats.entrySet()) {
+      if (packageName == null || entry.getKey().equals(packageName)) {
+        result.addAll(
+            (List<BroadcastResponseStats>)
+                queryBroadcastResponseStatsForId(entry.getValue(), (long) id));
+      }
+    }
+    return result;
+  }
+
+  private Object /* List<BroadcastResponseStats> */ queryBroadcastResponseStatsForId(
+      Map<Long, Object /*BroadcastResponseStats*/> idToResponseStats, long id) {
+    List<BroadcastResponseStats> result = new ArrayList<>();
+    for (Map.Entry<Long, Object /*BroadcastResponseStats*/> entry : idToResponseStats.entrySet()) {
+      if (id == 0 || entry.getKey() == id) {
+        result.add((BroadcastResponseStats) entry.getValue());
+      }
+    }
+    return result;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void clearBroadcastResponseStats(@Nullable String packageName, long id) {
+    for (Map.Entry<String, Map<Long, Object /*BroadcastResponseStats*/>> entry :
+        appBroadcastStats.entrySet()) {
+      if (packageName == null || entry.getKey().equals(packageName)) {
+        clearBroadcastResponseStatsForId(entry.getValue(), id);
+      }
+    }
+    appBroadcastStats.values().removeIf(Map::isEmpty);
+  }
+
+  private void clearBroadcastResponseStatsForId(
+      Map<Long, Object /*BroadcastResponseStats*/> idToResponseStats, long idToRemove) {
+    idToResponseStats.keySet().removeIf(id -> id == idToRemove || idToRemove == 0);
+  }
+
+  @TargetApi(Build.VERSION_CODES.TIRAMISU)
+  public void addBroadcastResponseStats(Object /*BroadcastResponseStats*/ statsObject) {
+    BroadcastResponseStats stats = (BroadcastResponseStats) statsObject;
+    Map<Long, Object /*BroadcastResponseStats*/> idToStats =
+        appBroadcastStats.computeIfAbsent(
+            stats.getPackageName(), unused -> Maps.newConcurrentMap());
+    idToStats.put(stats.getId(), stats);
   }
 
   @Resetter

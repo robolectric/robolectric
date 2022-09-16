@@ -38,6 +38,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.fonts.Font;
+import android.graphics.fonts.FontFamily;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -1152,6 +1153,15 @@ public class ResourcesTest {
   public void testFontBuilder() throws Exception {
     // Used to throw `java.io.IOException: Failed to read font contents`
     new Font.Builder(context.getResources(), R.font.vt323_regular).build();
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = Q)
+  @Config(minSdk = Q)
+  public void fontFamily_getFont() throws Exception {
+    Font platformFont = new Font.Builder(resources, R.font.vt323_regular).build();
+    FontFamily fontFamily = new FontFamily.Builder(platformFont).build();
+    assertThat(fontFamily.getFont(0)).isNotNull();
   }
 
   @Test

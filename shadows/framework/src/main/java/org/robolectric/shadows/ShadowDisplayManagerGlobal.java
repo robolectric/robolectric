@@ -145,6 +145,12 @@ public class ShadowDisplayManagerGlobal {
       return ids;
     }
 
+    // Added in Android T
+    @SuppressWarnings("unused")
+    public int[] getDisplayIds(boolean ignoredIncludeDisabled) {
+      return getDisplayIds();
+    }
+
     // @Override
     public void registerCallback(IDisplayManagerCallback iDisplayManagerCallback)
         throws RemoteException {

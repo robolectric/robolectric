@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static junit.framework.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -483,6 +484,61 @@ public class ShadowWallpaperManagerTest {
 
     assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_SYSTEM)).isNull();
     assertThat(manager.getWallpaperFile(WallpaperManager.FLAG_LOCK)).isNull();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void getDefaultWallpaperDimAmount_shouldBeZero() {
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(WallpaperManager.class)
+                .getWallpaperDimAmount())
+        .isEqualTo(0.0f);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setWallpaperDimAmount_shouldGetSameDimAmount() {
+    float testDimAmount = 0.1f;
+    ApplicationProvider.getApplicationContext()
+        .getSystemService(WallpaperManager.class)
+        .setWallpaperDimAmount(testDimAmount);
+
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(WallpaperManager.class)
+                .getWallpaperDimAmount())
+        .isEqualTo(testDimAmount);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setWallpaperDimAmount_belowRange_shouldBeBounded() {
+    float testDimAmount = -0.5f;
+    ApplicationProvider.getApplicationContext()
+        .getSystemService(WallpaperManager.class)
+        .setWallpaperDimAmount(testDimAmount);
+
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(WallpaperManager.class)
+                .getWallpaperDimAmount())
+        .isEqualTo(0f);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setWallpaperDimAmount_aboveRange_shouldBeBounded() {
+    float testDimAmount = 2.5f;
+    ApplicationProvider.getApplicationContext()
+        .getSystemService(WallpaperManager.class)
+        .setWallpaperDimAmount(testDimAmount);
+
+    assertThat(
+            ApplicationProvider.getApplicationContext()
+                .getSystemService(WallpaperManager.class)
+                .getWallpaperDimAmount())
+        .isEqualTo(1f);
   }
 
   private static byte[] getBytesFromFileDescriptor(FileDescriptor fileDescriptor)

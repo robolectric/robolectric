@@ -33,6 +33,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.annotation.GetInstallerPackageNameMode.Mode.REALISTIC;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -68,6 +69,7 @@ import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
+import android.content.pm.PackageManager.PackageInfoFlags;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
@@ -465,7 +467,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * android.content.pm.PackageManager} in T.
    */
   @Override
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = S_V2)
   protected PackageInfo getPackageArchiveInfo(String archiveFilePath, int flags) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel == S || apiLevel == S_V2) {
@@ -1241,12 +1243,19 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LEANBACK_LAUNCHER);
   }
 
-  ////////////////////////////
-
+  /**
+   * In Android T, the type of {@code flags} changed from {@code int} to {@link PackageInfoFlags}
+   */
   @Implementation(minSdk = N)
-  protected PackageInfo getPackageInfoAsUser(String packageName, int flags, int userId)
+  protected Object getPackageInfoAsUser(Object packageName, Object flagsObject, Object userId)
       throws NameNotFoundException {
-    return null;
+    int flags;
+    if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
+      flags = (int) ((PackageInfoFlags) flagsObject).getValue();
+    } else {
+      flags = (int) flagsObject;
+    }
+    return getPackageInfo((String) packageName, flags);
   }
 
   @Implementation

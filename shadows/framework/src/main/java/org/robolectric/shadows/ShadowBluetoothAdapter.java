@@ -8,8 +8,12 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
@@ -17,8 +21,10 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothStatusCodes;
+import android.bluetooth.IBluetoothManager;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.content.AttributionSource;
 import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -32,12 +38,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -51,6 +61,24 @@ public class ShadowBluetoothAdapter {
   private static final int ADDRESS_LENGTH = 17;
   private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH = 31;
   private static final int LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED = 1650;
+
+  /**
+   * Equivalent value to internal SystemApi {@link
+   * BluetoothStatusCodes#RFCOMM_LISTENER_START_FAILED_UUID_IN_USE}.
+   */
+  public static final int RFCOMM_LISTENER_START_FAILED_UUID_IN_USE = 2000;
+
+  /**
+   * Equivalent value to internal SystemApi {@link
+   * BluetoothStatusCodes#RFCOMM_LISTENER_OPERATION_FAILED_NO_MATCHING_SERVICE_RECORD}.
+   */
+  public static final int RFCOMM_LISTENER_OPERATION_FAILED_NO_MATCHING_SERVICE_RECORD = 2001;
+
+  /**
+   * Equivalent value to internal SystemApi {@link
+   * BluetoothStatusCodes#RFCOMM_LISTENER_FAILED_TO_CLOSE_SERVER_SOCKET}.
+   */
+  public static final int RFCOMM_LISTENER_FAILED_TO_CLOSE_SERVER_SOCKET = 2004;
 
   private static boolean isBluetoothSupported = true;
 
@@ -69,6 +97,8 @@ public class ShadowBluetoothAdapter {
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
+  private final ConcurrentMap<UUID, BackgroundRfcommServerEntry> backgroundRfcommServers =
+      new ConcurrentHashMap<>();
 
   @Resetter
   public static void reset() {
@@ -89,6 +119,16 @@ public class ShadowBluetoothAdapter {
       return null;
     }
     return reflector(BluetoothAdapterReflector.class).getDefaultAdapter();
+  }
+
+  /** Requires LooseSignatures because of {@link AttributionSource} parameter */
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected static Object createAdapter(Object attributionSource) {
+    IBluetoothManager service = ReflectionHelpers.createNullProxy(IBluetoothManager.class);
+    return ReflectionHelpers.callConstructor(
+        BluetoothAdapter.class,
+        ClassParameter.from(IBluetoothManager.class, service),
+        ClassParameter.from(AttributionSource.class, attributionSource));
   }
 
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
@@ -279,16 +319,25 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
+  /**
+   * Needs looseSignatures because in Android T the return value of this method was changed from
+   * bool to int.
+   */
   @Implementation
   protected Object setScanMode(int scanMode) {
+    boolean result = true;
     if (scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE
         && scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
         && scanMode != BluetoothAdapter.SCAN_MODE_NONE) {
-      return false;
+      result = false;
     }
 
     this.scanMode = scanMode;
-    return true;
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.TIRAMISU) {
+      return result ? BluetoothStatusCodes.SUCCESS : BluetoothStatusCodes.ERROR_UNKNOWN;
+    } else {
+      return result;
+    }
   }
 
   @Implementation(maxSdk = Q)
@@ -297,7 +346,7 @@ public class ShadowBluetoothAdapter {
     return (boolean) setScanMode(scanMode);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = S_V2)
   protected boolean setScanMode(int scanMode, long durationMillis) {
     int durationSeconds = Math.toIntExact(durationMillis / 1000);
     setDiscoverableTimeout(durationSeconds);
@@ -520,6 +569,121 @@ public class ShadowBluetoothAdapter {
     return isLeExtendedAdvertisingSupported
         ? LE_MAXIMUM_ADVERTISING_DATA_LENGTH_EXTENDED
         : LE_MAXIMUM_ADVERTISING_DATA_LENGTH;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected int startRfcommServer(String name, UUID uuid, PendingIntent pendingIntent) {
+    // PendingIntent#isImmutable throws an NPE if the component does not exist, so verify directly
+    // against the flags for now.
+    if ((shadowOf(pendingIntent).getFlags() & PendingIntent.FLAG_IMMUTABLE) == 0) {
+      throw new IllegalArgumentException("RFCOMM server PendingIntent must be marked immutable");
+    }
+
+    boolean[] isNewServerSocket = {false};
+    backgroundRfcommServers.computeIfAbsent(
+        uuid,
+        unused -> {
+          isNewServerSocket[0] = true;
+          return new BackgroundRfcommServerEntry(uuid, pendingIntent);
+        });
+    return isNewServerSocket[0]
+        ? BluetoothStatusCodes.SUCCESS
+        : RFCOMM_LISTENER_START_FAILED_UUID_IN_USE;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected int stopRfcommServer(UUID uuid) {
+    BackgroundRfcommServerEntry entry = backgroundRfcommServers.remove(uuid);
+
+    if (entry == null) {
+      return RFCOMM_LISTENER_OPERATION_FAILED_NO_MATCHING_SERVICE_RECORD;
+    }
+
+    try {
+      entry.serverSocket.close();
+      return BluetoothStatusCodes.SUCCESS;
+    } catch (IOException e) {
+      return RFCOMM_LISTENER_FAILED_TO_CLOSE_SERVER_SOCKET;
+    }
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  @Nullable
+  protected BluetoothSocket retrieveConnectedRfcommSocket(UUID uuid) {
+    BackgroundRfcommServerEntry serverEntry = backgroundRfcommServers.get(uuid);
+
+    try {
+      return serverEntry == null ? null : serverEntry.serverSocket.accept(/* timeout= */ 0);
+    } catch (IOException e) {
+      // This means there is no pending socket, so the contract indicates we should return null.
+      return null;
+    }
+  }
+
+  /**
+   * Creates an incoming socket connection from the given {@link BluetoothDevice} to a background
+   * Bluetooth server created with {@link BluetoothAdapter#startRfcommServer(String, UUID,
+   * PendingIntent)} on the given uuid.
+   *
+   * <p>Creating this socket connection will invoke the {@link PendingIntent} provided in {@link
+   * BluetoothAdapter#startRfcommServer(String, UUID, PendingIntent)} when the server socket was
+   * created for the given UUID. The component provided in the intent can then call {@link
+   * BluetoothAdapter#retrieveConnectedRfcommSocket(UUID)} to obtain the server side socket.
+   *
+   * <p>A {@link ShadowBluetoothSocket} obtained from the returned {@link BluetoothSocket} can be
+   * used to send data to and receive data from the server side socket. This returned {@link
+   * BluetoothSocket} is the same socket as returned by {@link
+   * BluetoothAdapter#retrieveConnectedRfcommSocket(UUID)} and should generally not be used directly
+   * outside of obtaining the shadow, as this socket is normally not exposed outside of the
+   * component started by the pending intent. {@link ShadowBluetoothSocket#getInputStreamFeeder()}
+   * and {@link ShadowBluetoothSocket#getOutputStreamSink()} can be used to send data to and from
+   * the socket as if it was a remote connection.
+   *
+   * <p><b>Warning:</b> The socket returned by this method and the corresponding server side socket
+   * retrieved from {@link BluetoothAdapter#retrieveConnectedRfcommSocket(UUID)} do not support
+   * reads and writes from different threads. Once reading or writing is started for a given socket
+   * on a given thread, that type of operation on that socket must only be done on that thread.
+   *
+   * @return a server side BluetoothSocket or {@code null} if the {@link UUID} is not registered.
+   *     This value should generally not be used directly, and is mainly used to obtain a shadow
+   *     with which a RFCOMM client can be simulated.
+   * @throws IllegalArgumentException if a server is not started for the given {@link UUID}.
+   * @throws CanceledException if the pending intent for the server socket was cancelled.
+   */
+  public BluetoothSocket addIncomingRfcommConnection(BluetoothDevice remoteDevice, UUID uuid)
+      throws CanceledException {
+    BackgroundRfcommServerEntry entry = backgroundRfcommServers.get(uuid);
+    if (entry == null) {
+      throw new IllegalArgumentException("No RFCOMM server open for UUID: " + uuid);
+    }
+
+    BluetoothSocket socket = shadowOf(entry.serverSocket).deviceConnected(remoteDevice);
+    entry.pendingIntent.send();
+
+    return socket;
+  }
+
+  /**
+   * Returns an immutable set of {@link UUID}s representing the currently registered RFCOMM servers.
+   */
+  @SuppressWarnings("JdkImmutableCollections")
+  public Set<UUID> getRegisteredRfcommServerUuids() {
+    return Set.of(backgroundRfcommServers.keySet().toArray(new UUID[0]));
+  }
+
+  private static final class BackgroundRfcommServerEntry {
+    final BluetoothServerSocket serverSocket;
+    final PendingIntent pendingIntent;
+
+    BackgroundRfcommServerEntry(UUID uuid, PendingIntent pendingIntent) {
+      this.serverSocket =
+          ShadowBluetoothServerSocket.newInstance(
+              /* type= */ BluetoothSocket.TYPE_RFCOMM,
+              /* auth= */ true,
+              /* encrypt= */ true,
+              new ParcelUuid(uuid));
+      this.pendingIntent = pendingIntent;
+    }
   }
 
   @ForType(BluetoothAdapter.class)

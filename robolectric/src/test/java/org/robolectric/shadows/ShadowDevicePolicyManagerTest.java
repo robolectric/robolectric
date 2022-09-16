@@ -12,6 +12,7 @@ import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTE
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
 import static android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
+import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_FINALIZED;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
@@ -24,10 +25,12 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.accounts.Account;
 import android.app.Application;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
@@ -68,6 +71,7 @@ public final class ShadowDevicePolicyManagerTest {
 
   private Application context;
   private DevicePolicyManager devicePolicyManager;
+  private ShadowDevicePolicyManager shadowDevicePolicyManager;
   private UserManager userManager;
   private ComponentName testComponent;
   private PackageManager packageManager;
@@ -78,7 +82,7 @@ public final class ShadowDevicePolicyManagerTest {
     context = ApplicationProvider.getApplicationContext();
     devicePolicyManager =
         (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
-
+    shadowDevicePolicyManager = Shadow.extract(devicePolicyManager);
     userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
     keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
 
@@ -1945,6 +1949,124 @@ public final class ShadowDevicePolicyManagerTest {
     assertThat(devicePolicyManager.isUsbDataSignalingEnabled()).isTrue();
     shadowOf(devicePolicyManager).setIsUsbDataSignalingEnabled(false);
     assertThat(devicePolicyManager.isUsbDataSignalingEnabled()).isFalse();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void getDevicePolicyManagementRoleHolderPackage_shouldReturnSetValue() {
+    shadowDevicePolicyManager.setDevicePolicyManagementRoleHolderPackage("dpm_role_holder");
+    assertThat(devicePolicyManager.getDevicePolicyManagementRoleHolderPackage())
+        .isEqualTo("dpm_role_holder");
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void getDevicePolicyManagementRoleHolderPackage_defaultValue_shouldReturnNull() {
+    assertThat(devicePolicyManager.getDevicePolicyManagementRoleHolderPackage()).isNull();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void isWorkProfileProvisioningFinalized_paramsMatch_returnTrue() {
+    UserHandle userHandle = UserHandle.SYSTEM;
+    Account account = new Account("name", "type");
+    devicePolicyManager.finalizeWorkProfileProvisioning(userHandle, account);
+    assertThat(shadowDevicePolicyManager.isWorkProfileProvisioningFinalized(userHandle, account))
+        .isTrue();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void isWorkProfileProvisioningFinalized_paramsMatchWithNullMigratedAccount_returnTrue() {
+    UserHandle userHandle = UserHandle.SYSTEM;
+    devicePolicyManager.finalizeWorkProfileProvisioning(userHandle, /* migratedAccount= */ null);
+    assertThat(
+            shadowDevicePolicyManager.isWorkProfileProvisioningFinalized(
+                userHandle, /* migratedAccount= */ null))
+        .isTrue();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void isWorkProfileProvisioningFinalized_migratedAccountMismatch_returnFalse() {
+    UserHandle userHandle = UserHandle.SYSTEM;
+    Account account = new Account("name", "type");
+    devicePolicyManager.finalizeWorkProfileProvisioning(userHandle, account);
+    assertThat(
+            shadowDevicePolicyManager.isWorkProfileProvisioningFinalized(
+                userHandle, /* migratedAccount= */ null))
+        .isFalse();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void isWorkProfileProvisioningFinalized_userHandleMismatch_returnFalse() {
+    UserHandle userHandle = UserHandle.SYSTEM;
+    Account account = new Account("name", "type");
+    devicePolicyManager.finalizeWorkProfileProvisioning(userHandle, account);
+    assertThat(
+            shadowDevicePolicyManager.isWorkProfileProvisioningFinalized(
+                UserHandle.of(123), account))
+        .isFalse();
+  }
+
+  @Config(minSdk = N)
+  @Test
+  public void isWorkProfileProvisioningFinalized_defaultValue_returnFalse() {
+    UserHandle userHandle = UserHandle.SYSTEM;
+    Account account = new Account("name", "type");
+    assertThat(shadowDevicePolicyManager.isWorkProfileProvisioningFinalized(userHandle, account))
+        .isFalse();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void getPolicyManagedProfiles_shouldReturnSetVal() {
+    List<UserHandle> policyManagedProfiles = Arrays.asList(UserHandle.SYSTEM);
+    shadowDevicePolicyManager.setPolicyManagedProfiles(policyManagedProfiles);
+    assertThat(devicePolicyManager.getPolicyManagedProfiles(UserHandle.SYSTEM))
+        .isEqualTo(policyManagedProfiles);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPolicyManagedProfiles_defaultValue_shouldReturnEmptyList() {
+    assertThat(devicePolicyManager.getPolicyManagedProfiles(UserHandle.SYSTEM)).isEmpty();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void getUserProvisioningStateForUser_shouldReturnSetValue() {
+    devicePolicyManager.setUserProvisioningState(STATE_USER_SETUP_FINALIZED, UserHandle.SYSTEM);
+    assertThat(
+            shadowDevicePolicyManager.getUserProvisioningStateForUser(
+                UserHandle.SYSTEM.getIdentifier()))
+        .isEqualTo(STATE_USER_SETUP_FINALIZED);
+  }
+
+  @Config(minSdk = N)
+  @Test
+  public void getUserProvisioningStateForUser_defaultValue_shouldReturnUnmanagedState() {
+    assertThat(
+            shadowDevicePolicyManager.getUserProvisioningStateForUser(
+                UserHandle.SYSTEM.getIdentifier()))
+        .isEqualTo(STATE_USER_UNMANAGED);
+  }
+
+  @Config(minSdk = N)
+  @Test
+  public void getUserProvisioningState_returnsSetUserProvisioningState() {
+    assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_UNMANAGED);
+
+    shadowDevicePolicyManager.setUserProvisioningState(STATE_USER_SETUP_COMPLETE);
+    assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_SETUP_COMPLETE);
+
+    shadowDevicePolicyManager.setUserProvisioningState(STATE_USER_SETUP_INCOMPLETE);
+    assertThat(devicePolicyManager.getUserProvisioningState())
+        .isEqualTo(STATE_USER_SETUP_INCOMPLETE);
+
+    shadowDevicePolicyManager.setUserProvisioningState(STATE_USER_UNMANAGED);
+    assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_UNMANAGED);
   }
 
   private ServiceConnection buildServiceConnection() {

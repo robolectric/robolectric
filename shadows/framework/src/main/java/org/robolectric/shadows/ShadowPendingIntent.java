@@ -198,6 +198,19 @@ public class ShadowPendingIntent {
       String requiredPermission,
       Bundle options)
       throws CanceledException {
+    send(context, code, intent, onFinished, handler, requiredPermission, options, 0);
+  }
+
+  void send(
+      Context context,
+      int code,
+      Intent intent,
+      PendingIntent.OnFinished onFinished,
+      Handler handler,
+      String requiredPermission,
+      Bundle options,
+      int requestCode)
+      throws CanceledException {
     this.lastOnFinished =
         handler == null
             ? onFinished
@@ -234,7 +247,7 @@ public class ShadowPendingIntent {
             (IBinder) null,
             (Activity) null,
             intentToSend,
-            0,
+            requestCode,
             (Bundle) null);
       }
     } else if (isBroadcast()) {

@@ -204,6 +204,19 @@ public final class ShadowMediaControllerTest {
     assertEquals(mediaController.getMetadata(), metadata);
   }
 
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void executeOnSessionDestroyed() {
+    MediaController.Callback mockCallback = mock(MediaController.Callback.class);
+
+    mediaController.registerCallback(mockCallback);
+    shadowMediaController.executeOnSessionDestroyed();
+
+    shadowOf(getMainLooper()).idle();
+
+    verify(mockCallback, times(1)).onSessionDestroyed();
+  }
+
   private static PlaybackState createPlaybackState() {
     return new PlaybackState.Builder().setState(PlaybackState.STATE_PLAYING, 0L, 0f).build();
   }

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.Manifest.permission;
+import android.annotation.FloatRange;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.WallpaperInfo;
@@ -17,6 +18,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
+import android.util.MathUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,6 +46,8 @@ public class ShadowWallpaperManager {
   private AtomicInteger wallpaperId = new AtomicInteger(0);
   private int lockScreenId;
   private int homeScreenId;
+
+  private float wallpaperDimAmount = 0.0f;
 
   @Implementation
   protected void sendWallpaperCommand(
@@ -221,6 +225,17 @@ public class ShadowWallpaperManager {
   @Implementation(minSdk = VERSION_CODES.M)
   protected WallpaperInfo getWallpaperInfo() {
     return wallpaperInfo;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void setWallpaperDimAmount(@FloatRange(from = 0f, to = 1f) float dimAmount) {
+    wallpaperDimAmount = MathUtils.saturate(dimAmount);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  @FloatRange(from = 0f, to = 1f)
+  protected float getWallpaperDimAmount() {
+    return wallpaperDimAmount;
   }
 
   /** Returns all the invocation records to {@link WallpaperManager#sendWallpaperCommand} */

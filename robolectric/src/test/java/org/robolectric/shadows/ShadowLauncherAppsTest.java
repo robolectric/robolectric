@@ -391,6 +391,17 @@ public class ShadowLauncherAppsTest {
     assertThat(getPinnedShortcuts(null, c3)).containsExactly(shortcut3);
   }
 
+  @Test
+  public void testHasShortcutHostPermission() {
+    shadowOf(launcherApps).setHasShortcutHostPermission(true);
+    assertThat(launcherApps.hasShortcutHostPermission()).isTrue();
+  }
+
+  @Test
+  public void testHasShortcutHostPermission_returnsFalseByDefault() {
+    assertThat(launcherApps.hasShortcutHostPermission()).isFalse();
+  }
+
   private List<ShortcutInfo> getPinnedShortcuts(String packageName, ComponentName activity) {
     ShortcutQuery query = new ShortcutQuery();
     query.setQueryFlags(ShortcutQuery.FLAG_MATCH_DYNAMIC | ShortcutQuery.FLAG_MATCH_PINNED);

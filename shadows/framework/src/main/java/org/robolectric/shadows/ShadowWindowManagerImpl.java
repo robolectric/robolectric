@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
@@ -104,7 +105,7 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
   }
 
   /** Re implement to avoid server call */
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = S_V2)
   protected WindowInsets getWindowInsetsFromServer(WindowManager.LayoutParams attrs, Rect bounds) {
     Context context = reflector(ReflectorWindowManagerImpl.class, realObject).getContext();
     final Rect systemWindowInsets = new Rect();

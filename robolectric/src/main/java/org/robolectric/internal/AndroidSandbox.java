@@ -1,14 +1,18 @@
 package org.robolectric.internal;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.robolectric.ApkLoader;
 import org.robolectric.android.internal.AndroidTestEnvironment;
+import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Sandbox;
@@ -16,6 +20,7 @@ import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowProviders;
 import org.robolectric.internal.bytecode.UrlResourceProvider;
 import org.robolectric.pluginapi.Sdk;
+import org.robolectric.shadows.SQLiteShadowPicker;
 import org.robolectric.util.inject.Injector;
 
 /** Sandbox simulating an Android device. */
@@ -23,6 +28,8 @@ import org.robolectric.util.inject.Injector;
 public class AndroidSandbox extends Sandbox {
   private final Sdk sdk;
   private final TestEnvironment testEnvironment;
+  private final Set<String> modeInvalidatedClasses = new HashSet<>();
+  private SQLiteMode.Mode activeSQLiteMode;
 
   @Inject
   public AndroidSandbox(
@@ -32,7 +39,8 @@ public class AndroidSandbox extends Sandbox {
       ApkLoader apkLoader,
       TestEnvironmentSpec testEnvironmentSpec,
       SdkSandboxClassLoader sdkSandboxClassLoader,
-      ShadowProviders shadowProviders) {
+      ShadowProviders shadowProviders,
+      SQLiteMode.Mode sqLiteMode) {
     super(sdkSandboxClassLoader);
 
     ClassLoader robolectricClassLoader = getRobolectricClassLoader();
@@ -48,6 +56,7 @@ public class AndroidSandbox extends Sandbox {
             .build();
 
     sdk = runtimeSdk;
+    activeSQLiteMode = sqLiteMode;
     this.testEnvironment = runOnMainThread(() -> sandboxScope.getInstance(TestEnvironment.class));
   }
 
@@ -57,6 +66,16 @@ public class AndroidSandbox extends Sandbox {
       String name = "SDK " + sdk.getApiLevel();
       return new Thread(new ThreadGroup(name), r, name + " Main Thread");
     };
+  }
+
+  @Override
+  protected Set<String> getModeInvalidatedClasses() {
+    return ImmutableSet.copyOf(modeInvalidatedClasses);
+  }
+
+  @Override
+  protected void clearModeInvalidatedClasses() {
+    modeInvalidatedClasses.clear();
   }
 
   public Sdk getSdk() {
@@ -70,6 +89,13 @@ public class AndroidSandbox extends Sandbox {
   @Override
   public String toString() {
     return "AndroidSandbox[SDK " + sdk + "]";
+  }
+
+  public void updateModes(SQLiteMode.Mode sqliteMode) {
+    if (activeSQLiteMode != sqliteMode) {
+      this.activeSQLiteMode = sqliteMode;
+      modeInvalidatedClasses.addAll(SQLiteShadowPicker.getAffectedClasses());
+    }
   }
 
   /**

@@ -3,6 +3,8 @@ package org.robolectric.internal.bytecode;
 import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -60,9 +62,18 @@ public class Sandbox {
   public void replaceShadowMap(ShadowMap shadowMap) {
     ShadowMap oldShadowMap = this.shadowMap;
     this.shadowMap = shadowMap;
-    Set<String> invalidatedClasses = shadowMap.getInvalidatedClasses(oldShadowMap);
+    Set<String> invalidatedClasses = new HashSet<>();
+    invalidatedClasses.addAll(shadowMap.getInvalidatedClasses(oldShadowMap));
+    invalidatedClasses.addAll(getModeInvalidatedClasses());
     getShadowInvalidator().invalidateClasses(invalidatedClasses);
+    clearModeInvalidatedClasses();
   }
+
+  protected Set<String> getModeInvalidatedClasses() {
+    return Collections.emptySet();
+  }
+
+  protected void clearModeInvalidatedClasses() {}
 
   public void configure(ClassHandler classHandler, Interceptors interceptors) {
     this.classHandler = classHandler;

@@ -5,12 +5,14 @@ import static android.app.usage.UsageStatsManager.INTERVAL_WEEKLY;
 import static android.content.Context.USAGE_STATS_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
 import android.app.PendingIntent;
+import android.app.usage.BroadcastResponseStats;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageEvents.Event;
 import android.app.usage.UsageStats;
@@ -42,6 +44,10 @@ public class ShadowUsageStatsManagerTest {
   private static final String TEST_PACKAGE_NAME1 = "com.company1.pkg1";
   private static final String TEST_PACKAGE_NAME2 = "com.company2.pkg2";
   private static final String TEST_ACTIVITY_NAME = "com.company2.pkg2.Activity";
+  private static final String APP_1 = "test.app";
+  private static final String APP_2 = "some.other.app";
+  private static final int BUCKET_ID_1 = 10;
+  private static final int BUCKET_ID_2 = 42;
 
   private UsageStatsManager usageStatsManager;
   private Application context;
@@ -959,5 +965,72 @@ public class ShadowUsageStatsManagerTest {
     assertThat(event.getEventType()).isEqualTo(Event.ACTIVITY_STOPPED);
 
     assertThat(events.hasNextEvent()).isFalse();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void addBroadcastResponseStats_returnsSeededData() {
+    BroadcastResponseStats stats = new BroadcastResponseStats(APP_1, BUCKET_ID_1);
+
+    shadowOf(usageStatsManager).addBroadcastResponseStats(stats);
+
+    assertThat(usageStatsManager.queryBroadcastResponseStats(APP_1, BUCKET_ID_1))
+        .containsExactly(stats);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void addBroadcastResponseStats_multipleApps_returnsCorrectStats() {
+    BroadcastResponseStats app1Stats = new BroadcastResponseStats(APP_1, BUCKET_ID_1);
+    BroadcastResponseStats app2Stats = new BroadcastResponseStats(APP_2, BUCKET_ID_1);
+
+    shadowOf(usageStatsManager).addBroadcastResponseStats(app1Stats);
+    shadowOf(usageStatsManager).addBroadcastResponseStats(app2Stats);
+
+    assertThat(usageStatsManager.queryBroadcastResponseStats(APP_1, BUCKET_ID_1))
+        .containsExactly(app1Stats);
+    assertThat(usageStatsManager.queryBroadcastResponseStats(APP_2, BUCKET_ID_1))
+        .containsExactly(app2Stats);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void addBroadcastResponseStats_multipleBuckets_returnsCorrectStats() {
+    BroadcastResponseStats bucket1Stats = new BroadcastResponseStats(APP_1, BUCKET_ID_1);
+    BroadcastResponseStats bucket2Stats = new BroadcastResponseStats(APP_1, BUCKET_ID_2);
+
+    shadowOf(usageStatsManager).addBroadcastResponseStats(bucket1Stats);
+    shadowOf(usageStatsManager).addBroadcastResponseStats(bucket2Stats);
+
+    assertThat(usageStatsManager.queryBroadcastResponseStats(APP_1, BUCKET_ID_1))
+        .containsExactly(bucket1Stats);
+    assertThat(usageStatsManager.queryBroadcastResponseStats(APP_1, BUCKET_ID_2))
+        .containsExactly(bucket2Stats);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void queryBroadcastResponseStats_zeroBucketId_returnsAllBuckets() {
+    BroadcastResponseStats bucket1Stats = new BroadcastResponseStats(APP_1, BUCKET_ID_1);
+    BroadcastResponseStats bucket2Stats = new BroadcastResponseStats(APP_1, BUCKET_ID_2);
+
+    shadowOf(usageStatsManager).addBroadcastResponseStats(bucket1Stats);
+    shadowOf(usageStatsManager).addBroadcastResponseStats(bucket2Stats);
+
+    assertThat(usageStatsManager.queryBroadcastResponseStats(APP_1, 0))
+        .containsExactly(bucket1Stats, bucket2Stats);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void addBroadcastResponseStats_nullApp_returnsAllApps() {
+    BroadcastResponseStats app1Stats = new BroadcastResponseStats(APP_1, BUCKET_ID_1);
+    BroadcastResponseStats app2Stats = new BroadcastResponseStats(APP_2, BUCKET_ID_1);
+
+    shadowOf(usageStatsManager).addBroadcastResponseStats(app1Stats);
+    shadowOf(usageStatsManager).addBroadcastResponseStats(app2Stats);
+
+    assertThat(usageStatsManager.queryBroadcastResponseStats(null, BUCKET_ID_1))
+        .containsExactly(app1Stats, app2Stats);
   }
 }

@@ -8,24 +8,35 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.Application;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.BluetoothSocket;
+import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.content.Intent;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -35,6 +46,13 @@ public class ShadowBluetoothAdapterTest {
   private static final int MOCK_PROFILE1 = 17;
   private static final int MOCK_PROFILE2 = 21;
   private static final String MOCK_MAC_ADDRESS = "00:11:22:33:AA:BB";
+
+  private static final UUID UUID1 = UUID.fromString("3e9507d3-20c9-4b1a-a75d-30c795334389");
+  private static final UUID UUID2 = UUID.fromString("cdba7974-3e3f-476a-9119-0d1be6b0e548");
+  private static final UUID UUID3 = UUID.fromString("4524c169-531b-4f27-8097-fd9f19e0c788");
+  private static final UUID UUID4 = UUID.fromString("468c2e72-8d89-43e3-b153-940c8ddee1da");
+  private static final UUID UUID5 = UUID.fromString("19ad4589-af27-4ccc-8cfb-de1bf2212298");
+  private static final Intent testIntent = new Intent("com.test.action.DUMMY_ACTION");
 
   private BluetoothAdapter bluetoothAdapter;
 
@@ -169,16 +187,25 @@ public class ShadowBluetoothAdapterTest {
 
   @Test
   @Config(maxSdk = S_V2)
-  public void scanMode_getAndSet_connectable() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE)).isTrue();
+  public void scanMode_getAndSet_connectable() {
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter,
+            "setScanMode",
+            ClassParameter.from(int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE));
+    assertThat(result).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
   }
 
   @Test
   @Config(maxSdk = S_V2)
-  public void scanMode_getAndSet_discoverable() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
-        .isTrue();
+  public void scanMode_getAndSet_discoverable() {
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter,
+            "setScanMode",
+            ClassParameter.from(int.class, BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE));
+    assertThat(result).isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
   }
@@ -186,14 +213,22 @@ public class ShadowBluetoothAdapterTest {
   @Test
   @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_none() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE)).isTrue();
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter,
+            "setScanMode",
+            ClassParameter.from(int.class, BluetoothAdapter.SCAN_MODE_NONE));
+    assertThat(result).isTrue();
     assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
   }
 
   @Test
   @Config(maxSdk = S_V2)
   public void scanMode_getAndSet_invalid() throws Exception {
-    assertThat(bluetoothAdapter.setScanMode(9999)).isFalse();
+    boolean result =
+        ReflectionHelpers.callInstanceMethod(
+            bluetoothAdapter, "setScanMode", ClassParameter.from(int.class, 9999));
+    assertThat(result).isFalse();
   }
 
   @Config(maxSdk = Q)
@@ -210,7 +245,8 @@ public class ShadowBluetoothAdapterTest {
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+    int result = ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getDiscoverableTimeout");
+    assertThat(result).isEqualTo(42);
   }
 
   @Config(minSdk = R, maxSdk = S_V2)
@@ -227,14 +263,50 @@ public class ShadowBluetoothAdapterTest {
         .isTrue();
     assertThat(bluetoothAdapter.getScanMode())
         .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(42);
+    int result = ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getDiscoverableTimeout");
+    assertThat(result).isEqualTo(42);
   }
 
   @Test
   @Config(maxSdk = S)
   public void discoverableTimeout_getAndSet() {
-    bluetoothAdapter.setDiscoverableTimeout(60);
-    assertThat(bluetoothAdapter.getDiscoverableTimeout()).isEqualTo(60);
+    ReflectionHelpers.callInstanceMethod(
+        bluetoothAdapter,
+        "setDiscoverableTimeout",
+        ClassParameter.from(int.class, 60 /* seconds */));
+    int result = ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getDiscoverableTimeout");
+    assertThat(result).isEqualTo(60);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void scanMode_getAndSet_connectable_T() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE))
+        .isEqualTo(BluetoothStatusCodes.SUCCESS);
+    assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void scanMode_getAndSet_discoverable_T() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE))
+        .isEqualTo(BluetoothStatusCodes.SUCCESS);
+    assertThat(bluetoothAdapter.getScanMode())
+        .isEqualTo(BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void scanMode_getAndSet_none_T() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(BluetoothAdapter.SCAN_MODE_NONE))
+        .isEqualTo(BluetoothStatusCodes.SUCCESS);
+    assertThat(bluetoothAdapter.getScanMode()).isEqualTo(BluetoothAdapter.SCAN_MODE_NONE);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void scanMode_getAndSet_invalid_T() throws Exception {
+    assertThat(bluetoothAdapter.setScanMode(9999)).isEqualTo(BluetoothStatusCodes.ERROR_UNKNOWN);
   }
 
   @Test
@@ -468,6 +540,200 @@ public class ShadowBluetoothAdapterTest {
     shadowOf(bluetoothAdapter).setIsLeExtendedAdvertisingSupported(false);
 
     assertThat(bluetoothAdapter.getLeMaximumAdvertisingDataLength()).isEqualTo(31);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void startRfcommServer_mutablePendingIntent_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothAdapter.startRfcommServer(
+                "testname",
+                UUID.randomUUID(),
+                PendingIntent.getBroadcast(
+                    getApplicationContext(),
+                    /* requestCode= */ 0,
+                    new Intent("com.dummy.action.DUMMY_ACTION"),
+                    /* flags= */ PendingIntent.FLAG_MUTABLE)));
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void startRfcommServer_newUuid_success() {
+    PendingIntent rfcommServerIntent =
+        PendingIntent.getBroadcast(
+            getApplicationContext(),
+            /* requestCode= */ 0,
+            new Intent("com.dummy.action.DUMMY_ACTION"),
+            /* flags= */ PendingIntent.FLAG_IMMUTABLE);
+
+    assertThat(
+            bluetoothAdapter.startRfcommServer("testname", UUID.randomUUID(), rfcommServerIntent))
+        .isEqualTo(BluetoothStatusCodes.SUCCESS);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void startRfcommServer_existingUuid_fails() {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+
+    assertThat(bluetoothAdapter.startRfcommServer("newtestname", UUID1, rfcommServerIntent))
+        .isEqualTo(ShadowBluetoothAdapter.RFCOMM_LISTENER_START_FAILED_UUID_IN_USE);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void stopRfcommServer_existingUuid_succeeds() {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+
+    assertThat(bluetoothAdapter.stopRfcommServer(UUID1)).isEqualTo(BluetoothStatusCodes.SUCCESS);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void stopRfcommServer_noExistingUuid_fails() {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+
+    assertThat(bluetoothAdapter.stopRfcommServer(UUID2))
+        .isEqualTo(
+            ShadowBluetoothAdapter.RFCOMM_LISTENER_OPERATION_FAILED_NO_MATCHING_SERVICE_RECORD);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void retrieveConnectedRfcommSocket_noPendingSocket_returnsNull() {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+
+    assertThat(bluetoothAdapter.retrieveConnectedRfcommSocket(UUID1)).isNull();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void retrieveConnectedRfcommSocket_pendingSocket_returnsSocket() throws Exception {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+    ((ShadowBluetoothAdapter) Shadow.extract(bluetoothAdapter))
+        .addIncomingRfcommConnection(bluetoothAdapter.getRemoteDevice("AB:CD:EF:12:34:56"), UUID1);
+
+    assertThat(bluetoothAdapter.retrieveConnectedRfcommSocket(UUID1)).isNotNull();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void retrieveConnectedRfcommSocket_pendingSocket_wrongUuid_returnsNull() throws Exception {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+    bluetoothAdapter.startRfcommServer("othertestname", UUID2, rfcommServerIntent);
+    ((ShadowBluetoothAdapter) Shadow.extract(bluetoothAdapter))
+        .addIncomingRfcommConnection(bluetoothAdapter.getRemoteDevice("AB:CD:EF:12:34:56"), UUID1);
+
+    assertThat(bluetoothAdapter.retrieveConnectedRfcommSocket(UUID2)).isNull();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void addIncomingRfcommConnection_pendingIntentFired() throws Exception {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+    ((ShadowBluetoothAdapter) Shadow.extract(bluetoothAdapter))
+        .addIncomingRfcommConnection(bluetoothAdapter.getRemoteDevice("AB:CD:EF:12:34:56"), UUID1);
+
+    assertThat(shadowOf((Application) getApplicationContext()).getBroadcastIntents())
+        .contains(testIntent);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void addIncomingRfcommConnection_socketRetrieved_canCommunicate() throws Exception {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    bluetoothAdapter.startRfcommServer("testname", UUID1, rfcommServerIntent);
+    ((ShadowBluetoothAdapter) Shadow.extract(bluetoothAdapter))
+        .addIncomingRfcommConnection(bluetoothAdapter.getRemoteDevice("AB:CD:EF:12:34:56"), UUID1);
+    BluetoothSocket socket = bluetoothAdapter.retrieveConnectedRfcommSocket(UUID1);
+
+    byte[] testBytes = "i can haz test string".getBytes(UTF_8);
+
+    shadowOf(socket).getInputStreamFeeder().write(testBytes);
+    shadowOf(socket).getInputStreamFeeder().flush();
+    shadowOf(socket).getInputStreamFeeder().close();
+    socket.getOutputStream().write(testBytes);
+    socket.getOutputStream().flush();
+    socket.getOutputStream().close();
+
+    assertThat(socket.getInputStream().readAllBytes()).isEqualTo(testBytes);
+    assertThat(shadowOf(socket).getOutputStreamSink().readAllBytes()).isEqualTo(testBytes);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  @SuppressWarnings("JdkImmutableCollections")
+  public void getResgisteredUuids_returnsRegisteredServers() {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    Set<UUID> serverUuids = Set.of(UUID1, UUID2, UUID3, UUID4, UUID5);
+
+    serverUuids.forEach(
+        uuid -> bluetoothAdapter.startRfcommServer(uuid.toString(), uuid, rfcommServerIntent));
+
+    assertThat(
+            ((ShadowBluetoothAdapter) Shadow.extract(bluetoothAdapter))
+                .getRegisteredRfcommServerUuids())
+        .containsExactlyElementsIn(serverUuids);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  @SuppressWarnings("JdkImmutableCollections")
+  public void getRegisteredUuids_serversStopped_doesNotReturnStoppedServerUuids() {
+    PendingIntent rfcommServerIntent = createTestPendingIntent(testIntent);
+
+    Set<UUID> serverUuids = Set.of(UUID1, UUID2, UUID3, UUID4, UUID5);
+
+    serverUuids.forEach(
+        uuid -> bluetoothAdapter.startRfcommServer(uuid.toString(), uuid, rfcommServerIntent));
+
+    bluetoothAdapter.stopRfcommServer(UUID4);
+
+    assertThat(
+            ((ShadowBluetoothAdapter) Shadow.extract(bluetoothAdapter))
+                .getRegisteredRfcommServerUuids())
+        .containsExactly(UUID1, UUID2, UUID3, UUID5);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setDiscoverableTimeout() {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    adapter.enable();
+    assertThat(adapter.setDiscoverableTimeout(Duration.ofSeconds(1000)))
+        .isEqualTo(BluetoothStatusCodes.SUCCESS);
+    assertThat(adapter.getDiscoverableTimeout().toSeconds()).isEqualTo(1000);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setDiscoverableTimeout_adapterNotEnabled() {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    assertThat(adapter.setDiscoverableTimeout(Duration.ZERO))
+        .isEqualTo(BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED);
+  }
+
+  private PendingIntent createTestPendingIntent(Intent intent) {
+    return PendingIntent.getBroadcast(
+        getApplicationContext(), /* requestCode= */ 0, intent, PendingIntent.FLAG_IMMUTABLE);
   }
 
   private BluetoothAdapter.LeScanCallback newLeScanCallback() {

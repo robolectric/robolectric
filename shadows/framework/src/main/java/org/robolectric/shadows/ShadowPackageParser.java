@@ -9,7 +9,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Callback;
 import android.content.pm.PackageParser.Package;
-import android.content.pm.PackageUserState;
 import android.os.Build;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
@@ -17,10 +16,12 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowLog.LogItem;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -135,6 +136,16 @@ public class ShadowPackageParser {
         @WithType("android.content.pm.PackageUserState")
             Object state);
 
+    @Static
+    PackageInfo generatePackageInfo(
+        PackageParser.Package p,
+        int[] gids,
+        int flags,
+        long firstInstallTime,
+        long lastUpdateTime,
+        Set<String> grantedPermissions,
+        @WithType("android.content.pm.PackageUserState") Object state);
+
     default PackageInfo generatePackageInfo(
         PackageParser.Package p,
         int[] gids,
@@ -147,18 +158,44 @@ public class ShadowPackageParser {
         return generatePackageInfo(p, gids, flags, firstInstallTime, lastUpdateTime,
             new HashSet<>());
       } else if (apiLevel <= LOLLIPOP) {
-        return generatePackageInfo(p, gids, flags, firstInstallTime, lastUpdateTime,
-            new HashSet<>(), new PackageUserState());
+        return generatePackageInfo(
+            p,
+            gids,
+            flags,
+            firstInstallTime,
+            lastUpdateTime,
+            new HashSet<>(),
+            newPackageUserState());
       } else if (apiLevel <= LOLLIPOP_MR1) {
-        return generatePackageInfo(p, gids, flags, firstInstallTime, lastUpdateTime,
-            new ArraySet<>(), new PackageUserState());
+        return generatePackageInfo(
+            p,
+            gids,
+            flags,
+            firstInstallTime,
+            lastUpdateTime,
+            new ArraySet<>(),
+            newPackageUserState());
       } else {
-        return PackageParser.generatePackageInfo(p, gids, flags, firstInstallTime, lastUpdateTime,
-            new HashSet<>(), new PackageUserState());
+        return generatePackageInfo(
+            p,
+            gids,
+            flags,
+            firstInstallTime,
+            lastUpdateTime,
+            (Set<String>) new HashSet<String>(),
+            newPackageUserState());
       }
     }
 
     Package parsePackage(File file, String fileName, DisplayMetrics displayMetrics, int flags);
+  }
+
+  private static Object newPackageUserState() {
+    try {
+      return ReflectionHelpers.newInstance(Class.forName("android.content.pm.PackageUserState"));
+    } catch (ClassNotFoundException e) {
+      throw new AssertionError(e);
+    }
   }
 
   /** Accessor interface for {@link Package}'s internals. */

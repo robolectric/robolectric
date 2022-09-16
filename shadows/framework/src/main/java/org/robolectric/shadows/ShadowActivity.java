@@ -19,6 +19,7 @@ import android.app.Dialog;
 import android.app.DirectAction;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
+import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
 import android.content.ComponentName;
 import android.content.Context;
@@ -59,6 +60,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.fakes.RoboIntentSender;
 import org.robolectric.fakes.RoboMenuItem;
 import org.robolectric.fakes.RoboSplashScreen;
 import org.robolectric.shadow.api.Shadow;
@@ -425,6 +427,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     lastIntentSenderRequest =
         new IntentSenderRequest(
             intentSender, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options);
+    lastIntentSenderRequest.send();
   }
 
   @Implementation(minSdk = KITKAT)
@@ -892,6 +895,25 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       this.flagsValues = flagsValues;
       this.extraFlags = extraFlags;
       this.options = options;
+    }
+
+    public void send() {
+      if (intentSender instanceof RoboIntentSender) {
+        try {
+          Shadow.<ShadowPendingIntent>extract(((RoboIntentSender) intentSender).getPendingIntent())
+              .send(
+                  RuntimeEnvironment.getApplication(),
+                  0,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  requestCode);
+        } catch (PendingIntent.CanceledException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 
