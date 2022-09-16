@@ -55,6 +55,7 @@ public class ShadowLauncherApps {
   private final Map<UserHandle, Map<String, ApplicationInfo>> applicationInfoList = new HashMap<>();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
+  private boolean hasShortcutHostPermission = false;
 
   /**
    * Adds a dynamic shortcut to be returned by {@link #getShortcuts(ShortcutQuery, UserHandle)}.
@@ -224,10 +225,19 @@ public class ShadowLauncherApps {
         "This method is not currently supported in Robolectric.");
   }
 
+  /**
+   * Sets the return value of {@link #hasShortcutHostPermission()}. If this isn't explicitly set,
+   * {@link #hasShortcutHostPermission()} defaults to returning false.
+   *
+   * @param permission boolean to be returned
+   */
+  public void setHasShortcutHostPermission(boolean permission) {
+    hasShortcutHostPermission = permission;
+  }
+
   @Implementation(minSdk = N)
   protected boolean hasShortcutHostPermission() {
-    throw new UnsupportedOperationException(
-        "This method is not currently supported in Robolectric.");
+    return hasShortcutHostPermission;
   }
 
   /**
