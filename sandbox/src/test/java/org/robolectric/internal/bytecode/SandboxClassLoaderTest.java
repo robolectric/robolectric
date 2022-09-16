@@ -609,32 +609,6 @@ public class SandboxClassLoaderTest {
     }
 
     @Override
-    public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
-      final InvocationProfile invocationProfile =
-          new InvocationProfile(signature, isStatic, getClass().getClassLoader());
-      return new Plan() {
-        @Override
-        public Object run(Object instance, Object[] params) throws Exception {
-          try {
-            return methodInvoked(
-                invocationProfile.clazz,
-                invocationProfile.methodName,
-                instance,
-                invocationProfile.paramTypes,
-                params);
-          } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-          }
-        }
-
-        @Override
-        public String describe() {
-          return invocationProfile.methodName;
-        }
-      };
-    }
-
-    @Override
     public MethodHandle getShadowCreator(Class<?> theClass) {
       return dropArguments(constant(String.class, "a shadow!"), 0, theClass);
     }

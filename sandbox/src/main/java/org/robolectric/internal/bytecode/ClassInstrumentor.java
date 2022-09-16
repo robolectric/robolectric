@@ -303,57 +303,8 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Constructors are instrumented as follows:
-   *
-   * <ul>
-   *   <li>Code other than a call to the superclass constructor is moved to a new method named
-   *       {@code __constructor__} with the same signature.
-   *   <li>The constructor is modified to call {@link ClassHandler#initializing(Object)} (or {@link
-   *       ClassHandler#getShadowCreator(Class)} for {@code invokedynamic} JVMs).
-   *   <li>The constructor is modified to then call {@link ClassHandler#methodInvoked(String,
-   *       boolean, Class)} (or {@link ClassHandler#findShadowMethodHandle(Class, String,
-   *       MethodType, boolean)} for {@code invokedynamic} JVMs) with the method name {@code
-   *       __constructor__} and the same parameter types.
-   * </ul>
-   *
-   * Note that most code in the constructor will not be executed unless the {@link ClassHandler}
-   * arranges for it to happen.
-   *
-   * <p>Given a constructor like this:
-   *
-   * <pre>
-   * public ThisClass(String name, int size) {
-   *   super(name, someStaticMethod());
-   *   this.size = size;
-   * }
-   * </pre>
-   *
-   * ... generates code like this:
-   *
-   * <pre>
-   * private $$robo$$__constructor__(String name, int size) {
-   *   this.size = size;
-   * }
-   *
-   * private __constructor__(String name, int size) {
-   *   Plan plan = RobolectricInternals.methodInvoked(
-   *       "pkg/ThisClass/__constructor__(Ljava/lang/String;I)V", true, ThisClass.class);
-   *   if (plan != null) {
-   *     try {
-   *       plan.run(this, new Object[] {name, size});
-   *     } catch (Throwable t) {
-   *       throw RobolectricInternals.cleanStackTrace(t);
-   *     }
-   *   } else {
-   *     $$robo$$__constructor__(name, size);
-   *   }
-   * }
-   *
-   * public ThisClass(String name, int size) {
-   *   super(name, someStaticMethod());
-   *   $$robo$init();
-   * }
-   * </pre>
+   * Constructors are instrumented as follows: TODO(slliu): Fill in constructor instrumentation
+   * directions
    *
    * @param method the constructor to instrument
    */

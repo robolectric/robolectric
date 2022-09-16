@@ -18,10 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.annotation.RealObject;
@@ -55,19 +52,6 @@ public class ShadowWrangler implements ClassHandler {
           return null;
         }
       };
-  public static final Plan DO_NOTHING_PLAN =
-      new Plan() {
-        @Override
-        public Object run(Object instance, Object[] params) throws Exception {
-          return null;
-        }
-
-        @Override
-        public String describe() {
-          return "do nothing";
-        }
-      };
-  public static final Plan CALL_REAL_CODE_PLAN = null;
   public static final Method CALL_REAL_CODE = null;
   public static final MethodHandle DO_NOTHING =
       constant(Void.class, null).asType(methodType(void.class));
@@ -109,14 +93,6 @@ public class ShadowWrangler implements ClassHandler {
   private final Interceptors interceptors;
   private final ShadowMatcher shadowMatcher;
   private final MethodHandle reflectorHandle;
-  private final Map<String, Plan> planCache =
-      Collections.synchronizedMap(
-          new LinkedHashMap<String, Plan>() {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<String, Plan> eldest) {
-              return size() > 500;
-            }
-          });
 
   /** key is instrumented class */
   private final ClassValueMap<ShadowInfo> cachedShadowInfos =
@@ -214,44 +190,6 @@ public class ShadowWrangler implements ClassHandler {
   @Override
   public Object initializing(Object instance) {
     return createShadowFor(instance);
-  }
-
-  @Override
-  public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
-    Plan plan;
-    if (planCache.containsKey(signature)) {
-      plan = planCache.get(signature);
-    } else {
-      plan = calculatePlan(signature, isStatic, theClass);
-      planCache.put(signature, plan);
-    }
-    return plan;
-  }
-
-  @SuppressWarnings("ReferenceEquality")
-  private Plan calculatePlan(String signature, boolean isStatic, Class<?> definingClass) {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "find shadow method",
-            () -> {
-              final ClassLoader classLoader = definingClass.getClassLoader();
-              final InvocationProfile invocationProfile =
-                  new InvocationProfile(signature, isStatic, classLoader);
-              try {
-                Class<?>[] types = invocationProfile.getParamClasses(classLoader);
-                Method shadowMethod =
-                    pickShadowMethod(definingClass, invocationProfile.methodName, types);
-                if (shadowMethod == CALL_REAL_CODE) {
-                  return CALL_REAL_CODE_PLAN;
-                } else if (shadowMethod == DO_NOTHING_METHOD) {
-                  return DO_NOTHING_PLAN;
-                } else {
-                  return new ShadowMethodPlan(shadowMethod);
-                }
-              } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-              }
-            });
   }
 
   @SuppressWarnings({"ReferenceEquality"})
@@ -445,10 +383,6 @@ public class ShadowWrangler implements ClassHandler {
           continue;
         }
 
-        if (className.equals(ShadowMethodPlan.class.getName())) {
-          continue;
-        }
-
         if (methodName.startsWith(ShadowConstants.ROBO_PREFIX)) {
           methodName =
               methodName.substring(
@@ -572,57 +506,6 @@ public class ShadowWrangler implements ClassHandler {
       realObjectField.set(target, value);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private static class ShadowMethodPlan implements Plan {
-    private final Method shadowMethod;
-
-    public ShadowMethodPlan(Method shadowMethod) {
-      this.shadowMethod = shadowMethod;
-    }
-
-    @Override
-    public Object run(Object instance, Object[] params) throws Throwable {
-      ShadowedObject shadowedObject = (ShadowedObject) instance;
-      Object shadow = shadowedObject == null ? null : shadowedObject.$$robo$getData();
-      try {
-        return shadowMethod.invoke(shadow, params);
-      } catch (IllegalArgumentException e) {
-        assert shadow
-            != null; // because IllegalArgumentException could only be thrown if shadow is non-null
-        Method tryAgainMethod =
-            shadow
-                .getClass()
-                .getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes());
-        if (!tryAgainMethod.equals(shadowMethod)) {
-          tryAgainMethod.setAccessible(true);
-          try {
-            return tryAgainMethod.invoke(shadow, params);
-          } catch (InvocationTargetException e1) {
-            throw e1.getCause();
-          }
-        } else {
-          throw new IllegalArgumentException(
-              "attempted to invoke "
-                  + shadowMethod
-                  + (shadow == null
-                      ? ""
-                      : " on instance of "
-                          + shadow.getClass()
-                          + ", but "
-                          + shadow.getClass().getSimpleName()
-                          + " doesn't extend "
-                          + shadowMethod.getDeclaringClass().getSimpleName()));
-        }
-      } catch (InvocationTargetException e) {
-        throw e.getCause();
-      }
-    }
-
-    @Override
-    public String describe() {
-      return shadowMethod.toString();
     }
   }
 

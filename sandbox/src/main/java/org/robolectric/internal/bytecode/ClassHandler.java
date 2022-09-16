@@ -27,32 +27,11 @@ public interface ClassHandler {
    *
    * <p>This happens before constructor code executes on the new instance.
    *
-   * <p>Implementations may return an object which will be associated with the new instance and
-   * passed along on future calls to {@link #methodInvoked(String, boolean, Class)}.
-   *
    * @param instance the newly-created instance
    * @return a data value to be associated with the new instance
    * @see #getShadowCreator(Class) for newer JVMs
    */
   Object initializing(Object instance);
-
-  /**
-   * Called by Robolectric when an instrumented method is invoked.
-   *
-   * <p>Implementations should return an {@link Plan}, which will be invoked with details about the
-   * current instance and parameters.
-   *
-   * <p>Implementations may also return null, in which case the method's original code will be
-   * executed.
-   *
-   * @param signature the JVM internal-format signature of the method being invoked (e.g. {@code
-   *     android/view/View/measure(II)V})
-   * @param isStatic true if the method is static
-   * @param theClass the class on which the method is declared
-   * @return an execution plan, or null if the original method's code should be executed
-   * @see #findShadowMethodHandle(Class, String, MethodType, boolean) for newer JVMs
-   */
-  Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass);
 
   /**
    * Called by Robolectric to determine how to create and initialize a shadow object when a new
@@ -87,7 +66,6 @@ public interface ClassHandler {
    * @param methodType the method type
    * @param isStatic true if the method is static
    * @return a method handle to invoke, or null if the original method's code should be executed
-   * @see #methodInvoked(String, boolean, Class) for older JVMs
    * @see ShadowInvalidator for invalidating the returned {@link MethodHandle}
    */
   MethodHandle findShadowMethodHandle(
@@ -120,14 +98,4 @@ public interface ClassHandler {
    * @return the stripped stack trace
    */
   <T extends Throwable> T stripStackTrace(T throwable);
-
-  /**
-   * An execution plan, which can be invoked to satisfy a requested method call.
-   */
-  interface Plan {
-
-    Object run(Object instance, Object[] params) throws Throwable;
-
-    String describe();
-  }
 }
