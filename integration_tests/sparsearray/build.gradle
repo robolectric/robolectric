@@ -43,4 +43,5 @@ dependencies {
     testImplementation project(":robolectric")
     testImplementation "junit:junit:$junitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 }
