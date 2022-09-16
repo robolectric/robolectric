@@ -12,14 +12,17 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
+import android.app.ILocaleManager;
 import android.app.INotificationManager;
 import android.app.ISearchManager;
 import android.app.IUiModeManager;
 import android.app.IWallpaperManager;
 import android.app.admin.IDevicePolicyManager;
+import android.app.ambientcontext.IAmbientContextManager;
 import android.app.job.IJobScheduler;
 import android.app.role.IRoleManager;
 import android.app.slice.ISliceManager;
@@ -75,6 +78,7 @@ import android.os.ServiceManager;
 import android.os.storage.IStorageManager;
 import android.permission.ILegacyPermissionManager;
 import android.permission.IPermissionManager;
+import android.safetycenter.ISafetyCenterManager;
 import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
@@ -83,6 +87,7 @@ import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
+import com.android.internal.statusbar.IStatusBar;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
 import com.android.internal.view.IInputMethodManager;
@@ -196,6 +201,12 @@ public class ShadowServiceManager {
       addBinderService(Context.LEGACY_PERMISSION_SERVICE, ILegacyPermissionManager.class);
       addBinderService(Context.UWB_SERVICE, IUwbAdapter.class);
       addBinderService(Context.VCN_MANAGEMENT_SERVICE, IVcnManagementService.class);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
+      addBinderService(Context.AMBIENT_CONTEXT_SERVICE, IAmbientContextManager.class);
+      addBinderService(Context.LOCALE_SERVICE, ILocaleManager.class);
+      addBinderService(Context.SAFETY_CENTER_SERVICE, ISafetyCenterManager.class);
+      addBinderService(Context.STATUS_BAR_SERVICE, IStatusBar.class);
     }
   }
 

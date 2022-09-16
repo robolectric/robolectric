@@ -1,7 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
 
+import androidx.annotation.NonNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -155,6 +157,7 @@ public class ShadowProcess {
     // We cannot re-randomize uid, because it would break code that statically depends on
     // android.os.Process.myUid(), which persists between tests.
     ShadowProcess.uidOverride = null;
+    ShadowProcess.processName = "";
   }
 
   static int getRandomApplicationUid() {
@@ -172,5 +175,27 @@ public class ShadowProcess {
     synchronized (killedProcessesLock) {
       return killedProcesses.contains(pid);
     }
+  }
+
+  private static String processName = "";
+
+  /**
+   * Returns the name of the process. You can override this value by calling {@link
+   * #setProcessName(String)}.
+   *
+   * @return process name.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected static String myProcessName() {
+    return processName;
+  }
+
+  /**
+   * Sets the process name returned by {@link #myProcessName()}.
+   *
+   * @param processName New process name to set. Cannot be null.
+   */
+  public static void setProcessName(@NonNull String processName) {
+    ShadowProcess.processName = processName;
   }
 }

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -18,6 +19,8 @@ import org.robolectric.shadow.api.Shadow;
 /** Unit tests for {@link ShadowStatusBarManager}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowStatusBarManagerTest {
+
+  private static final int TEST_NAV_BAR_MODE = 100;
 
   private final StatusBarManager statusBarManager =
       (StatusBarManager) getApplicationContext().getSystemService(Context.STATUS_BAR_SERVICE);
@@ -62,4 +65,17 @@ public final class ShadowStatusBarManagerTest {
     assertThat(shadowStatusBarManager.getDisable2Flags()).isEqualTo(StatusBarManager.DISABLE2_NONE);
   }
 
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void getNavBarMode_returnsNavBarMode() throws Exception {
+    statusBarManager.setNavBarMode(TEST_NAV_BAR_MODE);
+    assertThat(shadowStatusBarManager.getNavBarMode()).isEqualTo(TEST_NAV_BAR_MODE);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setNavBarMode_storesNavBarMode() throws Exception {
+    shadowStatusBarManager.setNavBarMode(TEST_NAV_BAR_MODE);
+    assertThat(shadowStatusBarManager.getNavBarMode()).isEqualTo(TEST_NAV_BAR_MODE);
+  }
 }

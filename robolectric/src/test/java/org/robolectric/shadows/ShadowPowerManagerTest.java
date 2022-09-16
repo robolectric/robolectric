@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.fail;
@@ -565,5 +566,16 @@ public class ShadowPowerManagerTest {
     RuntimeEnvironment.getMasterScheduler().advanceBy(1000, MILLISECONDS);
 
     assertThat(lock.isHeld()).isTrue();
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void isDeviceLightIdleMode_shouldGetAndSet() {
+    ShadowPowerManager shadowPowerManager = Shadow.extract(powerManager);
+    assertThat(powerManager.isDeviceLightIdleMode()).isFalse();
+    shadowPowerManager.setIsDeviceLightIdleMode(true);
+    assertThat(powerManager.isDeviceLightIdleMode()).isTrue();
+    shadowPowerManager.setIsDeviceLightIdleMode(false);
+    assertThat(powerManager.isDeviceLightIdleMode()).isFalse();
   }
 }

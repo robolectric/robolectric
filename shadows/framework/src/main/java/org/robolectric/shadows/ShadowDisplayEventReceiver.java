@@ -10,6 +10,8 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.os.MessageQueue;
 import android.os.SystemClock;
@@ -17,6 +19,7 @@ import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
 import dalvik.system.CloseGuard;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Array;
 import java.time.Duration;
 import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
@@ -134,10 +137,10 @@ public class ShadowDisplayEventReceiver {
     } else if (RuntimeEnvironment.getApiLevel() < Q) {
       displayEventReceiverReflector.onVsync(
           ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
-    } else if (RuntimeEnvironment.getApiLevel() <= R) {
+    } else if (RuntimeEnvironment.getApiLevel() < S) {
       displayEventReceiverReflector.onVsync(
           ShadowSystem.nanoTime(), 0L, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
-    } else {
+    } else if (RuntimeEnvironment.getApiLevel() < TIRAMISU) {
       try {
         // onVsync takes a package-private VSyncData class as a parameter, thus reflection
         // needs to be used
@@ -156,6 +159,12 @@ public class ShadowDisplayEventReceiver {
       } catch (ClassNotFoundException e) {
         throw new LinkageError("Unable to construct VsyncEventData", e);
       }
+    } else {
+      displayEventReceiverReflector.onVsync(
+          ShadowSystem.nanoTime(),
+          0L, /* physicalDisplayId currently ignored */
+          1, /* frame */
+          newVsyncEventData() /* VsyncEventData */);
     }
   }
 
@@ -222,6 +231,40 @@ public class ShadowDisplayEventReceiver {
         ShadowDisplayEventReceiver shadowReceiver = Shadow.extract(receiver);
         shadowReceiver.onVsync();
       }
+    }
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected Object getLatestVsyncEventData() {
+    return newVsyncEventData();
+  }
+
+  private Object newVsyncEventData() {
+    try {
+      // onVsync on T takes a package-private VsyncEventData class, which is itself composed of a
+      // package private VsyncEventData.FrameTimeline  class. So use reflection to build these up
+      Class<?> frameTimelineClass =
+          Class.forName("android.view.DisplayEventReceiver$VsyncEventData$FrameTimeline");
+      Object timeline =
+          ReflectionHelpers.callConstructor(
+              frameTimelineClass,
+              ClassParameter.from(long.class, 1) /* vsync id */,
+              ClassParameter.from(long.class, 1) /* expectedPresentTime */,
+              ClassParameter.from(long.class, 10) /* deadline */);
+
+      Object timelineArray = Array.newInstance(frameTimelineClass, 1);
+      Array.set(timelineArray, 0, timeline);
+
+      // get FrameTimeline[].class
+      Class<?> frameTimeLineArrayClass =
+          Class.forName("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;");
+      return ReflectionHelpers.callConstructor(
+          Class.forName("android.view.DisplayEventReceiver$VsyncEventData"),
+          ClassParameter.from(frameTimeLineArrayClass, timelineArray),
+          ClassParameter.from(int.class, 0), /* frameDeadline */
+          ClassParameter.from(long.class, 1)); /* frameInterval */
+    } catch (ClassNotFoundException e) {
+      throw new LinkageError("Unable to construct VsyncEventData", e);
     }
   }
 

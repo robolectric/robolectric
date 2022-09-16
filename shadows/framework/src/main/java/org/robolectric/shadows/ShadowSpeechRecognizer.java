@@ -5,14 +5,20 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.speech.IRecognitionService;
 import android.speech.RecognitionListener;
+import android.speech.RecognitionSupport;
+import android.speech.RecognitionSupportCallback;
 import android.speech.SpeechRecognizer;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import java.util.Queue;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -31,6 +37,11 @@ public class ShadowSpeechRecognizer {
   protected static SpeechRecognizer latestSpeechRecognizer;
   private Intent recognizerIntent;
   private RecognitionListener recognitionListener;
+  private static boolean isOnDeviceRecognitionAvailable = true;
+
+  private RecognitionSupportCallback recognitionSupportCallback;
+  private Executor recognitionSupportExecutor;
+  @Nullable private Intent latestModelDownloadIntent;
 
   /**
    * Returns the latest SpeechRecognizer. This method can only be called after {@link
@@ -48,6 +59,7 @@ public class ShadowSpeechRecognizer {
   @Resetter
   public static void reset() {
     latestSpeechRecognizer = null;
+    isOnDeviceRecognitionAvailable = true;
   }
 
   @Implementation
@@ -113,6 +125,52 @@ public class ShadowSpeechRecognizer {
     recognitionListener.onRmsChanged(rmsdB);
   }
 
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected static SpeechRecognizer createOnDeviceSpeechRecognizer(final Context context) {
+    SpeechRecognizer result =
+        reflector(SpeechRecognizerReflector.class).createOnDeviceSpeechRecognizer(context);
+    latestSpeechRecognizer = result;
+    return result;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected static boolean isOnDeviceRecognitionAvailable(final Context context) {
+    return isOnDeviceRecognitionAvailable;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void checkRecognitionSupport(
+      Intent recognizerIntent, Executor executor, RecognitionSupportCallback supportListener) {
+    recognitionSupportExecutor = executor;
+    recognitionSupportCallback = supportListener;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void triggerModelDownload(Intent recognizerIntent) {
+    latestModelDownloadIntent = recognizerIntent;
+  }
+
+  public static void setIsOnDeviceRecognitionAvailable(boolean available) {
+    isOnDeviceRecognitionAvailable = available;
+  }
+
+  @RequiresApi(VERSION_CODES.TIRAMISU)
+  public void triggerSupportResult(RecognitionSupport recognitionSupport) {
+    recognitionSupportExecutor.execute(
+        () -> recognitionSupportCallback.onSupportResult(recognitionSupport));
+  }
+
+  @RequiresApi(VERSION_CODES.TIRAMISU)
+  public void triggerSupportError(int error) {
+    recognitionSupportExecutor.execute(() -> recognitionSupportCallback.onError(error));
+  }
+
+  @RequiresApi(VERSION_CODES.TIRAMISU)
+  @Nullable
+  public Intent getLatestModelDownloadIntent() {
+    return latestModelDownloadIntent;
+  }
+
   /** Reflector interface for {@link SpeechRecognizer}'s internals. */
   @ForType(SpeechRecognizer.class)
   interface SpeechRecognizerReflector {
@@ -129,5 +187,9 @@ public class ShadowSpeechRecognizer {
 
     @Accessor("mHandler")
     Handler getHandler();
+
+    @Static
+    @Direct
+    SpeechRecognizer createOnDeviceSpeechRecognizer(Context context);
   }
 }
