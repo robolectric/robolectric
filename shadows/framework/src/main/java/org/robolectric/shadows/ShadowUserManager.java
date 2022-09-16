@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
@@ -1126,6 +1127,17 @@ public class ShadowUserManager {
   protected boolean requestQuietModeEnabled(
       boolean enableQuietMode, UserHandle userHandle, int flags) {
     return requestQuietModeEnabled(enableQuietMode, userHandle);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected Bundle getUserRestrictions() {
+    return getUserRestrictions(UserHandle.getUserHandleForUid(Process.myUid()));
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean hasUserRestrictionForUser(String restrictionKey, int userId) {
+    Bundle bundle = getUserRestrictions(UserHandle.getUserHandleForUid(userId));
+    return bundle != null && bundle.getBoolean(restrictionKey);
   }
 
   @Resetter

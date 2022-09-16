@@ -28,6 +28,7 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.Arrays.asList;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -61,6 +62,7 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
+import android.content.pm.pkg.FrameworkPackageUserState;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -1243,8 +1245,21 @@ public class ShadowPackageManager {
   }
 
   protected PackageInfo generatePackageInfo(Package appPackage, int flags) {
-    return reflector(_PackageParser_.class)
-        .generatePackageInfo(appPackage, new int[] {0}, flags, 0, 0);
+
+    if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
+      return PackageParser.generatePackageInfo(
+          appPackage,
+          new int[] {0},
+          flags,
+          0,
+          0,
+          Collections.emptySet(),
+          FrameworkPackageUserState.DEFAULT,
+          0);
+    } else {
+      return reflector(_PackageParser_.class)
+          .generatePackageInfo(appPackage, new int[] {0}, flags, 0, 0);
+    }
   }
 
   private void addFilters(

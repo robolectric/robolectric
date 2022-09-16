@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.telephony.PhoneStateListener.LISTEN_CALL_STATE;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_INFO;
 import static android.telephony.PhoneStateListener.LISTEN_CELL_LOCATION;
@@ -227,6 +228,12 @@ public class ShadowTelephonyManager {
     lastTelephonyCallback = callback;
     initTelephonyCallback(callback);
     telephonyCallbackRegistrations.add(callback);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void registerTelephonyCallback(
+      int includeLocationData, Executor executor, TelephonyCallback callback) {
+    registerTelephonyCallback(executor, callback);
   }
 
   @Implementation(minSdk = S)

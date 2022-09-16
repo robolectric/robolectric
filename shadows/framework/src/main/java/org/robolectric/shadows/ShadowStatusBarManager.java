@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.StatusBarManager;
@@ -30,6 +31,8 @@ public class ShadowStatusBarManager {
 
   private int disabled = StatusBarManager.DISABLE_NONE;
   private int disabled2 = StatusBarManager.DISABLE2_NONE;
+
+  private int navBarMode = StatusBarManager.NAV_BAR_MODE_DEFAULT;
 
   @Implementation
   protected void disable(int what) {
@@ -65,6 +68,16 @@ public class ShadowStatusBarManager {
   /** Returns the disable flags previously set in {@link #disable2}. */
   public int getDisable2Flags() {
     return disabled2;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void setNavBarMode(int mode) {
+    navBarMode = mode;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected int getNavBarMode() {
+    return navBarMode;
   }
 
   @ForType(StatusBarManager.class)

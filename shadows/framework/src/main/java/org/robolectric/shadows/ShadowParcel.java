@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.BadParcelableException;
@@ -17,7 +18,9 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
+import android.os.Parcelable.Creator;
 import android.util.Log;
+import android.util.Pair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileDescriptor;
@@ -30,6 +33,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -37,6 +41,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -53,8 +58,12 @@ public class ShadowParcel {
   protected static final String TAG = "Parcel";
 
   @RealObject private Parcel realObject;
+
   private static final NativeObjRegistry<ByteBuffer> NATIVE_BYTE_BUFFER_REGISTRY =
       new NativeObjRegistry<>(ByteBuffer.class);
+
+  private static final HashMap<ClassLoader, HashMap<String, Pair<Creator<?>, Class<?>>>>
+      pairedCreators = new HashMap<>();
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
   @SuppressWarnings("TypeParameterUnusedInFormals")
@@ -138,6 +147,138 @@ public class ShadowParcel {
               + name);
     }
     return creator;
+  }
+
+  /**
+   * The goal of this shadow method is to workaround a JVM/ART incompatibility.
+   *
+   * <p>In ART, a public field is visible regardless whether or not the enclosing class is public.
+   * On the JVM, this is not the case. For compatibility, we need to use {@link
+   * Field#setAccessible(boolean)} to simulate the same behavior.
+   */
+  @SuppressWarnings("unchecked")
+  @Implementation(minSdk = TIRAMISU)
+  protected <T> Parcelable.Creator<T> readParcelableCreatorInternal(
+      ClassLoader loader, Class<T> clazz) {
+    String name = realObject.readString();
+    if (name == null) {
+      return null;
+    }
+
+    Pair<Creator<?>, Class<?>> creatorAndParcelableClass;
+    synchronized (pairedCreators) {
+      HashMap<String, Pair<Creator<?>, Class<?>>> map = pairedCreators.get(loader);
+      if (map == null) {
+        pairedCreators.put(loader, new HashMap<>());
+        creatorAndParcelableClass = null;
+      } else {
+        creatorAndParcelableClass = map.get(name);
+      }
+    }
+
+    if (creatorAndParcelableClass != null) {
+      Parcelable.Creator<?> creator = creatorAndParcelableClass.first;
+      Class<?> parcelableClass = creatorAndParcelableClass.second;
+      if (clazz != null) {
+        if (!clazz.isAssignableFrom(parcelableClass)) {
+          throw newBadTypeParcelableException(
+              "Parcelable creator "
+                  + name
+                  + " is not "
+                  + "a subclass of required class "
+                  + clazz.getName()
+                  + " provided in the parameter");
+        }
+      }
+
+      return (Parcelable.Creator<T>) creator;
+    }
+
+    Parcelable.Creator<?> creator;
+    Class<?> parcelableClass;
+    try {
+      // If loader == null, explicitly emulate Class.forName(String) "caller
+      // classloader" behavior.
+      ClassLoader parcelableClassLoader = (loader == null ? getClass().getClassLoader() : loader);
+      // Avoid initializing the Parcelable class until we know it implements
+      // Parcelable and has the necessary CREATOR field.
+      parcelableClass = Class.forName(name, /* initialize= */ false, parcelableClassLoader);
+      if (!Parcelable.class.isAssignableFrom(parcelableClass)) {
+        throw new BadParcelableException(
+            "Parcelable protocol requires subclassing " + "from Parcelable on class " + name);
+      }
+      if (clazz != null) {
+        if (!clazz.isAssignableFrom(parcelableClass)) {
+          throw newBadTypeParcelableException(
+              "Parcelable creator "
+                  + name
+                  + " is not "
+                  + "a subclass of required class "
+                  + clazz.getName()
+                  + " provided in the parameter");
+        }
+      }
+
+      Field f = parcelableClass.getField("CREATOR");
+
+      // this is a fix for JDK8<->Android VM incompatibility:
+      // Apparently, JDK will not allow access to a public field if its
+      // class is not visible (private or package-private) from the call-site.
+      f.setAccessible(true);
+
+      if ((f.getModifiers() & Modifier.STATIC) == 0) {
+        throw new BadParcelableException(
+            "Parcelable protocol requires " + "the CREATOR object to be static on class " + name);
+      }
+      Class<?> creatorType = f.getType();
+      if (!Parcelable.Creator.class.isAssignableFrom(creatorType)) {
+        // Fail before calling Field.get(), not after, to avoid initializing
+        // parcelableClass unnecessarily.
+        throw new BadParcelableException(
+            "Parcelable protocol requires a "
+                + "Parcelable.Creator object called "
+                + "CREATOR on class "
+                + name);
+      }
+      creator = (Parcelable.Creator<?>) f.get(null);
+    } catch (IllegalAccessException e) {
+      Log.e(TAG, "Illegal access when unmarshalling: " + name, e);
+      throw new BadParcelableException("IllegalAccessException when unmarshalling: " + name, e);
+    } catch (ClassNotFoundException e) {
+      Log.e(TAG, "Class not found when unmarshalling: " + name, e);
+      throw new BadParcelableException("ClassNotFoundException when unmarshalling: " + name, e);
+    } catch (NoSuchFieldException e) {
+      throw new BadParcelableException(
+          "Parcelable protocol requires a "
+              + "Parcelable.Creator object called "
+              + "CREATOR on class "
+              + name,
+          e);
+    }
+    if (creator == null) {
+      throw new BadParcelableException(
+          "Parcelable protocol requires a "
+              + "non-null Parcelable.Creator object called "
+              + "CREATOR on class "
+              + name);
+    }
+
+    synchronized (pairedCreators) {
+      pairedCreators.get(loader).put(name, Pair.create(creator, parcelableClass));
+    }
+
+    return (Parcelable.Creator<T>) creator;
+  }
+
+  private BadParcelableException newBadTypeParcelableException(String message) {
+    try {
+      return (BadParcelableException)
+          ReflectionHelpers.callConstructor(
+              Class.forName("android.os.BadTypeParcelableException"),
+              ClassParameter.from(String.class, message));
+    } catch (ClassNotFoundException e) {
+      throw new LinkageError(e.getMessage(), e);
+    }
   }
 
   @Implementation
@@ -1236,5 +1377,10 @@ public class ShadowParcel {
   @Implementation(minSdk = S)
   protected static void nativeWriteFileDescriptor(Object nativePtr, Object val) {
     nativeWriteFileDescriptor((long) nativePtr, (FileDescriptor) val);
+  }
+
+  @Resetter
+  public static void reset() {
+    pairedCreators.clear();
   }
 }

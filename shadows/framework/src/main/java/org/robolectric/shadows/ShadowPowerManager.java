@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -166,6 +167,16 @@ public class ShadowPowerManager {
   /** Sets the value returned by {@link #isLightDeviceIdleMode()}. */
   public void setIsLightDeviceIdleMode(boolean lightDeviceIdleMode) {
     isLightDeviceIdleMode = lightDeviceIdleMode;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean isDeviceLightIdleMode() {
+    return isLightDeviceIdleMode();
+  }
+
+  /** Sets the value returned by {@link #isDeviceLightIdleMode()}. */
+  public void setIsDeviceLightIdleMode(boolean lightDeviceIdleMode) {
+    setIsLightDeviceIdleMode(lightDeviceIdleMode);
   }
 
   /**

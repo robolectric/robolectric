@@ -1,10 +1,15 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+
 import android.os.Build.VERSION_CODES;
 import android.os.CancellationSignal;
 import android.os.PersistableBundle;
 import android.uwb.RangingSession;
 import android.uwb.UwbManager;
+import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -15,6 +20,9 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowUwbManager {
 
   private PersistableBundle specificationInfo = new PersistableBundle();
+
+  private List<PersistableBundle> chipInfos = new ArrayList<>();
+
   private ShadowRangingSession.Adapter adapter =
       new ShadowRangingSession.Adapter() {
         @Override
@@ -67,5 +75,33 @@ public class ShadowUwbManager {
   /** Sets the bundle to be returned by {@link android.uwb.UwbManager#getSpecificationInfo}. */
   public void setSpecificationInfo(PersistableBundle specificationInfo) {
     this.specificationInfo = new PersistableBundle(specificationInfo);
+  }
+
+  /**
+   * Instantiates a {@link ShadowRangingSession} with the multi-chip API call. {@code chipId} is
+   * unused in the shadow implementation, so this is equivalent to {@link
+   * ShadowUwbManager#openRangingSession(PersistableBundle, Executor, RangingSession.Callback)}
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected CancellationSignal openRangingSession(
+      PersistableBundle params,
+      Executor executor,
+      RangingSession.Callback callback,
+      String chipId) {
+    return openRangingSession(params, executor, callback);
+  }
+
+  /**
+   * Simply returns the List of bundles provided by {@link ShadowUwbManager#setChipInfos(List)} ,
+   * allowing the tester to set multi-chip configuration.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected List<PersistableBundle> getChipInfos() {
+    return ImmutableList.copyOf(chipInfos);
+  }
+
+  /** Sets the list of bundles to be returned by {@link android.uwb.UwbManager#getChipInfos}. */
+  public void setChipInfos(List<PersistableBundle> chipInfos) {
+    this.chipInfos = new ArrayList<>(chipInfos);
   }
 }

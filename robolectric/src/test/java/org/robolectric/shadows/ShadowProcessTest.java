@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -7,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /** Test ShadowProcess */
 @RunWith(AndroidJUnit4.class)
@@ -146,6 +148,24 @@ public class ShadowProcessTest {
 
     assertThat(android.os.Process.getThreadPriority(android.os.Process.myTid()))
         .isEqualTo(THREAD_PRIORITY_LOWEST);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void shouldGetProcessNameAsSet() {
+    ShadowProcess.setProcessName("com.foo.bar:baz");
+
+    assertThat(android.os.Process.myProcessName()).isEqualTo("com.foo.bar:baz");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void shouldGetProcessNameAsEmptyAfterReset() {
+    ShadowProcess.setProcessName("com.foo.bar:baz");
+
+    ShadowProcess.reset();
+
+    assertThat(android.os.Process.myProcessName()).isEmpty();
   }
 }
 

@@ -1,11 +1,18 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.annotation.SystemApi;
 import android.app.UiModeManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.provider.Settings;
+import androidx.annotation.GuardedBy;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,8 +20,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
-/** */
+/** Shadow for {@link UiModeManager}. */
 @Implements(UiModeManager.class)
 public class ShadowUIModeManager {
   public int currentModeType = Configuration.UI_MODE_TYPE_UNDEFINED;
@@ -30,6 +40,21 @@ public class ShadowUIModeManager {
           UiModeManager.MODE_NIGHT_AUTO, UiModeManager.MODE_NIGHT_NO, UiModeManager.MODE_NIGHT_YES);
 
   private static final int DEFAULT_PRIORITY = 0;
+
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
+  private int nightModeCustomType = UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN;
+
+  @GuardedBy("lock")
+  private boolean isNightModeOn = false;
+
+  @RealObject UiModeManager realUiModeManager;
+
+  private static final ImmutableSet<Integer> VALID_NIGHT_MODE_CUSTOM_TYPES =
+      ImmutableSet.of(
+          UiModeManager.MODE_NIGHT_CUSTOM_TYPE_SCHEDULE,
+          UiModeManager.MODE_NIGHT_CUSTOM_TYPE_BEDTIME);
 
   @Implementation
   protected int getCurrentModeType() {
@@ -61,10 +86,29 @@ public class ShadowUIModeManager {
 
   @Implementation
   protected void setNightMode(int mode) {
-    if (VALID_NIGHT_MODES.contains(mode)) {
-      currentNightMode = mode;
-    } else {
-      currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+    synchronized (lock) {
+      ContentResolver resolver = getContentResolver();
+      switch (mode) {
+        case UiModeManager.MODE_NIGHT_NO:
+        case UiModeManager.MODE_NIGHT_YES:
+        case UiModeManager.MODE_NIGHT_AUTO:
+          currentNightMode = mode;
+          nightModeCustomType = UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN;
+          if (resolver != null) {
+            Settings.Secure.putInt(resolver, Settings.Secure.UI_NIGHT_MODE, mode);
+            Settings.Secure.putInt(
+                resolver,
+                Settings.Secure.UI_NIGHT_MODE_CUSTOM_TYPE,
+                UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN);
+          }
+          break;
+        default:
+          currentNightMode = UiModeManager.MODE_NIGHT_AUTO;
+          if (resolver != null) {
+            Settings.Secure.putInt(
+                resolver, Settings.Secure.UI_NIGHT_MODE, UiModeManager.MODE_NIGHT_AUTO);
+          }
+      }
     }
   }
 
@@ -109,6 +153,72 @@ public class ShadowUIModeManager {
       return false;
     }
     return activeProjectionTypes.remove(projectionType);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected int getNightModeCustomType() {
+    synchronized (lock) {
+      return nightModeCustomType;
+    }
+  }
+
+  /** Returns whether night mode is currently on when a custom night mode type is selected. */
+  public boolean isNightModeOn() {
+    synchronized (lock) {
+      return isNightModeOn;
+    }
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void setNightModeCustomType(int mode) {
+    synchronized (lock) {
+      ContentResolver resolver = getContentResolver();
+      if (VALID_NIGHT_MODE_CUSTOM_TYPES.contains(mode)) {
+        nightModeCustomType = mode;
+        currentNightMode = UiModeManager.MODE_NIGHT_CUSTOM;
+        if (resolver != null) {
+          Settings.Secure.putInt(resolver, Settings.Secure.UI_NIGHT_MODE_CUSTOM_TYPE, mode);
+        }
+      } else {
+        nightModeCustomType = UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN;
+        if (resolver != null) {
+          Settings.Secure.putInt(
+              resolver,
+              Settings.Secure.UI_NIGHT_MODE_CUSTOM_TYPE,
+              UiModeManager.MODE_NIGHT_CUSTOM_TYPE_UNKNOWN);
+        }
+      }
+    }
+  }
+
+  private ContentResolver getContentResolver() {
+    Context context = getContext();
+    return context == null ? null : context.getContentResolver();
+  }
+
+  // Note: UiModeManager stores the context only starting from Android R.
+  private Context getContext() {
+    if (VERSION.SDK_INT < VERSION_CODES.R) {
+      return null;
+    }
+    return reflector(UiModeManagerReflector.class, realUiModeManager).getContext();
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean setNightModeActivatedForCustomMode(int mode, boolean active) {
+    synchronized (lock) {
+      if (VALID_NIGHT_MODE_CUSTOM_TYPES.contains(mode) && nightModeCustomType == mode) {
+        isNightModeOn = active;
+        return true;
+      }
+      return false;
+    }
+  }
+
+  @ForType(UiModeManager.class)
+  interface UiModeManagerReflector {
+    @Accessor("mContext")
+    Context getContext();
   }
 
   private void assertHasPermission(String... permissions) {
