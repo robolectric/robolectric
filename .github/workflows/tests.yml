@@ -107,7 +107,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29, 32 ]
+        api-level: [ 29, 33 ]
 
     steps:
       - uses: actions/checkout@v3
