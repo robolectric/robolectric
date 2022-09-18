@@ -6,11 +6,11 @@ apply plugin: AndroidProjectConfigPlugin
 apply plugin: GradleManagedDevicePlugin
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 16
-        targetSdk 32
+        targetSdk 33
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

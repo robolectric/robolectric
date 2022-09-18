@@ -4,11 +4,11 @@ apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 16
-        targetSdk 32
+        targetSdk 33
     }
 
     compileOptions {
