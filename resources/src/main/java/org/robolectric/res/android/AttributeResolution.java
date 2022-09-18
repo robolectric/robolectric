@@ -66,8 +66,9 @@ public class AttributeResolution {
                                      int srcValuesLength, int[] attrs,
                                      int attrsLength, int[] outValues, int[] outIndices) {
     if (kDebugStyles) {
-      ALOGI("APPLY STYLE: theme=0x%s defStyleAttr=0x%x defStyleRes=0x%x", theme,
-          defStyleAttr, defStyleRes);
+      ALOGI(
+          "APPLY STYLE: theme=%s defStyleAttr=0x%x defStyleRes=0x%x",
+          theme, defStyleAttr, defStyleRes);
     }
 
     final ResTable res = theme.getResTable();
@@ -347,7 +348,9 @@ public class AttributeResolution {
           typeSetFlags.set(styleTypeSetFlags.get());
           value.set(defStyleAttrEntry.map.value);
           if (kDebugStyles) {
-            ALOGI("-> From def style: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
+            ALOGI(
+                "-> From def style: type=0x%x, data=0x%08x",
+                value.get().dataType, value.get().data);
           }
         }
       }
@@ -377,7 +380,9 @@ public class AttributeResolution {
           }
 
           if (kDebugStyles) {
-            ALOGI("-> Resolved theme: type=0x%x, data=0x%08x", value.get().dataType, value.get().data);
+            ALOGI(
+                "-> Resolved theme: type=0x%x, data=0x%08x",
+                value.get().dataType, value.get().data);
           }
         }
       }
@@ -392,7 +397,9 @@ public class AttributeResolution {
       }
 
       if (kDebugStyles) {
-        ALOGI("Attribute 0x%08x: type=0x%x, data=0x%08x", curIdent, value.get().dataType, value.get().data);
+        ALOGI(
+            "Attribute 0x%08x: type=0x%x, data=0x%08x",
+            curIdent, value.get().dataType, value.get().data);
       }
 
       // Write the final value back to Java.
