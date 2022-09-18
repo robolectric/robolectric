@@ -15,10 +15,10 @@ class GradleManagedDevicePlugin implements Plugin<Project> {
                     apiLevel = 29
                     systemImageSource = "aosp"
                 }
-                // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi32DebugAndroidTest
-                nexusOneApi32(ManagedVirtualDevice) {
+                // ./gradlew -Pandroid.sdk.channel=3 nexusOneApi33DebugAndroidTest
+                nexusOneApi33(ManagedVirtualDevice) {
                     device = "Nexus One"
-                    apiLevel = 32
+                    apiLevel = 33
                     systemImageSource = "google"
                 }
             }
