@@ -11,6 +11,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 /** Collection of helper methods for calling methods and accessing fields reflectively. */
 @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals", "NewApi"})
@@ -57,6 +58,7 @@ public class ReflectionHelpers {
             clazz.getClassLoader(),
             new Class[] {clazz},
             new InvocationHandler() {
+              @Nullable
               @Override
               public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 if (PRIMITIVE_RETURN_VALUES.containsKey(method.getReturnType().getName())) {
@@ -121,7 +123,7 @@ public class ReflectionHelpers {
           new InsideTraversal<R>() {
             @Override
             public R run(Class<?> traversalClass) throws Exception {
-              Field field = getDeclaredField(traversalClass, fieldName);
+              Field field = traversalClass.getDeclaredField(fieldName);
               field.setAccessible(true);
               return (R) field.get(object);
             }
@@ -146,7 +148,7 @@ public class ReflectionHelpers {
           new InsideTraversal<Void>() {
             @Override
             public Void run(Class<?> traversalClass) throws Exception {
-              Field field = getDeclaredField(traversalClass, fieldName);
+              Field field = traversalClass.getDeclaredField(fieldName);
               field.setAccessible(true);
               field.set(object, fieldNewValue);
               return null;
@@ -167,7 +169,7 @@ public class ReflectionHelpers {
    */
   public static void setField(Class<?> type, final Object object, final String fieldName, final Object fieldNewValue) {
     try {
-      Field field = getDeclaredField(type, fieldName);
+      Field field = type.getDeclaredField(fieldName);
       field.setAccessible(true);
       field.set(object, fieldNewValue);
     } catch (Exception e) {
@@ -202,7 +204,7 @@ public class ReflectionHelpers {
    */
   public static <R> R getStaticField(Class<?> clazz, String fieldName) {
     try {
-      return getStaticField(getDeclaredField(clazz, fieldName));
+      return getStaticField(clazz.getDeclaredField(fieldName));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -232,7 +234,7 @@ public class ReflectionHelpers {
    */
   public static void setStaticField(Class<?> clazz, String fieldName, Object fieldNewValue) {
     try {
-      setStaticField(getDeclaredField(clazz, fieldName), fieldNewValue);
+      setStaticField(clazz.getDeclaredField(fieldName), fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
