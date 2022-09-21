@@ -87,6 +87,8 @@ public class ShadowDevicePolicyManager {
   private CharSequence organizationName;
   private int organizationColor;
   private boolean isAutoTimeRequired;
+  private boolean isAutoTimeZoneEnabled;
+  private String timeZone;
   private int keyguardDisabledFeatures;
   private String lastSetPassword;
   private int requiredPasswordQuality = DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED;
@@ -585,6 +587,33 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   protected boolean getAutoTimeRequired() {
     return isAutoTimeRequired;
+  }
+
+  @Implementation(minSdk = R)
+  protected void setAutoTimeZoneEnabled(ComponentName admin, boolean enabled) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    isAutoTimeZoneEnabled = enabled;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean getAutoTimeZoneEnabled(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return isAutoTimeZoneEnabled;
+  }
+
+  @Implementation(minSdk = P)
+  protected boolean setTimeZone(ComponentName admin, String timeZone) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    if (isAutoTimeZoneEnabled) {
+      return false;
+    }
+    this.timeZone = timeZone;
+    return true;
+  }
+
+  /** Returns the time zone set by setTimeZone. */
+  public String getTimeZone() {
+    return timeZone;
   }
 
   /**

@@ -27,6 +27,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -828,6 +829,148 @@ public final class ShadowDevicePolicyManagerTest {
     // WHEN setAutoTimeRequired has not been called
     // THEN getAutoTimeRequired should return false
     assertThat(devicePolicyManager.getAutoTimeRequired()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setAutoTimeZoneEnabledShouldFailIfNotDeviceOrProfileOwner() {
+    // GIVEN the caller is not a device or profile owner
+    // WHEN setAutoTimeZoneEnabled is called
+    // THEN a SecurityException should be thrown
+    assertThrows(
+        SecurityException.class,
+        () -> devicePolicyManager.setAutoTimeZoneEnabled(testComponent, false));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getAutoTimeZoneEnabledShouldFailIfNotDeviceOrProfileOwner() {
+    // GIVEN the caller is not a device or profile owner
+    // WHEN getAutoTimeZoneEnabled is called
+    // THEN a SecurityException should be thrown
+    assertThrows(
+        SecurityException.class, () -> devicePolicyManager.getAutoTimeZoneEnabled(testComponent));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getAutoTimeZoneEnabledShouldWorkAsIntendedForDeviceOwner() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN setAutoTimeZoneEnabled is called with true
+    devicePolicyManager.setAutoTimeZoneEnabled(testComponent, true);
+
+    // THEN getAutoTimeZoneEnabled should return true
+    assertThat(devicePolicyManager.getAutoTimeZoneEnabled(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getAutoTimeZoneEnabledShouldWorkAsIntendedForProfileOwner() {
+    // GIVEN the caller is the profile owner
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    // WHEN setAutoTimeZoneEnabled is called with true
+    devicePolicyManager.setAutoTimeZoneEnabled(testComponent, true);
+
+    // THEN getAutoTimeZoneEnabled should return true
+    assertThat(devicePolicyManager.getAutoTimeZoneEnabled(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getAutoTimeZoneEnabledShouldReturnFalseIfNotSet() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN setAutoTimeZoneEnabled has not been called
+    // THEN getAutoTimeZoneEnabled should return false
+    assertThat(devicePolicyManager.getAutoTimeZoneEnabled(testComponent)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setTimeZoneShouldFailIfNotDeviceOrProfileOwner() {
+    // GIVEN the caller is not a device or profile owner
+    // WHEN setTimeZone is called
+    // THEN a SecurityException should be thrown
+    assertThrows(
+        SecurityException.class,
+        () -> devicePolicyManager.setTimeZone(testComponent, "America/New_York"));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setTimeZoneShouldReturnTrueIfAutoTimeZoneNotEnabled() {
+    String testTimeZone = "America/New_York";
+
+    // GIVEN the caller is the profile owner
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    // GIVEN auto time zone is not enabled
+    devicePolicyManager.setAutoTimeZoneEnabled(testComponent, false);
+
+    // WHEN setTimeZone is called with "America/New_York"
+    // THEN setTimeZone should return false
+    assertThat(devicePolicyManager.setTimeZone(testComponent, testTimeZone)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setTimeZoneShouldReturnFalseIfAutoTimeZoneEnabled() {
+    String testTimeZone = "America/New_York";
+
+    // GIVEN the caller is the profile owner
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    // GIVEN auto time zone is enabled
+    devicePolicyManager.setAutoTimeZoneEnabled(testComponent, true);
+
+    // WHEN setTimeZone is called with "America/New_York"
+    // THEN setTimeZone should return false
+    assertThat(devicePolicyManager.setTimeZone(testComponent, testTimeZone)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getTimeZoneShouldWorkAsIntendedForDeviceOwner() {
+    String testTimeZone = "America/New_York";
+
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN setTimeZone is called with "America/New_York"
+    devicePolicyManager.setTimeZone(testComponent, testTimeZone);
+
+    // THEN getTimeZone should return "America/New_York"
+    assertThat(shadowOf(devicePolicyManager).getTimeZone()).isEqualTo(testTimeZone);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getTimeZoneShouldWorkAsIntendedForProfileOwner() {
+    String testTimeZone = "America/New_York";
+
+    // GIVEN the caller is the profile owner
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    // WHEN setTimeZone is called with "America/New_York"
+    devicePolicyManager.setTimeZone(testComponent, testTimeZone);
+
+    // THEN getTimeZone should return "America/New_York"
+    assertThat(shadowOf(devicePolicyManager).getTimeZone()).isEqualTo(testTimeZone);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getTimeZoneShouldReturnNullIfSetTimeZoneHasNotBeenCalled() {
+    // GIVEN the caller is the profile owner
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    // WHEN setTimeZone is not called
+    // THEN getTimeZone should return null
+    assertThat(shadowOf(devicePolicyManager).getTimeZone()).isNull();
   }
 
   @Test
