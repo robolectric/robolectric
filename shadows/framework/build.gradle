@@ -15,9 +15,6 @@ configurations {
     sqlite4java
 }
 
-def sqlite4javaVersion = '1.0.392'
-def errorproneVersion = '2.9.0'
-
 task copySqliteNatives(type: Copy) {
     from project.configurations.sqlite4java {
         include '**/*.dll'
