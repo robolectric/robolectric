@@ -3,11 +3,16 @@ package org.robolectric.shadows;
 import android.database.sqlite.SQLiteConnection;
 import android.os.SystemProperties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.SQLiteMode.Mode;
 import org.robolectric.config.ConfigurationRegistry;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /**
  * The base shadow class for {@link SQLiteConnection} shadow APIs.
@@ -21,12 +26,30 @@ import org.robolectric.config.ConfigurationRegistry;
     shadowPicker = ShadowSQLiteConnection.Picker.class)
 public class ShadowSQLiteConnection {
 
+  Throwable onCreate = new Throwable();
+
   protected static AtomicBoolean useInMemoryDatabase = new AtomicBoolean();
 
   /** Shadow {@link Picker} for {@link ShadowSQLiteConnection} */
   public static class Picker extends SQLiteShadowPicker<ShadowSQLiteConnection> {
     public Picker() {
       super(ShadowLegacySQLiteConnection.class, ShadowNativeSQLiteConnection.class);
+    }
+  }
+
+  private final AtomicBoolean disposed = new AtomicBoolean();
+
+  @RealObject SQLiteConnection realObject;
+
+  @ReflectorObject SQLiteConnectionReflector sqliteConnectionReflector;
+
+  @Implementation
+  protected void dispose(boolean finalized) {
+    // On the JVM there may be two concurrent finalizer threads running if 'System.runFinalization'
+    // is called. Because CursorWindow.dispose is not thread safe, we can work around it
+    // by manually making it thread safe.
+    if (disposed.compareAndSet(false, true)) {
+      sqliteConnectionReflector.dispose(finalized);
     }
   }
 
@@ -77,4 +100,11 @@ public class ShadowSQLiteConnection {
   public static void reset() {
     useInMemoryDatabase.set(false);
   }
+
+  @ForType(SQLiteConnection.class)
+  interface SQLiteConnectionReflector {
+    @Direct
+    void dispose(boolean finalized);
+  }
 }
+
