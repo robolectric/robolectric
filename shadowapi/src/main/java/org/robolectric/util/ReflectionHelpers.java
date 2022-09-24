@@ -492,11 +492,7 @@ public class ReflectionHelpers {
           }
         }
         throw new NoSuchFieldException(name);
-      } catch (NoSuchMethodException e2) {
-        throw new NoSuchFieldException(name);
-      } catch (IllegalAccessException e2) {
-        throw new NoSuchFieldException(name);
-      } catch (InvocationTargetException e2) {
+      } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e2) {
         throw new NoSuchFieldException(name);
       }
     }
