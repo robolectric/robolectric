@@ -173,8 +173,7 @@ public class ShadowAccountManager {
     return start(
         new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
           @Override
-          public Boolean doWork()
-              throws OperationCanceledException, IOException, AuthenticatorException {
+          public Boolean doWork() {
             return removeAccountExplicitly(account);
           }
         });
@@ -196,8 +195,7 @@ public class ShadowAccountManager {
     return start(
         new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
           @Override
-          public Bundle doWork()
-              throws OperationCanceledException, IOException, AuthenticatorException {
+          public Bundle doWork() {
             Bundle result = new Bundle();
             if (removeAccountIntent == null) {
               result.putBoolean(
@@ -386,8 +384,7 @@ public class ShadowAccountManager {
     return start(
         new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
           @Override
-          public Bundle doWork()
-              throws OperationCanceledException, IOException, AuthenticatorException {
+          public Bundle doWork() throws AuthenticatorException {
             if (!authenticators.containsKey(accountType)) {
               throw new AuthenticatorException("No authenticator specified for " + accountType);
             }
@@ -428,8 +425,7 @@ public class ShadowAccountManager {
     return start(
         new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
           @Override
-          public Bundle doWork()
-              throws OperationCanceledException, IOException, AuthenticatorException {
+          public Bundle doWork() {
             // Just return sessionBundle as the result since it's not really used, allowing it to
             // be easily controlled in tests.
             return sessionBundle;
@@ -536,7 +532,7 @@ public class ShadowAccountManager {
     }
 
     @Override
-    public Bundle doWork() throws OperationCanceledException, IOException, AuthenticatorException {
+    public Bundle doWork() throws AuthenticatorException {
       if (!authenticators.containsKey(accountType)) {
         throw new AuthenticatorException("No authenticator specified for " + accountType);
       }
@@ -625,8 +621,7 @@ public class ShadowAccountManager {
     return start(
         new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
           @Override
-          public Bundle doWork()
-              throws OperationCanceledException, IOException, AuthenticatorException {
+          public Bundle doWork() throws AuthenticatorException {
             return getAuthToken(account, authTokenType);
           }
         });
@@ -641,17 +636,16 @@ public class ShadowAccountManager {
       final AccountManagerCallback<Bundle> callback,
       Handler handler) {
 
-    return start(new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
-      @Override
-      public Bundle doWork()
-          throws OperationCanceledException, IOException, AuthenticatorException {
-        return getAuthToken(account, authTokenType);
-      }
-    });
+    return start(
+        new BaseRoboAccountManagerFuture<Bundle>(callback, handler) {
+          @Override
+          public Bundle doWork() throws AuthenticatorException {
+            return getAuthToken(account, authTokenType);
+          }
+        });
   }
 
-  private Bundle getAuthToken(Account account, String authTokenType)
-      throws OperationCanceledException, IOException, AuthenticatorException {
+  private Bundle getAuthToken(Account account, String authTokenType) throws AuthenticatorException {
     Bundle result = new Bundle();
 
     String authToken = blockingGetAuthToken(account, authTokenType, false);
@@ -679,18 +673,19 @@ public class ShadowAccountManager {
       final String[] features,
       AccountManagerCallback<Boolean> callback,
       Handler handler) {
-    return start(new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
-      @Override
-      public Boolean doWork() throws OperationCanceledException, IOException, AuthenticatorException {
-        Set<String> availableFeatures = accountFeatures.get(account);
-        for (String feature : features) {
-          if (!availableFeatures.contains(feature)) {
-            return false;
+    return start(
+        new BaseRoboAccountManagerFuture<Boolean>(callback, handler) {
+          @Override
+          public Boolean doWork() {
+            Set<String> availableFeatures = accountFeatures.get(account);
+            for (String feature : features) {
+              if (!availableFeatures.contains(feature)) {
+                return false;
+              }
+            }
+            return true;
           }
-        }
-        return true;
-      }
-    });
+        });
   }
 
   @Implementation
@@ -702,8 +697,7 @@ public class ShadowAccountManager {
     return start(
         new BaseRoboAccountManagerFuture<Account[]>(callback, handler) {
           @Override
-          public Account[] doWork()
-              throws OperationCanceledException, IOException, AuthenticatorException {
+          public Account[] doWork() throws AuthenticatorException {
 
             if (authenticationErrorOnNextResponse) {
               setAuthenticationErrorOnNextResponse(false);
