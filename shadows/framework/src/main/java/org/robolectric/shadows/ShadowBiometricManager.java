@@ -1,9 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.Manifest.permission.USE_BIOMETRIC;
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE;
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
-import static android.hardware.biometrics.BiometricPrompt.BIOMETRIC_ERROR_HW_UNAVAILABLE;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -16,7 +13,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -28,6 +24,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowBiometricManager {
 
   protected boolean biometricServiceConnected = true;
+  private int authenticatorType = BiometricManager.Authenticators.EMPTY_SET;
 
   @RealObject private BiometricManager realBiometricManager;
 
@@ -37,20 +34,57 @@ public class ShadowBiometricManager {
   protected int canAuthenticate() {
     if (RuntimeEnvironment.getApiLevel() >= R) {
       return reflector(BiometricManagerReflector.class, realBiometricManager).canAuthenticate();
-    } else if (biometricServiceConnected) {
-      return BIOMETRIC_SUCCESS;
     } else {
-      boolean hasBiomatrics =
-          ReflectionHelpers.callStaticMethod(
-              BiometricManager.class,
-              "hasBiometrics",
-              ClassParameter.from(
-                  Context.class, RuntimeEnvironment.getApplication().getApplicationContext()));
-      if (!hasBiomatrics) {
-        return BIOMETRIC_ERROR_NO_HARDWARE;
+      int biometricResult =
+          canAuthenticateInternal(0, BiometricManager.Authenticators.BIOMETRIC_WEAK);
+      if (biometricServiceConnected) {
+        return BiometricManager.BIOMETRIC_SUCCESS;
+      } else if (biometricResult != BiometricManager.BIOMETRIC_SUCCESS) {
+        return biometricResult;
       } else {
-        return BIOMETRIC_ERROR_HW_UNAVAILABLE;
+        boolean hasBiometrics =
+            ReflectionHelpers.callStaticMethod(
+                BiometricManager.class,
+                "hasBiometrics",
+                ReflectionHelpers.ClassParameter.from(
+                    Context.class, RuntimeEnvironment.getApplication().getApplicationContext()));
+        if (!hasBiometrics) {
+          return BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE;
+        } else {
+          return BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE;
+        }
       }
+    }
+  }
+
+  @RequiresPermission(USE_BIOMETRIC)
+  @Implementation(minSdk = R)
+  protected int canAuthenticate(int authenticators) {
+    return canAuthenticateInternal(0, authenticators);
+  }
+
+  @RequiresPermission(USE_BIOMETRIC)
+  @Implementation(minSdk = R)
+  protected int canAuthenticate(int userId, int authenticators) {
+    return canAuthenticateInternal(userId, authenticators);
+  }
+
+  private int canAuthenticateInternal(int userId, int authenticators) {
+    if (authenticatorType == BiometricManager.Authenticators.BIOMETRIC_STRONG
+        && biometricServiceConnected) {
+      return BiometricManager.BIOMETRIC_SUCCESS;
+    }
+    if ((authenticatorType & BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+        == BiometricManager.Authenticators.DEVICE_CREDENTIAL) {
+      return BiometricManager.BIOMETRIC_SUCCESS;
+    }
+    if (authenticatorType != BiometricManager.Authenticators.EMPTY_SET) {
+      return authenticatorType;
+    }
+    if (!biometricServiceConnected) {
+      return BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE;
+    } else {
+      return BiometricManager.BIOMETRIC_SUCCESS;
     }
   }
 
@@ -65,9 +99,21 @@ public class ShadowBiometricManager {
     biometricServiceConnected = flag;
   }
 
-  @Implementation(minSdk = R)
-  protected int canAuthenticate(int userId, int authenticators) {
-    return biometricServiceConnected ? BIOMETRIC_SUCCESS : BIOMETRIC_ERROR_NO_HARDWARE;
+  /**
+   * Allow different result {@link #canAuthenticate(int)}, result will depend on the combination as
+   * described <a
+   * href="https://developer.android.com/reference/android/hardware/biometrics/BiometricManager#canAuthenticate(int)">here</a>
+   * For example, you can set the value {@code BiometricManager.Authenticators.BIOMETRIC_STRONG} to
+   * allow {@link #canAuthenticate(int)} return {@link BiometricManager#BIOMETRIC_SUCCESS} when you
+   * passed {@code BiometricManager.Authenticators.BIOMETRIC_WEAK} as parameter in {@link
+   * #canAuthenticate(int)}
+   *
+   * @param type to set the authenticatorType
+   * @see <a
+   *     href="https://developer.android.com/reference/android/hardware/biometrics/BiometricManager#canAuthenticate(int)"
+   */
+  public void setAuthenticatorType(int type) {
+    authenticatorType = type;
   }
 
   @ForType(BiometricManager.class)
