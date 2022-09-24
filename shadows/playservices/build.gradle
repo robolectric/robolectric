@@ -18,7 +18,7 @@ dependencies {
 
     compileOnly "com.android.support:support-fragment:28.0.0"
     compileOnly "com.google.android.gms:play-services-base:8.4.0"
-    compileOnly "com.google.android.gms:play-services-basement:8.4.0"
+    compileOnly "com.google.android.gms:play-services-basement:18.1.0"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
