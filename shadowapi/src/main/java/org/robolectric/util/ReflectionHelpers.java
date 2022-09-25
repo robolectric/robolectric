@@ -3,7 +3,6 @@ package org.robolectric.util;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -56,16 +55,13 @@ public class ReflectionHelpers {
         Proxy.newProxyInstance(
             clazz.getClassLoader(),
             new Class[] {clazz},
-            new InvocationHandler() {
-              @Override
-              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                if (PRIMITIVE_RETURN_VALUES.containsKey(method.getReturnType().getName())) {
-                  return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
-                } else if (method.getReturnType().isInterface()) {
-                  return createDeepProxy(method.getReturnType());
-                } else {
-                  return null;
-                }
+            (proxy, method, args) -> {
+              if (PRIMITIVE_RETURN_VALUES.containsKey(method.getReturnType().getName())) {
+                return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+              } else if (method.getReturnType().isInterface()) {
+                return createDeepProxy(method.getReturnType());
+              } else {
+                return null;
               }
             });
   }
@@ -76,32 +72,27 @@ public class ReflectionHelpers {
         Proxy.newProxyInstance(
             clazz.getClassLoader(),
             new Class[] {clazz},
-            new InvocationHandler() {
-              @Override
-              public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                try {
-                  Method delegateMethod =
-                      delegateClass.getMethod(method.getName(), method.getParameterTypes());
-                  delegateMethod.setAccessible(true);
-                  return delegateMethod.invoke(delegate, args);
-                } catch (NoSuchMethodException e) {
-                  return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
-                } catch (InvocationTargetException e) {
-                  // Required to propagate the correct throwable.
-                  throw e.getTargetException();
-                }
+            (proxy, method, args) -> {
+              try {
+                Method delegateMethod =
+                    delegateClass.getMethod(method.getName(), method.getParameterTypes());
+                delegateMethod.setAccessible(true);
+                return delegateMethod.invoke(delegate, args);
+              } catch (NoSuchMethodException e) {
+                return PRIMITIVE_RETURN_VALUES.get(method.getReturnType().getName());
+              } catch (InvocationTargetException e) {
+                // Required to propagate the correct throwable.
+                throw e.getTargetException();
               }
             });
   }
 
   public static <A extends Annotation> A defaultsFor(Class<A> annotation) {
     return annotation.cast(
-        Proxy.newProxyInstance(annotation.getClassLoader(), new Class[] { annotation },
-            new InvocationHandler() {
-              @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                return method.getDefaultValue();
-              }
-            }));
+        Proxy.newProxyInstance(
+            annotation.getClassLoader(),
+            new Class[] {annotation},
+            (proxy, method, args) -> method.getDefaultValue()));
   }
 
   /**
@@ -118,13 +109,10 @@ public class ReflectionHelpers {
       return traverseClassHierarchy(
           object.getClass(),
           NoSuchFieldException.class,
-          new InsideTraversal<R>() {
-            @Override
-            public R run(Class<?> traversalClass) throws Exception {
-              Field field = getDeclaredField(traversalClass, fieldName);
-              field.setAccessible(true);
-              return (R) field.get(object);
-            }
+          traversalClass -> {
+            Field field = getDeclaredField(traversalClass, fieldName);
+            field.setAccessible(true);
+            return (R) field.get(object);
           });
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -143,15 +131,13 @@ public class ReflectionHelpers {
       traverseClassHierarchy(
           object.getClass(),
           NoSuchFieldException.class,
-          new InsideTraversal<Void>() {
-            @Override
-            public Void run(Class<?> traversalClass) throws Exception {
-              Field field = getDeclaredField(traversalClass, fieldName);
-              field.setAccessible(true);
-              field.set(object, fieldNewValue);
-              return null;
-            }
-          });
+          (InsideTraversal<Void>)
+              traversalClass -> {
+                Field field = getDeclaredField(traversalClass, fieldName);
+                field.setAccessible(true);
+                field.set(object, fieldNewValue);
+                return null;
+              });
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -257,15 +243,14 @@ public class ReflectionHelpers {
       final Class<?>[] classes = ClassParameter.getClasses(classParameters);
       final Object[] values = ClassParameter.getValues(classParameters);
 
-      return traverseClassHierarchy(instance.getClass(), NoSuchMethodException.class, new InsideTraversal<R>() {
-        @Override
-        @SuppressWarnings("unchecked")
-        public R run(Class<?> traversalClass) throws Exception {
-          Method declaredMethod = traversalClass.getDeclaredMethod(methodName, classes);
-          declaredMethod.setAccessible(true);
-          return (R) declaredMethod.invoke(instance, values);
-        }
-      });
+      return traverseClassHierarchy(
+          instance.getClass(),
+          NoSuchMethodException.class,
+          traversalClass -> {
+            Method declaredMethod = traversalClass.getDeclaredMethod(methodName, classes);
+            declaredMethod.setAccessible(true);
+            return (R) declaredMethod.invoke(instance, values);
+          });
     } catch (InvocationTargetException e) {
       if (e.getTargetException() instanceof RuntimeException) {
         throw (RuntimeException) e.getTargetException();
@@ -442,7 +427,9 @@ public class ReflectionHelpers {
     }
   }
 
-  private static <R, E extends Exception> R traverseClassHierarchy(Class<?> targetClass, Class<? extends E> exceptionClass, InsideTraversal<R> insideTraversal) throws Exception {
+  private static <R, E extends Exception> R traverseClassHierarchy(
+      Class<?> targetClass, Class<? extends E> exceptionClass, InsideTraversal<R> insideTraversal)
+      throws Exception {
     Class<?> hierarchyTraversalClass = targetClass;
     while (true) {
       try {
