@@ -170,7 +170,7 @@ public class ProxyMaker {
     }
 
     try {
-      final Class<?> proxyClass = defineHiddenClass(targetClass, writer.toByteArray());
+      final Class<?> proxyClass = defineHiddenClass(targetClass, bytecode);
       final Field field = proxyClass.getDeclaredField(TARGET_FIELD);
       return new Factory() {
         @Override public <E> E createProxy(Class<E> targetClass, E target) {
