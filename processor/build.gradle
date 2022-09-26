@@ -47,7 +47,7 @@ dependencies {
         implementation files(toolsJar)
     }
 
-    testImplementation "javax.annotation:jsr250-api:1.0"
+    testImplementation "javax.annotation:jsr250-api:1.0-20050927.133100"
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "com.google.testing.compile:compile-testing:0.19"
