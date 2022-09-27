@@ -322,7 +322,7 @@ public class ShadowBitmap {
         parceledColors, 0, parceledWidth, parceledWidth, parceledHeight, parceledConfig);
   }
 
-  public static int getBytesPerPixel(Bitmap.Config config) {
+  static int getBytesPerPixel(Bitmap.Config config) {
     if (config == null) {
       throw new NullPointerException("Bitmap config was null.");
     }
@@ -819,10 +819,6 @@ public class ShadowBitmap {
       return scaledFromBitmap.sameAs(shadowOtherBitmap.scaledFromBitmap);
     }
     return true;
-  }
-
-  public Bitmap getRealBitmap() {
-    return realBitmap;
   }
 
   public void setCreatedFromResId(int resId, String description) {
