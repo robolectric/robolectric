@@ -208,6 +208,32 @@ public class ClassInstrumentor {
     mutableClass.addMethod(setFunction);
   }
 
+  /**
+   * Checks to see if the constructor byte code can be instrumented. Robolectric assumes that
+   * constructor bytecode follow the following pattern:
+   *
+   * <p>aload_0 ... some code ... invokespecial ... some code ... return
+   *
+   * <p>To check if the constructor byte code is malformed, we can just check to see if the first
+   * aload instruction is aload_0. If not, then that means the constructor byte code is malformed
+   * and will likely cause errors in instrumentation.
+   *
+   * @param ctor constructor method node
+   * @return whether or not the constructor can be instrumented
+   */
+  private boolean ctorCanBeInstrumented(MethodNode ctor) {
+    AbstractInsnNode[] insns = ctor.instructions.toArray();
+    for (int i = 0; i < insns.length; i++) {
+      AbstractInsnNode node = insns[i];
+
+      if (node.getOpcode() == Opcodes.ALOAD) {
+        VarInsnNode vNode = (VarInsnNode) node;
+        return vNode.var == 0;
+      }
+    }
+    return true;
+  }
+
   private void instrumentMethods(MutableClass mutableClass) {
     if (mutableClass.isInterface()) {
       for (MethodNode method : mutableClass.getMethods()) {
@@ -221,7 +247,9 @@ public class ClassInstrumentor {
           method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
           mutableClass.addMethod(generateStaticInitializerNotifierMethod(mutableClass));
         } else if (method.name.equals("<init>")) {
-          instrumentConstructor(mutableClass, method);
+          if (ctorCanBeInstrumented(method)) {
+            instrumentConstructor(mutableClass, method);
+          }
         } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
           instrumentNormalMethod(mutableClass, method);
         }

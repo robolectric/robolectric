@@ -1,0 +1,14 @@
+import org.robolectric.gradle.RoboJavaModulePlugin
+
+apply plugin: RoboJavaModulePlugin
+
+dependencies {
+    api project(":robolectric")
+    api project(":shadows:playservices")
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "com.google.android.gms:play-services-basement:18.0.1"
+}
