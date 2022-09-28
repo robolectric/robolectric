@@ -128,14 +128,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
   @Override
   public void setUpApplicationState(
       Method method, Configuration configuration, AndroidManifest appManifest) {
+    Config config = configuration.get(Config.class);
+
+    ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
 
     for (TestEnvironmentLifecyclePlugin e : testEnvironmentLifecyclePlugins) {
       e.onSetupApplicationState();
     }
-
-    Config config = configuration.get(Config.class);
-
-    ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
 
     clearEnvironment();
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
