@@ -39,6 +39,9 @@ public class ConfigurationRegistry {
 
   private <T> T getInSandboxClassLoader(Class<T> someConfigClass) {
     Object configInParentLoader = configurations.get(someConfigClass.getName());
+    if (configInParentLoader == null) {
+      return null;
+    }
     Object configInSandboxLoader = maybeReloadInSandboxClassLoader(configInParentLoader);
     return someConfigClass.cast(configInSandboxLoader);
   }
