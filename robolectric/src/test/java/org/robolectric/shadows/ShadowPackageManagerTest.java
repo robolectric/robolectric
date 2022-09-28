@@ -79,6 +79,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
+import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.PackageParser.Package;
 import android.content.pm.PackageParser.PermissionGroup;
 import android.content.pm.PackageStats;
@@ -103,6 +104,7 @@ import android.provider.DocumentsContract;
 import android.telecom.TelecomManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.core.content.pm.ApplicationInfoBuilder;
+import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -1419,6 +1421,88 @@ public class ShadowPackageManagerTest {
             ClassParameter.from(int.class, USER_ID));
 
     assertThat(resolvedActivity).isNull();
+  }
+
+  @Test
+  public void resolveExplicitIntent_sameApp() throws Exception {
+    ComponentName testComponent = new ComponentName(RuntimeEnvironment.getApplication(), "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+
+    shadowOf(packageManager).addActivityIfNotPresent(testComponent);
+    shadowOf(packageManager).addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent().setComponent(testComponent);
+    ResolveInfo resolveInfo = packageManager.resolveActivity(intent, 0);
+    assertThat(resolveInfo).isNotNull();
+    assertThat(resolveInfo.activityInfo.name).isEqualTo("name");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void resolveExplicitIntent_filterMatch() throws Exception {
+    ComponentName testComponent = new ComponentName("some.other.package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+
+    shadowOf(packageManager).addActivityIfNotPresent(testComponent);
+    shadowOf(packageManager).addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent("ACTION").setComponent(testComponent);
+    ResolveInfo resolveInfo = packageManager.resolveActivity(intent, ResolveInfoFlags.of(0));
+    assertThat(resolveInfo).isNotNull();
+    assertThat(resolveInfo.activityInfo.name).isEqualTo("name");
+    assertThat(resolveInfo.activityInfo.packageName).isEqualTo("some.other.package");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void resolveExplicitIntent_noFilterMatch() throws Exception {
+    ComponentName testComponent = new ComponentName("some.other.package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+
+    shadowOf(packageManager).addActivityIfNotPresent(testComponent);
+    shadowOf(packageManager).addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent("OTHER_ACTION").setComponent(testComponent);
+    assertThat(packageManager.resolveActivity(intent, ResolveInfoFlags.of(0))).isNull();
+  }
+
+  @Test
+  @Config(maxSdk = S)
+  public void resolveExplicitIntent_noFilterMatch_belowT() throws Exception {
+    ComponentName testComponent = new ComponentName("some.other.package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+
+    shadowOf(packageManager).addActivityIfNotPresent(testComponent);
+    shadowOf(packageManager).addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent("OTHER_ACTION").setComponent(testComponent);
+    assertThat(packageManager.resolveActivity(intent, 0)).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void resolveExplicitIntent_noFilterMatch_targetBelowT() throws Exception {
+    PackageInfo testPackage =
+        PackageInfoBuilder.newBuilder().setPackageName("some.other.package").build();
+    testPackage.applicationInfo.targetSdkVersion = S;
+    ComponentName testComponent = new ComponentName("some.other.package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+
+    shadowOf(packageManager).installPackage(testPackage);
+    shadowOf(packageManager).addActivityIfNotPresent(testComponent);
+    shadowOf(packageManager).addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent("OTHER_ACTION").setComponent(testComponent);
+    assertThat(packageManager.resolveActivity(intent, ResolveInfoFlags.of(0))).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void resolveExplicitIntent_noAction() throws Exception {
+    ComponentName testComponent = new ComponentName("some.other.package", "name");
+    IntentFilter intentFilter = new IntentFilter("ACTION");
+
+    shadowOf(packageManager).addActivityIfNotPresent(testComponent);
+    shadowOf(packageManager).addIntentFilterForActivity(testComponent, intentFilter);
+    Intent intent = new Intent().setComponent(testComponent);
+    ResolveInfo resolveInfo = packageManager.resolveActivity(intent, ResolveInfoFlags.of(0));
+    assertThat(resolveInfo).isNotNull();
+    assertThat(resolveInfo.activityInfo.name).isEqualTo("name");
   }
 
   @Test
