@@ -2,6 +2,7 @@ package org.robolectric.internal.bytecode;
 
 import static java.lang.invoke.MethodType.methodType;
 
+import com.google.common.collect.Iterables;
 import java.lang.invoke.CallSite;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.ListIterator;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.ConstantDynamic;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -28,10 +30,12 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.InvokeDynamicInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -209,26 +213,20 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Checks to see if the constructor byte code can be instrumented. Robolectric assumes that
-   * constructor bytecode follow the following pattern:
-   *
-   * <p>aload_0 ... some code ... invokespecial ... some code ... return
-   *
-   * <p>To check if the constructor byte code is malformed, we can just check to see if the first
-   * aload instruction is aload_0. If not, then that means the constructor byte code is malformed
-   * and will likely cause errors in instrumentation.
+   * Checks to see if the constructor byte code can be instrumented. Currently this checks if the
+   * first instruction is not a Jacoco load instructions. Robolectric is not capable at the moment
+   * of re-instrumenting Jacoco-instrumented constructors.
    *
    * @param ctor constructor method node
    * @return whether or not the constructor can be instrumented
    */
   private boolean ctorCanBeInstrumented(MethodNode ctor) {
     AbstractInsnNode[] insns = ctor.instructions.toArray();
-    for (int i = 0; i < insns.length; i++) {
-      AbstractInsnNode node = insns[i];
-
-      if (node.getOpcode() == Opcodes.ALOAD) {
-        VarInsnNode vNode = (VarInsnNode) node;
-        return vNode.var == 0;
+    if (insns.length > 0) {
+      if (insns[0] instanceof LdcInsnNode
+          && ((LdcInsnNode) insns[0]).cst instanceof ConstantDynamic) {
+        ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) insns[0]).cst;
+        return !cst.getName().equals("$jacocoData");
       }
     }
     return true;
@@ -349,21 +347,63 @@ public class ClassInstrumentor {
         new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
     makeMethodPublic(initMethodNode);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
-
-    initMethodNode.instructions = callSuper;
-
+    initMethodNode.instructions.add(callSuper);
     generator.loadThis();
     generator.invokeVirtual(mutableClass.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
     generateClassHandlerCall(
         mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
 
     generator.endMethod();
+
+    InsnList postamble = extractInstructionsAfterReturn(method, initMethodNode);
+    if (postamble.size() > 0) {
+      initMethodNode.instructions.add(postamble);
+    }
     mutableClass.addMethod(initMethodNode);
+  }
+
+  /**
+   * Checks to see if there are instructions after RETURN. If there are, it will check to see if
+   * they belong in the call-to-super, or the shadowable part of the constructor.
+   */
+  private InsnList extractInstructionsAfterReturn(MethodNode method, MethodNode initMethodNode) {
+    InsnList removedInstructions = new InsnList();
+    AbstractInsnNode returnNode =
+        Iterables.find(
+            method.instructions,
+            node -> node instanceof InsnNode && node.getOpcode() == Opcodes.RETURN,
+            null);
+    if (returnNode == null) {
+      return removedInstructions;
+    }
+    if (returnNode.getNext() instanceof LabelNode) {
+      // There are instructions after the return, check where they belong. Note this is a very rare
+      // edge case and only seems to happen with desugared+proguarded classes such as
+      // play-services-basement's ApiException.
+      LabelNode labelAfterReturn = (LabelNode) returnNode.getNext();
+      boolean inInitMethodNode =
+          Iterables.any(
+              initMethodNode.instructions,
+              input ->
+                  input instanceof JumpInsnNode
+                      && ((JumpInsnNode) input).label == labelAfterReturn);
+
+      if (inInitMethodNode) {
+        while (returnNode.getNext() != null) {
+          AbstractInsnNode node = returnNode.getNext();
+          method.instructions.remove(node);
+          removedInstructions.add(node);
+        }
+      }
+    }
+    return removedInstructions;
   }
 
   private static InsnList extractCallToSuperConstructor(
       MutableClass mutableClass, MethodNode ctor) {
     InsnList removedInstructions = new InsnList();
+    // Start removing instructions at the beginning of the method. The first instructions of
+    // constructors may vary.
     int startIndex = 0;
 
     AbstractInsnNode[] insns = ctor.instructions.toArray();
@@ -371,25 +411,6 @@ public class ClassInstrumentor {
       AbstractInsnNode node = insns[i];
 
       switch (node.getOpcode()) {
-        case Opcodes.ALOAD:
-          VarInsnNode vnode = (VarInsnNode) node;
-          if (vnode.var == 0) {
-            startIndex = i;
-          }
-          break;
-
-        case Opcodes.PUTFIELD:
-          FieldInsnNode pnode = (FieldInsnNode) node;
-          if (pnode.owner.equals(mutableClass.internalClassName) && pnode.name.equals("this$0")) {
-            // remove all instructions in the range startIndex..i, from aload_0 to putfield this$0
-            while (startIndex <= i) {
-              ctor.instructions.remove(insns[startIndex]);
-              removedInstructions.add(insns[startIndex]);
-              startIndex++;
-            }
-          }
-          break;
-
         case Opcodes.INVOKESPECIAL:
           MethodInsnNode mnode = (MethodInsnNode) node;
           if (mnode.owner.equals(mutableClass.internalClassName)
@@ -398,7 +419,7 @@ public class ClassInstrumentor {
               throw new AssertionError("Invalid MethodInsnNode name");
             }
 
-            // remove all instructions in the range startIndex..i, from aload_0 to invokespecial
+            // remove all instructions in the range 0 (the start) to invokespecial
             // <init>
             while (startIndex <= i) {
               ctor.instructions.remove(insns[startIndex]);
