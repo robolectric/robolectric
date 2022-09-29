@@ -231,7 +231,7 @@ public class ShadowBitmapTest {
     assertThat(shadowOf(bitmap1).getDescription())
         .isEqualTo(
             "Bitmap One\n"
-                + "Bitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>"
+                + "Bitmap Two with ColorMatrixColorFilter"
                 + " transformed by Matrix[pre=[], set={}, post=[]]");
   }
 
