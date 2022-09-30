@@ -72,9 +72,7 @@ public class ShadowBitmapDrawableTest {
     assertThat(shadowOf(canvas).getDescription())
         .isEqualTo(
             "Bitmap for"
-                + " resource:org.robolectric:drawable/an_image"
-                + " with"
-                + " ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>");
+                + " resource:org.robolectric:drawable/an_image with ColorMatrixColorFilter");
   }
 
   @Test
