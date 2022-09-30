@@ -1,26 +1,17 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
-import org.robolectric.util.reflector.Direct;
-import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
-  private ColorFilter colorFilter;
   String drawableCreateFromStreamSource;
   String drawableCreateFromPath;
 
@@ -37,25 +28,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     if (bitmap == null) {
       return;
     }
-    Paint paint = new Paint();
-    paint.setColorFilter(colorFilter);
-    canvas.drawBitmap(bitmap, 0, 0, paint);
-  }
-
-  @Implementation
-  protected Drawable mutate() {
-    Bitmap bitmap = realBitmapDrawable.getBitmap();
-    BitmapDrawable real = ReflectionHelpers.callConstructor(BitmapDrawable.class, ClassParameter.from(Bitmap.class, bitmap));
-    ShadowBitmapDrawable shadow = Shadow.extract(real);
-    shadow.colorFilter = this.colorFilter;
-    shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
-    return real;
-  }
-
-  @Implementation
-  protected void setColorFilter(ColorFilter colorFilter) {
-    this.colorFilter = colorFilter;
-    reflector(BitmapDrawableReflector.class, realBitmapDrawable).setColorFilter(colorFilter);
+    canvas.drawBitmap(bitmap, 0, 0, realBitmapDrawable.getPaint());
   }
 
   @Override
@@ -90,12 +63,5 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
   public String getPath() {
     return drawableCreateFromPath;
-  }
-
-  @ForType(BitmapDrawable.class)
-  interface BitmapDrawableReflector {
-
-    @Direct
-    void setColorFilter(ColorFilter colorFilter);
   }
 }

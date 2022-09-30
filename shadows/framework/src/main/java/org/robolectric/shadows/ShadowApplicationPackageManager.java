@@ -70,6 +70,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
+import android.content.pm.PackageManager.ResolveInfoFlags;
 import android.content.pm.PackageStats;
 import android.content.pm.PermissionGroupInfo;
 import android.content.pm.PermissionInfo;
@@ -664,6 +665,33 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         }
         I componentInfo = findMatchingComponent(component, componentsInPackage.apply(appPackage));
         if (componentInfo != null) {
+          List<IntentFilter> componentFilters = filters.get(component);
+          PackageInfo targetPackage = packageInfos.get(component.getPackageName());
+          if (RuntimeEnvironment.getApiLevel() >= TIRAMISU
+              && (intent.getAction() != null
+                  || intent.getCategories() != null
+                  || intent.getData() != null)
+              && componentFilters != null
+              && !component.getPackageName().equals(getContext().getPackageName())
+              && targetPackage.applicationInfo.targetSdkVersion >= TIRAMISU) {
+            // Check if the explicit intent matches filters on the target component for T+
+            boolean matchFound = false;
+            for (IntentFilter filter : componentFilters) {
+              if (matchIntentFilter(intent, filter) > 0) {
+                matchFound = true;
+                break;
+              }
+            }
+            if (!matchFound) {
+              Log.w(
+                  TAG,
+                  "Component "
+                      + componentInfo
+                      + " doesn't have required intent filters for "
+                      + intent);
+              return Collections.emptyList();
+            }
+          }
           ResolveInfo resolveInfo = buildResolveInfo(componentInfo);
           componentSetter.accept(resolveInfo, componentInfo);
           return new ArrayList<>(Collections.singletonList(resolveInfo));
@@ -1568,6 +1596,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
     return resolveActivity(intent, flags);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected ResolveInfo resolveActivityAsUser(Object intent, Object flags, Object userId) {
+    return resolveActivity((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected ResolveInfo resolveServiceAsUser(Object intent, Object flags, Object userId) {
+    return resolveService((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
   @Implementation

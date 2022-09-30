@@ -242,10 +242,6 @@ public class CppApkAssets {
       return loaded_apk;
     }
 
-    if (entry.get().getMethod() == kCompressDeflated) {
-      System.out.println(kResourcesArsc + " in APK '" + path + "' is compressed.");
-    }
-
     // Open the resource table via mmap unless it is compressed. This logic is taken care of by Open.
     loaded_apk.resources_asset_ = loaded_apk.Open(kResourcesArsc, Asset.AccessMode.ACCESS_BUFFER);
     if (loaded_apk.resources_asset_ == null) {

@@ -18,6 +18,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SwitchPoint;
 import java.lang.invoke.WrongMethodTypeException;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 
 @SuppressWarnings("RethrowReflectiveOperationExceptionAsLinkageError")
@@ -60,44 +61,67 @@ public class InvokeDynamicSupport {
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapInit(MethodHandles.Lookup caller, String name, MethodType type) {
-    RoboCallSite site = new RoboCallSite(type, caller.lookupClass());
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "invokedynamic bootstrap init",
+            () -> {
+              RoboCallSite site = new RoboCallSite(type, caller.lookupClass());
 
-    bindInitCallSite(site);
+              bindInitCallSite(site);
 
-    return site;
+              return site;
+            });
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrap(
       MethodHandles.Lookup caller, String name, MethodType type, MethodHandle original)
       throws IllegalAccessException {
-    MethodCallSite site = new MethodCallSite(caller.lookupClass(), type, name, original, REGULAR);
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "invokedynamic bootstrap",
+            () -> {
+              MethodCallSite site =
+                  new MethodCallSite(caller.lookupClass(), type, name, original, REGULAR);
 
-    bindCallSite(site);
+              bindCallSite(site);
 
-    return site;
+              return site;
+            });
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapStatic(
       MethodHandles.Lookup caller, String name, MethodType type, MethodHandle original)
       throws IllegalAccessException {
-    MethodCallSite site = new MethodCallSite(caller.lookupClass(), type, name, original, STATIC);
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "invokedynamic bootstrap static",
+            () -> {
+              MethodCallSite site =
+                  new MethodCallSite(caller.lookupClass(), type, name, original, STATIC);
 
-    bindCallSite(site);
+              bindCallSite(site);
 
-    return site;
+              return site;
+            });
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapIntrinsic(
       MethodHandles.Lookup caller, String name, MethodType type, String callee)
       throws IllegalAccessException {
-    MethodHandle mh = getMethodHandle(callee, name, type);
-    if (mh == null) {
-      throw new IllegalArgumentException("Could not find intrinsic for " + callee + ":" + name);
-    }
-    return new ConstantCallSite(mh.asType(type));
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "invokedynamic bootstrap intrinsic",
+            () -> {
+              MethodHandle mh = getMethodHandle(callee, name, type);
+              if (mh == null) {
+                throw new IllegalArgumentException(
+                    "Could not find intrinsic for " + callee + ":" + name);
+              }
+              return new ConstantCallSite(mh.asType(type));
+            });
   }
 
   private static final MethodHandle NOTHING =

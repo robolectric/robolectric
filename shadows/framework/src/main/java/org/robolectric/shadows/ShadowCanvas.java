@@ -15,8 +15,6 @@ import static android.os.Build.VERSION_CODES.S;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -34,7 +32,6 @@ import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.Join;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -301,27 +298,9 @@ public class ShadowCanvas {
     if (paint != null) {
       ColorFilter colorFilter = paint.getColorFilter();
       if (colorFilter != null) {
-        if (colorFilter instanceof ColorMatrixColorFilter) {
-          ColorMatrixColorFilter colorMatrixColorFilter = (ColorMatrixColorFilter) colorFilter;
-          ShadowColorMatrixColorFilter shadowColorMatrixColorFilter =
-              Shadow.extract(colorMatrixColorFilter);
-          ColorMatrix colorMatrix = shadowColorMatrixColorFilter.getMatrix();
-          appendDescription(" with ColorMatrixColorFilter<" + formatColorMatric(colorMatrix) + ">");
-        } else {
-          appendDescription(" with " + colorFilter);
-        }
+        appendDescription(" with " + colorFilter.getClass().getSimpleName());
       }
     }
-  }
-
-  private String formatColorMatric(ColorMatrix colorMatrix) {
-    List<String> floats = new ArrayList<>();
-    for (float f : colorMatrix.getArray()) {
-      String format = String.format("%.2f", f);
-      format = format.replace(".00", "");
-      floats.add(format);
-    }
-    return Join.join(",", floats);
   }
 
   private void separateLines() {

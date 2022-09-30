@@ -3,6 +3,7 @@ package android.graphics;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -664,5 +665,27 @@ public class BitmapTest {
     bitmap.setColorSpace(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
 
     assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
+  }
+
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
+  @Test
+  public void bitmapDrawable_mutate() {
+    BitmapDrawable drawable1 = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+    BitmapDrawable drawable2 = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+
+    Drawable mutated1 = drawable1.mutate();
+    Drawable mutated2 = drawable2.mutate();
+    mutated1.setAlpha(100);
+    mutated1.setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN);
+    mutated2.setAlpha(200);
+    mutated2.setColorFilter(Color.RED, PorterDuff.Mode.SRC_IN);
+    assertThat(mutated1.getAlpha()).isEqualTo(100);
+    // ColorFilter is part of the Drawable paint, so BLUE is overridden by RED.
+    assertThat(mutated1.getColorFilter())
+        .isEqualTo(new PorterDuffColorFilter(Color.BLUE, PorterDuff.Mode.SRC_IN));
+    assertThat(mutated2.getAlpha()).isEqualTo(200);
+    assertThat(mutated2.getColorFilter())
+        .isEqualTo(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
   }
 }

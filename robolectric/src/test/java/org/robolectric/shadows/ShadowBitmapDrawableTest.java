@@ -44,17 +44,6 @@ public class ShadowBitmapDrawableTest {
   }
 
   @Test
-  public void mutate_createsDeepCopy() {
-    BitmapDrawable original = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
-    Drawable mutated = original.mutate();
-    assertThat(original).isNotSameInstanceAs(mutated);
-    assertThat(mutated instanceof BitmapDrawable).isTrue();
-    assertThat(mutated.getIntrinsicHeight()).isEqualTo(original.getIntrinsicHeight());
-    assertThat(mutated.getIntrinsicWidth()).isEqualTo(original.getIntrinsicWidth());
-    assertThat(mutated.getBounds()).isEqualTo(original.getBounds());
-  }
-
-  @Test
   public void draw_shouldCopyDescriptionToCanvas() {
     BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
     Canvas canvas = new Canvas();
@@ -83,9 +72,7 @@ public class ShadowBitmapDrawableTest {
     assertThat(shadowOf(canvas).getDescription())
         .isEqualTo(
             "Bitmap for"
-                + " resource:org.robolectric:drawable/an_image"
-                + " with"
-                + " ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>");
+                + " resource:org.robolectric:drawable/an_image with ColorMatrixColorFilter");
   }
 
   @Test

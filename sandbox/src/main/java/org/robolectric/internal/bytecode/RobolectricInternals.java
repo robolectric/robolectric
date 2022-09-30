@@ -26,17 +26,13 @@ public class RobolectricInternals {
     return classHandler.initializing(instance);
   }
 
-  @SuppressWarnings("UnusedDeclaration")
-  public static ClassHandler.Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
-    return classHandler.methodInvoked(signature, isStatic, theClass);
-  }
-
   public static MethodHandle getShadowCreator(Class<?> caller) {
     return classHandler.getShadowCreator(caller);
   }
 
-  public static MethodHandle findShadowMethodHandle(Class<?> theClass, String name,
-      MethodType methodType, boolean isStatic) throws IllegalAccessException {
+  public static MethodHandle findShadowMethodHandle(
+      Class<?> theClass, String name, MethodType methodType, boolean isStatic)
+      throws IllegalAccessException {
     return classHandler.findShadowMethodHandle(theClass, name, methodType, isStatic);
   }
 
@@ -45,7 +41,8 @@ public class RobolectricInternals {
     return classHandler.stripStackTrace(exception);
   }
 
-  public static Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
+  public static Object intercept(String signature, Object instance, Object[] params, Class theClass)
+      throws Throwable {
     try {
       return classHandler.intercept(signature, instance, params, theClass);
     } catch (java.lang.LinkageError e) {

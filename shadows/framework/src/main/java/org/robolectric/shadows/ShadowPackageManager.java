@@ -49,7 +49,6 @@ import android.content.pm.InstallSourceInfo;
 import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Component;
 import android.content.pm.PackageParser.IntentInfo;
@@ -1391,10 +1390,9 @@ public class ShadowPackageManager {
    *
    * @param componentName Name of the activity whose intent filters are to be retrieved
    * @return the activity's intent filters
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public List<IntentFilter> getIntentFiltersForActivity(ComponentName componentName)
-      throws NameNotFoundException {
+  public List<IntentFilter> getIntentFiltersForActivity(ComponentName componentName) {
     return getIntentFiltersForComponent(componentName, activityFilters);
   }
 
@@ -1403,10 +1401,9 @@ public class ShadowPackageManager {
    *
    * @param componentName Name of the service whose intent filters are to be retrieved
    * @return the service's intent filters
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public List<IntentFilter> getIntentFiltersForService(ComponentName componentName)
-      throws NameNotFoundException {
+  public List<IntentFilter> getIntentFiltersForService(ComponentName componentName) {
     return getIntentFiltersForComponent(componentName, serviceFilters);
   }
 
@@ -1415,10 +1412,9 @@ public class ShadowPackageManager {
    *
    * @param componentName Name of the receiver whose intent filters are to be retrieved
    * @return the receiver's intent filters
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public List<IntentFilter> getIntentFiltersForReceiver(ComponentName componentName)
-      throws NameNotFoundException {
+  public List<IntentFilter> getIntentFiltersForReceiver(ComponentName componentName) {
       return getIntentFiltersForComponent(componentName, receiverFilters);
   }
 
@@ -1427,98 +1423,88 @@ public class ShadowPackageManager {
    *
    * @param componentName Name of the provider whose intent filters are to be retrieved
    * @return the provider's intent filters
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public List<IntentFilter> getIntentFiltersForProvider(ComponentName componentName)
-      throws NameNotFoundException {
+  public List<IntentFilter> getIntentFiltersForProvider(ComponentName componentName) {
     return getIntentFiltersForComponent(componentName, providerFilters);
   }
 
   /**
    * Add intent filter for given activity.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void addIntentFilterForActivity(ComponentName componentName, IntentFilter filter)
-      throws NameNotFoundException {
+  public void addIntentFilterForActivity(ComponentName componentName, IntentFilter filter) {
     addIntentFilterForComponent(componentName, filter, activityFilters);
   }
 
   /**
    * Add intent filter for given service.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void addIntentFilterForService(ComponentName componentName, IntentFilter filter)
-      throws NameNotFoundException {
+  public void addIntentFilterForService(ComponentName componentName, IntentFilter filter) {
     addIntentFilterForComponent(componentName, filter, serviceFilters);
   }
 
   /**
    * Add intent filter for given receiver.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void addIntentFilterForReceiver(ComponentName componentName, IntentFilter filter)
-      throws NameNotFoundException {
+  public void addIntentFilterForReceiver(ComponentName componentName, IntentFilter filter) {
     addIntentFilterForComponent(componentName, filter, receiverFilters);
   }
 
   /**
    * Add intent filter for given provider.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void addIntentFilterForProvider(ComponentName componentName, IntentFilter filter)
-      throws NameNotFoundException {
+  public void addIntentFilterForProvider(ComponentName componentName, IntentFilter filter) {
     addIntentFilterForComponent(componentName, filter, providerFilters);
   }
 
   /**
    * Clears intent filters for given activity.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void clearIntentFilterForActivity(ComponentName componentName)
-      throws NameNotFoundException {
+  public void clearIntentFilterForActivity(ComponentName componentName) {
     clearIntentFilterForComponent(componentName, activityFilters);
   }
 
   /**
    * Clears intent filters for given service.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void clearIntentFilterForService(ComponentName componentName)
-      throws NameNotFoundException {
+  public void clearIntentFilterForService(ComponentName componentName) {
     clearIntentFilterForComponent(componentName, serviceFilters);
   }
 
   /**
    * Clears intent filters for given receiver.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void clearIntentFilterForReceiver(ComponentName componentName)
-      throws NameNotFoundException {
+  public void clearIntentFilterForReceiver(ComponentName componentName) {
     clearIntentFilterForComponent(componentName, receiverFilters);
   }
 
   /**
    * Clears intent filters for given provider.
    *
-   * @throws NameNotFoundException if component with given name doesn't exist.
+   * @throws IllegalArgumentException if component with given name doesn't exist.
    */
-  public void clearIntentFilterForProvider(ComponentName componentName)
-      throws NameNotFoundException {
+  public void clearIntentFilterForProvider(ComponentName componentName) {
     clearIntentFilterForComponent(componentName, providerFilters);
   }
 
   private void addIntentFilterForComponent(
       ComponentName componentName,
       IntentFilter filter,
-      Map<ComponentName, List<IntentFilter>> filterMap)
-      throws NameNotFoundException {
+      Map<ComponentName, List<IntentFilter>> filterMap) {
     // Existing components should have an entry in respective filterMap.
     // It is OK to search over all filter maps, as it is impossible to have the same component name
     // being of two comopnent types (like activity and service at the same time).
@@ -1527,28 +1513,26 @@ public class ShadowPackageManager {
       filters.add(filter);
       return;
     }
-    throw new NameNotFoundException(componentName + " doesn't exist");
+    throw new IllegalArgumentException(componentName + " doesn't exist");
   }
 
   private void clearIntentFilterForComponent(
-      ComponentName componentName, Map<ComponentName, List<IntentFilter>> filterMap)
-      throws NameNotFoundException {
+      ComponentName componentName, Map<ComponentName, List<IntentFilter>> filterMap) {
     List<IntentFilter> filters = filterMap.get(componentName);
     if (filters != null) {
       filters.clear();
       return;
     }
-    throw new NameNotFoundException(componentName + " doesn't exist");
+    throw new IllegalArgumentException(componentName + " doesn't exist");
   }
 
   private List<IntentFilter> getIntentFiltersForComponent(
-      ComponentName componentName, Map<ComponentName, List<IntentFilter>> filterMap)
-      throws NameNotFoundException {
+      ComponentName componentName, Map<ComponentName, List<IntentFilter>> filterMap) {
     List<IntentFilter> filters = filterMap.get(componentName);
     if (filters != null) {
       return new ArrayList<>(filters);
     }
-    throw new NameNotFoundException(componentName + " doesn't exist");
+    throw new IllegalArgumentException(componentName + " doesn't exist");
   }
 
   /**

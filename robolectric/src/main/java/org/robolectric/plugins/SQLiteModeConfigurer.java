@@ -1,6 +1,5 @@
 package org.robolectric.plugins;
 
-import static com.google.common.base.StandardSystemProperty.OS_ARCH;
 import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import com.google.auto.service.AutoService;
@@ -30,12 +29,11 @@ public class SQLiteModeConfigurer implements Configurer<SQLiteMode.Mode> {
   @Nonnull
   @Override
   public SQLiteMode.Mode defaultConfig() {
-    String defaultValue = "LEGACY";
+    String defaultValue = "NATIVE";
     String os = systemProperties.getProperty(OS_NAME.key(), "").toLowerCase(Locale.US);
-    String arch = systemProperties.getProperty(OS_ARCH.key(), "").toLowerCase(Locale.US);
-    if (os.contains("mac") && arch.equals("aarch64")) {
-      // LEGACY SQLite native artifacts are not available for Mac M1.
-      defaultValue = "NATIVE";
+    // NATIVE SQLite mode not supported on Windows
+    if (os.contains("win")) {
+      defaultValue = "LEGACY";
     }
     return SQLiteMode.Mode.valueOf(
         systemProperties.getProperty("robolectric.sqliteMode", defaultValue));
