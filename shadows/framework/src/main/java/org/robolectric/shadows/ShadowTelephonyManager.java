@@ -923,6 +923,15 @@ public class ShadowTelephonyManager {
     return serviceState;
   }
 
+  /**
+   * Returns {@code null} by default or the value specified via {@link
+   * #setServiceState(ServiceState)}
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected ServiceState getServiceState(int includeLocationData) {
+    return getServiceState();
+  }
+
   /** Sets the value returned by {@link TelephonyManager#getServiceState()}. */
   public void setServiceState(ServiceState serviceState) {
     this.serviceState = serviceState;
