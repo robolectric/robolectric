@@ -48,6 +48,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.PersistableBundle;
 import android.os.UserHandle;
 import android.os.UserManager;
 import androidx.test.core.app.ApplicationProvider;
@@ -227,10 +228,12 @@ public final class ShadowDevicePolicyManagerTest {
     shadowOf(packageManager).addReceiverIfNotPresent(otherComponent);
     shadowOf(devicePolicyManager).setActiveAdmin(otherComponent);
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    PersistableBundle bundle = new PersistableBundle();
 
-    devicePolicyManager.transferOwnership(testComponent, otherComponent, null);
+    devicePolicyManager.transferOwnership(testComponent, otherComponent, bundle);
 
     devicePolicyManager.isProfileOwnerApp("new.owner");
+    assertThat(devicePolicyManager.getTransferOwnershipBundle()).isEqualTo(bundle);
   }
 
   @Test
@@ -239,13 +242,15 @@ public final class ShadowDevicePolicyManagerTest {
     ComponentName otherComponent = new ComponentName("new.owner", "Receiver");
     shadowOf(packageManager).addReceiverIfNotPresent(otherComponent);
     shadowOf(devicePolicyManager).setActiveAdmin(otherComponent);
+    PersistableBundle bundle = new PersistableBundle();
 
     try {
-      devicePolicyManager.transferOwnership(testComponent, otherComponent, null);
+      devicePolicyManager.transferOwnership(testComponent, otherComponent, bundle);
       fail("Should throw");
     } catch (SecurityException e) {
       // expected
     }
+    assertThat(devicePolicyManager.getTransferOwnershipBundle()).isNull();
   }
 
   @Test
@@ -1587,8 +1592,9 @@ public final class ShadowDevicePolicyManagerTest {
     ResolveInfo resolveInfo2 = new ResolveInfo();
     resolveInfo2.activityInfo = new ActivityInfo(resolveInfo.activityInfo);
     resolveInfo.activityInfo.name = "OtherActivity";
-    shadowOf(packageManager).setResolveInfosForIntent(
-        new Intent(Intent.ACTION_MAIN), Arrays.asList(resolveInfo, resolveInfo2));
+    shadowOf(packageManager)
+        .setResolveInfosForIntent(
+            new Intent(Intent.ACTION_MAIN), Arrays.asList(resolveInfo, resolveInfo2));
     shadowOf(packageManager).setShouldShowActivityChooser(true);
 
     ResolveInfo resolvedActivity =
@@ -1600,8 +1606,7 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.addPersistentPreferredActivity(
         testComponent, new IntentFilter(Intent.ACTION_MAIN), randomActivity);
 
-    resolvedActivity =
-        packageManager.resolveActivity(new Intent(Intent.ACTION_MAIN), 0);
+    resolvedActivity = packageManager.resolveActivity(new Intent(Intent.ACTION_MAIN), 0);
 
     assertThat(resolvedActivity.activityInfo.packageName)
         .isEqualTo(randomActivity.getPackageName());

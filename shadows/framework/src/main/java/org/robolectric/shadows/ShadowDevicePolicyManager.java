@@ -145,6 +145,7 @@ public class ShadowDevicePolicyManager {
   private final Map<UserHandle, Account> finalizedWorkProfileProvisioningMap = new HashMap<>();
   private List<UserHandle> policyManagedProfiles = new ArrayList<>();
   private final Map<Integer, Integer> userProvisioningStatesMap = new HashMap<>();
+  @Nullable private PersistableBundle lastTransferOwnershipBundle;
 
   private @RealObject DevicePolicyManager realObject;
 
@@ -328,19 +329,25 @@ public class ShadowDevicePolicyManager {
     return isUsbDataSignalingEnabled;
   }
 
-  /** @see #setDeviceOwner(ComponentName) */
+  /**
+   * @see #setDeviceOwner(ComponentName)
+   */
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected String getDeviceOwner() {
     return deviceOwner != null ? deviceOwner.getPackageName() : null;
   }
 
-  /** @see #setDeviceOwner(ComponentName) */
+  /**
+   * @see #setDeviceOwner(ComponentName)
+   */
   @Implementation(minSdk = N)
   public boolean isDeviceManaged() {
     return getDeviceOwner() != null;
   }
 
-  /** @see #setProfileOwner(ComponentName) */
+  /**
+   * @see #setProfileOwner(ComponentName)
+   */
   @Implementation(minSdk = LOLLIPOP)
   protected ComponentName getProfileOwner() {
     return profileOwner;
@@ -357,7 +364,7 @@ public class ShadowDevicePolicyManager {
 
   @Implementation(minSdk = P)
   protected void transferOwnership(
-      ComponentName admin, ComponentName target, PersistableBundle bundle) {
+      ComponentName admin, ComponentName target, @Nullable PersistableBundle bundle) {
     Objects.requireNonNull(admin, "ComponentName is null");
     Objects.requireNonNull(target, "Target cannot be null.");
     Preconditions.checkArgument(
@@ -372,6 +379,13 @@ public class ShadowDevicePolicyManager {
     } else {
       throw new SecurityException("Calling identity is not authorized");
     }
+    lastTransferOwnershipBundle = bundle;
+  }
+
+  @Implementation(minSdk = P)
+  @Nullable
+  protected PersistableBundle getTransferOwnershipBundle() {
+    return lastTransferOwnershipBundle;
   }
 
   private ShadowUserManager getShadowUserManager() {
@@ -417,6 +431,7 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   protected void clearProfileOwner(ComponentName admin) {
     profileOwner = null;
+    lastTransferOwnershipBundle = null;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
       removeActiveAdmin(admin);
     }
