@@ -35,4 +35,10 @@ class NormalCompatibilityTest {
   fun `Initialize Activity succeed`() {
     ActivityScenario.launch(TestActivity::class.java).use { assertThat(true).isTrue() }
   }
+
+  @Test
+  fun `Initialize TelephonyManager succeed`() {
+    val telephonyManager = application.getSystemService(Context.TELEPHONY_SERVICE)
+    assertThat(telephonyManager).isNotNull()
+  }
 }
