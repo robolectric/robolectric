@@ -41,8 +41,9 @@ public class ShadowDisplayManagerTest {
             ApplicationProvider.getApplicationContext().getSystemService(Context.DISPLAY_SERVICE);
   }
 
-  @Test @Config(maxSdk = JELLY_BEAN)
-  public void notSupportedInJellyBean() throws Exception {
+  @Test
+  @Config(maxSdk = JELLY_BEAN)
+  public void notSupportedInJellyBean() {
     try {
       ShadowDisplayManager.removeDisplay(0);
       fail("Expected Exception thrown");
@@ -53,7 +54,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void getDisplayInfo_shouldReturnCopy() throws Exception {
+  public void getDisplayInfo_shouldReturnCopy() {
     DisplayInfo displayInfo = getGlobal().getDisplayInfo(Display.DEFAULT_DISPLAY);
     int origAppWidth = displayInfo.appWidth;
     displayInfo.appWidth++;
@@ -63,13 +64,13 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void forNonexistentDisplay_getDisplayInfo_shouldReturnNull() throws Exception {
+  public void forNonexistentDisplay_getDisplayInfo_shouldReturnNull() {
     assertThat(getGlobal().getDisplayInfo(3)).isEqualTo(null);
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void forNonexistentDisplay_changeDisplay_shouldThrow() throws Exception {
+  public void forNonexistentDisplay_changeDisplay_shouldThrow() {
     try {
       ShadowDisplayManager.changeDisplay(3, "");
       fail("Expected Exception thrown");
@@ -80,7 +81,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void forNonexistentDisplay_removeDisplay_shouldThrow() throws Exception {
+  public void forNonexistentDisplay_removeDisplay_shouldThrow() {
     try {
       ShadowDisplayManager.removeDisplay(3);
       fail("Expected Exception thrown");
@@ -89,8 +90,9 @@ public class ShadowDisplayManagerTest {
     }
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR1)
-  public void addDisplay() throws Exception {
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void addDisplay() {
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
     assertThat(displayId).isGreaterThan(0);
 
@@ -102,16 +104,18 @@ public class ShadowDisplayManagerTest {
     assertThat(display.getDisplayId()).isEqualTo(displayId);
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR1)
-  public void addDisplay_shouldNotifyListeners() throws Exception {
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void addDisplay_shouldNotifyListeners() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
     assertThat(events).containsExactly("Added " + displayId);
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR1)
-  public void changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() throws Exception {
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() {
     Point smallest = new Point();
     Point largest = new Point();
 
@@ -129,8 +133,9 @@ public class ShadowDisplayManagerTest {
     assertThat(largest).isEqualTo(new Point(460, 460));
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR1)
-  public void withQualifiers_changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() throws Exception {
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void withQualifiers_changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() {
     Point smallest = new Point();
     Point largest = new Point();
 
@@ -146,8 +151,9 @@ public class ShadowDisplayManagerTest {
     assertThat(largest).isEqualTo(new Point(460, 460));
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR1)
-  public void changeAndRemoveDisplay_shouldNotifyListeners() throws Exception {
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void changeAndRemoveDisplay_shouldNotifyListeners() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
@@ -167,8 +173,9 @@ public class ShadowDisplayManagerTest {
         "Removed " + displayId);
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR1)
-  public void changeDisplay_shouldAllowPartialChanges() throws Exception {
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void changeDisplay_shouldAllowPartialChanges() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
@@ -187,7 +194,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.M)
-  public void modeBuilder_setsModeParameters() throws Exception {
+  public void modeBuilder_setsModeParameters() {
     int modeId = 5;
     int width = 500;
     int height = 1000;
@@ -206,7 +213,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.M)
-  public void setSupportedModes_addsOneDisplayMode() throws Exception {
+  public void setSupportedModes_addsOneDisplayMode() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), /* handler= */ null);
     int displayId = ShadowDisplayManager.addDisplay(/* qualifiersStr= */ "w100dp-h200dp");
@@ -228,7 +235,7 @@ public class ShadowDisplayManagerTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.M)
-  public void setSupportedModes_addsMultipleDisplayModes() throws Exception {
+  public void setSupportedModes_addsMultipleDisplayModes() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), /* handler= */ null);
     int displayId = ShadowDisplayManager.addDisplay(/* qualifiersStr= */ "w100dp-h200dp");
@@ -443,16 +450,9 @@ public class ShadowDisplayManagerTest {
     assertThat(instance.getBrightnessEvents()).containsExactlyElementsIn(events);
   }
 
-  // because DisplayInfo and DisplayManagerGlobal don't exist in Jelly Bean,
+  // because DisplayManagerGlobal don't exist in Jelly Bean,
   // and we don't want them resolved as part of the test class.
   static class HideFromJB {
-    static DisplayInfo createDisplayInfo(int width, int height) {
-      DisplayInfo displayInfo = new DisplayInfo();
-      displayInfo.appWidth = width;
-      displayInfo.appHeight = height;
-      return displayInfo;
-    }
-
     public static DisplayManagerGlobal getGlobal() {
       return DisplayManagerGlobal.getInstance();
     }
