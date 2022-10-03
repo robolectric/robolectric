@@ -50,7 +50,7 @@ dependencies {
     api project(":shadowapi")
     api project(":utils")
     api project(":utils:reflector")
-    api "androidx.test:monitor:$axtVersion@aar"
+    api "androidx.test:monitor:$axtMonitorVersion"
 
     implementation "com.google.errorprone:error_prone_annotations:$errorproneVersion"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"

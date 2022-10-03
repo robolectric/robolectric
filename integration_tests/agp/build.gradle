@@ -26,7 +26,7 @@ dependencies {
     testImplementation project(":integration_tests:agp:testsupport")
 
     testImplementation "junit:junit:${junitVersion}"
-    testImplementation("androidx.test:core:$axtVersion")
-    testImplementation("androidx.test:runner:$axtVersion")
+    testImplementation("androidx.test:core:$axtCoreVersion")
+    testImplementation("androidx.test:runner:$axtRunnerVersion")
     testImplementation("androidx.test.ext:junit:$axtJunitVersion")
 }
