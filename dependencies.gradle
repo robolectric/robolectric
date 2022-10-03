@@ -25,7 +25,7 @@ ext {
     asmVersion='9.3'
 
     kotlinVersion='1.5.20'
-    autoServiceVersion='1.0-rc6'
+    autoServiceVersion='1.0.1'
     multidexVersion='2.0.1'
     sqlite4javaVersion='1.0.392'
 }
