@@ -20,6 +20,10 @@ import android.app.UiAutomation;
 import android.content.ContentResolver;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.Looper;
@@ -28,6 +32,7 @@ import android.view.Display;
 import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
@@ -35,6 +40,7 @@ import android.view.WindowManagerImpl;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +111,30 @@ public class ShadowUiAutomation {
   @Implementation
   protected void throwIfNotConnectedLocked() {}
 
+  @Implementation
+  protected Bitmap takeScreenshot() {
+    if (!ShadowView.useRealGraphics()) {
+      return null;
+    }
+    Point displaySize = new Point();
+    ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
+    Bitmap screenshot = Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
+    Canvas screenshotCanvas = new Canvas(screenshot);
+    Paint paint = new Paint();
+    for (Root root : getViewRoots().reverse()) {
+      View rootView = root.getRootView();
+      if (rootView.getWidth() <= 0 || rootView.getHeight() <= 0) {
+        continue;
+      }
+      Bitmap window =
+          Bitmap.createBitmap(rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
+      Canvas windowCanvas = new Canvas(window);
+      rootView.draw(windowCanvas);
+      screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
+    }
+    return screenshot;
+  }
+
   /**
    * Injects a motion event into the appropriate window, see {@link
    * UiAutomation#injectInputEvent(InputEvent, boolean)}. This can be used through the {@link
@@ -137,14 +167,14 @@ public class ShadowUiAutomation {
       Root root = touchableRoots.get(i);
       if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
         event.offsetLocation(-root.params.x, -root.params.y);
-        root.impl.getView().dispatchTouchEvent(event);
+        root.getRootView().dispatchTouchEvent(event);
         event.offsetLocation(root.params.x, root.params.y);
         break;
       } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN && root.watchTouchOutside()) {
         MotionEvent outsideEvent = MotionEvent.obtain(event);
         outsideEvent.setAction(MotionEvent.ACTION_OUTSIDE);
         outsideEvent.offsetLocation(-root.params.x, -root.params.y);
-        root.impl.getView().dispatchTouchEvent(outsideEvent);
+        root.getRootView().dispatchTouchEvent(outsideEvent);
         outsideEvent.recycle();
       }
     }
@@ -155,14 +185,13 @@ public class ShadowUiAutomation {
     getViewRoots().stream()
         .filter(IS_FOCUSABLE)
         .findFirst()
-        .ifPresent(root -> root.impl.getView().dispatchKeyEvent(event));
+        .ifPresent(root -> root.getRootView().dispatchKeyEvent(event));
     return true;
   }
 
-  private static ArrayList<Root> getViewRoots() {
+  private static ImmutableList<Root> getViewRoots() {
     List<ViewRootImpl> viewRootImpls = getViewRootImpls();
     List<WindowManager.LayoutParams> params = getRootLayoutParams();
-    checkState(!viewRootImpls.isEmpty(), "no view roots!");
     checkState(
         params.size() == viewRootImpls.size(),
         "number params is not consistent with number of view roots!");
@@ -180,7 +209,7 @@ public class ShadowUiAutomation {
         comparingInt(Root::getType)
             .reversed()
             .thenComparing(comparingInt(Root::getIndex).reversed()));
-    return roots;
+    return ImmutableList.copyOf(roots);
   }
 
   @SuppressWarnings("unchecked")
@@ -253,6 +282,10 @@ public class ShadowUiAutomation {
 
     int getType() {
       return params.type;
+    }
+
+    View getRootView() {
+      return impl.getView();
     }
 
     boolean isTouchInside(MotionEvent event) {
