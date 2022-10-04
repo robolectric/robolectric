@@ -162,11 +162,6 @@ public class ShadowPathParser {
       mParams = params;
     }
 
-    private PathDataNode(PathDataNode n) {
-      mType = n.mType;
-      mParams = Arrays.copyOf(n.mParams, n.mParams.length);
-    }
-
     /**
      * Convert an array of PathDataNode to Path.
      *
@@ -577,52 +572,18 @@ public class ShadowPathParser {
     }
   }
 
-  @Implements(value = PathParser.PathData.class, minSdk = N, isInAndroidSdk = false)
-  public static class ShadowPathData {
-    long mNativePathData = 0;
+  @Implementation
+  protected static long nCreatePathDataFromString(String pathString, int stringLength) {
+    return 1;
+  }
 
-    @Implementation
-    public void __constructor__() {
-      // mNativePathData = nCreateEmptyPathData();
-    }
+  @Implementation
+  protected static long nCreateEmptyPathData() {
+    return 1;
+  }
 
-    @Implementation
-    public void __constructor__(PathParser.PathData data) {
-      // mNativePathData = nCreatePathData(data.mNativePathData);
-    }
-
-    @Implementation
-    public void __constructor__(String pathString) {
-      // mNativePathData = nCreatePathDataFromString(pathString, pathString.length());
-      // if (mNativePathData == 0) {
-      //     throw new IllegalArgumentException("Invalid pathData: " + pathString);
-      // }
-    }
-
-    @Implementation
-    public long getNativePtr() {
-      return mNativePathData;
-    }
-
-    /**
-     * Update the path data to match the source. Before calling this, make sure canMorph(target,
-     * source) is true.
-     *
-     * @param source The source path represented in PathData
-     */
-    @Implementation
-    public void setPathData(PathParser.PathData source) {
-      // nSetPathData(mNativePathData, source.mNativePathData);
-    }
-
-    @Override
-    @Implementation
-    protected void finalize() throws Throwable {
-      if (mNativePathData != 0) {
-        //   nFinalize(mNativePathData);
-        mNativePathData = 0;
-      }
-      super.finalize();
-    }
+  @Implementation
+  protected static long nCreatePathData(long nativePtr) {
+    return 1;
   }
 }
