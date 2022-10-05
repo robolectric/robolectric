@@ -29,7 +29,7 @@ dependencies {
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
 
     testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
     testRuntimeOnly AndroidSdk.S.coordinates

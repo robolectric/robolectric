@@ -17,7 +17,7 @@ dependencies {
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
     testImplementation "junit:junit:$junitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"

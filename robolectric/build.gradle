@@ -44,18 +44,19 @@ dependencies {
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly "junit:junit:${junitVersion}"
-    implementation "androidx.test:monitor:$axtVersion"
-    implementation "androidx.test.espresso:espresso-idling-resource:3.4.0"
+    api "androidx.test:monitor:$axtMonitorVersion@aar"
+    implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion@aar"
 
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation "com.google.truth.extensions:truth-java8-extension:${truthVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
-    testImplementation "androidx.test:core:$axtVersion"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "androidx.test.ext:truth:$axtVersion"
-    testImplementation "androidx.test:runner:$axtVersion"
+    testImplementation "androidx.test:core:$axtCoreVersion@aar"
+    testImplementation "androidx.lifecycle:lifecycle-common:2.5.1"
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
+    testImplementation "androidx.test.ext:truth:$axtTruthVersion@aar"
+    testImplementation "androidx.test:runner:$axtRunnerVersion@aar"
     testImplementation("com.google.guava:guava:$guavaJREVersion")
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports

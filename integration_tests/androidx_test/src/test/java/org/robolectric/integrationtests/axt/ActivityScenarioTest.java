@@ -94,8 +94,8 @@ public class ActivityScenarioTest {
   public static class LifecycleOwnerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle bundle) {
-      super.onCreate(bundle);
       setTheme(R.style.Theme_AppCompat);
+      super.onCreate(bundle);
     }
   }
 
