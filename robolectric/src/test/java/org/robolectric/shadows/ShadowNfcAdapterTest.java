@@ -8,7 +8,6 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -16,8 +15,6 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.test.core.app.ActivityScenario;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,6 +22,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -35,14 +33,15 @@ public class ShadowNfcAdapterTest {
 
   @Before
   public void setUp() throws Exception {
-    context = ApplicationProvider.getApplicationContext();
+    context = RuntimeEnvironment.getApplication();
     shadowOf(context.getPackageManager())
         .setSystemFeature(PackageManager.FEATURE_NFC, /* supported= */ true);
   }
 
   @Test
   public void setNdefPushMesageCallback_shouldUseCallback() {
-    final NfcAdapter.CreateNdefMessageCallback callback = mock(NfcAdapter.CreateNdefMessageCallback.class);
+    final NfcAdapter.CreateNdefMessageCallback callback =
+        mock(NfcAdapter.CreateNdefMessageCallback.class);
     final Activity activity = Robolectric.setupActivity(Activity.class);
     final NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
 
@@ -155,78 +154,61 @@ public class ShadowNfcAdapterTest {
   @Test
   @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void isInReaderMode_beforeEnableReaderMode_shouldReturnFalse() {
-    createActivity(
-        activity -> {
-          NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
-          assertThat(shadowOf(adapter).isInReaderMode()).isFalse();
-        });
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    assertThat(shadowOf(adapter).isInReaderMode()).isFalse();
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void isInReaderMode_afterEnableReaderMode_shouldReturnTrue() {
-    createActivity(
-        activity -> {
-          NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
-          NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
-          adapter.enableReaderMode(
-              activity,
-              callback,
-              NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
-              /* extras= */ null);
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        /* extras= */ null);
 
-          assertThat(shadowOf(adapter).isInReaderMode()).isTrue();
-        });
+    assertThat(shadowOf(adapter).isInReaderMode()).isTrue();
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void isInReaderMode_afterDisableReaderMode_shouldReturnFalse() {
-    createActivity(
-        activity -> {
-          NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
-          NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
-          adapter.enableReaderMode(
-              activity,
-              callback,
-              NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
-              /* extras= */ null);
-          adapter.disableReaderMode(activity);
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        /* extras= */ null);
+    adapter.disableReaderMode(activity);
 
-          assertThat(shadowOf(adapter).isInReaderMode()).isFalse();
-        });
+    assertThat(shadowOf(adapter).isInReaderMode()).isFalse();
   }
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void dispatchTagDiscovered_shouldDispatchTagToCallback() {
-    createActivity(
-        activity -> {
-          NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
-          NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
-          adapter.enableReaderMode(
-              activity,
-              callback,
-              NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
-              /* extras= */ null);
-          Tag tag = createMockTag();
-          shadowOf(adapter).dispatchTagDiscovered(tag);
+    final Activity activity = Robolectric.setupActivity(Activity.class);
+    NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
+    NfcAdapter.ReaderCallback callback = mock(NfcAdapter.ReaderCallback.class);
+    adapter.enableReaderMode(
+        activity,
+        callback,
+        NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
+        /* extras= */ null);
+    Tag tag = createMockTag();
+    shadowOf(adapter).dispatchTagDiscovered(tag);
 
-          verify(callback).onTagDiscovered(same(tag));
-        });
+    verify(callback).onTagDiscovered(same(tag));
   }
 
   private static Tag createMockTag() {
     return Tag.createMockTag(new byte[0], new int[0], new Bundle[0]);
-  }
-
-  private void createActivity(ActivityScenario.ActivityAction<Activity> activityAction) {
-    ActivityInfo activityInfo = new ActivityInfo();
-    activityInfo.packageName = context.getPackageName();
-    activityInfo.name = "android.app.Activity";
-    shadowOf(context.getPackageManager()).addOrUpdateActivity(activityInfo);
-    try (ActivityScenario<Activity> scenario = ActivityScenario.launch(Activity.class)) {
-      scenario.onActivity(activityAction);
-    }
   }
 }

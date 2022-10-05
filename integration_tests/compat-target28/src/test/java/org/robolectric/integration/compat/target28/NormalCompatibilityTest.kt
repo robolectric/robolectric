@@ -2,17 +2,17 @@ package org.robolectric.integration.compat.target28
 
 import android.content.Context
 import android.os.Build
-import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import org.robolectric.testapp.TestActivity
 
 @RunWith(RobolectricTestRunner::class)
 class NormalCompatibilityTest {
-  private val application = ApplicationProvider.getApplicationContext<Context>()
+  private val application = RuntimeEnvironment.getApplication()
 
   @Test
   fun `Environment SDK is 28`() {
@@ -33,6 +33,6 @@ class NormalCompatibilityTest {
 
   @Test
   fun `Initialize Activity succeed`() {
-    ActivityScenario.launch(TestActivity::class.java).use { assertThat(true).isTrue() }
+    Robolectric.setupActivity(TestActivity::class.java)
   }
 }

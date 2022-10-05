@@ -45,26 +45,26 @@ dependencies {
 
     // Testing dependencies
     testImplementation project(":robolectric")
-    testImplementation "androidx.test:runner:$axtVersion"
+    testImplementation "androidx.test:runner:$axtRunnerVersion"
     testImplementation "junit:junit:$junitVersion"
-    testImplementation "androidx.test:rules:$axtVersion"
+    testImplementation "androidx.test:rules:$axtRulesVersion"
     testImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
     testImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    testImplementation "androidx.test.ext:truth:$axtVersion"
-    testImplementation "androidx.test:core:$axtVersion"
-    testImplementation "androidx.fragment:fragment:$axtVersion"
-    testImplementation "androidx.fragment:fragment-testing:$axtVersion"
+    testImplementation "androidx.test.ext:truth:$axtTruthVersion"
+    testImplementation "androidx.test:core:$axtCoreVersion"
+    testImplementation "androidx.fragment:fragment:$fragmentVersion"
+    testImplementation "androidx.fragment:fragment-testing:$fragmentVersion"
     testImplementation "androidx.test.ext:junit:$axtJunitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
 
     androidTestImplementation project(':annotations')
-    androidTestImplementation "androidx.test:runner:$axtVersion"
+    androidTestImplementation "androidx.test:runner:$axtRunnerVersion"
     androidTestImplementation "junit:junit:$junitVersion"
-    androidTestImplementation "androidx.test:rules:$axtVersion"
+    androidTestImplementation "androidx.test:rules:$axtRulesVersion"
     androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    androidTestImplementation "androidx.test.ext:truth:$axtVersion"
-    androidTestImplementation "androidx.test:core:$axtVersion"
+    androidTestImplementation "androidx.test.ext:truth:$axtTruthVersion"
+    androidTestImplementation "androidx.test:core:$axtCoreVersion"
     androidTestImplementation "androidx.test.ext:junit:$axtJunitVersion"
     androidTestImplementation "com.google.truth:truth:$truthVersion"
 }
