@@ -3,53 +3,54 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import com.android.internal.util.VirtualRefBasePtr;
-import java.util.HashMap;
-import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.res.android.NativeObjRegistry;
 
 @Implements(value = VirtualRefBasePtr.class, isInAndroidSdk = false)
 public class ShadowVirtualRefBasePtr {
-  private static final Map<Long, RefHolder> POINTERS = new HashMap<>();
-  private static long nextNativeObj = 10000;
+  private static final NativeObjRegistry<RefHolder> NATIVE_REGISTRY =
+      new NativeObjRegistry<>(RefHolder.class);
 
-  synchronized public static <T> long put(T object) {
-    long nativePtr = nextNativeObj++;
-    POINTERS.put(nativePtr, new RefHolder<T>(object));
-    return nativePtr;
+  protected static synchronized <T> long put(T object) {
+    return NATIVE_REGISTRY.register(new RefHolder<T>(object));
   }
 
-  synchronized public static <T> T get(long nativePtr, Class<T> clazz) {
-    return clazz.cast(POINTERS.get(nativePtr).nativeThing);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
-  synchronized public static void nIncStrong(long ptr) {
-    if (ptr == 0) return;
-    POINTERS.get(ptr).incr();
+  protected static synchronized <T> T get(long nativePtr, Class<T> clazz) {
+    return clazz.cast(NATIVE_REGISTRY.getNativeObject(nativePtr).nativeThing);
   }
 
   @Implementation(minSdk = LOLLIPOP)
-  synchronized public static void nDecStrong(long ptr) {
-    if (ptr == 0) return;
-    if (POINTERS.get(ptr).decr()) {
-      POINTERS.remove(ptr);
+  protected static synchronized void nIncStrong(long ptr) {
+    if (ptr == 0) {
+      return;
+    }
+    NATIVE_REGISTRY.getNativeObject(ptr).incr();
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected static synchronized void nDecStrong(long ptr) {
+    if (ptr == 0) {
+      return;
+    }
+    if (NATIVE_REGISTRY.getNativeObject(ptr).decr()) {
+      NATIVE_REGISTRY.unregister(ptr);
     }
   }
 
-  private static class RefHolder<T> {
-    T nativeThing;
-    int refCount;
+  private static final class RefHolder<T> {
+    private T nativeThing;
+    private int refCount;
 
-    public RefHolder(T object) {
+    private RefHolder(T object) {
       this.nativeThing = object;
     }
 
-    synchronized public void incr() {
+    private synchronized void incr() {
       refCount++;
     }
 
-    synchronized public boolean decr() {
+    private synchronized boolean decr() {
       refCount--;
       return refCount == 0;
     }
