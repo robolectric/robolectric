@@ -50,23 +50,21 @@ dependencies {
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:${junitVersion}"
-    // temporarily use a newer monitor version for HardwareRendererCompat
-    testImplementation("androidx.test:monitor:1.5.0-alpha03")
-    testImplementation("androidx.test:runner:$axtVersion")
-    testImplementation("androidx.test:rules:$axtVersion")
+    testImplementation("androidx.test:monitor:$axtMonitorVersion")
+    testImplementation("androidx.test:runner:$axtRunnerVersion")
+    testImplementation("androidx.test:rules:$axtRulesVersion")
     testImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    testImplementation("androidx.test.ext:truth:$axtVersion")
-    testImplementation("androidx.test:core:$axtVersion")
+    testImplementation("androidx.test.ext:truth:$axtTruthVersion")
+    testImplementation("androidx.test:core:$axtCoreVersion")
     testImplementation("com.google.truth:truth:${truthVersion}")
     testImplementation("com.google.guava:guava:$guavaJREVersion")
 
     // Testing dependencies
-    // temporarily use a newer monitor version for HardwareRendererCompat
-    androidTestImplementation("androidx.test:monitor:1.5.0-alpha03")
-    androidTestImplementation("androidx.test:runner:$axtVersion")
-    androidTestImplementation("androidx.test:rules:$axtVersion")
+    androidTestImplementation("androidx.test:monitor:$axtMonitorVersion")
+    androidTestImplementation("androidx.test:runner:$axtRunnerVersion")
+    androidTestImplementation("androidx.test:rules:$axtRulesVersion")
     androidTestImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    androidTestImplementation("androidx.test.ext:truth:$axtVersion")
+    androidTestImplementation("androidx.test.ext:truth:$axtTruthVersion")
     androidTestImplementation("com.google.truth:truth:${truthVersion}")
     androidTestImplementation("com.google.guava:guava:$guavaJREVersion")
 }

@@ -32,12 +32,12 @@ dependencies {
     testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
     testImplementation "junit:junit:$junitVersion"
-    testImplementation("androidx.test:core:$axtVersion")
+    testImplementation("androidx.test:core:$axtCoreVersion")
     testImplementation("androidx.core:core:$coreVersion")
-    testImplementation("androidx.test:runner:$axtVersion")
-    testImplementation("androidx.test:rules:$axtVersion")
+    testImplementation("androidx.test:runner:$axtRunnerVersion")
+    testImplementation("androidx.test:rules:$axtRulesVersion")
     testImplementation("androidx.test.espresso:espresso-intents:$espressoVersion")
-    testImplementation("androidx.test.ext:truth:$axtVersion")
+    testImplementation("androidx.test.ext:truth:$axtTruthVersion")
     // TODO: this should be a transitive dependency of core...
     testImplementation("androidx.lifecycle:lifecycle-common:$lifecycleVersion")
     testImplementation("androidx.test.ext:junit:$axtJunitVersion")

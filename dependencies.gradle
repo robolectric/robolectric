@@ -4,15 +4,22 @@ ext {
     errorproneVersion='2.9.0'
     errorproneJavacVersion='9+181-r4173-1'
 
-    axtVersion='1.4.0'
-    espressoVersion='3.5.0-alpha07'
-    axtJunitVersion='1.1.3'
+    // AndroidX test versions
+    axtMonitorVersion='1.6.0-beta01'
+    axtRunnerVersion='1.5.0-beta01'
+    axtRulesVersion='1.4.1-beta01'
+    axtCoreVersion='1.5.0-beta01'
+    axtTruthVersion='1.5.0-beta01'
+    espressoVersion='3.5.0-beta01'
+    axtJunitVersion='1.1.4-beta01'
 
+    // AndroidX versions
     coreVersion='1.9.0'
     appCompatVersion='1.4.1'
     constraintlayoutVersion='2.1.4'
     windowVersion='1.0.0'
     lifecycleVersion='2.2.0'
+    fragmentVersion='1.5.3'
 
     truthVersion='1.1.3'
 
