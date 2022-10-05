@@ -187,7 +187,7 @@ public class ReflectionHelpers {
   @SuppressWarnings("unchecked")
   public static <R> R getStaticField(Field field) {
     try {
-      makeFieldVeryAccessible(field);
+      field.setAccessible(true);
       return (R) field.get(null);
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -218,7 +218,10 @@ public class ReflectionHelpers {
    */
   public static void setStaticField(Field field, Object fieldNewValue) {
     try {
-      makeFieldVeryAccessible(field);
+      if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
+        throw new IllegalArgumentException("Cannot set the value of final field " + field);
+      }
+      field.setAccessible(true);
       field.set(null, fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -456,49 +459,6 @@ public class ReflectionHelpers {
         if (hierarchyTraversalClass == null) {
           throw new RuntimeException(e);
         }
-      }
-    }
-  }
-
-  private static void makeFieldVeryAccessible(Field field) {
-    field.setAccessible(true);
-    // remove 'final' modifier if present
-    if ((field.getModifiers() & Modifier.FINAL) == Modifier.FINAL) {
-      try {
-        Field modifiersField = getDeclaredField(Field.class, "modifiers");
-        modifiersField.setAccessible(true);
-        try {
-          modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        } catch (IllegalAccessException e) {
-          throw new AssertionError(e);
-        }
-      } catch (NoSuchFieldException e) {
-        // ignore missing fields
-      }
-    }
-  }
-
-  private static Field getDeclaredField(Class<?> clazz, String name) throws NoSuchFieldException {
-    try {
-      return clazz.getDeclaredField(name);
-    } catch (NoSuchFieldException e1) {
-      try {
-        Method getDeclaredFields0 =
-            Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
-        getDeclaredFields0.setAccessible(true);
-        Field[] fields = (Field[]) getDeclaredFields0.invoke(clazz, false);
-        for (Field f : fields) {
-          if (f.getName().equals(name)) {
-            return f;
-          }
-        }
-        throw new NoSuchFieldException(name);
-      } catch (NoSuchMethodException e2) {
-        throw new NoSuchFieldException(name);
-      } catch (IllegalAccessException e2) {
-        throw new NoSuchFieldException(name);
-      } catch (InvocationTargetException e2) {
-        throw new NoSuchFieldException(name);
       }
     }
   }
