@@ -9,8 +9,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Generic collection of utility methods.
@@ -97,16 +95,7 @@ public class Util {
       throw new RuntimeException("huh? " + localArtifactUrl, e);
     }
   }
-
-  @Deprecated
-  public static List<Integer> intArrayToList(int[] ints) {
-    List<Integer> list = new ArrayList<>();
-    for (int value : ints) {
-      list.add(value);
-    }
-    return list;
-  }
-
+  
   public static int parseInt(String valueFor) {
     if (valueFor.startsWith("0x")) {
       return Integer.parseInt(valueFor.substring(2), 16);
