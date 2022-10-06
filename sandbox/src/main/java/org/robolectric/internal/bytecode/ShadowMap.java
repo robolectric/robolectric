@@ -38,11 +38,12 @@ public class ShadowMap {
     final ArrayListMultimap<String, String> shadowMap = ArrayListMultimap.create();
     final Map<String, String> shadowPickerMap = new HashMap<>();
 
+    // These are sorted in descending order (higher priority providers are first).
     for (ShadowProvider provider : sortedProviders) {
       for (Map.Entry<String, String> entry : provider.getShadows()) {
         shadowMap.put(entry.getKey(), entry.getValue());
       }
-      shadowPickerMap.putAll(provider.getShadowPickerMap());
+      provider.getShadowPickerMap().forEach(shadowPickerMap::putIfAbsent);
     }
     return new ShadowMap(
         ImmutableListMultimap.copyOf(shadowMap),
