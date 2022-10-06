@@ -2,6 +2,8 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assume.assumeFalse;
+import static org.junit.Assume.assumeTrue;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
@@ -82,13 +84,18 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void openRawResourceFd_returnsNull_todo_FIX() throws Exception {
+  public void openRawResourceFd_shouldReturnsNullForLegacyResource() throws Exception {
+    assumeTrue(useLegacy());
     try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
-      if (useLegacy()) {
         assertThat(afd).isNull();
-      } else {
+    }
+  }
+
+  @Test
+  public void openRawResourceFd_shouldReturnsValidFdForUnCompressFile() throws Exception {
+    assumeFalse(useLegacy());
+    try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
         assertThat(afd).isNotNull();
-      }
     }
   }
 

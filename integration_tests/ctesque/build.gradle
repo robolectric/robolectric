@@ -47,7 +47,7 @@ android {
 dependencies {
     implementation project(':testapp')
 
-    testImplementation project(":robolectric")
+    testImplementation project(':robolectric')
     testImplementation "junit:junit:${junitVersion}"
     testImplementation("androidx.test:monitor:$axtMonitorVersion")
     testImplementation("androidx.test:runner:$axtRunnerVersion")

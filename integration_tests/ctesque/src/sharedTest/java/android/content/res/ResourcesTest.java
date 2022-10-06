@@ -647,9 +647,12 @@ public class ResourcesTest {
   }
 
   @Test
-  @Ignore("todo: incorrect behavior on robolectric vs framework?")
-  public void openRawResourceFd_returnsNull_todo_FIX() {
-    assertThat(resources.openRawResourceFd(R.raw.raw_resource)).isNull();
+  public void openRawResourceFd_withNonCompressedFile_returnsNotNull() throws IOException {
+    // This test will run on non-legacy resource mode in Robolectric environment.
+    // To test behavior on legacy mode environment, please see ShadowResourceTest.
+    try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
+      assertThat(afd).isNotNull();
+    }
   }
 
   @Test
