@@ -94,13 +94,16 @@ public class ImplementsValidator extends Validator {
 
     AnnotationValue shadowPickerValue =
         Helpers.getAnnotationTypeMirrorValue(am, "shadowPicker");
-    TypeMirror shadowPickerTypeMirror = shadowPickerValue == null
-        ? null
-        : Helpers.getAnnotationTypeMirrorValue(shadowPickerValue);
+
+    TypeElement shadowPickerTypeElement =
+        shadowPickerValue == null
+            ? null
+            : (TypeElement)
+                types.asElement(Helpers.getAnnotationTypeMirrorValue(shadowPickerValue));
 
     // This shadow doesn't apply to the current SDK. todo: check each SDK.
     if (maxSdk != -1 && maxSdk < MAX_SUPPORTED_ANDROID_SDK) {
-      addShadowNotInSdk(shadowType, av, cv);
+      addShadowNotInSdk(shadowType, av, cv, shadowPickerTypeElement);
       return null;
     }
 
@@ -129,7 +132,7 @@ public class ImplementsValidator extends Validator {
       }
     }
     if (actualType == null) {
-      addShadowNotInSdk(shadowType, av, cv);
+      addShadowNotInSdk(shadowType, av, cv, shadowPickerTypeElement);
       return null;
     }
     final List<? extends TypeParameterElement> typeTP = actualType.getTypeParameters();
@@ -160,15 +163,16 @@ public class ImplementsValidator extends Validator {
         looseSignaturesAttr != null && (Boolean) looseSignaturesAttr.getValue();
     validateShadowMethods(actualType, shadowType, minSdk, maxSdk, looseSignatures);
 
-    modelBuilder.addShadowType(shadowType, actualType,
-        shadowPickerTypeMirror == null
-            ? null
-            : (TypeElement) types.asElement(shadowPickerTypeMirror));
+    modelBuilder.addShadowType(shadowType, actualType, shadowPickerTypeElement);
     return null;
   }
 
   private void addShadowNotInSdk(
-      TypeElement shadowType, AnnotationValue valueAttr, AnnotationValue classNameAttr) {
+      TypeElement shadowType,
+      AnnotationValue valueAttr,
+      AnnotationValue classNameAttr,
+      TypeElement shadowPickerTypeElement) {
+
     String sdkClassName;
     if (valueAttr == null) {
       sdkClassName = Helpers.getAnnotationStringValue(classNameAttr).replace('$', '.');
@@ -180,6 +184,9 @@ public class ImplementsValidator extends Validator {
     // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
     String name = getClassFQName(shadowType);
     modelBuilder.addExtraShadow(sdkClassName, name);
+    if (shadowPickerTypeElement != null) {
+      modelBuilder.addExtraShadowPicker(sdkClassName, shadowPickerTypeElement);
+    }
   }
 
   private static boolean suppressWarnings(Element element, String warningName) {

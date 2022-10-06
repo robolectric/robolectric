@@ -40,6 +40,7 @@ public class RobolectricModel {
    */
   private final TreeMap<String, ShadowInfo> shadowTypes;
   private final TreeMap<String, String> extraShadowTypes;
+  private final TreeMap<String, String> extraShadowPickers;
   /**
    * Key: name of shadow class
    */
@@ -51,14 +52,17 @@ public class RobolectricModel {
     return documentedPackages.values();
   }
 
-  public RobolectricModel(TreeSet<String> imports,
+  public RobolectricModel(
+      TreeSet<String> imports,
       TreeMap<String, ShadowInfo> shadowTypes,
       TreeMap<String, String> extraShadowTypes,
+      TreeMap<String, String> extraShadowPickers,
       TreeMap<String, ResetterInfo> resetterMap,
       Map<String, DocumentedPackage> documentedPackages) {
     this.imports = new TreeSet<>(imports);
     this.shadowTypes = new TreeMap<>(shadowTypes);
     this.extraShadowTypes = new TreeMap<>(extraShadowTypes);
+    this.extraShadowPickers = new TreeMap<>(extraShadowPickers);
     this.resetterMap = new TreeMap<>(resetterMap);
     this.documentedPackages = new TreeMap<>(documentedPackages);
   }
@@ -78,6 +82,7 @@ public class RobolectricModel {
     private final TreeSet<String> imports = newTreeSet();
     private final TreeMap<String, ShadowInfo> shadowTypes = newTreeMap();
     private final TreeMap<String, String> extraShadowTypes = newTreeMap();
+    private final TreeMap<String, String> extraShadowPickers = newTreeMap();
     private final TreeMap<String, ResetterInfo> resetterMap = newTreeMap();
     private final Map<String, DocumentedPackage> documentedPackages = new TreeMap<>();
 
@@ -115,6 +120,10 @@ public class RobolectricModel {
 
     public void addExtraShadow(String sdkClassName, String shadowClassName) {
       extraShadowTypes.put(shadowClassName, sdkClassName);
+    }
+
+    public void addExtraShadowPicker(String sdkClassName, TypeElement pickerTypeElement) {
+      extraShadowPickers.put(sdkClassName, helpers.getBinaryName(pickerTypeElement));
     }
 
     public void addResetter(TypeElement shadowTypeElement, ExecutableElement elem) {
@@ -161,7 +170,12 @@ public class RobolectricModel {
     RobolectricModel build() {
       prepare();
 
-      return new RobolectricModel(imports, shadowTypes, extraShadowTypes, resetterMap,
+      return new RobolectricModel(
+          imports,
+          shadowTypes,
+          extraShadowTypes,
+          extraShadowPickers,
+          resetterMap,
           documentedPackages);
     }
 
@@ -275,6 +289,10 @@ public class RobolectricModel {
 
   public Map<String, String> getExtraShadowTypes() {
     return extraShadowTypes;
+  }
+
+  public Map<String, String> getExtraShadowPickers() {
+    return extraShadowPickers;
   }
 
   public Iterable<ShadowInfo> getVisibleShadowTypes() {
