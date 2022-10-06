@@ -35,7 +35,6 @@ public class ShadowPackageParser {
   public static Package callParsePackage(Path apkFile) {
     PackageParser packageParser = new PackageParser();
 
-    int flags = PackageParser.PARSE_IGNORE_PROCESSES;
     try {
       Package thePackage;
       if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
@@ -45,12 +44,11 @@ public class ShadowPackageParser {
         if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
           QHelper.setCallback(packageParser);
         }
-        thePackage = packageParser.parsePackage(apkFile.toFile(), flags);
+        thePackage = packageParser.parsePackage(apkFile.toFile(), 0);
       } else { // JB -> KK
         thePackage =
             reflector(_PackageParser_.class, packageParser)
-                .parsePackage(
-                    apkFile.toFile(), Fs.externalize(apkFile), new DisplayMetrics(), flags);
+                .parsePackage(apkFile.toFile(), Fs.externalize(apkFile), new DisplayMetrics(), 0);
       }
 
       if (thePackage == null) {
