@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -201,6 +202,30 @@ public class ShadowJobSchedulerTest {
                 .build(),
             new JobWorkItem(new Intent()));
 
+    assertThat(result).isEqualTo(JobScheduler.RESULT_FAILURE);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void scheduleExpeditedJob_success() {
+    int result =
+        jobScheduler.schedule(
+            new JobInfo.Builder(0, new ComponentName(context, "component_class_name"))
+                .setExpedited(true)
+                .build());
+    assertThat(result).isEqualTo(JobScheduler.RESULT_SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void scheduleExpeditedJob_fail() {
+    shadowOf(jobScheduler).failExpeditedJob(true);
+
+    int result =
+        jobScheduler.schedule(
+            new JobInfo.Builder(0, new ComponentName(context, "component_class_name"))
+                .setExpedited(true)
+                .build());
     assertThat(result).isEqualTo(JobScheduler.RESULT_FAILURE);
   }
 }
