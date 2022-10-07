@@ -51,6 +51,7 @@ import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.view.Display;
@@ -1453,6 +1454,19 @@ public class ShadowActivityTest {
     assertThat(activityLp.token).isNotNull();
     assertThat(windowViewLp.token).isEqualTo(activityView.getWindowToken());
     assertThat(windowView.getApplicationWindowToken()).isEqualTo(activityView.getWindowToken());
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void getDisplay_succeeds() {
+    try {
+      System.setProperty("robolectric.createActivityContexts", "true");
+
+      Activity activity = Robolectric.setupActivity(Activity.class);
+      assertThat(activity.getDisplay()).isNotNull();
+    } finally {
+      System.setProperty("robolectric.createActivityContexts", "false");
+    }
   }
 
   /////////////////////////////

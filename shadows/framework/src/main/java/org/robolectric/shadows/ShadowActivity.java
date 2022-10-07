@@ -140,45 +140,54 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     Instrumentation instrumentation = activityThread.getInstrumentation();
 
-    // If a non-default display is specified in the activity options, create a new context
-    // using createActivityContext with the correct display ID set, instead of using the shared
-    // application context.
-    //
-    // This is more closely aligned with real android and ensures the correct display
-    // is used, but has a couple of caveats:
-    // - Qualifiers set via RuntimeEnvironment.setQualifiers won't be propagated to this activity
-    // - Calling getSystemService on the activity will return a different object than when calling
-    //   on the application, meaning non-static shadow system service state will not be shared.
-    if (activityOptions != null && VERSION.SDK_INT >= VERSION_CODES.O) {
-      int displayId = ActivityOptions.fromBundle(activityOptions).getLaunchDisplayId();
-      if (displayId != Display.DEFAULT_DISPLAY
-          // INVALID_DISPLAY indicates no display was set in the options bundle
-          && displayId != Display.INVALID_DISPLAY) {
-
-        LoadedApk loadedApk =
-            activityThread.getPackageInfo(
-                ShadowActivityThread.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
-        _LoadedApk_ loadedApkReflector = reflector(_LoadedApk_.class, loadedApk);
-        loadedApkReflector.setResources(application.getResources());
-        loadedApkReflector.setApplication(application);
-
-        baseContext =
-            reflector(_ContextImpl_.class)
-                .createActivityContext(
-                    activityThread,
-                    loadedApk,
-                    activityInfo,
-                    reflector(_ContextImpl_.class, baseContext).getActivityToken(),
-                    displayId,
-                    /* overrideConfiguration= */ application.getResources().getConfiguration());
-        reflector(_ContextImpl_.class, baseContext).setOuterContext(realActivity);
+    Context activityContext;
+    int displayId =
+        activityOptions != null
+            ? ActivityOptions.fromBundle(activityOptions).getLaunchDisplayId()
+            : Display.DEFAULT_DISPLAY;
+    // There's no particular reason to only do this above O, however the createActivityContext
+    // method signature changed between versions so just for convenience only the latest version is
+    // plumbed through, older versions will use the previous robolectric behavior of sharing
+    // activity and application ContextImpl objects.
+    // TODO(paulsowden): This should be enabled always but many service shadows are storing instance
+    //  state that should be represented globally, we'll have to update these one by one to use
+    //  static (i.e. global) state instead of instance state. For now enable only when the display
+    //  is requested to a non-default display which requires a separate context to function
+    //  properly.
+    if ((Boolean.getBoolean("robolectric.createActivityContexts")
+            || (displayId != Display.DEFAULT_DISPLAY && displayId != Display.INVALID_DISPLAY))
+        && RuntimeEnvironment.getApiLevel() >= O) {
+      LoadedApk loadedApk =
+          activityThread.getPackageInfo(
+              ShadowActivityThread.getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
+      _LoadedApk_ loadedApkReflector = reflector(_LoadedApk_.class, loadedApk);
+      loadedApkReflector.setResources(application.getResources());
+      loadedApkReflector.setApplication(application);
+      activityContext =
+          reflector(_ContextImpl_.class)
+              .createActivityContext(
+                  activityThread,
+                  loadedApk,
+                  activityInfo,
+                  reflector(_ContextImpl_.class, baseContext).getActivityToken(),
+                  displayId,
+                  /* overrideConfiguration= */ application.getResources().getConfiguration());
+      reflector(_ContextImpl_.class, activityContext).setOuterContext(realActivity);
+      // This is not what the SDK does but for backwards compatibility with previous versions of
+      // robolectric, which did not use a separate activity context, move the theme from the
+      // application context (previously tests would configure the theme on the application context
+      // with the expectation that it modify the activity).
+      if (baseContext.getThemeResId() != 0) {
+        activityContext.setTheme(baseContext.getThemeResId());
       }
+    } else {
+      activityContext = baseContext;
     }
 
     reflector(_Activity_.class, realActivity)
         .callAttach(
             realActivity,
-            baseContext,
+            activityContext,
             activityThread,
             instrumentation,
             application,
@@ -435,22 +444,30 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     hasReportedFullyDrawn = true;
   }
 
-  /** @return whether {@code ReportFullyDrawn()} methods has been called. */
+  /**
+   * @return whether {@code ReportFullyDrawn()} methods has been called.
+   */
   public boolean getReportFullyDrawn() {
     return hasReportedFullyDrawn;
   }
 
-  /** @return the {@code contentView} set by one of the {@code setContentView()} methods */
+  /**
+   * @return the {@code contentView} set by one of the {@code setContentView()} methods
+   */
   public View getContentView() {
     return ((ViewGroup) getWindow().findViewById(android.R.id.content)).getChildAt(0);
   }
 
-  /** @return the {@code resultCode} set by one of the {@code setResult()} methods */
+  /**
+   * @return the {@code resultCode} set by one of the {@code setResult()} methods
+   */
   public int getResultCode() {
     return resultCode;
   }
 
-  /** @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)} */
+  /**
+   * @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)}
+   */
   public Intent getResultIntent() {
     return resultIntent;
   }
@@ -490,13 +507,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return reflector(DirectActivityReflector.class, realActivity).getLastNonConfigurationInstance();
   }
 
-  /** @deprecated use {@link ActivityController#recreate()}. */
+  /**
+   * @deprecated use {@link ActivityController#recreate()}.
+   */
   @Deprecated
   public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
     this.lastNonConfigurationInstance = lastNonConfigurationInstance;
   }
 
-  /** @param view View to focus. */
+  /**
+   * @param view View to focus.
+   */
   public void setCurrentFocus(View view) {
     currentFocus = view;
   }

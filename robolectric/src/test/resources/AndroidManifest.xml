@@ -89,7 +89,7 @@
               android:label="@string/activity_name"/>
 
     <activity android:name=".android.controller.ActivityControllerTest$ConfigAwareActivity"
-              android:configChanges="fontScale" />
+              android:configChanges="fontScale|smallestScreenSize" />
 
     <activity android:name="org.robolectric.shadows.TestActivity">
       <intent-filter>

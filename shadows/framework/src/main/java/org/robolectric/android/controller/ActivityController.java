@@ -509,6 +509,7 @@ public class ActivityController<T extends Activity>
             //  destroying the old activity which will flush the object references from the weak
             //  maps (the side effect otherwise is flaky tests that behave differently based on when
             //  garbage collection last happened to run).
+            //  This should be removed when robolectric.createActivityContexts is enabled.
             System.gc();
 
             // TODO: Pass nonConfigurationInstance here instead of setting
