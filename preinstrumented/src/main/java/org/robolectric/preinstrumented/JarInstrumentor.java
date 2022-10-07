@@ -79,11 +79,6 @@ public class JarInstrumentor {
         } else if (name.endsWith(".class")) {
           String className = name.substring(0, name.length() - ".class".length()).replace('/', '.');
 
-          boolean classIsRenamed = isClassRenamed(className);
-          if (classIsRenamed) {
-            continue;
-          }
-
           try {
             byte[] classBytes = getClassBytes(className, jarFile);
             ClassDetails classDetails = new ClassDetails(classBytes);
@@ -154,11 +149,5 @@ public class JarInstrumentor {
     // Setting the timestamp to the original is necessary for deterministic output.
     entry.setTime(original.getTime());
     return entry;
-  }
-
-  private boolean isClassRenamed(String className) {
-    String internalName = className.replace('.', '/');
-    String remappedName = instrumentationConfiguration.mappedTypeName(internalName);
-    return !remappedName.equals(internalName);
   }
 }
