@@ -67,7 +67,12 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     ActivityLifecycleMonitorRegistry.registerInstance(lifecycleMonitor);
     ApplicationLifecycleMonitorRegistry.registerInstance(applicationMonitor);
     IntentMonitorRegistry.registerInstance(intentMonitor);
-    shadowOf(Resources.getSystem()).addConfigurationChangeListener(this::updateConfiguration);
+    if (!Boolean.getBoolean("robolectric.createActivityContexts")) {
+      // To avoid infinite recursion listen to the system resources, this will be updated before
+      // the application resources but because activities use the application resources they will
+      // get updated by the first activity (via updateConfiguration).
+      shadowOf(Resources.getSystem()).addConfigurationChangeListener(this::updateConfiguration);
+    }
 
     super.onCreate(arguments);
   }
@@ -123,6 +128,9 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   @Override
   public void callApplicationOnCreate(Application app) {
+    if (Boolean.getBoolean("robolectric.createActivityContexts")) {
+      shadowOf(app.getResources()).addConfigurationChangeListener(this::updateConfiguration);
+    }
     applicationMonitor.signalLifecycleChange(app, ApplicationStage.PRE_ON_CREATE);
     super.callApplicationOnCreate(app);
     applicationMonitor.signalLifecycleChange(app, ApplicationStage.CREATED);

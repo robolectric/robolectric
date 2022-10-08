@@ -28,7 +28,9 @@ import android.content.IntentSender;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.database.Cursor;
+import android.os.Binder;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -121,6 +123,19 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       @Nullable Bundle activityOptions,
       @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
+    callAttach(
+        intent,
+        /* activityOptions= */ activityOptions,
+        /* lastNonConfigurationInstances= */ null,
+        /* overrideConfig= */ null);
+  }
+
+  public void callAttach(
+      Intent intent,
+      @Nullable Bundle activityOptions,
+      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+          Object lastNonConfigurationInstances,
+      @Nullable Configuration overrideConfig) {
     Application application = RuntimeEnvironment.getApplication();
     Context baseContext = application.getBaseContext();
 
@@ -134,6 +149,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     } catch (NameNotFoundException e) {
       throw new RuntimeException("Activity is not resolved even if we made sure it exists", e);
     }
+    Binder token = new Binder();
 
     CharSequence activityTitle = activityInfo.loadLabel(baseContext.getPackageManager());
 
@@ -166,12 +182,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
       activityContext =
           reflector(_ContextImpl_.class)
               .createActivityContext(
-                  activityThread,
-                  loadedApk,
-                  activityInfo,
-                  reflector(_ContextImpl_.class, baseContext).getActivityToken(),
-                  displayId,
-                  /* overrideConfiguration= */ application.getResources().getConfiguration());
+                  activityThread, loadedApk, activityInfo, token, displayId, overrideConfig);
       reflector(_ContextImpl_.class, activityContext).setOuterContext(realActivity);
       // This is not what the SDK does but for backwards compatibility with previous versions of
       // robolectric, which did not use a separate activity context, move the theme from the
@@ -193,6 +204,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             application,
             intent,
             activityInfo,
+            token,
             activityTitle,
             lastNonConfigurationInstances);
 

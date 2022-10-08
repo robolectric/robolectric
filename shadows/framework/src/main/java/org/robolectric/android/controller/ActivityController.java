@@ -71,18 +71,15 @@ public class ActivityController<T extends Activity>
 
   public static <T extends Activity> ActivityController<T> of(
       T activity, Intent intent, @Nullable Bundle activityOptions) {
-    return new ActivityController<>(activity, intent)
-        .attach(activityOptions, /* lastNonConfigurationInstances= */ null);
+    return new ActivityController<>(activity, intent).attach(activityOptions);
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity, Intent intent) {
-    return new ActivityController<>(activity, intent)
-        .attach(/* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
+    return new ActivityController<>(activity, intent).attach(/* activityOptions= */ null);
   }
 
   public static <T extends Activity> ActivityController<T> of(T activity) {
-    return new ActivityController<>(activity, null)
-        .attach(/* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
+    return new ActivityController<>(activity, null).attach(/* activityOptions= */ null);
   }
 
   private ActivityController(T activity, Intent intent) {
@@ -91,10 +88,16 @@ public class ActivityController<T extends Activity>
     _component_ = reflector(_Activity_.class, component);
   }
 
+  private ActivityController<T> attach(@Nullable Bundle activityOptions) {
+    return attach(
+        activityOptions, /* lastNonConfigurationInstances= */ null, /* overrideConfig= */ null);
+  }
+
   private ActivityController<T> attach(
       @Nullable Bundle activityOptions,
       @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
-          Object lastNonConfigurationInstances) {
+          Object lastNonConfigurationInstances,
+      @Nullable Configuration overrideConfig) {
     if (attached) {
       return this;
     }
@@ -107,7 +110,8 @@ public class ActivityController<T extends Activity>
     packageManager.setComponentEnabledSetting(
         componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 0);
     ShadowActivity shadowActivity = Shadow.extract(component);
-    shadowActivity.callAttach(getIntent(), activityOptions, lastNonConfigurationInstances);
+    shadowActivity.callAttach(
+        getIntent(), activityOptions, lastNonConfigurationInstances, overrideConfig);
     shadowActivity.attachController(this);
     attached = true;
     return this;
@@ -516,7 +520,10 @@ public class ActivityController<T extends Activity>
             // mLastNonConfigurationInstances directly below. This field must be set before
             // attach. Since current implementation sets it after attach(), initialization is not
             // done correctly. For instance, fragment marked as retained is not retained.
-            attach(/* activityOptions= */ null, /* lastNonConfigurationInstances= */ null);
+            attach(
+                /* activityOptions= */ null,
+                /* lastNonConfigurationInstances= */ null,
+                newConfiguration);
 
             if (theme != 0) {
               recreatedActivity.setTheme(theme);
@@ -602,12 +609,13 @@ public class ActivityController<T extends Activity>
     Bundle outState = new Bundle();
     saveInstanceState(outState);
     Object lastNonConfigurationInstances = _component_.retainNonConfigurationInstances();
+    Configuration overrideConfig = component.getResources().getConfiguration();
     destroy();
 
     component = (T) ReflectionHelpers.callConstructor(component.getClass());
     _component_ = reflector(_Activity_.class, component);
     attached = false;
-    attach(/* activityOptions= */ null, lastNonConfigurationInstances);
+    attach(/* activityOptions= */ null, lastNonConfigurationInstances, overrideConfig);
     create(outState);
     start();
     restoreInstanceState(outState);
