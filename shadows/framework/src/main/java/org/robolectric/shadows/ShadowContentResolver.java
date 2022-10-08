@@ -73,20 +73,20 @@ public class ShadowContentResolver {
   @RealObject ContentResolver realContentResolver;
 
   private BaseCursor cursor;
-  private final List<Statement> statements = new CopyOnWriteArrayList<>();
-  private final List<InsertStatement> insertStatements = new CopyOnWriteArrayList<>();
-  private final List<UpdateStatement> updateStatements = new CopyOnWriteArrayList<>();
-  private final List<DeleteStatement> deleteStatements = new CopyOnWriteArrayList<>();
-  private List<NotifiedUri> notifiedUris = new ArrayList<>();
-  private Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
-  private Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
-  private Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
-  private final Map<String, List<ContentProviderOperation>> contentProviderOperations =
+  private static final List<Statement> statements = new CopyOnWriteArrayList<>();
+  private static final List<InsertStatement> insertStatements = new CopyOnWriteArrayList<>();
+  private static final List<UpdateStatement> updateStatements = new CopyOnWriteArrayList<>();
+  private static final List<DeleteStatement> deleteStatements = new CopyOnWriteArrayList<>();
+  private static final List<NotifiedUri> notifiedUris = new ArrayList<>();
+  private static final Map<Uri, BaseCursor> uriCursorMap = new HashMap<>();
+  private static final Map<Uri, Supplier<InputStream>> inputStreamMap = new HashMap<>();
+  private static final Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
+  private static final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
-  private ContentProviderResult[] contentProviderResults;
-  private final List<UriPermission> uriPermissions = new ArrayList<>();
+  private static ContentProviderResult[] contentProviderResults;
+  private static final List<UriPermission> uriPermissions = new ArrayList<>();
 
-  private final CopyOnWriteArrayList<ContentObserverEntry> contentObservers =
+  private static final CopyOnWriteArrayList<ContentObserverEntry> contentObservers =
       new CopyOnWriteArrayList<>();
 
   private static final Map<String, Map<Account, Status>> syncableAccounts = new HashMap<>();
@@ -98,6 +98,18 @@ public class ShadowContentResolver {
 
   @Resetter
   public static void reset() {
+    statements.clear();
+    insertStatements.clear();
+    updateStatements.clear();
+    deleteStatements.clear();
+    notifiedUris.clear();
+    uriCursorMap.clear();
+    inputStreamMap.clear();
+    outputStreamMap.clear();
+    contentProviderOperations.clear();
+    contentProviderResults = null;
+    uriPermissions.clear();
+    contentObservers.clear();
     syncableAccounts.clear();
     providers.clear();
     masterSyncAutomatically = false;
@@ -788,7 +800,7 @@ public class ShadowContentResolver {
    */
   @Deprecated
   public void setCursor(Uri uri, BaseCursor cursorForUri) {
-    this.uriCursorMap.put(uri, cursorForUri);
+    uriCursorMap.put(uri, cursorForUri);
   }
 
   /**
@@ -883,7 +895,7 @@ public class ShadowContentResolver {
 
   @Deprecated
   public void setContentProviderResult(ContentProviderResult[] contentProviderResults) {
-    this.contentProviderResults = contentProviderResults;
+    ShadowContentResolver.contentProviderResults = contentProviderResults;
   }
 
   private final Map<Uri, RuntimeException> registerContentProviderExceptions = new HashMap<>();
