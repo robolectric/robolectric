@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Locale;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -27,7 +25,6 @@ import org.robolectric.util.inject.Injector;
 public class JarInstrumentor {
 
   private static final int ONE_MB = 1024 * 1024;
-  private static final boolean PRINT_FAILED_CLASSES = false;
 
   private static final Injector INJECTOR = new Injector.Builder().build();
 
@@ -44,7 +41,7 @@ public class JarInstrumentor {
     instrumentationConfiguration = builder.build();
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, ClassNotFoundException {
     if (args.length != 2) {
       System.err.println("Usage: JarInstrumentor <source jar> <dest jar>");
       System.exit(1);
@@ -52,7 +49,8 @@ public class JarInstrumentor {
     new JarInstrumentor().instrumentJar(new File(args[0]), new File(args[1]));
   }
 
-  private void instrumentJar(File sourceFile, File destFile) throws IOException {
+  private void instrumentJar(File sourceFile, File destFile)
+      throws IOException, ClassNotFoundException {
     long startNs = System.nanoTime();
     JarFile jarFile = new JarFile(sourceFile);
     ClassNodeProvider classNodeProvider =
@@ -65,7 +63,6 @@ public class JarInstrumentor {
 
     int nonClassCount = 0;
     int classCount = 0;
-    Set<String> failedClasses = new TreeSet<>();
 
     try (JarOutputStream jarOut =
         new JarOutputStream(new BufferedOutputStream(new FileOutputStream(destFile), ONE_MB))) {
@@ -91,12 +88,9 @@ public class JarInstrumentor {
             jarOut.putNextEntry(createJarEntry(jarEntry));
             jarOut.write(outBytes);
             classCount++;
-          } catch (Exception e) {
-            failedClasses.add(className);
-            if (PRINT_FAILED_CLASSES) {
-              System.err.print("Failed to instrument " + className + ": ");
-              e.printStackTrace();
-            }
+          } catch (NegativeArraySizeException e) {
+            System.err.println(
+                "Skipping instrumenting due to NegativeArraySizeException for class: " + className);
           }
         } else {
           // resources & stuff
@@ -114,14 +108,6 @@ public class JarInstrumentor {
             classCount,
             nonClassCount,
             elapsedNs / 1000000000.0));
-    if (PRINT_FAILED_CLASSES) {
-      if (!failedClasses.isEmpty()) {
-        System.out.println("Failed to instrument:");
-      }
-      for (String failedClass : failedClasses) {
-        System.out.println("- " + failedClass);
-      }
-    }
   }
 
   private static byte[] getClassBytes(String className, JarFile jarFile)
