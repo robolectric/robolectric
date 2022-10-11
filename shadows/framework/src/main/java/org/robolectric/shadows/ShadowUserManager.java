@@ -457,6 +457,11 @@ public class ShadowUserManager {
     bundle.putBoolean(key, value);
   }
 
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected void setUserRestriction(String key, boolean value) {
+    setUserRestriction(key, value, Process.myUserHandle());
+  }
+
   /**
    * @deprecated When possible, please use the real Android framework API {@link
    *     UserManager#setUserRestriction()}.
