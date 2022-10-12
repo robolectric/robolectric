@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static java.util.stream.Collectors.toSet;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 
@@ -59,7 +60,8 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(value = AppOpsManager.class, looseSignatures = true)
+/** Shadow for {@link AppOpsManager}. */
+@Implements(value = AppOpsManager.class, minSdk = KITKAT, looseSignatures = true)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
@@ -88,7 +90,7 @@ public class ShadowAppOpsManager {
 
   private Context context;
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void __constructor__(Context context, IAppOpsService service) {
     this.context = context;
     invokeConstructor(
@@ -98,7 +100,7 @@ public class ShadowAppOpsManager {
         ClassParameter.from(IAppOpsService.class, service));
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected static void __staticInitializer__() {
     staticallyInitialized = true;
     Shadow.directInitialize(AppOpsManager.class);
@@ -132,7 +134,7 @@ public class ShadowAppOpsManager {
    * called afterwards with the {@code op}, {@code ui}, and {@code packageName} provided, it will *
    * return the {@code mode} set here.
    */
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   @HiddenApi
   public void setMode(int op, int uid, String packageName, int mode) {
     Integer oldMode = appModeMap.put(Key.create(uid, packageName, op), mode);
@@ -193,7 +195,7 @@ public class ShadowAppOpsManager {
    * @return app ops information about each package, containing only ops that were specified as an
    *     argument
    */
-  @Implementation(minSdk = KITKAT) // to be consistent with setMode() shadow implementations
+  @Implementation
   @HiddenApi
   protected List<PackageOps> getPackagesForOps(int[] ops) {
     Set<Integer> relevantOps;
@@ -284,7 +286,7 @@ public class ShadowAppOpsManager {
   }
 
   /** Removes a fake long-running operation from the set. */
-  @Implementation(minSdk = KITKAT, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   protected void finishOp(int op, int uid, String packageName) {
     longRunningOp.remove(Key.create(uid, packageName, op));
   }
@@ -320,16 +322,16 @@ public class ShadowAppOpsManager {
    * Like {@link AppOpsManager#checkOp} but instead of throwing a {@link SecurityException} it
    * returns {@link AppOpsManager#MODE_ERRORED}.
    *
-   * <p>Made public for testing {@link #setMode} as the method is {@coe @hide}.
+   * <p>Made public for testing {@link #setMode} as the method is {@code @hide}.
    */
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   @HiddenApi
   public int checkOpNoThrow(int op, int uid, String packageName) {
     int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
     return mode == AppOpsManager.MODE_FOREGROUND ? AppOpsManager.MODE_ALLOWED : mode;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   public int noteOp(int op, int uid, String packageName) {
     return noteOpInternal(op, uid, packageName, "", "");
   }
@@ -357,7 +359,7 @@ public class ShadowAppOpsManager {
     return noteOpInternal(op, uid, packageName, attributionTag, message);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected int noteOpNoThrow(int op, int uid, String packageName) {
     storedOps.put(Key.create(uid, packageName, null), op);
     return checkOpNoThrow(op, uid, packageName);
@@ -399,8 +401,8 @@ public class ShadowAppOpsManager {
     return checkOpNoThrow(op, proxiedUid, proxiedPackageName);
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.S)
-  @Implementation(minSdk = Build.VERSION_CODES.S)
+  @RequiresApi(api = S)
+  @Implementation(minSdk = S)
   protected int noteProxyOpNoThrow(
       Object op, Object attributionSource, Object message, Object ignoredSkipProxyOperation) {
     Preconditions.checkArgument(op instanceof Integer);
@@ -416,7 +418,7 @@ public class ShadowAppOpsManager {
         (String) message);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   @HiddenApi
   public List<PackageOps> getOpsForPackage(int uid, String packageName, int[] ops) {
     Set<Integer> opFilter = new HashSet<>();
@@ -458,7 +460,7 @@ public class ShadowAppOpsManager {
     return getOpsForPackage(uid, packageName, intOpsList.stream().mapToInt(i -> i).toArray());
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void checkPackage(int uid, String packageName) {
     try {
       // getPackageUid was introduced in API 24, so we call it on the shadow class
@@ -493,7 +495,7 @@ public class ShadowAppOpsManager {
     return audioRestrictions.get(getAudioRestrictionKey(code, usage));
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void startWatchingMode(int op, String packageName, OnOpChangedListener callback) {
     startWatchingModeImpl(op, packageName, 0, callback);
   }
@@ -514,7 +516,7 @@ public class ShadowAppOpsManager {
     keys.add(Key.create(null, packageName, op));
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void stopWatchingMode(OnOpChangedListener callback) {
     appOpListeners.remove(callback);
   }
