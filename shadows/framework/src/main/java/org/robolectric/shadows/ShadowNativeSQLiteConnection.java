@@ -13,16 +13,17 @@ import java.util.function.UnaryOperator;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.SQLiteConnectionNatives;
 import org.robolectric.util.PerfStatsCollector;
 
 /** Shadow for {@link SQLiteConnection} that is backed by native code */
 @Implements(className = "android.database.sqlite.SQLiteConnection", isInAndroidSdk = false)
 public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
-
   @Implementation(maxSdk = O)
   protected static Number nativeOpen(
       String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
+    DefaultNativeRuntimeLoader.injectAndLoad();
     return PerfStatsCollector.getInstance()
         .measure(
             "androidsqlite",
