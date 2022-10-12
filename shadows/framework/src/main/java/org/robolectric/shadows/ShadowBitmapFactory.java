@@ -8,7 +8,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.content.res.AssetManager.AssetInputStream;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -228,30 +227,7 @@ public class ShadowBitmapFactory {
     return bitmap;
   }
 
-  static Bitmap create(String name) {
-    return create(name, null);
-  }
-
-  /**
-   * @deprecated Use {@link Bitmap#createBitmap(int, int, Config)} to create a simple Bitmap or any
-   *     of the BitmapFactory.decode methods with real image data.
-   */
-  @Deprecated
-  public static Bitmap create(String name, BitmapFactory.Options options) {
-    return create(name, options, (Point) null);
-  }
-
-  /**
-   * @deprecated Use {@link Bitmap#createBitmap(int, int, Config)} to create a simple Bitmap or any
-   *     of the BitmapFactory.decode methods with real image data.
-   */
-  @Deprecated
-  public static Bitmap create(
-      final String name, final BitmapFactory.Options options, final Point widthAndHeight) {
-    return create(name, null, null, options, widthAndHeight, null);
-  }
-
-  private static Bitmap create(
+  static Bitmap create(
       final String name,
       final BitmapFactory.Options options,
       final RobolectricBufferedImage image) {
