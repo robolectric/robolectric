@@ -393,7 +393,7 @@ public class BitmapTest {
           .isTrue();
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* width= */ 1,
                       /* height= */ 1,
                       Bitmap.Config.ARGB_8888,
@@ -424,7 +424,7 @@ public class BitmapTest {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* colors= */ new int[] {0},
                       /* width= */ 1,
                       /* height= */ 1,
@@ -433,7 +433,7 @@ public class BitmapTest {
           .isFalse();
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* colors= */ new int[] {0},
                       /* offset= */ 0,
                       /* stride= */ 1,
@@ -463,7 +463,7 @@ public class BitmapTest {
           .isTrue();
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* width= */ 1,
                       /* height= */ 1,
                       Bitmap.Config.ARGB_8888,
@@ -495,7 +495,7 @@ public class BitmapTest {
           .isFalse();
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* width= */ 1,
                       /* height= */ 1,
                       Bitmap.Config.ARGB_8888,
@@ -525,7 +525,7 @@ public class BitmapTest {
           .isTrue();
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* width= */ 1,
                       /* height= */ 1,
                       Bitmap.Config.ARGB_8888,
@@ -558,7 +558,7 @@ public class BitmapTest {
           .isFalse();
       assertThat(
               Bitmap.createBitmap(
-                      /* displayMetrics= */ null,
+                      /* display= */ null,
                       /* width= */ 1,
                       /* height= */ 1,
                       Bitmap.Config.ARGB_8888,
@@ -687,5 +687,10 @@ public class BitmapTest {
     assertThat(mutated2.getAlpha()).isEqualTo(200);
     assertThat(mutated2.getColorFilter())
         .isEqualTo(new PorterDuffColorFilter(Color.RED, PorterDuff.Mode.SRC_IN));
+  }
+
+  @Test
+  public void null_bitmapConfig_throwsNPE() {
+    assertThrows(NullPointerException.class, () -> Bitmap.createBitmap(100, 100, null));
   }
 }
