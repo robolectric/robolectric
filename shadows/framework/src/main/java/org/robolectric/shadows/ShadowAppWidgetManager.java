@@ -36,7 +36,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -377,7 +376,9 @@ public class ShadowAppWidgetManager {
     alwaysRecreateViewsDuringUpdate = alwaysRecreate;
   }
 
-  /** @return the state of the{@code alwaysRecreateViewsDuringUpdate} flag */
+  /**
+   * @return the state of the{@code alwaysRecreateViewsDuringUpdate} flag
+   */
   public boolean getAlwaysRecreateViewsDuringUpdate() {
     return alwaysRecreateViewsDuringUpdate;
   }
@@ -419,11 +420,8 @@ public class ShadowAppWidgetManager {
 
   @ForType(RemoteViews.class)
   interface RemoteViewsReflector {
-
-    @Direct
     RemoteViews getRemoteViewsToApply(Context context);
 
-    @Direct
     boolean hasLandscapeAndPortraitLayouts();
   }
 }

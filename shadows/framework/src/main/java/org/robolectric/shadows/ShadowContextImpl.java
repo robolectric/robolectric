@@ -503,7 +503,6 @@ public class ShadowContextImpl {
     @Direct
     Object getSystemService(String name);
 
-    @Direct
     void startActivity(Intent intent, Bundle options);
 
     @Direct

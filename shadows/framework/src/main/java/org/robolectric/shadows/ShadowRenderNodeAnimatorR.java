@@ -11,6 +11,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -122,7 +123,7 @@ public class ShadowRenderNodeAnimatorR {
         }
       };
 
-  @ForType(value = RenderNodeAnimator.class, direct = true)
+  @ForType(value = RenderNodeAnimator.class)
   interface RenderNodeAnimatorReflector {
 
     @Accessor("mState")
@@ -134,12 +135,16 @@ public class ShadowRenderNodeAnimatorR {
 
     void onFinished();
 
+    @Direct
     void doStart();
 
+    @Direct
     void cancel();
 
+    @Direct
     void moveToRunningState();
 
+    @Direct
     void end();
   }
 }

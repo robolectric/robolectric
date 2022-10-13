@@ -98,7 +98,6 @@ public class ShadowWifiInfo {
     @Direct
     void setSSID(String ssid);
 
-    @Direct
     void setSSID(@WithType("android.net.wifi.WifiSsid") Object ssid);
 
     @Direct
