@@ -10,7 +10,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(SeekBar.class)
-public class ShadowSeekBar extends ShadowAbsSeekBar {
+public class ShadowSeekBar extends ShadowView {
 
   @RealObject private SeekBar realSeekBar;
 
