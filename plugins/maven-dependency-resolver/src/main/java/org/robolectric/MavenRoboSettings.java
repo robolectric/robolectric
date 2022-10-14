@@ -7,11 +7,13 @@ package org.robolectric;
  */
 @Deprecated
 public class MavenRoboSettings {
-
+  private static final int DEFAULT_PROXY_PORT = 0;
   private static String mavenRepositoryId;
   private static String mavenRepositoryUrl;
   private static String mavenRepositoryUserName;
   private static String mavenRepositoryPassword;
+  private static String mavenProxyHost = "";
+  private static int mavenProxyPort = DEFAULT_PROXY_PORT;
 
   static {
     mavenRepositoryId = System.getProperty("robolectric.dependency.repo.id", "mavenCentral");
@@ -19,6 +21,20 @@ public class MavenRoboSettings {
         System.getProperty("robolectric.dependency.repo.url", "https://repo1.maven.org/maven2");
     mavenRepositoryUserName = System.getProperty("robolectric.dependency.repo.username");
     mavenRepositoryPassword = System.getProperty("robolectric.dependency.repo.password");
+
+    String proxyHost = System.getProperty("robolectric.dependency.proxy.host");
+    if (proxyHost != null && !proxyHost.isEmpty()) {
+      mavenProxyHost = proxyHost;
+    }
+
+    String proxyPort = System.getProperty("robolectric.dependency.proxy.port");
+    if (proxyPort != null && !proxyPort.isEmpty()) {
+      try {
+        mavenProxyPort = Integer.parseInt(proxyPort);
+      } catch (NumberFormatException numberFormatException) {
+        mavenProxyPort = DEFAULT_PROXY_PORT;
+      }
+    }
   }
 
   public static String getMavenRepositoryId() {
@@ -51,5 +67,21 @@ public class MavenRoboSettings {
 
   public static void setMavenRepositoryPassword(String mavenRepositoryPassword) {
     MavenRoboSettings.mavenRepositoryPassword = mavenRepositoryPassword;
+  }
+
+  public static String getMavenProxyHost() {
+    return mavenProxyHost;
+  }
+
+  public static void setMavenProxyHost(String mavenProxyHost) {
+    MavenRoboSettings.mavenProxyHost = mavenProxyHost;
+  }
+
+  public static int getMavenProxyPort() {
+    return mavenProxyPort;
+  }
+
+  public static void setMavenProxyPort(int mavenProxyPort) {
+    MavenRoboSettings.mavenProxyPort = mavenProxyPort;
   }
 }
