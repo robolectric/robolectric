@@ -19,11 +19,13 @@ class StringPoolRef {
     return mPool.stringAt(mIndex);
   }
 
-//  final byte[] string8(Ref<Integer> outLen) {
-//    return null; //----------------------------------------------------------------------------------------
-//  }
-//
-//  final char[] string16(Ref<Integer> outLen) {
-//    return null; //----------------------------------------------------------------------------------------
-//  }
-};
+  //  final byte[] string8(Ref<Integer> outLen) {
+  //    return null;
+  // //----------------------------------------------------------------------------------------
+  //  }
+  //
+  //  final char[] string16(Ref<Integer> outLen) {
+  //    return null;
+  // //----------------------------------------------------------------------------------------
+  //  }
+}

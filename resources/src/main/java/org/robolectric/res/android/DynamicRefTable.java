@@ -179,4 +179,4 @@ public class DynamicRefTable
   final byte[]                         mLookupTable = new byte[256];
   final Map<String, Byte> mEntries = new HashMap<>();
   boolean                            mAppAsLib;
-};
+}
