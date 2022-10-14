@@ -573,6 +573,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   /** Create a file system safe directory path name for the current test. */
+  @SuppressWarnings("DoNotCall")
   private String createTestDataDirRootPath(Method method) {
     return method.getClass().getSimpleName()
         + "_"

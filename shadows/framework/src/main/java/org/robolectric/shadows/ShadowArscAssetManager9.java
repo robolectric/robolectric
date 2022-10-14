@@ -1927,4 +1927,4 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
     void createSystemAssetsInZygoteLocked();
   }
 }
-; // namespace android
+// namespace android

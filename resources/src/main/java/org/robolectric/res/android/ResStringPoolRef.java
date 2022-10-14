@@ -12,4 +12,4 @@ class ResStringPoolRef {
     ResStringPoolRef(int index) {
         this.index = index;
     }
-};
+}

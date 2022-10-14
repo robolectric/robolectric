@@ -1948,4 +1948,4 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
     void releaseTheme(long ptr);
   }
 }
-; // namespace android
+// namespace android

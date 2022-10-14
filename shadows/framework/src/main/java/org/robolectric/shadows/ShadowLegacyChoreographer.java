@@ -34,6 +34,7 @@ public class ShadowLegacyChoreographer extends ShadowChoreographer {
   private static volatile int postCallbackDelayMillis = 0;
   private static volatile int postFrameCallbackDelayMillis = 0;
 
+  @SuppressWarnings("ReturnValueIgnored")
   private static SoftThreadLocal<Choreographer> makeThreadLocal() {
     return new SoftThreadLocal<Choreographer>() {
       @Override
