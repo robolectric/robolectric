@@ -118,6 +118,7 @@ public class ShadowTelephonyManager {
   private String voiceMailNumber;
   private String voiceMailAlphaTag;
   private int phoneCount = 1;
+  private int activeModemCount = 1;
   private Map<Integer, TelephonyManager> subscriptionIdsToTelephonyManagers = new HashMap<>();
   private PersistableBundle carrierConfig;
   private ServiceState serviceState;
@@ -815,6 +816,17 @@ public class ShadowTelephonyManager {
   /** Sets the value returned by {@link TelephonyManager#getPhoneCount()}. */
   public void setPhoneCount(int phoneCount) {
     this.phoneCount = phoneCount;
+  }
+
+  /** Returns 1 by default or the value specified via {@link #setActiveModemCount(int)}. */
+  @Implementation(minSdk = R)
+  protected int getActiveModemCount() {
+    return activeModemCount;
+  }
+
+  /** Sets the value returned by {@link TelephonyManager#getActiveModemCount()}. */
+  public void setActiveModemCount(int activeModemCount) {
+    this.activeModemCount = activeModemCount;
   }
 
   /**
