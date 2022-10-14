@@ -15,6 +15,8 @@ public class MavenRoboSettingsTest {
   private String originalMavenRepositoryUrl;
   private String originalMavenRepositoryUserName;
   private String originalMavenRepositoryPassword;
+  private String originalMavenRepositoryProxyHost;
+  private int originalMavenProxyPort;
 
   @Before
   public void setUp() {
@@ -22,6 +24,8 @@ public class MavenRoboSettingsTest {
     originalMavenRepositoryUrl = MavenRoboSettings.getMavenRepositoryUrl();
     originalMavenRepositoryUserName = MavenRoboSettings.getMavenRepositoryUserName();
     originalMavenRepositoryPassword = MavenRoboSettings.getMavenRepositoryPassword();
+    originalMavenRepositoryProxyHost = MavenRoboSettings.getMavenProxyHost();
+    originalMavenProxyPort = MavenRoboSettings.getMavenProxyPort();
   }
 
   @After
@@ -30,6 +34,8 @@ public class MavenRoboSettingsTest {
     MavenRoboSettings.setMavenRepositoryUrl(originalMavenRepositoryUrl);
     MavenRoboSettings.setMavenRepositoryUserName(originalMavenRepositoryUserName);
     MavenRoboSettings.setMavenRepositoryPassword(originalMavenRepositoryPassword);
+    MavenRoboSettings.setMavenProxyHost(originalMavenRepositoryProxyHost);
+    MavenRoboSettings.setMavenProxyPort(originalMavenProxyPort);
   }
 
   @Test
@@ -64,5 +70,17 @@ public class MavenRoboSettingsTest {
   public void setMavenRepositoryPassword() {
     MavenRoboSettings.setMavenRepositoryPassword("password");
     assertEquals("password", MavenRoboSettings.getMavenRepositoryPassword());
+  }
+
+  @Test
+  public void setMavenProxyHost() {
+    MavenRoboSettings.setMavenProxyHost("123.4.5.678");
+    assertEquals("123.4.5.678", MavenRoboSettings.getMavenProxyHost());
+  }
+
+  @Test
+  public void setMavenProxyPort() {
+    MavenRoboSettings.setMavenProxyPort(9000);
+    assertEquals(9000, MavenRoboSettings.getMavenProxyPort());
   }
 }

@@ -44,11 +44,22 @@ public class MavenDependencyResolver implements DependencyResolver {
   private final File localRepositoryDir;
 
   public MavenDependencyResolver() {
-    this(MavenRoboSettings.getMavenRepositoryUrl(), MavenRoboSettings.getMavenRepositoryId(), MavenRoboSettings
-        .getMavenRepositoryUserName(), MavenRoboSettings.getMavenRepositoryPassword());
+    this(
+        MavenRoboSettings.getMavenRepositoryUrl(),
+        MavenRoboSettings.getMavenRepositoryId(),
+        MavenRoboSettings.getMavenRepositoryUserName(),
+        MavenRoboSettings.getMavenRepositoryPassword(),
+        MavenRoboSettings.getMavenProxyHost(),
+        MavenRoboSettings.getMavenProxyPort());
   }
 
-  public MavenDependencyResolver(String repositoryUrl, String repositoryId, String repositoryUserName, String repositoryPassword) {
+  public MavenDependencyResolver(
+      String repositoryUrl,
+      String repositoryId,
+      String repositoryUserName,
+      String repositoryPassword,
+      String proxyHost,
+      int proxyPort) {
     this.executorService = createExecutorService();
     this.localRepositoryDir = getLocalRepositoryDir();
     this.mavenArtifactFetcher =
@@ -56,6 +67,8 @@ public class MavenDependencyResolver implements DependencyResolver {
             repositoryUrl,
             repositoryUserName,
             repositoryPassword,
+            proxyHost,
+            proxyPort,
             localRepositoryDir,
             this.executorService);
   }
@@ -163,10 +176,18 @@ public class MavenDependencyResolver implements DependencyResolver {
       String repositoryUrl,
       String repositoryUserName,
       String repositoryPassword,
+      String proxyHost,
+      int proxyPort,
       File localRepositoryDir,
       ExecutorService executorService) {
     return new MavenArtifactFetcher(
-        repositoryUrl, repositoryUserName, repositoryPassword, localRepositoryDir, executorService);
+        repositoryUrl,
+        repositoryUserName,
+        repositoryPassword,
+        proxyHost,
+        proxyPort,
+        localRepositoryDir,
+        executorService);
   }
 
   protected ExecutorService createExecutorService() {

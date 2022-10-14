@@ -14,7 +14,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,6 +36,8 @@ public class MavenArtifactFetcher {
   private final String repositoryUrl;
   private final String repositoryUserName;
   private final String repositoryPassword;
+  private final String proxyHost;
+  private final int proxyPort;
   private final File localRepositoryDir;
   private final ExecutorService executorService;
   private File stagingRepositoryDir;
@@ -42,11 +46,15 @@ public class MavenArtifactFetcher {
       String repositoryUrl,
       String repositoryUserName,
       String repositoryPassword,
+      String proxyHost,
+      int proxyPort,
       File localRepositoryDir,
       ExecutorService executorService) {
     this.repositoryUrl = repositoryUrl;
     this.repositoryUserName = repositoryUserName;
     this.repositoryPassword = repositoryPassword;
+    this.proxyHost = proxyHost;
+    this.proxyPort = proxyPort;
     this.localRepositoryDir = localRepositoryDir;
     this.executorService = executorService;
   }
@@ -152,7 +160,8 @@ public class MavenArtifactFetcher {
 
   protected ListenableFuture<Void> createFetchToFileTask(URL remoteUrl, File tempFile) {
     return Futures.submitAsync(
-        new FetchToFileTask(remoteUrl, tempFile, repositoryUserName, repositoryPassword),
+        new FetchToFileTask(
+            remoteUrl, tempFile, repositoryUserName, repositoryPassword, proxyHost, proxyPort),
         this.executorService);
   }
 
@@ -168,18 +177,34 @@ public class MavenArtifactFetcher {
     private final File localFile;
     private String repositoryUserName;
     private String repositoryPassword;
+    private String proxyHost;
+    private int proxyPort;
 
     public FetchToFileTask(
-        URL remoteURL, File localFile, String repositoryUserName, String repositoryPassword) {
+        URL remoteURL,
+        File localFile,
+        String repositoryUserName,
+        String repositoryPassword,
+        String proxyHost,
+        int proxyPort) {
       this.remoteURL = remoteURL;
       this.localFile = localFile;
       this.repositoryUserName = repositoryUserName;
       this.repositoryPassword = repositoryPassword;
+      this.proxyHost = proxyHost;
+      this.proxyPort = proxyPort;
     }
 
     @Override
     public ListenableFuture<Void> call() throws Exception {
-      URLConnection connection = remoteURL.openConnection();
+      URLConnection connection;
+      if (this.proxyHost != null && !this.proxyHost.isEmpty() && this.proxyPort > 0) {
+        Proxy proxy =
+            new Proxy(Proxy.Type.HTTP, new InetSocketAddress(this.proxyHost, this.proxyPort));
+        connection = remoteURL.openConnection(proxy);
+      } else {
+        connection = remoteURL.openConnection();
+      }
       // Add authorization header if applicable.
       if (!Strings.isNullOrEmpty(this.repositoryUserName)) {
         String encoded =

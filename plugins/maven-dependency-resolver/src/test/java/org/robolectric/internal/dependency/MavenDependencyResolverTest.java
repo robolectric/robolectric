@@ -27,6 +27,8 @@ public class MavenDependencyResolverTest {
   private static final String REPOSITORY_URL;
   private static final String REPOSITORY_USERNAME = "username";
   private static final String REPOSITORY_PASSWORD = "password";
+  private static final String PROXY_HOST = "123.4.5.678";
+  private static final int PROXY_PORT = 9000;
   private static final HashFunction SHA512 = Hashing.sha512();
 
   private static DependencyJar[] successCases =
@@ -65,6 +67,8 @@ public class MavenDependencyResolverTest {
             REPOSITORY_URL,
             REPOSITORY_USERNAME,
             REPOSITORY_PASSWORD,
+            PROXY_HOST,
+            PROXY_PORT,
             localRepositoryDir,
             executorService);
     mavenDependencyResolver = new TestMavenDependencyResolver();
@@ -167,6 +171,8 @@ public class MavenDependencyResolverTest {
         String repositoryUrl,
         String repositoryUserName,
         String repositoryPassword,
+        String proxyHost,
+        int proxyPort,
         File localRepositoryDir,
         ExecutorService executorService) {
       return mavenArtifactFetcher;
@@ -200,12 +206,16 @@ public class MavenDependencyResolverTest {
         String repositoryUrl,
         String repositoryUserName,
         String repositoryPassword,
+        String proxyHost,
+        int proxyPort,
         File localRepositoryDir,
         ExecutorService executorService) {
       super(
           repositoryUrl,
           repositoryUserName,
           repositoryPassword,
+          proxyHost,
+          proxyPort,
           localRepositoryDir,
           executorService);
       this.executorService = executorService;
@@ -214,7 +224,7 @@ public class MavenDependencyResolverTest {
     @Override
     protected ListenableFuture<Void> createFetchToFileTask(URL remoteUrl, File tempFile) {
       return Futures.submitAsync(
-          new FetchToFileTask(remoteUrl, tempFile, null, null) {
+          new FetchToFileTask(remoteUrl, tempFile, null, null, null, 0) {
             @Override
             public ListenableFuture<Void> call() throws Exception {
               numRequests += 1;
