@@ -45,8 +45,7 @@ android {
 }
 
 dependencies {
-    implementation project(path: ':testapp')
-    implementation project(path: ':shadowapi', configuration: 'default')
+    implementation project(':testapp')
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:${junitVersion}"
@@ -61,6 +60,7 @@ dependencies {
     testImplementation("com.google.guava:guava:$guavaJREVersion")
 
     // Testing dependencies
+    androidTestImplementation project(':shadowapi')
     // temporarily use a newer monitor version for HardwareRendererCompat
     androidTestImplementation("androidx.test:monitor:1.5.0-alpha03")
     androidTestImplementation("androidx.test:runner:$axtVersion")
