@@ -14,7 +14,37 @@ spotless {
 }
 
 tasks.withType(GenerateModuleMetadata) {
+    // We don't want to release gradle module metadata now to avoid
+    // potential compatibility problems.
     enabled = false
+}
+
+compileKotlin {
+    // Use java/main classes directory to replace default kotlin/main to
+    // avoid d8 error when dexing & desugaring kotlin classes with non-exist
+    // kotlin/main directory because utils module doesn't have kotlin code
+    // in production. If utils module starts to add Kotlin code in main source
+    // set, we can remove this destinationDirectory modification.
+    destinationDirectory = file("${projectDir}/build/classes/java/main")
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+afterEvaluate {
+    configurations {
+        runtimeElements {
+            attributes {
+                // We should add artifactType with jar to ensure standard runtimeElements variant
+                // has a max priority selection sequence than other variants that brought by
+                // kotlin plugin.
+                attribute(
+                        Attribute.of("artifactType", String.class),
+                        ArtifactTypeDefinition.JAR_TYPE
+                )
+            }
+        }
+    }
 }
 
 dependencies {

@@ -11,7 +11,6 @@ android {
     defaultConfig {
         minSdk 16
         targetSdk 33
-        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -43,7 +42,6 @@ dependencies {
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
     implementation "androidx.multidex:multidex:$multidexVersion"
-    implementation project(path: ':shadowapi', configuration: 'default')
 
     // Testing dependencies
     testImplementation project(":robolectric")
@@ -59,6 +57,7 @@ dependencies {
     testImplementation "androidx.test.ext:junit:$axtJunitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
 
+    androidTestImplementation project(':annotations')
     androidTestImplementation "androidx.test:runner:$axtVersion"
     androidTestImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test:rules:$axtVersion"
