@@ -13,6 +13,10 @@ spotless {
     }
 }
 
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
+}
+
 dependencies {
     api project(":annotations")
     api project(":pluginapi")
