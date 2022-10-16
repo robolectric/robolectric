@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
@@ -246,5 +247,43 @@ public abstract class ShadowNotificationBuilderTestBase {
         .build();
 
     assertThat(shadowOf(notification).getBigPicture().sameAs(bigPicture)).isTrue();
+  }
+
+  @Test
+  public void build_whenAutoCancelNotSet_leaveAutoCancelAsFalse() {
+    Notification notification = builder.build();
+    assertThat(shadowOf(notification).isAutoCancel()).isFalse();
+  }
+
+  @Test
+  public void build_whenAutoCancelSet_setAutoCancelAsTrue() {
+    Notification notification = builder.setAutoCancel(true).build();
+    assertThat(shadowOf(notification).isAutoCancel()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void build_whenLocalOnlyNotSet_leaveLocalOnlyAsFalse() {
+    Notification notification = builder.build();
+    assertThat(shadowOf(notification).isLocalOnly()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = KITKAT_WATCH)
+  public void build_whenLocalOnlySet_setLocalOnlyAsTrue() {
+    Notification notification = builder.setLocalOnly(true).build();
+    assertThat(shadowOf(notification).isLocalOnly()).isTrue();
+  }
+
+  @Test
+  public void build_whenOnlyAlertOnceNotSet_leaveOnlyAlertOnceAsFalse() {
+    Notification notification = builder.build();
+    assertThat(shadowOf(notification).isOnlyAlertOnce()).isFalse();
+  }
+
+  @Test
+  public void build_whenOnlyAlertOnceSet_setOnlyAlertOnceAsTrue() {
+    Notification notification = builder.setOnlyAlertOnce(true).build();
+    assertThat(shadowOf(notification).isOnlyAlertOnce()).isTrue();
   }
 }

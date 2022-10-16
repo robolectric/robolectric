@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import androidx.annotation.RequiresApi;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.robolectric.RuntimeEnvironment;
@@ -147,5 +148,20 @@ public class ShadowNotification {
           "no id." + resourceName + " found in view:\n" + buf.toString());
     }
     return subView;
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.KITKAT_WATCH)
+  public boolean isAutoCancel() {
+    return (realNotification.flags & Notification.FLAG_AUTO_CANCEL)
+        == Notification.FLAG_AUTO_CANCEL;
+  }
+
+  public boolean isLocalOnly() {
+    return (realNotification.flags & Notification.FLAG_LOCAL_ONLY) == Notification.FLAG_LOCAL_ONLY;
+  }
+
+  public boolean isOnlyAlertOnce() {
+    return (realNotification.flags & Notification.FLAG_ONLY_ALERT_ONCE)
+        == Notification.FLAG_ONLY_ALERT_ONCE;
   }
 }
