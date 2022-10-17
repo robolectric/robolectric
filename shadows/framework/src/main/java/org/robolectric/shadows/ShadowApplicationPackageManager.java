@@ -859,6 +859,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ActivityInfo::new);
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  protected List<ResolveInfo> queryBroadcastReceivers(Object intent, @NonNull Object flags) {
+    return queryBroadcastReceivers((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+  }
+
   private static int matchIntentFilter(Intent intent, IntentFilter intentFilter) {
     return intentFilter.match(
         intent.getAction(),
