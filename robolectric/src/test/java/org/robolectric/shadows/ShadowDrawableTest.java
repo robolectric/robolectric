@@ -5,10 +5,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -40,14 +37,6 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  public void
-      createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() {
-    String corruptedStreamSource = "http://foo.com/image.jpg";
-    ShadowDrawable.addCorruptStreamSource(corruptedStreamSource);
-    assertNull(ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
-  }
-
-  @Test
   public void createFromResourceStream_shouldWorkWithoutSourceName() {
     Drawable drawable =
         Drawable.createFromResourceStream(
@@ -65,15 +54,6 @@ public class ShadowDrawableTest {
         ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
     assertNotNull(drawable);
     assertEquals("my_source", ((ShadowBitmapDrawable) shadowOf(drawable)).getSource());
-  }
-
-  @Test
-  public void reset__shouldClearStaticState() {
-    String src = "source1";
-    ShadowDrawable.addCorruptStreamSource(src);
-    assertTrue(ShadowDrawable.corruptStreamSources.contains(src));
-    ShadowDrawable.clearCorruptStreamSources();
-    assertFalse(ShadowDrawable.corruptStreamSources.contains(src));
   }
 
   @Test

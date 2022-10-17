@@ -6,12 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
@@ -22,7 +19,6 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowDrawable {
   private static int defaultIntrinsicWidth = -1;
   private static int defaultIntrinsicHeight = -1;
-  static final List<String> corruptStreamSources = new ArrayList<>();
 
   @RealObject Drawable realDrawable;
 
@@ -35,9 +31,6 @@ public class ShadowDrawable {
 
   @Implementation
   protected static Drawable createFromStream(InputStream is, String srcName) {
-    if (corruptStreamSources.contains(srcName)) {
-      return null;
-    }
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
     ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
     shadowBitmapDrawable.createdFromInputStream = is;
@@ -78,15 +71,6 @@ public class ShadowDrawable {
   @Implementation
   protected int getIntrinsicHeight() {
     return intrinsicHeight;
-  }
-
-  public static void addCorruptStreamSource(String src) {
-    corruptStreamSources.add(src);
-  }
-
-  @Resetter
-  public static void clearCorruptStreamSources() {
-    corruptStreamSources.clear();
   }
 
   public static void setDefaultIntrinsicWidth(int defaultIntrinsicWidth) {
