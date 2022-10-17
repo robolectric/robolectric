@@ -17,16 +17,12 @@ import org.robolectric.util.reflector.ForType;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
-  private static int defaultIntrinsicWidth = -1;
-  private static int defaultIntrinsicHeight = -1;
 
   @RealObject Drawable realDrawable;
 
   int createdFromResId = -1;
   InputStream createdFromInputStream;
 
-  private int intrinsicWidth = defaultIntrinsicWidth;
-  private int intrinsicHeight = defaultIntrinsicHeight;
   private boolean wasInvalidated;
 
   @Implementation
@@ -61,32 +57,6 @@ public class ShadowDrawable {
 
   protected void setCreatedFromResId(int createdFromResId, String resourceName) {
     this.createdFromResId = createdFromResId;
-  }
-
-  @Implementation
-  protected int getIntrinsicWidth() {
-    return intrinsicWidth;
-  }
-
-  @Implementation
-  protected int getIntrinsicHeight() {
-    return intrinsicHeight;
-  }
-
-  public static void setDefaultIntrinsicWidth(int defaultIntrinsicWidth) {
-    ShadowDrawable.defaultIntrinsicWidth = defaultIntrinsicWidth;
-  }
-
-  public static void setDefaultIntrinsicHeight(int defaultIntrinsicHeight) {
-    ShadowDrawable.defaultIntrinsicHeight = defaultIntrinsicHeight;
-  }
-
-  public void setIntrinsicWidth(int intrinsicWidth) {
-    this.intrinsicWidth = intrinsicWidth;
-  }
-
-  public void setIntrinsicHeight(int intrinsicHeight) {
-    this.intrinsicHeight = intrinsicHeight;
   }
 
   public InputStream getInputStream() {
