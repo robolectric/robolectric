@@ -26,16 +26,6 @@ public class ShadowDrawable {
   private boolean wasInvalidated;
 
   @Implementation
-  protected static Drawable createFromStream(InputStream is, String srcName) {
-    BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
-    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
-    shadowBitmapDrawable.createdFromInputStream = is;
-    shadowBitmapDrawable.drawableCreateFromStreamSource = srcName;
-    shadowBitmapDrawable.validate(); // start off not invalidated
-    return drawable;
-  }
-
-  @Implementation
   protected static Drawable createFromPath(String pathName) {
     BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
     ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
