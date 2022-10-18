@@ -25,15 +25,6 @@ public class ShadowDrawable {
 
   private boolean wasInvalidated;
 
-  @Implementation
-  protected static Drawable createFromPath(String pathName) {
-    BitmapDrawable drawable = new BitmapDrawable(ReflectionHelpers.callConstructor(Bitmap.class));
-    ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
-    shadowBitmapDrawable.drawableCreateFromPath = pathName;
-    shadowBitmapDrawable.validate(); // start off not invalidated
-    return drawable;
-  }
-
   public static Drawable createFromResourceId(int resourceId) {
     Bitmap bitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(bitmap);

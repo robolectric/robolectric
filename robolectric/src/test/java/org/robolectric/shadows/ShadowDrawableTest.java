@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -68,13 +67,6 @@ public class ShadowDrawableTest {
     assertThat(r.top).isEqualTo(2);
     assertThat(r.right).isEqualTo(3);
     assertThat(r.bottom).isEqualTo(4);
-  }
-
-  @Test
-  public void createFromPath__shouldReturnDrawableWithSpecificPath() {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
-    assertNotNull(drawable);
-    assertEquals("/foo", ((ShadowBitmapDrawable) shadowOf(drawable)).getPath());
   }
 
   @Test
