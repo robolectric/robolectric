@@ -372,6 +372,11 @@ public class ShadowDevicePolicyManager {
     Preconditions.checkArgument(
         !admin.getPackageName().equals(target.getPackageName()),
         "Provided administrator and target have the same package name.");
+    try {
+      context.getPackageManager().getReceiverInfo(target, 0);
+    } catch (PackageManager.NameNotFoundException e) {
+      throw new IllegalArgumentException("Unknown admin: " + target);
+    }
     if (admin.equals(deviceOwner)) {
       deviceOwner = target;
     } else if (admin.equals(profileOwner)) {

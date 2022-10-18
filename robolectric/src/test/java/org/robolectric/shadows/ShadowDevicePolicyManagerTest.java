@@ -254,6 +254,21 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void transferOwnershipShouldFailForNotTarget() {
+    ComponentName otherComponent = new ComponentName("new.owner", "Receiver");
+    PersistableBundle bundle = new PersistableBundle();
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    try {
+      devicePolicyManager.transferOwnership(testComponent, otherComponent, bundle);
+      fail("Should throw");
+    } catch (IllegalArgumentException e) {
+      // expected
+    }
+    assertThat(devicePolicyManager.getTransferOwnershipBundle()).isNull();
+  }
+
+  @Test
   public void isAdminActiveShouldReturnFalseForNonAdminDevice() {
     // GIVEN a test component which is not an active admin of the device
     // WHEN DevicePolicyManager#isAdminActive is called with it
