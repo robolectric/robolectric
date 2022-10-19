@@ -10,7 +10,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -25,14 +24,18 @@ public class ShadowDrawable {
 
   private boolean wasInvalidated;
 
+  /**
+   * Returns an invalid Drawable with the given the resource id.
+   *
+   * @deprecated use {@code ContextCompat.getDrawable(context, resourceId)}
+   */
+  @Deprecated
   public static Drawable createFromResourceId(int resourceId) {
-    Bitmap bitmap = ReflectionHelpers.callConstructor(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
-    shadowBitmap.createdFromResId = resourceId;
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
     BitmapDrawable drawable = new BitmapDrawable(bitmap);
     ShadowBitmapDrawable shadowBitmapDrawable = Shadow.extract(drawable);
     shadowBitmapDrawable.validate(); // start off not invalidated
-    shadowBitmapDrawable.createdFromResId = resourceId;
+    shadowBitmapDrawable.setCreatedFromResId(resourceId, null);
     return drawable;
   }
 
