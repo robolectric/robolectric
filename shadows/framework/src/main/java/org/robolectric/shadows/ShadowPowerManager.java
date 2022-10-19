@@ -13,6 +13,8 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
@@ -437,61 +439,79 @@ public class ShadowPowerManager {
   @Implements(PowerManager.WakeLock.class)
   public static class ShadowWakeLock {
     private boolean refCounted = true;
-    private int refCount = 0;
-    private boolean locked = false;
     private WorkSource workSource = null;
     private int timesHeld = 0;
     private String tag = null;
-    private Optional<Long> timeoutTimestamp = Optional.empty();
+    private List<Optional<Long>> timeoutTimestampList = new ArrayList<>();
 
-    private void acquireInternal() {
+    private void acquireInternal(Optional<Long> timeoutOptional) {
       ++timesHeld;
-      if (refCounted) {
-        refCount++;
-      } else {
-        locked = true;
-      }
+      timeoutTimestampList.add(timeoutOptional);
+    }
+
+    /** Iterate all the wake lock and remove those timeouted ones. */
+    private void refreshTimeoutTimestampList() {
+      timeoutTimestampList =
+          timeoutTimestampList.stream()
+              .filter(o -> !o.isPresent() || o.get() >= SystemClock.elapsedRealtime())
+              .collect(toCollection(ArrayList::new));
     }
 
     @Implementation
     protected void acquire() {
-      acquireInternal();
-      timeoutTimestamp = Optional.empty();
+      acquireInternal(Optional.empty());
     }
 
     @Implementation
     protected synchronized void acquire(long timeout) {
-      acquireInternal();
-      timeoutTimestamp = Optional.of(timeout + SystemClock.elapsedRealtime());
+      Long timeoutMillis = timeout + SystemClock.elapsedRealtime();
+      if (timeoutMillis > 0) {
+        acquireInternal(Optional.of(timeoutMillis));
+      } else {
+        // This is because many existing tests use Long.MAX_VALUE as timeout, which will cause a
+        // long overflow.
+        acquireInternal(Optional.empty());
+      }
     }
 
     /** Releases the wake lock. The {@code flags} are ignored. */
     @Implementation
     protected synchronized void release(int flags) {
-      if (refCounted) {
-        if (--refCount < 0) {
+      refreshTimeoutTimestampList();
+
+      // Dequeue the wake lock with smallest timeout.
+      // Map the subtracted value to 1 and -1 to avoid long->int cast overflow.
+      Optional<Optional<Long>> wakeLockOptional =
+          timeoutTimestampList.stream()
+              .min(
+                  comparing(
+                      (Optional<Long> arg) -> arg.orElse(Long.MAX_VALUE),
+                      (Long leftProperty, Long rightProperty) ->
+                          (leftProperty - rightProperty) > 0 ? 1 : -1));
+
+      if (wakeLockOptional.isEmpty()) {
+        if (refCounted) {
           throw new RuntimeException("WakeLock under-locked");
+        } else {
+          return;
         }
+      }
+
+      Optional<Long> wakeLock = wakeLockOptional.get();
+
+      if (refCounted) {
+        timeoutTimestampList.remove(wakeLock);
       } else {
-        locked = false;
-        timeoutTimestamp = Optional.empty();
+        // If a wake lock is not reference counted, then one call to release() is sufficient to undo
+        // the effect of all previous calls to acquire().
+        timeoutTimestampList = new ArrayList<>();
       }
     }
 
     @Implementation
     protected synchronized boolean isHeld() {
-      if (refCounted) {
-        return refCount > 0;
-      } else {
-        if (!locked) {
-          return false;
-        }
-        if (timeoutTimestamp.isPresent()
-            && timeoutTimestamp.get() < SystemClock.elapsedRealtime()) {
-          return false;
-        }
-        return true;
-      }
+      refreshTimeoutTimestampList();
+      return !timeoutTimestampList.isEmpty();
     }
 
     /**
