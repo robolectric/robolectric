@@ -18,11 +18,11 @@ import org.robolectric.shadow.api.ShadowPicker;
 /**
  * Maps from instrumented class to shadow class.
  *
- * We deal with class names rather than actual classes here, since a ShadowMap is built outside of
- * any sandboxes, but instrumented and shadowed classes must be loaded through a
- * {@link SandboxClassLoader}. We don't want to try to resolve those classes outside of a sandbox.
+ * <p>We deal with class names rather than actual classes here, since a ShadowMap is built outside
+ * of any sandboxes, but instrumented and shadowed classes must be loaded through a {@link
+ * SandboxClassLoader}. We don't want to try to resolve those classes outside of a sandbox.
  *
- * Once constructed, instances are immutable.
+ * <p>Once constructed, instances are immutable.
  */
 @SuppressWarnings("NewApi")
 public class ShadowMap {
@@ -114,8 +114,8 @@ public class ShadowMap {
     return pickShadow(instrumentedClassName, clazz, shadowPickerClassName);
   }
 
-  private ShadowInfo pickShadow(String instrumentedClassName, Class<?> clazz,
-      String shadowPickerClassName) {
+  private ShadowInfo pickShadow(
+      String instrumentedClassName, Class<?> clazz, String shadowPickerClassName) {
     ClassLoader sandboxClassLoader = clazz.getClassLoader();
     try {
       Class<? extends ShadowPicker<?>> shadowPickerClass =
@@ -128,16 +128,22 @@ public class ShadowMap {
       ShadowInfo shadowInfo = obtainShadowInfo(selectedShadowClass);
 
       if (!shadowInfo.shadowedClassName.equals(instrumentedClassName)) {
-        throw new IllegalArgumentException("Implemented class for "
-            + selectedShadowClass.getName() + " (" + shadowInfo.shadowedClassName + ") != "
-            + instrumentedClassName);
+        throw new IllegalArgumentException(
+            "Implemented class for "
+                + selectedShadowClass.getName()
+                + " ("
+                + shadowInfo.shadowedClassName
+                + ") != "
+                + instrumentedClassName);
       }
 
       return shadowInfo;
-    } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
-        | IllegalAccessException | InstantiationException e) {
-      throw new RuntimeException("Failed to resolve shadow picker for " + instrumentedClassName,
-          e);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | InvocationTargetException
+        | IllegalAccessException
+        | InstantiationException e) {
+      throw new RuntimeException("Failed to resolve shadow picker for " + instrumentedClassName, e);
     }
   }
 
@@ -224,7 +230,7 @@ public class ShadowMap {
     private final Map<String, ShadowInfo> overriddenShadows;
     private final Map<String, String> shadowPickers;
 
-    public Builder () {
+    public Builder() {
       defaultShadows = ImmutableListMultimap.of();
       overriddenShadows = new HashMap<>();
       shadowPickers = new HashMap<>();
@@ -262,8 +268,8 @@ public class ShadowMap {
     private void addShadowInfo(ShadowInfo shadowInfo) {
       overriddenShadows.put(shadowInfo.shadowedClassName, shadowInfo);
       if (shadowInfo.hasShadowPicker()) {
-        shadowPickers
-            .put(shadowInfo.shadowedClassName, shadowInfo.getShadowPickerClass().getName());
+        shadowPickers.put(
+            shadowInfo.shadowedClassName, shadowInfo.getShadowPickerClass().getName());
       }
     }
 

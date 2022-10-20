@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -32,8 +33,8 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
@@ -267,11 +268,7 @@ public class ShadowSettings {
           && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
-        return Shadow.directlyOn(
-            Settings.Secure.class,
-            "getLocationModeForUser",
-            ClassParameter.from(ContentResolver.class, cr),
-            ClassParameter.from(int.class, 0));
+        return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
       }
 
       return get(Integer.class, name).orElseThrow(() -> new SettingNotFoundException(name));
@@ -283,11 +280,7 @@ public class ShadowSettings {
           && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
-        return Shadow.directlyOn(
-            Settings.Secure.class,
-            "getLocationModeForUser",
-            ClassParameter.from(ContentResolver.class, cr),
-            ClassParameter.from(int.class, 0));
+        return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
       }
 
       return get(Integer.class, name).orElse(def);
@@ -575,5 +568,11 @@ public class ShadowSettings {
   @Resetter
   public static void reset() {
     canDrawOverlays = false;
+  }
+
+  @ForType(Settings.Secure.class)
+  interface SettingsSecureReflector {
+    @Static
+    int getLocationModeForUser(ContentResolver cr, int userId);
   }
 }

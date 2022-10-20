@@ -6,7 +6,6 @@ import android.preference.Preference;
 import android.preference.PreferenceManager;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 @Implements(Preference.class)
@@ -23,8 +22,6 @@ public class ShadowPreference {
 
   @ForType(Preference.class)
   interface PreferenceReflector {
-
-    @Direct
     void onAttachedToHierarchy(PreferenceManager preferenceManager);
   }
 }
