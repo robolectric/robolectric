@@ -443,6 +443,20 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = R)
+  public void shouldGiveDefaultActiveModemCount() {
+    assertThat(telephonyManager.getActiveModemCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void shouldGiveActiveModemCount() {
+    shadowOf(telephonyManager).setActiveModemCount(42);
+
+    assertThat(telephonyManager.getActiveModemCount()).isEqualTo(42);
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP_MR1)
   public void shouldGiveVoiceCapableTrue() {
     shadowOf(telephonyManager).setVoiceCapable(true);

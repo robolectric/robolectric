@@ -1,14 +1,17 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
 import android.app.Application;
+import android.app.ResourcesManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import com.google.common.base.Supplier;
 import java.nio.file.Path;
@@ -205,8 +208,12 @@ public class RuntimeEnvironment {
     }
 
     // Update the resources last so that listeners will have a consistent environment.
-    Resources systemResources = Resources.getSystem();
-    systemResources.updateConfiguration(configuration, displayMetrics);
+    // TODO(paulsowden): Can we call ResourcesManager.getInstance().applyConfigurationToResources()?
+    if (Build.VERSION.SDK_INT >= KITKAT
+        && ResourcesManager.getInstance().getConfiguration() != null) {
+      ResourcesManager.getInstance().getConfiguration().updateFrom(configuration);
+    }
+    Resources.getSystem().updateConfiguration(configuration, displayMetrics);
     if (RuntimeEnvironment.application != null) {
       getApplication().getResources().updateConfiguration(configuration, displayMetrics);
     } else {

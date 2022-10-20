@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.ExpectFailure.expectFailure;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
@@ -24,7 +24,7 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowVoiceInteractor}. */
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = Q)
+@Config(sdk = TIRAMISU)
 public final class ShadowVoiceInteractorTest {
 
   private static final String PROMPT_MESSAGE_1 = "Message_1";
@@ -122,6 +122,19 @@ public final class ShadowVoiceInteractorTest {
         new ConfirmationRequest(new Prompt(PROMPT_MESSAGE_1), /* extras= */ null);
 
     assertThat(testActivity.getVoiceInteractor().submitRequest(confirmationRequest)).isTrue();
+  }
+
+  @Test
+  public void getPackageName_returnsDefaultPackageName() {
+    assertThat(testActivity.getVoiceInteractor().getPackageName())
+        .isEqualTo(shadowVoiceInteractor.getPackageName());
+  }
+
+  @Test
+  public void getPackageName_returnsModifiedPackageName() {
+    shadowVoiceInteractor.setPackageName("random_voice_interactor");
+    assertThat(testActivity.getVoiceInteractor().getPackageName())
+        .isEqualTo("random_voice_interactor");
   }
 
   private void assertValues(List<String> promptMessage) {

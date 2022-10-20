@@ -83,6 +83,7 @@ import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
 import android.view.contentcapture.IContentCaptureManager;
+import android.view.translation.ITranslationManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.appwidget.IAppWidgetService;
@@ -201,6 +202,7 @@ public class ShadowServiceManager {
       addBinderService(Context.LEGACY_PERMISSION_SERVICE, ILegacyPermissionManager.class);
       addBinderService(Context.UWB_SERVICE, IUwbAdapter.class);
       addBinderService(Context.VCN_MANAGEMENT_SERVICE, IVcnManagementService.class);
+      addBinderService(Context.TRANSLATION_MANAGER_SERVICE, ITranslationManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
       addBinderService(Context.AMBIENT_CONTEXT_SERVICE, IAmbientContextManager.class);

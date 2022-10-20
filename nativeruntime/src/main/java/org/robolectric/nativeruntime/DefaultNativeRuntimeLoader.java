@@ -5,6 +5,7 @@ import static com.google.common.base.StandardSystemProperty.OS_NAME;
 
 import android.database.CursorWindow;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.NativeRuntimeLoader;
 import org.robolectric.util.PerfStatsCollector;
@@ -20,17 +22,30 @@ import org.robolectric.util.inject.Injector;
 /** Loads the Robolectric native runtime. */
 @AutoService(NativeRuntimeLoader.class)
 @Priority(Integer.MIN_VALUE)
-public final class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
-  private static final AtomicBoolean loaded = new AtomicBoolean(false);
+public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
+  protected static final AtomicBoolean loaded = new AtomicBoolean(false);
 
-  static void injectAndLoad() {
-    Injector injector = new Injector.Builder(CursorWindow.class.getClassLoader()).build();
-    NativeRuntimeLoader loader = injector.getInstance(NativeRuntimeLoader.class);
-    loader.ensureLoaded();
+  private static final AtomicReference<NativeRuntimeLoader> nativeRuntimeLoader =
+      new AtomicReference<>();
+
+  public static void injectAndLoad() {
+    // Ensure a single instance.
+    synchronized (nativeRuntimeLoader) {
+      if (nativeRuntimeLoader.get() == null) {
+        Injector injector = new Injector.Builder(CursorWindow.class.getClassLoader()).build();
+        NativeRuntimeLoader loader = injector.getInstance(NativeRuntimeLoader.class);
+        nativeRuntimeLoader.set(loader);
+      }
+    }
+    nativeRuntimeLoader.get().ensureLoaded();
   }
 
   @Override
-  public void ensureLoaded() {
+  public synchronized void ensureLoaded() {
+    if (loaded.get()) {
+      return;
+    }
+
     if (!isSupported()) {
       String errorMessage =
           String.format(
@@ -38,26 +53,24 @@ public final class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               OS_NAME.value(), OS_ARCH.value());
       throw new AssertionError(errorMessage);
     }
+    loaded.set(true);
 
-    if (loaded.compareAndSet(false, true)) {
-      try {
-        PerfStatsCollector.getInstance()
-            .measure(
-                "loadNativeRuntime",
-                () -> {
-                  String libraryName = System.mapLibraryName("robolectric-nativeruntime");
-                  System.setProperty(
-                      "robolectric.nativeruntime.languageTag", Locale.getDefault().toLanguageTag());
-                  File tmpLibraryFile =
-                      java.nio.file.Files.createTempFile("", libraryName).toFile();
-                  tmpLibraryFile.deleteOnExit();
-                  URL resource = Resources.getResource(nativeLibraryPath());
-                  Resources.asByteSource(resource).copyTo(Files.asByteSink(tmpLibraryFile));
-                  System.load(tmpLibraryFile.getAbsolutePath());
-                });
-      } catch (IOException e) {
-        throw new AssertionError("Unable to load Robolectric native runtime library", e);
-      }
+    try {
+      PerfStatsCollector.getInstance()
+          .measure(
+              "loadNativeRuntime",
+              () -> {
+                String libraryName = System.mapLibraryName("robolectric-nativeruntime");
+                System.setProperty(
+                    "robolectric.nativeruntime.languageTag", Locale.getDefault().toLanguageTag());
+                File tmpLibraryFile = java.nio.file.Files.createTempFile("", libraryName).toFile();
+                tmpLibraryFile.deleteOnExit();
+                URL resource = Resources.getResource(nativeLibraryPath());
+                Resources.asByteSource(resource).copyTo(Files.asByteSink(tmpLibraryFile));
+                System.load(tmpLibraryFile.getAbsolutePath());
+              });
+    } catch (IOException e) {
+      throw new AssertionError("Unable to load Robolectric native runtime library", e);
     }
   }
 
@@ -92,5 +105,10 @@ public final class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
       return "x86_64";
     }
     return arch;
+  }
+
+  @VisibleForTesting
+  static boolean isLoaded() {
+    return loaded.get();
   }
 }

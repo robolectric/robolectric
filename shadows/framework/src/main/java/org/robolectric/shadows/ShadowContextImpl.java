@@ -498,14 +498,11 @@ public class ShadowContextImpl {
         int displayId,
         Configuration overrideConfiguration);
 
-    IBinder getActivityToken();
-
     void setOuterContext(Context context);
 
     @Direct
     Object getSystemService(String name);
 
-    @Direct
     void startActivity(Intent intent, Bundle options);
 
     @Direct

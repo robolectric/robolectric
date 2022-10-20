@@ -11,7 +11,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -368,45 +367,19 @@ public class ShadowBitmapFactoryTest {
     BitmapFactory.Options options = new BitmapFactory.Options();
 
     options.inSampleSize = 0;
-    Bitmap bm = ShadowBitmapFactory.create(name, options);
+    Bitmap bm = ShadowBitmapFactory.create(name, options, null);
     assertThat(bm.getWidth()).isEqualTo(100);
     assertThat(bm.getHeight()).isEqualTo(100);
 
     options.inSampleSize = 2;
-    bm = ShadowBitmapFactory.create(name, options);
+    bm = ShadowBitmapFactory.create(name, options, null);
     assertThat(bm.getWidth()).isEqualTo(50);
     assertThat(bm.getHeight()).isEqualTo(50);
 
     options.inSampleSize = 101;
-    bm = ShadowBitmapFactory.create(name, options);
+    bm = ShadowBitmapFactory.create(name, options, null);
     assertThat(bm.getWidth()).isEqualTo(1);
     assertThat(bm.getHeight()).isEqualTo(1);
-  }
-
-  @Test
-  public void createShouldSetSizeToValueFromMapAsFirstPriority() {
-    ShadowBitmapFactory.provideWidthAndHeightHints("image.png", 111, 222);
-
-    final Bitmap bitmap = ShadowBitmapFactory.create("file:image.png", null, new Point(50, 60));
-
-    assertThat(bitmap.getWidth()).isEqualTo(111);
-    assertThat(bitmap.getHeight()).isEqualTo(222);
-  }
-
-  @Test
-  public void createShouldSetSizeToParameterAsSecondPriority() {
-    final Bitmap bitmap = ShadowBitmapFactory.create(null, null, new Point(70, 80));
-
-    assertThat(bitmap.getWidth()).isEqualTo(70);
-    assertThat(bitmap.getHeight()).isEqualTo(80);
-  }
-
-  @Test
-  public void createShouldSetSizeToHardcodedValueAsLastPriority() {
-    final Bitmap bitmap = ShadowBitmapFactory.create(null, null, null);
-
-    assertThat(bitmap.getWidth()).isEqualTo(100);
-    assertThat(bitmap.getHeight()).isEqualTo(100);
   }
 
   @Test

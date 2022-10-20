@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.res.Resources;
@@ -14,8 +13,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -51,15 +48,6 @@ public class ShadowBitmapDrawableTest {
 
     assertThat(shadowOf(canvas).getDescription())
         .isEqualTo("Bitmap for" + " resource:org.robolectric:drawable/an_image");
-  }
-
-  @Test
-  public void shouldInheritSourceStringFromDrawableDotCreateFromStream() {
-    InputStream emptyInputStream = new ByteArrayInputStream("".getBytes(UTF_8));
-    BitmapDrawable drawable =
-        (BitmapDrawable)
-            Drawable.createFromStream(emptyInputStream, "source" + " string" + " value");
-    assertThat(shadowOf(drawable).getSource()).isEqualTo("source string value");
   }
 
   @Test
@@ -105,4 +93,5 @@ public class ShadowBitmapDrawableTest {
                 ApplicationProvider.getApplicationContext().getResources(), (Bitmap) null))
         .isNotNull();
   }
+
 }

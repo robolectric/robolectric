@@ -9,13 +9,11 @@ import android.net.wifi.rtt.WifiRttManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link android.net.wifi.rtt.WifiRttManager}. */
-@Config(minSdk = P)
-@Implements(WifiRttManager.class)
+@Implements(value = WifiRttManager.class, minSdk = P)
 public class ShadowWifiRttManager {
   private List<RangingResult> rangingResults = new ArrayList<>();
 

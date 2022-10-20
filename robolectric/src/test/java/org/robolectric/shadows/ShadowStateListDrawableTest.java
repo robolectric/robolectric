@@ -11,27 +11,35 @@ import android.util.StateSet;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowStateListDrawableTest {
 
   @Test
   public void testAddStateWithDrawable() {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
-
+    Drawable drawable =
+        RuntimeEnvironment.getApplication()
+            .getResources()
+            .getDrawable(android.R.drawable.ic_delete);
     StateListDrawable stateListDrawable = new StateListDrawable();
     int[] states = {R.attr.state_pressed};
     stateListDrawable.addState(states, drawable);
 
     ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
     Drawable drawableForState = shadow.getDrawableForState(states);
+
     assertNotNull(drawableForState);
-    assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath()).isEqualTo("/foo");
+    assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getCreatedFromResId())
+        .isEqualTo(android.R.drawable.ic_delete);
   }
 
   @Test
   public void testAddDrawableWithWildCardState() {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
+    Drawable drawable =
+        RuntimeEnvironment.getApplication()
+            .getResources()
+            .getDrawable(android.R.drawable.ic_delete);
 
     StateListDrawable stateListDrawable = new StateListDrawable();
     stateListDrawable.addState(StateSet.WILD_CARD, drawable);
@@ -39,6 +47,7 @@ public class ShadowStateListDrawableTest {
     ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
     Drawable drawableForState = shadow.getDrawableForState(StateSet.WILD_CARD);
     assertNotNull(drawableForState);
-    assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath()).isEqualTo("/foo");
+    assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getCreatedFromResId())
+        .isEqualTo(android.R.drawable.ic_delete);
   }
 }

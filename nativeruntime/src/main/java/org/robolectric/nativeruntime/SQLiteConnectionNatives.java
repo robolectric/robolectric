@@ -27,10 +27,6 @@ import java.util.function.UnaryOperator;
  */
 public class SQLiteConnectionNatives {
 
-  static {
-    DefaultNativeRuntimeLoader.injectAndLoad();
-  }
-
   private SQLiteConnectionNatives() {}
 
   public static native long nativeOpen(

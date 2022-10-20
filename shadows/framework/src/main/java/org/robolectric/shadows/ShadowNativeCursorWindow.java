@@ -10,12 +10,15 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CursorWindowNatives;
+import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 
 /** Shadow for {@link CursorWindow} that is backed by native code */
 @Implements(value = CursorWindow.class, isInAndroidSdk = false)
 public class ShadowNativeCursorWindow extends ShadowCursorWindow {
+
   @Implementation
   protected static Number nativeCreate(String name, int cursorWindowSize) {
+    DefaultNativeRuntimeLoader.injectAndLoad();
     long result = CursorWindowNatives.nativeCreate(name, cursorWindowSize);
     if (RuntimeEnvironment.getApiLevel() < LOLLIPOP) {
       return PreLPointers.register(result);

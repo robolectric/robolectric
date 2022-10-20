@@ -25,10 +25,6 @@ import android.database.CharArrayBuffer;
  * https://cs.android.com/android/platform/superproject/+/android-11.0.0_r1:frameworks/base/core/java/android/database/CursorWindow.java
  */
 public final class CursorWindowNatives {
-  static {
-    DefaultNativeRuntimeLoader.injectAndLoad();
-  }
-
   private CursorWindowNatives() {}
 
   // May throw CursorWindowAllocationException

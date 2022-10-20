@@ -568,6 +568,34 @@ public class ShadowPowerManagerTest {
     assertThat(lock.isHeld()).isTrue();
   }
 
+  @Test
+  public void release_isRefCounted_dequeueTheSmallestTimeoutLock() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+
+    // There are 2 wake lock acquires when calling release(). The wake lock with the smallest
+    // timeout timestamp is release first.
+    lock.acquire(100);
+    lock.acquire(300);
+    lock.release();
+    RuntimeEnvironment.getMasterScheduler().advanceBy(200, MILLISECONDS);
+
+    assertThat(lock.isHeld()).isTrue();
+  }
+
+  @Test
+  public void release_isRefCounted_dequeueTimeoutLockBeforeUnlimited() {
+    PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TIMEOUT");
+
+    // There are 2 wake lock acquires when calling release(). The lock with timeout 100ms will be
+    // released first.
+    lock.acquire(100);
+    lock.acquire();
+    lock.release();
+    RuntimeEnvironment.getMasterScheduler().advanceBy(200, MILLISECONDS);
+
+    assertThat(lock.isHeld()).isTrue();
+  }
+
   @Config(minSdk = TIRAMISU)
   @Test
   public void isDeviceLightIdleMode_shouldGetAndSet() {

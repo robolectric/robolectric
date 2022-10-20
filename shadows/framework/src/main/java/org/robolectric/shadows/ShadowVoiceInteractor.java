@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.VoiceInteractor;
@@ -25,6 +26,16 @@ public class ShadowVoiceInteractor {
 
   private int directActionsInvalidationCount = 0;
   private final List<String> voiceInteractions = new CopyOnWriteArrayList<>();
+  public static String assistantPackageName = "test_package";
+
+  @Implementation(minSdk = TIRAMISU)
+  protected String getPackageName() {
+    return assistantPackageName;
+  }
+
+  public void setPackageName(String packageName) {
+    assistantPackageName = packageName;
+  }
 
   @Implementation(minSdk = Q)
   protected void notifyDirectActionsChanged() {

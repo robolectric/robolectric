@@ -315,14 +315,13 @@ public class ActivityControllerTest {
   }
 
   @Test
-  @Config(qualifiers = "land")
+  @Config(qualifiers = "sw600dp")
   public void noArgsConfigurationChange_appliesChangedSystemConfiguration() {
     ActivityController<ConfigAwareActivity> configController =
         Robolectric.buildActivity(ConfigAwareActivity.class).setup();
-    RuntimeEnvironment.setQualifiers("port");
+    RuntimeEnvironment.setQualifiers("sw800dp");
     configController.configurationChange();
-    assertThat(configController.get().newConfig.orientation)
-        .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+    assertThat(configController.get().newConfig.smallestScreenWidthDp).isEqualTo(800);
   }
 
   @Test

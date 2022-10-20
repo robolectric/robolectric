@@ -189,4 +189,7 @@ dependencies {
 
   compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
   compileOnly AndroidSdk.MAX_SDK.coordinates
+
+  testImplementation "junit:junit:${junitVersion}"
+  testImplementation "com.google.truth:truth:${truthVersion}"
 }

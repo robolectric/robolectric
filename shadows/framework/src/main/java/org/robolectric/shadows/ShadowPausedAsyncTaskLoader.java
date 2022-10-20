@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.AsyncTaskLoader;
 import java.util.concurrent.Executor;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
@@ -15,7 +13,8 @@ import org.robolectric.util.reflector.ForType;
 /**
  * The shadow {@link AsyncTaskLoader} for {@link LooperMode.Mode.PAUSED}.
  *
- * In {@link LooperMode.Mode.PAUSED} mode, Robolectric just uses the real AsyncTaskLoader for now.
+ * <p>In {@link LooperMode.Mode.PAUSED} mode, Robolectric just uses the real AsyncTaskLoader for
+ * now.
  */
 @Implements(
     value = AsyncTaskLoader.class,
@@ -30,9 +29,8 @@ public class ShadowPausedAsyncTaskLoader<D> extends ShadowAsyncTaskLoader<D> {
    * Allows overriding background executor used by the AsyncLoader.
    *
    * @deprecated It is recommended to switch to androidx's AsyncTaskLoader, which provides an
-   * overridable getExecutor method.
+   *     overridable getExecutor method.
    */
-  @Config(minSdk = KITKAT)
   @Deprecated
   public void setExecutor(Executor executor) {
     reflector(ReflectorAsyncTaskLoader.class, realObject).setExecutor(executor);

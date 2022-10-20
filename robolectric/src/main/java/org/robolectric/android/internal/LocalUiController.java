@@ -1,48 +1,30 @@
 package org.robolectric.android.internal;
 
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static java.util.Comparator.comparingInt;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.ViewRootImpl;
-import android.view.WindowManager.LayoutParams;
-import android.view.WindowManagerGlobal;
-import android.view.WindowManagerImpl;
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.platform.ui.InjectEventSecurityException;
 import androidx.test.platform.ui.UiController;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
-import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import androidx.test.runner.lifecycle.Stage;
 import com.google.common.annotations.Beta;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,25 +34,16 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPausedLooper;
-import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.shadows.ShadowUiAutomation;
 
 /** A {@link UiController} that runs on a local JVM with Robolectric. */
 public class LocalUiController implements UiController {
 
   private static final String TAG = "LocalUiController";
-
-  private static final Predicate<Root> IS_FOCUSABLE = hasLayoutFlag(FLAG_NOT_FOCUSABLE).negate();
-  private static final Predicate<Root> IS_TOUCHABLE = hasLayoutFlag(FLAG_NOT_TOUCHABLE).negate();
-  private static final Predicate<Root> IS_TOUCH_MODAL =
-      IS_FOCUSABLE.and(hasLayoutFlag(FLAG_NOT_TOUCH_MODAL).negate());
-  private static final Predicate<Root> WATCH_TOUCH_OUTSIDE =
-      IS_TOUCH_MODAL.negate().and(hasLayoutFlag(FLAG_WATCH_OUTSIDE_TOUCH));
 
   private static long idlingResourceErrorTimeoutMs = SECONDS.toMillis(26);
   private final HashSet<IdlingResourceProxyImpl> syncedIdlingResources = new HashSet<>();
@@ -90,48 +63,16 @@ public class LocalUiController implements UiController {
 
   @Override
   public boolean injectMotionEvent(MotionEvent event) throws InjectEventSecurityException {
-    checkNotNull(event);
-    checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     loopMainThreadUntilIdle();
-
-    // TODO(paulsowden): The real implementation will send a full event stream (a touch down
-    //  followed by a series of moves, etc) to the same window/root even if the subsequent events
-    //  leave the window bounds, and will split pointer down events based on the window flags.
-    //  This will be necessary to support more sophisticated multi-window use cases.
-
-    List<Root> touchableRoots = getViewRoots().stream().filter(IS_TOUCHABLE).collect(toList());
-    for (int i = 0; i < touchableRoots.size(); i++) {
-      Root root = touchableRoots.get(i);
-      if (i == touchableRoots.size() - 1 || root.isTouchModal() || root.isTouchInside(event)) {
-        event.offsetLocation(-root.params.x, -root.params.y);
-        root.impl.getView().dispatchTouchEvent(event);
-        event.offsetLocation(root.params.x, root.params.y);
-        break;
-      } else if (event.getActionMasked() == MotionEvent.ACTION_DOWN && root.watchTouchOutside()) {
-        MotionEvent outsideEvent = MotionEvent.obtain(event);
-        outsideEvent.setAction(MotionEvent.ACTION_OUTSIDE);
-        outsideEvent.offsetLocation(-root.params.x, -root.params.y);
-        root.impl.getView().dispatchTouchEvent(outsideEvent);
-        outsideEvent.recycle();
-      }
-    }
-
+    ShadowUiAutomation.injectInputEvent(event);
     loopMainThreadUntilIdle();
-
     return true;
   }
 
   @Override
   public boolean injectKeyEvent(KeyEvent event) throws InjectEventSecurityException {
-    checkNotNull(event);
-    checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
     loopMainThreadUntilIdle();
-
-    getViewRoots().stream()
-        .filter(IS_FOCUSABLE)
-        .findFirst()
-        .ifPresent(root -> root.impl.getView().dispatchKeyEvent(event));
-
+    ShadowUiAutomation.injectInputEvent(event);
     loopMainThreadUntilIdle();
     return true;
   }
@@ -326,117 +267,6 @@ public class LocalUiController implements UiController {
   @SuppressWarnings("AndroidJdkLibsChecker")
   public void loopMainThreadForAtLeast(long millisDelay) {
     shadowMainLooper().idleFor(Duration.ofMillis(millisDelay));
-  }
-
-  private ArrayList<Root> getViewRoots() {
-    List<ViewRootImpl> viewRootImpls = getViewRootImpls();
-    List<LayoutParams> params = getRootLayoutParams();
-    checkState(!viewRootImpls.isEmpty(), "no view roots!");
-    checkState(
-        params.size() == viewRootImpls.size(),
-        "number params is not consistent with number of view roots!");
-    Set<IBinder> startedActivityTokens = getStartedActivityTokens();
-    ArrayList<Root> roots = new ArrayList<>();
-    for (int i = 0; i < viewRootImpls.size(); i++) {
-      Root root = new Root(viewRootImpls.get(i), params.get(i), i);
-      // TODO: Should we also filter out sub-windows of non-started application windows?
-      if (root.getType() != LayoutParams.TYPE_BASE_APPLICATION
-          || startedActivityTokens.contains(root.impl.getView().getApplicationWindowToken())) {
-        roots.add(root);
-      }
-    }
-    roots.sort(
-        comparingInt(Root::getType)
-            .reversed()
-            .thenComparing(comparingInt(Root::getIndex).reversed()));
-    return roots;
-  }
-
-  private static List<ViewRootImpl> getViewRootImpls() {
-    Object windowManager = getViewRootsContainer();
-    Object viewRootsObj = ReflectionHelpers.getField(windowManager, "mRoots");
-    Class<?> viewRootsClass = viewRootsObj.getClass();
-    if (ViewRootImpl[].class.isAssignableFrom(viewRootsClass)) {
-      return Arrays.asList((ViewRootImpl[]) viewRootsObj);
-    } else if (List.class.isAssignableFrom(viewRootsClass)) {
-      return (List<ViewRootImpl>) viewRootsObj;
-    } else {
-      throw new IllegalStateException(
-          "WindowManager.mRoots is an unknown type " + viewRootsClass.getName());
-    }
-  }
-
-  private static List<LayoutParams> getRootLayoutParams() {
-    Object windowManager = getViewRootsContainer();
-    Object paramsObj = ReflectionHelpers.getField(windowManager, "mParams");
-    Class<?> paramsClass = paramsObj.getClass();
-    if (LayoutParams[].class.isAssignableFrom(paramsClass)) {
-      return Arrays.asList((LayoutParams[]) paramsObj);
-    } else if (List.class.isAssignableFrom(paramsClass)) {
-      return (List<LayoutParams>) paramsObj;
-    } else {
-      throw new IllegalStateException(
-          "WindowManager.mParams is an unknown type " + paramsClass.getName());
-    }
-  }
-
-  private static Object getViewRootsContainer() {
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
-      return ReflectionHelpers.callStaticMethod(WindowManagerImpl.class, "getDefault");
-    } else {
-      return WindowManagerGlobal.getInstance();
-    }
-  }
-
-  private static Set<IBinder> getStartedActivityTokens() {
-    ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
-    return ImmutableSet.<Activity>builder()
-        .addAll(monitor.getActivitiesInStage(Stage.STARTED))
-        .addAll(monitor.getActivitiesInStage(Stage.RESUMED))
-        .build()
-        .stream()
-        .map(activity -> activity.getWindow().getDecorView().getApplicationWindowToken())
-        .collect(toSet());
-  }
-
-  private static Predicate<Root> hasLayoutFlag(int flag) {
-    return root -> (root.params.flags & flag) == flag;
-  }
-
-  private static final class Root {
-    final ViewRootImpl impl;
-    final LayoutParams params;
-    final int index;
-
-    Root(ViewRootImpl impl, LayoutParams params, int index) {
-      this.impl = impl;
-      this.params = params;
-      this.index = index;
-    }
-
-    int getIndex() {
-      return index;
-    }
-
-    int getType() {
-      return params.type;
-    }
-
-    boolean isTouchInside(MotionEvent event) {
-      int index = event.getActionIndex();
-      return event.getX(index) >= params.x
-          && event.getX(index) <= params.x + impl.getView().getWidth()
-          && event.getY(index) >= params.y
-          && event.getY(index) <= params.y + impl.getView().getHeight();
-    }
-
-    boolean isTouchModal() {
-      return IS_TOUCH_MODAL.test(this);
-    }
-
-    boolean watchTouchOutside() {
-      return WATCH_TOUCH_OUTSIDE.test(this);
-    }
   }
 
   private interface IdlingResourceProxy {

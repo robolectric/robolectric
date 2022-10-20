@@ -4,14 +4,12 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -23,6 +21,7 @@ import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,53 +39,16 @@ public class ShadowDrawableTest {
   }
 
   @Test
-  public void
-      createFromStream__shouldReturnNullWhenAskedToCreateADrawableFromACorruptedSourceStream() {
-    String corruptedStreamSource = "http://foo.com/image.jpg";
-    ShadowDrawable.addCorruptStreamSource(corruptedStreamSource);
-    assertNull(ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), corruptedStreamSource));
-  }
-
-  @Test
   public void createFromResourceStream_shouldWorkWithoutSourceName() {
     Drawable drawable =
         Drawable.createFromResourceStream(
-            context.getResources(),
-            null,
-            new ByteArrayInputStream(new byte[0]),
-            null,
-            new BitmapFactory.Options());
+            context.getResources(), null, createImageStream(), null, new BitmapFactory.Options());
     assertNotNull(drawable);
-  }
-
-  @Test
-  public void createFromStream__shouldReturnDrawableWithSpecificSource() {
-    Drawable drawable =
-        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
-    assertNotNull(drawable);
-    assertEquals("my_source", ((ShadowBitmapDrawable) shadowOf(drawable)).getSource());
-  }
-
-  @Test
-  public void reset__shouldClearStaticState() {
-    String src = "source1";
-    ShadowDrawable.addCorruptStreamSource(src);
-    assertTrue(ShadowDrawable.corruptStreamSources.contains(src));
-    ShadowDrawable.clearCorruptStreamSources();
-    assertFalse(ShadowDrawable.corruptStreamSources.contains(src));
-  }
-
-  @Test
-  public void testCreateFromStream_shouldSetTheInputStreamOnTheReturnedDrawable() {
-    ByteArrayInputStream byteInputStream = new ByteArrayInputStream(new byte[0]);
-    Drawable drawable = Drawable.createFromStream(byteInputStream, "src name");
-    assertThat(shadowOf(drawable).getInputStream()).isEqualTo(byteInputStream);
   }
 
   @Test
   public void copyBoundsWithPassedRect() {
-    Drawable drawable =
-        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = Drawable.createFromStream(createImageStream(), "my_source");
     drawable.setBounds(1, 2, 3, 4);
     Rect r = new Rect();
     drawable.copyBounds(r);
@@ -98,21 +60,13 @@ public class ShadowDrawableTest {
 
   @Test
   public void copyBoundsToReturnedRect() {
-    Drawable drawable =
-        ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+    Drawable drawable = Drawable.createFromStream(createImageStream(), "my_source");
     drawable.setBounds(1, 2, 3, 4);
     Rect r = drawable.copyBounds();
     assertThat(r.left).isEqualTo(1);
     assertThat(r.top).isEqualTo(2);
     assertThat(r.right).isEqualTo(3);
     assertThat(r.bottom).isEqualTo(4);
-  }
-
-  @Test
-  public void createFromPath__shouldReturnDrawableWithSpecificPath() {
-    Drawable drawable = ShadowDrawable.createFromPath("/foo");
-    assertNotNull(drawable);
-    assertEquals("/foo", ((ShadowBitmapDrawable) shadowOf(drawable)).getPath());
   }
 
   @Test
@@ -220,5 +174,12 @@ public class ShadowDrawableTest {
       boundsChanged = true;
       super.onBoundsChange(bounds);
     }
+  }
+
+  private static ByteArrayInputStream createImageStream() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    bitmap.compress(CompressFormat.PNG, 100, outputStream);
+    return new ByteArrayInputStream(outputStream.toByteArray());
   }
 }

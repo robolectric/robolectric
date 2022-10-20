@@ -2,6 +2,7 @@ package org.robolectric.util;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Field;
@@ -125,14 +126,14 @@ public class ReflectionHelpersTest {
   public void setFinalStaticFieldReflectively_withFieldName_setsStaticFields() {
     int startingValue = ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD");
 
-    ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", 101);
-    assertWithMessage("startingValue").that(startingValue).isEqualTo(100);
-    assertWithMessage("BASE")
-        .that((int) ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD"))
-        .isEqualTo(101);
-
-    // Reset the value to avoid test pollution
-    ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", startingValue);
+    RuntimeException thrown =
+        assertThrows(
+            RuntimeException.class,
+            () -> ReflectionHelpers.setStaticField(ExampleWithFinalStatic.class, "FIELD", 101));
+    assertThat(thrown)
+        .hasCauseThat()
+        .hasMessageThat()
+        .contains("Cannot set the value of final field");
   }
 
   @Test

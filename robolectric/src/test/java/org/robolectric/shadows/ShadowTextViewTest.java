@@ -441,7 +441,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandleDips() {
-    ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density = 1.5f;
+    textView.getContext().getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
@@ -453,8 +453,7 @@ public class ShadowTextViewTest {
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
 
-    ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().scaledDensity =
-        1.5f;
+    textView.getContext().getResources().getDisplayMetrics().scaledDensity = 1.5f;
 
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
     assertThat(textView.getTextSize()).isEqualTo(15f);
@@ -462,7 +461,7 @@ public class ShadowTextViewTest {
 
   @Test
   public void setTextSize_shouldHandlePixels() {
-    ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density = 1.5f;
+    textView.getContext().getResources().getDisplayMetrics().density = 1.5f;
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
     assertThat(textView.getTextSize()).isEqualTo(10f);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);

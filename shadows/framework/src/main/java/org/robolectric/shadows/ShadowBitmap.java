@@ -12,7 +12,6 @@ import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.ColorSpace;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -109,6 +108,7 @@ public class ShadowBitmap {
     if (width <= 0 || height <= 0) {
       throw new IllegalArgumentException("width and height must be > 0");
     }
+    checkNotNull(config);
     Bitmap scaledBitmap = ReflectionHelpers.callConstructor(Bitmap.class);
     ShadowBitmap shadowBitmap = Shadow.extract(scaledBitmap);
     shadowBitmap.setDescription("Bitmap (" + width + " x " + height + ")");
@@ -131,7 +131,7 @@ public class ShadowBitmap {
   @Implementation(minSdk = O)
   protected static Bitmap createBitmap(
       int width, int height, Bitmap.Config config, boolean hasAlpha, ColorSpace colorSpace) {
-    checkArgument(colorSpace != null || config == Config.ALPHA_8);
+    checkArgument(colorSpace != null || config == Bitmap.Config.ALPHA_8);
     Bitmap bitmap = createBitmap(null, width, height, config, hasAlpha);
     ShadowBitmap shadowBitmap = Shadows.shadowOf(bitmap);
     shadowBitmap.colorSpace = colorSpace;
@@ -172,10 +172,6 @@ public class ShadowBitmap {
     shadowNewBitmap.createdFromMatrix = matrix;
     shadowNewBitmap.createdFromFilter = filter;
     shadowNewBitmap.config = src.getConfig();
-    if (shadowNewBitmap.config == null) {
-      shadowNewBitmap.config = Config.ARGB_8888;
-    }
-
     if (matrix != null) {
       ShadowMatrix shadowMatrix = Shadow.extract(matrix);
       shadowNewBitmap.appendDescription(" using matrix " + shadowMatrix.getDescription());
@@ -208,7 +204,7 @@ public class ShadowBitmap {
 
   @Implementation
   protected static Bitmap createBitmap(
-      int[] colors, int offset, int stride, int width, int height, Config config) {
+      int[] colors, int offset, int stride, int width, int height, Bitmap.Config config) {
     return createBitmap(null, colors, offset, stride, width, height, config);
   }
 
@@ -220,7 +216,7 @@ public class ShadowBitmap {
       int stride,
       int width,
       int height,
-      Config config) {
+      Bitmap.Config config) {
     if (width <= 0) {
       throw new IllegalArgumentException("width must be > 0");
     }
@@ -230,6 +226,7 @@ public class ShadowBitmap {
     if (Math.abs(stride) < width) {
       throw new IllegalArgumentException("abs(stride) must be >= width");
     }
+    checkNotNull(config);
     int lastScanline = offset + (height - 1) * stride;
     int length = colors.length;
     if (offset < 0
@@ -288,9 +285,6 @@ public class ShadowBitmap {
     shadowBitmap.height = dstHeight;
     shadowBitmap.config = src.getConfig();
     shadowBitmap.mutable = true;
-    if (shadowBitmap.config == null) {
-      shadowBitmap.config = Config.ARGB_8888;
-    }
     if (!ImageUtil.scaledBitmap(src, scaledBitmap, filter)) {
       shadowBitmap.bufferedImage =
           new BufferedImage(dstWidth, dstHeight, BufferedImage.TYPE_INT_ARGB);
@@ -598,7 +592,7 @@ public class ShadowBitmap {
 
   @Implementation
   protected final boolean hasAlpha() {
-    return hasAlpha && config != Config.RGB_565;
+    return hasAlpha && config != Bitmap.Config.RGB_565;
   }
 
   @Implementation
@@ -795,9 +789,7 @@ public class ShadowBitmap {
     if (this.width != shadowOtherBitmap.width || this.height != shadowOtherBitmap.height) {
       return false;
     }
-    if (this.config != null
-        && shadowOtherBitmap.config != null
-        && this.config != shadowOtherBitmap.config) {
+    if (this.config != shadowOtherBitmap.config) {
       return false;
     }
 

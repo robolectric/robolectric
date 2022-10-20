@@ -36,6 +36,7 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -213,23 +214,42 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Checks to see if the constructor byte code can be instrumented. Currently this checks if the
-   * first instruction is not a Jacoco load instructions. Robolectric is not capable at the moment
-   * of re-instrumenting Jacoco-instrumented constructors.
+   * Checks if the first instruction is a Jacoco load instructions. Robolectric is not capable at
+   * the moment of re-instrumenting Jacoco-instrumented constructors.
    *
    * @param ctor constructor method node
    * @return whether or not the constructor can be instrumented
    */
-  private boolean ctorCanBeInstrumented(MethodNode ctor) {
+  private boolean isJacocoInstrumented(MethodNode ctor) {
     AbstractInsnNode[] insns = ctor.instructions.toArray();
     if (insns.length > 0) {
       if (insns[0] instanceof LdcInsnNode
           && ((LdcInsnNode) insns[0]).cst instanceof ConstantDynamic) {
         ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) insns[0]).cst;
-        return !cst.getName().equals("$jacocoData");
+        return cst.getName().equals("$jacocoData");
       }
     }
-    return true;
+    return false;
+  }
+
+  /**
+   * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
+   * custom shadows for Jacoco-instrumented classes (except cnstructor shadows).
+   */
+  private void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
+    AbstractInsnNode returnNode =
+        Iterables.find(
+            ctor.instructions,
+            node -> node instanceof InsnNode && node.getOpcode() == Opcodes.RETURN,
+            null);
+    ctor.instructions.insertBefore(returnNode, new VarInsnNode(Opcodes.ALOAD, 0));
+    ctor.instructions.insertBefore(
+        returnNode,
+        new MethodInsnNode(
+            Opcodes.INVOKEVIRTUAL,
+            mutableClass.classType.getInternalName(),
+            ROBO_INIT_METHOD_NAME,
+            "()V"));
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
@@ -245,7 +265,9 @@ public class ClassInstrumentor {
           method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
           mutableClass.addMethod(generateStaticInitializerNotifierMethod(mutableClass));
         } else if (method.name.equals("<init>")) {
-          if (ctorCanBeInstrumented(method)) {
+          if (isJacocoInstrumented(method)) {
+            addCallToRoboInit(mutableClass, method);
+          } else {
             instrumentConstructor(mutableClass, method);
           }
         } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {

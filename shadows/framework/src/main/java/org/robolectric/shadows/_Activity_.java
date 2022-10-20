@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -177,10 +176,10 @@ public interface _Activity_ {
       Application application,
       Intent intent,
       ActivityInfo activityInfo,
+      IBinder token,
       CharSequence activityTitle,
       @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
-    Binder token = new Binder();
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel <= Build.VERSION_CODES.KITKAT) {
       attach(

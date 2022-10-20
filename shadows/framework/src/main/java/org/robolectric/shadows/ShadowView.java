@@ -801,7 +801,6 @@ public class ShadowView {
     @Direct
     void onLayout(boolean changed, int left, int top, int right, int bottom);
 
-    @Direct
     void assignParent(ViewParent viewParent);
 
     @Direct

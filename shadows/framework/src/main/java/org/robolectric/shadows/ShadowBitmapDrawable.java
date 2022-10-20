@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,6 +9,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
@@ -24,11 +27,15 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
    */
   @Implementation
   protected void draw(Canvas canvas) {
-    Bitmap bitmap = realBitmapDrawable.getBitmap();
-    if (bitmap == null) {
-      return;
+    if (ShadowView.useRealGraphics()) {
+      reflector(BitmapDrawableReflector.class, realBitmapDrawable).draw(canvas);
+    } else {
+      Bitmap bitmap = realBitmapDrawable.getBitmap();
+      if (bitmap == null) {
+        return;
+      }
+      canvas.drawBitmap(bitmap, 0, 0, realBitmapDrawable.getPaint());
     }
-    canvas.drawBitmap(bitmap, 0, 0, realBitmapDrawable.getPaint());
   }
 
   @Override
@@ -63,5 +70,11 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
   public String getPath() {
     return drawableCreateFromPath;
+  }
+
+  @ForType(BitmapDrawable.class)
+  interface BitmapDrawableReflector {
+    @Direct
+    void draw(Canvas canvas);
   }
 }

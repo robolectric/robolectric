@@ -87,7 +87,7 @@ public class ShadowCanvas {
   private long getNativeId() {
     return RuntimeEnvironment.getApiLevel() <= KITKAT_WATCH
         ? (int) ReflectionHelpers.getField(realCanvas, "mNativeCanvas")
-        : canvasReflector.getNativeCanvasWrapper();
+        : realCanvas.getNativeCanvasWrapper();
   }
 
   private NativeCanvas getNativeCanvas() {
@@ -719,9 +719,6 @@ public class ShadowCanvas {
   private interface CanvasReflector {
     @Direct
     void __constructor__(Bitmap bitmap);
-
-    @Direct
-    long getNativeCanvasWrapper();
 
     @Direct
     void release();

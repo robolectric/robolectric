@@ -206,6 +206,7 @@ public class ShadowProviderGenerator extends Generator {
           "  private static final Map<String, String> SHADOW_PICKER_MAP = "
               + "new HashMap<>("
               + shadowPickers.size()
+              + model.getExtraShadowPickers().size()
               + ");");
       writer.println();
 
@@ -222,6 +223,19 @@ public class ShadowProviderGenerator extends Generator {
                 + shadowPickerClassName
                 + "\");");
       }
+
+      for (Entry<String, String> entry : model.getExtraShadowPickers().entrySet()) {
+        final String className = entry.getKey();
+        final String shadowPickerClassName = entry.getValue();
+        writer.println(
+            "    SHADOW_PICKER_MAP.put(\""
+                + className
+                + "\", "
+                + "\""
+                + shadowPickerClassName
+                + "\");");
+      }
+
       writer.println("  }");
       writer.println();
 

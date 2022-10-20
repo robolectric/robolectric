@@ -1,7 +1,5 @@
 package org.robolectric.fakes;
 
-import static android.os.Build.VERSION_CODES.M;
-
 import android.os.Handler;
 import android.webkit.WebMessage;
 import android.webkit.WebMessagePort;
@@ -11,10 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
-import org.robolectric.annotation.Config;
 
 /** Robolectric implementation of {@link WebMessagePort}. */
-@Config(minSdk = M)
 public class RoboWebMessagePort extends WebMessagePort {
   private final List<String> receivedMessages = Collections.synchronizedList(new ArrayList<>());
   // The connected port receives all messages this port sends. This port receives messages sent by
