@@ -66,6 +66,10 @@ public class ShadowMap {
     this.shadowPickers = ImmutableMap.copyOf(shadowPickers);
   }
 
+  public boolean hasShadowPicker(MutableClass mutableClass) {
+    return shadowPickers.containsKey(mutableClass.getName().replace('$', '.'));
+  }
+
   public ShadowInfo getShadowInfo(Class<?> clazz, ShadowMatcher shadowMatcher) {
     String instrumentedClassName = clazz.getName();
 

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -63,6 +64,13 @@ public class JarInstrumentor {
 
     int nonClassCount = 0;
     int classCount = 0;
+
+    // get the jar's SDK version
+    try {
+      classInstrumentor.setAndroidJarSDKVersion(getJarAndroidSDKVersion(jarFile));
+    } catch (Exception e) {
+      throw new AssertionError("Unable to get Android SDK version from Jar File", e);
+    }
 
     try (JarOutputStream jarOut =
         new JarOutputStream(new BufferedOutputStream(new FileOutputStream(destFile), ONE_MB))) {
@@ -135,5 +143,12 @@ public class JarInstrumentor {
     // Setting the timestamp to the original is necessary for deterministic output.
     entry.setTime(original.getTime());
     return entry;
+  }
+
+  private int getJarAndroidSDKVersion(JarFile jarFile) throws IOException {
+    ZipEntry buildProp = jarFile.getEntry("build.prop");
+    Properties buildProps = new Properties();
+    buildProps.load(jarFile.getInputStream(buildProp));
+    return Integer.parseInt(buildProps.getProperty("ro.build.version.sdk"));
   }
 }

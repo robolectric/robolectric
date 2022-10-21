@@ -505,7 +505,6 @@ public class ClassInstrumentor {
     generator.endMethod();
     mutableClass.addMethod(delegatorMethodNode);
   }
-
   /**
    * Creates native stub which returns the default return value.
    *
@@ -713,6 +712,14 @@ public class ClassInstrumentor {
 
   int getTag(MethodNode m) {
     return Modifier.isStatic(m.access) ? Opcodes.H_INVOKESTATIC : Opcodes.H_INVOKESPECIAL;
+  }
+
+  // implemented in DirectClassInstrumentor
+  public void setAndroidJarSDKVersion(int androidJarSDKVersion) {}
+
+  // implemented in DirectClassInstrumentor
+  protected int getAndroidJarSDKVersion() {
+    return -1;
   }
 
   public interface Decorator {
