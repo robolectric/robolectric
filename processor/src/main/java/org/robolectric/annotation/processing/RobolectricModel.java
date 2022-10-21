@@ -4,6 +4,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
 import static com.google.common.collect.Sets.newTreeSet;
 
+import com.google.auto.common.MoreTypes;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimaps;
@@ -99,10 +100,9 @@ public class RobolectricModel {
       TypeElement shadowBaseType = null;
       if (shadowPickerType != null) {
         TypeMirror iface = helpers.findInterface(shadowPickerType, ShadowPicker.class);
-        if (iface != null) {
-          com.sun.tools.javac.code.Type type = ((com.sun.tools.javac.code.Type.ClassType) iface)
-              .allparams().get(0);
-          String baseClassName = type.asElement().getQualifiedName().toString();
+        if (iface instanceof DeclaredType) {
+          TypeMirror first = MoreTypes.asDeclared(iface).getTypeArguments().get(0);
+          String baseClassName = first.toString();
           shadowBaseType = helpers.getTypeElement(baseClassName);
         }
       }
