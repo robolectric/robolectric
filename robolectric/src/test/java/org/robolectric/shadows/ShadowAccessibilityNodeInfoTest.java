@@ -245,6 +245,18 @@ public class ShadowAccessibilityNodeInfoTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void clone_preservesPaneTitle() {
+    String title = "pane title";
+    AccessibilityNodeInfo node = AccessibilityNodeInfo.obtain();
+    node.setPaneTitle(title);
+
+    AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
+
+    assertThat(clone.getPaneTitle().toString()).isEqualTo(title);
+  }
+
+  @Test
   public void testGetBoundsInScreen() {
     AccessibilityNodeInfo root = AccessibilityNodeInfo.obtain();
     Rect expected = new Rect(0, 0, 100, 100);
