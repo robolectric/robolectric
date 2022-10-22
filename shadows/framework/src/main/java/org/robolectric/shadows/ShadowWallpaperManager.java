@@ -1,5 +1,9 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+
 import android.Manifest.permission;
 import android.annotation.FloatRange;
 import android.annotation.RequiresPermission;
@@ -61,12 +65,12 @@ public class ShadowWallpaperManager {
    * <p>This only caches the resource id in memory. Calling this will override any previously set
    * resource and does not differentiate between users.
    */
-  @Implementation(maxSdk = VERSION_CODES.M)
+  @Implementation(maxSdk = M)
   protected void setResource(int resid) {
     setResource(resid, WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation(minSdk = N)
   protected int setResource(int resid, int which) {
     if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
       return 0;
@@ -100,18 +104,21 @@ public class ShadowWallpaperManager {
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
    */
-  @Implementation(minSdk = VERSION_CODES.P)
+  @Implementation(minSdk = N)
   protected int setBitmap(Bitmap fullImage, Rect visibleCropHint, boolean allowBackup, int which) {
-    if (which == WallpaperManager.FLAG_LOCK) {
+    if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
+      return 0;
+    }
+    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
       lockScreenImage = fullImage;
       wallpaperInfo = null;
-      return 1;
-    } else if (which == WallpaperManager.FLAG_SYSTEM) {
+    }
+
+    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
       homeScreenImage = fullImage;
       wallpaperInfo = null;
-      return 1;
     }
-    return 0;
+    return 1;
   }
 
   /**
@@ -138,7 +145,7 @@ public class ShadowWallpaperManager {
    * @return An open, readable file descriptor to the requested wallpaper image file; {@code null}
    *     if no such wallpaper is configured.
    */
-  @Implementation(minSdk = VERSION_CODES.P)
+  @Implementation(minSdk = N)
   @Nullable
   protected ParcelFileDescriptor getWallpaperFile(int which) {
     if (which == WallpaperManager.FLAG_SYSTEM && homeScreenImage != null) {
@@ -149,7 +156,7 @@ public class ShadowWallpaperManager {
     return null;
   }
 
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation(minSdk = N)
   protected boolean isSetWallpaperAllowed() {
     return isWallpaperAllowed;
   }
@@ -158,7 +165,7 @@ public class ShadowWallpaperManager {
     isWallpaperAllowed = allowed;
   }
 
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation(minSdk = M)
   protected boolean isWallpaperSupported() {
     return isWallpaperSupported;
   }
@@ -176,17 +183,20 @@ public class ShadowWallpaperManager {
    * @param which either {@link WallpaperManager#FLAG_LOCK} or {WallpaperManager#FLAG_SYSTEM}
    * @return 0 if fails to cache. Otherwise, 1.
    */
-  @Implementation(minSdk = VERSION_CODES.N)
+  @Implementation(minSdk = N)
   protected int setStream(
       InputStream bitmapData, Rect visibleCropHint, boolean allowBackup, int which) {
-    if (which == WallpaperManager.FLAG_LOCK) {
-      lockScreenImage = BitmapFactory.decodeStream(bitmapData);
-      return 1;
-    } else if (which == WallpaperManager.FLAG_SYSTEM) {
-      homeScreenImage = BitmapFactory.decodeStream(bitmapData);
-      return 1;
+    if ((which & (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK)) == 0) {
+      return 0;
     }
-    return 0;
+    if ((which & WallpaperManager.FLAG_LOCK) == WallpaperManager.FLAG_LOCK) {
+      lockScreenImage = BitmapFactory.decodeStream(bitmapData);
+    }
+
+    if ((which & WallpaperManager.FLAG_SYSTEM) == WallpaperManager.FLAG_SYSTEM) {
+      homeScreenImage = BitmapFactory.decodeStream(bitmapData);
+    }
+    return 1;
   }
 
   /**
@@ -196,7 +206,7 @@ public class ShadowWallpaperManager {
    * previously set static wallpaper.
    */
   @SystemApi
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation(minSdk = M)
   @RequiresPermission(permission.SET_WALLPAPER_COMPONENT)
   protected boolean setWallpaperComponent(ComponentName wallpaperService)
       throws IOException, XmlPullParserException {
@@ -222,17 +232,17 @@ public class ShadowWallpaperManager {
    * Returns the information about the wallpaper if the current wallpaper is a live wallpaper
    * component. Otherwise, if the wallpaper is a static image, this returns null.
    */
-  @Implementation(minSdk = VERSION_CODES.M)
+  @Implementation
   protected WallpaperInfo getWallpaperInfo() {
     return wallpaperInfo;
   }
 
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  @Implementation(minSdk = TIRAMISU)
   protected void setWallpaperDimAmount(@FloatRange(from = 0f, to = 1f) float dimAmount) {
     wallpaperDimAmount = MathUtils.saturate(dimAmount);
   }
 
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  @Implementation(minSdk = TIRAMISU)
   @FloatRange(from = 0f, to = 1f)
   protected float getWallpaperDimAmount() {
     return wallpaperDimAmount;
