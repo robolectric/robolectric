@@ -99,7 +99,7 @@ jobs:
           path: '**/build/test-results/**/TEST-*.xml'
 
   instrumentation-tests:
-    runs-on: macos-11
+    runs-on: macos-12
     timeout-minutes: 60
     needs: build
 
