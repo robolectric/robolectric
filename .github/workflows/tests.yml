@@ -10,6 +10,9 @@ on:
 permissions:
   contents: read
 
+env:
+  cache-version: v1
+
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -135,7 +138,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
+          key: avd-${{ matrix.api-level }}-${{ env.cache-version }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -156,6 +159,11 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
           arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          disable-spellchecker: true
+
           profile: Nexus One
           script: |
             ./gradlew cAT || ./gradlew cAT || ./gradlew cAT || exit 1
