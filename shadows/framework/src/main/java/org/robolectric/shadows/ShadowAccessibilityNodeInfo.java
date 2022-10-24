@@ -416,7 +416,7 @@ public class ShadowAccessibilityNodeInfo {
     if (this.traversalBefore != null) {
       this.traversalBefore.recycle();
     }
-    
+
     this.traversalBefore = obtain(info);
   }
 
@@ -627,6 +627,7 @@ public class ShadowAccessibilityNodeInfo {
     }
     if (getApiLevel() >= P) {
       newInfo.setTooltipText(realAccessibilityNodeInfo.getTooltipText());
+      newInfo.setPaneTitle(realAccessibilityNodeInfo.getPaneTitle());
     }
 
     return newInfo;
