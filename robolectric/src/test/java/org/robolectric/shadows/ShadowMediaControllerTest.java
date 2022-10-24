@@ -21,6 +21,7 @@ import android.media.session.MediaController;
 import android.media.session.MediaController.PlaybackInfo;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
+import android.os.Bundle;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -130,6 +131,16 @@ public final class ShadowMediaControllerTest {
     PendingIntent pi = PendingIntent.getActivity(context, 555, intent, 0);
     shadowMediaController.setSessionActivity(pi);
     assertEquals(pi, mediaController.getSessionActivity());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setAndGetExtras() {
+    String extraKey = "test.extra.key";
+    Bundle extras = new Bundle();
+    extras.putBoolean(extraKey, true);
+    shadowMediaController.setExtras(extras);
+    assertEquals(true, mediaController.getExtras().getBoolean(extraKey, false));
   }
 
   @Test

@@ -30,6 +30,7 @@ public class ShadowMediaController {
   private PlaybackInfo playbackInfo;
   private MediaMetadata mediaMetadata;
   private PendingIntent sessionActivity;
+  private Bundle extras;
 
   /**
    * A value of RATING_NONE for ratingType indicates that rating media is not supported by the media
@@ -120,6 +121,17 @@ public class ShadowMediaController {
   @Implementation
   protected PendingIntent getSessionActivity() {
     return sessionActivity;
+  }
+
+  /** Saves the extras to control the return value of {@link MediaController#getExtras()}. */
+  public void setExtras(Bundle extras) {
+    this.extras = extras;
+  }
+
+  /** Gets the extras set via {@link #extras}. */
+  @Implementation
+  protected Bundle getExtras() {
+    return extras;
   }
 
   /**
