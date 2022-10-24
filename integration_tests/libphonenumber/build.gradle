@@ -9,5 +9,5 @@ dependencies {
 
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation 'com.googlecode.libphonenumber:libphonenumber:8.0.0'
+    testImplementation 'com.googlecode.libphonenumber:libphonenumber:8.12.57'
 }
