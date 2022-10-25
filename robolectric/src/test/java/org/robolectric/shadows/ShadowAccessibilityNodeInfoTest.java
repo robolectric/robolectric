@@ -225,7 +225,7 @@ public class ShadowAccessibilityNodeInfoTest {
   @Config(minSdk = O)
   @Test
   public void clone_preservesHintText() {
-    String hintText = "shiba bonchon";
+    String hintText = "tooltip hint";
     node.setHintText(hintText);
 
     AccessibilityNodeInfo clone = AccessibilityNodeInfo.obtain(node);
