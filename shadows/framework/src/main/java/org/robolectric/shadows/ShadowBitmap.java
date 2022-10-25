@@ -455,7 +455,7 @@ public class ShadowBitmap {
   }
 
   @Implementation(minSdk = S)
-  public Bitmap asShared() {
+  protected Bitmap asShared() {
     setMutable(false);
     return realBitmap;
   }
@@ -813,7 +813,7 @@ public class ShadowBitmap {
     return true;
   }
 
-  public void setCreatedFromResId(int resId, String description) {
+  void setCreatedFromResId(int resId, String description) {
     this.createdFromResId = resId;
     appendDescription(" for resource:" + description);
   }
