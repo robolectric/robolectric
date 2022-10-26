@@ -85,7 +85,7 @@ public class ShadowBitmapFactory {
       return null;
     }
     Bitmap bitmap = create("resource:" + resourceName, options, image);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromResId = id;
     return bitmap;
   }
@@ -116,7 +116,7 @@ public class ShadowBitmapFactory {
       return null;
     }
     Bitmap bitmap = create("file:" + pathName, options, image);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromPath = pathName;
     return bitmap;
   }
@@ -143,7 +143,7 @@ public class ShadowBitmapFactory {
       return null;
     }
     Bitmap bitmap = create("fd:" + fd, null, outPadding, opts, null, image);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromFileDescriptor = fd;
     return bitmap;
   }
@@ -189,7 +189,7 @@ public class ShadowBitmapFactory {
     Bitmap bitmap = create(name, null, outPadding, opts, null, image);
     ReflectionHelpers.callInstanceMethod(
         bitmap, "setNinePatchChunk", ClassParameter.from(byte[].class, ninePatchChunk));
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromStream = is;
 
     if (image != null && opts != null) {
@@ -222,7 +222,7 @@ public class ShadowBitmapFactory {
       return null;
     }
     Bitmap bitmap = create(desc, data, null, opts, null, image);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.createdFromBytes = data;
     return bitmap;
   }
@@ -242,7 +242,7 @@ public class ShadowBitmapFactory {
       final Point widthAndHeightOverride,
       final RobolectricBufferedImage image) {
     Bitmap bitmap = Shadow.newInstanceOf(Bitmap.class);
-    ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
     shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
 
     Bitmap.Config config;

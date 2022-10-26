@@ -16,7 +16,7 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false,
     minSdk = M,
     maxSdk = R)
-public class ShadowDisplayListCanvas extends ShadowCanvas {
+public class ShadowDisplayListCanvas extends ShadowLegacyCanvas {
 
   @Implementation(minSdk = O, maxSdk = P)
   protected static long nCreateDisplayListCanvas(long node, int width, int height) {

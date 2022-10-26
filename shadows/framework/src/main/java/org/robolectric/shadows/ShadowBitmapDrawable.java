@@ -42,8 +42,8 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
   protected void setCreatedFromResId(int createdFromResId, String resourceName) {
     super.setCreatedFromResId(createdFromResId, resourceName);
     Bitmap bitmap = realBitmapDrawable.getBitmap();
-    if (bitmap != null && Shadow.extract(bitmap) instanceof ShadowBitmap) {
-      ShadowBitmap shadowBitmap = Shadow.extract(bitmap);
+    if (bitmap != null && Shadow.extract(bitmap) instanceof ShadowLegacyBitmap) {
+      ShadowLegacyBitmap shadowBitmap = Shadow.extract(bitmap);
       if (shadowBitmap.createdFromResId == -1) {
         shadowBitmap.setCreatedFromResId(createdFromResId, resourceName);
       }

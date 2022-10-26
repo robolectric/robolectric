@@ -26,7 +26,6 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
-import org.robolectric.Shadows;
 import org.robolectric.shadow.api.Shadow;
 
 public class ImageUtil {
@@ -117,7 +116,7 @@ public class ImageUtil {
     if (srcWidth <= 0 || srcHeight <= 0 || dstWidth <= 0 || dstHeight <= 0) {
       return false;
     }
-    BufferedImage before = ((ShadowBitmap) Shadow.extract(src)).getBufferedImage();
+    BufferedImage before = ((ShadowLegacyBitmap) Shadow.extract(src)).getBufferedImage();
     if (before == null || before.getColorModel() == null) {
       return false;
     }
@@ -129,7 +128,7 @@ public class ImageUtil {
         filter ? VALUE_INTERPOLATION_BILINEAR : VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
     graphics2D.drawImage(before, 0, 0, dstWidth, dstHeight, 0, 0, srcWidth, srcHeight, null);
     graphics2D.dispose();
-    ((ShadowBitmap) Shadow.extract(dst)).setBufferedImage(after);
+    ((ShadowLegacyBitmap) Shadow.extract(dst)).setBufferedImage(after);
     return true;
   }
 
@@ -156,7 +155,8 @@ public class ImageUtil {
         int width = realBitmap.getWidth();
         int height = realBitmap.getHeight();
         boolean needAlphaChannel = needAlphaChannel(format);
-        BufferedImage bufferedImage = Shadows.shadowOf(realBitmap).getBufferedImage();
+        BufferedImage bufferedImage =
+            ((ShadowLegacyBitmap) Shadow.extract(realBitmap)).getBufferedImage();
         if (bufferedImage == null) {
           bufferedImage =
               new BufferedImage(
