@@ -1310,6 +1310,11 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return uid;
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  protected Object getPackageUid(Object packageName, Object flags) throws NameNotFoundException {
+    return getPackageUid((String) packageName, (int) ((PackageInfoFlags) flags).getValue());
+  }
+
   @Implementation(minSdk = N)
   protected int getPackageUidAsUser(String packageName, int userId) throws NameNotFoundException {
     return 0;

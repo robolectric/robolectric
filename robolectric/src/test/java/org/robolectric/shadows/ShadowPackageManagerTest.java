@@ -2390,6 +2390,24 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageUid_sdkT() throws NameNotFoundException {
+    shadowOf(packageManager).setPackagesForUid(10, new String[] {"a_name"});
+    assertThat(packageManager.getPackageUid("a_name", PackageInfoFlags.of(0))).isEqualTo(10);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageUid_sdkT_shouldThrowNameNotFoundExceptionIfNotExist() {
+    try {
+      packageManager.getPackageUid("a_name", PackageInfoFlags.of(0));
+      fail("should have thrown NameNotFoundException");
+    } catch (PackageManager.NameNotFoundException e) {
+      assertThat(e).hasMessageThat().contains("a_name");
+    }
+  }
+
+  @Test
   public void getPackagesForUid_shouldReturnSetPackageName() {
     shadowOf(packageManager).setPackagesForUid(10, new String[] {"a_name"});
     assertThat(packageManager.getPackagesForUid(10)).asList().containsExactly("a_name");
