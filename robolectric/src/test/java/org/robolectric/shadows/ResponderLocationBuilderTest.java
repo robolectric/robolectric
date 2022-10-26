@@ -90,5 +90,4 @@ public final class ResponderLocationBuilderTest {
     assertThat(responderLocation.isLciSubelementValid()).isTrue();
     assertThat(responderLocation.isZaxisSubelementValid()).isTrue();
   }
-
 }

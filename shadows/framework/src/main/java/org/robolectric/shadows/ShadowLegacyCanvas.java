@@ -588,7 +588,6 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     nativeObjectRegistry.getNativeObject(canvasHandle).restoreToCount(saveCount);
   }
 
-
   private static class PathPaintHistoryEvent {
     private final Path drawnPath;
     private final Paint pathPaint;
