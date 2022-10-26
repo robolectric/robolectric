@@ -24,7 +24,6 @@ import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -164,7 +163,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     }
 
     if (bitmap != null && targetBitmap != null) {
-      ShadowBitmap shadowTargetBitmap = Shadows.shadowOf(targetBitmap);
+      ShadowLegacyBitmap shadowTargetBitmap = Shadow.extract(targetBitmap);
       shadowTargetBitmap.drawBitmap(bitmap, (int) left, (int) top);
     }
   }
@@ -248,7 +247,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     rectPaintEvents.add(new RectPaintHistoryEvent(left, top, right, bottom, paint));
 
     if (targetBitmap != null) {
-      ShadowBitmap shadowTargetBitmap = Shadows.shadowOf(targetBitmap);
+      ShadowLegacyBitmap shadowTargetBitmap = Shadow.extract(targetBitmap);
       shadowTargetBitmap.drawRect(new RectF(left, top, right, bottom), paint);
     }
   }
@@ -258,7 +257,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     rectPaintEvents.add(new RectPaintHistoryEvent(r.left, r.top, r.right, r.bottom, paint));
 
     if (targetBitmap != null) {
-      ShadowBitmap shadowTargetBitmap = Shadows.shadowOf(targetBitmap);
+      ShadowLegacyBitmap shadowTargetBitmap = Shadow.extract(targetBitmap);
       shadowTargetBitmap.drawRect(r, paint);
     }
   }
