@@ -15,7 +15,7 @@ public class ShadowPathMeasure {
   @Implementation
   protected void __constructor__(Path path, boolean forceClosed) {
     if (path != null) {
-      ShadowPath shadowPath = (ShadowPath) Shadow.extract(path);
+      ShadowLegacyPath shadowPath = Shadow.extract(path);
       mOriginalPathIterator =
           new CachedPathIteratorFactory(shadowPath.getJavaShape().getPathIterator(null));
     }
