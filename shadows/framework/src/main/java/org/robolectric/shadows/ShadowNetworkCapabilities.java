@@ -19,7 +19,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectic provides overrides for fetching and updating transport. */
-@Implements(value = NetworkCapabilities.class, minSdk = LOLLIPOP)
+@Implements(value = NetworkCapabilities.class, minSdk = LOLLIPOP, looseSignatures = true)
 public class ShadowNetworkCapabilities {
 
   @RealObject protected NetworkCapabilities realNetworkCapabilities;
@@ -90,10 +90,12 @@ public class ShadowNetworkCapabilities {
 
   /** Sets the LinkDownstreamBandwidthKbps of the NetworkCapabilities. */
   @HiddenApi
-  @Implementation(minSdk = Q)
-  public NetworkCapabilities setLinkDownstreamBandwidthKbps(int kbps) {
+  @Implementation
+  public Object setLinkDownstreamBandwidthKbps(Object kbps) {
+    // Loose signatures is necessary because the return type of setLinkDownstreamBandwidthKbps
+    // changed from void to NetworkCapabilities starting from API 28 (Pie)
     return reflector(NetworkCapabilitiesReflector.class, realNetworkCapabilities)
-        .setLinkDownstreamBandwidthKbps(kbps);
+        .setLinkDownstreamBandwidthKbps((int) kbps);
   }
 
   @ForType(NetworkCapabilities.class)

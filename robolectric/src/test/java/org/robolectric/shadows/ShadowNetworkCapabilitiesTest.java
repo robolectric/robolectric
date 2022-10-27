@@ -107,4 +107,11 @@ public class ShadowNetworkCapabilitiesTest {
     assertThat(wifiInfo.getSSID()).isEqualTo(String.format("\"%s\"", fakeSsid));
     assertThat(wifiInfo.getBSSID()).isEqualTo(fakeBssid);
   }
+
+  @Test
+  public void setLinkDownstreamBandwidthKbps() {
+    NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(networkCapabilities).setLinkDownstreamBandwidthKbps(100);
+    assertThat(networkCapabilities.getLinkDownstreamBandwidthKbps()).isEqualTo(100);
+  }
 }
