@@ -13,17 +13,18 @@ import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
-import android.content.Intent;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.os.WorkSource;
 import java.util.Collections;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -63,6 +64,29 @@ public class ShadowAlarmManager {
     internalSet(type, triggerAtTime, listener, targetHandler);
   }
 
+  @Implementation(minSdk = LOLLIPOP)
+  protected void set(
+      int type,
+      long triggerAtMillis,
+      long windowMillis,
+      long intervalMillis,
+      PendingIntent operation,
+      WorkSource workSource) {
+    internalSet(type, triggerAtMillis, 0L, operation, null);
+  }
+
+  @Implementation(minSdk = N)
+  protected void set(
+      int type,
+      long triggerAtMillis,
+      long windowLengthMillis,
+      long intervalMillis,
+      OnAlarmListener listener,
+      Handler targetHandler,
+      WorkSource workSource) {
+    internalSet(type, triggerAtMillis, listener, targetHandler);
+  }
+
   @Implementation(minSdk = KITKAT)
   protected void setExact(int type, long triggerAtTime, PendingIntent operation) {
     internalSet(type, triggerAtTime, 0L, operation, null);
@@ -72,6 +96,17 @@ public class ShadowAlarmManager {
   protected void setExact(
       int type, long triggerAtTime, String tag, OnAlarmListener listener, Handler targetHandler) {
     internalSet(type, triggerAtTime, listener, targetHandler);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void setExact(
+      int type,
+      long triggerAtTime,
+      String tag,
+      Executor executor,
+      WorkSource workSource,
+      OnAlarmListener listener) {
+    internalSet(type, triggerAtTime, executor, listener);
   }
 
   @Implementation(minSdk = KITKAT)
@@ -135,8 +170,8 @@ public class ShadowAlarmManager {
       long interval,
       PendingIntent operation,
       PendingIntent showIntent) {
-    cancel(operation);
     synchronized (scheduledAlarms) {
+      cancelInternal(operation);
       scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent));
       Collections.sort(scheduledAlarms);
     }
@@ -149,8 +184,8 @@ public class ShadowAlarmManager {
       PendingIntent operation,
       PendingIntent showIntent,
       boolean allowWhileIdle) {
-    cancel(operation);
     synchronized (scheduledAlarms) {
+      cancelInternal(operation);
       scheduledAlarms.add(
           new ScheduledAlarm(type, triggerAtTime, interval, operation, showIntent, allowWhileIdle));
       Collections.sort(scheduledAlarms);
@@ -159,9 +194,18 @@ public class ShadowAlarmManager {
 
   private void internalSet(
       int type, long triggerAtTime, OnAlarmListener listener, Handler handler) {
-    cancel(listener);
     synchronized (scheduledAlarms) {
+      cancelInternal(listener);
       scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, 0L, listener, handler));
+      Collections.sort(scheduledAlarms);
+    }
+  }
+
+  private void internalSet(
+      int type, long triggerAtTime, Executor executor, OnAlarmListener listener) {
+    synchronized (scheduledAlarms) {
+      cancelInternal(listener);
+      scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, 0L, executor, listener));
       Collections.sort(scheduledAlarms);
     }
   }
@@ -191,31 +235,23 @@ public class ShadowAlarmManager {
 
   @Implementation
   protected void cancel(PendingIntent operation) {
-    ShadowPendingIntent shadowPendingIntent = Shadow.extract(operation);
-    final Intent toRemove = shadowPendingIntent.getSavedIntent();
-    final int requestCode = shadowPendingIntent.getRequestCode();
-    for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
-      if (scheduledAlarm.operation != null) {
-        ShadowPendingIntent scheduledShadowPendingIntent = Shadow.extract(scheduledAlarm.operation);
-        final Intent scheduledIntent = scheduledShadowPendingIntent.getSavedIntent();
-        final int scheduledRequestCode = scheduledShadowPendingIntent.getRequestCode();
-        if (scheduledIntent.filterEquals(toRemove) && scheduledRequestCode == requestCode) {
-          scheduledAlarms.remove(scheduledAlarm);
-          break;
-        }
-      }
-    }
+    cancelInternal(operation);
   }
 
   @Implementation(minSdk = N)
   protected void cancel(OnAlarmListener listener) {
-    for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
-      if (scheduledAlarm.onAlarmListener != null) {
-        if (scheduledAlarm.onAlarmListener.equals(listener)) {
-          scheduledAlarms.remove(scheduledAlarm);
-          break;
-        }
-      }
+    cancelInternal(listener);
+  }
+
+  private void cancelInternal(PendingIntent operation) {
+    synchronized (scheduledAlarms) {
+      scheduledAlarms.removeIf(alarm -> operation.equals(alarm.operation));
+    }
+  }
+
+  private void cancelInternal(OnAlarmListener listener) {
+    synchronized (scheduledAlarms) {
+      scheduledAlarms.removeIf(alarm -> listener.equals(alarm.onAlarmListener));
     }
   }
 
@@ -247,6 +283,7 @@ public class ShadowAlarmManager {
 
     public final OnAlarmListener onAlarmListener;
     public final Handler handler;
+    public final Executor executor;
 
     public ScheduledAlarm(
         int type, long triggerAtTime, PendingIntent operation, PendingIntent showIntent) {
@@ -259,7 +296,7 @@ public class ShadowAlarmManager {
         long interval,
         PendingIntent operation,
         PendingIntent showIntent) {
-      this(type, triggerAtTime, interval, operation, showIntent, null, null, false);
+      this(type, triggerAtTime, interval, operation, showIntent, null, null, null, false);
     }
 
     public ScheduledAlarm(
@@ -269,7 +306,7 @@ public class ShadowAlarmManager {
         PendingIntent operation,
         PendingIntent showIntent,
         boolean allowWhileIdle) {
-      this(type, triggerAtTime, interval, operation, showIntent, null, null, allowWhileIdle);
+      this(type, triggerAtTime, interval, operation, showIntent, null, null, null, allowWhileIdle);
     }
 
     private ScheduledAlarm(
@@ -278,7 +315,16 @@ public class ShadowAlarmManager {
         long interval,
         OnAlarmListener onAlarmListener,
         Handler handler) {
-      this(type, triggerAtTime, interval, null, null, onAlarmListener, handler, false);
+      this(type, triggerAtTime, interval, null, null, onAlarmListener, null, handler, false);
+    }
+
+    private ScheduledAlarm(
+        int type,
+        long triggerAtTime,
+        long interval,
+        Executor executor,
+        OnAlarmListener onAlarmListener) {
+      this(type, triggerAtTime, interval, null, null, onAlarmListener, executor, null, false);
     }
 
     private ScheduledAlarm(
@@ -288,6 +334,7 @@ public class ShadowAlarmManager {
         PendingIntent operation,
         PendingIntent showIntent,
         OnAlarmListener onAlarmListener,
+        Executor executor,
         Handler handler,
         boolean allowWhileIdle) {
       this.type = type;
@@ -296,6 +343,7 @@ public class ShadowAlarmManager {
       this.interval = interval;
       this.showIntent = showIntent;
       this.onAlarmListener = onAlarmListener;
+      this.executor = executor;
       this.handler = handler;
       this.allowWhileIdle = allowWhileIdle;
     }

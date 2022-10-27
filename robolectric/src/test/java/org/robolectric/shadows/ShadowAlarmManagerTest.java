@@ -113,11 +113,37 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
+  @Config(minSdk = LOLLIPOP)
+  public void set_shouldRegisterAlarm_worksource() {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME,
+        0L,
+        0L,
+        0L,
+        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0),
+        null);
+
+    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+    assertThat(scheduledAlarm).isNotNull();
+    assertThat(scheduledAlarm.allowWhileIdle).isFalse();
+  }
+
+  @Test
   @Config(minSdk = N)
   public void set_shouldRegisterAlarm_forApi24() {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
     OnAlarmListener listener = () -> {};
     alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, "tag", listener, null);
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void set_shouldRegisterAlarm_listener_handler_worksource() {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    OnAlarmListener listener = () -> {};
+    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0L, 0L, 0L, listener, null, null);
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
 
@@ -166,6 +192,15 @@ public class ShadowAlarmManagerTest {
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
     OnAlarmListener listener = () -> {};
     alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, "tag", listener, null);
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setExact_shouldRegisterAlarm_listener() {
+    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+    OnAlarmListener listener = () -> {};
+    alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, "tag", Runnable::run, null, listener);
     assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
   }
 
