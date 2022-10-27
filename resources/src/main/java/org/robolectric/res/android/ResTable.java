@@ -2695,11 +2695,7 @@ public class ResTable {
   }
 
   public void lock() {
-    try {
-      mLock.acquire();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    mLock.acquireUninterruptibly();
   }
 
   public void unlock() {
