@@ -202,7 +202,7 @@ public class ShadowTypeface {
 
   @HiddenApi
   @Implementation(minSdk = Q, maxSdk = R)
-  public static void initSystemDefaultTypefaces(
+  protected static void initSystemDefaultTypefaces(
       Object systemFontMap, Object fallbacks, Object aliases) {}
 
   @Resetter
