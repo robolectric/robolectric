@@ -462,7 +462,7 @@ public class ShadowLegacyPath extends ShadowPath {
     ShadowLegacyPath shadowSrc = extract(src);
     if (!shadowSrc.isSimplePath) isSimplePath = false;
 
-    ShadowMatrix shadowMatrix = extract(matrix);
+    ShadowLegacyMatrix shadowMatrix = extract(matrix);
     ShadowLegacyPath.addPath(realObject, src, shadowMatrix.getAffineTransform());
   }
 
@@ -512,7 +512,7 @@ public class ShadowLegacyPath extends ShadowPath {
 
   @Implementation
   protected void transform(Matrix matrix, Path dst) {
-    ShadowMatrix shadowMatrix = extract(matrix);
+    ShadowLegacyMatrix shadowMatrix = extract(matrix);
 
     if (shadowMatrix.hasPerspective()) {
       Log.w(TAG, "android.graphics.Path#transform() only supports affine transformations.");
