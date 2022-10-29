@@ -64,7 +64,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link AppOpsManager}. */
-@Implements(value = AppOpsManager.class, looseSignatures = true)
+@Implements(value = AppOpsManager.class)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
@@ -415,18 +415,18 @@ public class ShadowAppOpsManager {
   @RequiresApi(api = S)
   @Implementation(minSdk = S)
   protected int noteProxyOpNoThrow(
-      Object op, Object attributionSource, Object message, Object ignoredSkipProxyOperation) {
-    Preconditions.checkArgument(op instanceof Integer);
+      int op,
+      @ClassName(value = "android.content.AttributionSource") Object attributionSource,
+      String message,
+      boolean ignoredSkipProxyOperation) {
     Preconditions.checkArgument(attributionSource instanceof AttributionSource);
-    Preconditions.checkArgument(message == null || message instanceof String);
-    Preconditions.checkArgument(ignoredSkipProxyOperation instanceof Boolean);
     AttributionSource castedAttributionSource = (AttributionSource) attributionSource;
     return noteProxyOpNoThrow(
-        (int) op,
+        op,
         castedAttributionSource.getNextPackageName(),
         castedAttributionSource.getNextUid(),
         castedAttributionSource.getNextAttributionTag(),
-        (String) message);
+        message);
   }
 
   @Implementation

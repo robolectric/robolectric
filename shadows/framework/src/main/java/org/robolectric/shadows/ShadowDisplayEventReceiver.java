@@ -32,7 +32,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /**
@@ -284,7 +283,7 @@ public class ShadowDisplayEventReceiver {
         long timestampNanos,
         long physicalDisplayId,
         int frame,
-        @WithType("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData);
+        @ClassName("android.view.DisplayEventReceiver$VsyncEventData") Object vsyncEventData);
 
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();
@@ -300,14 +299,14 @@ public class ShadowDisplayEventReceiver {
 
     @Constructor
     Object newVsyncEventData(
-        @WithType("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
+        @ClassName("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
             Object frameTimelineArray,
         int preferredFrameTimelineIndex,
         long frameInterval);
 
     @Constructor
     Object newVsyncEventData(
-        @WithType("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
+        @ClassName("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
             Object frameTimelineArray,
         int preferredFrameTimelineIndex,
         int timelineArrayLength,

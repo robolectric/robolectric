@@ -45,10 +45,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 
 /** Shadow of {@link UsageStatsManager}. */
-@Implements(
-    value = UsageStatsManager.class,
-    minSdk = Build.VERSION_CODES.LOLLIPOP,
-    looseSignatures = true)
+@Implements(value = UsageStatsManager.class, minSdk = Build.VERSION_CODES.LOLLIPOP)
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =
       UsageStatsManager.STANDBY_BUCKET_ACTIVE;
@@ -596,7 +593,7 @@ public class ShadowUsageStatsManager {
   @SuppressWarnings("unchecked")
   @Implementation(minSdk = TIRAMISU)
   protected Object /* List<BroadcastResponseStats> */ queryBroadcastResponseStats(
-      @Nullable Object packageName, Object id) {
+      @Nullable String packageName, long id) {
     List<BroadcastResponseStats> result = new ArrayList<>();
     for (Map.Entry<String, Map<Long, Object /*BroadcastResponseStats*/>> entry :
         appBroadcastStats.entrySet()) {

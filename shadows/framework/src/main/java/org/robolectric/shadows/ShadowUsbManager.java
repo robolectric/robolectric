@@ -32,7 +32,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link android.hardware.usb.UsbManager}. */
-@Implements(value = UsbManager.class, looseSignatures = true)
+@Implements(value = UsbManager.class)
 public class ShadowUsbManager {
 
   @RealObject private UsbManager realUsbManager;
@@ -261,22 +261,23 @@ public class ShadowUsbManager {
 
   @Implementation(minSdk = M)
   @HiddenApi
-  protected /* UsbPortStatus */ Object getPortStatus(/* UsbPort */ Object port) {
+  protected /* UsbPortStatus */ Object getPortStatus(
+      @ClassName(value = "android.hardware.usb.UsbPort") Object port) {
     return usbPortStatuses.get(port);
   }
 
   @Implementation(minSdk = M)
   @HiddenApi
   protected void setPortRoles(
-      /* UsbPort */ Object port, /* int */ Object powerRole, /* int */ Object dataRole) {
+      @ClassName(value = "android.hardware.usb.UsbPort") Object port, int powerRole, int dataRole) {
     UsbPortStatus status = usbPortStatuses.get(port);
     usbPortStatuses.put(
         (UsbPort) port,
         (UsbPortStatus)
             createUsbPortStatus(
                 status.getCurrentMode(),
-                (int) powerRole,
-                (int) dataRole,
+                powerRole,
+                dataRole,
                 status.getSupportedRoleCombinations()));
     RuntimeEnvironment.getApplication()
         .sendBroadcast(new Intent(UsbManager.ACTION_USB_PORT_CHANGED));

@@ -76,10 +76,9 @@ import org.robolectric.shadows.ShadowInstrumentation.TargetAndRequestCode;
 import org.robolectric.shadows.ShadowLoadedApk._LoadedApk_;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 @SuppressWarnings("NewApi")
-@Implements(value = Activity.class, looseSignatures = true)
+@Implements(value = Activity.class)
 public class ShadowActivity extends ShadowContextThemeWrapper {
 
   @RealObject protected Activity realActivity;
@@ -130,7 +129,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public void callAttach(
       Intent intent,
       @Nullable Bundle activityOptions,
-      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+      @Nullable @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     callAttach(
         intent,
@@ -142,7 +141,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   public void callAttach(
       Intent intent,
       @Nullable Bundle activityOptions,
-      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+      @Nullable @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       @Nullable Configuration overrideConfig) {
     Application application = RuntimeEnvironment.getApplication();

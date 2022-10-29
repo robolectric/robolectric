@@ -1,14 +1,14 @@
-package org.robolectric.util.reflector;
+package org.robolectric.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Parameters with types that can't be resolved at compile time may be annotated @WithType. */
+/** Parameters with types that can't be resolved at compile time may be annotated @ClassName. */
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WithType {
+public @interface ClassName {
 
   /**
    * The class name intended for this parameter.

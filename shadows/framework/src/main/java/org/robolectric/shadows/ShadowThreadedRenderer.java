@@ -12,15 +12,14 @@ import org.robolectric.shadow.api.Shadow;
 @Implements(
     className = "android.view.ThreadedRenderer",
     isInAndroidSdk = false,
-    looseSignatures = true,
     minSdk = O,
     maxSdk = P)
 public class ShadowThreadedRenderer {
 
   @Implementation
   protected static Bitmap createHardwareBitmap(
-      /*RenderNode*/ Object node, /*int*/ Object width, /*int*/ Object height) {
-    return createHardwareBitmap((int) width, (int) height);
+      @ClassName(value = "android.view.RenderNode") Object node, int width, int height) {
+    return createHardwareBitmap(width, height);
   }
 
   private static Bitmap createHardwareBitmap(int width, int height) {

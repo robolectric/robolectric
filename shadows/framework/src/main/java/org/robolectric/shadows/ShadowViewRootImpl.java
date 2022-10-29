@@ -40,7 +40,6 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.util.reflector.WithType;
 
 @Implements(value = ViewRootImpl.class, isInAndroidSdk = false)
 public class ShadowViewRootImpl {
@@ -401,7 +400,7 @@ public class ShadowViewRootImpl {
         Rect stableInsets,
         Rect outsets,
         boolean reportDraw,
-        @WithType("android.util.MergedConfiguration") Object mergedConfiguration,
+        @ClassName("android.util.MergedConfiguration") Object mergedConfiguration,
         Rect backDropFrame,
         boolean forceLayout,
         boolean alwaysConsumeNavBar,
@@ -416,12 +415,12 @@ public class ShadowViewRootImpl {
         Rect stableInsets,
         Rect outsets,
         boolean reportDraw,
-        @WithType("android.util.MergedConfiguration") Object mergedConfiguration,
+        @ClassName("android.util.MergedConfiguration") Object mergedConfiguration,
         Rect backDropFrame,
         boolean forceLayout,
         boolean alwaysConsumeNavBar,
         int displayId,
-        @WithType("android.view.DisplayCutout$ParcelableWrapper") Object displayCutout);
+        @ClassName("android.view.DisplayCutout$ParcelableWrapper") Object displayCutout);
 
     default void dispatchResized(Rect frame) {
       Rect emptyRect = new Rect(0, 0, 0, 0);

@@ -27,7 +27,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
-@Implements(value = SensorManager.class, looseSignatures = true)
+@Implements(value = SensorManager.class)
 public class ShadowSensorManager {
   public boolean forceListenersToFail = false;
   private final Multimap<Integer, Sensor> sensorMap =
@@ -241,7 +241,8 @@ public class ShadowSensorManager {
   }
 
   @Implementation(minSdk = O)
-  protected Object createDirectChannel(MemoryFile mem) {
+  protected @ClassName("android.hardware.SensorDirectChannel") Object createDirectChannel(
+      MemoryFile mem) {
     return ReflectionHelpers.callConstructor(SensorDirectChannel.class,
         ClassParameter.from(SensorManager.class, realObject),
         ClassParameter.from(int.class, 0),

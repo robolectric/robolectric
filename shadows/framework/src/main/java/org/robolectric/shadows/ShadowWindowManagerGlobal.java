@@ -31,10 +31,7 @@ import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
-@Implements(
-    value = WindowManagerGlobal.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
   private static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
   private static IWindowSession windowSession;

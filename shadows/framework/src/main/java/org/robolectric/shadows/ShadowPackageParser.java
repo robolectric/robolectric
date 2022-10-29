@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowLog.LogItem;
@@ -24,7 +25,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.util.reflector.WithType;
 
 @Implements(value = PackageParser.class, isInAndroidSdk = false)
 @SuppressWarnings("NewApi")
@@ -108,8 +108,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         HashSet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState")
-            Object state);
+        @ClassName("android.content.pm.PackageUserState") Object state);
 
     // LOLLIPOP_MR1
     @Static
@@ -120,8 +119,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         ArraySet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState")
-            Object state);
+        @ClassName("android.content.pm.PackageUserState") Object state);
 
     @Static
     PackageInfo generatePackageInfo(
@@ -131,7 +129,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         Set<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState") Object state);
+        @ClassName("android.content.pm.PackageUserState") Object state);
 
     default PackageInfo generatePackageInfo(
         PackageParser.Package p,

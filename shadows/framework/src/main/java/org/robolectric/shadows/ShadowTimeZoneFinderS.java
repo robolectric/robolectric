@@ -12,17 +12,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for TimeZoneFinder on S or above. */
-@Implements(
-    value = TimeZoneFinder.class,
-    minSdk = S,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(className = "android.timezone.TimeZoneFinder", minSdk = S, isInAndroidSdk = false)
 public class ShadowTimeZoneFinderS {
 
   private static final String TZLOOKUP_PATH = "/usr/share/zoneinfo/tzlookup.xml";
 
   @Implementation
-  protected static Object getInstance() {
+  protected static @ClassName("android.timezone.TimeZoneFinder") Object getInstance() {
     return TimeZoneFinder.createInstanceForTests(readTzlookup());
   }
 

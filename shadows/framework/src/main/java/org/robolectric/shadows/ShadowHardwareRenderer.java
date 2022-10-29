@@ -40,6 +40,7 @@ public class ShadowHardwareRenderer {
   // need to use loose signatures here to account for signature changes
   @Implementation(minSdk = S)
   protected static long nCreateProxy(Object translucent, Object rootRenderNode) {
+    // TODO Find an approach to support the same method with disconnected range
     return nCreateProxy((boolean) translucent, (long) rootRenderNode);
   }
 

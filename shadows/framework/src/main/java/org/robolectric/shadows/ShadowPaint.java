@@ -33,7 +33,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Paint.class, looseSignatures = true)
+@Implements(value = Paint.class)
 public class ShadowPaint {
 
   private int color;
@@ -533,8 +533,11 @@ public class ShadowPaint {
   }
 
   @Implementation(minSdk = N, maxSdk = N_MR1)
-  protected int nGetFontMetricsInt(Object nativePaint, Object nativeTypeface, Object fmi) {
-    return nGetFontMetricsInt((long) nativePaint, (FontMetricsInt) fmi);
+  protected int nGetFontMetricsInt(
+      long nativePaint,
+      long nativeTypeface,
+      @ClassName(value = "android.graphics.Paint$FontMetricsInt") Object fmi) {
+    return nGetFontMetricsInt(nativePaint, (FontMetricsInt) fmi);
   }
 
   @Implementation(maxSdk = M)

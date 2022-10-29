@@ -71,7 +71,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 @Implements(value = Instrumentation.class)
 public class ShadowInstrumentation {
@@ -1068,8 +1067,8 @@ public class ShadowInstrumentation {
         Context instrContext,
         Context appContext,
         ComponentName component,
-        @WithType("android.app.IInstrumentationWatcher") Object watcher,
-        @WithType("android.app.IUiAutomationConnection") Object uiAutomationConnection);
+        @ClassName("android.app.IInstrumentationWatcher") Object watcher,
+        @ClassName("android.app.IUiAutomationConnection") Object uiAutomationConnection);
 
     @Direct
     ActivityResult execStartActivity(

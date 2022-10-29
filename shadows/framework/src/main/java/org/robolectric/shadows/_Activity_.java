@@ -19,7 +19,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 /** Accessor interface for {@link Activity}'s internals. */
 @ForType(Activity.class)
@@ -41,7 +40,7 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration);
 
@@ -58,10 +57,10 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor);
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor);
 
   // <= M
   void attach(
@@ -76,11 +75,11 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration,
       String referer,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor);
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor);
 
   // <= N_MR1
   void attach(
@@ -95,11 +94,11 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration,
       String referer,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
       Window window);
 
   // <= P
@@ -115,13 +114,13 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration,
       String referer,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
       Window window,
-      @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback);
+      @ClassName("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback);
 
   // <= R
   void attach(
@@ -136,13 +135,13 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration,
       String referer,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
       Window window,
-      @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
+      @ClassName("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
       IBinder assistToken);
 
   // >= S
@@ -158,13 +157,13 @@ public interface _Activity_ {
       CharSequence title,
       Activity parent,
       String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       Configuration configuration,
       String referer,
-      @WithType("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object iVoiceInteractor,
       Window window,
-      @WithType("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
+      @ClassName("android.view.ViewRootImpl$ActivityConfigCallback") Object activityConfigCallback,
       IBinder assistToken,
       IBinder shareableActivityToken);
 
@@ -178,7 +177,7 @@ public interface _Activity_ {
       ActivityInfo activityInfo,
       IBinder token,
       CharSequence activityTitle,
-      @WithType("android.app.Activity$NonConfigurationInstances")
+      @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     if (apiLevel == Build.VERSION_CODES.KITKAT) {
@@ -380,7 +379,7 @@ public interface _Activity_ {
   void setLastNonConfigurationInstances(Object nonConfigInstance);
 
   void setVoiceInteractor(
-      @WithType("com.android.internal.app.IVoiceInteractor") Object voiceInteractor);
+      @ClassName("com.android.internal.app.IVoiceInteractor") Object voiceInteractor);
 
   @Accessor("mWindowAdded")
   boolean getWindowAdded();

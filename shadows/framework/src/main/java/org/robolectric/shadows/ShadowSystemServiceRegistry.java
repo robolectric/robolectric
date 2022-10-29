@@ -15,7 +15,6 @@ import org.robolectric.util.reflector.ForType;
 @Implements(
   className = "android.app.SystemServiceRegistry",
   isInAndroidSdk = false,
-  looseSignatures = true,
   minSdk = Build.VERSION_CODES.M
 )
 public class ShadowSystemServiceRegistry {
@@ -128,7 +127,8 @@ public class ShadowSystemServiceRegistry {
   }
 
   @Implementation(minSdk = O)
-  protected static void onServiceNotFound(/* ServiceNotFoundException */ Object e0) {
+  protected static void onServiceNotFound(
+      @ClassName(value = "android.os.ServiceManager.ServiceNotFoundException") Object e0) {
     // otherwise the full stacktrace might be swallowed...
     Exception e = (Exception) e0;
     e.printStackTrace();

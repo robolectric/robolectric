@@ -81,7 +81,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
-@Implements(value = TelephonyManager.class, looseSignatures = true)
+@Implements(value = TelephonyManager.class)
 public class ShadowTelephonyManager {
 
   @RealObject protected TelephonyManager realTelephonyManager;
@@ -205,12 +205,13 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = S)
   @HiddenApi
   public void bootstrapAuthenticationRequest(
-      Object appType,
-      Object nafId,
-      Object securityProtocol,
-      Object forceBootStrapping,
-      Object e,
-      Object callback) {
+      int appType,
+      Uri nafId,
+      @ClassName(value = "android.telephony.gba.UaSecurityProtocolIdentifier")
+          Object securityProtocol,
+      boolean forceBootStrapping,
+      Executor e,
+      @ClassName(value = "android.telephony.BootstrapAuthenticationCallback") Object callback) {
     this.callback = callback;
   }
 
@@ -261,7 +262,8 @@ public class ShadowTelephonyManager {
 
   @Implementation(minSdk = S)
   public void registerTelephonyCallback(
-      /*Executor*/ Object executor, /*TelephonyCallback*/ Object callback) {
+      @ClassName(value = "java.util.concurrent.Executor") Object executor,
+      @ClassName(value = "android.telephony.TelephonyCallback") Object callback) {
     Preconditions.checkArgument(executor instanceof Executor);
     Preconditions.checkArgument(callback instanceof TelephonyCallback);
     lastTelephonyCallback = callback;
@@ -271,15 +273,15 @@ public class ShadowTelephonyManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected void registerTelephonyCallback(
-      /*int*/ Object includeLocationData, /*Executor*/
-      Object executor, /*TelephonyCallback*/
-      Object callback) {
-    Preconditions.checkArgument(includeLocationData instanceof Integer);
+      int includeLocationData,
+      @ClassName(value = "java.util.concurrent.Executor") Object executor,
+      @ClassName(value = "android.telephony.TelephonyCallback") Object callback) {
     registerTelephonyCallback(executor, callback);
   }
 
   @Implementation(minSdk = S)
-  public void unregisterTelephonyCallback(/*TelephonyCallback*/ Object callback) {
+  public void unregisterTelephonyCallback(
+      @ClassName(value = "android.telephony.TelephonyCallback") Object callback) {
     telephonyCallbackRegistrations.remove(callback);
   }
 
@@ -733,8 +735,9 @@ public class ShadowTelephonyManager {
    * TelephonyManager#NETWORK_TYPE_UNKNOWN} if it was never called.
    */
   @Implementation(minSdk = Q)
-  protected void requestCellInfoUpdate(Object cellInfoExecutor, Object cellInfoCallback) {
-    Executor executor = (Executor) cellInfoExecutor;
+  protected void requestCellInfoUpdate(
+      Executor executor,
+      @ClassName(value = "android.telephony.CellInfoCallback") Object cellInfoCallback) {
     if (callbackCellInfos == null) {
       // ignore
     } else if (requestCellInfoUpdateErrorCode != 0 || requestCellInfoUpdateDetail != null) {
@@ -827,7 +830,8 @@ public class ShadowTelephonyManager {
   }
 
   @CallSuper
-  protected void initTelephonyCallback(Object callback) {
+  protected void initTelephonyCallback(
+      @ClassName(value = "android.telephony.TelephonyCallback") Object callback) {
     if (VERSION.SDK_INT < S) {
       return;
     }

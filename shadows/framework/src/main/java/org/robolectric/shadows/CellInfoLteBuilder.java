@@ -12,7 +12,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 /** Builder for {@link android.telephony.CellInfoLte}. */
 public class CellInfoLteBuilder {
@@ -113,7 +112,7 @@ public class CellInfoLteBuilder {
         long timeStamp,
         CellIdentityLte cellIdentity,
         CellSignalStrengthLte cellSignalStrength,
-        @WithType("android.telephony.CellConfigLte") Object cellConfigLte);
+        @ClassName("android.telephony.CellConfigLte") Object cellConfigLte);
 
     @Accessor("mCellIdentityLte")
     void setCellIdentity(CellIdentityLte cellIdentity);

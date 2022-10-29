@@ -19,7 +19,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for android.text.StaticLayout */
-@Implements(value = StaticLayout.class, looseSignatures = true)
+@Implements(value = StaticLayout.class)
 public class ShadowStaticLayout {
 
   @ForType(className = "android.text.StaticLayout$LineBreaks")
@@ -46,37 +46,37 @@ public class ShadowStaticLayout {
   @HiddenApi
   @Implementation(minSdk = M, maxSdk = O_MR1)
   public static int nComputeLineBreaks(
-      Object nativePtr,
-      Object recycle,
-      Object recycleBreaks,
-      Object recycleWidths,
-      Object recycleFlags,
-      Object recycleLength) {
+      long nativePtr,
+      @ClassName(value = "android.text.StaticLayout$LineBreaks") Object recycle,
+      int[] recycleBreaks,
+      float[] recycleWidths,
+      int[] recycleFlags,
+      int recycleLength) {
     return 1;
   }
 
   @HiddenApi
   @Implementation(minSdk = P, maxSdk = P)
   protected static int nComputeLineBreaks(
-      Object nativePtr,
-      Object text,
-      Object measuredTextPtr,
-      Object length,
-      Object firstWidth,
-      Object firstWidthLineCount,
-      Object restWidth,
-      Object variableTabStops,
-      Object defaultTabStop,
-      Object indentsOffset,
-      Object recycle,
-      Object recycleLength,
-      Object recycleBreaks,
-      Object recycleWidths,
-      Object recycleAscents,
-      Object recycleDescents,
-      Object recycleFlags,
-      Object charWidths) {
-    reflector(LineBreaksReflector.class, recycle).setBreaks(new int[] {((char[]) text).length});
+      long nativePtr,
+      char[] text,
+      long measuredTextPtr,
+      int length,
+      float firstWidth,
+      int firstWidthLineCount,
+      float restWidth,
+      int[] variableTabStops,
+      int defaultTabStop,
+      int indentsOffset,
+      @ClassName(value = "android.text.StaticLayout$LineBreaks") Object recycle,
+      int recycleLength,
+      int[] recycleBreaks,
+      float[] recycleWidths,
+      float[] recycleAscents,
+      float[] recycleDescents,
+      int[] recycleFlags,
+      float[] charWidths) {
+    reflector(LineBreaksReflector.class, recycle).setBreaks(new int[] {text.length});
     return 1;
   }
 }

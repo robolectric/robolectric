@@ -14,7 +14,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
-import org.robolectric.util.reflector.WithType;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
@@ -91,7 +90,7 @@ public class ShadowWifiInfo {
     @Direct
     void setSSID(String ssid);
 
-    void setSSID(@WithType("android.net.wifi.WifiSsid") Object ssid);
+    void setSSID(@ClassName("android.net.wifi.WifiSsid") Object ssid);
 
     @Direct
     void setBSSID(String bssid);

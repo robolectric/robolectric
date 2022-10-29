@@ -50,7 +50,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = AudioManager.class, looseSignatures = true)
+@Implements(value = AudioManager.class)
 public class ShadowAudioManager {
   @RealObject AudioManager realAudioManager;
 
@@ -883,7 +883,8 @@ public class ShadowAudioManager {
   @HiddenApi
   @Implementation(minSdk = P)
   @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING)
-  protected int registerAudioPolicy(@NonNull Object audioPolicy) {
+  protected int registerAudioPolicy(
+      @NonNull @ClassName(value = "android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     String id = getIdForAudioPolicy(audioPolicy);
@@ -897,7 +898,8 @@ public class ShadowAudioManager {
 
   @HiddenApi
   @Implementation(minSdk = Q)
-  protected void unregisterAudioPolicy(@NonNull Object audioPolicy) {
+  protected void unregisterAudioPolicy(
+      @NonNull @ClassName(value = "android.media.audiopolicy.AudioPolicy") Object audioPolicy) {
     Preconditions.checkNotNull(audioPolicy, "Illegal null AudioPolicy argument");
     AudioPolicy policy = (AudioPolicy) audioPolicy;
     registeredAudioPolicies.remove(getIdForAudioPolicy(policy));

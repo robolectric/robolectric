@@ -38,6 +38,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.versioning.AndroidVersionInitTools;
 
@@ -162,7 +163,7 @@ public class SdkStore {
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
       if (sdkMethod == null) {
-        return "No such method in " + className;
+        return "No such method " + methodElement + " in " + className;
       }
 
       MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
@@ -372,8 +373,14 @@ public class SdkStore {
       for (VariableElement variableElement : methodElement.getParameters()) {
         TypeMirror varTypeMirror = variableElement.asType();
         String paramType = canonicalize(varTypeMirror);
-        String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
-        paramTypes.add(paramTypeWithoutGenerics);
+        ClassName className = variableElement.getAnnotation(ClassName.class);
+        if (className != null) {
+          // If this parameter has ClassName annotation, we need to save its type
+          // based on ClassName value.
+          paramTypes.add(typeWithoutGenerics(className.value()));
+        } else {
+          paramTypes.add(typeWithoutGenerics(paramType));
+        }
       }
     }
 
@@ -433,7 +440,15 @@ public class SdkStore {
 
     public MethodExtraInfo(ExecutableElement methodElement) {
       this.isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
-      this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+      TypeMirror typeMirror = methodElement.getReturnType();
+      WithType withType = methodElement.getAnnotation(WithType.class);
+      if (withType != null) {
+        // If this return type has WithType annotation, we need to save its type
+        // based on WithType value.
+        this.returnType = typeWithoutGenerics(withType.value());
+      } else {
+        this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+      }
     }
 
     @Override
