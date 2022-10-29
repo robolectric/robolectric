@@ -18,8 +18,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
     className = "libcore.util.TimeZoneFinder",
     minSdk = O,
     maxSdk = P,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowTimeZoneFinder {
 
   private static final String TZLOOKUP_PATH = "/usr/share/zoneinfo/tzlookup.xml";

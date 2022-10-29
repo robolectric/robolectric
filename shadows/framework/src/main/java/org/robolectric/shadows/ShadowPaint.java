@@ -21,6 +21,7 @@ import android.graphics.Paint.FontMetricsInt;
 import android.graphics.PathEffect;
 import android.graphics.Shader;
 import android.graphics.Typeface;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -32,7 +33,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = Paint.class, looseSignatures = true)
+@Implements(value = Paint.class)
 public class ShadowPaint {
 
   private int color;
@@ -532,8 +533,11 @@ public class ShadowPaint {
   }
 
   @Implementation(minSdk = N, maxSdk = N_MR1)
-  protected int nGetFontMetricsInt(Object nativePaint, Object nativeTypeface, Object fmi) {
-    return nGetFontMetricsInt((long) nativePaint, (FontMetricsInt) fmi);
+  protected int nGetFontMetricsInt(
+      long nativePaint,
+      long nativeTypeface,
+      @ClassName("android.graphics.Paint.FontMetricsInt") Object fmi) {
+    return nGetFontMetricsInt(nativePaint, (FontMetricsInt) fmi);
   }
 
   @Implementation(maxSdk = M)

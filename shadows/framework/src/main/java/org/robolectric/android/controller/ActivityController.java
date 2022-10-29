@@ -29,6 +29,7 @@ import android.view.WindowManager;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowContextThemeWrapper;
@@ -39,7 +40,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
-import org.robolectric.util.reflector.WithType;
 
 /**
  * ActivityController provides low-level APIs to control activity's lifecycle.
@@ -99,7 +99,7 @@ public class ActivityController<T extends Activity>
 
   private ActivityController<T> attach(
       @Nullable Bundle activityOptions,
-      @Nullable @WithType("android.app.Activity$NonConfigurationInstances")
+      @Nullable @ClassName("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances,
       @Nullable Configuration overrideConfig) {
     if (attached) {

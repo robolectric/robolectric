@@ -21,6 +21,7 @@ import android.view.WindowManagerGlobal;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -31,10 +32,7 @@ import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
-@Implements(
-    value = WindowManagerGlobal.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowWindowManagerGlobal {
   private static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
   private static IWindowSession windowSession;
@@ -119,7 +117,8 @@ public class ShadowWindowManagerGlobal {
   }
 
   @Implementation
-  public static Object getWindowManagerService() throws RemoteException {
+  public static @ClassName("android.view.IWindowManager") Object getWindowManagerService()
+      throws RemoteException {
     IWindowManager service =
         reflector(WindowManagerGlobalReflector.class).getWindowManagerService();
     if (service == null) {

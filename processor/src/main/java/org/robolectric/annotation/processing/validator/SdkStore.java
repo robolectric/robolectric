@@ -38,6 +38,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.versioning.AndroidVersionInitTools;
 
@@ -162,7 +163,7 @@ public class SdkStore {
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
       if (sdkMethod == null) {
-        return "No such method in " + className;
+        return "No such method " + methodElement + " in " + className;
       }
 
       MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
@@ -335,7 +336,7 @@ public class SdkStore {
     }
 
     MethodExtraInfo findMethod(ExecutableElement methodElement, boolean looseSignatures) {
-      MethodInfo methodInfo = new MethodInfo(methodElement);
+      MethodInfo methodInfo = new MethodInfo(methodElement, looseSignatures);
 
       MethodExtraInfo methodExtraInfo = methods.get(methodInfo);
       if (looseSignatures && methodExtraInfo == null) {
@@ -366,14 +367,25 @@ public class SdkStore {
     }
 
     /** Create a MethodInfo from AST (an @Implementation method in a shadow class). */
-    public MethodInfo(ExecutableElement methodElement) {
+    public MethodInfo(ExecutableElement methodElement, boolean looseSignatures) {
       this.name = cleanMethodName(methodElement);
 
       for (VariableElement variableElement : methodElement.getParameters()) {
         TypeMirror varTypeMirror = variableElement.asType();
         String paramType = canonicalize(varTypeMirror);
-        String paramTypeWithoutGenerics = typeWithoutGenerics(paramType);
-        paramTypes.add(paramTypeWithoutGenerics);
+        // If one shadow class is marked by looseSignature, we should ignore
+        // ClassName in its method's signature as it will affect special method
+        // signatures for looseSignature.
+        if (!looseSignatures) {
+          ClassName className = variableElement.getAnnotation(ClassName.class);
+          // If this parameter has ClassName annotation, we need to save its type
+          // based on ClassName value.
+          if (className != null) {
+            paramTypes.add(typeWithoutGenerics(className.value()));
+            continue;
+          }
+        }
+        paramTypes.add(typeWithoutGenerics(paramType));
       }
     }
 
@@ -433,7 +445,14 @@ public class SdkStore {
 
     public MethodExtraInfo(ExecutableElement methodElement) {
       this.isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
-      this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+      ClassName className = methodElement.getAnnotation(ClassName.class);
+      if (className != null) {
+        // If this return type has ClassName annotation, we need to save its type
+        // based on ClassName value.
+        this.returnType = typeWithoutGenerics(className.value());
+      } else {
+        this.returnType = typeWithoutGenerics(canonicalize(methodElement.getReturnType()));
+      }
     }
 
     @Override
