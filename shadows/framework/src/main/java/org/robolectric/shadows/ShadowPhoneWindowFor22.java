@@ -8,11 +8,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.reflector.ForType;
 
-/**
- * Shadow for the API 16-22 PhoneWindow.li
- */
-@Implements(className = "com.android.internal.policy.impl.PhoneWindow", maxSdk = LOLLIPOP_MR1,
-    looseSignatures = true, isInAndroidSdk = false)
+/** Shadow for the API 16-22 PhoneWindow.li */
+@Implements(
+    className = "com.android.internal.policy.impl.PhoneWindow",
+    maxSdk = LOLLIPOP_MR1,
+    isInAndroidSdk = false)
 public class ShadowPhoneWindowFor22 extends ShadowPhoneWindow {
 
   @Override @Implementation(maxSdk = LOLLIPOP_MR1)

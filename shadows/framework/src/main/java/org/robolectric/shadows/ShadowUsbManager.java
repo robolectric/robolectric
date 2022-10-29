@@ -187,7 +187,7 @@ public class ShadowUsbManager {
 
   @Implementation(minSdk = M)
   @HiddenApi
-  protected /* UsbPort[] */ Object getPorts() {
+  protected /*List<UsbPort> from SDK29 and UsbPort[] before SDK29*/ Object getPorts() {
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
       return new ArrayList<>(usbPortStatuses.keySet());
     }
@@ -255,28 +255,29 @@ public class ShadowUsbManager {
    * portId} if present; otherwise returns {@code null}.
    */
   @Nullable
-  public /* UsbPortStatus */ Object getPortStatus(String portId) {
+  public /*ndroid.hardware.usb.UsbPortStatus*/ Object getPortStatus(String portId) {
     return usbPortStatuses.get(usbPorts.get(portId));
   }
 
   @Implementation(minSdk = M)
   @HiddenApi
-  protected /* UsbPortStatus */ Object getPortStatus(/* UsbPort */ Object port) {
+  protected /*android.hardware.usb.UsbPortStatus*/ Object getPortStatus(
+      /*android.hardware.usb.UsbPort*/ Object port) {
     return usbPortStatuses.get(port);
   }
 
   @Implementation(minSdk = M)
   @HiddenApi
   protected void setPortRoles(
-      /* UsbPort */ Object port, /* int */ Object powerRole, /* int */ Object dataRole) {
+      /*android.hardware.usb.UsbPort*/ Object port, Object powerRole, Object dataRole) {
     UsbPortStatus status = usbPortStatuses.get(port);
     usbPortStatuses.put(
         (UsbPort) port,
         (UsbPortStatus)
             createUsbPortStatus(
                 status.getCurrentMode(),
-                (int) powerRole,
-                (int) dataRole,
+                (Integer) powerRole,
+                (Integer) dataRole,
                 status.getSupportedRoleCombinations()));
     RuntimeEnvironment.getApplication()
         .sendBroadcast(new Intent(UsbManager.ACTION_USB_PORT_CHANGED));

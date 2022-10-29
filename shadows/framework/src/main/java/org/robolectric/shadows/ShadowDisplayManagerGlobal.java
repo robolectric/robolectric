@@ -24,6 +24,7 @@ import java.util.TreeMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.annotation.Nullable;
 import org.robolectric.android.Bootstrap;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -34,10 +35,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
-@Implements(
-    value = DisplayManagerGlobal.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = DisplayManagerGlobal.class, isInAndroidSdk = false)
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;
 
@@ -234,14 +232,17 @@ public class ShadowDisplayManagerGlobal {
   @Implementation(minSdk = P)
   @HiddenApi
   protected void setBrightnessConfigurationForUser(
-      Object configObject, Object userId, Object packageName) {
+      @ClassName("android.hardware.display.BrightnessConfiguration") Object configObject,
+      int userId,
+      String packageName) {
     BrightnessConfiguration config = (BrightnessConfiguration) configObject;
-    brightnessConfiguration.put((int) userId, config);
+    brightnessConfiguration.put(userId, config);
   }
 
   @Implementation(minSdk = P)
   @HiddenApi
-  protected Object getBrightnessConfigurationForUser(int userId) {
+  protected @ClassName("android.hardware.display.BrightnessConfiguration") Object
+      getBrightnessConfigurationForUser(int userId) {
     BrightnessConfiguration config = brightnessConfiguration.get(userId);
     if (config != null) {
       return config;
@@ -252,7 +253,8 @@ public class ShadowDisplayManagerGlobal {
 
   @Implementation(minSdk = P)
   @HiddenApi
-  protected Object getDefaultBrightnessConfiguration() {
+  protected @ClassName("android.hardware.display.BrightnessConfiguration") Object
+      getDefaultBrightnessConfiguration() {
     return defaultBrightnessConfiguration;
   }
 

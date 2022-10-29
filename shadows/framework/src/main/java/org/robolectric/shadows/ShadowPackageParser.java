@@ -99,8 +99,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         HashSet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState")
-            Object state);
+        @WithType("android.content.pm.PackageUserState") Object state);
 
     // LOLLIPOP_MR1
     @Static
@@ -111,8 +110,7 @@ public class ShadowPackageParser {
         long firstInstallTime,
         long lastUpdateTime,
         ArraySet<String> grantedPermissions,
-        @WithType("android.content.pm.PackageUserState")
-            Object state);
+        @WithType("android.content.pm.PackageUserState") Object state);
 
     @Static
     PackageInfo generatePackageInfo(

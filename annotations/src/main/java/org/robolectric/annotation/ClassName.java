@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /** Parameters with types that can't be resolved at compile time may be annotated @ClassName. */
-@Target(ElementType.PARAMETER)
+@Target({ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClassName {
 
