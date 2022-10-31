@@ -140,6 +140,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
+    return getInstalledPackages((long) flags);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected List<PackageInfo> getInstalledPackages(Object flags) {
+    return getInstalledPackages(((PackageInfoFlags) flags).getValue());
+  }
+
+  private List<PackageInfo> getInstalledPackages(long flags) {
     List<PackageInfo> result = new ArrayList<>();
     synchronized (lock) {
       Set<String> packageNames = null;
@@ -429,6 +438,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
+    return getPackageInfo(packageName, (long) flags);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected PackageInfo getPackageInfo(Object packageName, Object flags)
+      throws NameNotFoundException {
+    return getPackageInfo((String) packageName, ((PackageInfoFlags) flags).getValue());
+  }
+
+  private PackageInfo getPackageInfo(String packageName, long flags) throws NameNotFoundException {
     synchronized (lock) {
       PackageInfo info = packageInfos.get(packageName);
       if (info == null
@@ -494,7 +513,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   private <T extends ComponentInfo> T[] applyFlagsToComponentInfoList(
-      T[] components, int flags, int activationFlag, Function<T, T> copyConstructor) {
+      T[] components, long flags, int activationFlag, Function<T, T> copyConstructor) {
     if (components == null || (flags & activationFlag) == 0) {
       return null;
     }
@@ -536,7 +555,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         || (VERSION.SDK_INT >= VERSION_CODES.KITKAT && resolveInfo.providerInfo != null);
   }
 
-  private static boolean isFlagSet(int flags, int matchFlag) {
+  private static boolean isFlagSet(long flags, long matchFlag) {
     return (flags & matchFlag) == matchFlag;
   }
 
@@ -896,7 +915,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    *
    * @throws NameNotFoundException when component is filtered out by a flag
    */
-  private void applyFlagsToComponentInfo(ComponentInfo componentInfo, int flags)
+  private void applyFlagsToComponentInfo(ComponentInfo componentInfo, long flags)
       throws NameNotFoundException {
     componentInfo.name = (componentInfo.name == null) ? "" : componentInfo.name;
     ApplicationInfo applicationInfo = componentInfo.applicationInfo;
@@ -1364,7 +1383,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return packageInfo.applicationInfo;
   }
 
-  private void applyFlagsToApplicationInfo(@Nullable ApplicationInfo appInfo, int flags)
+  private void applyFlagsToApplicationInfo(@Nullable ApplicationInfo appInfo, long flags)
       throws NameNotFoundException {
     if (appInfo == null) {
       return;

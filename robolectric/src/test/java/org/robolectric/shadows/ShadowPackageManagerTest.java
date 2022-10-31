@@ -2038,6 +2038,55 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageInfoAfterT_shouldReturnRequestedPermissions() throws Exception {
+    PackageInfo packageInfo =
+        packageManager.getPackageInfo(
+            context.getPackageName(), PackageInfoFlags.of(PackageManager.GET_PERMISSIONS));
+    String[] permissions = packageInfo.requestedPermissions;
+    assertThat(permissions).isNotNull();
+    assertThat(permissions).hasLength(4);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageInfoAfterT_uninstalledPackage_includeUninstalled() throws Exception {
+    String packageName = context.getPackageName();
+    shadowOf(packageManager).deletePackage(packageName);
+
+    PackageInfo info =
+        packageManager.getPackageInfo(packageName, PackageInfoFlags.of(MATCH_UNINSTALLED_PACKAGES));
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(packageName);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageInfoAfterT_uninstalledPackage_dontIncludeUninstalled() {
+    String packageName = context.getPackageName();
+    shadowOf(packageManager).deletePackage(packageName);
+
+    try {
+      PackageInfo info = packageManager.getPackageInfo(packageName, PackageInfoFlags.of(0));
+      fail("should have thrown NameNotFoundException:" + info.applicationInfo.flags);
+    } catch (NameNotFoundException e) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPackageInfoAfterT_disabledPackage_includeDisabled() throws Exception {
+    packageManager.setApplicationEnabledSetting(
+        context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+    PackageInfo info =
+        packageManager.getPackageInfo(
+            context.getPackageName(), PackageInfoFlags.of(MATCH_DISABLED_COMPONENTS));
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(context.getPackageName());
+  }
+
+  @Test
   public void getInstalledPackages_uninstalledPackage_includeUninstalled() {
     shadowOf(packageManager).deletePackage(context.getPackageName());
 
@@ -2060,6 +2109,45 @@ public class ShadowPackageManagerTest {
 
     assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS)).isNotEmpty();
     assertThat(packageManager.getInstalledPackages(MATCH_DISABLED_COMPONENTS).get(0).packageName)
+        .isEqualTo(context.getPackageName());
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getInstalledPackagesAfterT_uninstalledPackage_includeUninstalled() {
+    shadowOf(packageManager).deletePackage(context.getPackageName());
+
+    assertThat(packageManager.getInstalledPackages(PackageInfoFlags.of(MATCH_UNINSTALLED_PACKAGES)))
+        .isNotEmpty();
+    assertThat(
+            packageManager
+                .getInstalledPackages(PackageInfoFlags.of(MATCH_UNINSTALLED_PACKAGES))
+                .get(0)
+                .packageName)
+        .isEqualTo(context.getPackageName());
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getInstalledPackagesAfterT_uninstalledPackage_dontIncludeUninstalled() {
+    shadowOf(packageManager).deletePackage(context.getPackageName());
+
+    assertThat(packageManager.getInstalledPackages(PackageInfoFlags.of(0))).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getInstalledPackagesAfterT_disabledPackage_includeDisabled() {
+    packageManager.setApplicationEnabledSetting(
+        context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, 0);
+
+    assertThat(packageManager.getInstalledPackages(PackageInfoFlags.of(MATCH_DISABLED_COMPONENTS)))
+        .isNotEmpty();
+    assertThat(
+            packageManager
+                .getInstalledPackages(PackageInfoFlags.of(MATCH_DISABLED_COMPONENTS))
+                .get(0)
+                .packageName)
         .isEqualTo(context.getPackageName());
   }
 
