@@ -64,7 +64,7 @@ public class ShadowAlarmManager {
     internalSet(type, triggerAtTime, listener, targetHandler);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = KITKAT)
   protected void set(
       int type,
       long triggerAtMillis,
