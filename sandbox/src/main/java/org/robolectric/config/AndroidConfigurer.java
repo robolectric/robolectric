@@ -60,6 +60,7 @@ public class AndroidConfigurer {
         .doNotAcquirePackage("jdk.internal.")
         .doNotAcquirePackage("org.junit")
         .doNotAcquirePackage("org.hamcrest")
+        .doNotAcquirePackage("org.objectweb.asm")
         .doNotAcquirePackage("org.robolectric.annotation.")
         .doNotAcquirePackage("org.robolectric.internal.")
         .doNotAcquirePackage("org.robolectric.pluginapi.")
@@ -98,8 +99,7 @@ public class AndroidConfigurer {
     }
 
     // Instrumenting these classes causes a weird failure.
-    builder.doNotInstrumentClass("android.R")
-        .doNotInstrumentClass("android.R$styleable");
+    builder.doNotInstrumentClass("android.R").doNotInstrumentClass("android.R$styleable");
 
     builder
         .addInstrumentedPackage("dalvik.")
