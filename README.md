@@ -13,17 +13,24 @@ Here's an example of a simple test written using Robolectric:
 
 ```java
 @RunWith(AndroidJUnit4.class)
-public class MyActivityTest {
+public final class MyActivityTest {
+
+  @Rule
+  public ActivityScenarioRule<MyActivity> activityScenarioRule =
+      new ActivityScenarioRule<>(MyActivity.class);
 
   @Test
   public void clickingButton_shouldChangeResultsViewText() {
-    Activity activity = Robolectric.setupActivity(MyActivity.class);
+    activityScenarioRule
+        .getScenario()
+        .onActivity(
+            activity -> {
+              Button button = (Button) activity.findViewById(R.id.press_me_button);
+              TextView results = (TextView) activity.findViewById(R.id.results_text_view);
 
-    Button button = (Button) activity.findViewById(R.id.press_me_button);
-    TextView results = (TextView) activity.findViewById(R.id.results_text_view);
-
-    button.performClick();
-    assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
+              button.performClick();
+              assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
+            });
   }
 }
 ```
