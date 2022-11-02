@@ -364,7 +364,7 @@ public class ClassInstrumentor {
    *
    * @param method the constructor to instrument
    */
-  private void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
+  protected void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
     makeMethodPrivate(method);
 
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
