@@ -131,6 +131,7 @@ public class ShadowTelephonyManager {
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
+  private /*UiccCardInfo[]*/ Object uiccCardsInfo;
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
@@ -485,6 +486,18 @@ public class ShadowTelephonyManager {
   @HiddenApi
   protected /*UiccSlotInfo[]*/ Object getUiccSlotsInfo() {
     return uiccSlotInfos;
+  }
+
+  /** Sets the UICC cards information returned by {@link #getUiccCardsInfo()}. */
+  public void setUiccCardsInfo(/*UiccCardsInfo[]*/ Object uiccCardsInfo) {
+    this.uiccCardsInfo = uiccCardsInfo;
+  }
+
+  /** Returns the UICC cards information set by {@link #setUiccCardsInfo}. */
+  @Implementation(minSdk = Q)
+  @HiddenApi
+  protected /*UiccSlotInfo[]*/ Object getUiccCardsInfo() {
+    return uiccCardsInfo;
   }
 
   /** Clears {@code slotIndex} to state mapping and resets to default state. */
