@@ -46,6 +46,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -76,6 +77,7 @@ import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.ApplicationInfoFlags;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
@@ -2743,8 +2745,35 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void getInstalledApplications() {
+  public void getInstalledApplications_noFlags_oldSdk() {
     List<ApplicationInfo> installedApplications = packageManager.getInstalledApplications(0);
+
+    // Default should include the application under test
+    assertThat(installedApplications).hasSize(1);
+    assertThat(installedApplications.get(0).packageName).isEqualTo("org.robolectric");
+
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "org.other";
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = "org.other";
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    installedApplications = packageManager.getInstalledApplications(0);
+    assertThat(installedApplications).hasSize(2);
+    assertThat(installedApplications.get(1).packageName).isEqualTo("org.other");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getInstalledApplications_null_throwsException() {
+    assertThrows(Exception.class, () -> packageManager.getInstalledApplications(null));
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getInstalledApplications_noFlags_returnsAllInstalledApplications() {
+    List<ApplicationInfo> installedApplications =
+        packageManager.getInstalledApplications(ApplicationInfoFlags.of(0));
 
     // Default should include the application under test
     assertThat(installedApplications).hasSize(1);

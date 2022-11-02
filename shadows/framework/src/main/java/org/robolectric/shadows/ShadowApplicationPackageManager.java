@@ -67,6 +67,7 @@ import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.ApplicationInfoFlags;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
@@ -999,6 +1000,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected List<ApplicationInfo> getInstalledApplications(int flags) {
+    return getInstalledApplications((long) flags);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected List<ApplicationInfo> getInstalledApplications(Object flags) {
+    return getInstalledApplications(((ApplicationInfoFlags) flags).getValue());
+  }
+
+  private List<ApplicationInfo> getInstalledApplications(long flags) {
     List<PackageInfo> packageInfos = getInstalledPackages(flags);
     List<ApplicationInfo> result = new ArrayList<>(packageInfos.size());
 
