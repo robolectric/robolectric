@@ -964,7 +964,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = S)
   public void setCallComposerStatus() {
-    ShadowTelephonyManager.setCallComposerStatus(CALL_COMPOSER_STATUS_ON);
+    telephonyManager.setCallComposerStatus(CALL_COMPOSER_STATUS_ON);
 
     assertThat(telephonyManager.getCallComposerStatus()).isEqualTo(CALL_COMPOSER_STATUS_ON);
   }

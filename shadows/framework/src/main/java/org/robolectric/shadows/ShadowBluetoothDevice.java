@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.IntRange;
@@ -16,10 +17,10 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothSocket;
+import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.IBluetooth;
 import android.content.Context;
 import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.ParcelUuid;
 import java.io.IOException;
@@ -39,7 +40,8 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(BluetoothDevice.class)
+/** Shadow for {@link BluetoothDevice}. */
+@Implements(value = BluetoothDevice.class, looseSignatures = true)
 public class ShadowBluetoothDevice {
   @Deprecated // Prefer {@link android.bluetooth.BluetoothAdapter#getRemoteDevice}
   public static BluetoothDevice newInstance(String address) {
@@ -103,8 +105,14 @@ public class ShadowBluetoothDevice {
    *
    * @param alias alias name.
    */
-  public void setAlias(String alias) {
-    this.alias = alias;
+  @Implementation
+  public Object setAlias(Object alias) {
+    this.alias = (String) alias;
+    if (RuntimeEnvironment.getApiLevel() >= S) {
+      return BluetoothStatusCodes.SUCCESS;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -438,7 +446,7 @@ public class ShadowBluetoothDevice {
 
   private void checkForBluetoothConnectPermission() {
     if (shouldThrowSecurityExceptions
-        && VERSION.SDK_INT >= VERSION_CODES.S
+        && VERSION.SDK_INT >= S
         && !checkPermission(android.Manifest.permission.BLUETOOTH_CONNECT)) {
       throw new SecurityException("Bluetooth connect permission required.");
     }
