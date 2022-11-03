@@ -16,7 +16,7 @@ dependencies {
     api project(":annotations")
     api "com.google.guava:guava:$guavaJREVersion"
 
-    compileOnly "com.android.support:support-fragment:28.0.0"
+    compileOnly "androidx.fragment:fragment:1.2.0"
     compileOnly "com.google.android.gms:play-services-base:8.4.0"
     compileOnly "com.google.android.gms:play-services-basement:8.4.0"
 
@@ -30,7 +30,7 @@ dependencies {
     testImplementation "junit:junit:$junitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
-    testRuntimeOnly "com.android.support:support-fragment:28.0.0"
+    testRuntimeOnly "androidx.fragment:fragment:1.2.0"
     testRuntimeOnly "com.google.android.gms:play-services-base:8.4.0"
     testRuntimeOnly "com.google.android.gms:play-services-basement:8.4.0"
 
