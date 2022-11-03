@@ -12,11 +12,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link ContextHubClient}. */
-@Implements(
-    value = ContextHubClient.class,
-    minSdk = VERSION_CODES.P,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = ContextHubClient.class, minSdk = VERSION_CODES.P, isInAndroidSdk = false)
 public class ShadowContextHubClient {
   private final List<NanoAppMessage> messages = new ArrayList<>();
 
