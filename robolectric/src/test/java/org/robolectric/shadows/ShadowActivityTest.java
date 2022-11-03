@@ -118,14 +118,15 @@ public class ShadowActivityTest {
 
   @Test
   public void createActivity_noDisplayFinished_shouldFinishActivity() {
-    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-    controller.get().setTheme(android.R.style.Theme_NoDisplay);
-    controller.create();
-    controller.get().finish();
-    controller.start().visible().resume();
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      controller.get().setTheme(android.R.style.Theme_NoDisplay);
+      controller.create();
+      controller.get().finish();
+      controller.start().visible().resume();
 
-    activity = controller.get();
-    assertThat(activity.isFinishing()).isTrue();
+      activity = controller.get();
+      assertThat(activity.isFinishing()).isTrue();
+    }
   }
 
   @Config(minSdk = M)
@@ -154,35 +155,38 @@ public class ShadowActivityTest {
   public void
       shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers()
           throws Exception {
-    ActivityController<DialogCreatingActivity> controller =
-        Robolectric.buildActivity(DialogCreatingActivity.class);
-    activity = controller.get();
+    try (ActivityController<DialogCreatingActivity> controller =
+        Robolectric.buildActivity(DialogCreatingActivity.class)) {
+      activity = controller.get();
 
-    DialogLifeCycleActivity activity2 = Robolectric.setupActivity(DialogLifeCycleActivity.class);
-    activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
+      DialogLifeCycleActivity activity2 = Robolectric.setupActivity(DialogLifeCycleActivity.class);
+      activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
 
-    controller.destroy();
+      controller.destroy();
+    }
   }
 
   @Test
   public void shouldNotRegisterNullBroadcastReceiver() {
-    ActivityController<DialogCreatingActivity> controller =
-        Robolectric.buildActivity(DialogCreatingActivity.class);
-    activity = controller.get();
-    activity.registerReceiver(null, new IntentFilter());
+    try (ActivityController<DialogCreatingActivity> controller =
+        Robolectric.buildActivity(DialogCreatingActivity.class)) {
+      activity = controller.get();
+      activity.registerReceiver(null, new IntentFilter());
 
-    controller.destroy();
+      controller.destroy();
+    }
   }
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldReportDestroyedStatus() {
-    ActivityController<DialogCreatingActivity> controller =
-        Robolectric.buildActivity(DialogCreatingActivity.class);
-    activity = controller.get();
+    try (ActivityController<DialogCreatingActivity> controller =
+        Robolectric.buildActivity(DialogCreatingActivity.class)) {
+      activity = controller.get();
 
-    controller.destroy();
-    assertThat(activity.isDestroyed()).isTrue();
+      controller.destroy();
+      assertThat(activity.isDestroyed()).isTrue();
+    }
   }
 
   @Test
@@ -259,12 +263,14 @@ public class ShadowActivityTest {
 
   @Test
   public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() {
-    ThrowOnResultActivity activity = Robolectric.buildActivity(ThrowOnResultActivity.class).get();
-    activity.startActivityForResult(new Intent().setType("audio/*"), 123);
-    activity.startActivityForResult(new Intent().setType("image/*"), 456);
+    Intent requestIntent = new Intent();
+    try (ActivityController<ThrowOnResultActivity> controller =
+        Robolectric.buildActivity(ThrowOnResultActivity.class)) {
+      ThrowOnResultActivity activity = controller.get();
+      activity.startActivityForResult(new Intent().setType("audio/*"), 123);
+      activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
-    Intent requestIntent = new Intent().setType("video/*");
-    try {
+      requestIntent.setType("video/*");
       shadowOf(activity)
           .receiveResult(
               requestIntent, Activity.RESULT_OK, new Intent().setData(Uri.parse("content:foo")));
@@ -600,11 +606,13 @@ public class ShadowActivityTest {
 
   @Test // unclear what the correct behavior should be here...
   public void shouldPopulateWindowDecorViewWithMergeLayoutContents() {
-    Activity activity = Robolectric.buildActivity(Activity.class).create().get();
-    activity.setContentView(R.layout.toplevel_merge);
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      Activity activity = controller.create().get();
+      activity.setContentView(R.layout.toplevel_merge);
 
-    View contentView = activity.findViewById(android.R.id.content);
-    assertThat(((ViewGroup) contentView).getChildCount()).isEqualTo(2);
+      View contentView = activity.findViewById(android.R.id.content);
+      assertThat(((ViewGroup) contentView).getChildCount()).isEqualTo(2);
+    }
   }
 
   @Test
@@ -1011,10 +1019,12 @@ public class ShadowActivityTest {
 
   @Test
   public void getActionBar_shouldWorkIfActivityHasAnAppropriateTheme() {
-    ActionBarThemedActivity myActivity =
-        Robolectric.buildActivity(ActionBarThemedActivity.class).create().get();
-    ActionBar actionBar = myActivity.getActionBar();
-    assertThat(actionBar).isNotNull();
+    try (ActivityController<ActionBarThemedActivity> controller =
+        Robolectric.buildActivity(ActionBarThemedActivity.class)) {
+      ActionBarThemedActivity myActivity = controller.create().get();
+      ActionBar actionBar = myActivity.getActionBar();
+      assertThat(actionBar).isNotNull();
+    }
   }
 
   public static class ActionBarThemedActivity extends Activity {
@@ -1330,157 +1340,168 @@ public class ShadowActivityTest {
   @Test
   @Config(minSdk = O)
   public void buildActivity_noOptionsBundle_launchesOnDefaultDisplay() {
-    Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class, null)) {
+      Activity activity = controller.setup().get();
 
-    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
-        .isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+    }
   }
 
   @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithNoDisplaySet_launchesOnDefaultDisplay() {
-    Activity activity =
-        Robolectric.buildActivity(Activity.class, null, ActivityOptions.makeBasic().toBundle())
-            .setup()
-            .get();
+    try (ActivityController<Activity> controller =
+        Robolectric.buildActivity(Activity.class, null, ActivityOptions.makeBasic().toBundle())) {
+      Activity activity = controller.setup().get();
 
-    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
-        .isEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+    }
   }
 
   @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithDefaultDisplaySet_launchesOnDefaultDisplay() {
-    Activity activity =
+    try (ActivityController<Activity> controller =
         Robolectric.buildActivity(
-                Activity.class,
-                null,
-                ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle())
-            .setup()
-            .get();
-
-    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
-        .isEqualTo(Display.DEFAULT_DISPLAY);
+            Activity.class,
+            null,
+            ActivityOptions.makeBasic().setLaunchDisplayId(Display.DEFAULT_DISPLAY).toBundle())) {
+      Activity activity = controller.setup().get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+    }
   }
 
   @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithValidNonDefaultDisplaySet_launchesOnSpecifiedDisplay() {
     int displayId = ShadowDisplayManager.addDisplay("");
-
-    Activity activity =
+    try (ActivityController<Activity> controller =
         Robolectric.buildActivity(
-                Activity.class,
-                null,
-                ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())
-            .setup()
-            .get();
-
-    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
-        .isNotEqualTo(Display.DEFAULT_DISPLAY);
-    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId()).isEqualTo(displayId);
+            Activity.class,
+            null,
+            ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle())) {
+      Activity activity = controller.setup().get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isNotEqualTo(Display.DEFAULT_DISPLAY);
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(displayId);
+    }
   }
 
   @Test
   @Config(minSdk = O)
   public void buildActivity_optionBundleWithInvalidNonDefaultDisplaySet_launchesOnDefaultDisplay() {
-    Activity activity =
+    try (ActivityController<Activity> controller =
         Robolectric.buildActivity(
-                Activity.class,
-                null,
-                ActivityOptions.makeBasic().setLaunchDisplayId(123).toBundle())
-            .setup()
-            .get();
-
-    assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
-        .isEqualTo(Display.DEFAULT_DISPLAY);
+            Activity.class, null, ActivityOptions.makeBasic().setLaunchDisplayId(123).toBundle())) {
+      Activity activity = controller.setup().get();
+      assertThat(activity.getWindowManager().getDefaultDisplay().getDisplayId())
+          .isEqualTo(Display.DEFAULT_DISPLAY);
+    }
   }
 
   @Test
   @Config(minSdk = Q)
   public void callOnGetDirectActions_succeeds() {
-    ActivityController<TestActivity> controller = Robolectric.buildActivity(TestActivity.class);
-    TestActivity testActivity = controller.setup().get();
-    Consumer<List<DirectAction>> testConsumer =
-        (directActions) -> {
-          assertThat(directActions.size()).isEqualTo(1);
-          DirectAction action = directActions.get(0);
-          assertThat(action.getId()).isEqualTo(testActivity.getDirectActionForTesting().getId());
-          ComponentName componentName = action.getExtras().getParcelable("componentName");
-          assertThat(componentName.compareTo(testActivity.getComponentName())).isEqualTo(0);
-        };
-    shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), testConsumer);
+    try (ActivityController<TestActivity> controller =
+        Robolectric.buildActivity(TestActivity.class)) {
+      TestActivity testActivity = controller.setup().get();
+      Consumer<List<DirectAction>> testConsumer =
+          (directActions) -> {
+            assertThat(directActions.size()).isEqualTo(1);
+            DirectAction action = directActions.get(0);
+            assertThat(action.getId()).isEqualTo(testActivity.getDirectActionForTesting().getId());
+            ComponentName componentName = action.getExtras().getParcelable("componentName");
+            assertThat(componentName.compareTo(testActivity.getComponentName())).isEqualTo(0);
+          };
+      shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), testConsumer);
+    }
   }
 
   @Test
   @Config(minSdk = Q)
   public void callOnGetDirectActions_malformedDirectAction_fails() {
-    ActivityController<TestActivity> controller = Robolectric.buildActivity(TestActivity.class);
-    TestActivity testActivity = controller.setup().get();
-    // malformed DirectAction has missing LocusId
-    testActivity.setReturnMalformedDirectAction(true);
-    assertThrows(
-        NullPointerException.class,
-        () -> {
-          shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), (unused) -> {});
-        });
+    try (ActivityController<TestActivity> controller =
+        Robolectric.buildActivity(TestActivity.class)) {
+      TestActivity testActivity = controller.setup().get();
+      // malformed DirectAction has missing LocusId
+      testActivity.setReturnMalformedDirectAction(true);
+      assertThrows(
+          NullPointerException.class,
+          () -> {
+            shadowOf(testActivity).callOnGetDirectActions(new CancellationSignal(), (unused) -> {});
+          });
+    }
   }
 
   @Test
   @Config(minSdk = S)
   public void splashScreen_setThemeId_succeeds() {
     int splashScreenThemeId = 173;
-    Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      Activity activity = controller.setup().get();
 
-    activity.getSplashScreen().setSplashScreenTheme(splashScreenThemeId);
+      activity.getSplashScreen().setSplashScreenTheme(splashScreenThemeId);
 
-    RoboSplashScreen roboSplashScreen = (RoboSplashScreen) activity.getSplashScreen();
-    assertThat(roboSplashScreen.getSplashScreenTheme()).isEqualTo(splashScreenThemeId);
+      RoboSplashScreen roboSplashScreen = (RoboSplashScreen) activity.getSplashScreen();
+      assertThat(roboSplashScreen.getSplashScreenTheme()).isEqualTo(splashScreenThemeId);
+    }
   }
 
   @Test
   @Config(minSdk = S)
   public void splashScreen_instanceOfRoboSplashScreen_succeeds() {
-    Activity activity = Robolectric.buildActivity(Activity.class, null).setup().get();
-
-    assertThat(activity.getSplashScreen()).isInstanceOf(RoboSplashScreen.class);
+    try (ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class)) {
+      Activity activity = controller.setup().get();
+      assertThat(activity.getSplashScreen()).isInstanceOf(RoboSplashScreen.class);
+    }
   }
 
   @Test
   public void applicationWindow_hasCorrectWindowTokens() {
-    Activity activity = Robolectric.buildActivity(TestActivity.class).setup().get();
-    View activityView = activity.getWindow().getDecorView();
-    WindowManager.LayoutParams activityLp =
-        (WindowManager.LayoutParams) activityView.getLayoutParams();
+    try (ActivityController<TestActivity> controller =
+        Robolectric.buildActivity(TestActivity.class)) {
+      Activity activity = controller.setup().get();
+      View activityView = activity.getWindow().getDecorView();
+      WindowManager.LayoutParams activityLp =
+          (WindowManager.LayoutParams) activityView.getLayoutParams();
 
-    View windowView = new View(activity);
-    WindowManager.LayoutParams windowViewLp = new WindowManager.LayoutParams();
-    windowViewLp.type = WindowManager.LayoutParams.TYPE_APPLICATION;
-    ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
-        .addView(windowView, windowViewLp);
-    ShadowLooper.idleMainLooper();
+      View windowView = new View(activity);
+      WindowManager.LayoutParams windowViewLp = new WindowManager.LayoutParams();
+      windowViewLp.type = WindowManager.LayoutParams.TYPE_APPLICATION;
+      ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
+          .addView(windowView, windowViewLp);
+      ShadowLooper.idleMainLooper();
 
-    assertThat(activityLp.token).isNotNull();
-    assertThat(windowViewLp.token).isEqualTo(activityLp.token);
+      assertThat(activityLp.token).isNotNull();
+      assertThat(windowViewLp.token).isEqualTo(activityLp.token);
+    }
   }
 
   @Test
   public void subWindow_hasCorrectWindowTokens() {
-    Activity activity = Robolectric.buildActivity(TestActivity.class).setup().get();
-    View activityView = activity.getWindow().getDecorView();
-    WindowManager.LayoutParams activityLp =
-        (WindowManager.LayoutParams) activityView.getLayoutParams();
+    try (ActivityController<TestActivity> controller =
+        Robolectric.buildActivity(TestActivity.class)) {
+      Activity activity = controller.setup().get();
+      View activityView = activity.getWindow().getDecorView();
+      WindowManager.LayoutParams activityLp =
+          (WindowManager.LayoutParams) activityView.getLayoutParams();
 
-    View windowView = new View(activity);
-    WindowManager.LayoutParams windowViewLp = new WindowManager.LayoutParams();
-    windowViewLp.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
-    ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
-        .addView(windowView, windowViewLp);
-    ShadowLooper.idleMainLooper();
+      View windowView = new View(activity);
+      WindowManager.LayoutParams windowViewLp = new WindowManager.LayoutParams();
+      windowViewLp.type = WindowManager.LayoutParams.TYPE_APPLICATION_PANEL;
+      ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
+          .addView(windowView, windowViewLp);
+      ShadowLooper.idleMainLooper();
 
-    assertThat(activityLp.token).isNotNull();
-    assertThat(windowViewLp.token).isEqualTo(activityView.getWindowToken());
-    assertThat(windowView.getApplicationWindowToken()).isEqualTo(activityView.getWindowToken());
+      assertThat(activityLp.token).isNotNull();
+      assertThat(windowViewLp.token).isEqualTo(activityView.getWindowToken());
+      assertThat(windowView.getApplicationWindowToken()).isEqualTo(activityView.getWindowToken());
+    }
   }
 
   @Test
