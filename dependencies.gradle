@@ -5,13 +5,13 @@ ext {
     errorproneJavacVersion='9+181-r4173-1'
 
     // AndroidX test versions
-    axtMonitorVersion='1.6.0-rc01'
-    axtRunnerVersion='1.5.0-rc01'
-    axtRulesVersion='1.5.0-rc01'
-    axtCoreVersion='1.5.0-rc01'
-    axtTruthVersion='1.5.0-rc01'
-    espressoVersion='3.5.0-rc01'
-    axtJunitVersion='1.1.4-rc01'
+    axtMonitorVersion='1.6.0'
+    axtRunnerVersion='1.5.0'
+    axtRulesVersion='1.5.0'
+    axtCoreVersion='1.5.0'
+    axtTruthVersion='1.5.0'
+    espressoVersion='3.5.0'
+    axtJunitVersion='1.1.4'
 
     // AndroidX versions
     coreVersion='1.9.0'
