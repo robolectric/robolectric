@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static androidx.test.InstrumentationRegistry.getTargetContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap.CompressFormat;
@@ -50,6 +51,7 @@ public class BitmapTest {
   @Config(minSdk = P)
   @SdkSuppress(minSdkVersion = P)
   @Test public void createBitmap() {
+    assumeFalse(Boolean.getBoolean("robolectric.nativeruntime.enableGraphics"));
     // Bitmap.createBitmap(Picture) requires hardware-backed bitmaps
     HardwareRendererCompat.setDrawingEnabled(true);
     Picture picture = new Picture();
