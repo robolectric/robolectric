@@ -116,11 +116,14 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
     }
 }
 
-def sdksToInstrument() {
+static def sdksToInstrument() {
   var result = AndroidSdk.ALL_SDKS
-  var sdkFilter = (System.getenv('PREINSTRUMENTED_SDK_VERSIONS') ?: "").split(",").collect { it as Integer }
-  if (sdkFilter.size > 0) {
-    result = result.findAll { sdkFilter.contains(it.apiLevel) }
+  var preInstrumentedSdkVersions = (System.getenv('PREINSTRUMENTED_SDK_VERSIONS') ?: "")
+  if (preInstrumentedSdkVersions.length() > 0) {
+    var sdkFilter = preInstrumentedSdkVersions.split(",").collect { it as Integer }
+    if (sdkFilter.size > 0) {
+      result = result.findAll { sdkFilter.contains(it.apiLevel) }
+    }
   }
   return result
 }
