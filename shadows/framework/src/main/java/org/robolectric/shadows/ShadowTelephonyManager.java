@@ -77,7 +77,8 @@ public class ShadowTelephonyManager {
   @RealObject protected TelephonyManager realTelephonyManager;
 
   private final Map<PhoneStateListener, Integer> phoneStateRegistrations = new HashMap<>();
-  private final List<TelephonyCallback> telephonyCallbackRegistrations = new ArrayList<>();
+  private final /*List<TelephonyCallback>*/ List<Object> telephonyCallbackRegistrations =
+      new ArrayList<>();
   private final Map<Integer, String> slotIndexToDeviceId = new HashMap<>();
   private final Map<Integer, String> slotIndexToImei = new HashMap<>();
   private final Map<Integer, String> slotIndexToMeid = new HashMap<>();
@@ -87,7 +88,7 @@ public class ShadowTelephonyManager {
       new HashMap<>();
 
   private PhoneStateListener lastListener;
-  private TelephonyCallback lastTelephonyCallback;
+  private /*TelephonyCallback*/ Object lastTelephonyCallback;
   private int lastEventFlags;
 
   private String deviceId;
@@ -225,7 +226,10 @@ public class ShadowTelephonyManager {
   }
 
   @Implementation(minSdk = S)
-  public void registerTelephonyCallback(Executor executor, TelephonyCallback callback) {
+  public void registerTelephonyCallback(
+      /*Executor*/ Object executor, /*TelephonyCallback*/ Object callback) {
+    Preconditions.checkArgument(executor instanceof Executor);
+    Preconditions.checkArgument(callback instanceof TelephonyCallback);
     lastTelephonyCallback = callback;
     initTelephonyCallback(callback);
     telephonyCallbackRegistrations.add(callback);
@@ -233,17 +237,20 @@ public class ShadowTelephonyManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected void registerTelephonyCallback(
-      int includeLocationData, Executor executor, TelephonyCallback callback) {
+      /*int*/ Object includeLocationData, /*Executor*/
+      Object executor, /*TelephonyCallback*/
+      Object callback) {
+    Preconditions.checkArgument(includeLocationData instanceof Integer);
     registerTelephonyCallback(executor, callback);
   }
 
   @Implementation(minSdk = S)
-  public void unregisterTelephonyCallback(TelephonyCallback callback) {
+  public void unregisterTelephonyCallback(/*TelephonyCallback*/ Object callback) {
     telephonyCallbackRegistrations.remove(callback);
   }
 
   /** Returns the most recent callback passed to #registerTelephonyCallback(). */
-  public TelephonyCallback getLastTelephonyCallback() {
+  public /*TelephonyCallback*/ Object getLastTelephonyCallback() {
     return lastTelephonyCallback;
   }
 
@@ -701,7 +708,7 @@ public class ShadowTelephonyManager {
   }
 
   @CallSuper
-  protected void initTelephonyCallback(TelephonyCallback callback) {
+  protected void initTelephonyCallback(Object callback) {
     if (VERSION.SDK_INT < S) {
       return;
     }
