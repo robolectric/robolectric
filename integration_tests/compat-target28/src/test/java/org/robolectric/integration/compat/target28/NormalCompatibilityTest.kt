@@ -35,4 +35,10 @@ class NormalCompatibilityTest {
   fun `Initialize Activity succeed`() {
     Robolectric.setupActivity(TestActivity::class.java)
   }
+
+  @Test
+  fun `Initialize TelephonyManager succeed`() {
+    val telephonyManager = application.getSystemService(Context.TELEPHONY_SERVICE)
+    assertThat(telephonyManager).isNotNull()
+  }
 }
