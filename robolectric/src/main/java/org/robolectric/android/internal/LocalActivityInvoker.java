@@ -40,13 +40,13 @@ public class LocalActivityInvoker implements ActivityInvoker {
     startActivity(intent, /* activityOptions= */ null);
   }
 
-  // TODO(paigemca): Omitting @Override until androidx.test.monitor version can be upgraded
+  @Override
   public void startActivityForResult(Intent intent, @Nullable Bundle activityOptions) {
     isActivityLaunchedForResult = true;
     controller = getInstrumentation().startActivitySyncInternal(intent, activityOptions);
   }
 
-  // TODO(paigemca): Omitting @Override until androidx.test.monitor version can be upgraded
+  @Override
   public void startActivityForResult(Intent intent) {
     isActivityLaunchedForResult = true;
     startActivityForResult(intent, /* activityOptions= */ null);
