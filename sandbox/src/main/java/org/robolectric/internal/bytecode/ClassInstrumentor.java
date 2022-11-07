@@ -234,20 +234,27 @@ public class ClassInstrumentor {
    * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
    * custom shadows for Jacoco-instrumented classes (except cnstructor shadows).
    */
-  private void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
+  protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
     AbstractInsnNode returnNode =
         Iterables.find(
             ctor.instructions,
-            node -> node instanceof InsnNode && node.getOpcode() == Opcodes.RETURN,
+            node -> {
+              if (node.getOpcode() == Opcodes.INVOKESPECIAL) {
+                MethodInsnNode mNode = (MethodInsnNode) node;
+                return (mNode.owner.equals(mutableClass.internalClassName)
+                    || mNode.owner.equals(mutableClass.classNode.superName));
+              }
+              return false;
+            },
             null);
-    ctor.instructions.insertBefore(returnNode, new VarInsnNode(Opcodes.ALOAD, 0));
-    ctor.instructions.insertBefore(
+    ctor.instructions.insert(
         returnNode,
         new MethodInsnNode(
             Opcodes.INVOKEVIRTUAL,
             mutableClass.classType.getInternalName(),
             ROBO_INIT_METHOD_NAME,
             "()V"));
+    ctor.instructions.insert(returnNode, new VarInsnNode(Opcodes.ALOAD, 0));
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
