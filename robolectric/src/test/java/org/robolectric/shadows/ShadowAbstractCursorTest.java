@@ -12,7 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAbstractCursorTest {
@@ -212,11 +211,10 @@ public class ShadowAbstractCursorTest {
   @Test
   public void testGetNotificationUri() {
     Uri uri = Uri.parse("content://foo.com");
-    ShadowAbstractCursor shadow = Shadows.shadowOf(cursor);
-    assertThat(shadow.getNotificationUri_Compatibility()).isNull();
+    assertThat(cursor.getNotificationUri()).isNull();
     cursor.setNotificationUri(
         ApplicationProvider.getApplicationContext().getContentResolver(), uri);
-    assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);
+    assertThat(cursor.getNotificationUri()).isEqualTo(uri);
   }
 
   @Test
