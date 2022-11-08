@@ -1088,6 +1088,9 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = Build.VERSION_CODES.Q)
   protected boolean isEmergencyNumber(String number) {
+    if (ShadowServiceManager.getService(Context.TELEPHONY_SERVICE) == null) {
+      throw new IllegalStateException("telephony service is null.");
+    }
 
     if (number == null) {
       return false;
