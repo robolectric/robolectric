@@ -22,12 +22,14 @@ public final class ShadowLocaleManagerTest {
   private static final LocaleList DEFAULT_LOCALES = LocaleList.forLanguageTags("en-XC,ar-XB");
 
   private Context context;
-  private ShadowLocaleManager localeManager;
+  private LocaleManager localeManager;
+  private ShadowLocaleManager shadowLocaleManager;
 
   @Before
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();
-    localeManager = Shadow.extract(context.getSystemService(LocaleManager.class));
+    localeManager = context.getSystemService(LocaleManager.class);
+    shadowLocaleManager = Shadow.extract(localeManager);
   }
 
   @Test
@@ -38,7 +40,7 @@ public final class ShadowLocaleManagerTest {
 
     localeManager.setApplicationLocales(DEFAULT_PACKAGE_NAME, DEFAULT_LOCALES);
 
-    localeManager.enforceInstallerCheck(false);
+    shadowLocaleManager.enforceInstallerCheck(false);
     assertThat(localeManager.getApplicationLocales(DEFAULT_PACKAGE_NAME))
         .isEqualTo(DEFAULT_LOCALES);
   }
@@ -46,8 +48,8 @@ public final class ShadowLocaleManagerTest {
   @Test
   public void getApplicationLocales_fetchAsInstaller_returnsLocales() {
     localeManager.setApplicationLocales(DEFAULT_PACKAGE_NAME, DEFAULT_LOCALES);
-    localeManager.setCallerAsInstallerForPackage(DEFAULT_PACKAGE_NAME);
-    localeManager.enforceInstallerCheck(true);
+    shadowLocaleManager.setCallerAsInstallerForPackage(DEFAULT_PACKAGE_NAME);
+    shadowLocaleManager.enforceInstallerCheck(true);
 
     assertThat(localeManager.getApplicationLocales(DEFAULT_PACKAGE_NAME))
         .isEqualTo(DEFAULT_LOCALES);
@@ -56,9 +58,25 @@ public final class ShadowLocaleManagerTest {
   @Test
   public void getApplicationLocales_fetchAsInstaller_throwsSecurityExceptionIfIncorrectInstaller() {
     localeManager.setApplicationLocales(DEFAULT_PACKAGE_NAME, DEFAULT_LOCALES);
-    localeManager.enforceInstallerCheck(true);
+    shadowLocaleManager.enforceInstallerCheck(true);
 
     assertThrows(
         SecurityException.class, () -> localeManager.getApplicationLocales(DEFAULT_PACKAGE_NAME));
+  }
+
+  @Test
+  @Config(qualifiers = "en")
+  public void getSystemLocales_en() {
+    LocaleList localeList = localeManager.getSystemLocales();
+    assertThat(localeList.size()).isEqualTo(1);
+    assertThat(localeList.get(0).getLanguage()).isEqualTo("en");
+  }
+
+  @Test
+  @Config(qualifiers = "zh")
+  public void getSystemLocales_zh() {
+    LocaleList localeList = localeManager.getSystemLocales();
+    assertThat(localeList.size()).isEqualTo(1);
+    assertThat(localeList.get(0).getLanguage()).isEqualTo("zh");
   }
 }
