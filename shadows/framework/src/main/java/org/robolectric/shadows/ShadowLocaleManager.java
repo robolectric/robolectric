@@ -1,8 +1,11 @@
 package org.robolectric.shadows;
 
 import android.app.LocaleManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
+import androidx.annotation.RequiresApi;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +33,7 @@ public class ShadowLocaleManager {
    * @see #enforceInstallerCheck
    * @see #setCallerAsInstallerForPackage
    */
+  @RequiresApi(api = VERSION_CODES.N)
   @Implementation
   protected LocaleList getApplicationLocales(String packageName) {
     if (enforceInstallerCheck) {
@@ -49,6 +53,16 @@ public class ShadowLocaleManager {
   @Implementation
   protected void setApplicationLocales(String packageName, LocaleList locales) {
     appLocales.put(packageName, locales);
+  }
+
+  @RequiresApi(api = VERSION_CODES.N)
+  @Implementation
+  protected LocaleList getSystemLocales() {
+    Configuration configuration = Resources.getSystem().getConfiguration();
+    if (configuration != null) {
+      return configuration.getLocales();
+    }
+    return LocaleList.getEmptyLocaleList();
   }
 
   /**
