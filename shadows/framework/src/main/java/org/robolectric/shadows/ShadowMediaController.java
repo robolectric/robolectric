@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.media.MediaMetadata;
 import android.media.Rating;
@@ -12,6 +13,7 @@ import android.media.session.MediaController.Callback;
 import android.media.session.MediaController.PlaybackInfo;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
+import android.os.Handler;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.annotation.Implementation;
@@ -136,12 +138,13 @@ public class ShadowMediaController {
 
   /**
    * Register callback and store it in the shadow to make it easier to check the state of the
-   * registered callbacks.
+   * registered callbacks. Handler is just passed on to the real class.
    */
   @Implementation
-  protected void registerCallback(@NonNull Callback callback) {
+  protected void registerCallback(@NonNull Callback callback, @Nullable Handler handler) {
     callbacks.add(callback);
-    reflector(MediaControllerReflector.class, realMediaController).registerCallback(callback);
+    reflector(MediaControllerReflector.class, realMediaController)
+        .registerCallback(callback, handler);
   }
 
   /**
@@ -204,7 +207,7 @@ public class ShadowMediaController {
   interface MediaControllerReflector {
 
     @Direct
-    void registerCallback(@NonNull Callback callback);
+    void registerCallback(@NonNull Callback callback, @Nullable Handler handler);
 
     @Direct
     void unregisterCallback(@NonNull Callback callback);
