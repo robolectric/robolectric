@@ -162,30 +162,30 @@ public class ShadowSystemVibrator extends ShadowVibrator {
 
   private void recordVibratePredefined(long milliseconds, int effectId) {
     vibrating = true;
-    this.effectId = effectId;
-    this.milliseconds = milliseconds;
+    ShadowVibrator.effectId = effectId;
+    ShadowVibrator.milliseconds = milliseconds;
     handler.removeCallbacks(stopVibratingRunnable);
-    handler.postDelayed(stopVibratingRunnable, this.milliseconds);
+    handler.postDelayed(stopVibratingRunnable, ShadowVibrator.milliseconds);
   }
 
   private void recordVibrate(long milliseconds) {
     vibrating = true;
-    this.milliseconds = milliseconds;
+    ShadowVibrator.milliseconds = milliseconds;
     handler.removeCallbacks(stopVibratingRunnable);
-    handler.postDelayed(stopVibratingRunnable, this.milliseconds);
+    handler.postDelayed(stopVibratingRunnable, ShadowVibrator.milliseconds);
   }
 
   protected void recordVibratePattern(long[] pattern, int repeat) {
     vibrating = true;
-    this.pattern = pattern;
-    this.repeat = repeat;
+    ShadowVibrator.pattern = pattern;
+    ShadowVibrator.repeat = repeat;
     handler.removeCallbacks(stopVibratingRunnable);
     if (repeat < 0) {
       long endDelayMillis = 0;
       for (long t : pattern) {
         endDelayMillis += t;
       }
-      this.milliseconds = endDelayMillis;
+      ShadowVibrator.milliseconds = endDelayMillis;
       handler.postDelayed(stopVibratingRunnable, endDelayMillis);
     }
   }
