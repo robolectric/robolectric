@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ContentProvider;
@@ -10,14 +11,17 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
-@Implements(ContentProvider.class)
+/** Shadow for {@link ContentProvider}. */
+@Implements(value = ContentProvider.class, looseSignatures = true)
 public class ShadowContentProvider {
   @RealObject private ContentProvider realContentProvider;
 
   private String callingPackage;
 
-  public void setCallingPackage(String callingPackage) {
-    this.callingPackage = callingPackage;
+  @Implementation(minSdk = Q, maxSdk = Q)
+  public Object setCallingPackage(Object callingPackage) {
+    this.callingPackage = (String) callingPackage;
+    return callingPackage;
   }
 
   @Implementation(minSdk = KITKAT)

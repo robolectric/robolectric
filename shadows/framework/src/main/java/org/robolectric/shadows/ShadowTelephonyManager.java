@@ -164,7 +164,8 @@ public class ShadowTelephonyManager {
     callComposerStatus = 0;
   }
 
-  public static void setCallComposerStatus(int callComposerStatus) {
+  @Implementation(minSdk = S)
+  protected void setCallComposerStatus(int callComposerStatus) {
     ShadowTelephonyManager.callComposerStatus = callComposerStatus;
   }
 
