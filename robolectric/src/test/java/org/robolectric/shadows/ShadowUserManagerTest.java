@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
@@ -907,17 +906,27 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = O)
+  @Config(minSdk = N)
   public void isQuietModeEnabled_shouldReturnFalse() {
     assertThat(userManager.isQuietModeEnabled(Process.myUserHandle())).isFalse();
   }
 
   @Test
-  @Config(minSdk = Q)
+  @Config(minSdk = N)
   public void isQuietModeEnabled_withProfile_shouldReturnFalse() {
     shadowOf(userManager).addProfile(0, 10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE);
 
     assertThat(userManager.isQuietModeEnabled(new UserHandle(10))).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void isQuietModeEnabled_withProfileQuietMode_shouldReturnTrue() {
+    shadowOf(userManager)
+        .addProfile(
+            0, 10, "Work profile", UserInfo.FLAG_MANAGED_PROFILE | UserInfo.FLAG_QUIET_MODE);
+
+    assertThat(userManager.isQuietModeEnabled(new UserHandle(10))).isTrue();
   }
 
   @Test
