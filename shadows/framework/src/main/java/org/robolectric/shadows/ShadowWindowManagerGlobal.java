@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -66,7 +67,9 @@ public class ShadowWindowManagerGlobal {
   private static synchronized WindowSessionDelegate getWindowSessionDelegate() {
     if (windowSessionDelegate == null) {
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel >= S_V2) {
+      if (apiLevel > TIRAMISU) {
+        windowSessionDelegate = new WindowSessionDelegateU();
+      } else if (apiLevel >= S_V2) {
         windowSessionDelegate = new WindowSessionDelegateSV2();
       } else if (apiLevel >= S) {
         windowSessionDelegate = new WindowSessionDelegateS();
@@ -384,7 +387,7 @@ public class ShadowWindowManagerGlobal {
   }
 
   private static class WindowSessionDelegateSV2 extends WindowSessionDelegateS {
-    // @Implementation(minSdk = S_V2)
+    // @Implementation(minSdk = S_V2, maxSdk = TIRAMISU)
     public int addToDisplayAsUser(
         IWindow window,
         WindowManager.LayoutParams attrs,
@@ -395,6 +398,24 @@ public class ShadowWindowManagerGlobal {
         InputChannel outInputChannel,
         InsetsState outInsetsState,
         InsetsSourceControl[] outActiveControls) {
+      return getAddFlags();
+    }
+  }
+
+  private static class WindowSessionDelegateU extends WindowSessionDelegateSV2 {
+    // @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+    public int addToDisplayAsUser(
+        IWindow window,
+        WindowManager.LayoutParams attrs,
+        int viewVisibility,
+        int layerStackId,
+        int userId,
+        int requestedVisibleTypes,
+        InputChannel outInputChannel,
+        InsetsState insetsState,
+        InsetsSourceControl[] activeControls,
+        Rect attachedFrame,
+        float[] sizeCompatScale) {
       return getAddFlags();
     }
   }
