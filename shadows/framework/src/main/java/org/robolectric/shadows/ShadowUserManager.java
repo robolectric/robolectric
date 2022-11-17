@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
-import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -855,7 +854,7 @@ public class ShadowUserManager {
    * <p>This method checks whether the user handle corresponds to a managed profile, and then query
    * its state. When quiet, the user is not running.
    */
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = N)
   protected boolean isQuietModeEnabled(UserHandle userHandle) {
     // Return false if this is not a managed profile (this is the OS's behavior).
     if (!isManagedProfileWithoutPermission(userHandle)) {
