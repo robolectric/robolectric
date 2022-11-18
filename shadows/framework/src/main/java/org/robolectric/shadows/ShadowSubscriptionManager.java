@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.os.Build.VERSION;
 import android.telephony.SubscriptionInfo;
@@ -32,10 +33,17 @@ public class ShadowSubscriptionManager {
   public static final int INVALID_PHONE_INDEX =
       ReflectionHelpers.getStaticField(SubscriptionManager.class, "INVALID_PHONE_INDEX");
 
+  private static int activeDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
   private static int defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
+
+  /** Returns value set with {@link #setActiveDataSubscriptionId(int)}. */
+  @Implementation(minSdk = R)
+  protected static int getActiveDataSubscriptionId() {
+    return activeDataSubscriptionId;
+  }
 
   /** Returns value set with {@link #setDefaultSubscriptionId(int)}. */
   @Implementation(minSdk = N)
@@ -83,6 +91,11 @@ public class ShadowSubscriptionManager {
   @HiddenApi
   protected static int getDefaultDataSubId() {
     return defaultDataSubscriptionId;
+  }
+
+  /** Sets the value that will be returned by {@link #getActiveDataSubscriptionId()}. */
+  public static void setActiveDataSubscriptionId(int activeDataSubscriptionId) {
+    ShadowSubscriptionManager.activeDataSubscriptionId = activeDataSubscriptionId;
   }
 
   /** Sets the value that will be returned by {@link #getDefaultSubscriptionId()}. */
@@ -379,6 +392,7 @@ public class ShadowSubscriptionManager {
 
   @Resetter
   public static void reset() {
+    activeDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultDataSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultSmsSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
     defaultVoiceSubscriptionId = SubscriptionManager.INVALID_SUBSCRIPTION_ID;
