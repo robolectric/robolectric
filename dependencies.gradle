@@ -29,7 +29,7 @@ ext {
 
     guavaJREVersion='31.1-jre'
 
-    asmVersion='9.3'
+    asmVersion='9.4'
 
     kotlinVersion='1.7.20'
     autoServiceVersion='1.0.1'
