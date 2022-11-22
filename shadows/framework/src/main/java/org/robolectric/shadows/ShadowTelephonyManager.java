@@ -912,6 +912,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = O)
   protected TelephonyManager createForPhoneAccountHandle(PhoneAccountHandle handle) {
+    checkReadPhoneStatePermission();
     return phoneAccountToTelephonyManagers.get(handle);
   }
 
