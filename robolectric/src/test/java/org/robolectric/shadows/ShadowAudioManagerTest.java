@@ -28,7 +28,6 @@ import android.media.audiopolicy.AudioPolicy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -757,15 +756,7 @@ public class ShadowAudioManagerTest {
 
   private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {
     AudioDeviceInfo info = Shadow.newInstanceOf(AudioDeviceInfo.class);
-    Field portField = AudioDeviceInfo.class.getDeclaredField("mPort");
-    portField.setAccessible(true);
-    Object port = Shadow.newInstanceOf("android.media.AudioDevicePort");
-    portField.set(info, port);
-
-    Field typeField = port.getClass().getDeclaredField("mType");
-    typeField.setAccessible(true);
-    typeField.set(port, type);
-
+    shadowOf(info).setType(type);
     return info;
   }
 }
