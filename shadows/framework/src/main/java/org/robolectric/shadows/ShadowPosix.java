@@ -11,10 +11,14 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(className = "libcore.io.Posix", maxSdk = Build.VERSION_CODES.N_MR1, isInAndroidSdk = false)
+/** Shadow for {@link libcore.io.Posix} */
+@Implements(
+    className = "libcore.io.Posix",
+    maxSdk = Build.VERSION_CODES.N_MR1,
+    isInAndroidSdk = false)
 public class ShadowPosix {
   @Implementation
-  public static void mkdir(String path, int mode) throws ErrnoException {
+  public void mkdir(String path, int mode) throws ErrnoException {
     new File(path).mkdirs();
   }
 
