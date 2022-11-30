@@ -55,6 +55,10 @@ public class ShadowAppWidgetManager {
   private Multimap<UserHandle, AppWidgetProviderInfo> installedProvidersForProfile =
       HashMultimap.create();
 
+  // AppWidgetProvider is enabled if at least one widget is active. `isWidgetsEnabled` should be set
+  //  to false if the last widget is removed (when removing widgets is implemented).
+  private boolean isWidgetsEnabled = false;
+
   @Implementation(maxSdk = KITKAT)
   protected void __constructor__(Context context) {
     this.context = context;
@@ -307,6 +311,15 @@ public class ShadowAppWidgetManager {
     widgetInfo.view = widgetInfo.lastRemoteViews.apply(context, new AppWidgetHostView(context));
   }
 
+  private void enableWidgetsIfNecessary(Class<? extends AppWidgetProvider> appWidgetProviderClass) {
+    if (!isWidgetsEnabled) {
+      isWidgetsEnabled = true;
+      AppWidgetProvider appWidgetProvider =
+          ReflectionHelpers.callConstructor(appWidgetProviderClass);
+      appWidgetProvider.onReceive(context, new Intent(AppWidgetManager.ACTION_APPWIDGET_ENABLED));
+    }
+  }
+
   /**
    * Creates a widget by inflating its layout.
    *
@@ -345,7 +358,12 @@ public class ShadowAppWidgetManager {
       newWidgetIds[i] = myWidgetId;
     }
 
-    appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
+    // Enable widgets if we are creating the first widget.
+    enableWidgetsIfNecessary(appWidgetProviderClass);
+
+    Intent intent = new Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+    intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, newWidgetIds);
+    appWidgetProvider.onReceive(context, intent);
     return newWidgetIds;
   }
 
