@@ -11,12 +11,16 @@ import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorEventListener2;
 import android.hardware.SensorManager;
 import android.os.Build;
+import android.os.Looper;
 import android.os.MemoryFile;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Optional;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -226,8 +230,56 @@ public class ShadowSensorManagerTest {
     assertThat(sensorManager.getSensorList(0)).isNotNull();
   }
 
-  private static class TestSensorEventListener implements SensorEventListener {
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.KITKAT)
+  public void flush_shouldCallOnFlushCompleted() {
+    Sensor accelSensor = ShadowSensor.newInstance(TYPE_ACCELEROMETER);
+    Sensor gyroSensor = ShadowSensor.newInstance(TYPE_GYROSCOPE);
+
+    TestSensorEventListener listener1 = new TestSensorEventListener();
+    TestSensorEventListener listener2 = new TestSensorEventListener();
+    TestSensorEventListener listener3 = new TestSensorEventListener();
+
+    sensorManager.registerListener(listener1, accelSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    sensorManager.registerListener(listener2, accelSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    sensorManager.registerListener(listener2, gyroSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
+    // Call flush with the first listener. It should return true (as the flush
+    // succeeded), and should call onFlushCompleted for all listeners registered for accelSensor.
+    assertThat(sensorManager.flush(listener1)).isTrue();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(listener1.getOnFlushCompletedCalls()).containsExactly(accelSensor);
+    assertThat(listener2.getOnFlushCompletedCalls()).containsExactly(accelSensor);
+    assertThat(listener3.getOnFlushCompletedCalls()).isEmpty();
+
+    // Call flush with the second listener. It should again return true, and should call
+    // onFlushCompleted for all listeners registered for accelSensor and gyroSensor.
+    assertThat(sensorManager.flush(listener2)).isTrue();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    // From the two calls to flush, onFlushCompleted should have been called twice for accelSensor
+    // and once for gyroSensor.
+    assertThat(listener1.getOnFlushCompletedCalls()).containsExactly(accelSensor, accelSensor);
+    assertThat(listener2.getOnFlushCompletedCalls())
+        .containsExactly(accelSensor, accelSensor, gyroSensor);
+    assertThat(listener3.getOnFlushCompletedCalls()).isEmpty();
+
+    // Call flush with the third listener. This listener is not registered for any sensors, so it
+    // should return false.
+    assertThat(sensorManager.flush(listener3)).isFalse();
+    shadowOf(Looper.getMainLooper()).idle();
+
+    // There should not have been any more onFlushCompleted calls.
+    assertThat(listener1.getOnFlushCompletedCalls()).containsExactly(accelSensor, accelSensor);
+    assertThat(listener2.getOnFlushCompletedCalls())
+        .containsExactly(accelSensor, accelSensor, gyroSensor);
+    assertThat(listener3.getOnFlushCompletedCalls()).isEmpty();
+  }
+
+  private static class TestSensorEventListener implements SensorEventListener2 {
     private Optional<SensorEvent> latestSensorEvent = Optional.absent();
+    private List<Sensor> onFlushCompletedCalls = new ArrayList<>();
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
@@ -235,6 +287,15 @@ public class ShadowSensorManagerTest {
     @Override
     public void onSensorChanged(SensorEvent event) {
       latestSensorEvent = Optional.of(event);
+    }
+
+    @Override
+    public void onFlushCompleted(Sensor sensor) {
+      onFlushCompletedCalls.add(sensor);
+    }
+
+    public List<Sensor> getOnFlushCompletedCalls() {
+      return onFlushCompletedCalls;
     }
 
     public Optional<SensorEvent> getLatestSensorEvent() {

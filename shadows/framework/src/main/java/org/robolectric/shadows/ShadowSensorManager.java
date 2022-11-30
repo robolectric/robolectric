@@ -9,8 +9,10 @@ import android.hardware.Sensor;
 import android.hardware.SensorDirectChannel;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorEventListener2;
 import android.hardware.SensorManager;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.MemoryFile;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -144,6 +146,27 @@ public class ShadowSensorManager {
     for (SensorEventListener listener : getListeners()) {
       listener.onSensorChanged(event);
     }
+  }
+
+  @Implementation(minSdk = KITKAT)
+  protected boolean flush(SensorEventListener listener) {
+    // ShadowSensorManager doesn't queue up any sensor events, so nothing actually needs to be
+    // flushed. Just call onFlushCompleted for each sensor that would have been flushed.
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              // Go through each sensor that the listener is registered for, and call
+              // onFlushCompleted on each listener registered for that sensor.
+              for (Sensor sensor : listeners.get(listener)) {
+                for (SensorEventListener registeredListener : getListeners()) {
+                  if ((registeredListener instanceof SensorEventListener2)
+                      && listeners.containsEntry(registeredListener, sensor)) {
+                    ((SensorEventListener2) registeredListener).onFlushCompleted(sensor);
+                  }
+                }
+              }
+            });
+    return listeners.containsKey(listener);
   }
 
   public SensorEvent createSensorEvent() {
