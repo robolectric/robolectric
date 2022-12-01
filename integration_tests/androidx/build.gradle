@@ -38,8 +38,6 @@ dependencies {
     testImplementation("androidx.test:rules:$axtRulesVersion")
     testImplementation("androidx.test.espresso:espresso-intents:$espressoVersion")
     testImplementation("androidx.test.ext:truth:$axtTruthVersion")
-    // TODO: this should be a transitive dependency of core...
-    testImplementation("androidx.lifecycle:lifecycle-common:$lifecycleVersion")
     testImplementation("androidx.test.ext:junit:$axtJunitVersion")
     testImplementation("com.google.truth:truth:$truthVersion")
 }
