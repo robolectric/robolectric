@@ -24,7 +24,7 @@ ext {
 
     junitVersion='4.13.2'
 
-    mockitoVersion='4.1.0'
+    mockitoVersion='4.9.0'
 
     guavaJREVersion='31.1-jre'
 
