@@ -35,7 +35,11 @@ public class ShadowMediaStore {
 
       @Implementation
       protected static Bitmap getBitmap(ContentResolver cr, Uri url) {
-        return ShadowBitmapFactory.create(url.toString(), null, null);
+        if (ShadowView.useRealGraphics()) {
+          return Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        } else {
+          return ShadowBitmapFactory.create(url.toString(), null, null);
+        }
       }
     }
 

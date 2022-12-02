@@ -1,52 +1,50 @@
 package org.robolectric.shadows;
 
-import static android.app.AlarmManager.INTERVAL_HOUR;
-import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build.VERSION_CODES;
-import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.os.WorkSource;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import java.util.Date;
+import java.time.Duration;
+import java.util.Objects;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowAlarmManager.ScheduledAlarm;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAlarmManagerTest {
 
   private Context context;
-  private Activity activity;
   private AlarmManager alarmManager;
-  private ShadowAlarmManager shadowAlarmManager;
 
   @Before
   public void setUp() {
     context = ApplicationProvider.getApplicationContext();
     alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-    shadowAlarmManager = shadowOf(alarmManager);
-    activity = Robolectric.setupActivity(Activity.class);
 
-    TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
-    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
+    ShadowAlarmManager.setAutoSchedule(true);
   }
 
   @Test
@@ -64,13 +62,7 @@ public class ShadowAlarmManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_abbreviateTimeZone_ignore() {
-    try {
-      alarmManager.setTimeZone("PST");
-      fail("IllegalArgumentException not thrown");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
+    assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("PST"));
   }
 
   @Test
@@ -83,13 +75,7 @@ public class ShadowAlarmManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.M)
   public void setTimeZone_invalidTimeZone_ignore() {
-    try {
-      alarmManager.setTimeZone("-07:00");
-      fail("IllegalArgumentException not thrown");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-    assertThat(TimeZone.getDefault().getID()).isEqualTo("America/Los_Angeles");
+    assertThrows(IllegalArgumentException.class, () -> alarmManager.setTimeZone("-07:00"));
   }
 
   @Test
@@ -100,361 +86,623 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  public void set_shouldRegisterAlarm() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+  public void set_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void set_alarmListener() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
     alarmManager.set(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+        AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 10, "tag", onFire, null);
 
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(scheduledAlarm).isNotNull();
-    assertThat(scheduledAlarm.allowWhileIdle).isFalse();
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
   }
 
   @Test
-  @Config(minSdk = N)
-  public void set_shouldRegisterAlarm_forApi24() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    OnAlarmListener listener = () -> {};
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, "tag", listener, null);
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+  public void setRepeating_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setRepeating(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          20L,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.getIntervalMs()).isEqualTo(20);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire, times(1)).run();
+
+      alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 20);
+      assertThat(alarm.getIntervalMs()).isEqualTo(20);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20));
+      verify(onFire, times(2)).run();
+    }
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20));
+    verify(onFire, times(2)).run();
   }
 
+  @Config(minSdk = VERSION_CODES.KITKAT)
   @Test
-  @Config(minSdk = M)
-  public void setAndAllowWhileIdle_shouldRegisterAlarm() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setAndAllowWhileIdle(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+  public void setWindow_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setWindow(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          20L,
+          listener.getPendingIntent());
 
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(scheduledAlarm).isNotNull();
-    assertThat(scheduledAlarm.allowWhileIdle).isTrue();
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.getWindowLengthMs()).isEqualTo(20);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire).run();
+    }
   }
 
+  @Config(minSdk = VERSION_CODES.N)
   @Test
-  @Config(minSdk = M)
-  public void setExactAndAllowWhileIdle_shouldRegisterAlarm() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setExactAndAllowWhileIdle(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(scheduledAlarm).isNotNull();
-    assertThat(scheduledAlarm.allowWhileIdle).isTrue();
-  }
-
-  @Test
-  @Config(minSdk = KITKAT)
-  public void setExact_shouldRegisterAlarm_forApi19() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setExact(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void setExact_shouldRegisterAlarm_forApi124() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    OnAlarmListener listener = () -> {};
-    alarmManager.setExact(AlarmManager.ELAPSED_REALTIME, 0, "tag", listener, null);
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
-  }
-
-  @Test
-  @Config(minSdk = KITKAT)
-  public void setWindow_shouldRegisterAlarm_forApi19() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
+  public void setWindow_alarmListener() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
     alarmManager.setWindow(
         AlarmManager.ELAPSED_REALTIME,
-        0,
-        1,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+        SystemClock.elapsedRealtime() + 10,
+        20L,
+        "tag",
+        onFire,
+        null);
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getWindowLengthMs()).isEqualTo(20);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
   }
 
+  @Config(minSdk = VERSION_CODES.S)
   @Test
-  @Config(minSdk = N)
-  public void setWindow_shouldRegisterAlarm_forApi24() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    OnAlarmListener listener = () -> {};
-    alarmManager.setWindow(AlarmManager.ELAPSED_REALTIME, 0, 1, "tag", listener, null);
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
-  }
-
-  @Test
-  public void setRepeating_shouldRegisterAlarm() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    alarmManager.setRepeating(
+  public void setPrioritized_alarmListener() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
+    alarmManager.setPrioritized(
         AlarmManager.ELAPSED_REALTIME,
-        0,
-        INTERVAL_HOUR,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNotNull();
+        SystemClock.elapsedRealtime() + 10,
+        20L,
+        "tag",
+        Runnable::run,
+        onFire);
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getWindowLengthMs()).isEqualTo(20);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
   }
 
+  @Config(minSdk = VERSION_CODES.KITKAT)
   @Test
-  public void set_shouldReplaceAlarmsWithSameIntentReceiver() {
+  public void setExact_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setExact(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void setExact_alarmListener() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
+    alarmManager.setExact(
+        AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 10, "tag", onFire, null);
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
+  }
+
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  @Test
+  public void setAlarmClock_pendingIntent() {
+    AlarmClockInfo alarmClockInfo =
+        new AlarmClockInfo(
+            SystemClock.elapsedRealtime() + 10,
+            PendingIntent.getBroadcast(context, 0, new Intent("show"), 0));
+
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setAlarmClock(alarmClockInfo, listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.RTC_WAKEUP);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.getAlarmClockInfo()).isEqualTo(alarmClockInfo);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.KITKAT)
+  @Test
+  public void set_pendingIntent_workSource() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          20L,
+          0L,
+          listener.getPendingIntent(),
+          new WorkSource());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.getWindowLengthMs()).isEqualTo(20);
+      assertThat(alarm.getIntervalMs()).isEqualTo(0);
+      assertThat(alarm.getWorkSource()).isEqualTo(new WorkSource());
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void set_alarmListener_workSource() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
     alarmManager.set(
         AlarmManager.ELAPSED_REALTIME,
-        500,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+        SystemClock.elapsedRealtime() + 10,
+        20L,
+        0L,
+        "tag",
+        onFire,
+        null,
+        new WorkSource());
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getWindowLengthMs()).isEqualTo(20);
+    assertThat(alarm.getIntervalMs()).isEqualTo(0);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+    assertThat(alarm.getWorkSource()).isEqualTo(new WorkSource());
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void set_alarmListener_workSource_noTag() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
     alarmManager.set(
         AlarmManager.ELAPSED_REALTIME,
-        1000,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+        SystemClock.elapsedRealtime() + 10,
+        20L,
+        0L,
+        onFire,
+        null,
+        new WorkSource());
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getWindowLengthMs()).isEqualTo(20);
+    assertThat(alarm.getIntervalMs()).isEqualTo(0);
+    assertThat(alarm.getWorkSource()).isEqualTo(new WorkSource());
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
+  }
+
+  @Config(minSdk = VERSION_CODES.S)
+  @Test
+  public void setExact_alarmListener_workSource() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
+    alarmManager.setExact(
+        AlarmManager.ELAPSED_REALTIME,
+        SystemClock.elapsedRealtime() + 10,
+        "tag",
+        Runnable::run,
+        new WorkSource(),
+        onFire);
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+    assertThat(alarm.getWorkSource()).isEqualTo(new WorkSource());
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
   }
 
   @Test
-  public void set_shouldReplaceDuplicates() {
+  public void setInexactRepeating_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setInexactRepeating(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          20L,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.getIntervalMs()).isEqualTo(20);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire, times(1)).run();
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20));
+      verify(onFire, times(2)).run();
+    }
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20));
+    verify(onFire, times(2)).run();
+  }
+
+  @Config(minSdk = VERSION_CODES.M)
+  @Test
+  public void setAndAllowWhileIdle_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setAndAllowWhileIdle(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.isAllowWhileIdle()).isTrue();
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire, times(1)).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.M)
+  @Test
+  public void setExactAndAllowWhileIdle_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.setExactAndAllowWhileIdle(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+      assertThat(alarm.isAllowWhileIdle()).isTrue();
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire, times(1)).run();
+    }
+  }
+
+  @Test
+  public void cancel_pendingIntent() {
+    Runnable onFire1 = mock(Runnable.class);
+    Runnable onFire2 = mock(Runnable.class);
+    try (TestBroadcastListener listener1 =
+            new TestBroadcastListener(onFire1, "action1").register();
+        TestBroadcastListener listener2 =
+            new TestBroadcastListener(onFire2, "action2").register()) {
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 20,
+          listener1.getPendingIntent());
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          listener2.getPendingIntent());
+
+      assertThat(shadowOf(alarmManager).getScheduledAlarms()).hasSize(2);
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+
+      alarmManager.cancel(listener2.getPendingIntent());
+
+      assertThat(shadowOf(alarmManager).getScheduledAlarms()).hasSize(1);
+      alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 20);
+
+      alarmManager.cancel(listener1.getPendingIntent());
+
+      assertThat(shadowOf(alarmManager).getScheduledAlarms()).isEmpty();
+      assertThat(shadowOf(alarmManager).peekNextScheduledAlarm()).isNull();
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20));
+      verify(onFire1, never()).run();
+      verify(onFire2, never()).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void cancel_alarmListener() {
+    OnAlarmListener onFire1 = mock(OnAlarmListener.class);
+    OnAlarmListener onFire2 = mock(OnAlarmListener.class);
     alarmManager.set(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+        AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 20, "tag", onFire1, null);
     alarmManager.set(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
+        AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 10, "tag", onFire2, null);
+
+    assertThat(shadowOf(alarmManager).getScheduledAlarms()).hasSize(2);
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+
+    alarmManager.cancel(onFire2);
+
+    assertThat(shadowOf(alarmManager).getScheduledAlarms()).hasSize(1);
+    alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 20);
+
+    alarmManager.cancel(onFire1);
+
+    assertThat(shadowOf(alarmManager).getScheduledAlarms()).isEmpty();
+    assertThat(shadowOf(alarmManager).peekNextScheduledAlarm()).isNull();
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(20));
+    verify(onFire1, never()).onAlarm();
+    verify(onFire2, never()).onAlarm();
   }
 
   @Test
-  public void setRepeating_shouldReplaceDuplicates() {
-    alarmManager.setRepeating(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        INTERVAL_HOUR,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    alarmManager.setRepeating(
-        AlarmManager.ELAPSED_REALTIME,
-        0,
-        INTERVAL_HOUR,
-        PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
-  }
-
-  @Test
-  @SuppressWarnings("JavaUtilDate")
-  public void shouldSupportGetNextScheduledAlarm() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-
-    long now = new Date().getTime();
-    Intent intent = new Intent(activity, activity.getClass());
-    PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, now, pendingIntent);
-
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    assertScheduledAlarm(now, pendingIntent, scheduledAlarm);
-  }
-
-  @Test
-  @SuppressWarnings("JavaUtilDate")
-  public void getNextScheduledAlarm_shouldReturnRepeatingAlarms() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-
-    long now = new Date().getTime();
-    Intent intent = new Intent(activity, activity.getClass());
-    PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0);
-    alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, now, INTERVAL_HOUR, pendingIntent);
-
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-    assertRepeatingScheduledAlarm(now, INTERVAL_HOUR, pendingIntent, scheduledAlarm);
-  }
-
-  @Test
-  @SuppressWarnings("JavaUtilDate")
-  public void peekNextScheduledAlarm_shouldReturnNextAlarm() {
-    assertThat(shadowAlarmManager.getNextScheduledAlarm()).isNull();
-
-    long now = new Date().getTime();
-    Intent intent = new Intent(activity, activity.getClass());
-    PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, intent, 0);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME, now, pendingIntent);
-
-    ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.peekNextScheduledAlarm();
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm()).isNotNull();
-    assertScheduledAlarm(now, pendingIntent, scheduledAlarm);
-  }
-
-  @Test
-  public void cancel_removesMatchingPendingIntents() {
-    Intent intent = new Intent(context, String.class);
-    PendingIntent pendingIntent =
-        PendingIntent.getBroadcast(context, 0, intent, FLAG_UPDATE_CURRENT);
-    alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
-
-    Intent intent2 = new Intent(context, Integer.class);
-    PendingIntent pendingIntent2 =
-        PendingIntent.getBroadcast(context, 0, intent2, FLAG_UPDATE_CURRENT);
-    alarmManager.set(AlarmManager.RTC, 1337, pendingIntent2);
-
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
-
-    Intent intent3 = new Intent(context, String.class);
-    PendingIntent pendingIntent3 =
-        PendingIntent.getBroadcast(context, 0, intent3, FLAG_UPDATE_CURRENT);
-    alarmManager.cancel(pendingIntent3);
-
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
-  }
-
-  @Test
-  public void cancel_removesMatchingPendingIntentsWithActions() {
-    Intent newIntent = new Intent("someAction");
-    PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, newIntent, 0);
-
-    alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
-
-    alarmManager.cancel(PendingIntent.getBroadcast(context, 0, new Intent("anotherAction"), 0));
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
-
-    alarmManager.cancel(PendingIntent.getBroadcast(context, 0, new Intent("someAction"), 0));
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(0);
-  }
-
-  @Test
-  public void schedule_useRequestCodeToMatchExistingPendingIntents() {
-    Intent intent = new Intent("ACTION!");
-    PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
-
-    PendingIntent pI2 = PendingIntent.getService(context, 2, intent, 0);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
-
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
-  }
-
-  @Test
-  public void cancel_useRequestCodeToMatchExistingPendingIntents() {
-    Intent intent = new Intent("ACTION!");
-    PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI);
-
-    PendingIntent pI2 = PendingIntent.getService(context, 2, intent, 0);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 10, pI2);
-
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
-
-    alarmManager.cancel(pI);
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(1);
-    assertThat(shadowAlarmManager.getNextScheduledAlarm().operation).isEqualTo(pI2);
-  }
-
-  @Test
-  @Config(minSdk = N)
-  public void cancel_removesMatchingListeners() {
-    Intent intent = new Intent("ACTION!");
-    PendingIntent pI = PendingIntent.getService(context, 1, intent, 0);
-    OnAlarmListener listener1 = () -> {};
-    OnAlarmListener listener2 = () -> {};
-    Handler handler = new Handler();
-
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 20, "tag", listener1, handler);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 30, "tag", listener2, handler);
-    alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, 40, pI);
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(3);
-
-    alarmManager.cancel(listener1);
-    assertThat(shadowAlarmManager.getScheduledAlarms()).hasSize(2);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().onAlarmListener).isEqualTo(listener2);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().handler).isEqualTo(handler);
-  }
-
-  @Test
-  @Config(minSdk = LOLLIPOP)
-  public void getNextAlarmClockInfo() {
-    assertThat(alarmManager.getNextAlarmClock()).isNull();
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm()).isNull();
-
-    // Schedule an alarm.
-    PendingIntent show = PendingIntent.getBroadcast(context, 0, new Intent("showAction"), 0);
-    PendingIntent operation = PendingIntent.getBroadcast(context, 0, new Intent("opAction"), 0);
-    AlarmClockInfo info = new AlarmClockInfo(1000, show);
-    alarmManager.setAlarmClock(info, operation);
-
-    AlarmClockInfo next = alarmManager.getNextAlarmClock();
-    assertThat(next).isNotNull();
-    assertThat(next.getTriggerTime()).isEqualTo(1000);
-    assertThat(next.getShowIntent()).isSameInstanceAs(show);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameInstanceAs(operation);
-
-    // Schedule another alarm sooner.
-    PendingIntent show2 = PendingIntent.getBroadcast(context, 0, new Intent("showAction2"), 0);
-    PendingIntent operation2 = PendingIntent.getBroadcast(context, 0, new Intent("opAction2"), 0);
-    AlarmClockInfo info2 = new AlarmClockInfo(500, show2);
-    alarmManager.setAlarmClock(info2, operation2);
-
-    next = alarmManager.getNextAlarmClock();
-    assertThat(next).isNotNull();
-    assertThat(next.getTriggerTime()).isEqualTo(500);
-    assertThat(next.getShowIntent()).isSameInstanceAs(show2);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameInstanceAs(operation2);
-
-    // Remove the soonest alarm.
-    alarmManager.cancel(operation2);
-
-    next = alarmManager.getNextAlarmClock();
-    assertThat(next).isNotNull();
-    assertThat(next.getTriggerTime()).isEqualTo(1000);
-    assertThat(next.getShowIntent()).isSameInstanceAs(show);
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm().operation).isSameInstanceAs(operation);
-
-    // Remove the sole alarm.
-    alarmManager.cancel(operation);
-
-    assertThat(alarmManager.getNextAlarmClock()).isNull();
-    assertThat(shadowAlarmManager.peekNextScheduledAlarm()).isNull();
-  }
-
-  @Test
-  @Config(minSdk = S)
-  public void canScheduleExactAlarms_default_returnsTrue() {
+  @Config(minSdk = VERSION_CODES.S)
+  public void canScheduleExactAlarms() {
     assertThat(alarmManager.canScheduleExactAlarms()).isFalse();
-  }
 
-  @Test
-  @Config(minSdk = S)
-  public void canScheduleExactAlarms_setCanScheduleExactAlarms_returnsTrue() {
     ShadowAlarmManager.setCanScheduleExactAlarms(true);
-
     assertThat(alarmManager.canScheduleExactAlarms()).isTrue();
-  }
 
-  @Test
-  @Config(minSdk = S)
-  public void canScheduleExactAlarms_setCannotScheduleExactAlarms_returnsFalse() {
     ShadowAlarmManager.setCanScheduleExactAlarms(false);
-
     assertThat(alarmManager.canScheduleExactAlarms()).isFalse();
   }
 
-  private void assertScheduledAlarm(
-      long now, PendingIntent pendingIntent, ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
-    assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
+  @Test
+  @Config(minSdk = VERSION_CODES.LOLLIPOP)
+  public void getNextAlarmClockInfo() {
+    AlarmClockInfo alarmClockInfo1 =
+        new AlarmClockInfo(
+            SystemClock.elapsedRealtime() + 10,
+            PendingIntent.getBroadcast(context, 0, new Intent("show1"), 0));
+    AlarmClockInfo alarmClockInfo2 =
+        new AlarmClockInfo(
+            SystemClock.elapsedRealtime() + 5,
+            PendingIntent.getBroadcast(context, 0, new Intent("show2"), 0));
+
+    alarmManager.setAlarmClock(
+        alarmClockInfo1, PendingIntent.getBroadcast(context, 0, new Intent("fire1"), 0));
+    alarmManager.setAlarmClock(
+        alarmClockInfo2, PendingIntent.getBroadcast(context, 0, new Intent("fire2"), 0));
+    assertThat(alarmManager.getNextAlarmClock()).isEqualTo(alarmClockInfo2);
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(5));
+    assertThat(alarmManager.getNextAlarmClock()).isEqualTo(alarmClockInfo1);
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(5));
+    assertThat(alarmManager.getNextAlarmClock()).isNull();
   }
 
-  private void assertRepeatingScheduledAlarm(
-      long now,
-      long interval,
-      PendingIntent pendingIntent,
-      ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
-    assertThat(scheduledAlarm).isNotNull();
-    assertThat(scheduledAlarm.operation).isNotNull();
-    assertThat(scheduledAlarm.operation).isSameInstanceAs(pendingIntent);
-    assertThat(scheduledAlarm.type).isEqualTo(AlarmManager.ELAPSED_REALTIME);
-    assertThat(scheduledAlarm.triggerAtTime).isEqualTo(now);
-    assertThat(scheduledAlarm.interval).isEqualTo(interval);
+  @Test
+  public void replace_pendingIntent() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() + 10,
+          listener.getPendingIntent());
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME_WAKEUP,
+          SystemClock.elapsedRealtime() + 20,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME_WAKEUP);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 20);
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire, never()).run();
+
+      shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+      verify(onFire).run();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void replace_alarmListener() {
+    OnAlarmListener onFire = mock(OnAlarmListener.class);
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 10, "tag", onFire, null);
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        SystemClock.elapsedRealtime() + 20,
+        "tag1",
+        onFire,
+        null);
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME_WAKEUP);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 20);
+    assertThat(alarm.getTag()).isEqualTo("tag1");
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire, never()).onAlarm();
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+    verify(onFire).onAlarm();
+  }
+
+  @Test
+  public void pastTime() {
+    Runnable onFire = mock(Runnable.class);
+    try (TestBroadcastListener listener = new TestBroadcastListener(onFire, "action").register()) {
+      alarmManager.set(
+          AlarmManager.ELAPSED_REALTIME,
+          SystemClock.elapsedRealtime() - 10,
+          listener.getPendingIntent());
+
+      ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+      assertThat(alarm).isNotNull();
+      assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+      assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() - 10);
+
+      shadowOf(Looper.getMainLooper()).idle();
+      verify(onFire).run();
+
+      assertThat(shadowOf(alarmManager).peekNextScheduledAlarm()).isNull();
+    }
+  }
+
+  @Config(minSdk = VERSION_CODES.N)
+  @Test
+  public void reentrant() {
+    AtomicReference<OnAlarmListener> listenerRef = new AtomicReference<>();
+    listenerRef.set(
+        () ->
+            alarmManager.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 10,
+                "tag",
+                listenerRef.get(),
+                null));
+    alarmManager.set(
+        AlarmManager.ELAPSED_REALTIME_WAKEUP,
+        SystemClock.elapsedRealtime() + 10,
+        "tag",
+        listenerRef.get(),
+        null);
+
+    ScheduledAlarm alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME_WAKEUP);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+
+    shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(10));
+
+    alarm = shadowOf(alarmManager).peekNextScheduledAlarm();
+    assertThat(alarm).isNotNull();
+    assertThat(alarm.getType()).isEqualTo(AlarmManager.ELAPSED_REALTIME);
+    assertThat(alarm.getTriggerAtMs()).isEqualTo(SystemClock.elapsedRealtime() + 10);
+    assertThat(alarm.getTag()).isEqualTo("tag");
+  }
+
+  private class TestBroadcastListener extends BroadcastReceiver implements AutoCloseable {
+
+    private final Runnable alarm;
+    private final String action;
+
+    @Nullable private PendingIntent pendingIntent;
+
+    TestBroadcastListener(Runnable alarm, String action) {
+      this.alarm = alarm;
+      this.action = action;
+    }
+
+    TestBroadcastListener register() {
+      pendingIntent = PendingIntent.getBroadcast(context, 0, new Intent(action), 0);
+      context.registerReceiver(this, new IntentFilter(action));
+      return this;
+    }
+
+    PendingIntent getPendingIntent() {
+      return Objects.requireNonNull(pendingIntent);
+    }
+
+    @Override
+    public void close() {
+      context.unregisterReceiver(this);
+      if (pendingIntent != null) {
+        pendingIntent.cancel();
+      }
+    }
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (Objects.equals(action, intent.getAction())) {
+        alarm.run();
+      }
+    }
   }
 }

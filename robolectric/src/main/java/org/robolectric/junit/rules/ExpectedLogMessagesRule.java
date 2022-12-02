@@ -284,7 +284,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
       return type == log.type
           && !(tag != null ? !tag.equals(log.tag) : log.tag != null)
           && !(msg != null ? !msg.equals(log.msg) : log.msg != null)
-          && !(msgPattern != null ? !msgPattern.equals(log.msgPattern) : log.msgPattern != null)
+          && !(msgPattern != null ? !isEqual(msgPattern, log.msgPattern) : log.msgPattern != null)
           && !(throwableMatcher != null
               ? !throwableMatcher.equals(log.throwableMatcher)
               : log.throwableMatcher != null);
@@ -292,7 +292,7 @@ public final class ExpectedLogMessagesRule implements TestRule {
 
     @Override
     public int hashCode() {
-      return Objects.hash(type, tag, msg, msgPattern, throwableMatcher);
+      return Objects.hash(type, tag, msg, hash(msgPattern), throwableMatcher);
     }
 
     @Override
@@ -312,6 +312,18 @@ public final class ExpectedLogMessagesRule implements TestRule {
           + '\''
           + throwableStr
           + '}';
+    }
+
+    /** Returns true if the pattern and flags compiled in a {@link Pattern} were the same. */
+    private static boolean isEqual(Pattern a, Pattern b) {
+      return a != null && b != null
+          ? a.pattern().equals(b.pattern()) && a.flags() == b.flags()
+          : Objects.equals(a, b);
+    }
+
+    /** Returns hash for a {@link Pattern} based on the pattern and flags it was compiled with. */
+    private static int hash(Pattern pattern) {
+      return pattern == null ? 0 : Objects.hash(pattern.pattern(), pattern.flags());
     }
   }
 }

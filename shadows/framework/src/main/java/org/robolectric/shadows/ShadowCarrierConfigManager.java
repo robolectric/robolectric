@@ -16,6 +16,7 @@ public class ShadowCarrierConfigManager {
 
   private final HashMap<Integer, PersistableBundle> bundles = new HashMap<>();
   private final HashMap<Integer, PersistableBundle> overrideBundles = new HashMap<>();
+  private boolean readPhoneStatePermission = true;
 
   /**
    * Returns {@link android.os.PersistableBundle} previously set by {@link #overrideConfig} or
@@ -24,6 +25,7 @@ public class ShadowCarrierConfigManager {
    */
   @Implementation
   public PersistableBundle getConfigForSubId(int subId) {
+    checkReadPhoneStatePermission();
     if (overrideBundles.containsKey(subId) && overrideBundles.get(subId) != null) {
       return overrideBundles.get(subId);
     }
@@ -31,6 +33,10 @@ public class ShadowCarrierConfigManager {
       return bundles.get(subId);
     }
     return new PersistableBundle();
+  }
+
+  public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
+    this.readPhoneStatePermission = readPhoneStatePermission;
   }
 
   /**
@@ -51,5 +57,11 @@ public class ShadowCarrierConfigManager {
   @HiddenApi
   protected void overrideConfig(int subId, @Nullable PersistableBundle config) {
     overrideBundles.put(subId, config);
+  }
+
+  private void checkReadPhoneStatePermission() {
+    if (!readPhoneStatePermission) {
+      throw new SecurityException();
+    }
   }
 }

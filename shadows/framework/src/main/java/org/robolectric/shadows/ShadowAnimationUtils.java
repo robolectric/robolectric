@@ -9,7 +9,6 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.TranslateAnimation;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.Shadow;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AnimationUtils.class)
@@ -24,8 +23,6 @@ public class ShadowAnimationUtils {
   protected static LayoutAnimationController loadLayoutAnimation(Context context, int id) {
     Animation anim = new TranslateAnimation(0, 0, 30, 0);
     LayoutAnimationController layoutAnim = new LayoutAnimationController(anim);
-    ShadowLayoutAnimationController shadowLayoutAnimationController = Shadow.extract(layoutAnim);
-    shadowLayoutAnimationController.setLoadedFromResourceId(id);
     return layoutAnim;
   }
 }

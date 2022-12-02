@@ -9,6 +9,9 @@ import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_DEF
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_ACTIVE_PER_USER;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_INACTIVE;
 import static android.app.admin.DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
+import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME;
+import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
+import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
 import static android.app.admin.DevicePolicyManager.PASSWORD_COMPLEXITY_HIGH;
 import static android.app.admin.DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
@@ -1695,6 +1698,91 @@ public final class ShadowDevicePolicyManagerTest {
 
     assertThat(devicePolicyManager.hasGrantedPolicy(testComponent, USES_ENCRYPTED_STORAGE))
         .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getLockTaskFeatures_nullAdmin_throwsNullPointerException() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    assertThrows(NullPointerException.class, () -> devicePolicyManager.getLockTaskFeatures(null));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getLockTaskFeatures_notOwner_throwsSecurityException() {
+    assertThrows(
+        SecurityException.class, () -> devicePolicyManager.getLockTaskFeatures(testComponent));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getLockTaskFeatures_default_noFeatures() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThat(devicePolicyManager.getLockTaskFeatures(testComponent)).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setLockTaskFeatures_nullAdmin_throwsNullPointerException() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThrows(
+        NullPointerException.class, () -> devicePolicyManager.setLockTaskFeatures(null, 0));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setLockTaskFeatures_notOwner_throwsSecurityException() {
+    assertThrows(
+        SecurityException.class, () -> devicePolicyManager.setLockTaskFeatures(testComponent, 0));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setLockTaskFeatures_overviewWithoutHome_throwsIllegalArgumentException() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> devicePolicyManager.setLockTaskFeatures(testComponent, LOCK_TASK_FEATURE_OVERVIEW));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setLockTaskFeatures_notificationsWithoutHome_throwsIllegalArgumentException() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            devicePolicyManager.setLockTaskFeatures(
+                testComponent, LOCK_TASK_FEATURE_NOTIFICATIONS));
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setLockTaskFeatures_homeOverviewNotifications_success() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    int flags =
+        LOCK_TASK_FEATURE_HOME | LOCK_TASK_FEATURE_OVERVIEW | LOCK_TASK_FEATURE_NOTIFICATIONS;
+    devicePolicyManager.setLockTaskFeatures(testComponent, flags);
+
+    assertThat(devicePolicyManager.getLockTaskFeatures(testComponent)).isEqualTo(flags);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void setLockTaskFeatures_setFeaturesTwice_keepsLatestFeatures() {
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+    devicePolicyManager.setLockTaskFeatures(testComponent, LOCK_TASK_FEATURE_HOME);
+
+    int flags =
+        LOCK_TASK_FEATURE_HOME | LOCK_TASK_FEATURE_OVERVIEW | LOCK_TASK_FEATURE_NOTIFICATIONS;
+    devicePolicyManager.setLockTaskFeatures(testComponent, flags);
+
+    assertThat(devicePolicyManager.getLockTaskFeatures(testComponent)).isEqualTo(flags);
   }
 
   @Test

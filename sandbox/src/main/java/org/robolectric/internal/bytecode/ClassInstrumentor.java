@@ -175,8 +175,6 @@ public class ClassInstrumentor {
         // If there is no constructor, adds one
         addNoArgsConstructor(mutableClass);
 
-        addDirectCallConstructor(mutableClass);
-
         addRoboInitMethod(mutableClass);
 
         removeFinalFromFields(mutableClass);
@@ -236,20 +234,27 @@ public class ClassInstrumentor {
    * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
    * custom shadows for Jacoco-instrumented classes (except cnstructor shadows).
    */
-  private void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
+  protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
     AbstractInsnNode returnNode =
         Iterables.find(
             ctor.instructions,
-            node -> node instanceof InsnNode && node.getOpcode() == Opcodes.RETURN,
+            node -> {
+              if (node.getOpcode() == Opcodes.INVOKESPECIAL) {
+                MethodInsnNode mNode = (MethodInsnNode) node;
+                return (mNode.owner.equals(mutableClass.internalClassName)
+                    || mNode.owner.equals(mutableClass.classNode.superName));
+              }
+              return false;
+            },
             null);
-    ctor.instructions.insertBefore(returnNode, new VarInsnNode(Opcodes.ALOAD, 0));
-    ctor.instructions.insertBefore(
+    ctor.instructions.insert(
         returnNode,
         new MethodInsnNode(
             Opcodes.INVOKEVIRTUAL,
             mutableClass.classType.getInternalName(),
             ROBO_INIT_METHOD_NAME,
             "()V"));
+    ctor.instructions.insert(returnNode, new VarInsnNode(Opcodes.ALOAD, 0));
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
@@ -291,8 +296,6 @@ public class ClassInstrumentor {
       mutableClass.addMethod(defaultConstructor);
     }
   }
-
-  protected void addDirectCallConstructor(MutableClass mutableClass) {}
 
   /**
    * Generates code like this:
@@ -351,12 +354,24 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Constructors are instrumented as follows: TODO(slliu): Fill in constructor instrumentation
-   * directions
+   * Constructors are instrumented as follows:
+   *
+   * <ul>
+   *   <li>The original constructor will be stripped of its instructions leading up to, and
+   *       including, the call to super() or this(). It is also renamed to $$robo$$__constructor__
+   *   <li>A method called __constructor__ is created and its job is to call
+   *       $$robo$$__constructor__. The __constructor__ method is what gets shadowed if a Shadow
+   *       wants to shadow a constructor.
+   *   <li>A new constructor is created and contains the stripped instructions of the original
+   *       constructor leading up to, and including, the call to super() or this(). Then, it has a
+   *       call to $$robo$init to initialize the Class' Shadow Object. Then, it uses invokedynamic
+   *       to call __constructor__. Finally, it contains any instructions that might occur after the
+   *       return statement in the original constructor.
+   * </ul>
    *
    * @param method the constructor to instrument
    */
-  private void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
+  protected void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
     makeMethodPrivate(method);
 
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
@@ -488,7 +503,8 @@ public class ClassInstrumentor {
       instrumentNativeMethod(mutableClass, method);
     }
 
-    // todo figure out
+    // Create delegator method with same name as original method. The delegator method will use
+    // invokedynamic to decide at runtime whether to call original method or shadowed method
     String originalName = method.name;
     method.name = directMethodName(mutableClass, originalName);
 

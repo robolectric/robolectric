@@ -60,13 +60,15 @@ public class DateFormatTest {
 
   @Test
   public void getTimeFormat_am() {
+    // allow both regular and thin whitespace separators
     assertThat(DateFormat.getTimeFormat(getApplicationContext()).format(dateAM))
-        .isEqualTo("8:24 AM");
+        .matches("8:24\\sAM");
   }
 
   @Test
   public void getTimeFormat_pm() {
+    // allow both regular and thin whitespace separators
     assertThat(DateFormat.getTimeFormat(getApplicationContext()).format(datePM))
-        .isEqualTo("4:24 PM");
+        .matches("4:24\\sPM");
   }
 }

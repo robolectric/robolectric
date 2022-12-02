@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -45,6 +46,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build.VERSION;
@@ -962,7 +964,7 @@ public class ShadowTelephonyManagerTest {
   @Test
   @Config(minSdk = S)
   public void setCallComposerStatus() {
-    ShadowTelephonyManager.setCallComposerStatus(CALL_COMPOSER_STATUS_ON);
+    telephonyManager.setCallComposerStatus(CALL_COMPOSER_STATUS_ON);
 
     assertThat(telephonyManager.getCallComposerStatus()).isEqualTo(CALL_COMPOSER_STATUS_ON);
   }
@@ -1029,5 +1031,13 @@ public class ShadowTelephonyManagerTest {
     telephonyManager.setVisualVoicemailSmsFilterSettings(null);
 
     assertThat(shadowOf(telephonyManager).getVisualVoicemailSmsFilterSettings()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isEmergencyNumber_telephonyServiceUnavailable_throwsIllegalStateException() {
+    ShadowServiceManager.setServiceAvailability(Context.TELEPHONY_SERVICE, false);
+
+    assertThrows(IllegalStateException.class, () -> telephonyManager.isEmergencyNumber("911"));
   }
 }

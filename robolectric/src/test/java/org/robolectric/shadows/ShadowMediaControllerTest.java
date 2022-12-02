@@ -162,6 +162,23 @@ public final class ShadowMediaControllerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
+  public void registerWithHandlerAndGetCallback() {
+    List<MediaController.Callback> mockCallbacks = new ArrayList<>();
+    assertEquals(mockCallbacks, shadowMediaController.getCallbacks());
+
+    MediaController.Callback mockCallback1 = mock(MediaController.Callback.class);
+    mockCallbacks.add(mockCallback1);
+    mediaController.registerCallback(mockCallback1, null);
+    assertEquals(mockCallbacks, shadowMediaController.getCallbacks());
+
+    MediaController.Callback mockCallback2 = mock(MediaController.Callback.class);
+    mockCallbacks.add(mockCallback2);
+    mediaController.registerCallback(mockCallback2, null);
+    assertEquals(mockCallbacks, shadowMediaController.getCallbacks());
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
   public void unregisterCallback() {
     List<MediaController.Callback> mockCallbacks = new ArrayList<>();
     MediaController.Callback mockCallback1 = mock(MediaController.Callback.class);

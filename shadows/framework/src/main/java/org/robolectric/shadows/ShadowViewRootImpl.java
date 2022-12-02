@@ -21,9 +21,11 @@ import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.ClientWindowFrames;
 import java.util.ArrayList;
+import java.util.Optional;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -47,6 +49,49 @@ public class ShadowViewRootImpl {
 
   @RealObject protected ViewRootImpl realObject;
 
+  /**
+   * The visibility of the system status bar.
+   *
+   * <p>The value will be read in the intercepted {@link #getWindowInsets(boolean)} method providing
+   * the current state via the returned {@link WindowInsets} instance if it has been set..
+   *
+   * <p>NOTE: This state does not reflect the current state of system UI visibility flags or the
+   * current window insets. Rather it tracks the latest known state provided via {@link
+   * #setIsStatusBarVisible(boolean)}.
+   */
+  private static Optional<Boolean> isStatusBarVisible = Optional.empty();
+
+  /**
+   * The visibility of the system navigation bar.
+   *
+   * <p>The value will be read in the intercepted {@link #getWindowInsets(boolean)} method providing
+   * the current state via the returned {@link WindowInsets} instance if it has been set.
+   *
+   * <p>NOTE: This state does not reflect the current state of system UI visibility flags or the
+   * current window insets. Rather it tracks the latest known state provided via {@link
+   * #setIsNavigationBarVisible(boolean)}.
+   */
+  private static Optional<Boolean> isNavigationBarVisible = Optional.empty();
+
+  /** Allows other shadows to set the state of {@link #isStatusBarVisible}. */
+  protected static void setIsStatusBarVisible(boolean isStatusBarVisible) {
+    ShadowViewRootImpl.isStatusBarVisible = Optional.of(isStatusBarVisible);
+  }
+
+  /** Clears the last known state of {@link #isStatusBarVisible}. */
+  protected static void clearIsStatusBarVisible() {
+    ShadowViewRootImpl.isStatusBarVisible = Optional.empty();
+  }
+
+  /** Allows other shadows to set the state of {@link #isNavigationBarVisible}. */
+  protected static void setIsNavigationBarVisible(boolean isNavigationBarVisible) {
+    ShadowViewRootImpl.isNavigationBarVisible = Optional.of(isNavigationBarVisible);
+  }
+
+  /** Clears the last known state of {@link #isNavigationBarVisible}. */
+  protected static void clearIsNavigationBarVisible() {
+    ShadowViewRootImpl.isNavigationBarVisible = Optional.empty();
+  }
 
   @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
   protected static IWindowSession getWindowSession(Looper mainLooper) {
@@ -185,6 +230,38 @@ public class ShadowViewRootImpl {
     }
   }
 
+  /**
+   * On Android R+ {@link WindowInsets} supports checking visibility of specific inset types.
+   *
+   * <p>For those SDK levels, override the real {@link WindowInsets} with the tracked system bar
+   * visibility status ({@link #isStatusBarVisible}/{@link #isNavigationBarVisible}), if set.
+   *
+   * <p>NOTE: We use state tracking in place of a longer term solution of implementing the insets
+   * calculations and broadcast (via listeners) for now. Once we have insets calculations working we
+   * should remove this mechanism.
+   */
+  @Implementation(minSdk = R)
+  protected WindowInsets getWindowInsets(boolean forceConstruct) {
+    WindowInsets realInsets =
+        reflector(ViewRootImplReflector.class, realObject).getWindowInsets(forceConstruct);
+
+    WindowInsets.Builder overridenInsetsBuilder = new WindowInsets.Builder(realInsets);
+
+    if (isStatusBarVisible.isPresent()) {
+      overridenInsetsBuilder =
+          overridenInsetsBuilder.setVisible(
+              WindowInsets.Type.statusBars(), isStatusBarVisible.get());
+    }
+
+    if (isNavigationBarVisible.isPresent()) {
+      overridenInsetsBuilder =
+          overridenInsetsBuilder.setVisible(
+              WindowInsets.Type.navigationBars(), isNavigationBarVisible.get());
+    }
+
+    return overridenInsetsBuilder.build();
+  }
+
   @Resetter
   public static void reset() {
     ViewRootImplReflector viewRootImplStatic = reflector(ViewRootImplReflector.class);
@@ -192,6 +269,9 @@ public class ShadowViewRootImpl {
     viewRootImplStatic.setFirstDrawHandlers(new ArrayList<>());
     viewRootImplStatic.setFirstDrawComplete(false);
     viewRootImplStatic.setConfigCallbacks(new ArrayList<>());
+
+    clearIsStatusBarVisible();
+    clearIsNavigationBarVisible();
   }
 
   public void callWindowFocusChanged(boolean hasFocus) {
@@ -389,5 +469,9 @@ public class ShadowViewRootImpl {
 
     // SDK >= T
     void windowFocusChanged(boolean hasFocus);
+
+    // SDK >= M
+    @Direct
+    WindowInsets getWindowInsets(boolean forceConstruct);
   }
 }

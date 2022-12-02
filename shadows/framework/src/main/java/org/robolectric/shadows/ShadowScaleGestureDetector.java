@@ -5,27 +5,32 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.ReflectorObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ScaleGestureDetector.class)
 public class ShadowScaleGestureDetector {
 
+  @ReflectorObject ScaleGestureDetectorReflector scaleGestureDetectorReflector;
   private MotionEvent onTouchEventMotionEvent;
   private ScaleGestureDetector.OnScaleGestureListener listener;
-  private float scaleFactor = 1;
-  private float focusX;
-  private float focusY;
+  private Float scaleFactor;
+  private Float focusX;
+  private Float focusY;
 
   @Implementation
   protected void __constructor__(
       Context context, ScaleGestureDetector.OnScaleGestureListener listener) {
+    scaleGestureDetectorReflector.__constructor__(context, listener);
     this.listener = listener;
   }
 
   @Implementation
   protected boolean onTouchEvent(MotionEvent event) {
     onTouchEventMotionEvent = event;
-    return true;
+    return scaleGestureDetectorReflector.onTouchEvent(event);
   }
 
   public MotionEvent getOnTouchEventMotionEvent() {
@@ -34,9 +39,9 @@ public class ShadowScaleGestureDetector {
 
   public void reset() {
     onTouchEventMotionEvent = null;
-    scaleFactor = 1;
-    focusX = 0;
-    focusY = 0;
+    scaleFactor = null;
+    focusX = null;
+    focusY = null;
   }
 
   public ScaleGestureDetector.OnScaleGestureListener getListener() {
@@ -49,7 +54,7 @@ public class ShadowScaleGestureDetector {
 
   @Implementation
   protected float getScaleFactor() {
-    return scaleFactor;
+    return scaleFactor != null ? scaleFactor : scaleGestureDetectorReflector.getScaleFactor();
   }
 
   public void setFocusXY(float focusX, float focusY) {
@@ -59,11 +64,29 @@ public class ShadowScaleGestureDetector {
 
   @Implementation
   protected float getFocusX() {
-    return focusX;
+    return focusX != null ? focusX : scaleGestureDetectorReflector.getFocusX();
   }
 
   @Implementation
   protected float getFocusY() {
-    return focusY;
+    return focusY != null ? focusY : scaleGestureDetectorReflector.getFocusY();
+  }
+
+  @ForType(ScaleGestureDetector.class)
+  private interface ScaleGestureDetectorReflector {
+    @Direct
+    void __constructor__(Context context, ScaleGestureDetector.OnScaleGestureListener listener);
+
+    @Direct
+    boolean onTouchEvent(MotionEvent event);
+
+    @Direct
+    float getScaleFactor();
+
+    @Direct
+    float getFocusX();
+
+    @Direct
+    float getFocusY();
   }
 }

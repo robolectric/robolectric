@@ -7,6 +7,7 @@ import static org.robolectric.res.android.Util.ALOGV;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import com.google.common.primitives.Shorts;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,11 +24,20 @@ public class FileMap {
   /** ZIP archive central directory end header signature. */
   private static final int ENDSIG = 0x6054b50;
 
-  private static final int ENDHDR = 22;
+  private static final int EOCD_SIZE = 22;
+
+  private static final int ZIP64_EOCD_SIZE = 56;
+
+  private static final int ZIP64_EOCD_LOCATOR_SIZE = 20;
+
   /** ZIP64 archive central directory end header signature. */
   private static final int ENDSIG64 = 0x6064b50;
-  /** the maximum size of the end of central directory section in bytes */
-  private static final int MAXIMUM_ZIP_EOCD_SIZE = 64 * 1024 + ENDHDR;
+
+  private static final int MAX_COMMENT_SIZE = 64 * 1024; // 64k
+
+  /** the maximum size of the end of central directory sections in bytes */
+  private static final int MAXIMUM_ZIP_EOCD_SIZE =
+      MAX_COMMENT_SIZE + EOCD_SIZE + ZIP64_EOCD_SIZE + ZIP64_EOCD_LOCATOR_SIZE;
 
   private ZipFile zipFile;
   private ZipEntry zipEntry;
@@ -209,7 +219,6 @@ public class FileMap {
 
       // First read the 'end of central directory record' in order to find the start of the central
       // directory
-      // The end of central directory record (EOCD) is max comment length (64K) + 22 bytes
       int endOfCdSize = Math.min(MAXIMUM_ZIP_EOCD_SIZE, length);
       int endofCdOffset = length - endOfCdSize;
       randomAccessFile.seek(endofCdOffset);
@@ -217,7 +226,11 @@ public class FileMap {
       randomAccessFile.readFully(buffer);
 
       int centralDirOffset = findCentralDir(buffer);
-
+      if (centralDirOffset == -1) {
+        // If the zip file contains > 2^16 entries, a Zip64 EOCD is written, and the central
+        // dir offset in the regular EOCD may be -1.
+        centralDirOffset = findCentralDir64(buffer);
+      }
       int offset = centralDirOffset - endofCdOffset;
       if (offset < 0) {
         // read the entire central directory record into memory
@@ -284,7 +297,7 @@ public class FileMap {
 
   private static int findCentralDir(byte[] buffer) throws IOException {
     // find start of central directory by scanning backwards
-    int scanOffset = buffer.length - ENDHDR;
+    int scanOffset = buffer.length - EOCD_SIZE;
 
     while (true) {
       int val = readInt(buffer, scanOffset);
@@ -305,10 +318,46 @@ public class FileMap {
     return offsetToCentralDir;
   }
 
+  private static int findCentralDir64(byte[] buffer) throws IOException {
+    // find start of central directory by scanning backwards
+    int scanOffset = buffer.length - EOCD_SIZE - ZIP64_EOCD_LOCATOR_SIZE - ZIP64_EOCD_SIZE;
+
+    while (true) {
+      int val = readInt(buffer, scanOffset);
+      if (val == ENDSIG64) {
+        break;
+      }
+
+      // Ok, keep backing up looking for the ZIP end central directory
+      // signature.
+      --scanOffset;
+      if (scanOffset < 0) {
+        throw new ZipException("ZIP directory not found, not a ZIP archive.");
+      }
+    }
+    // scanOffset is now start of end of central directory record
+    // the 'offset to central dir' data is at position 16 in the record
+    long offsetToCentralDir = readLong(buffer, scanOffset + 48);
+    return (int) offsetToCentralDir;
+  }
+
   /** Read a 32-bit integer from a bytebuffer in little-endian order. */
   private static int readInt(byte[] buffer, int offset) {
     return Ints.fromBytes(
         buffer[offset + 3], buffer[offset + 2], buffer[offset + 1], buffer[offset]);
+  }
+
+  /** Read a 64-bit integer from a bytebuffer in little-endian order. */
+  private static long readLong(byte[] buffer, int offset) {
+    return Longs.fromBytes(
+        buffer[offset + 7],
+        buffer[offset + 6],
+        buffer[offset + 5],
+        buffer[offset + 4],
+        buffer[offset + 3],
+        buffer[offset + 2],
+        buffer[offset + 1],
+        buffer[offset]);
   }
 
   /** Read a 16-bit short from a bytebuffer in little-endian order. */

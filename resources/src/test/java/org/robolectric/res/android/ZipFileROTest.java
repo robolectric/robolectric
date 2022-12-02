@@ -3,9 +3,12 @@ package org.robolectric.res.android;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,5 +65,34 @@ public final class ZipFileROTest {
 
     ZipFileRO zipFile = ZipFileRO.open(blob.toString());
     assertThat(zipFile).isNotNull();
+  }
+
+  @Test
+  public void testCreateJar() throws Exception {
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+    ZipOutputStream out = new ZipOutputStream(byteArrayOutputStream);
+    // Write 2^16 + 1 entries, forcing zip64 EOCD to be written.
+    for (int i = 0; i < 65537; i++) {
+      out.putNextEntry(new ZipEntry(Integer.toString(i)));
+      out.closeEntry();
+    }
+    out.close();
+    byte[] zipBytes = byteArrayOutputStream.toByteArray();
+    // Write 0xff for the following fields in the EOCD, which some zip libraries do.
+    // Entries in this disk (2 bytes)
+    // Total Entries (2 byte)
+    // Size of Central Dir (4 bytes)
+    // Offset to Central Dir (4 bytes)
+    // Total: 12 bytes
+    for (int i = 0; i < 12; i++) {
+      zipBytes[zipBytes.length - 3 - i] = (byte) 0xff;
+    }
+    File tmpFile = File.createTempFile("zip64eocd", "zip");
+    Files.write(zipBytes, tmpFile);
+    ZipFileRO zro = ZipFileRO.open(tmpFile.getAbsolutePath());
+    assertThat(zro).isNotNull();
+    assertThat(zro.findEntryByName("0")).isNotNull();
+    assertThat(zro.findEntryByName("65536")).isNotNull();
+    assertThat(zro.findEntryByName("65537")).isNull();
   }
 }

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
@@ -11,6 +10,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowMatrixTest {
@@ -23,7 +23,7 @@ public class ShadowMatrixTest {
     m.preTranslate(16, 23);
     m.preSkew(42, 108);
 
-    assertThat(shadowOf(m).getPreOperations())
+    assertThat(((ShadowMatrix) Shadow.extract(m)).getPreOperations())
         .containsExactly("skew 42.0 108.0", "translate 16.0 23.0", "rotate 4.0 8.0 15.0");
   }
 
@@ -34,7 +34,7 @@ public class ShadowMatrixTest {
     m.postTranslate(16, 23);
     m.postSkew(42, 108);
 
-    assertThat(shadowOf(m).getPostOperations())
+    assertThat(((ShadowMatrix) Shadow.extract(m)).getPostOperations())
         .containsExactly("rotate 4.0 8.0 15.0", "translate 16.0 23.0", "skew 42.0 108.0");
   }
 
@@ -49,7 +49,8 @@ public class ShadowMatrixTest {
     m.setRotate(42);
     m.setRotate(108);
 
-    assertThat(shadowOf(m).getSetOperations()).containsEntry("rotate", "108.0");
+    assertThat(((ShadowMatrix) Shadow.extract(m)).getSetOperations())
+        .containsEntry("rotate", "108.0");
   }
 
   @Test
@@ -59,7 +60,7 @@ public class ShadowMatrixTest {
     matrix.preScale(2, 2, 2, 2);
     matrix.postScale(3, 3, 3, 3);
 
-    final ShadowMatrix shadow = shadowOf(matrix);
+    final ShadowMatrix shadow = Shadow.extract(matrix);
     assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 1.0");
     assertThat(shadow.getPreOperations().get(0)).isEqualTo("scale 2.0 2.0 2.0 2.0");
     assertThat(shadow.getPostOperations().get(0)).isEqualTo("scale 3.0 3.0 3.0 3.0");
@@ -70,7 +71,7 @@ public class ShadowMatrixTest {
     final Matrix matrix = new Matrix();
     matrix.setScale(1, 2, 3, 4);
 
-    final ShadowMatrix shadow = shadowOf(matrix);
+    final ShadowMatrix shadow = Shadow.extract(matrix);
     assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 2.0 3.0 4.0");
   }
 
@@ -83,7 +84,7 @@ public class ShadowMatrixTest {
     matrix2.setScale(3, 4);
     matrix2.set(matrix1);
 
-    final ShadowMatrix shadow = shadowOf(matrix2);
+    final ShadowMatrix shadow = Shadow.extract(matrix2);
     assertThat(shadow.getSetOperations().get("scale")).isEqualTo("1.0 2.0");
   }
 
@@ -96,7 +97,7 @@ public class ShadowMatrixTest {
     matrix2.set(matrix1);
     matrix2.set(null);
 
-    final ShadowMatrix shadow = shadowOf(matrix2);
+    final ShadowMatrix shadow = Shadow.extract(matrix2);
     assertThat(shadow.getSetOperations()).isEmpty();
   }
 
