@@ -30,11 +30,14 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelUuid;
 import android.provider.Settings;
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -99,6 +102,8 @@ public class ShadowBluetoothAdapter {
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
   private final ConcurrentMap<UUID, BackgroundRfcommServerEntry> backgroundRfcommServers =
       new ConcurrentHashMap<>();
+  private final Map<Integer, List<BluetoothProfile.ServiceListener>>
+      bluetoothProfileServiceListeners = new HashMap<>();
 
   @Resetter
   public static void reset() {
@@ -528,6 +533,13 @@ public class ShadowBluetoothAdapter {
       return false;
     } else {
       listener.onServiceConnected(profile, proxy);
+      List<BluetoothProfile.ServiceListener> profileListeners =
+          bluetoothProfileServiceListeners.get(profile);
+      if (profileListeners != null) {
+        profileListeners.add(listener);
+      } else {
+        bluetoothProfileServiceListeners.put(profile, new ArrayList<>(ImmutableList.of(listener)));
+      }
       return true;
     }
   }
@@ -548,6 +560,13 @@ public class ShadowBluetoothAdapter {
 
     if (proxy != null && proxy.equals(profileProxies.get(profile))) {
       profileProxies.remove(profile);
+      List<BluetoothProfile.ServiceListener> profileListeners =
+          bluetoothProfileServiceListeners.remove(profile);
+      if (profileListeners != null) {
+        for (BluetoothProfile.ServiceListener listener : profileListeners) {
+          listener.onServiceDisconnected(profile);
+        }
+      }
     }
   }
 

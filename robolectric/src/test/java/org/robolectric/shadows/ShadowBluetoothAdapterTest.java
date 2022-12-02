@@ -495,6 +495,51 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  public void closeProfileProxy_severalCallersObserving_allNotified() {
+    BluetoothProfile mockProxy = mock(BluetoothProfile.class);
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+    BluetoothProfile.ServiceListener mockServiceListener2 =
+        mock(BluetoothProfile.ServiceListener.class);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    bluetoothAdapter.getProfileProxy(
+        RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
+    bluetoothAdapter.getProfileProxy(
+        RuntimeEnvironment.getApplication(), mockServiceListener2, MOCK_PROFILE1);
+
+    bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    verify(mockServiceListener).onServiceDisconnected(MOCK_PROFILE1);
+    verify(mockServiceListener2).onServiceDisconnected(MOCK_PROFILE1);
+  }
+
+  @Test
+  public void closeProfileProxy_severalCallersObservingAndClosedTwice_allNotifiedOnce() {
+    BluetoothProfile mockProxy = mock(BluetoothProfile.class);
+    BluetoothProfile.ServiceListener mockServiceListener =
+        mock(BluetoothProfile.ServiceListener.class);
+    BluetoothProfile.ServiceListener mockServiceListener2 =
+        mock(BluetoothProfile.ServiceListener.class);
+    shadowOf(bluetoothAdapter).setProfileProxy(MOCK_PROFILE1, mockProxy);
+
+    bluetoothAdapter.getProfileProxy(
+        RuntimeEnvironment.getApplication(), mockServiceListener, MOCK_PROFILE1);
+    bluetoothAdapter.getProfileProxy(
+        RuntimeEnvironment.getApplication(), mockServiceListener2, MOCK_PROFILE1);
+
+    bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
+    verify(mockServiceListener).onServiceConnected(MOCK_PROFILE1, mockProxy);
+    verify(mockServiceListener2).onServiceConnected(MOCK_PROFILE1, mockProxy);
+    verify(mockServiceListener).onServiceDisconnected(MOCK_PROFILE1);
+    verify(mockServiceListener2).onServiceDisconnected(MOCK_PROFILE1);
+
+    bluetoothAdapter.closeProfileProxy(MOCK_PROFILE1, mockProxy);
+    verifyNoMoreInteractions(mockServiceListener);
+    verifyNoMoreInteractions(mockServiceListener2);
+  }
+
+  @Test
   public void closeProfileProxy_reversesSetProfileProxy() {
     BluetoothProfile mockProxy = mock(BluetoothProfile.class);
     BluetoothProfile.ServiceListener mockServiceListener =
