@@ -3,8 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric.integrationtests.axt">
 
-  <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS"/>
-
   <application>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"

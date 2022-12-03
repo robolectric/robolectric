@@ -7,8 +7,6 @@
       android:minSdkVersion="14"
       android:targetSdkVersion="27"/>
 
-  <uses-permission android:name="android.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS"/>
-
   <application>
     <activity android:name=".EspressoActivity" android:exported="true"/>
   </application>
