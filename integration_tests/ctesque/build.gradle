@@ -67,4 +67,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:truth:$axtTruthVersion")
     androidTestImplementation("com.google.truth:truth:${truthVersion}")
     androidTestImplementation("com.google.guava:guava:$guavaJREVersion")
+    androidTestUtil "androidx.test.services:test-services:$axtTestServicesVersion"
 }
