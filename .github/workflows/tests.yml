@@ -166,7 +166,7 @@ jobs:
 
           profile: Nexus One
           script: |
-            ./gradlew cAT || ./gradlew cAT || ./gradlew cAT || exit 1
+            ./gradlew cAT
 
       - name: Upload test results
         if: always()
