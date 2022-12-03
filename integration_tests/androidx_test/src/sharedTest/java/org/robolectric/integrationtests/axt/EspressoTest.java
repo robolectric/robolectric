@@ -25,6 +25,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,6 +39,11 @@ public final class EspressoTest {
   @Rule
   public ActivityScenarioRule<EspressoActivity> activityRule =
       new ActivityScenarioRule<>(EspressoActivity.class);
+
+  @BeforeClass
+  public static void dismissSystemDialog() {
+    TestUtils.dismissSystemDialog();
+  }
 
   @Test
   public void onIdle_doesnt_block() {
