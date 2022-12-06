@@ -54,6 +54,10 @@ public class MutableClass {
     return new ArrayList<>(classNode.methods);
   }
 
+  public Type getClassType() {
+    return classType;
+  }
+
   public void addMethod(MethodNode methodNode) {
     classNode.methods.add(methodNode);
   }
