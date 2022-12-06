@@ -430,14 +430,10 @@ public final class ShadowPausedLooper extends ShadowLooper {
       setLooperExecutor(this);
       isPaused = true;
       runLatch.countDown();
-      while (true) {
+      while (isPaused) {
         try {
           Runnable runnable = executionQueue.take();
           runnable.run();
-          if (runnable instanceof UnPauseRunnable) {
-            setLooperExecutor(new HandlerExecutor(new Handler(realLooper)));
-            return;
-          }
         } catch (InterruptedException e) {
           // ignore
         }
@@ -448,6 +444,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
   private class UnPauseRunnable extends ControlRunnable {
     @Override
     public void run() {
+      setLooperExecutor(new HandlerExecutor(new Handler(realLooper)));
       isPaused = false;
       runLatch.countDown();
     }
