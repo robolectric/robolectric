@@ -4,6 +4,7 @@ import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -170,24 +171,24 @@ public class ShadowSubscriptionManagerTest {
 
   @Test
   public void isNetworkRoaming_shouldReturnTrueIfSet() {
-    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /* isNetworkRoaming= */ true);
     assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isTrue();
   }
 
   /** Multi act-asserts are discouraged but here we are testing the set+unset. */
   @Test
   public void isNetworkRoaming_shouldReturnFalseIfUnset() {
-    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /* isNetworkRoaming= */ true);
     assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isTrue();
 
-    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ false);
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /* isNetworkRoaming= */ false);
     assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isFalse();
   }
 
   /** Multi act-asserts are discouraged but here we are testing the set+clear. */
   @Test
   public void isNetworkRoaming_shouldReturnFalseOnClear() {
-    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /*isNetworkRoaming=*/ true);
+    shadowOf(subscriptionManager).setNetworkRoamingStatus(123, /* isNetworkRoaming= */ true);
     assertThat(shadowOf(subscriptionManager).isNetworkRoaming(123)).isTrue();
 
     shadowOf(subscriptionManager).clearNetworkRoamingStatus();
@@ -312,6 +313,22 @@ public class ShadowSubscriptionManagerTest {
                 .buildSubscriptionInfo()
                 .getMnc())
         .isEqualTo(123);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumber_phoneNumberNotSet_returnsEmptyString() {
+    assertThat(subscriptionManager.getPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID))
+        .isEqualTo("");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumber_setPhoneNumber_returnsPhoneNumber() {
+    shadowOf(subscriptionManager)
+        .setPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, "123");
+    assertThat(subscriptionManager.getPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID))
+        .isEqualTo("123");
   }
 
   private static class DummySubscriptionsChangedListener
