@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -171,6 +172,20 @@ public class ShadowBluetoothHeadsetTest {
             BluetoothHeadset.STATE_AUDIO_CONNECTING,
             BluetoothHeadset.STATE_AUDIO_CONNECTED,
             BluetoothHeadset.STATE_AUDIO_DISCONNECTED);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void isVoiceRecognitionSupported_supportedByDefault() {
+    assertThat(bluetoothHeadset.isVoiceRecognitionSupported(device1)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setVoiceRecognitionSupported_false_notSupported() {
+    shadowOf(bluetoothHeadset).setVoiceRecognitionSupported(false);
+
+    assertThat(bluetoothHeadset.isVoiceRecognitionSupported(device1)).isFalse();
   }
 
   @Test

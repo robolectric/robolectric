@@ -14,6 +14,7 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.annotation.TargetApi;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -74,6 +75,7 @@ public class ShadowAudioManager {
       new HashSet<>();
   private final HashSet<AudioManager.AudioPlaybackCallback> audioPlaybackCallbacks =
       new HashSet<>();
+  private final HashSet<AudioDeviceCallback> audioDeviceCallbacks = new HashSet<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
   private boolean bluetoothA2dpOn;
@@ -418,12 +420,123 @@ public class ShadowAudioManager {
     defaultDevicesForAttributes = devices;
   }
 
+  /**
+   * Sets the list of connected input devices represented by {@link AudioDeviceInfo}.
+   *
+   * <p>The previous list of input devices is replaced and no notifications of the list of {@link
+   * AudioDeviceCallback} is done.
+   *
+   * <p>To add/remove devices one by one and trigger notifications for the list of {@link
+   * AudioDeviceCallback} please use one of the following methods {@link
+   * #addInputDevice(AudioDeviceInfo, boolean)}, {@link #removeInputDevice(AudioDeviceInfo,
+   * boolean)}.
+   */
   public void setInputDevices(List<AudioDeviceInfo> inputDevices) {
-    this.inputDevices = inputDevices;
+    this.inputDevices = new ArrayList<>(inputDevices);
   }
 
+  /**
+   * Sets the list of connected output devices represented by {@link AudioDeviceInfo}.
+   *
+   * <p>The previous list of output devices is replaced and no notifications of the list of {@link
+   * AudioDeviceCallback} is done.
+   *
+   * <p>To add/remove devices one by one and trigger notifications for the list of {@link
+   * AudioDeviceCallback} please use one of the following methods {@link
+   * #addOutputDevice(AudioDeviceInfo, boolean)}, {@link #removeOutputDevice(AudioDeviceInfo,
+   * boolean)}.
+   */
   public void setOutputDevices(List<AudioDeviceInfo> outputDevices) {
-    this.outputDevices = outputDevices;
+    this.outputDevices = new ArrayList<>(outputDevices);
+  }
+
+  /**
+   * Adds an input {@link AudioDeviceInfo} and notifies the list of {@link AudioDeviceCallback} if
+   * the device was not present before and indicated by {@code notifyAudioDeviceCallbacks}.
+   */
+  public void addInputDevice(AudioDeviceInfo inputDevice, boolean notifyAudioDeviceCallbacks) {
+    boolean changed =
+        !this.inputDevices.contains(inputDevice) && this.inputDevices.add(inputDevice);
+    if (changed && notifyAudioDeviceCallbacks) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(inputDevice), /* added= */ true);
+    }
+  }
+
+  /**
+   * Removes an input {@link AudioDeviceInfo} and notifies the list of {@link AudioDeviceCallback}
+   * if the device was present before and indicated by {@code notifyAudioDeviceCallbacks}.
+   */
+  public void removeInputDevice(AudioDeviceInfo inputDevice, boolean notifyAudioDeviceCallbacks) {
+    boolean changed = this.inputDevices.remove(inputDevice);
+    if (changed && notifyAudioDeviceCallbacks) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(inputDevice), /* added= */ false);
+    }
+  }
+
+  /**
+   * Adds an output {@link AudioDeviceInfo} and notifies the list of {@link AudioDeviceCallback} if
+   * the device was not present before and indicated by {@code notifyAudioDeviceCallbacks}.
+   */
+  public void addOutputDevice(AudioDeviceInfo outputDevice, boolean notifyAudioDeviceCallbacks) {
+    boolean changed =
+        !this.outputDevices.contains(outputDevice) && this.outputDevices.add(outputDevice);
+    if (changed && notifyAudioDeviceCallbacks) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(outputDevice), /* added= */ true);
+    }
+  }
+
+  /**
+   * Removes an output {@link AudioDeviceInfo} and notifies the list of {@link AudioDeviceCallback}
+   * if the device was present before and indicated by {@code notifyAudioDeviceCallbacks}.
+   */
+  public void removeOutputDevice(AudioDeviceInfo outputDevice, boolean notifyAudioDeviceCallbacks) {
+    boolean changed = this.outputDevices.remove(outputDevice);
+    if (changed && notifyAudioDeviceCallbacks) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(outputDevice), /* added= */ false);
+    }
+  }
+
+  /**
+   * Registers an {@link AudioDeviceCallback} object to receive notifications of changes to the set
+   * of connected audio devices.
+   *
+   * <p>The {@code handler} is ignored.
+   *
+   * @see #addInputDevice(AudioDeviceInfo, boolean)
+   * @see #addOutputDevice(AudioDeviceInfo, boolean)
+   * @see #removeInputDevice(AudioDeviceInfo, boolean)
+   * @see #removeOutputDevice(AudioDeviceInfo, boolean)
+   */
+  @Implementation(minSdk = M)
+  protected void registerAudioDeviceCallback(AudioDeviceCallback callback, Handler handler) {
+    audioDeviceCallbacks.add(callback);
+    // indicate currently available devices as added, similarly to MSG_DEVICES_CALLBACK_REGISTERED
+    callback.onAudioDevicesAdded(getDevices(AudioManager.GET_DEVICES_ALL));
+  }
+
+  /**
+   * Unregisters an {@link AudioDeviceCallback} object which has been previously registered to
+   * receive notifications of changes to the set of connected audio devices.
+   *
+   * @see #addInputDevice(AudioDeviceInfo, boolean)
+   * @see #addOutputDevice(AudioDeviceInfo, boolean)
+   * @see #removeInputDevice(AudioDeviceInfo, boolean)
+   * @see #removeOutputDevice(AudioDeviceInfo, boolean)
+   */
+  @Implementation(minSdk = M)
+  protected void unregisterAudioDeviceCallback(AudioDeviceCallback callback) {
+    audioDeviceCallbacks.remove(callback);
+  }
+
+  private void notifyAudioDeviceCallbacks(List<AudioDeviceInfo> devices, boolean added) {
+    AudioDeviceInfo[] devicesArray = devices.toArray(new AudioDeviceInfo[0]);
+    for (AudioDeviceCallback callback : audioDeviceCallbacks) {
+      if (added) {
+        callback.onAudioDevicesAdded(devicesArray);
+      } else {
+        callback.onAudioDevicesRemoved(devicesArray);
+      }
+    }
   }
 
   private List<AudioDeviceInfo> getInputDevices() {
