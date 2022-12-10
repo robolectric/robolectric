@@ -179,7 +179,7 @@ public final class ExpectedLogMessagesRuleTest {
             + "\\s+tag='Mytag'"
             + "\\s+msg='message2'"
             + "\\s+throwable=java.lang.IllegalArgumentException"
-            + "(\\s+at .*\\)\\n)+"
+            + "(\\s+at .*\\)\\R)+"
             + "\\s+}][\\s\\S]*";
     String expectedNotObservedPattern =
         "[\\s\\S]*Expected, but not observed:"
