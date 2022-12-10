@@ -1,56 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/layout"
-    android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
-    >
+    android:orientation="vertical">
 
-  <EditText
-    android:id="@+id/edit_text"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"/>
+    <EditText
+        android:id="@+id/edit_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-  <Button
-    android:id="@+id/button"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"/>
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
-  <TextView
-      android:id="@+id/text_view"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"
-      android:text="Text View"/>
+    <TextView
+        android:id="@+id/text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Text View" />
 
-  <TextView
-      android:id="@+id/text_view_positive_scale_x"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"
-      android:textScaleX="1.5"
-      android:text="Text View with positive textScaleX"/>
+    <TextView
+        android:id="@+id/text_view_positive_scale_x"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Text View with positive textScaleX"
+        android:textScaleX="1.5" />
 
-  <TextView
-      android:id="@+id/text_view_negative_scale_x"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"
-      android:textScaleX="-1.5"
-      android:text="Text View with negative textScaleX"/>
+    <TextView
+        android:id="@+id/text_view_negative_scale_x"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Text View with negative textScaleX"
+        android:textScaleX="-1.5" />
 
-  <TextView
-      android:id="@+id/text_view_letter_spacing"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"
-      android:letterSpacing="0.05"
-      android:text="Text View with letterSpacing"/>
+    <TextView
+        android:id="@+id/text_view_letter_spacing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:letterSpacing="0.05"
+        android:text="Text View with letterSpacing" />
 
-  <EditText
-      android:id="@+id/edit_text_phone"
-      android:layout_height="wrap_content"
-      android:layout_width="wrap_content"
-      android:inputType="phone"
-      />
+    <EditText
+        android:id="@+id/edit_text_phone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="phone" />
 
 </LinearLayout>
