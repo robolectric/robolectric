@@ -6,8 +6,13 @@ import libcore.util.NativeAllocationRegistry;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = NativeAllocationRegistry.class, minSdk = N, isInAndroidSdk = false, looseSignatures = true)
-public class ShadowNativeAllocationRegistry {
+/** Shadow for {@link NativeAllocationRegistry} that is a no-op. */
+@Implements(
+    value = NativeAllocationRegistry.class,
+    minSdk = N,
+    isInAndroidSdk = false,
+    looseSignatures = true)
+public class ShadowNoopNativeAllocationRegistry {
 
   @Implementation
   protected Runnable registerNativeAllocation(Object referent, Object allocator) {
