@@ -78,7 +78,7 @@ public class AndroidManifestTest {
   @Test
   public void parseManifest_shouldReadBroadcastReceivers() throws Exception {
     AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
-    assertThat(config.getBroadcastReceivers()).hasSize(8);
+    assertThat(config.getBroadcastReceivers()).hasSize(9);
 
     assertThat(config.getBroadcastReceivers().get(0).getName())
         .isEqualTo("org.robolectric.ConfigTestReceiver.InnerReceiver");
@@ -121,6 +121,11 @@ public class AndroidManifestTest {
         .isEqualTo("org.robolectric.ConfigTestReceiverPermissionsAndActions");
     assertThat(config.getBroadcastReceivers().get(7).getActions())
         .contains("org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE");
+
+    assertThat(config.getBroadcastReceivers().get(8).getName())
+        .isEqualTo("org.robolectric.CustomConstructorReceiver");
+    assertThat(config.getBroadcastReceivers().get(8).getActions())
+        .contains("org.robolectric.ACTION_CUSTOM_CONSTRUCTOR");
   }
 
   @Test

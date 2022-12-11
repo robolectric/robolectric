@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.ConfigTestReceiver;
+import org.robolectric.CustomConstructorReceiver;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -92,6 +93,12 @@ public class ShadowContextWrapperTest {
     ShadowLooper.shadowMainLooper().idle();
 
     assertThat(receiver.intentsReceived).hasSize(1);
+  }
+
+  @Test
+  public void registerReceiver_shouldGetReceiverWithCustomConstructor() {
+    BroadcastReceiver receiver = getReceiverOfClass(CustomConstructorReceiver.class);
+    assertThat(receiver).isInstanceOf(CustomConstructorReceiver.class);
   }
 
   @Test

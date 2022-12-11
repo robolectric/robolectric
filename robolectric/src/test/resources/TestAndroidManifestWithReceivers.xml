@@ -65,5 +65,11 @@
         <action android:name="org.robolectric.ACTION_RECEIVER_PERMISSION_PACKAGE"/>
       </intent-filter>
     </receiver>
+
+    <receiver android:name=".CustomConstructorReceiver">
+      <intent-filter>
+        <action android:name="org.robolectric.ACTION_CUSTOM_CONSTRUCTOR"/>
+      </intent-filter>
+    </receiver>
   </application>
 </manifest>
