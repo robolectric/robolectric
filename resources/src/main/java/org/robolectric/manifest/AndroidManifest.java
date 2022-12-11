@@ -51,6 +51,7 @@ public class AndroidManifest implements UsesSdk {
   private String processName;
   private String themeRef;
   private String labelRef;
+  private String appComponentFactory; // Added from SDK 28
   private Integer minSdkVersion;
   private Integer targetSdkVersion;
   private Integer maxSdkVersion;
@@ -184,6 +185,7 @@ public class AndroidManifest implements UsesSdk {
         rClassName = packageName + ".R";
 
         Node applicationNode = findApplicationNode(manifestDocument);
+        // Parse application node of the AndroidManifest.xml
         if (applicationNode != null) {
           NamedNodeMap attributes = applicationNode.getAttributes();
           int attrCount = attributes.getLength();
@@ -197,6 +199,7 @@ public class AndroidManifest implements UsesSdk {
           processName = applicationAttributes.get("android:process");
           themeRef = applicationAttributes.get("android:theme");
           labelRef = applicationAttributes.get("android:label");
+          appComponentFactory = applicationAttributes.get("android:appComponentFactory");
 
           parseReceivers(applicationNode);
           parseServices(applicationNode);
@@ -596,6 +599,11 @@ public class AndroidManifest implements UsesSdk {
 
   public String getLabelRef() {
     return labelRef;
+  }
+
+  public String getAppComponentFactory() {
+    parseAndroidManifest();
+    return appComponentFactory;
   }
 
   /**

@@ -84,6 +84,7 @@ import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
 import org.robolectric.shadows.ShadowView;
+import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -357,7 +358,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
         // Preload fonts resources
         FontsContract.setApplicationContextForResources(application);
       }
-      registerBroadcastReceivers(application, appManifest);
+      registerBroadcastReceivers(application, appManifest, loadedApk);
 
       appResources.updateConfiguration(androidConfiguration, displayMetrics);
       // propagate any updates to configuration via RuntimeEnvironment.setQualifiers
@@ -407,6 +408,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
       Path packageFile = appManifest.getApkFile();
       parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
+    }
+    if (parsedPackage != null
+        && parsedPackage.applicationInfo != null
+        && RuntimeEnvironment.getApiLevel() >= P) {
+      parsedPackage.applicationInfo.appComponentFactory = appManifest.getAppComponentFactory();
     }
     return parsedPackage;
   }
@@ -692,16 +698,39 @@ public class AndroidTestEnvironment implements TestEnvironment {
         .toString();
   }
 
+  private static BroadcastReceiver newBroadcastReceiverFromP(
+      String receiverClassName, LoadedApk loadedApk) {
+    ClassLoader classLoader = Shadow.class.getClassLoader();
+    if (loadedApk == null || loadedApk.getAppFactory() == null) {
+      return (BroadcastReceiver) newInstanceOf(receiverClassName);
+    } else {
+      try {
+        return loadedApk.getAppFactory().instantiateReceiver(classLoader, receiverClassName, null);
+      } catch (ReflectiveOperationException e) {
+        Logger.warn(
+            "Failed to initialize receiver %s with AppComponentFactory %s: %s",
+            receiverClassName, loadedApk.getAppFactory(), e);
+      }
+    }
+    return null;
+  }
+
   // TODO move/replace this with packageManager
   @VisibleForTesting
-  static void registerBroadcastReceivers(Application application, AndroidManifest androidManifest) {
+  static void registerBroadcastReceivers(
+      Application application, AndroidManifest androidManifest, LoadedApk loadedApk) {
     for (BroadcastReceiverData receiver : androidManifest.getBroadcastReceivers()) {
       IntentFilter filter = new IntentFilter();
       for (String action : receiver.getActions()) {
         filter.addAction(action);
       }
       String receiverClassName = replaceLastDotWith$IfInnerStaticClass(receiver.getName());
-      application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+      if (loadedApk != null && RuntimeEnvironment.getApiLevel() >= P) {
+        application.registerReceiver(
+            newBroadcastReceiverFromP(receiverClassName, loadedApk), filter);
+      } else {
+        application.registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+      }
     }
   }
 
