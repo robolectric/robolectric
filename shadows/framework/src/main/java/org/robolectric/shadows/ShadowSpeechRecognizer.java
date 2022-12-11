@@ -12,11 +12,11 @@ import android.os.Looper;
 import android.os.Message;
 import android.speech.IRecognitionService;
 import android.speech.RecognitionListener;
-import android.speech.RecognitionSupport;
-import android.speech.RecognitionSupportCallback;
 import android.speech.SpeechRecognizer;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import com.google.common.base.Preconditions;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
@@ -30,7 +30,7 @@ import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Robolectric shadow for SpeechRecognizer. */
-@Implements(SpeechRecognizer.class)
+@Implements(value = SpeechRecognizer.class, looseSignatures = true)
 public class ShadowSpeechRecognizer {
 
   @RealObject SpeechRecognizer realSpeechRecognizer;
@@ -39,7 +39,7 @@ public class ShadowSpeechRecognizer {
   private RecognitionListener recognitionListener;
   private static boolean isOnDeviceRecognitionAvailable = true;
 
-  private RecognitionSupportCallback recognitionSupportCallback;
+  private /*RecognitionSupportCallback*/ Object recognitionSupportCallback;
   private Executor recognitionSupportExecutor;
   @Nullable private Intent latestModelDownloadIntent;
 
@@ -138,10 +138,17 @@ public class ShadowSpeechRecognizer {
     return isOnDeviceRecognitionAvailable;
   }
 
+  @RequiresApi(api = VERSION_CODES.TIRAMISU)
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected void checkRecognitionSupport(
-      Intent recognizerIntent, Executor executor, RecognitionSupportCallback supportListener) {
-    recognitionSupportExecutor = executor;
+      @NonNull /*Intent*/ Object recognizerIntent,
+      @NonNull /*Executor*/ Object executor,
+      @NonNull /*RecognitionSupportCallback*/ Object supportListener) {
+    Preconditions.checkArgument(recognizerIntent instanceof Intent);
+    Preconditions.checkArgument(executor instanceof Executor);
+    Preconditions.checkArgument(
+        supportListener instanceof android.speech.RecognitionSupportCallback);
+    recognitionSupportExecutor = (Executor) executor;
     recognitionSupportCallback = supportListener;
   }
 
@@ -155,14 +162,20 @@ public class ShadowSpeechRecognizer {
   }
 
   @RequiresApi(VERSION_CODES.TIRAMISU)
-  public void triggerSupportResult(RecognitionSupport recognitionSupport) {
+  public void triggerSupportResult(/*RecognitionSupport*/ Object recognitionSupport) {
+    Preconditions.checkArgument(recognitionSupport instanceof android.speech.RecognitionSupport);
     recognitionSupportExecutor.execute(
-        () -> recognitionSupportCallback.onSupportResult(recognitionSupport));
+        () ->
+            ((android.speech.RecognitionSupportCallback) recognitionSupportCallback)
+                .onSupportResult((android.speech.RecognitionSupport) recognitionSupport));
   }
 
   @RequiresApi(VERSION_CODES.TIRAMISU)
   public void triggerSupportError(int error) {
-    recognitionSupportExecutor.execute(() -> recognitionSupportCallback.onError(error));
+    recognitionSupportExecutor.execute(
+        () ->
+            ((android.speech.RecognitionSupportCallback) recognitionSupportCallback)
+                .onError(error));
   }
 
   @RequiresApi(VERSION_CODES.TIRAMISU)
