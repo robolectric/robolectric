@@ -124,8 +124,6 @@ public class ReflectionHelpersTest {
 
   @Test
   public void setFinalStaticFieldReflectively_withFieldName_setsStaticFields() {
-    int startingValue = ReflectionHelpers.getStaticField(ExampleWithFinalStatic.class, "FIELD");
-
     RuntimeException thrown =
         assertThrows(
             RuntimeException.class,
