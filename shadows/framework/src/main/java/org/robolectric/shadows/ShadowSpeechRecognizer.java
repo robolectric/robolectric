@@ -45,7 +45,7 @@ public class ShadowSpeechRecognizer {
 
   /**
    * Returns the latest SpeechRecognizer. This method can only be called after {@link
-   * SpeechRecognizer#createSpeechRecognizer()} is called.
+   * SpeechRecognizer#createSpeechRecognizer(Context)} is called.
    */
   public static SpeechRecognizer getLatestSpeechRecognizer() {
     return latestSpeechRecognizer;
