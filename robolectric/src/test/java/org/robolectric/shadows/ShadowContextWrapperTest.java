@@ -4,6 +4,7 @@ import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -46,6 +47,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.ConfigTestReceiver;
+import org.robolectric.CustomConstructorReceiverWrapper.CustomConstructorWithEmptyActionReceiver;
+import org.robolectric.CustomConstructorReceiverWrapper.CustomConstructorWithOneActionReceiver;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
@@ -92,6 +95,20 @@ public class ShadowContextWrapperTest {
     ShadowLooper.shadowMainLooper().idle();
 
     assertThat(receiver.intentsReceived).hasSize(1);
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithAppComponentFactory.xml", minSdk = P)
+  public void registerReceiver_shouldGetReceiverWithCustomConstructorEmptyAction() {
+    BroadcastReceiver receiver = getReceiverOfClass(CustomConstructorWithEmptyActionReceiver.class);
+    assertThat(receiver).isInstanceOf(CustomConstructorWithEmptyActionReceiver.class);
+  }
+
+  @Test
+  @Config(manifest = "TestAndroidManifestWithAppComponentFactory.xml", minSdk = P)
+  public void registerReceiver_shouldGetReceiverWithCustomConstructorAndOneAction() {
+    BroadcastReceiver receiver = getReceiverOfClass(CustomConstructorWithOneActionReceiver.class);
+    assertThat(receiver).isInstanceOf(CustomConstructorWithOneActionReceiver.class);
   }
 
   @Test

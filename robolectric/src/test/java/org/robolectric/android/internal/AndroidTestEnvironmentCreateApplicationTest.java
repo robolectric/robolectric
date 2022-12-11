@@ -88,7 +88,7 @@ public class AndroidTestEnvironmentCreateApplicationTest {
     Application application = AndroidTestEnvironment.createApplication(appManifest, null,
         new ApplicationInfo());
     shadowOf(application).callAttach(RuntimeEnvironment.systemContext);
-    registerBroadcastReceivers(application, appManifest);
+    registerBroadcastReceivers(application, appManifest, null);
 
     List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
     assertThat(receivers).hasSize(1);
