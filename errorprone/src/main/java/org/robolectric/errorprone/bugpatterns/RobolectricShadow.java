@@ -20,10 +20,12 @@ import com.sun.source.doctree.StartElementTree;
 import com.sun.source.doctree.TextTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.TreePathScanner;
@@ -31,7 +33,6 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.DCTree.DCDocComment;
 import com.sun.tools.javac.tree.DCTree.DCReference;
-import com.sun.tools.javac.tree.DCTree.DCStartElement;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import java.util.ArrayList;
@@ -113,11 +114,12 @@ public final class RobolectricShadow extends BugChecker implements ClassTreeMatc
     @Override
     public Void visitStartElement(StartElementTree startElementTree, Void aVoid) {
       if (startElementTree.getName().toString().equalsIgnoreCase("p")) {
-        DCStartElement node = (DCStartElement) startElementTree;
-
         DocTreePath path = getCurrentPath();
-        int start = (int) node.getSourcePosition((DCDocComment) path.getDocComment()) + node.pos;
-        int end = node.getEndPos((DCDocComment) getCurrentPath().getDocComment());
+        DCDocComment doc = (DCDocComment) path.getDocComment();
+        DocSourcePositions positions = trees.getSourcePositions();
+        CompilationUnitTree compilationUnitTree = path.getTreePath().getCompilationUnit();
+        int start = (int) positions.getStartPosition(compilationUnitTree, doc, startElementTree);
+        int end = (int) positions.getEndPosition(compilationUnitTree, doc, startElementTree);
 
         fixes.add(Optional.of(SuggestedFix.replace(start, end, "")));
       }
