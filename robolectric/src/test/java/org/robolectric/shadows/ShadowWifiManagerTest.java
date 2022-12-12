@@ -675,6 +675,21 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
+  @Config(minSdk = R)
+  public void testSetClearWifiConnectedNetworkScorer() {
+    // GIVEN
+    WifiManager.WifiConnectedNetworkScorer mockScorer =
+        mock(WifiManager.WifiConnectedNetworkScorer.class);
+    // WHEN
+    wifiManager.setWifiConnectedNetworkScorer(directExecutor(), mockScorer);
+    assertThat(shadowOf(wifiManager).isWifiConnectedNetworkScorerEnabled()).isTrue();
+    wifiManager.clearWifiConnectedNetworkScorer();
+
+    // THEN
+    assertThat(shadowOf(wifiManager).isWifiConnectedNetworkScorerEnabled()).isFalse();
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void testGetUsabilityScores() {
     // GIVEN
