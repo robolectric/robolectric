@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -850,6 +851,14 @@ public class ShadowUserManagerTest {
     assertThat(UserManager.supportsMultipleUsers()).isTrue();
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void isHeadlessSystemUserMode() {
+    assertThat(UserManager.isHeadlessSystemUserMode()).isFalse();
+
+    shadowOf(userManager).setHeadlessSystemUserMode(true);
+    assertThat(UserManager.isHeadlessSystemUserMode()).isTrue();
+  }
 
   @Test
   @Config(minSdk = Q)

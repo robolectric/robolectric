@@ -1034,6 +1034,19 @@ public class ShadowUserManager {
     ShadowUserManager.isMultiUserSupported = isMultiUserSupported;
   }
 
+  @Implementation(minSdk = S)
+  protected static boolean isHeadlessSystemUserMode() {
+    return isHeadlessSystemUserMode;
+  }
+
+  /**
+   * Sets whether the device is in Headless System User Mode (HSUM); controls the return value of
+   * {@link UserManager#isHeadlessSystemUserMode}.
+   */
+  public void setHeadlessSystemUserMode(boolean isHeadlessSystemUserMode) {
+    ShadowUserManager.isHeadlessSystemUserMode = isHeadlessSystemUserMode;
+  }
+
   /**
    * Switches the current user to {@code userHandle}.
    *
