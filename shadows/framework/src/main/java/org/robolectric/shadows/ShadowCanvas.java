@@ -6,11 +6,10 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadow.api.ShadowPicker;
-import org.robolectric.shadows.ShadowCanvas.CanvasPicker;
+import org.robolectric.shadows.ShadowCanvas.Picker;
 
 /** Base class for {@link Canvas} shadow classes. Mainly contains public shadow API signatures. */
-@Implements(value = Canvas.class, shadowPicker = CanvasPicker.class)
+@Implements(value = Canvas.class, shadowPicker = Picker.class)
 public abstract class ShadowCanvas {
 
   public static String visualize(Canvas canvas) {
@@ -202,11 +201,10 @@ public abstract class ShadowCanvas {
     }
   }
 
-  /** A {@link ShadowPicker} that always selects the legacy ShadowCanvas */
-  public static class CanvasPicker implements ShadowPicker<ShadowCanvas> {
-    @Override
-    public Class<? extends ShadowCanvas> pickShadowClass() {
-      return ShadowLegacyCanvas.class;
+  /** Shadow picker for {@link Canvas}. */
+  public static final class Picker extends GraphicsShadowPicker<Object> {
+    public Picker() {
+      super(ShadowLegacyCanvas.class, ShadowNativeCanvas.class);
     }
   }
 }

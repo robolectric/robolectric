@@ -183,13 +183,16 @@ processResources {
 
 dependencies {
   api project(":utils")
-
-  annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
+  api project(":utils:reflector")
   api "com.google.guava:guava:$guavaJREVersion"
 
+  annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
   compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
   compileOnly AndroidSdk.MAX_SDK.coordinates
 
+  testCompileOnly AndroidSdk.MAX_SDK.coordinates
+  testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+  testImplementation project(":robolectric")
   testImplementation "junit:junit:${junitVersion}"
   testImplementation "com.google.truth:truth:${truthVersion}"
 }

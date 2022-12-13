@@ -5,7 +5,6 @@ import android.graphics.Matrix;
 import java.io.InputStream;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.shadows.ShadowBitmap.Picker;
 
 /** Base class for {@link Bitmap} shadows. */
@@ -125,11 +124,10 @@ public abstract class ShadowBitmap {
 
   public abstract void setDescription(String s);
 
-  /** A {@link ShadowPicker} that always selects the legacy ShadowBitmap. */
-  public static class Picker implements ShadowPicker<ShadowBitmap> {
-    @Override
-    public Class<? extends ShadowBitmap> pickShadowClass() {
-      return ShadowLegacyBitmap.class;
+  /** Shadow picker for {@link Bitmap}. */
+  public static final class Picker extends GraphicsShadowPicker<Object> {
+    public Picker() {
+      super(ShadowLegacyBitmap.class, ShadowNativeBitmap.class);
     }
   }
 }
