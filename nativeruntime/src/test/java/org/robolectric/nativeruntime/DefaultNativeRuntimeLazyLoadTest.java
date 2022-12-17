@@ -1,6 +1,7 @@
 package org.robolectric.nativeruntime;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.annotation.Config.ALL_SDKS;
 
 import android.app.Application;
 import android.database.CursorWindow;
@@ -8,8 +9,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
+@Config(sdk = ALL_SDKS)
 public final class DefaultNativeRuntimeLazyLoadTest {
 
   /**
