@@ -19,6 +19,7 @@ final class SystemFeatureListInitializer {
 
     if (apiLevel >= VERSION_CODES.O) {
       features.put(PackageManager.FEATURE_WIFI_AWARE, true);
+      features.put(PackageManager.FEATURE_COMPANION_DEVICE_SETUP, true);
     }
 
     if (apiLevel >= VERSION_CODES.P) {

@@ -34,6 +34,7 @@ import android.app.usage.IUsageStatsManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothManager;
+import android.companion.ICompanionDeviceManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
@@ -171,6 +172,7 @@ public class ShadowServiceManager {
       addBinderService("mount", IStorageManager.class);
       addBinderService(Context.WIFI_AWARE_SERVICE, IWifiAwareManager.class);
       addBinderService(Context.STORAGE_STATS_SERVICE, IStorageStatsManager.class);
+      addBinderService(Context.COMPANION_DEVICE_SERVICE, ICompanionDeviceManager.class);
     } else {
       addBinderService("mount", "android.os.storage.IMountService");
     }

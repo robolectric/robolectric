@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
@@ -23,6 +24,7 @@ public class ShadowBluetoothHeadset {
   private final List<BluetoothDevice> connectedDevices = new ArrayList<>();
   private boolean allowsSendVendorSpecificResultCode = true;
   private BluetoothDevice activeBluetoothDevice;
+  private boolean isVoiceRecognitionSupported = true;
 
   /**
    * Overrides behavior of {@link getConnectedDevices}. Returns list of devices that is set up by
@@ -127,6 +129,27 @@ public class ShadowBluetoothHeadset {
     intent.putExtra(BluetoothDevice.EXTRA_DEVICE, activeBluetoothDevice);
     RuntimeEnvironment.getApplication().sendBroadcast(intent);
     return true;
+  }
+
+  /**
+   * Sets whether the headset supports voice recognition.
+   *
+   * <p>By default voice recognition is supported.
+   *
+   * @see #isVoiceRecognitionSupported(BluetoothDevice)
+   */
+  public void setVoiceRecognitionSupported(boolean supported) {
+    isVoiceRecognitionSupported = supported;
+  }
+
+  /**
+   * Checks whether the headset supports voice recognition.
+   *
+   * @see #setVoiceRecognitionSupported(boolean)
+   */
+  @Implementation(minSdk = S)
+  protected boolean isVoiceRecognitionSupported(BluetoothDevice device) {
+    return isVoiceRecognitionSupported;
   }
 
   /**

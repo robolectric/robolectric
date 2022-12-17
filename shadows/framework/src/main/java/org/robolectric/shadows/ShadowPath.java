@@ -5,7 +5,6 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import java.util.List;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.shadows.ShadowPath.Picker;
 
 /** Base class for {@link ShadowPath} classes. */
@@ -81,11 +80,10 @@ public abstract class ShadowPath {
     }
   }
 
-  /** A {@link ShadowPicker} that always selects the legacy ShadowPath */
-  public static class Picker implements ShadowPicker<ShadowPath> {
-    @Override
-    public Class<? extends ShadowPath> pickShadowClass() {
-      return ShadowLegacyPath.class;
+  /** Shadow picker for {@link Path}. */
+  public static final class Picker extends GraphicsShadowPicker<Object> {
+    public Picker() {
+      super(ShadowLegacyPath.class, ShadowNativePath.class);
     }
   }
 }

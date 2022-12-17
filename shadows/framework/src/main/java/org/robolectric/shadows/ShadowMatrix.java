@@ -5,7 +5,6 @@ import android.graphics.Matrix;
 import java.util.List;
 import java.util.Map;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.shadows.ShadowMatrix.Picker;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -43,11 +42,10 @@ public abstract class ShadowMatrix {
 
   public abstract String getDescription();
 
-  /** A {@link ShadowPicker} that always selects the legacy ShadowPath */
-  public static class Picker implements ShadowPicker<ShadowMatrix> {
-    @Override
-    public Class<? extends ShadowMatrix> pickShadowClass() {
-      return ShadowLegacyMatrix.class;
+  /** Shadow picker for {@link Matrix}. */
+  public static final class Picker extends GraphicsShadowPicker<Object> {
+    public Picker() {
+      super(ShadowLegacyMatrix.class, ShadowNativeMatrix.class);
     }
   }
 }

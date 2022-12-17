@@ -49,7 +49,7 @@ public class ClassInstrumentor {
   private static final Handle BOOTSTRAP_STATIC;
   private static final Handle BOOTSTRAP_INTRINSIC;
   private static final String ROBO_INIT_METHOD_NAME = "$$robo$init";
-  static final Type OBJECT_TYPE = Type.getType(Object.class);
+  protected static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
   final Decorator decorator;
 

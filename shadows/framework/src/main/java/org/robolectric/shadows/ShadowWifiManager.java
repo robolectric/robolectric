@@ -65,6 +65,7 @@ public class ShadowWifiManager {
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
       wifiUsabilityStatsListeners = new ConcurrentHashMap<>();
   private final List<WifiUsabilityScore> usabilityScores = new ArrayList<>();
+  private Object networkScorer;
   @RealObject WifiManager wifiManager;
   private WifiConfiguration apConfig;
 
@@ -434,6 +435,32 @@ public class ShadowWifiManager {
     synchronized (usabilityScores) {
       usabilityScores.add(new WifiUsabilityScore(seqNum, score, predictionHorizonSec));
     }
+  }
+
+  /**
+   * Implements setWifiConnectedNetworkScorer() with the generic Object input as
+   * WifiConnectedNetworkScorer is a hidden/System API.
+   */
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected boolean setWifiConnectedNetworkScorer(Object executorObject, Object scorerObject) {
+    if (networkScorer == null) {
+      networkScorer = scorerObject;
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @Implementation(minSdk = R)
+  @HiddenApi
+  protected void clearWifiConnectedNetworkScorer() {
+    networkScorer = null;
+  }
+
+  /** Returns if wifi connected betwork scorer enabled */
+  public boolean isWifiConnectedNetworkScorerEnabled() {
+    return networkScorer != null;
   }
 
   @Implementation

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.graphics.Typeface;
 import org.robolectric.annotation.Implements;
-import org.robolectric.shadow.api.ShadowPicker;
 import org.robolectric.shadows.ShadowTypeface.Picker;
 
 /** Base class for {@link ShadowTypeface} classes. */
@@ -65,11 +64,10 @@ public abstract class ShadowTypeface {
     }
   }
 
-  /** A {@link ShadowPicker} that always selects the legacy ShadowTypeface. */
-  public static class Picker implements ShadowPicker<ShadowTypeface> {
-    @Override
-    public Class<? extends ShadowTypeface> pickShadowClass() {
-      return ShadowLegacyTypeface.class;
+  /** Shadow picker for {@link Typeface}. */
+  public static final class Picker extends GraphicsShadowPicker<Object> {
+    public Picker() {
+      super(ShadowLegacyTypeface.class, ShadowNativeTypeface.class);
     }
   }
 }

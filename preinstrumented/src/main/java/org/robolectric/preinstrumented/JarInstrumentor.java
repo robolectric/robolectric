@@ -149,6 +149,11 @@ public class JarInstrumentor {
     ZipEntry buildProp = jarFile.getEntry("build.prop");
     Properties buildProps = new Properties();
     buildProps.load(jarFile.getInputStream(buildProp));
+    String codename = buildProps.getProperty("ro.build.version.codename");
+    // Check for a prerelease SDK.
+    if (!"REL".equals(codename)) {
+      return 10000;
+    }
     return Integer.parseInt(buildProps.getProperty("ro.build.version.sdk"));
   }
 }
