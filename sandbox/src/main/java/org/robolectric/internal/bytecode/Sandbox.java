@@ -20,7 +20,7 @@ public class Sandbox {
   private final SandboxClassLoader sandboxClassLoader;
   private final ExecutorService executorService;
   private ShadowInvalidator shadowInvalidator;
-  private ClassHandler classHandler; // todo not public
+  private ClassHandler classHandler;
   private ShadowMap shadowMap = ShadowMap.EMPTY;
 
   public Sandbox(
