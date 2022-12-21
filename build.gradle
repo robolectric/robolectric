@@ -18,7 +18,6 @@ buildscript {
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:2.0.2'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "com.github.ben-manes:gradle-versions-plugin:0.42.0"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:6.9.1"
     }
 }
@@ -35,7 +34,6 @@ allprojects {
 }
 
 apply plugin: 'idea'
-apply plugin: 'com.github.ben-manes.versions'
 
 project.ext.configAnnotationProcessing = []
 project.afterEvaluate {
@@ -120,29 +118,6 @@ task aggregateJsondocs(type: Copy) {
 task aggregateDocs {
     dependsOn ':aggregateJavadocs'
     dependsOn ':aggregateJsondocs'
-}
-
-// aggregate test results from all projects...
-task aggregateTestReports(type: TestReport) {
-    def jobNumber = System.getenv('TRAVIS_JOB_NUMBER')
-    if (jobNumber == null) {
-        destinationDir = file("$buildDir/reports/allTests")
-    } else {
-        destinationDir = file("$buildDir/reports/allTests/$jobNumber")
-    }
-}
-
-afterEvaluate {
-    def aggregateTestReportsTask = rootProject.tasks['aggregateTestReports']
-
-    allprojects.each { p ->
-        p.afterEvaluate {
-            p.tasks.withType(Test) { t ->
-                aggregateTestReportsTask.reportOn binResultsDir
-                finalizedBy aggregateTestReportsTask
-            }
-        }
-    }
 }
 
 task prefetchSdks() {
