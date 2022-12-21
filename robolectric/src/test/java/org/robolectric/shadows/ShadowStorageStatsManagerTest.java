@@ -134,7 +134,7 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryWithoutSetup_shouldFail() {
+  public void queryPackageWithoutSetup_shouldFail() {
     assertThrows(
         PackageManager.NameNotFoundException.class,
         () ->
@@ -144,7 +144,16 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryWithCorrectArguments_shouldReturnSetupValue() throws Exception {
+  public void queryUserWithoutSetup_shouldFail() {
+    assertThrows(
+        PackageManager.NameNotFoundException.class,
+        () ->
+            shadowOf(storageStatsManager)
+                .queryStatsForUser(UUID.randomUUID(), Process.myUserHandle()));
+  }
+
+  @Test
+  public void queryPackageWithCorrectArguments_shouldReturnSetupValue() throws Exception {
     // Arrange
     StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
@@ -161,7 +170,105 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryWithWrongArguments_shouldFail() {
+  public void queryUserWithCorrectArguments_shouldReturnSetupValue() throws Exception {
+    // Arrange
+    StorageStats expected = buildStorageStats();
+    UUID uuid = UUID.randomUUID();
+    String packageName = "somePackageName";
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
+
+    // Act
+    StorageStats actual = shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle);
+
+    // Assert
+    assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void queryUser_shouldReturnAccumulatedStats() throws Exception {
+    // Arrange
+    StorageStats storageStats = buildStorageStats();
+    UUID uuid1 = UUID.randomUUID();
+    UUID uuid2 = UUID.randomUUID();
+    String packageName1 = "somePackageName1";
+    String packageName2 = "somePackageName2";
+    String packageName3 = "somePackageName3";
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName1, userHandle, storageStats);
+    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName2, userHandle, storageStats);
+    shadowOf(storageStatsManager).addStorageStats(uuid1, packageName3, userHandle, storageStats);
+    shadowOf(storageStatsManager).addStorageStats(uuid2, packageName1, userHandle, storageStats);
+    shadowOf(storageStatsManager).addStorageStats(uuid2, packageName2, userHandle, storageStats);
+
+    // Act
+    StorageStats actual1 = shadowOf(storageStatsManager).queryStatsForUser(uuid1, userHandle);
+    StorageStats actual2 = shadowOf(storageStatsManager).queryStatsForUser(uuid2, userHandle);
+
+    // Assert
+    assertThat(actual1.getAppBytes()).isEqualTo(9000L); // 3000 * 3
+    assertThat(actual1.getDataBytes()).isEqualTo(6000L); // 2000 * 3
+    assertThat(actual1.getCacheBytes()).isEqualTo(3000L); // 1000 * 3
+    assertThat(actual2.getAppBytes()).isEqualTo(6000L); // 3000 * 2
+    assertThat(actual2.getDataBytes()).isEqualTo(4000L); // 2000 * 2
+    assertThat(actual2.getCacheBytes()).isEqualTo(2000L); // 1000 * 2
+  }
+
+  @Test
+  public void queryUser_packageStatsUpdated_shouldUpdateUserStats() throws Exception {
+    // Arrange
+    UUID uuid = UUID.randomUUID();
+    String packageName1 = "somePackageName1";
+    String packageName2 = "somePackageName2";
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(storageStatsManager)
+        .addStorageStats(uuid, packageName1, userHandle, buildStorageStats());
+    shadowOf(storageStatsManager)
+        .addStorageStats(uuid, packageName2, userHandle, buildStorageStats());
+    shadowOf(storageStatsManager)
+        .addStorageStats(
+            uuid,
+            packageName2,
+            userHandle,
+            buildStorageStats(
+                /* codeSize= */ 2000L, /* dataSize= */ 1000L, /* cacheSize= */ 3000L));
+
+    // Act
+    StorageStats actual = shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle);
+
+    // Assert
+    assertThat(actual.getAppBytes()).isEqualTo(5000L); // 3000 + 2000
+    assertThat(actual.getDataBytes()).isEqualTo(3000L); // 2000 + 1000
+    assertThat(actual.getCacheBytes()).isEqualTo(4000L); // 1000 + 3000
+  }
+
+  @Test
+  public void queryUser_packageStatsUpdated_singlePackage_shouldUpdateUserStats() throws Exception {
+    // Arrange
+    UUID uuid = UUID.randomUUID();
+    String packageName = "somePackageName1";
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(storageStatsManager)
+        .addStorageStats(uuid, packageName, userHandle, buildStorageStats());
+    shadowOf(storageStatsManager)
+        .addStorageStats(
+            uuid,
+            packageName,
+            userHandle,
+            buildStorageStats(
+                /* codeSize= */ 2000L, /* dataSize= */ 1000L, /* cacheSize= */ 3000L));
+
+    // Act
+    StorageStats actual = shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle);
+
+    // Assert
+    assertThat(actual.getAppBytes()).isEqualTo(2000L);
+    assertThat(actual.getDataBytes()).isEqualTo(1000L);
+    assertThat(actual.getCacheBytes()).isEqualTo(3000L);
+  }
+
+  @Test
+  public void queryPackageWithWrongArguments_shouldFail() {
     // Arrange
     StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
@@ -199,7 +306,35 @@ public final class ShadowStorageStatsManagerTest {
   }
 
   @Test
-  public void queryAfterClearSetup_shouldFail() {
+  public void queryUserWithWrongArguments_shouldFail() {
+    // Arrange
+    StorageStats expected = buildStorageStats();
+    UUID uuid = UUID.randomUUID();
+    UUID differentUUID = UUID.randomUUID();
+    UserHandle userHandle = UserHandle.getUserHandleForUid(0);
+    // getUserHandleForUid will divide uid by 100000. Pass in some arbitrary number > 100000 to be
+    // different from system uid 0.
+    UserHandle differentUserHandle = UserHandle.getUserHandleForUid(1200000);
+
+    assertThat(uuid).isNotEqualTo(differentUUID);
+    assertThat(userHandle).isNotEqualTo(differentUserHandle);
+
+    // Act
+    shadowOf(storageStatsManager)
+        .addStorageStats(uuid, /* packageName= */ "somePackageName", userHandle, expected);
+
+    // Assert
+    assertThrows(
+        PackageManager.NameNotFoundException.class,
+        () -> shadowOf(storageStatsManager).queryStatsForUser(differentUUID, userHandle));
+
+    assertThrows(
+        PackageManager.NameNotFoundException.class,
+        () -> shadowOf(storageStatsManager).queryStatsForUser(uuid, differentUserHandle));
+  }
+
+  @Test
+  public void queryPackageAfterClearSetup_shouldFail() {
     // Arrange
     StorageStats expected = buildStorageStats();
     UUID uuid = UUID.randomUUID();
@@ -216,10 +351,29 @@ public final class ShadowStorageStatsManagerTest {
         () -> shadowOf(storageStatsManager).queryStatsForPackage(uuid, packageName, userHandle));
   }
 
+  @Test
+  public void queryUserAfterClearSetup_shouldFail() {
+    // Arrange
+    StorageStats expected = buildStorageStats();
+    UUID uuid = UUID.randomUUID();
+    String packageName = "somePackageName";
+    UserHandle userHandle = Process.myUserHandle();
+    shadowOf(storageStatsManager).addStorageStats(uuid, packageName, userHandle, expected);
+
+    // Act
+    shadowOf(storageStatsManager).clearStorageStats();
+
+    // Assert
+    assertThrows(
+        PackageManager.NameNotFoundException.class,
+        () -> shadowOf(storageStatsManager).queryStatsForUser(uuid, userHandle));
+  }
+
   private static StorageStats buildStorageStats() {
-    long codeSize = 3000L;
-    long dataSize = 2000L;
-    long cacheSize = 1000L;
+    return buildStorageStats(/* codeSize= */ 3000L, /* dataSize= */ 2000L, /* cacheSize= */ 1000L);
+  }
+
+  private static StorageStats buildStorageStats(long codeSize, long dataSize, long cacheSize) {
     Parcel parcel = Parcel.obtain();
     parcel.writeLong(codeSize);
     parcel.writeLong(dataSize);
