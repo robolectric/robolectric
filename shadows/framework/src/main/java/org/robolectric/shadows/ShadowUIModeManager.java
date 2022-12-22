@@ -61,6 +61,10 @@ public class ShadowUIModeManager {
     return currentModeType;
   }
 
+  public void setCurrentModeType(int modeType) {
+    this.currentModeType = modeType;
+  }
+
   @Implementation(maxSdk = VERSION_CODES.Q)
   protected void enableCarMode(int flags) {
     enableCarMode(DEFAULT_PRIORITY, flags);
