@@ -2,7 +2,7 @@ name: Check aggregateDocs
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, 'robolectric-*.x' ]
 
   pull_request:
     branches: [ master, google ]
