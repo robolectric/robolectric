@@ -110,7 +110,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29, 33 ]
+        api-level: [ 30, 31 ]
 
     steps:
       - uses: actions/checkout@v3
@@ -127,10 +127,17 @@ jobs:
 
       - name: Determine emulator target
         id: determine-target
+        env:
+          API_LEVEL: ${{ matrix.api-level }}
         run: |
-          TARGET="google_apis"
-          echo "::set-output name=TARGET::$TARGET"
-          
+          TARGET="aosp_atd"
+          ARCH="x86"
+          if [ "$API_LEVEL" -ge "31" ]; then
+            ARCH="x86_64"
+          fi
+          echo "ARCH=$ARCH" >> $GITHUB_OUTPUT
+          echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
+
       - name: AVD cache
         uses: actions/cache@v3
         id: avd-cache
@@ -146,7 +153,8 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
+          arch: ${{ steps.determine-target.outputs.ARCH }}
+          channel: canary
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -158,7 +166,8 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ steps.determine-target.outputs.TARGET }}
-          arch: x86_64
+          arch: ${{ steps.determine-target.outputs.ARCH }}
+          channel: canary
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
