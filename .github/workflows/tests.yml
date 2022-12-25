@@ -145,5 +145,6 @@ jobs:
           name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}-${{ matrix.shard }}
           path: |
             **/build/reports/*
-            **/build/outputs/*/connected/*
-            **/build/outputs/*/managedDevice/*
+            **/build/outputs/managed_device_android_test_additional_output/*
+            **/build/outputs/log/*
+            **/build/outputs/androidTest-results/managedDevice/*/logcat-org.robolectric*.txt
