@@ -14,6 +14,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,10 +22,13 @@ import android.widget.TextView;
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
+import androidx.test.espresso.Root;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import java.util.concurrent.atomic.AtomicReference;
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -79,6 +83,23 @@ public final class EspressoTest {
             });
   }
 
+  private static final class TestRootMatcher extends TypeSafeMatcher<Root> {
+    @Override
+    protected boolean matchesSafely(Root root) {
+      int type = root.getWindowLayoutParams().get().type;
+      Log.e("EspressoTest", "match for root " + root + ", type " + type);
+      Log.e("EspressoTest", "match for root view " + root.getDecorView());
+      Log.e("EspressoTest", "match for root window focus " + root.getDecorView().hasWindowFocus());
+      Log.e("EspressoTest", "match for root focus " + root.getDecorView().hasFocus());
+      return root.isReady() && root.getDecorView() != null && root.getDecorView().hasWindowFocus();
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText("test root matcher");
+    }
+  }
+
   /** Perform the equivalent of click except using espresso APIs */
   @Test
   public void buttonClick_espresso() {
@@ -87,7 +108,9 @@ public final class EspressoTest {
     // thread, we should run Espresso checking in instrumentation thread.
     AtomicReference<EspressoActivity> activityRef = new AtomicReference<>();
     activityRule.getScenario().onActivity(activityRef::set);
-    onView(withId(R.id.button)).check(matches(isCompletelyDisplayed()));
+    onView(withId(R.id.button))
+        .inRoot(new TestRootMatcher())
+        .check(matches(isCompletelyDisplayed()));
     onView(withId(R.id.button)).perform(click());
     // If we have clicked the button of EspressoActivity, we can get correct Activity
     // instance from ActivityScenario safely.
@@ -189,15 +212,19 @@ public final class EspressoTest {
   @Test
   public void changeText_withCloseSoftKeyboard() {
     // Type text and then press the button.
-    onView(withId(R.id.edit_text)).perform(typeText("anything"), closeSoftKeyboard());
+    onView(withId(R.id.edit_text))
+        .inRoot(new TestRootMatcher())
+        .perform(typeText("anything"), closeSoftKeyboard());
 
     // Check that the text was changed.
-    onView(withId(R.id.edit_text)).check(matches(withText("anything")));
+    onView(withId(R.id.edit_text))
+        .inRoot(new TestRootMatcher())
+        .check(matches(withText("anything")));
   }
 
   @Test
   public void changeText_addNewline() {
-    onView(withId(R.id.edit_text)).perform(typeText("Some text."));
+    onView(withId(R.id.edit_text)).inRoot(new TestRootMatcher()).perform(typeText("Some text."));
     onView(withId(R.id.edit_text)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
     onView(withId(R.id.edit_text)).perform(typeTextIntoFocusedView("Other text."));
 
