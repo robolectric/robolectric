@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
@@ -75,6 +76,7 @@ public class ShadowUserManager {
 
   private static int maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
   private static boolean isMultiUserSupported = false;
+  private static boolean isHeadlessSystemUserMode = false;
 
   @RealObject private UserManager realObject;
   private UserManagerState userManagerState;
@@ -1133,6 +1135,16 @@ public class ShadowUserManager {
     return requestQuietModeEnabled(enableQuietMode, userHandle);
   }
 
+  @Implementation(minSdk = S)
+  protected static boolean isHeadlessSystemUserMode() {
+    return isHeadlessSystemUserMode;
+  }
+
+  /** Updates headless system user mode. */
+  public static void setHeadlessSystemUserMode(boolean isEnabled) {
+    ShadowUserManager.isHeadlessSystemUserMode = isEnabled;
+  }
+
   @Implementation(minSdk = TIRAMISU)
   protected Bundle getUserRestrictions() {
     return getUserRestrictions(UserHandle.getUserHandleForUid(Process.myUid()));
@@ -1148,6 +1160,7 @@ public class ShadowUserManager {
   public static void reset() {
     maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
     isMultiUserSupported = false;
+    isHeadlessSystemUserMode = false;
   }
 
   @ForType(UserManager.class)
