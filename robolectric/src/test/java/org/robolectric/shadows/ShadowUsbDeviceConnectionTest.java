@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -17,6 +18,9 @@ import android.hardware.usb.UsbManager;
 import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,7 +51,6 @@ public class ShadowUsbDeviceConnectionTest {
     when(usbDevice.getConfiguration(0)).thenReturn(usbConfiguration);
     when(usbConfiguration.getInterfaceCount()).thenReturn(1);
     when(usbConfiguration.getInterface(0)).thenReturn(usbInterface);
-    when(usbConfiguration.getInterface(0)).thenReturn(usbInterface);
   }
 
   @Test
@@ -56,8 +59,17 @@ public class ShadowUsbDeviceConnectionTest {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
 
-    assertThat(usbDeviceConnection.claimInterface(usbInterface, /*force=*/ false)).isTrue();
+    assertThat(usbDeviceConnection.claimInterface(usbInterface, /* force= */ false)).isTrue();
     assertThat(usbDeviceConnection.releaseInterface(usbInterface)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setInterface() {
+    UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
+    UsbInterface usbInterface = selectInterface(usbDevice);
+
+    assertThat(usbDeviceConnection.setInterface(usbInterface)).isTrue();
   }
 
   @Test
@@ -65,29 +77,29 @@ public class ShadowUsbDeviceConnectionTest {
   public void controlTransfer() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
-    usbDeviceConnection.claimInterface(usbInterface, /*force=*/ false);
+    usbDeviceConnection.claimInterface(usbInterface, /* force= */ false);
 
     int len = 10;
     assertThat(
             usbDeviceConnection.controlTransfer(
-                /*requestType=*/ 0,
-                /*request=*/ 0,
-                /*value=*/ 0,
-                /*index=*/ 0,
-                /*buffer=*/ new byte[len],
-                /*length=*/ len,
-                /*timeout=*/ 0))
+                /* requestType= */ 0,
+                /* request= */ 0,
+                /* value= */ 0,
+                /* index= */ 0,
+                /* buffer= */ new byte[len],
+                /* length= */ len,
+                /* timeout= */ 0))
         .isEqualTo(len);
     assertThat(
             usbDeviceConnection.controlTransfer(
-                /*requestType=*/ 0,
-                /*request=*/ 0,
-                /*value=*/ 0,
-                /*index=*/ 0,
-                /*buffer=*/ new byte[len],
-                /*offset=*/ 0,
-                /*length=*/ len,
-                /*timeout=*/ 0))
+                /* requestType= */ 0,
+                /* request= */ 0,
+                /* value= */ 0,
+                /* index= */ 0,
+                /* buffer= */ new byte[len],
+                /* offset= */ 0,
+                /* length= */ len,
+                /* timeout= */ 0))
         .isEqualTo(len);
   }
 
@@ -97,25 +109,44 @@ public class ShadowUsbDeviceConnectionTest {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
     UsbEndpoint usbEndpointOut = getEndpoint(usbInterface, UsbConstants.USB_DIR_OUT);
-    usbDeviceConnection.claimInterface(usbInterface, /*force=*/ false);
+    usbDeviceConnection.claimInterface(usbInterface, /* force= */ false);
+    InputStream outgoingData = shadowOf(usbDeviceConnection).getOutgoingDataStream();
 
     byte[] msg = "Hello World".getBytes(UTF_8);
-    assertThat(usbDeviceConnection.bulkTransfer(usbEndpointOut, msg, msg.length, /*timeout=*/ 0))
+    assertThat(usbDeviceConnection.bulkTransfer(usbEndpointOut, msg, msg.length, /* timeout= */ 0))
         .isEqualTo(msg.length);
 
-    byte[] buffer = new byte[msg.length];
-    shadowOf(usbDeviceConnection).readOutgoingData(buffer);
-    assertThat(buffer).isEqualTo(msg);
+    byte[] buffer = new byte[1024];
+    int read = outgoingData.read(buffer);
+    assertThat(Arrays.copyOf(buffer, read)).isEqualTo(msg);
 
     msg = "Goodbye World".getBytes(UTF_8);
     assertThat(
             usbDeviceConnection.bulkTransfer(
-                usbEndpointOut, msg, /*offset=*/ 0, msg.length, /*timeout=*/ 0))
+                usbEndpointOut, msg, /* offset= */ 0, msg.length, /* timeout= */ 0))
         .isEqualTo(msg.length);
 
-    buffer = new byte[msg.length];
-    shadowOf(usbDeviceConnection).readOutgoingData(buffer);
-    assertThat(buffer).isEqualTo(msg);
+    buffer = new byte[1024];
+    read = outgoingData.read(buffer);
+    assertThat(Arrays.copyOf(buffer, read)).isEqualTo(msg);
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void releaseInterface_closesOutgoingDataStream() throws Exception {
+    UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
+    UsbInterface usbInterface = selectInterface(usbDevice);
+    UsbEndpoint usbEndpointOut = getEndpoint(usbInterface, UsbConstants.USB_DIR_OUT);
+    usbDeviceConnection.claimInterface(usbInterface, /* force= */ false);
+    InputStream outgoingData = shadowOf(usbDeviceConnection).getOutgoingDataStream();
+
+    byte[] msg = "Hello World".getBytes(UTF_8);
+    assertThat(usbDeviceConnection.bulkTransfer(usbEndpointOut, msg, msg.length, /* timeout= */ 0))
+        .isEqualTo(msg.length);
+    usbDeviceConnection.releaseInterface(usbInterface);
+
+    byte[] buffer = new byte[1024];
+    assertThrows(IOException.class, () -> outgoingData.read(buffer));
   }
 
   @Nullable
