@@ -9,6 +9,7 @@ dependencies {
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "junit:junit:${junitVersion}"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "com.google.truth:truth:$truthVersion"
     testImplementation "com.google.android.gms:play-services-basement:18.0.1"
 }
