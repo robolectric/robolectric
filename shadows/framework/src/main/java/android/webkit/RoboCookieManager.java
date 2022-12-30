@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /**
@@ -29,6 +30,20 @@ public class RoboCookieManager extends CookieManager {
   public void setCookie(String url, String value) {
     Cookie cookie = parseCookie(url, value);
     if (cookie != null) {
+      Cookie existingCookie = null;
+      for (Cookie c : store) {
+        if (c == null) {
+          continue;
+        }
+        if (Objects.equals(c.getName(), cookie.getName())
+            && Objects.equals(c.mHostname, cookie.mHostname)) {
+          existingCookie = c;
+          break;
+        }
+      }
+      if (existingCookie != null) {
+        store.remove(existingCookie);
+      }
       store.add(cookie);
     }
   }
@@ -208,7 +223,7 @@ public class RoboCookieManager extends CookieManager {
       String field = fields[i].trim();
       if (field.startsWith(EXPIRATION_FIELD_NAME)) {
         expiration = getExpiration(field);
-      } else if (field.toUpperCase().equals(SECURE_ATTR_NAME)) {
+      } else if (field.equalsIgnoreCase(SECURE_ATTR_NAME)) {
         isSecure = true;
       }
     }
