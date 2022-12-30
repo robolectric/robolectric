@@ -35,5 +35,6 @@ include ':integration_tests:security-providers'
 include ":integration_tests:mockk"
 include ':integration_tests:compat-target28'
 include ":integration_tests:multidex"
+include ":integration_tests:play_services"
 include ":integration_tests:sparsearray"
 include ':testapp'
