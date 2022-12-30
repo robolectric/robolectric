@@ -50,6 +50,16 @@ public class CookieManagerTest {
   }
 
   @Test
+  public void setCookie_overrideCookieHasTheSameKey() {
+    final String httpsUrl = "https://robolectric.org/";
+    final CookieManager cookieManager = CookieManager.getInstance();
+    cookieManager.setCookie(httpsUrl, "A=100;");
+    cookieManager.setCookie(httpsUrl, "A=200;");
+    String cookie = cookieManager.getCookie(httpsUrl);
+    assertThat(cookie).isEqualTo("A=200");
+  }
+
+  @Test
   public void getCookie_doesNotReturnAttributes() {
     final String httpsUrl = "https://robolectric.org/";
     final CookieManager cookieManager = CookieManager.getInstance();
