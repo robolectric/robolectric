@@ -50,6 +50,6 @@ dependencies {
     testImplementation "javax.annotation:jsr250-api:1.0"
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "com.google.testing.compile:compile-testing:0.19"
+    testImplementation "com.google.testing.compile:compile-testing:0.21.0"
     testImplementation "com.google.truth:truth:${truthVersion}"
 }
