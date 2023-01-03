@@ -488,8 +488,25 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
-    assertThat(contentResolver.openOutputStream(uri21)).isInstanceOf(OutputStream.class);
+  public void openOutputStream_withNoRealOrRegisteredProvider_doesNotThrow() throws Exception {
+    Uri uri = Uri.parse("content://invalidauthority/test/1");
+    assertThat(contentResolver.openOutputStream(uri)).isNotNull();
+  }
+
+  @Test
+  public void openOutputStream_withRealContentProvider_canReadBytesWrittenToOutputStream()
+      throws IOException, RemoteException {
+    Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/test/1");
+
+    // Write content through given outputstream
+    try (OutputStream outputStream = contentResolver.openOutputStream(uri)) {
+      outputStream.write("foo".getBytes(UTF_8));
+    }
+
+    // Verify written content can be read back
+    InputStream inputStream = contentResolver.openInputStream(uri);
+    assertThat(new String(inputStream.readAllBytes(), UTF_8)).isEqualTo("foo");
   }
 
   @Test
@@ -1177,7 +1194,7 @@ public class ShadowContentResolverTest {
       } catch (IOException e) {
         throw new RuntimeException("error creating new file", e);
       }
-      return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+      return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
     }
   }
 }
