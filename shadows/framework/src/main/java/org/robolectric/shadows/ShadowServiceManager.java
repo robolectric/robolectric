@@ -42,6 +42,7 @@ import android.content.integrity.IAppIntegrityManager;
 import android.content.pm.ICrossProfileApps;
 import android.content.pm.IShortcutService;
 import android.content.rollback.IRollbackManager;
+import android.hardware.ISensorPrivacyManager;
 import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.fingerprint.IFingerprintService;
@@ -205,6 +206,7 @@ public class ShadowServiceManager {
       addBinderService(Context.UWB_SERVICE, IUwbAdapter.class);
       addBinderService(Context.VCN_MANAGEMENT_SERVICE, IVcnManagementService.class);
       addBinderService(Context.TRANSLATION_MANAGER_SERVICE, ITranslationManager.class);
+      addBinderService(Context.SENSOR_PRIVACY_SERVICE, ISensorPrivacyManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
       addBinderService(Context.AMBIENT_CONTEXT_SERVICE, IAmbientContextManager.class);
