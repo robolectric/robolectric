@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -14,6 +15,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.admin.DeviceAdminService;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
@@ -247,6 +251,69 @@ public class ShadowWifiManagerTest {
 
     list = wifiManager.getConfiguredNetworks();
     assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      getCallerConfiguredNetworks_noAccessWifiStatePermission_shouldThrowSecurityException() {
+    shadowOf(wifiManager).setAccessWifiStatePermission(false);
+
+    assertThrows(SecurityException.class, () -> wifiManager.getCallerConfiguredNetworks());
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getCallerConfiguredNetworks_noNetworksConfigured_returnsEmptyList() {
+    assertThat(wifiManager.getCallerConfiguredNetworks()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getCallerConfiguredNetworks_networksAddedAndRemoved_returnsConfiguredNetworks() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+    wifiManager.addNetwork(wifiConfiguration);
+
+    assertThat(wifiManager.getCallerConfiguredNetworks()).hasSize(1);
+
+    wifiManager.removeNetwork(0);
+
+    assertThat(wifiManager.getCallerConfiguredNetworks()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      removeNonCallerConfiguredNetworks_noChangeWifiStatePermission_shouldThrowSecurityException() {
+    setDeviceOwner();
+    shadowOf(wifiManager).setChangeWifiStatePermission(false);
+
+    assertThrows(SecurityException.class, () -> wifiManager.removeNonCallerConfiguredNetworks());
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void removeNonCallerConfiguredNetworks_notDeviceOwner_shouldThrowSecurityException() {
+    assertThrows(SecurityException.class, () -> wifiManager.removeNonCallerConfiguredNetworks());
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void removeNonCallerConfiguredNetworks_noConfiguredNetworks_returnsFalse() {
+    setDeviceOwner();
+
+    assertThat(wifiManager.removeNonCallerConfiguredNetworks()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void removeNonCallerConfiguredNetworks_hasConfiguredNetworks_removesConfiguredNetworks() {
+    setDeviceOwner();
+    wifiManager.addNetwork(new WifiConfiguration());
+    wifiManager.addNetwork(new WifiConfiguration());
+
+    assertThat(wifiManager.removeNonCallerConfiguredNetworks()).isTrue();
+    assertThat(wifiManager.getConfiguredNetworks()).isEmpty();
   }
 
   @Test
@@ -763,5 +830,15 @@ public class ShadowWifiManagerTest {
     assertThat(status).isTrue();
 
     assertThat(shadowOf(wifiManager).getWifiApConfiguration().SSID).isEqualTo("foo");
+  }
+
+  private void setDeviceOwner() {
+    shadowOf(
+            (DevicePolicyManager)
+                ApplicationProvider.getApplicationContext()
+                    .getSystemService(Context.DEVICE_POLICY_SERVICE))
+        .setDeviceOwner(
+            new ComponentName(
+                ApplicationProvider.getApplicationContext(), DeviceAdminService.class));
   }
 }
