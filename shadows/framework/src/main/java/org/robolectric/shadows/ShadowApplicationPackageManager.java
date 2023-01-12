@@ -2236,6 +2236,22 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return reflector(ReflectorApplicationPackageManager.class, realObject).getContext();
   }
 
+  /** Stub that will always throw. */
+  @Implementation(minSdk = S)
+  protected PackageManager.Property getProperty(String propertyName, String packageName)
+      throws NameNotFoundException {
+    // TODO: in future read this value from parsed manifest
+    throw new NameNotFoundException("unsupported");
+  }
+
+  /** Stub that will always throw. */
+  @Implementation(minSdk = S)
+  protected PackageManager.Property getProperty(String propertyName, ComponentName name)
+      throws NameNotFoundException {
+    // TODO: in future read this value from parsed manifest
+    throw new NameNotFoundException("unsupported");
+  }
+
   /** Reflector interface for {@link ApplicationPackageManager}'s internals. */
   @ForType(ApplicationPackageManager.class)
   private interface ReflectorApplicationPackageManager {

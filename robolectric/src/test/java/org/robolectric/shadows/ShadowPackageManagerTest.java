@@ -4326,6 +4326,25 @@ public class ShadowPackageManagerTest {
     assertThat(packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void getProperty() throws NameNotFoundException {
+    assertThrows(
+        NameNotFoundException.class,
+        () ->
+            packageManager.getProperty(
+                "myproperty", RuntimeEnvironment.getApplication().getPackageName()));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProperty_component() throws NameNotFoundException {
+    final ComponentName componentName =
+        new ComponentName(RuntimeEnvironment.getApplication().getPackageName(), "mycomponentname");
+    assertThrows(
+        NameNotFoundException.class, () -> packageManager.getProperty("myproperty", componentName));
+  }
+
   public String[] setPackagesSuspended(
       String[] packageNames,
       boolean suspended,
