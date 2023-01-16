@@ -1,5 +1,5 @@
 ext {
-    apiCompatVersion='4.9'
+    apiCompatVersion='4.9.2'
 
     errorproneVersion='2.17.0'
     errorproneJavacVersion='9+181-r4173-1'
