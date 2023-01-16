@@ -16,7 +16,7 @@ ext {
 
     // AndroidX versions
     coreVersion='1.9.0'
-    appCompatVersion='1.4.1'
+    appCompatVersion='1.6.0'
     constraintlayoutVersion='2.1.4'
     windowVersion='1.0.0'
     fragmentVersion='1.5.3'
