@@ -575,7 +575,7 @@ public class ShadowView {
 
   @Implementation
   protected void scrollTo(int x, int y) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).scrollTo(x, y);
     } else {
       reflector(_View_.class, realView)
@@ -588,7 +588,7 @@ public class ShadowView {
 
   @Implementation
   protected void scrollBy(int x, int y) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).scrollBy(x, y);
     } else {
       scrollTo(getScrollX() + x, getScrollY() + y);
@@ -597,7 +597,7 @@ public class ShadowView {
 
   @Implementation
   protected int getScrollX() {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       return reflector(_View_.class, realView).getScrollX();
     } else {
       return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
@@ -606,7 +606,7 @@ public class ShadowView {
 
   @Implementation
   protected int getScrollY() {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       return reflector(_View_.class, realView).getScrollY();
     } else {
       return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
@@ -615,7 +615,7 @@ public class ShadowView {
 
   @Implementation
   protected void setScrollX(int scrollX) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).setScrollX(scrollX);
     } else {
       scrollTo(scrollX, scrollToCoordinates.y);
@@ -624,7 +624,7 @@ public class ShadowView {
 
   @Implementation
   protected void setScrollY(int scrollY) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).setScrollY(scrollY);
     } else {
       scrollTo(scrollToCoordinates.x, scrollY);
@@ -1056,5 +1056,16 @@ public class ShadowView {
 
   static boolean useRealGraphics() {
     return Boolean.getBoolean("robolectric.nativeruntime.enableGraphics");
+  }
+
+  /**
+   * Currently the default View scrolling implementation is broken and low-fidelty. For instance,
+   * even if a View has no children, Robolectric will still happily set the scroll position of a
+   * View. Long-term we want to eliminate this broken behavior, but in the mean time the real
+   * scrolling behavior is enabled when native graphics are enabled, or when a system property is
+   * set.
+   */
+  static boolean useRealScrolling() {
+    return useRealGraphics() || Boolean.getBoolean("robolectric.useRealScrolling");
   }
 }

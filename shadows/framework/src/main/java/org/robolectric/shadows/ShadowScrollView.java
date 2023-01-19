@@ -16,7 +16,7 @@ public class ShadowScrollView extends ShadowViewGroup {
 
   @Implementation
   protected void smoothScrollTo(int x, int y) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(ScrollViewReflector.class, realScrollView).smoothScrollTo(x, y);
     } else {
       scrollTo(x, y);
@@ -25,7 +25,7 @@ public class ShadowScrollView extends ShadowViewGroup {
 
   @Implementation
   protected void smoothScrollBy(int x, int y) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(ScrollViewReflector.class, realScrollView).smoothScrollBy(x, y);
     } else {
       scrollBy(x, y);
