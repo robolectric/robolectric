@@ -2238,16 +2238,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   /** Stub that will always throw. */
   @Implementation(minSdk = S)
-  protected PackageManager.Property getProperty(String propertyName, String packageName)
-      throws NameNotFoundException {
+  protected Object /* PackageManager.Property */ getProperty(
+      String propertyName, String packageName) throws NameNotFoundException {
     // TODO: in future read this value from parsed manifest
     throw new NameNotFoundException("unsupported");
   }
 
   /** Stub that will always throw. */
   @Implementation(minSdk = S)
-  protected PackageManager.Property getProperty(String propertyName, ComponentName name)
-      throws NameNotFoundException {
+  protected Object /* PackageManager.Property */ getProperty(
+      String propertyName, ComponentName name) throws NameNotFoundException {
     // TODO: in future read this value from parsed manifest
     throw new NameNotFoundException("unsupported");
   }
