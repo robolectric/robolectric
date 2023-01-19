@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -137,7 +138,9 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
       }
     }
     System.setProperty(
-        "robolectric.nativeruntime.fontdir", fontsOutputPath.toAbsolutePath().toString());
+        "robolectric.nativeruntime.fontdir",
+        // Android's FontListParser expects a trailing slash for the base font directory.
+        fontsOutputPath.toAbsolutePath() + File.separator);
     if (zipfs != null) {
       zipfs.close();
     }
