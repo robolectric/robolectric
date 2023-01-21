@@ -7,19 +7,18 @@
 package org.robolectric.resources
 
 class R {
-    class attr
-    object bool {
-        /**  mcc310 = US Carrier mnc=004 = Verizon
-         */
-        const val is_verizon = 0x7f020000
-    }
+  class attr
+  object bool {
+    /** mcc310 = US Carrier mnc=004 = Verizon */
+    const val is_verizon = 0x7f020000
+  }
 
-    object integer {
-        const val flock_size = 0x7f030000
-    }
+  object integer {
+    const val flock_size = 0x7f030000
+  }
 
-    object string {
-        const val first_string = 0x7f040000
-        const val second_string = 0x7f040001
-    }
+  object string {
+    const val first_string = 0x7f040000
+    const val second_string = 0x7f040001
+  }
 }

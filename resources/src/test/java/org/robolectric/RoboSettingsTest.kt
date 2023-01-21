@@ -11,26 +11,26 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class RoboSettingsTest {
 
-    private var originalUseGlobalScheduler = false
+  private var originalUseGlobalScheduler = false
 
-    @Before
-    fun setUp() {
-        originalUseGlobalScheduler = RoboSettings.isUseGlobalScheduler()
-    }
+  @Before
+  fun setUp() {
+    originalUseGlobalScheduler = RoboSettings.isUseGlobalScheduler()
+  }
 
-    @After
-    fun tearDown() {
-        RoboSettings.setUseGlobalScheduler(originalUseGlobalScheduler)
-    }
+  @After
+  fun tearDown() {
+    RoboSettings.setUseGlobalScheduler(originalUseGlobalScheduler)
+  }
 
-    @Test
-    fun getIsUseGlobalScheduler_defaultFalse(){
-        assertFalse(RoboSettings.isUseGlobalScheduler())
-        }
+  @Test
+  fun getIsUseGlobalScheduler_defaultFalse() {
+    assertFalse(RoboSettings.isUseGlobalScheduler())
+  }
 
-    @Test
-    fun setUseGlobalScheduler() {
-        RoboSettings.setUseGlobalScheduler(true)
-        assertTrue(RoboSettings.isUseGlobalScheduler())
-    }
+  @Test
+  fun setUseGlobalScheduler() {
+    RoboSettings.setUseGlobalScheduler(true)
+    assertTrue(RoboSettings.isUseGlobalScheduler())
+  }
 }
