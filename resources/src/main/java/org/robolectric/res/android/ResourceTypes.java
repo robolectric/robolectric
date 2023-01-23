@@ -161,6 +161,7 @@ public class ResourceTypes {
   public static final int RES_TABLE_TYPE_TYPE         = 0x0201;
   public static final int RES_TABLE_TYPE_SPEC_TYPE    = 0x0202;
   public static final int RES_TABLE_LIBRARY_TYPE      = 0x0203;
+  public static final int RES_TABLE_STAGED_ALIAS_TYPE = 0x0206;
 
   /**
    * Macros for building/splitting resource identifiers.
@@ -1502,6 +1503,44 @@ public static class ResTable_ref
       }
     }
   };
+
+  /**
+   * A map that allows rewriting staged (non-finalized) resource ids to their finalized
+   * counterparts.
+   */
+  static class ResTable_staged_alias_header extends WithOffset {
+    public static final int SIZEOF = ResChunk_header.SIZEOF + 4;
+
+    ResChunk_header header;
+
+    // The number of ResTable_staged_alias_entry that follow this header.
+    int count;
+
+    ResTable_staged_alias_header(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      header = new ResChunk_header(buf, offset);
+      count = buf.getInt(offset + ResChunk_header.SIZEOF);
+    }
+  }
+
+  /** Maps the staged (non-finalized) resource id to its finalized resource id. */
+  static class ResTable_staged_alias_entry extends WithOffset {
+    public static final int SIZEOF = 8;
+
+    // The compile-time staged resource id to rewrite.
+    int stagedResId;
+
+    // The compile-time finalized resource id to which the staged resource id should be rewritten.
+    int finalizedResId;
+
+    ResTable_staged_alias_entry(ByteBuffer buf, int offset) {
+      super(buf, offset);
+
+      stagedResId = buf.getInt(offset);
+      finalizedResId = buf.getInt(offset + 4);
+    }
+  }
 
   // struct alignas(uint32_t) Idmap_header {
   static class Idmap_header extends WithOffset {

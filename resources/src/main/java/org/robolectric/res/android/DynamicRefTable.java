@@ -92,14 +92,26 @@ public class DynamicRefTable
     return NO_ERROR;
   }
 
+  void addAlias(int stagedId, int finalizedId) {
+    mAliasId.put(stagedId, finalizedId);
+  }
+
 //  // Performs the actual conversion of build-time resource ID to run-time
 //  // resource ID.
   int lookupResourceId(Ref<Integer> resId) {
     int res = resId.get();
     int packageId = Res_GETPACKAGE(res) + 1;
 
-    if (packageId == APP_PACKAGE_ID && !mAppAsLib) {
-      // No lookup needs to be done, app package IDs are absolute.
+    Integer alias_id = mAliasId.get(res);
+    if (alias_id != null) {
+      // Rewrite the resource id to its alias resource id. Since the alias resource id is a
+      // compile-time id, it still needs to be resolved further.
+      res = alias_id;
+    }
+
+    if (packageId == SYS_PACKAGE_ID || (packageId == APP_PACKAGE_ID && !mAppAsLib)) {
+      // No lookup needs to be done, app and framework package IDs are absolute.
+      resId.set(res);
       return NO_ERROR;
     }
 
@@ -179,4 +191,5 @@ public class DynamicRefTable
   final byte[]                         mLookupTable = new byte[256];
   final Map<String, Byte> mEntries = new HashMap<>();
   boolean                            mAppAsLib;
+  final Map<Integer, Integer> mAliasId = new HashMap<>();
 }
