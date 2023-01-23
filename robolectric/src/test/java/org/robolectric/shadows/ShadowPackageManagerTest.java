@@ -78,6 +78,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ApplicationInfoFlags;
+import android.content.pm.PackageManager.ComponentEnabledSetting;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
@@ -4343,6 +4344,60 @@ public class ShadowPackageManagerTest {
         new ComponentName(RuntimeEnvironment.getApplication().getPackageName(), "mycomponentname");
     assertThrows(
         NameNotFoundException.class, () -> packageManager.getProperty("myproperty", componentName));
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setComponentEnabledSettingsSameSettings_getComponentEnabledSettingsConsistent() {
+    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
+    ComponentName componentName0 = new ComponentName(context, "mycomponentname0");
+    ComponentName componentName1 = new ComponentName(context, "mycomponentname1");
+    ComponentEnabledSetting componentEnabledSetting0 =
+        new ComponentEnabledSetting(
+            componentName0,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP);
+    ComponentEnabledSetting componentEnabledSetting1 =
+        new ComponentEnabledSetting(
+            componentName1,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP);
+    ImmutableList<ComponentEnabledSetting> componentEnabledSettings =
+        ImmutableList.of(componentEnabledSetting0, componentEnabledSetting1);
+
+    pm.setComponentEnabledSettings(componentEnabledSettings);
+
+    for (ComponentEnabledSetting setting : componentEnabledSettings) {
+      assertThat(pm.getComponentEnabledSetting(setting.getComponentName()))
+          .isEqualTo(setting.getEnabledState());
+    }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setComponentEnabledSettingsDifferentSettings_getComponentEnabledSettingsConsistent() {
+    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
+    ComponentName componentName0 = new ComponentName(context, "mycomponentname0");
+    ComponentName componentName1 = new ComponentName(context, "mycomponentname1");
+    ComponentEnabledSetting componentEnabledSetting0 =
+        new ComponentEnabledSetting(
+            componentName0,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP);
+    ComponentEnabledSetting componentEnabledSetting1 =
+        new ComponentEnabledSetting(
+            componentName1,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP);
+    ImmutableList<ComponentEnabledSetting> componentEnabledSettings =
+        ImmutableList.of(componentEnabledSetting0, componentEnabledSetting1);
+
+    pm.setComponentEnabledSettings(componentEnabledSettings);
+
+    for (ComponentEnabledSetting setting : componentEnabledSettings) {
+      assertThat(pm.getComponentEnabledSetting(setting.getComponentName()))
+          .isEqualTo(setting.getEnabledState());
+    }
   }
 
   public String[] setPackagesSuspended(
