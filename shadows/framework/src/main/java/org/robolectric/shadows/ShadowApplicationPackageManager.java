@@ -68,6 +68,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ApplicationInfoFlags;
+import android.content.pm.PackageManager.ComponentEnabledSetting;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
@@ -332,6 +333,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected void setComponentEnabledSetting(ComponentName componentName, int newState, int flags) {
     componentList.put(componentName, new ComponentState(newState, flags));
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void setComponentEnabledSettings(List<ComponentEnabledSetting> settings) {
+    for (ComponentEnabledSetting setting : settings) {
+      componentList.put(
+          setting.getComponentName(),
+          new ComponentState(setting.getEnabledState(), setting.getEnabledFlags()));
+    }
   }
 
   @Implementation
