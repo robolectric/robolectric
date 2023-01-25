@@ -36,6 +36,7 @@ import android.view.WindowId;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -44,12 +45,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
@@ -1054,8 +1058,16 @@ public class ShadowView {
     void setWindowId(WindowId windowId);
   }
 
-  static boolean useRealGraphics() {
-    return Boolean.getBoolean("robolectric.nativeruntime.enableGraphics");
+  /**
+   * Internal API to determine if native graphics is enabled.
+   *
+   * <p>This is currently public because it has to be accessed from multiple packages, but it is not
+   * recommended to depend on this API.
+   */
+  @Beta
+  public static boolean useRealGraphics() {
+    GraphicsMode.Mode graphicsMode = ConfigurationRegistry.get(GraphicsMode.Mode.class);
+    return graphicsMode == Mode.NATIVE && RuntimeEnvironment.getApiLevel() >= O;
   }
 
   /**

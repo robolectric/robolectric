@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -203,7 +204,7 @@ public class RuntimeEnvironment {
       configuration = new Configuration();
     }
     Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
-    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
+    if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
 

@@ -83,6 +83,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
+import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
@@ -169,7 +170,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration, displayMetrics);
 
-    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
+    if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
     Locale locale =
