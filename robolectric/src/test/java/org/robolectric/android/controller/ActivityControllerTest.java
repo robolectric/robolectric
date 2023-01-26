@@ -11,6 +11,7 @@ import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.WindowConfiguration;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -298,6 +299,31 @@ public class ActivityControllerTest {
     assertThat(transcript).containsAtLeast("onConfigurationChanged", "View.onConfigurationChanged");
     assertThat(configController.get().getResources().getConfiguration().fontScale)
         .isEqualTo(newFontScale);
+  }
+
+  @Config(minSdk = P)
+  @Test
+  public void configurationChange_windowConfigurationChanges_doesNotRecreateActivity() {
+    Configuration config =
+        new Configuration(
+            ApplicationProvider.getApplicationContext().getResources().getConfiguration());
+    WindowConfiguration windowConfiguration = config.windowConfiguration;
+    windowConfiguration.setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
+
+    ActivityController<ConfigAwareActivity> controller =
+        Robolectric.buildActivity(ConfigAwareActivity.class).setup();
+    transcript.clear();
+    controller.configurationChange(config);
+
+    assertThat(transcript).containsAtLeast("onConfigurationChanged", "View.onConfigurationChanged");
+    assertThat(
+            controller
+                .get()
+                .getResources()
+                .getConfiguration()
+                .windowConfiguration
+                .getWindowingMode())
+        .isEqualTo(WindowConfiguration.WINDOWING_MODE_FULLSCREEN);
   }
 
   @Test
