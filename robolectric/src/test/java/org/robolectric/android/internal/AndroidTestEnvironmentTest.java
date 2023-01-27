@@ -330,4 +330,14 @@ public class AndroidTestEnvironmentTest {
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w640dp-h480dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("land");
   }
+
+  @Test
+  public void
+      thisTestNameHasMoreThan255Characters1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890() {
+    bootstrapWrapper.callSetUpApplicationState();
+    ApplicationInfo applicationInfo =
+        ApplicationProvider.getApplicationContext().getApplicationInfo();
+    assertThat(applicationInfo.dataDir).isNotNull();
+    assertThat(new File(applicationInfo.dataDir).isDirectory()).isTrue();
+  }
 }

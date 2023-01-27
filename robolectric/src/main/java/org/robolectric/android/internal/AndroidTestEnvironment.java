@@ -576,9 +576,15 @@ public class AndroidTestEnvironment implements TestEnvironment {
   /** Create a file system safe directory path name for the current test. */
   @SuppressWarnings("DoNotCall")
   private String createTestDataDirRootPath(Method method) {
-    return method.getClass().getSimpleName()
-        + "_"
-        + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
+    // Cap the size to 220 to avoid `file name too long errors` if the final filename > 255 chars.`
+    String directoryName =
+        method.getDeclaringClass().getSimpleName()
+            + "_"
+            + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
+    if (directoryName.length() > 220) {
+      directoryName = directoryName.substring(0, 220);
+    }
+    return directoryName;
   }
 
   @Override
