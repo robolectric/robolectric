@@ -1,10 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import android.media.MediaExtractor;
+import android.media.MediaExtractor.MetricsConstants;
 import android.media.MediaFormat;
+import android.os.PersistableBundle;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.util.DataSource;
 
 /** Tests for ShadowMediaExtractor */
@@ -173,5 +177,20 @@ public class ShadowMediaExtractorTest {
     mediaExtractor.setDataSource(path);
 
     assertThat(mediaExtractor.getTrackCount()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getMetrics_returnsMetrics() throws IOException {
+    PersistableBundle metrics = new PersistableBundle();
+    metrics.putString(MetricsConstants.MIME_TYPE, "audio/mp4");
+    ShadowMediaExtractor.setMetrics(dataSource, metrics);
+
+    MediaExtractor mediaExtractor = new MediaExtractor();
+    mediaExtractor.setDataSource(path);
+
+    assertThat(mediaExtractor.getMetrics().size()).isEqualTo(1);
+    assertThat(mediaExtractor.getMetrics().getString(MetricsConstants.MIME_TYPE))
+        .isEqualTo("audio/mp4");
   }
 }
