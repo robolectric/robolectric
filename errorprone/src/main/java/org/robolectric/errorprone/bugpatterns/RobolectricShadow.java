@@ -44,12 +44,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /**
- * Ensure Robolectric shadow's method marked with {@code @Implemenetation} is protected
+ * Ensure Robolectric shadow's method marked with {@code @Implementation} is protected
  *
  * @author christianw@google.com (Christian Williams)
  */
 @BugPattern(
-    name = "RobolectricShadow",
     summary = "Robolectric @Implementation methods should be protected.",
     severity = SUGGESTION,
     documentSuppression = false,
