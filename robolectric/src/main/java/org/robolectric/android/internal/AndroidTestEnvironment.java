@@ -93,6 +93,8 @@ import org.robolectric.util.TempDirectory;
 public class AndroidTestEnvironment implements TestEnvironment {
 
   private static final String CONSCRYPT_PROVIDER = "Conscrypt";
+  private static final int MAX_DATA_DIR_NAME_LENGTH = 120;
+
   private final Sdk runtimeSdk;
   private final Sdk compileSdk;
 
@@ -576,13 +578,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
   /** Create a file system safe directory path name for the current test. */
   @SuppressWarnings("DoNotCall")
   private String createTestDataDirRootPath(Method method) {
-    // Cap the size to 220 to avoid `file name too long errors` if the final filename > 255 chars.`
+    // Cap the size to 120 to avoid unnecessarily long directory names.
     String directoryName =
-        method.getDeclaringClass().getSimpleName()
-            + "_"
-            + method.getName().replaceAll("[^a-zA-Z0-9.-]", "_");
-    if (directoryName.length() > 220) {
-      directoryName = directoryName.substring(0, 220);
+        (method.getDeclaringClass().getSimpleName() + "_" + method.getName())
+            .replaceAll("[^a-zA-Z0-9.-]", "_");
+    if (directoryName.length() > MAX_DATA_DIR_NAME_LENGTH) {
+      directoryName = directoryName.substring(0, MAX_DATA_DIR_NAME_LENGTH);
     }
     return directoryName;
   }
