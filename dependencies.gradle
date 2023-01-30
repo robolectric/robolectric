@@ -5,7 +5,7 @@ ext {
     errorproneJavacVersion='9+181-r4173-1'
 
     // AndroidX test versions
-    axtMonitorVersion='1.6.0'
+    axtMonitorVersion='1.6.1'
     axtRunnerVersion='1.5.0'
     axtRulesVersion='1.5.0'
     axtCoreVersion='1.5.0'
