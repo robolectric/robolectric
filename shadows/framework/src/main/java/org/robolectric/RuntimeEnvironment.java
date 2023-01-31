@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -13,11 +14,13 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import com.google.common.base.Supplier;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
@@ -194,6 +197,10 @@ public class RuntimeEnvironment {
    * @param newQualifiers the qualifiers to apply
    */
   public static void setQualifiers(String newQualifiers) {
+    if (getApiLevel() >= JELLY_BEAN_MR1) {
+      ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, newQualifiers);
+    }
+
     Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
