@@ -26,6 +26,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.AddNetworkResult;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Build;
@@ -251,6 +252,24 @@ public class ShadowWifiManagerTest {
 
     list = wifiManager.getConfiguredNetworks();
     assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void addNetworkPrivileged_nullConfig_shouldThrowIllegalArgumentException() {
+    assertThrows(IllegalArgumentException.class, () -> wifiManager.addNetworkPrivileged(null));
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void addNetworkPrivileged_nonNullConfig_shouldAddNetworkSuccessfully() {
+    WifiConfiguration wifiConfiguration = new WifiConfiguration();
+
+    AddNetworkResult addNetworkResult = wifiManager.addNetworkPrivileged(wifiConfiguration);
+
+    assertThat(addNetworkResult).isNotNull();
+    assertThat(addNetworkResult.statusCode).isEqualTo(AddNetworkResult.STATUS_SUCCESS);
+    assertThat(wifiManager.getConfiguredNetworks()).hasSize(1);
   }
 
   @Test

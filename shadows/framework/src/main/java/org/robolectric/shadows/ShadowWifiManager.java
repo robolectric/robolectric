@@ -17,6 +17,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.AddNetworkResult;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Handler;
@@ -179,6 +180,21 @@ public class ShadowWifiManager {
     config.networkId = -1;
     networkIdToConfiguredNetworks.put(networkId, makeCopy(config, networkId));
     return networkId;
+  }
+
+  /**
+   * The new version of {@link #addNetwork(WifiConfiguration)} which returns a more detailed failure
+   * codes. The original implementation of this API is limited to Device Owner (DO), Profile Owner
+   * (PO), system app, and privileged apps but this shadow can be called by all apps.
+   */
+  @Implementation(minSdk = S)
+  protected AddNetworkResult addNetworkPrivileged(WifiConfiguration config) {
+    if (config == null) {
+      throw new IllegalArgumentException("config cannot be null");
+    }
+
+    int networkId = addNetwork(config);
+    return new AddNetworkResult(AddNetworkResult.STATUS_SUCCESS, networkId);
   }
 
   @Implementation
