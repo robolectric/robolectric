@@ -65,6 +65,14 @@ public class ShadowMediaMetadataRetrieverTest {
   }
 
   @Test
+  public void getFrameAtTime_withoutTime() {
+    addFrame(path, 1, bitmap);
+    addFrame(path, 2, bitmap2);
+    retriever.setDataSource(path);
+    assertThat(retriever.getFrameAtTime()).isEqualTo(bitmap);
+  }
+
+  @Test
   @Config(minSdk = O_MR1)
   public void getScaledFrameAtTime_shouldDependOnDataSource() {
     addScaledFrame(toDataSource(path), 1, 1024, 768, bitmap);
