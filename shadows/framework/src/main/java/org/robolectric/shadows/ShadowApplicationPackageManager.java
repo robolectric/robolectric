@@ -1137,7 +1137,9 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation
   protected void setInstallerPackageName(String targetPackage, String installerPackageName) {
-    packageInstallerMap.put(targetPackage, installerPackageName);
+    synchronized (lock) {
+      packageInstallerMap.put(targetPackage, installerPackageName);
+    }
   }
 
   @Implementation(minSdk = KITKAT)
