@@ -23,5 +23,5 @@ dependencies {
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation "junit:junit:${junitVersion}"
     testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation 'io.mockk:mockk:1.9.3'
+    testImplementation 'io.mockk:mockk:1.13.4'
 }
