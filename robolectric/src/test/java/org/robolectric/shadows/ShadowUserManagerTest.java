@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -1055,6 +1056,18 @@ public class ShadowUserManagerTest {
         .isEqualTo(UserInfo.FLAG_QUIET_MODE);
     assertThat(receivedAction.get()).isNull();
     assertThat(receivedHandle.get()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void someUserHasAccount() {
+    assertThat(userManager.someUserHasAccount(SEED_ACCOUNT_NAME, SEED_ACCOUNT_TYPE)).isFalse();
+
+    shadowOf(userManager).setSomeUserHasAccount(SEED_ACCOUNT_NAME, SEED_ACCOUNT_TYPE);
+    assertThat(userManager.someUserHasAccount(SEED_ACCOUNT_NAME, SEED_ACCOUNT_TYPE)).isTrue();
+
+    shadowOf(userManager).removeSomeUserHasAccount(SEED_ACCOUNT_NAME, SEED_ACCOUNT_TYPE);
+    assertThat(userManager.someUserHasAccount(SEED_ACCOUNT_NAME, SEED_ACCOUNT_TYPE)).isFalse();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
