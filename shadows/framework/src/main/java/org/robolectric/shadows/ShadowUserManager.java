@@ -19,6 +19,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
+import android.accounts.Account;
 import android.annotation.UserIdInt;
 import android.app.Application;
 import android.content.Context;
@@ -39,6 +40,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -96,6 +98,8 @@ public class ShadowUserManager {
   private Context context;
   private boolean enforcePermissions;
   private int userSwitchability = UserManager.SWITCHABILITY_STATUS_OK;
+
+  private final Set<Account> userAccounts = new HashSet<>();
 
   /**
    * Global UserManager state. Shared across {@link UserManager}s created in different {@link
@@ -1174,5 +1178,20 @@ public class ShadowUserManager {
 
     @Accessor("mUserId")
     void setUserId(int userId);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean someUserHasAccount(String accountName, String accountType) {
+    return userAccounts.contains(new Account(accountName, accountType));
+  }
+
+  /** Setter for {@link UserManager#someUserHasAccount(String, String)}. */
+  public void setSomeUserHasAccount(String accountName, String accountType) {
+    userAccounts.add(new Account(accountName, accountType));
+  }
+
+  /** Removes user account set via {@link #setSomeUserHasAccount(String, String)}. */
+  public void removeSomeUserHasAccount(String accountName, String accountType) {
+    userAccounts.remove(new Account(accountName, accountType));
   }
 }
