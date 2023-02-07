@@ -1,11 +1,12 @@
 package org.robolectric.junit.rules;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.instanceOf;
 
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.regex.Pattern;
 import org.hamcrest.Description;
+import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
@@ -209,9 +210,24 @@ public final class ExpectedLogMessagesRuleTest {
   }
 
   @Test
-  public void expectLogMessageWithPattern_duplicatePatterns() {
+  public void expectLogMessage_duplicateExpectatedValues_areDeduplicated() {
+    Log.e("Mytag", "message1");
+    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
+    rule.expectLogMessage(Log.ERROR, "Mytag", "message1");
+  }
+
+  @Test
+  public void expectLogMessageWithPattern_duplicateExpectatedValues_areDeduplicated() {
     Log.e("Mytag", "message1");
     rule.expectLogMessagePattern(Log.ERROR, "Mytag", Pattern.compile("message1"));
     rule.expectLogMessagePattern(Log.ERROR, "Mytag", Pattern.compile("message1"));
+  }
+
+  @Test
+  public void expectLogMessage_duplicateMatchers_areNotDeduplicated() {
+    Log.e("Mytag", "message1");
+    rule.expectLogMessage(Log.ERROR, "Mytag", Matchers.equalTo("message1"));
+    rule.expectLogMessage(Log.ERROR, "Mytag", Matchers.equalTo("message1"));
+    expectedException.expect(Matchers.isA(AssertionError.class));
   }
 }
