@@ -5,7 +5,9 @@ import static android.content.pm.ApplicationInfo.FLAG_INSTALLED;
 import static android.content.pm.ApplicationInfo.FLAG_SYSTEM;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
+import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
+import static android.content.pm.PackageManager.DONT_KILL_APP;
 import static android.content.pm.PackageManager.GET_ACTIVITIES;
 import static android.content.pm.PackageManager.GET_META_DATA;
 import static android.content.pm.PackageManager.GET_PROVIDERS;
@@ -342,6 +344,24 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
           setting.getComponentName(),
           new ComponentState(setting.getEnabledState(), setting.getEnabledFlags()));
     }
+  }
+
+  @Implementation(minSdk = Q)
+  protected void setSyntheticAppDetailsActivityEnabled(String packageName, boolean enabled) {
+    ComponentName componentName =
+        new ComponentName(packageName, PackageManager.APP_DETAILS_ACTIVITY_CLASS_NAME);
+    setComponentEnabledSetting(
+        componentName,
+        enabled ? COMPONENT_ENABLED_STATE_DEFAULT : COMPONENT_ENABLED_STATE_DISABLED,
+        DONT_KILL_APP);
+  }
+
+  @Implementation(minSdk = Q)
+  protected boolean getSyntheticAppDetailsActivityEnabled(String packageName) {
+    ComponentName componentName =
+        new ComponentName(packageName, PackageManager.APP_DETAILS_ACTIVITY_CLASS_NAME);
+    int state = getComponentEnabledSetting(componentName);
+    return state == COMPONENT_ENABLED_STATE_ENABLED || state == COMPONENT_ENABLED_STATE_DEFAULT;
   }
 
   @Implementation

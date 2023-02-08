@@ -4400,6 +4400,20 @@ public class ShadowPackageManagerTest {
     }
   }
 
+  @Test
+  @Config(minSdk = Q)
+  public void setSyntheticAppDetailsActivityEnabled_getConsistent() {
+    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
+
+    pm.setSyntheticAppDetailsActivityEnabled(TEST_PACKAGE_NAME, true);
+    boolean before = pm.getSyntheticAppDetailsActivityEnabled(TEST_PACKAGE_NAME);
+    pm.setSyntheticAppDetailsActivityEnabled(TEST_PACKAGE_NAME, false);
+    boolean after = pm.getSyntheticAppDetailsActivityEnabled(TEST_PACKAGE_NAME);
+
+    assertThat(before).isTrue();
+    assertThat(after).isFalse();
+  }
+
   public String[] setPackagesSuspended(
       String[] packageNames,
       boolean suspended,
