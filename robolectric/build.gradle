@@ -25,7 +25,7 @@ dependencies {
     api project(":shadows:framework")
 
     implementation 'org.conscrypt:conscrypt-openjdk-uber:2.5.2'
-    api "org.bouncycastle:bcprov-jdk15on:1.70"
+    api "org.bouncycastle:bcprov-jdk18on:1.72"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
