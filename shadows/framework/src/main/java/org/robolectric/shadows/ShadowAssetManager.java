@@ -25,7 +25,8 @@ abstract public class ShadowAssetManager {
           ShadowLegacyAssetManager.class,
           ShadowArscAssetManager.class,
           ShadowArscAssetManager9.class,
-          ShadowArscAssetManager10.class);
+          ShadowArscAssetManager10.class,
+          ShadowArscAssetManager14.class);
     }
   }
 

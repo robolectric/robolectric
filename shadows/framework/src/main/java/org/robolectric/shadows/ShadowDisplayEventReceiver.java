@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -86,12 +87,22 @@ public class ShadowDisplayEventReceiver {
             new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)));
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = TIRAMISU)
   protected static long nativeInit(
       WeakReference<DisplayEventReceiver> receiver,
       MessageQueue msgQueue,
       int vsyncSource,
       int configChanged) {
+    return nativeInit(receiver, msgQueue);
+  }
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected static long nativeInit(
+      WeakReference<DisplayEventReceiver> receiver,
+      MessageQueue msgQueue,
+      int vsyncSource,
+      int eventRegistration,
+      long layerHandle) {
     return nativeInit(receiver, msgQueue);
   }
 
@@ -289,5 +300,8 @@ public class ShadowDisplayEventReceiver {
 
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();
+
+    @Accessor("mReceiverPtr")
+    long getReceiverPtr();
   }
 }

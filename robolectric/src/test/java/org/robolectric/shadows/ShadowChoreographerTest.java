@@ -9,10 +9,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.shadow.api.Shadow;
 
 /** Unit tests for {@link ShadowChoreographer}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowChoreographerTest {
+
+  @Test
+  public void isValid() {
+    ShadowPausedChoreographer shadowPausedChoreographer =
+        Shadow.extract(Choreographer.getInstance());
+    assertThat(shadowPausedChoreographer.isInitialized()).isTrue();
+  }
 
   @Test
   public void setPaused_isPaused_doesntRun() {

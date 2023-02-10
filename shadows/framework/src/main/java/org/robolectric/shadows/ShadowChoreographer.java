@@ -7,6 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
+import android.view.DisplayEventReceiver;
 import java.time.Duration;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -171,5 +172,8 @@ public abstract class ShadowChoreographer {
 
     @Direct
     void doFrame(long frameTimeNanos, int frame);
+
+    @Accessor("mDisplayEventReceiver")
+    DisplayEventReceiver getReceiver();
   }
 }
