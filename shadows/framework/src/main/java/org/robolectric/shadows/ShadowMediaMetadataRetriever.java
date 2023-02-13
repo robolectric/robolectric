@@ -72,6 +72,11 @@ public class ShadowMediaMetadataRetriever {
     return (frames.containsKey(dataSource) ? frames.get(dataSource).get(timeUs) : null);
   }
 
+  @Implementation
+  protected Bitmap getFrameAtTime() {
+    return getFrameAtTime(/* timeUs= */ 1, /* option= */ 0);
+  }
+
   @Implementation(minSdk = O_MR1)
   protected Bitmap getScaledFrameAtTime(long timeUs, int option, int dstWidth, int dstHeight) {
     return (scaledFrames.containsKey(dataSource)
