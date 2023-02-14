@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -7,12 +8,14 @@ import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
 import android.content.res.Configuration;
+import android.text.format.DateUtils;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.Scheduler;
@@ -114,5 +117,15 @@ public class RuntimeEnvironmentTest {
     RuntimeEnvironment.setQualifiers("+land");
     int screenRotation = ShadowDisplay.getDefaultDisplay().getRotation();
     assertThat(screenRotation).isEqualTo(Surface.ROTATION_0);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void setQualifiers_resetsDateUtilsFormatCache() {
+    RuntimeEnvironment.setQualifiers("ar-rXB");
+    // Populate the DateUtils static format cache.
+    String unused = DateUtils.formatElapsedTime(120);
+    RuntimeEnvironment.setQualifiers("en-rUS");
+    assertThat(DateUtils.formatElapsedTime(120)).isEqualTo("02:00");
   }
 }

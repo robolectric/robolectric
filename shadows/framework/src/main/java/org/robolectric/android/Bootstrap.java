@@ -8,6 +8,7 @@ import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Qualifiers;
+import org.robolectric.shadows.ShadowDateUtils;
 import org.robolectric.shadows.ShadowDisplayManager;
 import org.robolectric.shadows.ShadowWindowManagerImpl;
 
@@ -101,6 +102,9 @@ public class Bootstrap {
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
 
     fixJellyBean(configuration, displayMetrics);
+
+    // DateUtils has a static cache of the last Configuration, so it may need to be reset.
+    ShadowDateUtils.resetLastConfig();
   }
 
   private static void fixJellyBean(Configuration configuration, DisplayMetrics displayMetrics) {
