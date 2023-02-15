@@ -364,7 +364,12 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     p.writeInt(realBitmap.getDensity());
     p.writeBoolean(realBitmap.isMutable());
     p.writeSerializable(realBitmap.getConfig());
-    p.writeString(realBitmap.getColorSpace().getName());
+    ColorSpace colorSpace = realBitmap.getColorSpace();
+    boolean hasColorSpace = colorSpace != null;
+    p.writeBoolean(hasColorSpace);
+    if (hasColorSpace) {
+      p.writeString(colorSpace.getName());
+    }
     p.writeBoolean(realBitmap.hasAlpha());
     int[] pixels = new int[width * height];
     realBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
@@ -378,20 +383,28 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     int density = p.readInt();
     boolean mutable = p.readBoolean();
     Bitmap.Config parceledConfig = (Bitmap.Config) p.readSerializable();
-    String colorSpaceName = p.readString();
-    boolean hasAlpha = p.readBoolean();
     ColorSpace colorSpace = null;
-    ColorSpace[] namedColorSpaces = reflector(ColorSpaceReflector.class).getNamedColorSpaces();
-    for (ColorSpace named : namedColorSpaces) {
-      if (named.getName().equals(colorSpaceName)) {
-        colorSpace = named;
-        break;
+    boolean hasColorSpace = p.readBoolean();
+    if (hasColorSpace) {
+      String colorSpaceName = p.readString();
+      ColorSpace[] namedColorSpaces = reflector(ColorSpaceReflector.class).getNamedColorSpaces();
+      for (ColorSpace named : namedColorSpaces) {
+        if (named.getName().equals(colorSpaceName)) {
+          colorSpace = named;
+          break;
+        }
       }
     }
+    boolean hasAlpha = p.readBoolean();
     int[] parceledColors = new int[parceledHeight * parceledWidth];
     p.readIntArray(parceledColors);
-    Bitmap bitmap =
-        Bitmap.createBitmap(parceledWidth, parceledHeight, parceledConfig, hasAlpha, colorSpace);
+    Bitmap bitmap;
+    if (colorSpace != null) {
+      bitmap =
+          Bitmap.createBitmap(parceledWidth, parceledHeight, parceledConfig, hasAlpha, colorSpace);
+    } else {
+      bitmap = Bitmap.createBitmap(parceledWidth, parceledHeight, parceledConfig, hasAlpha);
+    }
     bitmap.setPixels(parceledColors, 0, parceledWidth, 0, 0, parceledWidth, parceledHeight);
     bitmap.setDensity(density);
     if (!mutable) {
