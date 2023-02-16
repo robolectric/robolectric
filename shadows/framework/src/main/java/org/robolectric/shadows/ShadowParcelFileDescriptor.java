@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -13,7 +14,6 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.Constructor;
 import java.util.UUID;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -21,6 +21,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -51,13 +52,15 @@ public class ShadowParcelFileDescriptor {
 
   @Implementation
   protected static ParcelFileDescriptor open(File file, int mode) throws FileNotFoundException {
-    ParcelFileDescriptor pfd;
-    try {
-      Constructor<ParcelFileDescriptor> constructor =
-          ParcelFileDescriptor.class.getDeclaredConstructor(FileDescriptor.class);
-      pfd = constructor.newInstance(new FileDescriptor());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+    ParcelFileDescriptor pfd = null;
+    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
+      pfd = new ParcelFileDescriptor(new FileDescriptor());
+    } else {
+      // In Jelly Bean, the ParcelFileDescriptor(FileDescriptor) constructor was non-public.
+      pfd =
+          ReflectionHelpers.callConstructor(
+              ParcelFileDescriptor.class,
+              ClassParameter.from(FileDescriptor.class, new FileDescriptor()));
     }
     ShadowParcelFileDescriptor shadowParcelFileDescriptor = Shadow.extract(pfd);
     shadowParcelFileDescriptor.file = new RandomAccessFile(file, getFileMode(mode));

@@ -385,16 +385,16 @@ public class ShadowLocationManager {
         if (locationProviderConstructor == null) {
           if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
             locationProviderConstructor =
-                LocationProvider.class.getConstructor(
+                LocationProvider.class.getDeclaredConstructor(
                     String.class, android.location.provider.ProviderProperties.class);
           } else {
             locationProviderConstructor =
-                LocationProvider.class.getConstructor(
+                LocationProvider.class.getDeclaredConstructor(
                     String.class,
                     Class.forName("com.android.internal.location.ProviderProperties"));
           }
-          locationProviderConstructor.setAccessible(true);
         }
+        locationProviderConstructor.setAccessible(true);
 
         if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
           return locationProviderConstructor.newInstance(name, properties.getProviderProperties());

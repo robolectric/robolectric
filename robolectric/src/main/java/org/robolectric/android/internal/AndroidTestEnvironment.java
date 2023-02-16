@@ -195,7 +195,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
-    RuntimeEnvironment.setActivityThread(ReflectionHelpers.newInstance(ActivityThread.class));
+    RuntimeEnvironment.setActivityThread(ReflectionHelpers.callConstructor(ActivityThread.class));
     ReflectionHelpers.setStaticField(
         ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
@@ -315,7 +315,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       } catch (ClassNotFoundException e) {
         throw new RuntimeException(e);
       }
-      final Object appBindData = ReflectionHelpers.newInstance(appBindDataClass);
+      final Object appBindData = ReflectionHelpers.callConstructor(appBindDataClass);
       final _AppBindData_ _appBindData_ = reflector(_AppBindData_.class, appBindData);
       _appBindData_.setProcessName(parsedPackage.packageName);
       _appBindData_.setAppInfo(applicationInfo);

@@ -17,7 +17,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Camera.class)
 public class ShadowCamera {
@@ -300,7 +299,7 @@ public class ShadowCamera {
 
     /** Add custom preview sizes to supportedPreviewSizes. */
     public void addSupportedPreviewSize(int width, int height) {
-      Camera.Size newSize = ReflectionHelpers.newInstance(Camera.class).new Size(width, height);
+      Camera.Size newSize = newInstanceOf(Camera.class).new Size(width, height);
       supportedPreviewSizes.add(newSize);
     }
 

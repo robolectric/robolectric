@@ -103,7 +103,7 @@ public class SandboxClassLoaderTest {
   public void shouldDelegateToHandlerForConstructors() throws Exception {
     Class<?> clazz = loadClass(AClassWithNoDefaultConstructor.class);
     Constructor<?> ctor = clazz.getDeclaredConstructor(String.class);
-    assertTrue(Modifier.isPublic(ctor.getModifiers()));
+    assertThat(Modifier.isPublic(ctor.getModifiers())).isFalse();
     ctor.setAccessible(true);
     Object instance = ctor.newInstance("new one");
     assertThat(transcript)

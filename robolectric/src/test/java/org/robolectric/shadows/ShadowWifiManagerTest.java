@@ -41,6 +41,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiManagerTest {
@@ -60,9 +61,17 @@ public class ShadowWifiManagerTest {
 
   @Test
   public void setWifiInfo_shouldUpdateWifiInfo() {
-    WifiInfo wifiInfo = new WifiInfo();
+    WifiInfo wifiInfo = newWifiInfo();
     shadowOf(wifiManager).setConnectionInfo(wifiInfo);
     assertThat(wifiManager.getConnectionInfo()).isSameInstanceAs(wifiInfo);
+  }
+
+  private static WifiInfo newWifiInfo() {
+    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+      return new WifiInfo();
+    } else {
+      return ReflectionHelpers.callConstructor(WifiInfo.class);
+    }
   }
 
   @Test
