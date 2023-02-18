@@ -6,7 +6,7 @@ ext {
 
     // AndroidX test versions
     axtMonitorVersion='1.6.1'
-    axtRunnerVersion='1.5.0'
+    axtRunnerVersion='1.5.2'
     axtRulesVersion='1.5.0'
     axtCoreVersion='1.5.0'
     axtTruthVersion='1.5.0'
