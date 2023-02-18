@@ -26,9 +26,7 @@ compileKotlin {
     // in production. If utils module starts to add Kotlin code in main source
     // set, we can remove this destinationDirectory modification.
     destinationDirectory = file("${projectDir}/build/classes/java/main")
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 }
 
 afterEvaluate {
