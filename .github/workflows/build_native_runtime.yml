@@ -142,3 +142,11 @@ jobs:
           name: robolectric-nativeruntime-windows-x86_64.dll
           path: |
             build/robolectric-nativeruntime-windows-x86_64.dll
+
+      - name: Upload libnativeruntime (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v3
+        with:
+          name: icu-files
+          path: |
+            nativeruntime/external/icu/**
