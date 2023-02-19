@@ -57,14 +57,6 @@ jobs:
           path: ~/icu-bin
           key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
 
-      - name: Cache ICU build output (Windows)
-        id: cache-icu-windows
-        uses: actions/cache@v3
-        if: runner.os == 'Windows'
-        with:
-          path: D:\msys64\home\runneradmin\icu-bin
-          key: ${{ runner.os }}-${{ runner.arch }}-icu-windows-${{ hashFiles('nativeruntime/external/icu/**') }}
-
       - name: Build ICU for MacOS
         if: runner.os =='macOS' && steps.cache-icu.outputs.cache-hit != 'true'
         run: |
