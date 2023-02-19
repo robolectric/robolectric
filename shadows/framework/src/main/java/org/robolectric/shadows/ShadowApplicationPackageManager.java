@@ -67,7 +67,6 @@ import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.ApplicationInfoFlags;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
@@ -97,6 +96,7 @@ import android.telecom.TelecomManager;
 import android.util.Log;
 import android.util.Pair;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Sets;
 import java.io.File;
@@ -1005,7 +1005,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = TIRAMISU)
   protected List<ApplicationInfo> getInstalledApplications(Object flags) {
-    return getInstalledApplications(((ApplicationInfoFlags) flags).getValue());
+    return getInstalledApplications(((PackageManager.ApplicationInfoFlags) flags).getValue());
   }
 
   private List<ApplicationInfo> getInstalledApplications(long flags) {
@@ -1383,9 +1383,26 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected ApplicationInfo getApplicationInfo(String packageName, int flags)
+  protected ApplicationInfo getApplicationInfo(Object packageName, Object flags)
       throws NameNotFoundException {
-    PackageInfo packageInfo = getPackageInfo(packageName, flags);
+    Preconditions.checkArgument(packageName instanceof String);
+    boolean isIntType = flags instanceof Integer;
+    PackageInfo packageInfo;
+    if (VERSION.SDK_INT >= TIRAMISU) {
+      boolean isApplicationInfoFlagsType = flags instanceof PackageManager.ApplicationInfoFlags;
+      Preconditions.checkArgument(isIntType || isApplicationInfoFlagsType);
+      if (isApplicationInfoFlagsType) {
+        packageInfo =
+            getPackageInfo(
+                (String) packageName,
+                (int) ((PackageManager.ApplicationInfoFlags) flags).getValue());
+      } else {
+        packageInfo = getPackageInfo((String) packageName, (int) flags);
+      }
+    } else {
+      Preconditions.checkArgument(isIntType);
+      packageInfo = getPackageInfo((String) packageName, (int) flags);
+    }
     if (packageInfo.applicationInfo == null) {
       throw new NameNotFoundException("Package found but without application info");
     }

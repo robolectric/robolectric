@@ -963,8 +963,18 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  public void getApplicationInfo_ThisApplication() throws Exception {
+  public void getApplicationInfo_thisApplication() throws Exception {
     ApplicationInfo info = packageManager.getApplicationInfo(context.getPackageName(), 0);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(context.getPackageName());
+    assertThat(info.processName).isEqualTo(info.packageName);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getApplicationInfo_thisApplication_withApplicationInfoFlags() throws Exception {
+    ApplicationInfo info =
+        packageManager.getApplicationInfo(context.getPackageName(), ApplicationInfoFlags.of(0));
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(context.getPackageName());
     assertThat(info.processName).isEqualTo(info.packageName);
@@ -981,11 +991,39 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void
+      getApplicationInfo_uninstalledApplication_includeUninstalled_withApplicationInfoFlags()
+          throws Exception {
+    shadowOf(packageManager).deletePackage(context.getPackageName());
+
+    ApplicationInfo info =
+        packageManager.getApplicationInfo(
+            context.getPackageName(), ApplicationInfoFlags.of(MATCH_UNINSTALLED_PACKAGES));
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(context.getPackageName());
+  }
+
+  @Test
   public void getApplicationInfo_uninstalledApplication_dontIncludeUninstalled() {
     shadowOf(packageManager).deletePackage(context.getPackageName());
 
     try {
       packageManager.getApplicationInfo(context.getPackageName(), 0);
+      fail("PackageManager.NameNotFoundException not thrown");
+    } catch (PackageManager.NameNotFoundException e) {
+      // expected
+    }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void
+      getApplicationInfo_uninstalledApplication_dontIncludeUninstalled_withApplicationInfoFlags() {
+    shadowOf(packageManager).deletePackage(context.getPackageName());
+
+    try {
+      packageManager.getApplicationInfo(context.getPackageName(), ApplicationInfoFlags.of(0));
       fail("PackageManager.NameNotFoundException not thrown");
     } catch (PackageManager.NameNotFoundException e) {
       // expected
@@ -1003,8 +1041,22 @@ public class ShadowPackageManagerTest {
     }
   }
 
+  @Test(expected = PackageManager.NameNotFoundException.class)
+  @Config(minSdk = TIRAMISU)
+  public void
+      getApplicationInfo_whenUnknown_shouldThrowNameNotFoundException_withApplicationInfoFlags()
+          throws Exception {
+    try {
+      packageManager.getApplicationInfo("unknown_package", ApplicationInfoFlags.of(0));
+      fail("should have thrown NameNotFoundException");
+    } catch (PackageManager.NameNotFoundException e) {
+      assertThat(e.getMessage()).contains("unknown_package");
+      throw e;
+    }
+  }
+
   @Test
-  public void getApplicationInfo_OtherApplication() throws Exception {
+  public void getApplicationInfo_otherApplication() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
     packageInfo.applicationInfo = new ApplicationInfo();
@@ -1013,6 +1065,23 @@ public class ShadowPackageManagerTest {
     shadowOf(packageManager).installPackage(packageInfo);
 
     ApplicationInfo info = packageManager.getApplicationInfo(TEST_PACKAGE_NAME, 0);
+    assertThat(info).isNotNull();
+    assertThat(info.packageName).isEqualTo(TEST_PACKAGE_NAME);
+    assertThat(packageManager.getApplicationLabel(info).toString()).isEqualTo(TEST_PACKAGE_LABEL);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getApplicationInfo_otherApplication_withApplicationInfoFlags() throws Exception {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo = new ApplicationInfo();
+    packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+    packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    ApplicationInfo info =
+        packageManager.getApplicationInfo(TEST_PACKAGE_NAME, ApplicationInfoFlags.of(0));
     assertThat(info).isNotNull();
     assertThat(info.packageName).isEqualTo(TEST_PACKAGE_NAME);
     assertThat(packageManager.getApplicationLabel(info).toString()).isEqualTo(TEST_PACKAGE_LABEL);
