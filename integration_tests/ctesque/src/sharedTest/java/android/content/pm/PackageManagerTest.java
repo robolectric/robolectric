@@ -16,7 +16,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
-import androidx.test.InstrumentationRegistry;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public final class PackageManagerTest {
 
   @Before
   public void setup() throws Exception {
-    context = InstrumentationRegistry.getTargetContext();
+    context = ApplicationProvider.getApplicationContext();
     pm = context.getPackageManager();
   }
 
@@ -99,7 +99,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void getComponent_partialName() throws Exception {
+  public void getComponent_partialName() {
     ComponentName serviceName = new ComponentName(context, ".TestService");
 
     try {
@@ -110,7 +110,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void getComponent_wrongNameActivity() throws Exception {
+  public void getComponent_wrongNameActivity() {
     ComponentName activityName = new ComponentName(context, "WrongNameActivity");
 
     try {
@@ -137,14 +137,14 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void queryIntentServices_noFlags() throws Exception {
+  public void queryIntentServices_noFlags() {
     List<ResolveInfo> result = pm.queryIntentServices(new Intent(context, TestService.class), 0);
 
     assertThat(result).hasSize(1);
   }
 
   @Test
-  public void getCompoent_disabledComponent_doesntInclude() throws Exception {
+  public void getComponent_disabledComponent_doesntInclude() {
     ComponentName disabledActivityName =
         new ComponentName(context, "org.robolectric.testapp.DisabledTestActivity");
 
@@ -156,7 +156,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void getCompoent_disabledComponent_include() throws Exception {
+  public void getComponent_disabledComponent_include() throws Exception {
     ComponentName disabledActivityName =
         new ComponentName(context, "org.robolectric.testapp.DisabledTestActivity");
 
@@ -166,8 +166,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void getPackageInfo_programmaticallyDisabledComponent_noFlags_notReturned()
-      throws Exception {
+  public void getPackageInfo_programmaticallyDisabledComponent_noFlags_notReturned() {
     ComponentName activityName = new ComponentName(context, "org.robolectric.testapp.TestActivity");
     pm.setComponentEnabledSetting(activityName, COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -207,7 +206,7 @@ public final class PackageManagerTest {
   @Test
   @Config(maxSdk = 23)
   @SdkSuppress(maxSdkVersion = 23)
-  public void getPackageInfo_disabledAplication_stillReturned_below24() throws Exception {
+  public void getPackageInfo_disabledApplication_stillReturned_below24() throws Exception {
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -232,7 +231,7 @@ public final class PackageManagerTest {
   @Test
   @Config(minSdk = 24)
   @SdkSuppress(minSdkVersion = 24)
-  public void getPackageInfo_disabledAplication_stillReturned_after24() throws Exception {
+  public void getPackageInfo_disabledApplication_stillReturned_after24() throws Exception {
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -249,7 +248,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void getPackageInfo_disabledAplication_withFlags_returnedEverything() throws Exception {
+  public void getPackageInfo_disabledApplication_withFlags_returnedEverything() throws Exception {
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -267,7 +266,7 @@ public final class PackageManagerTest {
   }
 
   @Test
-  public void getApplicationInfo_disabledAplication_stillReturnedWithNoFlags() throws Exception {
+  public void getApplicationInfo_disabledApplication_stillReturnedWithNoFlags() throws Exception {
     pm.setApplicationEnabledSetting(
         context.getPackageName(), COMPONENT_ENABLED_STATE_DISABLED, DONT_KILL_APP);
 
@@ -297,14 +296,5 @@ public final class PackageManagerTest {
       }
     }
     return filtered.toArray(new ActivityInfo[0]);
-  }
-
-  private static boolean isRobolectric() {
-    try {
-      Class.forName("org.robolectric.RuntimeEnvironment");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
   }
 }
