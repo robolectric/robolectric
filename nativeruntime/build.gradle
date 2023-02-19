@@ -69,7 +69,11 @@ task configureICU {
         } else if (os.contains("mac")) {
           commandLine './runConfigureICU', 'MacOSX', '--enable-static', '--disable-shared'
         } else if (os.contains("win")) {
-          commandLine 'sh', './runConfigureICU', 'MinGW', '--enable-static', '--disable-shared'
+          // See https://github.com/robolectric/robolectric/issues/7963.
+          // We found that --disable-shared broke the ICU building in Windows' MinGW64
+          // environment. Before we find a perfect solution to fix it, we need to remove
+          // it from ICU's configuration command in MinGW64 environment.
+          commandLine 'sh', './runConfigureICU', 'MinGW', '--enable-static'
         } else {
           println("ICU configure not supported for OS '${System.getProperty("os.name")}'")
         }
