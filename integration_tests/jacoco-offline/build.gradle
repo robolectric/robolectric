@@ -1,0 +1,112 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+apply plugin: "jacoco"
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 16
+        targetSdk 33
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions.unitTests.includeAndroidResources true
+}
+
+jacoco {
+    toolVersion = jacocoVersion
+}
+
+configurations {
+    jacocoAnt
+    jacocoRuntime
+}
+
+
+dependencies {
+    api project(":robolectric")
+
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+}
+
+def unitTestTaskName = "testDebugUnitTest"
+
+def compileSourceTaskName = "compileDebugJavaWithJavac"
+
+def javaDirPath = "${buildDir.path}/intermediates/javac/debug/classes"
+
+def kotlinDirPath = "${buildDir.path}/classes/kotlin/main"
+
+def jacocoInstrumentedClassesOutputDirPath = "${buildDir.path}/classes/java/classes-instrumented"
+
+// make sure it's evaluated after the AGP evaluation.
+afterEvaluate {
+    tasks[compileSourceTaskName].doLast {
+        println "[JaCoCo]:Generating JaCoCo instrumented classes for the build."
+
+        def jacocoInstrumentOutputDirPathFile = new File(jacocoInstrumentedClassesOutputDirPath)
+        if (jacocoInstrumentOutputDirPathFile.exists()) {
+            println "[JaCoCo]:Classes had been instrumented."
+            return
+        }
+
+        ant.taskdef(name: 'instrument',
+                classname: 'org.jacoco.ant.InstrumentTask',
+                classpath: configurations.jacocoAnt.asPath)
+
+        def classesDirPathFile = new File(javaDirPath)
+        if (classesDirPathFile.exists()) {
+            ant.instrument(destdir: jacocoInstrumentedClassesOutputDirPath) {
+                fileset(
+                        dir: javaDirPath,
+                        excludes: []
+                )
+            }
+        } else {
+            println "Classes directory with path: " + classesDirPathFile + " was not existed."
+        }
+
+        def classesDirPathFileKotlin = new File(kotlinDirPath)
+        if (classesDirPathFileKotlin.exists()) {
+            ant.instrument(destdir: jacocoInstrumentedClassesOutputDirPath) {
+                fileset(
+                        dir: kotlinDirPath,
+                        excludes: []
+                )
+            }
+        } else {
+            println "Classes directory with path: " + classesDirPathFileKotlin + " was not existed."
+        }
+    }
+
+    def executionDataFilePath = "${buildDir.path}/jacoco/${unitTestTaskName}.exec"
+
+    // put JaCoCo instrumented classes and JaCoCoRuntime to the beginning of the JVM classpath.
+    tasks["${unitTestTaskName}"].doFirst {
+        jacoco {
+            // disable JaCoCo on-the-fly from Gradle JaCoCo plugin.
+            enabled = false
+        }
+
+        println "[JaCoCo]:Modifying classpath of tests JVM."
+
+        systemProperty 'jacoco-agent.destfile', executionDataFilePath
+
+        classpath = files(jacocoInstrumentedClassesOutputDirPath) + classpath + configurations.jacocoRuntime
+
+        println "Final test JVM classpath is ${classpath.getAsPath()}"
+    }
+}
