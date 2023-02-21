@@ -21,7 +21,7 @@ dependencies {
     api project(":utils")
 
     // We should keep httpclient version for low level API compatibility.
-    earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
+    earlyRuntime "org.apache.httpcomponents:httpcore:4.4.16"
     api "org.apache.httpcomponents:httpclient:4.0.3"
     compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
 
