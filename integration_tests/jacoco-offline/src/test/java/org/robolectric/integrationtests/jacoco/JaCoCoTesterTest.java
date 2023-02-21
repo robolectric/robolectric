@@ -1,4 +1,4 @@
-package org.robolectric.integrationtests.jacoco.onthefly;
+package org.robolectric.integrationtests.jacoco;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -6,9 +6,9 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
 @RunWith(RobolectricTestRunner.class)
-public class JaCoCoOnTheFlyTesterTest {
+public class JaCoCoTesterTest {
   @Test
   public void testGetValueBeforeShadow() {
-    Assert.assertEquals(JaCoCoOnTheFlyTester.VALUE, new JaCoCoOnTheFlyTester().getValue());
+    Assert.assertEquals(JaCoCoTester.VALUE, new JaCoCoTester().getValue());
   }
 }

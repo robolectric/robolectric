@@ -1,10 +1,10 @@
-package org.robolectric.integrationtests.jacoco.onthefly;
+package org.robolectric.integrationtests.jacoco;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(JaCoCoOnTheFlyTester.class)
-public class ShadowJaCoCoOnTheFlyTester {
+@Implements(JaCoCoTester.class)
+public class ShadowJaCoCoTester {
   public static final int VALUE = 0;
 
   @Implementation
