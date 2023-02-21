@@ -27,6 +27,8 @@ ext {
 
     mockitoVersion='4.11.0'
 
+    jacocoVersion='0.8.8'
+
     guavaJREVersion='31.1-jre'
 
     asmVersion='9.4'

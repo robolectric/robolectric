@@ -1,0 +1,41 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+apply plugin: "jacoco"
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 16
+        targetSdk 33
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions.unitTests.includeAndroidResources true
+}
+
+jacoco {
+    toolVersion = jacocoVersion
+}
+
+dependencies {
+    api project(":robolectric")
+
+    compileOnly AndroidSdk.MAX_SDK.coordinates
+
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
+
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation "androidx.test:core:$axtCoreVersion"
+    testImplementation "androidx.test:runner:$axtRunnerVersion"
+    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
+    testImplementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
+}
