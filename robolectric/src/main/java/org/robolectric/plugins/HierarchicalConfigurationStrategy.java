@@ -10,6 +10,7 @@ import java.util.function.Function;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.Configurer;
+import org.robolectric.util.PerfStatsCollector;
 
 /**
  * Robolectric's default {@link ConfigurationStrategy}.
@@ -75,9 +76,19 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
         s -> {
           Object[] configsForClass = getClassConfig(testClass, counter);
           Package pkg = testClass.getPackage();
-          Object[] configsForPackage = getPackageConfig(pkg == null ? "" : pkg.getName(), counter);
+          Object[] configsForPackage =
+              getPackageConfigMeasured(pkg == null ? "" : pkg.getName(), counter);
           return merge(configsForPackage, configsForClass);
         });
+  }
+
+  private Object[] getPackageConfigMeasured(String packageName, Counter counter) {
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "getPackageConfig",
+            () -> {
+              return getPackageConfig(packageName, counter);
+            });
   }
 
   private Object[] getPackageConfig(String packageName, Counter counter) {
@@ -91,7 +102,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
           if (parentPackage == null) {
             return merge(defaultConfigs, packageConfigs);
           } else {
-            Object[] packageConfig = getPackageConfig(parentPackage, counter);
+            Object[] packageConfig = getPackageConfigMeasured(parentPackage, counter);
             return merge(packageConfig, packageConfigs);
           }
         });
