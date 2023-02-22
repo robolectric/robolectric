@@ -33,6 +33,7 @@ public @interface Config {
 
   String DEFAULT_VALUE_STRING = "--default";
   int DEFAULT_VALUE_INT = -1;
+  float DEFAULT_FONT_SCALE = 1.0f;
 
   String DEFAULT_MANIFEST_NAME = "AndroidManifest.xml";
   Class<? extends Application> DEFAULT_APPLICATION = DefaultApplication.class;
@@ -54,6 +55,13 @@ public @interface Config {
 
   /** The maximum Android SDK level to emulate when running tests on multiple API versions. */
   int maxSdk() default -1;
+
+  /**
+   * The default font scale. In U+, users will have a slider to determine font scale. In all
+   * previous APIs, font scales are either small (0.85f), normal (1.0f), large (1.15f) or huge
+   * (1.3f)
+   */
+  float fontScale() default 1.0f;
 
   /**
    * The Android manifest file to load; Robolectric will look relative to the current directory.
@@ -166,6 +174,7 @@ public @interface Config {
     private final int[] sdk;
     private final int minSdk;
     private final int maxSdk;
+    private final float fontScale;
     private final String manifest;
     private final String qualifiers;
     private final String resourceDir;
@@ -184,6 +193,7 @@ public @interface Config {
           parseSdkInt(properties.getProperty("maxSdk", "-1")),
           properties.getProperty("manifest", DEFAULT_VALUE_STRING),
           properties.getProperty("qualifiers", DEFAULT_QUALIFIERS),
+          Float.parseFloat(properties.getProperty("fontScale", "1.0f")),
           properties.getProperty("packageName", DEFAULT_PACKAGE_NAME),
           properties.getProperty("resourceDir", DEFAULT_RES_FOLDER),
           properties.getProperty("assetDir", DEFAULT_ASSET_FOLDER),
@@ -284,6 +294,7 @@ public @interface Config {
         int maxSdk,
         String manifest,
         String qualifiers,
+        float fontScale,
         String packageName,
         String resourceDir,
         String assetDir,
@@ -296,6 +307,7 @@ public @interface Config {
       this.maxSdk = maxSdk;
       this.manifest = manifest;
       this.qualifiers = qualifiers;
+      this.fontScale = fontScale;
       this.packageName = packageName;
       this.resourceDir = resourceDir;
       this.assetDir = assetDir;
@@ -325,6 +337,11 @@ public @interface Config {
     @Override
     public String manifest() {
       return manifest;
+    }
+
+    @Override
+    public float fontScale() {
+      return fontScale;
     }
 
     @Override
@@ -413,6 +430,7 @@ public @interface Config {
     protected int[] sdk = new int[0];
     protected int minSdk = -1;
     protected int maxSdk = -1;
+    protected float fontScale = 1.0f;
     protected String manifest = Config.DEFAULT_VALUE_STRING;
     protected String qualifiers = Config.DEFAULT_QUALIFIERS;
     protected String packageName = Config.DEFAULT_PACKAGE_NAME;
@@ -431,6 +449,7 @@ public @interface Config {
       maxSdk = config.maxSdk();
       manifest = config.manifest();
       qualifiers = config.qualifiers();
+      fontScale = config.fontScale();
       packageName = config.packageName();
       resourceDir = config.resourceDir();
       assetDir = config.assetDir();
@@ -475,6 +494,11 @@ public @interface Config {
       return this;
     }
 
+    public Builder setFontScale(float fontScale) {
+      this.fontScale = fontScale;
+      return this;
+    }
+
     public Builder setAssetDir(String assetDir) {
       this.assetDir = assetDir;
       return this;
@@ -515,6 +539,7 @@ public @interface Config {
       int[] overlaySdk = overlayConfig.sdk();
       int overlayMinSdk = overlayConfig.minSdk();
       int overlayMaxSdk = overlayConfig.maxSdk();
+      float overlayFontScale = overlayConfig.fontScale();
 
       //noinspection ConstantConditions
       if (overlaySdk != null && overlaySdk.length > 0) {
@@ -531,6 +556,8 @@ public @interface Config {
         this.maxSdk = pick(this.maxSdk, overlayMaxSdk, DEFAULT_VALUE_INT);
       }
       this.manifest = pick(this.manifest, overlayConfig.manifest(), DEFAULT_VALUE_STRING);
+
+      this.fontScale = pick(this.fontScale, overlayFontScale, DEFAULT_FONT_SCALE);
 
       String qualifiersOverlayValue = overlayConfig.qualifiers();
       if (qualifiersOverlayValue != null && !qualifiersOverlayValue.equals("")) {
@@ -583,6 +610,7 @@ public @interface Config {
           maxSdk,
           manifest,
           qualifiers,
+          fontScale,
           packageName,
           resourceDir,
           assetDir,

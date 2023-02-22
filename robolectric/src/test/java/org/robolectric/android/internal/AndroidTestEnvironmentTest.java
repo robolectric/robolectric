@@ -9,6 +9,7 @@ import static org.robolectric.annotation.ConscryptMode.Mode.ON;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -300,6 +301,27 @@ public class AndroidTestEnvironmentTest {
     bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+w124dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
+  }
+
+  @Test
+  @Config(fontScale = 1.3f)
+  public void setFontScale_updatesFontScale() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
+
+    Context context = ApplicationProvider.getApplicationContext();
+    DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+    assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.3f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density * 1.3f);
+  }
+
+  @Test
+  public void fontScaleNotSet_stillSetToDefault() throws Exception {
+    bootstrapWrapper.callSetUpApplicationState();
+
+    Context context = ApplicationProvider.getApplicationContext();
+    DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+    assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.0f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density);
   }
 
   @LazyApplication(LazyLoad.ON)
