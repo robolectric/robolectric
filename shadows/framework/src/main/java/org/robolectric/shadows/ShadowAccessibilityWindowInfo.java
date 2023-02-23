@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -51,6 +52,8 @@ public class ShadowAccessibilityWindowInfo {
   private boolean isActive = false;
 
   private boolean isFocused = false;
+
+  private boolean isPictureInPicture = false;
 
   @RealObject private AccessibilityWindowInfo mRealAccessibilityWindowInfo;
 
@@ -256,6 +259,11 @@ public class ShadowAccessibilityWindowInfo {
     return isAccessibilityFocused;
   }
 
+  @Implementation(minSdk = O)
+  protected boolean isInPictureInPictureMode() {
+    return isPictureInPicture;
+  }
+
   @Implementation
   protected void recycle() {
     // This shadow does not track recycling of windows.
@@ -312,6 +320,11 @@ public class ShadowAccessibilityWindowInfo {
   @Implementation
   public void setFocused(boolean focused) {
     isFocused = focused;
+  }
+
+  @Implementation(minSdk = O)
+  public void setPictureInPicture(boolean pictureInPicture) {
+    isPictureInPicture = pictureInPicture;
   }
 
   public void addChild(AccessibilityWindowInfo child) {
