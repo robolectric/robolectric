@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.media.MediaCodec;
@@ -9,6 +10,7 @@ import android.media.MediaMuxer;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -40,32 +42,59 @@ public final class ShadowMediaMuxerTest {
   @Test
   @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_sameZeroOffset() throws IOException {
-    basicMuxingFlow(0, 0, INPUT_SIZE);
+    String tempFilePath =
+        tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
+    MediaMuxer muxer = new MediaMuxer(tempFilePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+
+    basicMuxingFlow(muxer, tempFilePath, 0, 0, INPUT_SIZE);
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_sameNonZeroOffset() throws IOException {
-    basicMuxingFlow(10, 10, INPUT_SIZE);
+    String tempFilePath =
+        tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
+    MediaMuxer muxer = new MediaMuxer(tempFilePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+
+    basicMuxingFlow(muxer, tempFilePath, 10, 10, INPUT_SIZE);
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_nonSameButSmallerOffset() throws IOException {
-    basicMuxingFlow(0, 10, INPUT_SIZE);
+    String tempFilePath =
+        tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
+    MediaMuxer muxer = new MediaMuxer(tempFilePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+
+    basicMuxingFlow(muxer, tempFilePath, 0, 10, INPUT_SIZE);
   }
 
   @Test
   @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_nonSameButLargerOffset() throws IOException {
-    basicMuxingFlow(10, 0, INPUT_SIZE);
-  }
-
-  private void basicMuxingFlow(int bufInfoOffset, int bufOffset, int inputSize) throws IOException {
     String tempFilePath =
         tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
     MediaMuxer muxer = new MediaMuxer(tempFilePath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
 
+    basicMuxingFlow(muxer, tempFilePath, 10, 0, INPUT_SIZE);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void basicMuxingFlow_fileDescriptorConstructor_sameZeroOffset() throws IOException {
+    String tempFilePath =
+        tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
+    try (FileOutputStream outputStream = new FileOutputStream(tempFilePath)) {
+      MediaMuxer muxer =
+          new MediaMuxer(outputStream.getFD(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
+
+      basicMuxingFlow(muxer, tempFilePath, 0, 0, INPUT_SIZE);
+    }
+  }
+
+  private void basicMuxingFlow(
+      MediaMuxer muxer, String tempFilePath, int bufInfoOffset, int bufOffset, int inputSize)
+      throws IOException {
     MediaFormat format = new MediaFormat();
     format.setString(MediaFormat.KEY_MIME, MediaFormat.MIMETYPE_AUDIO_AAC);
 
