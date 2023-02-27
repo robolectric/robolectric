@@ -54,6 +54,7 @@ import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.provider.Settings;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableSet;
@@ -2355,6 +2356,28 @@ public final class ShadowDevicePolicyManagerTest {
 
     shadowDevicePolicyManager.setUserProvisioningState(STATE_USER_UNMANAGED);
     assertThat(devicePolicyManager.getUserProvisioningState()).isEqualTo(STATE_USER_UNMANAGED);
+  }
+
+  @Config(minSdk = M)
+  @Test
+  public void setGlobalSetting_globalSettingSet() {
+    String enabled = "1";
+
+    devicePolicyManager.setGlobalSetting(testComponent, Settings.Global.ADB_ENABLED, enabled);
+
+    assertThat(Settings.Global.getString(context.getContentResolver(), Settings.Global.ADB_ENABLED))
+        .isEqualTo(enabled);
+  }
+
+  @Config(minSdk = M)
+  @Test
+  public void setGlobalSetting_settingCanBeReturnedAsInteger() throws Exception {
+    String enabled = "1";
+
+    devicePolicyManager.setGlobalSetting(testComponent, Settings.Global.ADB_ENABLED, enabled);
+
+    assertThat(Settings.Global.getInt(context.getContentResolver(), Settings.Global.ADB_ENABLED))
+        .isEqualTo(1);
   }
 
   private ServiceConnection buildServiceConnection() {
