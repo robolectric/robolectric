@@ -172,6 +172,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Bootstrap.applyQualifiers(config.qualifiers(), apiLevel, androidConfiguration, displayMetrics);
 
+    androidConfiguration.fontScale = config.fontScale();
+
     if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
