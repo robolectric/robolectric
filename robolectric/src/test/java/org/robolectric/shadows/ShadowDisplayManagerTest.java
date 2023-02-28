@@ -167,10 +167,8 @@ public class ShadowDisplayManagerTest {
 
     ShadowDisplayManager.removeDisplay(displayId);
 
-    assertThat(events).containsExactly(
-        "Added " + displayId,
-        "Changed " + displayId,
-        "Removed " + displayId);
+    assertThat(events)
+        .containsExactly("Added " + displayId, "Changed " + displayId, "Removed " + displayId);
   }
 
   @Test
@@ -187,9 +185,7 @@ public class ShadowDisplayManagerTest {
     assertThat(display.getHeight()).isEqualTo(100);
     assertThat(display.getOrientation()).isEqualTo(Surface.ROTATION_90);
 
-    assertThat(events).containsExactly(
-        "Added " + displayId,
-        "Changed " + displayId);
+    assertThat(events).containsExactly("Added " + displayId, "Changed " + displayId);
   }
 
   @Test
@@ -312,36 +308,44 @@ public class ShadowDisplayManagerTest {
     assertThat(shadowOf(instance).getSaturationLevel()).isEqualTo(1.0f);
   }
 
-  @Test @Config(minSdk = P)
+  @Test
+  @Config(minSdk = P)
   public void setSaturationLevel_setToValueGreaterThanOne_shouldThrow() {
     try {
       instance.setSaturationLevel(1.1f);
       fail("Expected IllegalArgumentException thrown");
-    } catch (IllegalArgumentException expected) {}
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
-  @Test @Config(minSdk = P)
+  @Test
+  @Config(minSdk = P)
   public void setSaturationLevel_setToNegativeValue_shouldThrow() {
     try {
       instance.setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");
-    } catch (IllegalArgumentException expected) {}
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
-  @Test @Config(minSdk = P)
+  @Test
+  @Config(minSdk = P)
   public void setSaturationLevel_setToValueGreaterThanOneViaShadow_shouldThrow() {
     try {
       shadowOf(instance).setSaturationLevel(1.1f);
       fail("Expected IllegalArgumentException thrown");
-    } catch (IllegalArgumentException expected) {}
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
-  @Test @Config(minSdk = P)
+  @Test
+  @Config(minSdk = P)
   public void setSaturationLevel_setToNegativevalueViaShadow_shouldThrow() {
     try {
       shadowOf(instance).setSaturationLevel(-0.1f);
       fail("Expected IllegalArgumentException thrown");
-    } catch (IllegalArgumentException expected) {}
+    } catch (IllegalArgumentException expected) {
+    }
   }
 
   @Test
@@ -448,6 +452,56 @@ public class ShadowDisplayManagerTest {
 
     ShadowDisplayManager.setBrightnessEvents(events);
     assertThat(instance.getBrightnessEvents()).containsExactlyElementsIn(events);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void setNaturallyPortrait_setPortrait_isRotatedWhenLandscape() {
+    ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, true);
+
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "land");
+
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_90);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void setNaturallyPortrait_setPortraitWhenLandscape_isRotated() {
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "land");
+
+    ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, true);
+
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_90);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void setNaturallyPortrait_setLandscape_isNotRotatedWhenLandscape() {
+    ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
+
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "land");
+
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_0);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void setNaturallyPortrait_setLandscape_isRotatedWhenPortrait() {
+    ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
+
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "port");
+
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_90);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void setNaturallyPortrait_setLandscapeWhenLandscape_isNotRotated() {
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "land");
+
+    ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
+
+    assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_0);
   }
 
   // because DisplayManagerGlobal don't exist in Jelly Bean,
