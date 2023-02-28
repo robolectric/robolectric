@@ -1124,7 +1124,10 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected void extendVerificationTimeout(
       int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
-    verificationTimeoutExtension.put(id, millisecondsToDelay);
+    synchronized (lock) {
+      verificationTimeoutExtension.put(id, millisecondsToDelay);
+      verificationCodeAtTimeoutExtension.put(id, verificationCodeAtTimeout);
+    }
   }
 
   @Override

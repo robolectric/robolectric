@@ -16,6 +16,7 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static android.content.pm.PackageInfo.REQUESTED_PERMISSION_GRANTED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+import static android.content.pm.PackageManager.EXTRA_VERIFICATION_ID;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_GRANTED_BY_DEFAULT;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_SYSTEM_FIXED;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_USER_FIXED;
@@ -30,6 +31,7 @@ import static android.content.pm.PackageManager.SIGNATURE_NO_MATCH;
 import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
+import static android.content.pm.PackageManager.VERIFICATION_REJECT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -48,6 +50,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -62,6 +65,7 @@ import android.Manifest.permission_group;
 import android.app.Activity;
 import android.app.Application;
 import android.app.admin.DevicePolicyManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -128,6 +132,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
@@ -154,6 +159,7 @@ public class ShadowPackageManagerTest {
   private static final String REAL_TEST_APP_PACKAGE_NAME = "org.robolectric.exampleapp";
   private static final String TEST_PACKAGE3_NAME = "com.a.third.package";
   private static final int TEST_PACKAGE_VERSION_CODE = 10000;
+  public static final int INSTALL_VERIFICATION_ID = 1234;
 
   @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
   private Context context;
@@ -2618,10 +2624,76 @@ public class ShadowPackageManagerTest {
 
   @Test
   @Config(minSdk = JELLY_BEAN_MR1)
-  public void extendPendingInstallTimeout() {
-    packageManager.extendVerificationTimeout(1234, 0, 1000);
+  public void
+      extendPendingInstallTimeout_verificationRejectAtTimeout_extendsPendingInstallTimeoutAndsetsCodeAtTimeoutToReject() {
+    packageManager.extendVerificationTimeout(
+        INSTALL_VERIFICATION_ID,
+        /* verificationCodeAtTimeout= */ VERIFICATION_REJECT,
+        /* millisecondsToDelay= */ 1000);
 
-    assertThat(shadowOf(packageManager).getVerificationExtendedTimeout(1234)).isEqualTo(1000);
+    assertThat(shadowOf(packageManager).getVerificationExtendedTimeout(INSTALL_VERIFICATION_ID))
+        .isEqualTo(1000);
+    assertThat(
+            shadowOf(packageManager).getVerificationCodeAtTimeoutExtension(INSTALL_VERIFICATION_ID))
+        .isEqualTo(VERIFICATION_REJECT);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void
+      extendPendingInstallTimeout_verificationAllowAtTimeout_extendsPendingInstallTimeoutAndsetsCodeAtTimeoutToAllow() {
+    packageManager.extendVerificationTimeout(
+        INSTALL_VERIFICATION_ID,
+        /* verificationCodeAtTimeout= */ VERIFICATION_ALLOW,
+        /* millisecondsToDelay= */ 1000);
+
+    assertThat(shadowOf(packageManager).getVerificationExtendedTimeout(INSTALL_VERIFICATION_ID))
+        .isEqualTo(1000);
+    assertThat(
+            shadowOf(packageManager).getVerificationCodeAtTimeoutExtension(INSTALL_VERIFICATION_ID))
+        .isEqualTo(VERIFICATION_ALLOW);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void whenVerificationTimeOutNotExtended_verificationCodeAtTimeoutIsAllow() {
+    assertThat(shadowOf(packageManager).getVerificationExtendedTimeout(INSTALL_VERIFICATION_ID))
+        .isEqualTo(0);
+    // Default verdict is to allow installation.
+    assertThat(
+            shadowOf(packageManager).getVerificationCodeAtTimeoutExtension(INSTALL_VERIFICATION_ID))
+        .isEqualTo(VERIFICATION_ALLOW);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void triggerInstallVerificationTimeout_broadcastsPackageVerifiedIntent() {
+    ShadowPackageManager shadowPackageManagerMock =
+        mock(ShadowPackageManager.class, Mockito.CALLS_REAL_METHODS);
+
+    doReturn(VERIFICATION_REJECT)
+        .when(shadowPackageManagerMock)
+        .getVerificationCodeAtTimeoutExtension(INSTALL_VERIFICATION_ID);
+
+    List<Integer> verificationIdList = new ArrayList<>();
+    List<Integer> verificationResultList = new ArrayList<>();
+    BroadcastReceiver receiver =
+        new BroadcastReceiver() {
+          @Override
+          public void onReceive(Context context, Intent intent) {
+            verificationIdList.add(intent.getIntExtra(EXTRA_VERIFICATION_ID, 0));
+            verificationResultList.add(
+                intent.getIntExtra(PackageManager.EXTRA_VERIFICATION_RESULT, 0));
+          }
+        };
+    IntentFilter intentFilter = new IntentFilter(Intent.ACTION_PACKAGE_VERIFIED);
+    context.registerReceiver(receiver, intentFilter);
+
+    shadowPackageManagerMock.triggerInstallVerificationTimeout(
+        (Application) context, INSTALL_VERIFICATION_ID);
+
+    assertThat(verificationIdList).containsExactly(INSTALL_VERIFICATION_ID);
+    assertThat(verificationResultList).containsExactly(VERIFICATION_REJECT);
   }
 
   @Test
