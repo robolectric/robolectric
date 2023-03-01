@@ -77,18 +77,12 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
           Object[] configsForClass = getClassConfig(testClass, counter);
           Package pkg = testClass.getPackage();
           Object[] configsForPackage =
-              getPackageConfigMeasured(pkg == null ? "" : pkg.getName(), counter);
+              PerfStatsCollector.getInstance()
+                  .measure(
+                      "getPackageConfig",
+                      () -> getPackageConfig(pkg == null ? "" : pkg.getName(), counter));
           return merge(configsForPackage, configsForClass);
         });
-  }
-
-  private Object[] getPackageConfigMeasured(String packageName, Counter counter) {
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "getPackageConfig",
-            () -> {
-              return getPackageConfig(packageName, counter);
-            });
   }
 
   private Object[] getPackageConfig(String packageName, Counter counter) {
@@ -102,7 +96,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
           if (parentPackage == null) {
             return merge(defaultConfigs, packageConfigs);
           } else {
-            Object[] packageConfig = getPackageConfigMeasured(parentPackage, counter);
+            Object[] packageConfig = getPackageConfig(parentPackage, counter);
             return merge(packageConfig, packageConfigs);
           }
         });

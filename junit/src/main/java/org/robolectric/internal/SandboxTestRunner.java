@@ -237,7 +237,6 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
       @Override
       public void evaluate() throws Throwable {
         PerfStatsCollector perfStatsCollector = PerfStatsCollector.getInstance();
-        perfStatsCollector.reset();
         perfStatsCollector.setEnabled(!perfStatsReporters.isEmpty());
 
         Event initialization = perfStatsCollector.startEvent("initialization");
@@ -297,11 +296,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
                 } catch (Exception e) {
                   e.printStackTrace();
                 }
+                reportPerfStats(perfStatsCollector);
+                perfStatsCollector.reset();
               }
             });
-
-        reportPerfStats(perfStatsCollector);
-        perfStatsCollector.reset();
       }
     };
   }

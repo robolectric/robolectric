@@ -266,6 +266,24 @@ public class RobolectricTestRunnerTest {
   }
 
   @Test
+  public void failedTest_shouldStillReportPerfStats() throws Exception {
+    List<Metric> metrics = new ArrayList<>();
+    PerfStatsReporter reporter = (metadata, metrics1) -> metrics.addAll(metrics1);
+
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(
+            TestThatFails.class,
+            RobolectricTestRunner.defaultInjector()
+                .bind(PerfStatsReporter[].class, new PerfStatsReporter[] {reporter})
+                .build());
+
+    runner.run(notifier);
+
+    Set<String> metricNames = metrics.stream().map(Metric::getName).collect(toSet());
+    assertThat(metricNames).contains("initialization");
+  }
+
+  @Test
   public void shouldResetThreadInterrupted() throws Exception {
     RobolectricTestRunner runner = new SingleSdkRobolectricTestRunner(TestWithInterrupt.class);
     runner.run(notifier);
@@ -348,6 +366,15 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void second() throws Exception {
+    }
+  }
+
+  @Ignore
+  @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+  public static class TestThatFails {
+    @Test
+    public void first() throws Exception {
+      throw new AssertionError();
     }
   }
 
