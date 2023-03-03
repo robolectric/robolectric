@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -113,10 +114,11 @@ public class RuntimeEnvironmentTest {
   }
 
   @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGetRotation() {
     RuntimeEnvironment.setQualifiers("+land");
     int screenRotation = ShadowDisplay.getDefaultDisplay().getRotation();
-    assertThat(screenRotation).isEqualTo(Surface.ROTATION_0);
+    assertThat(screenRotation).isEqualTo(Surface.ROTATION_90);
   }
 
   @Test
