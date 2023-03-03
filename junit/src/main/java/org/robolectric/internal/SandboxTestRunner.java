@@ -258,6 +258,10 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
               HelperTestRunner helperTestRunner = getCachedHelperTestRunner(bootstrappedTestClass);
               helperTestRunner.frameworkMethod = method;
 
+              // The method class may be different than the test class if the method annotated @Test
+              // is declared on a superclass of the test.
+              Class<?> bootstrappedMethodClass =
+                  sandbox.bootstrappedClass(method.getMethod().getDeclaringClass());
               final Method bootstrappedMethod;
               try {
                 Class<?>[] parameterTypes =
@@ -265,7 +269,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
                         .map(type -> type.isPrimitive() ? type : sandbox.bootstrappedClass(type))
                         .toArray(Class[]::new);
                 bootstrappedMethod =
-                    bootstrappedTestClass.getMethod(method.getMethod().getName(), parameterTypes);
+                    bootstrappedMethodClass.getMethod(method.getMethod().getName(), parameterTypes);
               } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
               }
