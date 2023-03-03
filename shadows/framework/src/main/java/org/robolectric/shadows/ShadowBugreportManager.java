@@ -140,6 +140,12 @@ public class ShadowBugreportManager {
     return shareDescription;
   }
 
+  /** Returns the screenshot file descriptor if set with {@code startBugreport}, else null. */
+  @Nullable
+  public ParcelFileDescriptor getScreenshotFd() {
+    return screenshotFd;
+  }
+
   private void resetParams() {
     try {
       bugreportFd.close();
