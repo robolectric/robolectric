@@ -126,10 +126,13 @@ public class ShadowUserManager {
 
     private int nextUserId = DEFAULT_SECONDARY_USER_ID;
 
+    // TODO: use UserInfo.FLAG_MAIN when available
+    private static final int FLAG_MAIN = 0x00004000;
+
     public UserManagerState() {
       int id = UserHandle.USER_SYSTEM;
       String name = "system_user";
-      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN;
+      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN | FLAG_MAIN;
 
       userSerialNumbers.put(id, (long) id);
       // Start the user as shut down.
