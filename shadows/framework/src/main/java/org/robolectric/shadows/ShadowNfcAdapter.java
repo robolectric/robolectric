@@ -11,6 +11,7 @@ import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -220,7 +221,9 @@ public class ShadowNfcAdapter {
     }
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
       nfcAdapterReflector.setHasNfcFeature(false);
-      nfcAdapterReflector.setHasBeamFeature(false);
+      if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.CUR_DEVELOPMENT) {
+        nfcAdapterReflector.setHasBeamFeature(false);
+      }
     }
   }
 
