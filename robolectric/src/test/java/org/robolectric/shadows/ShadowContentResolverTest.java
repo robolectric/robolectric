@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
@@ -578,6 +579,98 @@ public class ShadowContentResolverTest {
     assertThat(streamCreateCount.get()).isEqualTo(1);
 
     contentResolver.openOutputStream(uri).write(5);
+    assertThat(streamCreateCount.get()).isEqualTo(2);
+  }
+
+  @Test
+  public void openOutputStream_withModeWithNoRealOrRegisteredProvider_throws() {
+    Uri uri = Uri.parse("content://invalidauthority/test/1");
+    assertThrows(FileNotFoundException.class, () -> contentResolver.openOutputStream(uri, "wt"));
+  }
+
+  @Test
+  public void openOutputStream_withModeWithRealContentProvider_canReadBytesWrittenToOutputStream()
+      throws IOException, RemoteException {
+    Robolectric.setupContentProvider(MyContentProvider.class, AUTHORITY);
+    Uri uri = Uri.parse("content://" + AUTHORITY + "/test/1");
+
+    // Write content through given outputstream
+    try (OutputStream outputStream = contentResolver.openOutputStream(uri, "wt")) {
+      outputStream.write("foo".getBytes(UTF_8));
+    }
+
+    // Verify written content can be read back
+    InputStream inputStream = contentResolver.openInputStream(uri);
+    assertThat(new String(inputStream.readAllBytes(), UTF_8)).isEqualTo("foo");
+  }
+
+  @Test
+  public void openOutputStream_withModeShouldReturnRegisteredStream() throws Exception {
+    final Uri uri = Uri.parse("content://registeredProvider/path");
+
+    AtomicInteger callCount = new AtomicInteger();
+    OutputStream outputStream =
+        new OutputStream() {
+
+          @Override
+          public void write(int arg0) throws IOException {
+            callCount.incrementAndGet();
+          }
+
+          @Override
+          public String toString() {
+            return "outputstream for " + uri;
+          }
+        };
+
+    shadowOf(contentResolver).registerOutputStream(uri, outputStream);
+
+    assertThat(callCount.get()).isEqualTo(0);
+    contentResolver.openOutputStream(uri, "wt").write(5);
+    assertThat(callCount.get()).isEqualTo(1);
+  }
+
+  @Test
+  public void openOutputStream_withModeShouldReturnNewStreamFromRegisteredSupplier()
+      throws Exception {
+    final Uri uri = Uri.parse("content://registeredProvider/path");
+
+    AtomicInteger streamCreateCount = new AtomicInteger();
+    shadowOf(contentResolver)
+        .registerOutputStreamSupplier(
+            uri,
+            () -> {
+              streamCreateCount.incrementAndGet();
+              AtomicBoolean isClosed = new AtomicBoolean();
+              isClosed.set(false);
+              OutputStream outputStream =
+                  new OutputStream() {
+                    @Override
+                    public void close() {
+                      isClosed.set(true);
+                    }
+
+                    @Override
+                    public void write(int arg0) throws IOException {
+                      if (isClosed.get()) {
+                        throw new IOException();
+                      }
+                    }
+
+                    @Override
+                    public String toString() {
+                      return "outputstream for " + uri;
+                    }
+                  };
+              return outputStream;
+            });
+
+    assertThat(streamCreateCount.get()).isEqualTo(0);
+    OutputStream outputStream1 = contentResolver.openOutputStream(uri, "wt");
+    outputStream1.close();
+    assertThat(streamCreateCount.get()).isEqualTo(1);
+
+    contentResolver.openOutputStream(uri, "wt").write(5);
     assertThat(streamCreateCount.get()).isEqualTo(2);
   }
 

@@ -203,18 +203,8 @@ public class ShadowContentResolver {
 
   @Implementation
   protected final OutputStream openOutputStream(final Uri uri) throws FileNotFoundException {
-    Supplier<OutputStream> supplier = outputStreamMap.get(uri);
-    if (supplier != null) {
-      OutputStream outputStream = supplier.get();
-      if (outputStream != null) {
-        return outputStream;
-      }
-    }
     try {
-      return reflector(
-              org.robolectric.shadows.ShadowContentResolver.ContentResolverReflector.class,
-              realContentResolver)
-          .openOutputStream(uri);
+      return openOutputStream(uri, "w");
     } catch (SecurityException | FileNotFoundException e) {
       // This is legacy behavior is only supported because existing users require it.
       return new OutputStream() {
@@ -227,6 +217,19 @@ public class ShadowContentResolver {
         }
       };
     }
+  }
+
+  @Implementation
+  protected final OutputStream openOutputStream(Uri uri, String mode) throws FileNotFoundException {
+    Supplier<OutputStream> supplier = outputStreamMap.get(uri);
+    if (supplier != null) {
+      OutputStream outputStream = supplier.get();
+      if (outputStream != null) {
+        return outputStream;
+      }
+    }
+    return reflector(ContentResolverReflector.class, realContentResolver)
+        .openOutputStream(uri, mode);
   }
 
   /**
@@ -1183,6 +1186,6 @@ public class ShadowContentResolver {
     InputStream openInputStream(Uri uri) throws FileNotFoundException;
 
     @Direct
-    OutputStream openOutputStream(Uri uri) throws FileNotFoundException;
+    OutputStream openOutputStream(Uri uri, String mode) throws FileNotFoundException;
   }
 }
