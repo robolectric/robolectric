@@ -1,7 +1,12 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
+
 import android.companion.AssociationInfo;
 import android.net.MacAddress;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Builder for {@link AssociationInfo}. */
 public class AssociationInfoBuilder {
@@ -73,6 +78,7 @@ public class AssociationInfoBuilder {
   }
 
   public AssociationInfo build() {
+    if (RuntimeEnvironment.getApiLevel() < CUR_DEVELOPMENT) {
     return new AssociationInfo(
         id,
         userId,
@@ -84,5 +90,26 @@ public class AssociationInfoBuilder {
         notifyOnDeviceNearby,
         approvedMs,
         lastTimeConnectedMs);
+    } else {
+      try {
+        return ReflectionHelpers.callConstructor(
+            AssociationInfo.class,
+            ClassParameter.from(int.class, id),
+            ClassParameter.from(int.class, userId),
+            ClassParameter.from(String.class, packageName),
+            ClassParameter.from(MacAddress.class, MacAddress.fromString(deviceMacAddress)),
+            ClassParameter.from(CharSequence.class, displayName),
+            ClassParameter.from(String.class, deviceProfile),
+            ClassParameter.from(Class.forName("android.companion.AssociatedDevice"), null),
+            ClassParameter.from(boolean.class, selfManaged),
+            ClassParameter.from(boolean.class, notifyOnDeviceNearby),
+            ClassParameter.from(boolean.class, false /*revoked*/),
+            ClassParameter.from(long.class, approvedMs),
+            ClassParameter.from(long.class, lastTimeConnectedMs),
+            ClassParameter.from(int.class, 0 /*systemDataSyncFlags*/));
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }
