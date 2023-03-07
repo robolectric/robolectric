@@ -215,6 +215,27 @@ public class RuntimeEnvironment {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
 
+    updateConfiguration(configuration, displayMetrics);
+  }
+
+  public static void setFontScale(float fontScale) {
+    Resources systemResources = getApplication().getResources();
+    DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
+    Configuration configuration = systemResources.getConfiguration();
+
+    displayMetrics.scaledDensity = displayMetrics.density * fontScale;
+    configuration.fontScale = fontScale;
+
+    updateConfiguration(configuration, displayMetrics);
+  }
+
+  public static float getFontScale() {
+    Resources systemResources = getApplication().getResources();
+    return systemResources.getConfiguration().fontScale;
+  }
+
+  private static void updateConfiguration(
+      Configuration configuration, DisplayMetrics displayMetrics) {
     // Update the resources last so that listeners will have a consistent environment.
     // TODO(paulsowden): Can we call ResourcesManager.getInstance().applyConfigurationToResources()?
     if (Build.VERSION.SDK_INT >= KITKAT
@@ -230,7 +251,6 @@ public class RuntimeEnvironment {
       Bootstrap.updateDisplayResources(configuration, displayMetrics);
     }
   }
-
 
   public static int getApiLevel() {
     return apiLevel;

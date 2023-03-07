@@ -8,9 +8,12 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.text.format.DateUtils;
+import android.util.DisplayMetrics;
 import android.view.Surface;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -111,6 +114,22 @@ public class RuntimeEnvironmentTest {
     Application app = RuntimeEnvironment.getApplication();
     assertThat(app.getResources().getConfiguration().orientation)
         .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
+  }
+
+  @Test
+  public void testSetFontScale_updatesFontScale() {
+    Context context = ApplicationProvider.getApplicationContext();
+    DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
+    assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.0f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density);
+    assertThat(RuntimeEnvironment.getFontScale()).isEqualTo(1.0f);
+
+    RuntimeEnvironment.setFontScale(1.3f);
+
+    assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.3f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density * 1.3f);
+    assertThat(RuntimeEnvironment.getFontScale()).isEqualTo(1.3f);
   }
 
   @Test
