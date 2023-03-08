@@ -54,7 +54,7 @@ public class ShadowSystemServiceRegistry {
     static _ServiceFetcher_ get(String key, Object serviceFetcher) {
       String serviceFetcherClassName = getConcreteClassName(serviceFetcher);
       if (serviceFetcherClassName == null) {
-        throw new IllegalStateException("no idea what to do with " + key + " " + serviceFetcher);
+        throw new IllegalStateException("could not find class name for serviceFetcher " + key);
       }
 
       switch (serviceFetcherClassName) {
@@ -69,8 +69,15 @@ public class ShadowSystemServiceRegistry {
         default:
           if (key.equals(Context.INPUT_METHOD_SERVICE)) {
             return o -> {}; // handled by ShadowInputMethodManager.reset()
+          } else if (key.equals(Context.INPUT_SERVICE)) {
+            return o -> {}; // handled by ShadowInputManager.reset()
           }
-          throw new IllegalStateException("no idea what to do with " + key + " " + serviceFetcher);
+          throw new IllegalStateException(
+              "did not recognize serviceFetcher class name "
+                  + serviceFetcherClassName
+                  + " for key '"
+                  + key
+                  + "'");
       }
     }
 
