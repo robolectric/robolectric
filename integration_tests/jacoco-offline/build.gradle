@@ -21,7 +21,7 @@ android {
 }
 
 jacoco {
-    toolVersion = "0.8.8"
+    toolVersion = jacocoVersion
 }
 
 configurations {
@@ -39,10 +39,6 @@ dependencies {
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
 
     testImplementation "junit:junit:$junitVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
-    testImplementation "androidx.test:core:$axtCoreVersion"
-    testImplementation "androidx.test:runner:$axtRunnerVersion"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
     testImplementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
 

@@ -1,4 +1,4 @@
-package org.robolectric.integrationtests.jacoco;
+package org.robolectric.integrationtests.jacoco.offline;
 
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

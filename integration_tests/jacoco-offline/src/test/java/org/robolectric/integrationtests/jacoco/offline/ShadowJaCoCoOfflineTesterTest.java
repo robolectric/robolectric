@@ -1,4 +1,4 @@
-package org.robolectric.integrationtests.jacoco;
+package org.robolectric.integrationtests.jacoco.offline;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,6 +15,6 @@ public class ShadowJaCoCoOfflineTesterTest {
   @Test
   public void testGetValue() {
     Assert.assertNotEquals(JaCoCoOfflineTester.VALUE, ShadowJaCoCoOfflineTester.VALUE);
-    Assert.assertEquals(new JaCoCoOfflineTester().getValue(), ShadowJaCoCoOfflineTester.VALUE);
+    Assert.assertEquals(ShadowJaCoCoOfflineTester.VALUE, new JaCoCoOfflineTester().getValue());
   }
 }
