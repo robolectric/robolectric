@@ -318,6 +318,19 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = R)
+  public void getUserHandles() {
+    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).size()).isEqualTo(1);
+    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).get(0).myUserId())
+        .isEqualTo(UserHandle.USER_SYSTEM);
+
+    UserHandle expectedUserHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).size()).isEqualTo(2);
+    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).get(1))
+        .isEqualTo(expectedUserHandle);
+  }
+
+  @Test
   @Config(minSdk = N_MR1, maxSdk = Q)
   public void isDemoUser() {
     // All methods are based on the current user, so no need to pass a UserHandle.

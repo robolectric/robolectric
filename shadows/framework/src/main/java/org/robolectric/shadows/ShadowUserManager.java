@@ -607,6 +607,16 @@ public class ShadowUserManager {
   }
 
   @HiddenApi
+  @Implementation(minSdk = R)
+  protected List<UserHandle> getUserHandles(boolean excludeDying) {
+    ArrayList<UserHandle> userHandles = new ArrayList<>();
+    for (int id : userManagerState.userSerialNumbers.keySet()) {
+      userHandles.addAll(userManagerState.userProfilesListMap.get(id));
+    }
+    return userHandles;
+  }
+
+  @HiddenApi
   @Implementation(minSdk = JELLY_BEAN_MR1)
   protected static int getMaxSupportedUsers() {
     return maxSupportedUsers;
