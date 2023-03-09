@@ -88,6 +88,7 @@ import android.view.contentcapture.IContentCaptureManager;
 import android.view.translation.ITranslationManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
+import com.android.internal.app.ISoundTriggerService;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.statusbar.IStatusBar;
@@ -165,6 +166,7 @@ public class ShadowServiceManager {
     }
     if (RuntimeEnvironment.getApiLevel() >= N) {
       addBinderService(Context.CONTEXTHUB_SERVICE, IContextHubService.class);
+      addBinderService(Context.SOUND_TRIGGER_SERVICE, ISoundTriggerService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= N_MR1) {
       addBinderService(Context.SHORTCUT_SERVICE, IShortcutService.class);
