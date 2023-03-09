@@ -212,18 +212,22 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Checks if the first instruction is a Jacoco load instructions. Robolectric is not capable at
-   * the moment of re-instrumenting Jacoco-instrumented constructors.
+   * Checks if the first or second instruction is a Jacoco load instruction. Robolectric is not
+   * capable at the moment of re-instrumenting Jacoco-instrumented constructors, so these are
+   * currently skipped.
    *
    * @param ctor constructor method node
    * @return whether or not the constructor can be instrumented
    */
   private boolean isJacocoInstrumented(MethodNode ctor) {
     AbstractInsnNode[] insns = ctor.instructions.toArray();
-    if (insns.length > 0) {
-      if (insns[0] instanceof LdcInsnNode
-          && ((LdcInsnNode) insns[0]).cst instanceof ConstantDynamic) {
-        ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) insns[0]).cst;
+    if (insns.length > 1) {
+      AbstractInsnNode node = insns[0];
+      if (node instanceof LabelNode) {
+        node = insns[1];
+      }
+      if ((node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof ConstantDynamic)) {
+        ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) node).cst;
         return cst.getName().equals("$jacocoData");
       }
     }
