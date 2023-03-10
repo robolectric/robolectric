@@ -25,17 +25,14 @@ jacoco {
 }
 
 dependencies {
-    api project(":robolectric")
-
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
 
+    testImplementation project(":robolectric")
     testImplementation "junit:junit:$junitVersion"
     testImplementation "com.google.truth:truth:$truthVersion"
-    testImplementation "androidx.test:core:$axtCoreVersion"
-    testImplementation "androidx.test:runner:$axtRunnerVersion"
     testImplementation "androidx.test.ext:junit:$axtJunitVersion"
     testImplementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
