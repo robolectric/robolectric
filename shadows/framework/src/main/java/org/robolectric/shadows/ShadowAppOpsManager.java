@@ -7,8 +7,10 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static java.util.stream.Collectors.toSet;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -59,6 +61,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link AppOpsManager}. */
 @Implements(value = AppOpsManager.class, minSdk = KITKAT, looseSignatures = true)
@@ -146,11 +150,19 @@ public class ShadowAppOpsManager {
       for (Key key : entry.getValue()) {
         if (op == key.getOpCode()
             && (key.getPackageName() == null || key.getPackageName().equals(packageName))) {
-          String[] sOpToString =
-              ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
-          entry.getKey().onOpChanged(sOpToString[op], packageName);
+          entry.getKey().onOpChanged(getOpString(op), packageName);
         }
       }
+    }
+  }
+
+  protected String getOpString(int opCode) {
+    if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
+      String[] sOpToString = ReflectionHelpers.getStaticField(AppOpsManager.class, "sOpToString");
+      return sOpToString[opCode];
+    } else {
+      Object[] sAppOpInfos = ReflectionHelpers.getStaticField(AppOpsManager.class, "sAppOpInfos");
+      return reflector(AppOpInfoReflector.class, sAppOpInfos[opCode]).getName();
     }
   }
 
@@ -632,5 +644,11 @@ public class ShadowAppOpsManager {
     if (RuntimeEnvironment.getApiLevel() >= R && staticallyInitialized) {
       ReflectionHelpers.setStaticField(AppOpsManager.class, "sOnOpNotedCallback", null);
     }
+  }
+
+  @ForType(className = "android.app.AppOpInfo")
+  interface AppOpInfoReflector {
+    @Accessor("name")
+    String getName();
   }
 }
