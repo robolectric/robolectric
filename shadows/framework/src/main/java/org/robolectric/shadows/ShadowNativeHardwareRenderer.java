@@ -137,8 +137,9 @@ public class ShadowNativeHardwareRenderer {
   }
 
   @Implementation(minSdk = S)
-  protected static void nSetColorMode(long nativeProxy, int colorMode) {
+  protected static Object nSetColorMode(long nativeProxy, int colorMode) {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
+    return null;
   }
 
   @Implementation(minSdk = S)
@@ -377,7 +378,8 @@ public class ShadowNativeHardwareRenderer {
       int wideColorDataspace,
       long appVsyncOffsetNanos,
       long presentationDeadlineNanos,
-      boolean supportsFp16ForHdr) {
+      boolean supportsFp16ForHdr,
+      boolean nInitDisplayInfo) {
     nInitDisplayInfo(
         width,
         height,
