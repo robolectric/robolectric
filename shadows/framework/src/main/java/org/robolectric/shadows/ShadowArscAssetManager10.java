@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.res.android.ApkAssetsCookie.K_INVALID_COOKIE;
 import static org.robolectric.res.android.ApkAssetsCookie.kInvalidCookie;
 import static org.robolectric.res.android.Asset.SEEK_CUR;
@@ -584,7 +585,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   //                                    jint smallest_screen_width_dp, jint screen_width_dp,
   //                                    jint screen_height_dp, jint screen_layout, jint ui_mode,
   //                                    jint color_mode, jint major_version) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = TIRAMISU)
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
