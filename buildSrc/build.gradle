@@ -12,7 +12,7 @@ dependencies {
     implementation localGroovy()
 
     api "com.google.guava:guava:31.1-jre"
-    api 'org.jetbrains:annotations:16.0.2'
+    api 'org.jetbrains:annotations:24.0.1'
     implementation "org.ow2.asm:asm-tree:9.4"
     implementation 'com.android.tools.build:gradle:7.4.2'
 }
