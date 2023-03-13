@@ -25,7 +25,7 @@ ext {
 
     junitVersion='4.13.2'
 
-    mockitoVersion='4.11.0'
+    mockitoVersion='5.2.0'
 
     jacocoVersion='0.8.8'
 
