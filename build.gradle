@@ -14,7 +14,7 @@ buildscript {
 
     dependencies {
         gradle
-        classpath 'com.android.tools.build:gradle:7.4.0'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:3.0.1'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
