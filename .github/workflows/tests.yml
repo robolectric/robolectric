@@ -34,27 +34,9 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
 
-      - name: Cache ICU build output
-        id: cache-icu
-        uses: actions/cache@v3
-        with:
-          path: ~/icu-bin
-          key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
-
-      - name: Build ICU
-        if: steps.cache-icu.outputs.cache-hit != 'true'
-        run: |
-          cd nativeruntime/external/icu/icu4c/source
-          CFLAGS="-fPIC" CXXFLAGS="-fPIC" ./runConfigureICU Linux --enable-static --prefix=$HOME/icu-bin
-          make -j4
-          make install
-
-      - name: Install Ninja
-        run: sudo apt-get install ninja-build
-
       - name: Build
         run: |
-          ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
+          SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
           ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
@@ -78,19 +60,9 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2
 
-      - name: Cache ICU build output
-        id: cache-icu
-        uses: actions/cache@v3
-        with:
-          path: ~/icu-bin
-          key: ${{ runner.os }}-${{ runner.arch }}-icu-${{ hashFiles('nativeruntime/external/icu/**') }}
-
-      - name: Install Ninja
-        run: sudo apt-get install ninja-build
-
       - name: Run unit tests
         run: |
-          ICU_ROOT_DIR=$HOME/icu-bin SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
+          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew test \
           --info --stacktrace --continue \
           --parallel \
           --no-watch-fs \
