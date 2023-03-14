@@ -12,7 +12,6 @@ import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.IntentSender;
-import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.Executors;
@@ -122,17 +121,17 @@ public class ShadowCompanionDeviceManagerTest {
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void testAddAssociation_byAssociationInfo() {
     AssociationInfo info =
-        new AssociationInfo(
-            /* id= */ 1,
-            /* userId= */ 1,
-            "packageName",
-            MacAddress.fromString(MAC_ADDRESS),
-            "displayName",
-            "deviceProfile",
-            /* selfManaged= */ false,
-            /* notifyOnDeviceNearby= */ false,
-            /* timeApprovedMs= */ 0,
-            /* lastTimeConnectedMs= */ 0);
+        AssociationInfoBuilder.newBuilder()
+            .setId(1)
+            .setUserId(1)
+            .setPackageName("packageName")
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setDisplayName("displayName")
+            .setSelfManaged(false)
+            .setNotifyOnDeviceNearby(false)
+            .setApprovedMs(0)
+            .setLastTimeConnectedMs(0)
+            .build();
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
     shadowCompanionDeviceManager.addAssociation(info);
     assertThat(companionDeviceManager.getMyAssociations()).contains(info);
