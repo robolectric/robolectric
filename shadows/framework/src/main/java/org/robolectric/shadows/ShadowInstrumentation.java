@@ -1011,10 +1011,20 @@ public class ShadowInstrumentation {
   }
 
   int checkPermission(String permission, int pid, int uid) {
-    Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair(pid, uid));
-    return grantedPermissionsForPidUid != null && grantedPermissionsForPidUid.contains(permission)
-        ? PERMISSION_GRANTED
-        : PERMISSION_DENIED;
+    if (pid == -1) {
+      for (Map.Entry<Pair<Integer, Integer>, Set<String>> entry :
+          grantedPermissionsMap.entrySet()) {
+        if (entry.getKey().second == uid && entry.getValue().contains(permission)) {
+          return PERMISSION_GRANTED;
+        }
+      }
+      return PERMISSION_DENIED;
+    } else {
+      Set<String> grantedPermissionsForPidUid = grantedPermissionsMap.get(new Pair(pid, uid));
+      return grantedPermissionsForPidUid != null && grantedPermissionsForPidUid.contains(permission)
+          ? PERMISSION_GRANTED
+          : PERMISSION_DENIED;
+    }
   }
 
   void grantPermissions(String... permissionNames) {

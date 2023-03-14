@@ -1,19 +1,31 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.IBluetoothGatt;
+import android.content.Context;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.ImmutableIntArray;
 import java.util.ArrayList;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow of {@link BluetoothManager} that makes the testing possible. */
 @Implements(value = BluetoothManager.class, minSdk = JELLY_BEAN_MR2)
@@ -57,6 +69,11 @@ public class ShadowBluetoothManager {
     }
   }
 
+  /**
+   * Get the {@link BluetoothAdapter} for this device.
+   *
+   * @return BluetoothAdapter instance
+   */
   @Implementation
   protected BluetoothAdapter getAdapter() {
     return BluetoothAdapter.getDefaultAdapter();
@@ -100,5 +117,46 @@ public class ShadowBluetoothManager {
 
   private boolean isProfileValid(int profile) {
     return profile == BluetoothProfile.GATT || profile == BluetoothProfile.GATT_SERVER;
+  }
+
+  @Implementation(minSdk = O, maxSdk = R)
+  protected BluetoothGattServer openGattServer(
+      Context context, BluetoothGattServerCallback callback, int transport) {
+    return createGattServer(context, callback, transport);
+  }
+
+  /**
+   * Overrides behavior of {@link openGattServer} and returns {@link ShadowBluetoothGattServer}
+   * after creating and using a nullProxy for {@link IBluetoothGatt}.
+   */
+  @Implementation(minSdk = S)
+  protected BluetoothGattServer openGattServer(
+      Context context, BluetoothGattServerCallback callback, int transport, boolean eattSupport) {
+    return createGattServer(context, callback, transport);
+  }
+
+  private BluetoothGattServer createGattServer(
+      Context unusedContext, BluetoothGattServerCallback callback, int transport) {
+    IBluetoothGatt iGatt = ReflectionHelpers.createNullProxy(IBluetoothGatt.class);
+    BluetoothGattServer gattServer;
+
+    if (RuntimeEnvironment.getApiLevel() <= R) {
+      gattServer =
+          ReflectionHelpers.callConstructor(
+              BluetoothGattServer.class,
+              ClassParameter.from(IBluetoothGatt.class, iGatt),
+              ClassParameter.from(int.class, transport));
+    } else {
+      gattServer =
+          ReflectionHelpers.callConstructor(
+              BluetoothGattServer.class,
+              ClassParameter.from(IBluetoothGatt.class, iGatt),
+              ClassParameter.from(int.class, transport),
+              ClassParameter.from(BluetoothAdapter.class, this.getAdapter()));
+    }
+    PerfStatsCollector.getInstance().incrementCount("constructShadowBluetoothGattServer");
+    ShadowBluetoothGattServer shadowBluetoothGattServer = Shadow.extract(gattServer);
+    shadowBluetoothGattServer.setGattServerCallback(callback);
+    return gattServer;
   }
 }

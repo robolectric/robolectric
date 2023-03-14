@@ -5,7 +5,9 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -15,6 +17,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.AddNetworkResult;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Handler;
@@ -49,6 +52,7 @@ public class ShadowWifiManager {
 
   private static float sSignalLevelInPercent = 1f;
   private boolean accessWifiStatePermission = true;
+  private boolean changeWifiStatePermission = true;
   private int wifiState = WifiManager.WIFI_STATE_ENABLED;
   private boolean wasSaved = false;
   private WifiInfo wifiInfo;
@@ -140,6 +144,19 @@ public class ShadowWifiManager {
     return scanResults;
   }
 
+  /**
+   * The original implementation allows this to be called by the Device Owner (DO), Profile Owner
+   * (PO), callers with carrier privilege and system apps, but this shadow can be called by all apps
+   * carrying the ACCESS_WIFI_STATE permission.
+   *
+   * <p>This shadow is a wrapper for getConfiguredNetworks() and does not actually check the caller.
+   */
+  @Implementation(minSdk = S)
+  protected List<WifiConfiguration> getCallerConfiguredNetworks() {
+    checkAccessWifiStatePermission();
+    return getConfiguredNetworks();
+  }
+
   @Implementation
   protected List<WifiConfiguration> getConfiguredNetworks() {
     final ArrayList<WifiConfiguration> wifiConfigurations = new ArrayList<>();
@@ -165,10 +182,40 @@ public class ShadowWifiManager {
     return networkId;
   }
 
+  /**
+   * The new version of {@link #addNetwork(WifiConfiguration)} which returns a more detailed failure
+   * codes. The original implementation of this API is limited to Device Owner (DO), Profile Owner
+   * (PO), system app, and privileged apps but this shadow can be called by all apps.
+   */
+  @Implementation(minSdk = S)
+  protected AddNetworkResult addNetworkPrivileged(WifiConfiguration config) {
+    if (config == null) {
+      throw new IllegalArgumentException("config cannot be null");
+    }
+
+    int networkId = addNetwork(config);
+    return new AddNetworkResult(AddNetworkResult.STATUS_SUCCESS, networkId);
+  }
+
   @Implementation
   protected boolean removeNetwork(int netId) {
     networkIdToConfiguredNetworks.remove(netId);
     return true;
+  }
+
+  /**
+   * Removes all configured networks regardless of the app that created the network. Can only be
+   * called by a Device Owner (DO) app.
+   *
+   * @return {@code true} if at least one network is removed, {@code false} otherwise
+   */
+  @Implementation(minSdk = S)
+  protected boolean removeNonCallerConfiguredNetworks() {
+    checkChangeWifiStatePermission();
+    checkDeviceOwner();
+    int previousSize = networkIdToConfiguredNetworks.size();
+    networkIdToConfiguredNetworks.clear();
+    return networkIdToConfiguredNetworks.size() < previousSize;
   }
 
   /**
@@ -353,6 +400,10 @@ public class ShadowWifiManager {
     this.accessWifiStatePermission = accessWifiStatePermission;
   }
 
+  public void setChangeWifiStatePermission(boolean changeWifiStatePermission) {
+    this.changeWifiStatePermission = changeWifiStatePermission;
+  }
+
   /**
    * Prevents a networkId from being updated using the {@link updateNetwork(WifiConfiguration)}
    * method. This is to simulate the case where a separate application creates a network, and the
@@ -397,7 +448,21 @@ public class ShadowWifiManager {
 
   private void checkAccessWifiStatePermission() {
     if (!accessWifiStatePermission) {
-      throw new SecurityException();
+      throw new SecurityException("Caller does not hold ACCESS_WIFI_STATE permission");
+    }
+  }
+
+  private void checkChangeWifiStatePermission() {
+    if (!changeWifiStatePermission) {
+      throw new SecurityException("Caller does not hold CHANGE_WIFI_STATE permission");
+    }
+  }
+
+  private void checkDeviceOwner() {
+    if (!getContext()
+        .getSystemService(DevicePolicyManager.class)
+        .isDeviceOwnerApp(getContext().getPackageName())) {
+      throw new SecurityException("Caller is not device owner");
     }
   }
 

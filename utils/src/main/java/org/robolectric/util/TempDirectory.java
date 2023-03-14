@@ -52,6 +52,10 @@ public class TempDirectory {
     }
   }
 
+  public Path getBasePath() {
+    return basePath;
+  }
+
   static void clearAllDirectories() {
     ExecutorService deletionExecutorService = Executors.newFixedThreadPool(DELETE_THREAD_POOL_SIZE);
     synchronized (tempDirectoriesToDelete) {

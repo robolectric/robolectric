@@ -50,4 +50,10 @@
         android:layout_height="wrap_content"
         android:inputType="phone" />
 
+    <EditText
+        android:id="@+id/edit_text_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number" />
+
 </LinearLayout>

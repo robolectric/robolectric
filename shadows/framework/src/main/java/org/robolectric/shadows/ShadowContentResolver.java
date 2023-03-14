@@ -7,6 +7,7 @@ import static android.content.ContentResolver.SCHEME_ANDROID_RESOURCE;
 import static android.content.ContentResolver.SCHEME_CONTENT;
 import static android.content.ContentResolver.SCHEME_FILE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -201,7 +202,25 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final OutputStream openOutputStream(final Uri uri) {
+  protected final OutputStream openOutputStream(final Uri uri) throws FileNotFoundException {
+    try {
+      return openOutputStream(uri, "w");
+    } catch (SecurityException | FileNotFoundException e) {
+      // This is legacy behavior is only supported because existing users require it.
+      return new OutputStream() {
+        @Override
+        public void write(int arg0) throws IOException {}
+
+        @Override
+        public String toString() {
+          return "outputstream for " + uri;
+        }
+      };
+    }
+  }
+
+  @Implementation
+  protected final OutputStream openOutputStream(Uri uri, String mode) throws FileNotFoundException {
     Supplier<OutputStream> supplier = outputStreamMap.get(uri);
     if (supplier != null) {
       OutputStream outputStream = supplier.get();
@@ -209,15 +228,8 @@ public class ShadowContentResolver {
         return outputStream;
       }
     }
-    return new OutputStream() {
-      @Override
-      public void write(int arg0) throws IOException {}
-
-      @Override
-      public String toString() {
-        return "outputstream for " + uri;
-      }
-    };
+    return reflector(ContentResolverReflector.class, realContentResolver)
+        .openOutputStream(uri, mode);
   }
 
   /**
@@ -553,12 +565,26 @@ public class ShadowContentResolver {
       }
       for (Map.Entry<Account, Status> mp : map.getValue().entrySet()) {
         if (isSyncActive(mp.getKey(), map.getKey())) {
-          SyncInfo si = new SyncInfo(0, mp.getKey(), map.getKey(), 0);
+          SyncInfo si = newSyncInfo(0, mp.getKey(), map.getKey(), 0);
           list.add(si);
         }
       }
     }
     return list;
+  }
+
+  private static SyncInfo newSyncInfo(
+      int authorityId, Account account, String authority, long startTime) {
+    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
+      return new SyncInfo(authorityId, account, authority, startTime);
+    } else {
+      return ReflectionHelpers.callConstructor(
+          SyncInfo.class,
+          ClassParameter.from(int.class, authorityId),
+          ClassParameter.from(Account.class, account),
+          ClassParameter.from(String.class, authority),
+          ClassParameter.from(long.class, startTime));
+    }
   }
 
   @Implementation
@@ -1160,6 +1186,6 @@ public class ShadowContentResolver {
     InputStream openInputStream(Uri uri) throws FileNotFoundException;
 
     @Direct
-    OutputStream openOutputStream(Uri uri) throws FileNotFoundException;
+    OutputStream openOutputStream(Uri uri, String mode) throws FileNotFoundException;
   }
 }

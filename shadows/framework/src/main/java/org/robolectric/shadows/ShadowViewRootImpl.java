@@ -123,7 +123,30 @@ public class ShadowViewRootImpl {
   }
 
   public void callDispatchResized() {
-    if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.S_V2) {
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
+      Display display = getDisplay();
+      Rect frame = new Rect();
+      display.getRectSize(frame);
+
+      ClientWindowFrames frames = new ClientWindowFrames();
+      // set the final field
+      ReflectionHelpers.setField(frames, "frame", frame);
+
+      ReflectionHelpers.callInstanceMethod(
+          ViewRootImpl.class,
+          realObject,
+          "dispatchResized",
+          ClassParameter.from(ClientWindowFrames.class, frames),
+          ClassParameter.from(boolean.class, true), /* reportDraw */
+          ClassParameter.from(
+              MergedConfiguration.class, new MergedConfiguration()), /* mergedConfiguration */
+          ClassParameter.from(InsetsState.class, new InsetsState()), /* insetsState */
+          ClassParameter.from(boolean.class, false), /* forceLayout */
+          ClassParameter.from(boolean.class, false), /* alwaysConsumeSystemBars */
+          ClassParameter.from(int.class, 0), /* displayId */
+          ClassParameter.from(int.class, 0), /* syncSeqId */
+          ClassParameter.from(boolean.class, false) /* dragResizing */);
+    } else if (RuntimeEnvironment.getApiLevel() > Build.VERSION_CODES.S_V2) {
       Display display = getDisplay();
       Rect frame = new Rect();
       display.getRectSize(frame);

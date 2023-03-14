@@ -89,6 +89,7 @@ public class ShadowDevicePolicyManager {
   private Map<String, Bundle> applicationRestrictionsMap = new HashMap<>();
   private CharSequence organizationName;
   private int organizationColor;
+  private boolean isAutoTimeEnabled;
   private boolean isAutoTimeRequired;
   private boolean isAutoTimeZoneEnabled;
   private String timeZone;
@@ -600,6 +601,18 @@ public class ShadowDevicePolicyManager {
   protected int getOrganizationColor(ComponentName admin) {
     enforceProfileOwner(admin);
     return organizationColor;
+  }
+
+  @Implementation(minSdk = R)
+  protected void setAutoTimeEnabled(ComponentName admin, boolean enabled) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    isAutoTimeEnabled = enabled;
+  }
+
+  @Implementation(minSdk = R)
+  protected boolean getAutoTimeEnabled(ComponentName admin) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    return isAutoTimeEnabled;
   }
 
   @Implementation(minSdk = LOLLIPOP)

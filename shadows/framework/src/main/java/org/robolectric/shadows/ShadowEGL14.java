@@ -84,6 +84,11 @@ public class ShadowEGL14 {
   }
 
   @Implementation
+  protected static EGLContext eglGetCurrentContext() {
+    return createEglContext(3);
+  }
+
+  @Implementation
   protected static boolean eglMakeCurrent(
       EGLDisplay dpy, EGLSurface draw, EGLSurface read, EGLContext ctx) {
     return true;

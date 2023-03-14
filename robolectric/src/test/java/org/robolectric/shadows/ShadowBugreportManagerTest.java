@@ -74,6 +74,7 @@ public final class ShadowBugreportManagerTest {
     shadowMainLooper().idle();
 
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNotNull();
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
   }
@@ -217,6 +218,7 @@ public final class ShadowBugreportManagerTest {
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNotNull();
 
     shadowBugreportManager.executeOnFinished();
     shadowMainLooper().idle();
@@ -224,6 +226,7 @@ public final class ShadowBugreportManagerTest {
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
     verify(callback).onFinished();
     verify(callback, never()).onError(anyInt());
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNull();
   }
 
   @Test
@@ -244,6 +247,7 @@ public final class ShadowBugreportManagerTest {
     verify(callback, never()).onProgress(anyFloat());
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNotNull();
 
     shadowBugreportManager.executeOnProgress(50.0f);
     shadowMainLooper().idle();
@@ -252,6 +256,7 @@ public final class ShadowBugreportManagerTest {
     verify(callback).onProgress(50.0f);
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNotNull();
 
     shadowBugreportManager.executeOnFinished();
     shadowMainLooper().idle();
@@ -263,6 +268,7 @@ public final class ShadowBugreportManagerTest {
     verify(callback).onFinished();
     verify(callback, never()).onError(anyInt());
     verifyNoMoreInteractions(callback);
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNull();
   }
 
   @Test
@@ -281,6 +287,7 @@ public final class ShadowBugreportManagerTest {
     assertThat(shadowBugreportManager.isBugreportInProgress()).isTrue();
     verify(callback, never()).onFinished();
     verify(callback, never()).onError(anyInt());
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNotNull();
 
     shadowBugreportManager.executeOnFinished();
     shadowMainLooper().idle();
@@ -288,6 +295,7 @@ public final class ShadowBugreportManagerTest {
     assertThat(shadowBugreportManager.isBugreportInProgress()).isFalse();
     verify(callback).onFinished();
     verify(callback, never()).onError(anyInt());
+    assertThat(shadowBugreportManager.getScreenshotFd()).isNull();
   }
 
   private ParcelFileDescriptor createWriteFile(String fileName) throws IOException {

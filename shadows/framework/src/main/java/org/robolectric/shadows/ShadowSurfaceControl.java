@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -11,6 +12,7 @@ import android.view.SurfaceControl;
 import android.view.SurfaceSession;
 import dalvik.system.CloseGuard;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
@@ -82,6 +84,9 @@ public class ShadowSurfaceControl {
 
   void initializeNativeObject() {
     surfaceControlReflector.setNativeObject(nativeObject.incrementAndGet());
+    if (RuntimeEnvironment.getApiLevel() >= CUR_DEVELOPMENT) {
+      surfaceControlReflector.setFreeNativeResources(() -> {});
+    }
   }
 
   @ForType(SurfaceControl.class)
@@ -94,5 +99,8 @@ public class ShadowSurfaceControl {
 
     @Direct
     void finalize();
+
+    @Accessor("mFreeNativeResources")
+    void setFreeNativeResources(Runnable runnable);
   }
 }

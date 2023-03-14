@@ -53,6 +53,8 @@ public class ShadowLauncherApps {
       HashMultimap.create();
   private final Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
   private final Map<UserHandle, Map<String, ApplicationInfo>> applicationInfoList = new HashMap<>();
+  private final Map<UserHandle, Map<String, Bundle>> suspendedPackageLauncherExtras =
+      new HashMap<>();
 
   private final List<Pair<LauncherApps.Callback, Handler>> callbacks = new ArrayList<>();
   private boolean hasShortcutHostPermission = false;
@@ -205,11 +207,36 @@ public class ShadowLauncherApps {
         "Package " + packageName + " not found for user " + user.getIdentifier());
   }
 
+  /**
+   * Adds a {@link Bundle} to be retrieved by {@link #getSuspendedPackageLauncherExtras(String,
+   * UserHandle)}.
+   *
+   * @param userHandle the user handle to be added.
+   * @param packageName the package name to be added.
+   * @param bundle the bundle for the extras.
+   */
+  public void addSuspendedPackageLauncherExtras(
+      UserHandle userHandle, String packageName, Bundle bundle) {
+    if (!suspendedPackageLauncherExtras.containsKey(userHandle)) {
+      suspendedPackageLauncherExtras.put(userHandle, new HashMap<>());
+    }
+    suspendedPackageLauncherExtras.get(userHandle).put(packageName, bundle);
+  }
+
   @Implementation(minSdk = P)
   @Nullable
-  protected Bundle getSuspendedPackageLauncherExtras(String packageName, UserHandle user) {
-    throw new UnsupportedOperationException(
-        "This method is not currently supported in Robolectric.");
+  protected Bundle getSuspendedPackageLauncherExtras(String packageName, UserHandle user)
+      throws NameNotFoundException {
+    Map<String, Bundle> map = suspendedPackageLauncherExtras.get(user);
+    if (map != null && map.containsKey(packageName)) {
+      return map.get(packageName);
+    }
+
+    throw new NameNotFoundException(
+        "Suspended package extras for  "
+            + packageName
+            + " not found for user "
+            + user.getIdentifier());
   }
 
   @Implementation(minSdk = Q)

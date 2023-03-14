@@ -98,6 +98,11 @@ public class AndroidConfigurer {
       builder.addClassNameTranslation("sun.misc.Cleaner", "java.lang.ref.Cleaner$Cleanable");
     }
 
+    // Don't acquire legacy support packages.
+    builder
+        .doNotInstrumentPackage("android.support.constraint.")
+        .doNotInstrumentPackage("android.support.v7.view.");
+
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R").doNotInstrumentClass("android.R$styleable");
 

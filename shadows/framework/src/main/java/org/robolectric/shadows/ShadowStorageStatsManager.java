@@ -6,6 +6,7 @@ import android.app.usage.StorageStats;
 import android.app.usage.StorageStatsManager;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Parcel;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
 import com.google.auto.value.AutoValue;
@@ -29,7 +30,10 @@ public class ShadowStorageStatsManager {
   private final Map<UUID, FreeAndTotalBytesPair> freeAndTotalBytesMap =
       createFreeAndTotalBytesMapWithSingleEntry(
           StorageManager.UUID_DEFAULT, DEFAULT_STORAGE_FREE_BYTES, DEFAULT_STORAGE_TOTAL_BYTES);
-  private final Map<StorageStatsKey, StorageStats> storageStatsMap = new ConcurrentHashMap<>();
+  private final Map<StorageStatsKey, StorageStats> storageStatsMapForPackage =
+      new ConcurrentHashMap<>();
+  private final Map<StorageStatsKey, StorageStats> storageStatsMapForUser =
+      new ConcurrentHashMap<>();
 
   /**
    * Sets the {@code storageUuid} to return the specified {@code freeBytes} and {@code totalBytes}
@@ -53,21 +57,50 @@ public class ShadowStorageStatsManager {
   }
 
   /**
-   * Sets the {@link StorageStats} to return when queried with matching {@code storageUuid}, {@code
-   * packageName} and {@code userHandle}.
+   * Sets the {@link StorageStats} for given {@code storageUuid}, {@code packageName} and {@code
+   * userHandle}. If {@code queryStatsForPackage} is called with matching {@code storageUuid},
+   * {@code packageName} and {@code userHandle}, the {@code storageStatsToReturn} will be returned
+   * directly. If {@code queryStatsForUser} is called with matching {@code storageUuid} and {@code
+   * userHandle}, then an accumulated {@link StorageStats} will be returned.
    */
   public void addStorageStats(
       UUID storageUuid,
       String packageName,
       UserHandle userHandle,
       StorageStats storageStatsToReturn) {
-    storageStatsMap.put(
-        StorageStatsKey.create(storageUuid, packageName, userHandle), storageStatsToReturn);
+    StorageStatsKey storageStatsKeyForPackage =
+        StorageStatsKey.create(storageUuid, packageName, userHandle);
+    StorageStats storageStatsForPackage = storageStatsMapForPackage.get(storageStatsKeyForPackage);
+    storageStatsMapForPackage.put(storageStatsKeyForPackage, storageStatsToReturn);
+
+    StorageStatsKey storageStatsKeyForUser =
+        StorageStatsKey.create(storageUuid, /* packageName= */ "", userHandle);
+    StorageStats storageStatsForUser = storageStatsMapForUser.get(storageStatsKeyForUser);
+    if (storageStatsForUser == null) {
+      storageStatsMapForUser.put(storageStatsKeyForUser, storageStatsToReturn);
+    } else {
+      long moreAppBytes = storageStatsToReturn.getAppBytes();
+      long moreDataBytes = storageStatsToReturn.getDataBytes();
+      long moreCacheBytes = storageStatsToReturn.getCacheBytes();
+      if (storageStatsForPackage != null) {
+        moreAppBytes -= storageStatsForPackage.getAppBytes();
+        moreDataBytes -= storageStatsForPackage.getDataBytes();
+        moreCacheBytes -= storageStatsForPackage.getCacheBytes();
+      }
+      Parcel parcel = Parcel.obtain();
+      parcel.writeLong(storageStatsForUser.getAppBytes() + moreAppBytes);
+      parcel.writeLong(storageStatsForUser.getDataBytes() + moreDataBytes);
+      parcel.writeLong(storageStatsForUser.getCacheBytes() + moreCacheBytes);
+      parcel.setDataPosition(0);
+      storageStatsMapForUser.put(
+          storageStatsKeyForUser, StorageStats.CREATOR.createFromParcel(parcel));
+    }
   }
 
   /** Clears all {@link StorageStats} set in {@link ShadowStorageStatsManager#addStorageStats}. */
   public void clearStorageStats() {
-    storageStatsMap.clear();
+    storageStatsMapForPackage.clear();
+    storageStatsMapForUser.clear();
   }
 
   /**
@@ -112,10 +145,30 @@ public class ShadowStorageStatsManager {
   protected StorageStats queryStatsForPackage(UUID storageUuid, String packageName, UserHandle user)
       throws PackageManager.NameNotFoundException, IOException {
     StorageStats storageStat =
-        storageStatsMap.get(StorageStatsKey.create(storageUuid, packageName, user));
+        storageStatsMapForPackage.get(StorageStatsKey.create(storageUuid, packageName, user));
     if (storageStat == null) {
       throw new PackageManager.NameNotFoundException(
           "queryStatsForPackage with non matching arguments. Did you forget to call"
+              + " addStorageStats?");
+    }
+    return storageStat;
+  }
+
+  /**
+   * Fake implementation of {@link StorageStatsManager#queryStatsForUser} that returns an
+   * accumulated {@link StorageStats} based on the setup values for the user. This fake
+   * implementation does not check for access permission. It only checks for arguments matching
+   * those set in {@link ShadowStorageStatsManager#addStorageStats}.
+   */
+  @Implementation
+  protected StorageStats queryStatsForUser(UUID storageUuid, UserHandle user)
+      throws PackageManager.NameNotFoundException, IOException {
+    StorageStats storageStat =
+        storageStatsMapForUser.get(
+            StorageStatsKey.create(storageUuid, /* packageName= */ "", user));
+    if (storageStat == null) {
+      throw new PackageManager.NameNotFoundException(
+          "queryStatsForUser with non matching arguments. Did you forget to call"
               + " addStorageStats?");
     }
     return storageStat;

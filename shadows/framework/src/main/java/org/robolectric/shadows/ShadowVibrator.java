@@ -6,15 +6,18 @@ import android.media.AudioAttributes;
 import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
 
 @Implements(Vibrator.class)
 public class ShadowVibrator {
@@ -84,6 +87,20 @@ public class ShadowVibrator {
   /** Returns the last list of {@link VibrationEffectSegment}. */
   public List<VibrationEffectSegment> getVibrationEffectSegments() {
     return vibrationEffectSegments;
+  }
+
+  /** Returns the last list of {@link PrimitiveSegment} vibrations in {@link PrimitiveEffect}. */
+  @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
+  public List<PrimitiveEffect> getPrimitiveSegmentsInPrimitiveEffects() {
+    return vibrationEffectSegments.stream()
+        .filter(segment -> segment instanceof PrimitiveSegment)
+        .map(
+            segment ->
+                new PrimitiveEffect(
+                    ReflectionHelpers.getField(segment, "mPrimitiveId"),
+                    ReflectionHelpers.getField(segment, "mScale"),
+                    ReflectionHelpers.getField(segment, "mDelay")))
+        .collect(Collectors.toList());
   }
 
   /** Returns the last list of {@link PrimitiveEffect}. */

@@ -93,6 +93,12 @@ public class ShadowMediaMuxer {
   @Implementation
   protected static long nativeSetup(@NonNull FileDescriptor fd, int format) throws IOException {
     FileOutputStream outputStream = fdToStream.get(fd);
+    if (outputStream == null) {
+      // If this MediaMuxer was constructed with the un-shadowed MediaMuxer(FileDescriptor, int), no
+      // FileOutputStream will be associated with the FileDescriptor, so just create one.
+      outputStream = new FileOutputStream(fd);
+      fdToStream.put(fd, outputStream);
+    }
 
     long potentialKey;
     do {

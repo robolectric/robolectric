@@ -1,18 +1,25 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.res.Configuration;
+import android.text.format.DateUtils;
+import android.util.DisplayMetrics;
 import android.view.Surface;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.Scheduler;
@@ -110,9 +117,36 @@ public class RuntimeEnvironmentTest {
   }
 
   @Test
+  public void testSetFontScale_updatesFontScale() {
+    Context context = ApplicationProvider.getApplicationContext();
+    DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
+    assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.0f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density);
+    assertThat(RuntimeEnvironment.getFontScale()).isEqualTo(1.0f);
+
+    RuntimeEnvironment.setFontScale(1.3f);
+
+    assertThat(context.getResources().getConfiguration().fontScale).isEqualTo(1.3f);
+    assertThat(displayMetrics.scaledDensity).isEqualTo(displayMetrics.density * 1.3f);
+    assertThat(RuntimeEnvironment.getFontScale()).isEqualTo(1.3f);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGetRotation() {
     RuntimeEnvironment.setQualifiers("+land");
     int screenRotation = ShadowDisplay.getDefaultDisplay().getRotation();
-    assertThat(screenRotation).isEqualTo(Surface.ROTATION_0);
+    assertThat(screenRotation).isEqualTo(Surface.ROTATION_90);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void setQualifiers_resetsDateUtilsFormatCache() {
+    RuntimeEnvironment.setQualifiers("ar-rXB");
+    // Populate the DateUtils static format cache.
+    String unused = DateUtils.formatElapsedTime(120);
+    RuntimeEnvironment.setQualifiers("en-rUS");
+    assertThat(DateUtils.formatElapsedTime(120)).isEqualTo("02:00");
   }
 }

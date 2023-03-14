@@ -24,6 +24,7 @@ final class SystemFeatureListInitializer {
 
     if (apiLevel >= VERSION_CODES.P) {
       features.put(PackageManager.FEATURE_WIFI_DIRECT, true);
+      features.put(PackageManager.FEATURE_WIFI_RTT, true);
     }
 
     return ImmutableMap.copyOf(features);

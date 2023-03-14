@@ -658,16 +658,25 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
-  public void checkPermissionUidPid() {
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
+  public void checkPermission_denied() {
+    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ 1, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
 
+    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ -1, /* uid= */ 1))
+        .isEqualTo(PackageManager.PERMISSION_DENIED);
+  }
+
+  @Test
+  public void checkPermission_granted() {
     shadowContextWrapper.grantPermissions(1, 1, "MY_PERMISSON");
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 2, 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ 1, /* uid= */ 1))
+        .isEqualTo(PackageManager.PERMISSION_GRANTED);
+
+    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ 2, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_DENIED);
 
-    assertThat(contextWrapper.checkPermission("MY_PERMISSON", 1, 1))
+    assertThat(contextWrapper.checkPermission("MY_PERMISSON", /* pid= */ -1, /* uid= */ 1))
         .isEqualTo(PackageManager.PERMISSION_GRANTED);
   }
 

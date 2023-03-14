@@ -10,6 +10,7 @@ import java.util.function.Function;
 import javax.annotation.Priority;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.Configurer;
+import org.robolectric.util.PerfStatsCollector;
 
 /**
  * Robolectric's default {@link ConfigurationStrategy}.
@@ -23,6 +24,7 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
 
   /** The cache is sized to avoid repeated resolutions for any node. */
   private int highWaterMark = 0;
+
   private final Map<String, Object[]> cache =
       new LinkedHashMap<String, Object[]>() {
         @Override
@@ -47,12 +49,16 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
   @Override
   public ConfigurationImpl getConfig(Class<?> testClass, Method method) {
     final Counter counter = new Counter();
-    Object[] configs = cache(testClass.getName() + "/" + method.getName(), counter, s -> {
-      counter.incr();
-      Object[] methodConfigs = getConfigs(counter,
-          configurer -> configurer.getConfigFor(method));
-      return merge(getFirstClassConfig(testClass, counter), methodConfigs);
-    });
+    Object[] configs =
+        cache(
+            testClass.getName() + "/" + method.getName(),
+            counter,
+            s -> {
+              counter.incr();
+              Object[] methodConfigs =
+                  getConfigs(counter, configurer -> configurer.getConfigFor(method));
+              return merge(getFirstClassConfig(testClass, counter), methodConfigs);
+            });
 
     ConfigurationImpl testConfig = new ConfigurationImpl();
     for (int i = 0; i < configurers.length; i++) {
@@ -64,19 +70,28 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
 
   private Object[] getFirstClassConfig(Class<?> testClass, Counter counter) {
     // todo: should parent class configs have lower precedence than package configs?
-    return cache("first:" + testClass, counter, s -> {
+    return cache(
+        "first:" + testClass,
+        counter,
+        s -> {
           Object[] configsForClass = getClassConfig(testClass, counter);
-      Package pkg = testClass.getPackage();
-      Object[] configsForPackage = getPackageConfig(pkg == null ? "" : pkg.getName(), counter);
+          Package pkg = testClass.getPackage();
+          Object[] configsForPackage =
+              PerfStatsCollector.getInstance()
+                  .measure(
+                      "getPackageConfig",
+                      () -> getPackageConfig(pkg == null ? "" : pkg.getName(), counter));
           return merge(configsForPackage, configsForClass);
-        }
-    );
+        });
   }
 
   private Object[] getPackageConfig(String packageName, Counter counter) {
-    return cache(packageName, counter, s -> {
-          Object[] packageConfigs = getConfigs(counter,
-              configurer -> configurer.getConfigFor(packageName));
+    return cache(
+        packageName,
+        counter,
+        s -> {
+          Object[] packageConfigs =
+              getConfigs(counter, configurer -> configurer.getConfigFor(packageName));
           String parentPackage = parentPackage(packageName);
           if (parentPackage == null) {
             return merge(defaultConfigs, packageConfigs);
@@ -96,16 +111,20 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
   }
 
   private Object[] getClassConfig(Class<?> testClass, Counter counter) {
-    return cache(testClass.getName(), counter, s -> {
-      Object[] classConfigs = getConfigs(counter, configurer -> configurer.getConfigFor(testClass));
+    return cache(
+        testClass.getName(),
+        counter,
+        s -> {
+          Object[] classConfigs =
+              getConfigs(counter, configurer -> configurer.getConfigFor(testClass));
 
-      Class<?> superclass = testClass.getSuperclass();
-      if (superclass != Object.class) {
-        Object[] superclassConfigs = getClassConfig(superclass, counter);
-        return merge(superclassConfigs, classConfigs);
-      }
-      return classConfigs;
-    });
+          Class<?> superclass = testClass.getSuperclass();
+          if (superclass != Object.class) {
+            Object[] superclassConfigs = getClassConfig(superclass, counter);
+            return merge(superclassConfigs, classConfigs);
+          }
+          return classConfigs;
+        });
   }
 
   private Object[] cache(String name, Counter counter, Function<String, Object[]> fn) {
@@ -146,11 +165,10 @@ public class HierarchicalConfigurationStrategy implements ConfigurationStrategy 
       Configurer configurer = configurers[i];
       Object childConfig = childConfigs[i];
       Object parentConfig = parentConfigs[i];
-      objects[i] = childConfig == null
-          ? parentConfig
-          : parentConfig == null
-              ? childConfig
-              : configurer.merge(parentConfig, childConfig);
+      objects[i] =
+          childConfig == null
+              ? parentConfig
+              : parentConfig == null ? childConfig : configurer.merge(parentConfig, childConfig);
     }
     return objects;
   }

@@ -1,12 +1,17 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -31,14 +36,16 @@ public class ShadowBluetoothManagerTest {
   private static final int PROFILE_STATE_CONNECTED = BluetoothProfile.STATE_CONNECTED;
   private static final int PROFILE_STATE_CONNECTING = BluetoothProfile.STATE_CONNECTING;
   private static final int[] CONNECTED_STATES = new int[] {PROFILE_STATE_CONNECTED};
+  private static final BluetoothGattServerCallback callback = new BluetoothGattServerCallback() {};
 
   private BluetoothManager manager;
   private BluetoothAdapter adapter;
   private ShadowBluetoothManager shadowManager;
+  private Context context;
 
   @Before
   public void setUp() {
-    Context context = ApplicationProvider.getApplicationContext();
+    context = ApplicationProvider.getApplicationContext();
     manager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
     adapter = manager.getAdapter();
     shadowManager = shadowOf(manager);
@@ -134,5 +141,21 @@ public class ShadowBluetoothManagerTest {
 
   private BluetoothDevice createBluetoothDevice(String address) {
     return adapter.getRemoteDevice(address);
+  }
+
+  @Test
+  @Config(minSdk = O, maxSdk = R)
+  public void openGattServer_doesNotCrash() {
+    BluetoothGattServer gattServer = manager.openGattServer(context, callback, 0);
+    assertThat(gattServer).isNotNull();
+    assertThat(shadowOf(gattServer).getGattServerCallback()).isSameInstanceAs(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void openGattServerWithTransport_doesNotCrash() {
+    BluetoothGattServer gattServer = manager.openGattServer(context, callback, 0, true);
+    assertThat(gattServer).isNotNull();
+    assertThat(shadowOf(gattServer).getGattServerCallback()).isSameInstanceAs(callback);
   }
 }

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -156,7 +157,12 @@ public class ShadowActivityThread {
   /** Update's ActivityThread's list of active Activities */
   void registerActivityLaunch(
       Intent intent, ActivityInfo activityInfo, Activity activity, IBinder token) {
-    ActivityClientRecord record = new ActivityClientRecord();
+    ActivityClientRecord record;
+    if (RuntimeEnvironment.getApiLevel() >= P) {
+      record = new ActivityClientRecord();
+    } else {
+      record = ReflectionHelpers.callConstructor(ActivityClientRecord.class);
+    }
     ActivityClientRecordReflector recordReflector =
         reflector(ActivityClientRecordReflector.class, record);
     recordReflector.setToken(token);

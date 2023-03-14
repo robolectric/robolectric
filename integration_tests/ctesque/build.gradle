@@ -55,6 +55,7 @@ dependencies {
     testImplementation("androidx.test.ext:junit:$axtJunitVersion")
     testImplementation("androidx.test.ext:truth:$axtTruthVersion")
     testImplementation("androidx.test:core:$axtCoreVersion")
+    testImplementation("androidx.test.espresso:espresso-core:$espressoVersion")
     testImplementation("com.google.truth:truth:${truthVersion}")
     testImplementation("com.google.guava:guava:$guavaJREVersion")
 
@@ -65,6 +66,7 @@ dependencies {
     androidTestImplementation("androidx.test:rules:$axtRulesVersion")
     androidTestImplementation("androidx.test.ext:junit:$axtJunitVersion")
     androidTestImplementation("androidx.test.ext:truth:$axtTruthVersion")
+    androidTestImplementation("androidx.test.espresso:espresso-core:$espressoVersion")
     androidTestImplementation("com.google.truth:truth:${truthVersion}")
     androidTestImplementation("com.google.guava:guava:$guavaJREVersion")
     androidTestUtil "androidx.test.services:test-services:$axtTestServicesVersion"

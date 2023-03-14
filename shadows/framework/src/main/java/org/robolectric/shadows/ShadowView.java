@@ -36,6 +36,7 @@ import android.view.WindowId;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -44,12 +45,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.GraphicsMode;
+import org.robolectric.annotation.GraphicsMode.Mode;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
@@ -575,7 +579,7 @@ public class ShadowView {
 
   @Implementation
   protected void scrollTo(int x, int y) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).scrollTo(x, y);
     } else {
       reflector(_View_.class, realView)
@@ -588,7 +592,7 @@ public class ShadowView {
 
   @Implementation
   protected void scrollBy(int x, int y) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).scrollBy(x, y);
     } else {
       scrollTo(getScrollX() + x, getScrollY() + y);
@@ -597,7 +601,7 @@ public class ShadowView {
 
   @Implementation
   protected int getScrollX() {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       return reflector(_View_.class, realView).getScrollX();
     } else {
       return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
@@ -606,7 +610,7 @@ public class ShadowView {
 
   @Implementation
   protected int getScrollY() {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       return reflector(_View_.class, realView).getScrollY();
     } else {
       return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
@@ -615,7 +619,7 @@ public class ShadowView {
 
   @Implementation
   protected void setScrollX(int scrollX) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).setScrollX(scrollX);
     } else {
       scrollTo(scrollX, scrollToCoordinates.y);
@@ -624,7 +628,7 @@ public class ShadowView {
 
   @Implementation
   protected void setScrollY(int scrollY) {
-    if (useRealGraphics()) {
+    if (useRealScrolling()) {
       reflector(_View_.class, realView).setScrollY(scrollY);
     } else {
       scrollTo(scrollToCoordinates.x, scrollY);
@@ -1054,7 +1058,26 @@ public class ShadowView {
     void setWindowId(WindowId windowId);
   }
 
-  static boolean useRealGraphics() {
-    return Boolean.getBoolean("robolectric.nativeruntime.enableGraphics");
+  /**
+   * Internal API to determine if native graphics is enabled.
+   *
+   * <p>This is currently public because it has to be accessed from multiple packages, but it is not
+   * recommended to depend on this API.
+   */
+  @Beta
+  public static boolean useRealGraphics() {
+    GraphicsMode.Mode graphicsMode = ConfigurationRegistry.get(GraphicsMode.Mode.class);
+    return graphicsMode == Mode.NATIVE && RuntimeEnvironment.getApiLevel() >= O;
+  }
+
+  /**
+   * Currently the default View scrolling implementation is broken and low-fidelty. For instance,
+   * even if a View has no children, Robolectric will still happily set the scroll position of a
+   * View. Long-term we want to eliminate this broken behavior, but in the mean time the real
+   * scrolling behavior is enabled when native graphics are enabled, or when a system property is
+   * set.
+   */
+  static boolean useRealScrolling() {
+    return useRealGraphics() || Boolean.getBoolean("robolectric.useRealScrolling");
   }
 }

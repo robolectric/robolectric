@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -86,12 +87,22 @@ public class ShadowDisplayEventReceiver {
             new NativeDisplayEventReceiver(new WeakReference<>((DisplayEventReceiver) receiver)));
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = TIRAMISU)
   protected static long nativeInit(
       WeakReference<DisplayEventReceiver> receiver,
       MessageQueue msgQueue,
       int vsyncSource,
       int configChanged) {
+    return nativeInit(receiver, msgQueue);
+  }
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected static long nativeInit(
+      WeakReference<DisplayEventReceiver> receiver,
+      MessageQueue msgQueue,
+      int vsyncSource,
+      int eventRegistration,
+      long layerHandle) {
     return nativeInit(receiver, msgQueue);
   }
 
@@ -239,21 +250,19 @@ public class ShadowDisplayEventReceiver {
     return newVsyncEventData();
   }
 
-  private Object newVsyncEventData() {
+  private static Object /* VsyncEventData */ newVsyncEventData() {
     try {
       // onVsync on T takes a package-private VsyncEventData class, which is itself composed of a
       // package private VsyncEventData.FrameTimeline  class. So use reflection to build these up
       Class<?> frameTimelineClass =
           Class.forName("android.view.DisplayEventReceiver$VsyncEventData$FrameTimeline");
-      Object timeline =
-          ReflectionHelpers.callConstructor(
-              frameTimelineClass,
-              ClassParameter.from(long.class, 1) /* vsync id */,
-              ClassParameter.from(long.class, 1) /* expectedPresentTime */,
-              ClassParameter.from(long.class, 10) /* deadline */);
 
-      Object timelineArray = Array.newInstance(frameTimelineClass, 1);
-      Array.set(timelineArray, 0, timeline);
+      int timelineArrayLength = RuntimeEnvironment.getApiLevel() == TIRAMISU ? 1 : 7;
+
+      Object timelineArray = Array.newInstance(frameTimelineClass, timelineArrayLength);
+      for (int i = 0; i < timelineArrayLength; i++) {
+        Array.set(timelineArray, i, newFrameTimeline(frameTimelineClass));
+      }
 
       // get FrameTimeline[].class
       Class<?> frameTimeLineArrayClass =
@@ -266,6 +275,14 @@ public class ShadowDisplayEventReceiver {
     } catch (ClassNotFoundException e) {
       throw new LinkageError("Unable to construct VsyncEventData", e);
     }
+  }
+
+  private static Object newFrameTimeline(Class<?> frameTimelineClass) {
+    return ReflectionHelpers.callConstructor(
+        frameTimelineClass,
+        ClassParameter.from(long.class, 1) /* vsync id */,
+        ClassParameter.from(long.class, 1) /* expectedPresentTime */,
+        ClassParameter.from(long.class, 10) /* deadline */);
   }
 
   /** Reflector interface for {@link DisplayEventReceiver}'s internals. */
@@ -289,5 +306,8 @@ public class ShadowDisplayEventReceiver {
 
     @Accessor("mCloseGuard")
     CloseGuard getCloseGuard();
+
+    @Accessor("mReceiverPtr")
+    long getReceiverPtr();
   }
 }

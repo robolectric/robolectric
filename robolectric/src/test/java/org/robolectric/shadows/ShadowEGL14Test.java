@@ -17,6 +17,11 @@ import org.robolectric.annotation.Config;
 @Config(minSdk = VERSION_CODES.LOLLIPOP)
 public final class ShadowEGL14Test {
   @Test
+  public void eglGetCurrentContext() {
+    assertThat(EGL14.eglGetCurrentContext()).isNotNull();
+  }
+
+  @Test
   public void eglGetDisplay() {
     assertThat(EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY)).isNotNull();
   }

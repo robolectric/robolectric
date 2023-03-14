@@ -224,9 +224,97 @@ public class ShadowAccessibilityServiceTest {
     w2.setId(2);
     AccessibilityWindowInfo w3 = AccessibilityWindowInfo.obtain();
     w3.setId(3);
+
     shadow.setWindows(Arrays.asList(w1, w2, w3));
+
     assertThat(service.getWindows()).hasSize(3);
     assertThat(service.getWindows()).containsExactly(w1, w2, w3).inOrder();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getWindowsforDefaultDisplay_returnEmptyList() {
+    assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getWindowsforNonDefaultDisplay_returnNullList() {
+    assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY + 1)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setWindowsOnDisplay_returnPopulatedWindowsOnAllDisplays() {
+    AccessibilityWindowInfo w1 = AccessibilityWindowInfo.obtain();
+    w1.setId(1);
+    AccessibilityWindowInfo w2 = AccessibilityWindowInfo.obtain();
+    w2.setId(2);
+    AccessibilityWindowInfo w3 = AccessibilityWindowInfo.obtain();
+    w3.setId(3);
+    AccessibilityWindowInfo w4 = AccessibilityWindowInfo.obtain();
+    w4.setId(4);
+    AccessibilityWindowInfo w5 = AccessibilityWindowInfo.obtain();
+    w5.setId(5);
+    AccessibilityWindowInfo w6 = AccessibilityWindowInfo.obtain();
+    w6.setId(6);
+    AccessibilityWindowInfo w7 = AccessibilityWindowInfo.obtain();
+    w7.setId(7);
+
+    shadow.setWindowsOnDisplay(Display.DEFAULT_DISPLAY, Arrays.asList(w1, w2, w3));
+    shadow.setWindowsOnDisplay(Display.DEFAULT_DISPLAY + 1, Arrays.asList(w4, w5, w6, w7));
+
+    assertThat(service.getWindows()).hasSize(3);
+    assertThat(service.getWindows()).containsExactly(w1, w2, w3).inOrder();
+    assertThat(service.getWindowsOnAllDisplays().size()).isEqualTo(2);
+    assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY))
+        .containsExactly(w1, w2, w3)
+        .inOrder();
+    assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY + 1))
+        .containsExactly(w4, w5, w6, w7)
+        .inOrder();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setNullWindowsOnNonDefaultDisplay_nonDefaultDisplayHasWindows_displayIsRemoved() {
+    AccessibilityWindowInfo w1 = AccessibilityWindowInfo.obtain();
+    w1.setId(1);
+    AccessibilityWindowInfo w2 = AccessibilityWindowInfo.obtain();
+    w2.setId(2);
+    AccessibilityWindowInfo w3 = AccessibilityWindowInfo.obtain();
+    w3.setId(3);
+    shadow.setWindowsOnDisplay(Display.DEFAULT_DISPLAY + 1, Arrays.asList(w1, w2, w3));
+
+    shadow.setWindowsOnDisplay(Display.DEFAULT_DISPLAY + 1, null);
+
+    assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY + 1)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setWindows_nonDefaultDisplayHasWindows_nonDefaultDisplayWindowsNotRemoved() {
+    AccessibilityWindowInfo w1 = AccessibilityWindowInfo.obtain();
+    w1.setId(1);
+    AccessibilityWindowInfo w2 = AccessibilityWindowInfo.obtain();
+    w2.setId(2);
+    AccessibilityWindowInfo w3 = AccessibilityWindowInfo.obtain();
+    w3.setId(3);
+    AccessibilityWindowInfo w4 = AccessibilityWindowInfo.obtain();
+    w4.setId(4);
+    AccessibilityWindowInfo w5 = AccessibilityWindowInfo.obtain();
+    w5.setId(5);
+    AccessibilityWindowInfo w6 = AccessibilityWindowInfo.obtain();
+    w6.setId(6);
+    AccessibilityWindowInfo w7 = AccessibilityWindowInfo.obtain();
+    w7.setId(7);
+    shadow.setWindowsOnDisplay(Display.DEFAULT_DISPLAY + 1, Arrays.asList(w4, w5, w6, w7));
+
+    shadow.setWindows(Arrays.asList(w1, w2, w3));
+
+    assertThat(service.getWindowsOnAllDisplays().get(Display.DEFAULT_DISPLAY + 1))
+        .containsExactly(w4, w5, w6, w7)
+        .inOrder();
   }
 
   @Test

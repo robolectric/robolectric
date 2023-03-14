@@ -33,7 +33,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowBluetoothGatt {
 
   private static final String NULL_CALLBACK_MSG = "BluetoothGattCallback can not be null.";
-
+  
   private BluetoothGattCallback bluetoothGattCallback;
   private int connectionPriority = BluetoothGatt.CONNECTION_PRIORITY_BALANCED;
   private boolean isConnected = false;
@@ -42,7 +42,7 @@ public class ShadowBluetoothGatt {
   private byte[] readBytes;
   private final Set<BluetoothGattService> discoverableServices = new HashSet<>();
   private final ArrayList<BluetoothGattService> services = new ArrayList<>();
-
+      
   @RealObject private BluetoothGatt realBluetoothGatt;
   @ReflectorObject protected BluetoothGattReflector bluetoothGattReflector;
 
@@ -137,7 +137,7 @@ public class ShadowBluetoothGatt {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected void disconnect() {
     bluetoothGattReflector.disconnect();
-    if (this.getGattCallback() != null && this.isConnected) {
+    if (this.isCallbackAppropriate()) {
       this.getGattCallback()
           .onConnectionStateChange(
               this.realBluetoothGatt,
@@ -292,6 +292,48 @@ public class ShadowBluetoothGatt {
 
   public byte[] getLatestReadBytes() {
     return this.readBytes;
+  }
+
+  public BluetoothConnectionManager getBluetoothConnectionManager() {
+    return BluetoothConnectionManager.getInstance();
+  }
+
+  /**
+   * Simulate a successful Gatt Client Conection with {@link BluetoothConnectionManager}. Performs a
+   * {@link BluetoothGattCallback#onConnectionStateChange} if available.
+   *
+   * @param remoteAddress address of Gatt client
+   */
+  public void notifyConnection(String remoteAddress) {
+    BluetoothConnectionManager.getInstance().registerGattClientConnection(remoteAddress);
+    this.isConnected = true;
+    if (this.isCallbackAppropriate()) {
+      this.getGattCallback()
+          .onConnectionStateChange(
+              this.realBluetoothGatt, BluetoothGatt.GATT_SUCCESS, BluetoothGatt.STATE_CONNECTED);
+    }
+  }
+
+  /**
+   * Simulate a successful Gatt Client Disconnection with {@link BluetoothConnectionManager}.
+   * Performs a {@link BluetoothGattCallback#onConnectionStateChange} if available.
+   *
+   * @param remoteAddress address of Gatt client
+   */
+  public void notifyDisconnection(String remoteAddress) {
+    BluetoothConnectionManager.getInstance().unregisterGattClientConnection(remoteAddress);
+    if (this.isCallbackAppropriate()) {
+      this.getGattCallback()
+          .onConnectionStateChange(
+              this.realBluetoothGatt,
+              BluetoothGatt.GATT_SUCCESS,
+              BluetoothProfile.STATE_DISCONNECTED);
+    }
+    this.isConnected = false;
+  }
+
+  private boolean isCallbackAppropriate() {
+    return this.getGattCallback() != null && this.isConnected;
   }
 
   @ForType(BluetoothGatt.class)

@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
@@ -13,11 +14,14 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import com.google.common.base.Supplier;
 import java.nio.file.Path;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.shadows.ShadowDisplayManager;
+import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
 
@@ -193,6 +197,10 @@ public class RuntimeEnvironment {
    * @param newQualifiers the qualifiers to apply
    */
   public static void setQualifiers(String newQualifiers) {
+    if (getApiLevel() >= JELLY_BEAN_MR1) {
+      ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, newQualifiers);
+    }
+
     Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
 
@@ -203,10 +211,31 @@ public class RuntimeEnvironment {
       configuration = new Configuration();
     }
     Bootstrap.applyQualifiers(newQualifiers, getApiLevel(), configuration, displayMetrics);
-    if (Boolean.getBoolean("robolectric.nativeruntime.enableGraphics")) {
+    if (ShadowView.useRealGraphics()) {
       Bitmap.setDefaultDensity(displayMetrics.densityDpi);
     }
 
+    updateConfiguration(configuration, displayMetrics);
+  }
+
+  public static void setFontScale(float fontScale) {
+    Resources systemResources = getApplication().getResources();
+    DisplayMetrics displayMetrics = systemResources.getDisplayMetrics();
+    Configuration configuration = systemResources.getConfiguration();
+
+    displayMetrics.scaledDensity = displayMetrics.density * fontScale;
+    configuration.fontScale = fontScale;
+
+    updateConfiguration(configuration, displayMetrics);
+  }
+
+  public static float getFontScale() {
+    Resources systemResources = getApplication().getResources();
+    return systemResources.getConfiguration().fontScale;
+  }
+
+  private static void updateConfiguration(
+      Configuration configuration, DisplayMetrics displayMetrics) {
     // Update the resources last so that listeners will have a consistent environment.
     // TODO(paulsowden): Can we call ResourcesManager.getInstance().applyConfigurationToResources()?
     if (Build.VERSION.SDK_INT >= KITKAT
@@ -222,7 +251,6 @@ public class RuntimeEnvironment {
       Bootstrap.updateDisplayResources(configuration, displayMetrics);
     }
   }
-
 
   public static int getApiLevel() {
     return apiLevel;

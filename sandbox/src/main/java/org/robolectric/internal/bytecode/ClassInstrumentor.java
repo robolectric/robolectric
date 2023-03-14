@@ -212,18 +212,22 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Checks if the first instruction is a Jacoco load instructions. Robolectric is not capable at
-   * the moment of re-instrumenting Jacoco-instrumented constructors.
+   * Checks if the first or second instruction is a Jacoco load instruction. Robolectric is not
+   * capable at the moment of re-instrumenting Jacoco-instrumented constructors, so these are
+   * currently skipped.
    *
    * @param ctor constructor method node
    * @return whether or not the constructor can be instrumented
    */
   private boolean isJacocoInstrumented(MethodNode ctor) {
     AbstractInsnNode[] insns = ctor.instructions.toArray();
-    if (insns.length > 0) {
-      if (insns[0] instanceof LdcInsnNode
-          && ((LdcInsnNode) insns[0]).cst instanceof ConstantDynamic) {
-        ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) insns[0]).cst;
+    if (insns.length > 1) {
+      AbstractInsnNode node = insns[0];
+      if (node instanceof LabelNode) {
+        node = insns[1];
+      }
+      if ((node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof ConstantDynamic)) {
+        ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) node).cst;
         return cst.getName().equals("$jacocoData");
       } else if (insns.length > 1
           && insns[0] instanceof LabelNode
@@ -376,6 +380,7 @@ public class ClassInstrumentor {
    * @param method the constructor to instrument
    */
   protected void instrumentConstructor(MutableClass mutableClass, MethodNode method) {
+    int methodAccess = method.access;
     makeMethodPrivate(method);
 
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
@@ -385,8 +390,7 @@ public class ClassInstrumentor {
 
     String[] exceptions = exceptionArray(method);
     MethodNode initMethodNode =
-        new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
-    makeMethodPublic(initMethodNode);
+        new MethodNode(methodAccess, "<init>", method.desc, method.signature, exceptions);
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(initMethodNode);
     initMethodNode.instructions.add(callSuper);
     generator.loadThis();
@@ -677,12 +681,6 @@ public class ClassInstrumentor {
   private static void makeClassPublic(ClassNode clazz) {
     clazz.access =
         (clazz.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE);
-  }
-
-  /** Replaces protected and private method modifiers with public. */
-  protected void makeMethodPublic(MethodNode method) {
-    method.access =
-        (method.access | Opcodes.ACC_PUBLIC) & ~(Opcodes.ACC_PROTECTED | Opcodes.ACC_PRIVATE);
   }
 
   /** Replaces protected and public class modifiers with private. */

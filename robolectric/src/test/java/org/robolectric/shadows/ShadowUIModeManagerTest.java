@@ -53,6 +53,13 @@ public class ShadowUIModeManagerTest {
   }
 
   @Test
+  public void testModeType() {
+    assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_UNDEFINED);
+    shadowOf(uiModeManager).setCurrentModeType(Configuration.UI_MODE_TYPE_DESK);
+    assertThat(uiModeManager.getCurrentModeType()).isEqualTo(Configuration.UI_MODE_TYPE_DESK);
+  }
+
+  @Test
   @Config(minSdk = R)
   public void testCarModePriority() {
     int priority = 9;

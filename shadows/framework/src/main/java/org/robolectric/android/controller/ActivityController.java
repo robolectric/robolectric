@@ -66,6 +66,9 @@ public class ActivityController<T extends Activity>
     DESTROYED
   }
 
+  // ActivityInfo constant.
+  private static final int CONFIG_WINDOW_CONFIGURATION = 0x20000000;
+
   private _Activity_ _component_;
   private LifecycleState currentState = LifecycleState.INITIAL;
 
@@ -425,11 +428,12 @@ public class ActivityController<T extends Activity>
       Configuration newConfiguration, DisplayMetrics newMetrics, @Config int changedConfig) {
     component.getResources().updateConfiguration(newConfiguration, newMetrics);
 
+    int filteredChanges = filterConfigChanges(changedConfig);
     // TODO: throw on changedConfig == 0 since it non-intuitively calls onConfigurationChanged
 
     // Can the activity handle itself ALL configuration changes?
-    if ((getActivityInfo(component.getApplication()).configChanges & changedConfig)
-        == changedConfig) {
+    if ((getActivityInfo(component.getApplication()).configChanges & filteredChanges)
+        == filteredChanges) {
       shadowMainLooper.runPaused(
           () -> {
             component.onConfigurationChanged(newConfiguration);
@@ -457,7 +461,7 @@ public class ActivityController<T extends Activity>
           () -> {
             // Set flags
             _component_.setChangingConfigurations(true);
-            _component_.setConfigChangeFlags(changedConfig);
+            _component_.setConfigChangeFlags(filteredChanges);
 
             // Perform activity destruction
             final Bundle outState = new Bundle();
@@ -676,6 +680,16 @@ public class ActivityController<T extends Activity>
     }
 
     destroy();
+  }
+
+  // See ActivityRecord#getConfigurationChanges for the config changes that are considered for
+  // activity recreation by the window manager.
+  private static int filterConfigChanges(int changedConfig) {
+    // We don't want window configuration to cause relaunches.
+    if ((changedConfig & CONFIG_WINDOW_CONFIGURATION) != 0) {
+      changedConfig &= ~CONFIG_WINDOW_CONFIGURATION;
+    }
+    return changedConfig;
   }
 
   /** Accessor interface for android.app.Activity.NonConfigurationInstances's internals. */

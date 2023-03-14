@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
@@ -18,6 +19,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest.permission;
+import android.accounts.Account;
 import android.annotation.UserIdInt;
 import android.app.Application;
 import android.content.Context;
@@ -38,6 +40,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +78,7 @@ public class ShadowUserManager {
 
   private static int maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
   private static boolean isMultiUserSupported = false;
+  private static boolean isHeadlessSystemUserMode = false;
 
   @RealObject private UserManager realObject;
   private UserManagerState userManagerState;
@@ -94,6 +98,8 @@ public class ShadowUserManager {
   private Context context;
   private boolean enforcePermissions;
   private int userSwitchability = UserManager.SWITCHABILITY_STATUS_OK;
+
+  private final Set<Account> userAccounts = new HashSet<>();
 
   /**
    * Global UserManager state. Shared across {@link UserManager}s created in different {@link
@@ -120,10 +126,13 @@ public class ShadowUserManager {
 
     private int nextUserId = DEFAULT_SECONDARY_USER_ID;
 
+    // TODO: use UserInfo.FLAG_MAIN when available
+    private static final int FLAG_MAIN = 0x00004000;
+
     public UserManagerState() {
       int id = UserHandle.USER_SYSTEM;
       String name = "system_user";
-      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN;
+      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN | FLAG_MAIN;
 
       userSerialNumbers.put(id, (long) id);
       // Start the user as shut down.
@@ -595,6 +604,16 @@ public class ShadowUserManager {
   protected int getUserHandle(int serialNumber) {
     Integer userHandle = userManagerState.userSerialNumbers.inverse().get((long) serialNumber);
     return userHandle == null ? -1 : userHandle;
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = R)
+  protected List<UserHandle> getUserHandles(boolean excludeDying) {
+    ArrayList<UserHandle> userHandles = new ArrayList<>();
+    for (int id : userManagerState.userSerialNumbers.keySet()) {
+      userHandles.addAll(userManagerState.userProfilesListMap.get(id));
+    }
+    return userHandles;
   }
 
   @HiddenApi
@@ -1133,6 +1152,16 @@ public class ShadowUserManager {
     return requestQuietModeEnabled(enableQuietMode, userHandle);
   }
 
+  @Implementation(minSdk = S)
+  protected static boolean isHeadlessSystemUserMode() {
+    return isHeadlessSystemUserMode;
+  }
+
+  /** Updates headless system user mode. */
+  public static void setHeadlessSystemUserMode(boolean isEnabled) {
+    ShadowUserManager.isHeadlessSystemUserMode = isEnabled;
+  }
+
   @Implementation(minSdk = TIRAMISU)
   protected Bundle getUserRestrictions() {
     return getUserRestrictions(UserHandle.getUserHandleForUid(Process.myUid()));
@@ -1148,6 +1177,7 @@ public class ShadowUserManager {
   public static void reset() {
     maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
     isMultiUserSupported = false;
+    isHeadlessSystemUserMode = false;
   }
 
   @ForType(UserManager.class)
@@ -1161,5 +1191,20 @@ public class ShadowUserManager {
 
     @Accessor("mUserId")
     void setUserId(int userId);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean someUserHasAccount(String accountName, String accountType) {
+    return userAccounts.contains(new Account(accountName, accountType));
+  }
+
+  /** Setter for {@link UserManager#someUserHasAccount(String, String)}. */
+  public void setSomeUserHasAccount(String accountName, String accountType) {
+    userAccounts.add(new Account(accountName, accountType));
+  }
+
+  /** Removes user account set via {@link #setSomeUserHasAccount(String, String)}. */
+  public void removeSomeUserHasAccount(String accountName, String accountType) {
+    userAccounts.remove(new Account(accountName, accountType));
   }
 }

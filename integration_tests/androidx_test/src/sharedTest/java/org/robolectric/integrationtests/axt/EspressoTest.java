@@ -25,6 +25,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -127,6 +128,15 @@ public final class EspressoTest {
     onView(withId(R.id.edit_text_phone)).perform(typeText("411"));
 
     onView(withId(R.id.edit_text_phone)).check(matches(withText("411")));
+  }
+
+  /** use typeText with a inputType number */
+  @Test
+  @Ignore // TODO(#5110): fails
+  public void typeText_number() {
+    onView(withId(R.id.edit_text_number)).perform(typeText("411"));
+
+    onView(withId(R.id.edit_text_number)).check(matches(withText("411")));
   }
 
   @Test

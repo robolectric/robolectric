@@ -59,4 +59,11 @@ public class ShadowAccessibilityWindowInfoTest {
     shadow.addChild(window);
     assertThat(shadow.getChild(0)).isEqualTo(window);
   }
+
+  @Test
+  public void testSetPictureInPicture() {
+    assertThat(shadow.isInPictureInPictureMode()).isFalse();
+    shadow.setPictureInPicture(true);
+    assertThat(shadow.isInPictureInPictureMode()).isTrue();
+  }
 }

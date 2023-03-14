@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
@@ -25,6 +26,7 @@ import android.content.pm.LauncherApps.ShortcutQuery;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -400,6 +402,35 @@ public class ShadowLauncherAppsTest {
   @Test
   public void testHasShortcutHostPermission_returnsFalseByDefault() {
     assertThat(launcherApps.hasShortcutHostPermission()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSuspendedPackageLauncherExtras_returnsBundle() {
+    Bundle bundle = new Bundle();
+    bundle.putInt("suspended_app", 5);
+    shadowOf(launcherApps)
+        .addSuspendedPackageLauncherExtras(USER_HANDLE, TEST_PACKAGE_NAME_2, bundle);
+
+    assertThat(launcherApps.getSuspendedPackageLauncherExtras(TEST_PACKAGE_NAME_2, USER_HANDLE))
+        .isEqualTo(bundle);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getSuspendedPackageLauncherExtras_returnsEmptyBundle() {
+    Throwable throwable =
+        assertThrows(
+            NameNotFoundException.class,
+            () -> launcherApps.getSuspendedPackageLauncherExtras(TEST_PACKAGE_NAME, USER_HANDLE));
+
+    assertThat(throwable)
+        .hasMessageThat()
+        .isEqualTo(
+            "Suspended package extras for  "
+                + TEST_PACKAGE_NAME
+                + " not found for user "
+                + USER_HANDLE.getIdentifier());
   }
 
   private List<ShortcutInfo> getPinnedShortcuts(String packageName, ComponentName activity) {

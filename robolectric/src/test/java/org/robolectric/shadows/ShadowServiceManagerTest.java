@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import android.content.Context;
+import android.os.Build.VERSION_CODES;
 import android.os.IBinder;
 import android.os.ServiceManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -13,14 +14,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowServiceManager}. */
 @RunWith(AndroidJUnit4.class)
 public final class ShadowServiceManagerTest {
-
+  
   @Test
   public void getService_available_shouldReturnNonNull() {
     assertThat(ServiceManager.getService(Context.INPUT_METHOD_SERVICE)).isNotNull();
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.S)
+  public void getSensorPrivacyService_notNull() {
+    assertThat(ServiceManager.getService(Context.SENSOR_PRIVACY_SERVICE)).isNotNull();
   }
 
   @Test

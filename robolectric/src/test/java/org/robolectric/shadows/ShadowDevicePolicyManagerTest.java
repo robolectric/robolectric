@@ -818,6 +818,43 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
+  @Config(minSdk = R)
+  public void getAutoTimeEnabledShouldWorkAsIntendedForDeviceOwner() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN setAutoTimeEnabled is called with true
+    devicePolicyManager.setAutoTimeEnabled(testComponent, true);
+
+    // THEN getAutoTimeEnabled should return true
+    assertThat(devicePolicyManager.getAutoTimeEnabled(testComponent)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getAutoTimeEnabledShouldWorkAsIntendedForProfileOwner() {
+    // GIVEN the caller is the profile owner
+    shadowOf(devicePolicyManager).setProfileOwner(testComponent);
+
+    // WHEN setAutoTimeEnabled is called with false
+    devicePolicyManager.setAutoTimeEnabled(testComponent, false);
+
+    // THEN getAutoTimeEnabled should return false
+    assertThat(devicePolicyManager.getAutoTimeEnabled(testComponent)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getAutoTimeEnabledShouldReturnFalseIfNotSet() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // WHEN setAutoTimeEnabled has not been called
+    // THEN getAutoTimeEnabled should return false
+    assertThat(devicePolicyManager.getAutoTimeEnabled(testComponent)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = LOLLIPOP)
   public void getAutoTimeRequiredShouldWorkAsIntendedForDeviceOwner() {
     // GIVEN the caller is the device owner
