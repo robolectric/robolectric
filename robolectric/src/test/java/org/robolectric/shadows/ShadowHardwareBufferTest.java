@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -86,7 +87,7 @@ public class ShadowHardwareBufferTest {
   }
 
   @Test
-  @Config(minSdk = O)
+  @Config(minSdk = O, maxSdk = TIRAMISU /* framework no longer validates format in > T */)
   public void createInvalidFormatThrows() {
     try {
       HardwareBuffer.create(
