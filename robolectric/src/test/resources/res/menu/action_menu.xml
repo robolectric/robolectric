@@ -1,5 +1,7 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="AppCompatResource">
     <item android:id="@+id/action_search"
-          android:actionViewClass="android.widget.SearchView"
-          android:showAsAction="always"/>
+        android:actionViewClass="android.widget.SearchView"
+        android:showAsAction="always"/>
 </menu>
