@@ -1135,7 +1135,12 @@ public class ShadowContentResolverTest {
     // unfortunately, there is no direct way of testing if authority is set or not
     // however, it's checked in ContentProvider.Transport method calls (validateIncomingUri), so
     // it's the closest we can test against
-    provider.getIContentProvider().getType(uri); // should not throw
+    if (RuntimeEnvironment.getApiLevel() <= 28) {
+      provider.getIContentProvider().getType(uri); // should not throw
+    } else {
+      // just call validateIncomingUri directly
+      provider.validateIncomingUri(uri);
+    }
   }
 
   @Test
