@@ -24,6 +24,7 @@ class MavenDependencyResolverTest {
   private lateinit var executorService: ExecutorService
   private lateinit var mavenDependencyResolver: MavenDependencyResolver
   private lateinit var mavenArtifactFetcher: TestMavenArtifactFetcher
+
   @Before
   @Throws(Exception::class)
   fun setUp() {
@@ -149,8 +150,8 @@ class MavenDependencyResolverTest {
       repositoryPassword: String?,
       proxyHost: String?,
       proxyPort: Int,
-      localRepositoryDir: File?,
-      executorService: ExecutorService?
+      localRepositoryDir: File,
+      executorService: ExecutorService
     ): MavenArtifactFetcher {
       return mavenArtifactFetcher
     }
@@ -174,8 +175,8 @@ class MavenDependencyResolverTest {
     repositoryPassword: String?,
     proxyHost: String?,
     proxyPort: Int,
-    localRepositoryDir: File?,
-    private val executorService: ExecutorService?
+    localRepositoryDir: File,
+    private val executorService: ExecutorService
   ) :
     MavenArtifactFetcher(
       repositoryUrl,
@@ -281,12 +282,12 @@ class MavenDependencyResolverTest {
       }
     }
 
-    fun sha512(contents: String?): String {
+    fun sha512(contents: String): String {
       return SHA512.hashString(contents, StandardCharsets.UTF_8).toString()
     }
 
     @Throws(IOException::class)
-    fun readFile(file: File?): String {
+    fun readFile(file: File): String {
       return String(Files.asByteSource(file).read(), StandardCharsets.UTF_8)
     }
   }
