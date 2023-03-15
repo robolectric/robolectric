@@ -27,6 +27,5 @@ public class EspressoActivity extends Activity {
 
     button = findViewById(R.id.button);
     button.setOnClickListener(view -> buttonClicked = true);
-    button.setOnLongClickListener(v -> true);
   }
 }
