@@ -69,7 +69,6 @@ import android.content.pm.ModuleInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.ApplicationInfoFlags;
 import android.content.pm.PackageManager.ComponentEnabledSetting;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
@@ -1419,31 +1418,22 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation
-  protected ApplicationInfo getApplicationInfo(Object packageName, Object flags)
+  protected ApplicationInfo getApplicationInfo(String packageName, int flags)
       throws NameNotFoundException {
-    Preconditions.checkArgument(packageName instanceof String);
-    boolean isIntType = flags instanceof Integer;
-    PackageInfo packageInfo;
-    if (VERSION.SDK_INT >= TIRAMISU) {
-      boolean isApplicationInfoFlagsType = flags instanceof PackageManager.ApplicationInfoFlags;
-      Preconditions.checkArgument(isIntType || isApplicationInfoFlagsType);
-      if (isApplicationInfoFlagsType) {
-        packageInfo =
-            getPackageInfo(
-                (String) packageName,
-                (int) ((PackageManager.ApplicationInfoFlags) flags).getValue());
-      } else {
-        packageInfo = getPackageInfo((String) packageName, (int) flags);
-      }
-    } else {
-      Preconditions.checkArgument(isIntType);
-      packageInfo = getPackageInfo((String) packageName, (int) flags);
-    }
+    PackageInfo packageInfo = getPackageInfo(packageName, flags);
     if (packageInfo.applicationInfo == null) {
       throw new NameNotFoundException("Package found but without application info");
     }
     // Maybe query app infos from overridden resolveInfo as well?
     return packageInfo.applicationInfo;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected ApplicationInfo getApplicationInfo(Object packageName, Object flagsObject)
+      throws NameNotFoundException {
+    Preconditions.checkArgument(flagsObject instanceof PackageManager.ApplicationInfoFlags);
+    PackageManager.ApplicationInfoFlags flags = (PackageManager.ApplicationInfoFlags) flagsObject;
+    return getApplicationInfo((String) packageName, (int) (flags).getValue());
   }
 
   private void applyFlagsToApplicationInfo(@Nullable ApplicationInfo appInfo, long flags)

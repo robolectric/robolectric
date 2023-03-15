@@ -1063,6 +1063,13 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  public void getApplicationInfo_nullPackage_shouldThrowNameNotFoundException() {
+    assertThrows(
+        PackageManager.NameNotFoundException.class,
+        () -> packageManager.getApplicationInfo(null, 0));
+  }
+
+  @Test
   public void getApplicationInfo_otherApplication() throws Exception {
     PackageInfo packageInfo = new PackageInfo();
     packageInfo.packageName = TEST_PACKAGE_NAME;
