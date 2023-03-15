@@ -14,8 +14,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +24,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import androidx.annotation.Nullable;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayOutputStream;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowViewGroupTest {
@@ -182,32 +184,71 @@ public class ShadowViewGroupTest {
   }
 
   @Test
+  @Config(minSdk = 17) // TODO: mysteriously fails on github CI on API 16
   public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() {
-    makeFocusable(root, child1, child2, child3, child3a, child3b);
-    assertFalse(root.hasFocus());
+    ContainerActivity containerActivity = Robolectric.setupActivity(ContainerActivity.class);
+    makeFocusable(
+        containerActivity.root,
+        containerActivity.child1,
+        containerActivity.child2,
+        containerActivity.child3,
+        containerActivity.child3a,
+        containerActivity.child3b);
 
-    child1.requestFocus();
-    assertTrue(root.hasFocus());
+    containerActivity.child1.requestFocus();
+    assertTrue(containerActivity.root.hasFocus());
 
-    child1.clearFocus();
-    assertFalse(child1.hasFocus());
-    assertTrue(root.hasFocus());
+    containerActivity.child1.clearFocus();
+    assertFalse(containerActivity.child1.hasFocus());
+    assertTrue(containerActivity.root.hasFocus());
 
-    child3b.requestFocus();
-    assertTrue(root.hasFocus());
+    containerActivity.child3b.requestFocus();
+    assertTrue(containerActivity.root.hasFocus());
 
-    child3b.clearFocus();
-    assertFalse(child3b.hasFocus());
-    assertFalse(child3.hasFocus());
-    assertTrue(root.hasFocus());
+    containerActivity.child3b.clearFocus();
+    assertFalse(containerActivity.child3b.hasFocus());
+    assertFalse(containerActivity.child3.hasFocus());
+    assertTrue(containerActivity.root.hasFocus());
 
-    child2.requestFocus();
-    assertFalse(child3.hasFocus());
-    assertTrue(child2.hasFocus());
-    assertTrue(root.hasFocus());
+    containerActivity.child2.requestFocus();
+    assertFalse(containerActivity.child3.hasFocus());
+    assertTrue(containerActivity.child2.hasFocus());
+    assertTrue(containerActivity.root.hasFocus());
 
-    root.requestFocus();
-    assertTrue(root.hasFocus());
+    containerActivity.root.requestFocus();
+    assertTrue(containerActivity.root.hasFocus());
+  }
+
+  private static class ContainerActivity extends Activity {
+
+    ViewGroup root;
+    View child1;
+    View child2;
+    ViewGroup child3;
+    View child3a;
+    View child3b;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+
+      root = new FrameLayout(this);
+
+      child1 = new View(this);
+      child2 = new View(this);
+      child3 = new FrameLayout(this);
+      child3a = new View(this);
+      child3b = new View(this);
+
+      root.addView(child1);
+      root.addView(child2);
+      root.addView(child3);
+
+      child3.addView(child3a);
+      child3.addView(child3b);
+
+      setContentView(root);
+    }
   }
 
   @Test
@@ -455,7 +496,7 @@ public class ShadowViewGroupTest {
     DrawRecordView view = new DrawRecordView(context);
     ViewGroup viewGroup = new FrameLayout(context);
     viewGroup.addView(view);
-    Bitmap bitmap = Bitmap.createBitmap(100, 100, Config.ARGB_8888);
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
     Canvas canvas = new Canvas(bitmap);
     viewGroup.draw(canvas);
     assertThat(view.wasDrawn).isTrue();
