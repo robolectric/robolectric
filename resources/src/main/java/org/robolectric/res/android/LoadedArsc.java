@@ -737,7 +737,8 @@ public class LoadedArsc {
             // for (auto entryIter = entryBegin; entryIter != entry_end; ++entryIter) {
             for (ResTable_lib_entry entryIter = entryBegin;
                 entryIter.myOffset() != entryBegin.myOffset() + dtohl(lib.count);
-                entryIter = new ResTable_lib_entry(entryIter.myBuf(), entryIter.myOffset() + ResTable_lib_entry.SIZEOF)) {
+                entryIter = new ResTable_lib_entry(
+                    entryIter.myBuf(), entryIter.myOffset() + ResTable_lib_entry.SIZEOF)) {
               String package_name =
                   Util.ReadUtf16StringFromDevice(entryIter.packageName,
                       entryIter.packageName.length);
