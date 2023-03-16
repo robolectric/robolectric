@@ -36,7 +36,6 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -212,12 +211,13 @@ public class ClassInstrumentor {
   }
 
   /**
-   * Checks if the first or second instruction is a Jacoco load instruction. Robolectric is not
-   * capable at the moment of re-instrumenting Jacoco-instrumented constructors, so these are
-   * currently skipped.
+   * Checks if the first or second instruction is a Jacoco load instruction.
+   *
+   * <p>Note that in most of cases, JaCoCo load instructions should locate at the beginning of the
+   * constructor.
    *
    * @param ctor constructor method node
-   * @return whether or not the constructor can be instrumented
+   * @return whether or not the constructor was instrumented by JaCoCo
    */
   private boolean isJacocoInstrumented(MethodNode ctor) {
     AbstractInsnNode[] insns = ctor.instructions.toArray();
@@ -229,40 +229,11 @@ public class ClassInstrumentor {
       if ((node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof ConstantDynamic)) {
         ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) node).cst;
         return cst.getName().equals("$jacocoData");
-      } else if (insns.length > 1
-          && insns[0] instanceof LabelNode
-          && insns[1] instanceof MethodInsnNode) {
-        return "$jacocoInit".equals(((MethodInsnNode) insns[1]).name);
+      } else if (node instanceof MethodInsnNode) {
+        return "$jacocoInit".equals(((MethodInsnNode) node).name);
       }
     }
     return false;
-  }
-
-  /**
-   * Adds a call $$robo$init, which instantiates a shadow object if required. This is to support
-   * custom shadows for Jacoco-instrumented classes (except cnstructor shadows).
-   */
-  protected void addCallToRoboInit(MutableClass mutableClass, MethodNode ctor) {
-    AbstractInsnNode returnNode =
-        Iterables.find(
-            ctor.instructions,
-            node -> {
-              if (node.getOpcode() == Opcodes.INVOKESPECIAL) {
-                MethodInsnNode mNode = (MethodInsnNode) node;
-                return (mNode.owner.equals(mutableClass.internalClassName)
-                    || mNode.owner.equals(mutableClass.classNode.superName));
-              }
-              return false;
-            },
-            null);
-    ctor.instructions.insert(
-        returnNode,
-        new MethodInsnNode(
-            Opcodes.INVOKEVIRTUAL,
-            mutableClass.classType.getInternalName(),
-            ROBO_INIT_METHOD_NAME,
-            "()V"));
-    ctor.instructions.insert(returnNode, new VarInsnNode(Opcodes.ALOAD, 0));
   }
 
   private void instrumentMethods(MutableClass mutableClass) {
@@ -278,11 +249,7 @@ public class ClassInstrumentor {
           method.name = ShadowConstants.STATIC_INITIALIZER_METHOD_NAME;
           mutableClass.addMethod(generateStaticInitializerNotifierMethod(mutableClass));
         } else if (method.name.equals("<init>")) {
-          if (isJacocoInstrumented(method)) {
-            addCallToRoboInit(mutableClass, method);
-          } else {
-            instrumentConstructor(mutableClass, method);
-          }
+          instrumentConstructor(mutableClass, method);
         } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
           instrumentNormalMethod(mutableClass, method);
         }
@@ -366,7 +333,8 @@ public class ClassInstrumentor {
    *
    * <ul>
    *   <li>The original constructor will be stripped of its instructions leading up to, and
-   *       including, the call to super() or this(). It is also renamed to $$robo$$__constructor__
+   *       including, possible instrumented calls (like jacoco) before the call to super() or this()
+   *       and the call to super() or this(). It is also renamed to $$robo$$__constructor__
    *   <li>A method called __constructor__ is created and its job is to call
    *       $$robo$$__constructor__. The __constructor__ method is what gets shadowed if a Shadow
    *       wants to shadow a constructor.
@@ -383,7 +351,15 @@ public class ClassInstrumentor {
     int methodAccess = method.access;
     makeMethodPrivate(method);
 
+    boolean isJacocoInstrumented = isJacocoInstrumented(method);
+
     InsnList callSuper = extractCallToSuperConstructor(mutableClass, method);
+
+    if (isJacocoInstrumented) {
+      InsnList initJaCoCo = extractInitJaCoCoFromConstructorCallSuper(callSuper);
+      method.instructions.insert(initJaCoCo);
+    }
+
     method.name = directMethodName(mutableClass, ShadowConstants.CONSTRUCTOR_METHOD_NAME);
     mutableClass.addMethod(
         redirectorMethod(mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME));
@@ -405,6 +381,44 @@ public class ClassInstrumentor {
       initMethodNode.instructions.add(postamble);
     }
     mutableClass.addMethod(initMethodNode);
+  }
+
+  /**
+   * JaCoCo instrumentation initializes its probes before constructor to collect the coverage.
+   *
+   * <p>Those JaCoCo instrumented instructions are supported to be stripped from call super
+   * instructions and insert to the original constructor in case of breaking the following
+   * instructions.
+   */
+  private InsnList extractInitJaCoCoFromConstructorCallSuper(InsnList callSuper) {
+    InsnList removedInstructions = new InsnList();
+
+    AbstractInsnNode[] insns = callSuper.toArray();
+    for (int i = 0; i < insns.length; i++) {
+      AbstractInsnNode node = insns[i];
+
+      if (node.getOpcode() == Opcodes.INVOKESTATIC) {
+        MethodInsnNode mnode = (MethodInsnNode) node;
+        if ("$jacocoInit".equals(mnode.name)) {
+          if (i + 1 >= insns.length) {
+            throw new RuntimeException("huh? JaCoCo instrumented instructions completed?!");
+          }
+
+          if (insns[i + 1].getOpcode() != Opcodes.ASTORE) {
+            throw new RuntimeException("huh? JaCoCo instrumented instructions no astore?!");
+          }
+
+          callSuper.remove(insns[i]);
+          callSuper.remove(insns[i + 1]);
+          removedInstructions.add(insns[i]);
+          removedInstructions.add(insns[i + 1]);
+
+          return removedInstructions;
+        }
+      }
+    }
+
+    throw new RuntimeException("huh? JaCoCo instrumented?!");
   }
 
   /**
