@@ -350,7 +350,7 @@ public class CppAssetManager2 {
         // that compile against the framework.
         for (ConfiguredPackage pkg : iter.packages_) {
           for (Map.Entry<Integer, Integer> entry :
-              pkg.loaded_package_.GetAliasResourceIdMap().entrySet()) {
+              pkg.loaded_package_.getAliasResourceIdMap().entrySet()) {
             iter2.dynamic_ref_table.addAlias(entry.getKey(), entry.getValue());
           }
         }

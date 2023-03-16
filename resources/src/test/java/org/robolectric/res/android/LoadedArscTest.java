@@ -44,12 +44,12 @@ public class LoadedArscTest {
               (short) RES_TABLE_STAGED_ALIAS_TYPE,
               () -> {
                 // header
-                buf.putInt(1); // ResTable_staged_alias_header.count
+                buf.putInt(1); // ResTableStagedAliasHeader.count
               },
               () -> {
                 // contents
-                buf.putInt(stagedResId); // ResTable_staged_alias_entry.stagedResId
-                buf.putInt(finalizedResId); // ResTable_staged_alias_entry.finalizedResId
+                buf.putInt(stagedResId); // ResTableStagedAliasEntry.stagedResId
+                buf.putInt(finalizedResId); // ResTableStagedAliasEntry.finalizedResId
               });
         });
     final Chunk chunk = new Chunk(new ResChunk_header(buf, 0));
@@ -57,7 +57,7 @@ public class LoadedArscTest {
         LoadedArsc.LoadedPackage.Load(
             chunk, null /* loaded_idmap */, true /* system */, false /* load_as_shared_library */);
 
-    final Map<Integer, Integer> aliasIdMap = loadedPackage.GetAliasResourceIdMap();
+    final Map<Integer, Integer> aliasIdMap = loadedPackage.getAliasResourceIdMap();
     assertEquals(finalizedResId, (int) aliasIdMap.get(stagedResId));
   }
 }

@@ -1508,15 +1508,15 @@ public static class ResTable_ref
    * A map that allows rewriting staged (non-finalized) resource ids to their finalized
    * counterparts.
    */
-  static class ResTable_staged_alias_header extends WithOffset {
+  static class ResTableStagedAliasHeader extends WithOffset {
     public static final int SIZEOF = ResChunk_header.SIZEOF + 4;
 
     ResChunk_header header;
 
-    // The number of ResTable_staged_alias_entry that follow this header.
+    // The number of ResTableStagedAliasEntry that follow this header.
     int count;
 
-    ResTable_staged_alias_header(ByteBuffer buf, int offset) {
+    ResTableStagedAliasHeader(ByteBuffer buf, int offset) {
       super(buf, offset);
 
       header = new ResChunk_header(buf, offset);
@@ -1525,7 +1525,7 @@ public static class ResTable_ref
   }
 
   /** Maps the staged (non-finalized) resource id to its finalized resource id. */
-  static class ResTable_staged_alias_entry extends WithOffset {
+  static class ResTableStagedAliasEntry extends WithOffset {
     public static final int SIZEOF = 8;
 
     // The compile-time staged resource id to rewrite.
@@ -1534,7 +1534,7 @@ public static class ResTable_ref
     // The compile-time finalized resource id to which the staged resource id should be rewritten.
     int finalizedResId;
 
-    ResTable_staged_alias_entry(ByteBuffer buf, int offset) {
+    ResTableStagedAliasEntry(ByteBuffer buf, int offset) {
       super(buf, offset);
 
       stagedResId = buf.getInt(offset);
