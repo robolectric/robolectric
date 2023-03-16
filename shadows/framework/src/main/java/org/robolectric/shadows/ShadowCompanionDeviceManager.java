@@ -7,7 +7,6 @@ import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
-import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import androidx.annotation.Nullable;
@@ -129,17 +128,18 @@ public class ShadowCompanionDeviceManager {
 
   /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
   private AssociationInfo createAssociationInfo(RoboAssociationInfo info) {
-    return new AssociationInfo(
-        info.id(),
-        info.userId(),
-        info.packageName(),
-        MacAddress.fromString(info.deviceMacAddress()),
-        info.displayName(),
-        info.deviceProfile(),
-        info.selfManaged(),
-        info.notifyOnDeviceNearby(),
-        info.timeApprovedMs(),
-        info.lastTimeConnectedMs());
+    return AssociationInfoBuilder.newBuilder()
+        .setId(info.id())
+        .setUserId(info.userId())
+        .setPackageName(info.packageName())
+        .setDeviceMacAddress(info.deviceMacAddress())
+        .setDisplayName(info.displayName())
+        .setDeviceProfile(info.deviceProfile())
+        .setSelfManaged(info.selfManaged())
+        .setNotifyOnDeviceNearby(info.notifyOnDeviceNearby())
+        .setApprovedMs(info.timeApprovedMs())
+        .setLastTimeConnectedMs(info.lastTimeConnectedMs())
+        .build();
   }
 
   private RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
