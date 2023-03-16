@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+
 import android.opengl.Matrix;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -25,7 +27,7 @@ public class ShadowOpenGLMatrix {
    * @throws IllegalArgumentException if result, lhs, or rhs are null, or if resultOffset + 16 >
    *     result.length or lhsOffset + 16 > lhs.length or rhsOffset + 16 > rhs.length.
    */
-  @Implementation
+  @Implementation(maxSdk = TIRAMISU)
   protected static void multiplyMM(
       float[] result, int resultOffset, float[] lhs, int lhsOffset, float[] rhs, int rhsOffset) {
     if (result == null) {
@@ -84,7 +86,7 @@ public class ShadowOpenGLMatrix {
    *     resultVecOffset + 4 > resultVec.length or lhsMatOffset + 16 > lhsMat.length or rhsVecOffset
    *     + 4 > rhsVec.length.
    */
-  @Implementation
+  @Implementation(maxSdk = TIRAMISU)
   protected static void multiplyMV(
       float[] resultVec,
       int resultVecOffset,
