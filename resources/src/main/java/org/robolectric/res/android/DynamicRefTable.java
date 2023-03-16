@@ -102,11 +102,11 @@ public class DynamicRefTable
     int res = resId.get();
     int packageId = Res_GETPACKAGE(res) + 1;
 
-    Integer alias_id = mAliasId.get(res);
-    if (alias_id != null) {
+    Integer aliasId = mAliasId.get(res);
+    if (aliasId != null) {
       // Rewrite the resource id to its alias resource id. Since the alias resource id is a
       // compile-time id, it still needs to be resolved further.
-      res = alias_id;
+      res = aliasId;
     }
 
     if (packageId == SYS_PACKAGE_ID || (packageId == APP_PACKAGE_ID && !mAppAsLib)) {

@@ -29,6 +29,8 @@ import org.robolectric.res.android.Chunk.Iterator;
 import org.robolectric.res.android.Idmap.LoadedIdmap;
 import org.robolectric.res.android.ResourceTypes.IdmapEntry_header;
 import org.robolectric.res.android.ResourceTypes.ResStringPool_header;
+import org.robolectric.res.android.ResourceTypes.ResTableStagedAliasEntry;
+import org.robolectric.res.android.ResourceTypes.ResTableStagedAliasHeader;
 import org.robolectric.res.android.ResourceTypes.ResTable_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_lib_entry;
@@ -37,8 +39,6 @@ import org.robolectric.res.android.ResourceTypes.ResTable_map;
 import org.robolectric.res.android.ResourceTypes.ResTable_map_entry;
 import org.robolectric.res.android.ResourceTypes.ResTable_package;
 import org.robolectric.res.android.ResourceTypes.ResTable_sparseTypeEntry;
-import org.robolectric.res.android.ResourceTypes.ResTable_staged_alias_entry;
-import org.robolectric.res.android.ResourceTypes.ResTable_staged_alias_header;
 import org.robolectric.res.android.ResourceTypes.ResTable_type;
 import org.robolectric.res.android.ResourceTypes.ResTable_typeSpec;
 import org.robolectric.res.android.ResourceTypes.Res_value;
@@ -370,7 +370,7 @@ public class LoadedArsc {
     // };
     final Map<Integer, TypeSpec> type_specs_ = new HashMap<>();
     final List<DynamicPackageEntry> dynamic_package_map_ = new ArrayList<>();
-    final Map<Integer, Integer> alias_id_map_ = new HashMap<>();
+    final Map<Integer, Integer> aliasIdMap = new HashMap<>();
 
     ResTable_entry GetEntry(ResTable_type type_chunk,
         short entry_index) {
@@ -729,30 +729,30 @@ public class LoadedArsc {
 
             // loaded_package.dynamic_package_map_.reserve(dtohl(lib.count));
 
-            // ResTable_lib_entry entry_begin =
+            // ResTable_lib_entry entryBegin =
             //     reinterpret_cast<ResTable_lib_entry*>(child_chunk.data_ptr());
-            ResTable_lib_entry entry_begin =
+            ResTable_lib_entry entryBegin =
                 child_chunk.asResTable_lib_entry();
-            // ResTable_lib_entry entry_end = entry_begin + dtohl(lib.count);
-            // for (auto entry_iter = entry_begin; entry_iter != entry_end; ++entry_iter) {
-            for (ResTable_lib_entry entry_iter = entry_begin;
-                entry_iter.myOffset() != entry_begin.myOffset() + dtohl(lib.count);
-                entry_iter = new ResTable_lib_entry(entry_iter.myBuf(), entry_iter.myOffset() + ResTable_lib_entry.SIZEOF)) {
+            // ResTable_lib_entry entry_end = entryBegin + dtohl(lib.count);
+            // for (auto entryIter = entryBegin; entryIter != entry_end; ++entryIter) {
+            for (ResTable_lib_entry entryIter = entryBegin;
+                entryIter.myOffset() != entryBegin.myOffset() + dtohl(lib.count);
+                entryIter = new ResTable_lib_entry(entryIter.myBuf(), entryIter.myOffset() + ResTable_lib_entry.SIZEOF)) {
               String package_name =
-                  Util.ReadUtf16StringFromDevice(entry_iter.packageName,
-                      entry_iter.packageName.length);
+                  Util.ReadUtf16StringFromDevice(entryIter.packageName,
+                      entryIter.packageName.length);
               
-              if (dtohl(entry_iter.packageId) >= 255) {
+              if (dtohl(entryIter.packageId) >= 255) {
                 logError(String.format(
                     "Package ID %02x in RES_TABLE_LIBRARY_TYPE too large for package '%s'.",
-                    dtohl(entry_iter.packageId), package_name));
+                    dtohl(entryIter.packageId), package_name));
                 return emptyBraces();
               }
 
               // loaded_package.dynamic_package_map_.emplace_back(std.move(package_name),
-              //     dtohl(entry_iter.packageId));
+              //     dtohl(entryIter.packageId));
               loaded_package.dynamic_package_map_.add(new DynamicPackageEntry(package_name,
-                  dtohl(entry_iter.packageId)));
+                  dtohl(entryIter.packageId)));
             }
 
           } break;
@@ -767,52 +767,52 @@ public class LoadedArsc {
                 break;
               }
 
-              ResTable_staged_alias_header lib_alias = child_chunk.asResTable_staged_alias_header();
-              if (lib_alias == null) {
+              ResTableStagedAliasHeader libAlias = child_chunk.asResTableStagedAliasHeader();
+              if (libAlias == null) {
                 logError("RES_TABLE_STAGED_ALIAS_TYPE is too small.");
                 return emptyBraces();
               }
-              if ((child_chunk.data_size() / ResTable_staged_alias_entry.SIZEOF)
-                  < dtohl(lib_alias.count)) {
+              if ((child_chunk.data_size() / ResTableStagedAliasEntry.SIZEOF)
+                  < dtohl(libAlias.count)) {
                 logError("RES_TABLE_STAGED_ALIAS_TYPE is too small to hold entries.");
                 return emptyBraces();
               }
 
-              // const auto entry_begin =
-              // child_chunk.data_ptr().convert<ResTable_staged_alias_entry>();
-              // const auto entry_end = entry_begin + dtohl(lib_alias.count);
-              ResTable_staged_alias_entry entry_begin = child_chunk.asResTable_staged_alias_entry();
-              int entry_end_offset =
-                  entry_begin.myOffset()
-                      + dtohl(lib_alias.count) * ResTable_staged_alias_entry.SIZEOF;
-              // std::unordered_set<uint32_t> finalized_ids;
-              // finalized_ids.reserve(entry_end - entry_begin);
-              Set<Integer> finalized_ids = new HashSet<>();
-              for (ResTable_staged_alias_entry entry_iter = entry_begin;
-                  entry_iter.myOffset() != entry_end_offset;
-                  entry_iter =
-                      new ResTable_staged_alias_entry(
-                          entry_iter.myBuf(),
-                          entry_iter.myOffset() + ResTable_staged_alias_entry.SIZEOF)) {
+              // const auto entryBegin =
+              // child_chunk.data_ptr().convert<ResTableStagedAliasEntry>();
+              // const auto entry_end = entryBegin + dtohl(libAlias.count);
+              ResTableStagedAliasEntry entryBegin = child_chunk.asResTableStagedAliasEntry();
+              int entryEndOffset =
+                  entryBegin.myOffset()
+                      + dtohl(libAlias.count) * ResTableStagedAliasEntry.SIZEOF;
+              // std::unordered_set<uint32_t> finalizedIds;
+              // finalizedIds.reserve(entry_end - entryBegin);
+              Set<Integer> finalizedIds = new HashSet<>();
+              for (ResTableStagedAliasEntry entryIter = entryBegin;
+                  entryIter.myOffset() != entryEndOffset;
+                  entryIter =
+                      new ResTableStagedAliasEntry(
+                          entryIter.myBuf(),
+                          entryIter.myOffset() + ResTableStagedAliasEntry.SIZEOF)) {
 
-                int finalized_id = dtohl(entry_iter.finalizedResId);
-                // if (!finalized_ids.insert(finalized_id).second) {
-                if (!finalized_ids.add(finalized_id)) {
+                int finalizedId = dtohl(entryIter.finalizedResId);
+                // if (!finalizedIds.insert(finalizedId).second) {
+                if (!finalizedIds.add(finalizedId)) {
                   logError(
                       String.format(
                           "Repeated finalized resource id '%08x' in staged aliases.",
-                          finalized_id));
+                          finalizedId));
                   return emptyBraces();
                 }
 
-                int staged_id = dtohl(entry_iter.stagedResId);
-                // auto [_, success] = loaded_package->alias_id_map_.emplace(staged_id,
-                // finalized_id);
-                Integer previousValue = loaded_package.alias_id_map_.put(staged_id, finalized_id);
+                int stagedId = dtohl(entryIter.stagedResId);
+                // auto [_, success] = loaded_package->aliasIdMap.emplace(stagedId,
+                // finalizedId);
+                Integer previousValue = loaded_package.aliasIdMap.put(stagedId, finalizedId);
                 if (previousValue != null) {
                   logError(
                       String.format(
-                          "Repeated staged resource id '%08x' in staged aliases.", staged_id));
+                          "Repeated staged resource id '%08x' in staged aliases.", stagedId));
                   return emptyBraces();
                 }
               }
@@ -922,8 +922,8 @@ public class LoadedArsc {
       }
     }
 
-    Map<Integer, Integer> GetAliasResourceIdMap() {
-      return alias_id_map_;
+    Map<Integer, Integer> getAliasResourceIdMap() {
+      return aliasIdMap;
     }
 
     private static LoadedPackage emptyBraces() {
