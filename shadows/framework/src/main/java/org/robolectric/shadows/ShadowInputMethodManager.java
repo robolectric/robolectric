@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
@@ -74,7 +75,7 @@ public class ShadowInputMethodManager {
     return true;
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = TIRAMISU)
   protected boolean showSoftInput(
       View view, int flags, ResultReceiver resultReceiver, int ignoredReason) {
     return showSoftInput(view, flags, resultReceiver);
