@@ -22,10 +22,14 @@ public class ShadowMemoryMappedFileS {
   private static final String TZ_DATA_1 = "/misc/zoneinfo/tzdata";
   private static final String TZ_DATA_2 = "/usr/share/zoneinfo/tzdata";
   private static final String TZ_DATA_3 = "/misc/zoneinfo/current/tzdata";
+  private static final String TZ_DATA_4 = "/etc/tz/tzdata";
 
   @Implementation
   public static MemoryMappedFile mmapRO(String path) throws Throwable {
-    if (path.endsWith(TZ_DATA_1) || path.endsWith(TZ_DATA_2) || path.endsWith(TZ_DATA_3)) {
+    if (path.endsWith(TZ_DATA_1)
+        || path.endsWith(TZ_DATA_2)
+        || path.endsWith(TZ_DATA_3)
+        || path.endsWith(TZ_DATA_4)) {
       InputStream is = MemoryMappedFile.class.getResourceAsStream(TZ_DATA_2);
       if (is == null) {
         throw new ErrnoException("open", -1);
