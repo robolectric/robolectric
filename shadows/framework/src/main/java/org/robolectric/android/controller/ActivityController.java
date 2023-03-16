@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -150,8 +151,10 @@ public class ActivityController<T extends Activity>
         () -> {
           if (RuntimeEnvironment.getApiLevel() <= O_MR1) {
             _component_.performRestart();
-          } else {
+          } else if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
             _component_.performRestart(true, "restart()");
+          } else {
+            _component_.performRestart(true);
           }
           currentState = LifecycleState.RESTARTED;
         });

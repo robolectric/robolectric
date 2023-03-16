@@ -322,6 +322,8 @@ public interface _Activity_ {
 
   void performRestart(boolean start, String reason);
 
+  void performRestart(boolean start);
+
   void performRestoreInstanceState(Bundle savedInstanceState);
 
   void performResume();

@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
@@ -404,22 +406,32 @@ public class ShadowMediaCodec {
   }
 
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void invalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  /** Prevents calling Android-only methods on basic ByteBuffer objects. */
-  @Implementation(minSdk = LOLLIPOP)
-  protected void validateInputByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected void invalidateByteBufferLocked(
+      @Nullable ByteBuffer[] buffers, int index, boolean input) {}
 
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
+  protected void validateInputByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected void validateInputByteBufferLocked(@Nullable ByteBuffer[] buffers, int index) {}
+
+  /** Prevents calling Android-only methods on basic ByteBuffer objects. */
+  @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void revalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected void revalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index, boolean input) {}
 
   /**
    * Prevents calling Android-only methods on basic ByteBuffer objects. Replicates existing behavior
    * adjusting buffer positions and limits.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void validateOutputByteBuffer(
       @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
     if (buffers != null && index >= 0 && index < buffers.length) {
@@ -430,13 +442,25 @@ public class ShadowMediaCodec {
     }
   }
 
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected void validateOutputByteBufferLocked(
+      @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
+    validateOutputByteBuffer(buffers, index, info);
+  }
+
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void invalidateByteBuffers(@Nullable ByteBuffer[] buffers) {}
 
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected void invalidateByteBuffersLocked(@Nullable ByteBuffer[] buffers) {}
+
   /** Prevents attempting to free non-direct ByteBuffer objects. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void freeByteBuffer(@Nullable ByteBuffer buffer) {}
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected void freeByteBufferLocked(@Nullable ByteBuffer buffer) {}
 
   /** Shadows CodecBuffer to prevent attempting to free non-direct ByteBuffer objects. */
   @Implements(className = "android.media.MediaCodec$BufferMap$CodecBuffer", minSdk = LOLLIPOP)

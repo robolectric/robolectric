@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -697,7 +698,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @HiddenApi
-  @Implementation(minSdk = VERSION_CODES.O)
+  @Implementation(minSdk = VERSION_CODES.O, maxSdk = TIRAMISU)
   public void setConfiguration(
       int mcc,
       int mnc,

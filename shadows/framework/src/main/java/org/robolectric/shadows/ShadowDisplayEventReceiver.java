@@ -106,7 +106,7 @@ public class ShadowDisplayEventReceiver {
     return nativeInit(receiver, msgQueue);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation(minSdk = KITKAT_WATCH, maxSdk = TIRAMISU)
   protected static void nativeDispose(long receiverPtr) {
     NativeDisplayEventReceiver receiver = nativeObjRegistry.unregister(receiverPtr);
     if (receiver != null) {

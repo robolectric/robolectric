@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -26,7 +27,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.media.ImageReader} */
-@Implements(ImageReader.class)
+@Implements(value = ImageReader.class, looseSignatures = true)
 public class ShadowImageReader {
   // Using same return codes as ImageReader.
   private static final int ACQUIRE_SUCCESS = 0;
@@ -64,9 +65,14 @@ public class ShadowImageReader {
     return ACQUIRE_SUCCESS;
   }
 
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = TIRAMISU)
   protected int nativeImageSetup(Image image, boolean useLegacyImageFormat) {
     return nativeImageSetup(image);
+  }
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected int nativeImageSetup(Object /* Image */ image) {
+    return nativeImageSetup((Image) image);
   }
 
   @Implementation(minSdk = KITKAT)
