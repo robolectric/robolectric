@@ -267,7 +267,7 @@ public class ShadowLegacyLooperTest {
   }
 
   @Test
-  public void resetThreadLoopers_fromNonMainThread_shouldThrowISE() throws InterruptedException {
+  public void resetThreadLoopers_fromNonMainThread_doesNotThrow() throws InterruptedException {
     final AtomicReference<Throwable> ex = new AtomicReference<>();
     Thread t =
         new Thread() {
@@ -282,7 +282,7 @@ public class ShadowLegacyLooperTest {
         };
     t.start();
     t.join();
-    assertThat(ex.get()).isInstanceOf(IllegalStateException.class);
+    assertThat(ex.get()).isNull();
   }
 
   @Test

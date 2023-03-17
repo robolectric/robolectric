@@ -160,14 +160,15 @@ public class RobolectricTestRunnerTest {
                     new TestEnvironmentSpec(AndroidTestEnvironmentWithFailingSetUp.class))
                 .build());
     runner.run(notifier);
-    assertThat(events).containsExactly(
-        "started: first",
-        "failure: fake error in setUpApplicationState",
-        "finished: first",
-        "started: second",
-        "failure: fake error in setUpApplicationState",
-        "finished: second"
-    ).inOrder();
+    assertThat(events)
+        .containsExactly(
+            "started: first",
+            "failure: ShadowActivityThread.reset: ActivityThread not set",
+            "finished: first",
+            "started: second",
+            "failure: ShadowActivityThread.reset: ActivityThread not set",
+            "finished: second")
+        .inOrder();
   }
 
   @Test
