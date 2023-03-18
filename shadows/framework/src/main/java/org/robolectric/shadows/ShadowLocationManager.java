@@ -1119,11 +1119,23 @@ public class ShadowLocationManager {
   @Implementation(minSdk = VERSION_CODES.N)
   protected boolean registerGnssMeasurementsCallback(
       GnssMeasurementsEvent.Callback listener, Handler handler) {
-    if (handler == null) {
-      handler = new Handler();
-    }
+    if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.R) {
+      if (handler == null) {
+        handler = new Handler();
+      }
 
-    return registerGnssMeasurementsCallback(new HandlerExecutor(handler), listener);
+      return registerGnssMeasurementsCallback(new HandlerExecutor(handler), listener);
+    } else {
+      return registerGnssMeasurementsCallback(Runnable::run, listener);
+    }
+  }
+
+  @Implementation(minSdk = VERSION_CODES.R)
+  @RequiresApi(api = VERSION_CODES.R)
+  protected boolean registerGnssMeasurementsCallback(
+      Object request, Object executor, Object callback) {
+    return registerGnssMeasurementsCallback(
+        (Executor) executor, (GnssMeasurementsEvent.Callback) callback);
   }
 
   @Implementation(minSdk = VERSION_CODES.R)
