@@ -194,7 +194,7 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
-  public void setUpApplicationState_shouldCreateStorageDirs() throws Exception {
+  public void setUpApplicationState_shouldCreateStorageDirs() {
     bootstrapWrapper.callSetUpApplicationState();
     ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
         .getApplicationInfo();
@@ -211,7 +211,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   @Config(minSdk = Build.VERSION_CODES.N)
-  public void setUpApplicationState_shouldCreateStorageDirs_Nplus() throws Exception {
+  public void setUpApplicationState_shouldCreateStorageDirs_Nplus() {
     bootstrapWrapper.callSetUpApplicationState();
     ApplicationInfo applicationInfo = ApplicationProvider.getApplicationContext()
         .getApplicationInfo();
@@ -270,24 +270,27 @@ public class AndroidTestEnvironmentTest {
     }
   }
 
-  @Test @Config(qualifiers = "b+fr+Cyrl+UK")
-  public void localeIsSet() throws Exception {
+  @Test
+  @Config(qualifiers = "b+fr+Cyrl+UK")
+  public void localeIsSet() {
     bootstrapWrapper.callSetUpApplicationState();
     assertThat(Locale.getDefault().getLanguage()).isEqualTo("fr");
     assertThat(Locale.getDefault().getScript()).isEqualTo("Cyrl");
     assertThat(Locale.getDefault().getCountry()).isEqualTo("UK");
   }
 
-  @Test @Config(qualifiers = "w123dp-h456dp")
-  public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() throws Exception {
+  @Test
+  @Config(qualifiers = "w123dp-h456dp")
+  public void whenNotPrefixedWithPlus_setQualifiers_shouldNotBeBasedOnPreviousConfig() {
     bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("land");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w470dp-h320dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("-land-");
   }
 
-  @Test @Config(qualifiers = "w100dp-h125dp")
-  public void whenDimensAndSizeSpecified_setQualifiers_should() throws Exception {
+  @Test
+  @Config(qualifiers = "w100dp-h125dp")
+  public void whenDimensAndSizeSpecified_setQualifiers_should() {
     bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+xlarge");
     Configuration configuration = Resources.getSystem().getConfiguration();
@@ -296,8 +299,9 @@ public class AndroidTestEnvironmentTest {
     assertThat(DeviceConfig.getScreenSize(configuration)).isEqualTo(ScreenSize.xlarge);
   }
 
-  @Test @Config(qualifiers = "w123dp-h456dp")
-  public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() throws Exception {
+  @Test
+  @Config(qualifiers = "w123dp-h456dp")
+  public void whenPrefixedWithPlus_setQualifiers_shouldBeBasedOnPreviousConfig() {
     bootstrapWrapper.callSetUpApplicationState();
     RuntimeEnvironment.setQualifiers("+w124dp");
     assertThat(RuntimeEnvironment.getQualifiers()).contains("w124dp-h456dp");
@@ -305,7 +309,7 @@ public class AndroidTestEnvironmentTest {
 
   @Test
   @Config(fontScale = 1.3f)
-  public void setFontScale_updatesFontScale() throws Exception {
+  public void setFontScale_updatesFontScale() {
     bootstrapWrapper.callSetUpApplicationState();
 
     Context context = ApplicationProvider.getApplicationContext();
@@ -315,7 +319,7 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
-  public void fontScaleNotSet_stillSetToDefault() throws Exception {
+  public void fontScaleNotSet_stillSetToDefault() {
     bootstrapWrapper.callSetUpApplicationState();
 
     Context context = ApplicationProvider.getApplicationContext();
