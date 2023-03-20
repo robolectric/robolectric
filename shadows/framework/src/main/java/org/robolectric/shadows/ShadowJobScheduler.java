@@ -13,6 +13,7 @@ import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.os.Build;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,8 +58,9 @@ public abstract class ShadowJobScheduler {
   @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
   public static class ShadowJobSchedulerImpl extends ShadowJobScheduler {
 
-    private Map<Integer, JobInfo> scheduledJobs = new LinkedHashMap<>();
-    private Set<Integer> jobsToFail = new HashSet<>();
+    private final Map<Integer, JobInfo> scheduledJobs =
+        Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Set<Integer> jobsToFail = Collections.synchronizedSet(new HashSet<>());
     private boolean failExpeditedJobEnabled;
 
     @Override

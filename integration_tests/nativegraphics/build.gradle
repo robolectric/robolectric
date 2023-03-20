@@ -1,0 +1,38 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+import org.robolectric.gradle.GradleManagedDevicePlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+apply plugin: GradleManagedDevicePlugin
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        minSdk 26
+        targetSdk 33
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            all {
+                systemProperty 'robolectric.graphicsMode', 'NATIVE'
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility 11
+        targetCompatibility 11
+    }
+}
+
+dependencies {
+    testImplementation project(':robolectric')
+    testImplementation AndroidSdk.MAX_SDK.coordinates
+    testImplementation "junit:junit:${junitVersion}"
+    testImplementation("com.google.truth:truth:${truthVersion}")
+    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+}

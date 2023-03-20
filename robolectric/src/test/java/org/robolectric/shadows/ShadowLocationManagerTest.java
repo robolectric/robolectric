@@ -28,6 +28,8 @@ import android.content.IntentFilter;
 import android.location.Criteria;
 import android.location.GnssAntennaInfo;
 import android.location.GnssAntennaInfo.PhaseCenterOffset;
+import android.location.GnssMeasurementRequest;
+import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
@@ -1439,6 +1441,38 @@ public class ShadowLocationManagerTest {
     shadowOf(Looper.getMainLooper()).idle();
     inOrder1.verify(listener1, never()).onNmeaMessage("message3", 3);
     inOrder2.verify(listener2, never()).onNmeaMessage("message3", 3);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testGnssMeasurementsCallback() {
+    GnssMeasurementsEvent.Callback listener1 = mock(GnssMeasurementsEvent.Callback.class);
+    GnssMeasurementsEvent.Callback listener2 = mock(GnssMeasurementsEvent.Callback.class);
+    InOrder inOrder1 = Mockito.inOrder(listener1);
+    InOrder inOrder2 = Mockito.inOrder(listener2);
+
+    GnssMeasurementsEvent events1 = new GnssMeasurementsEvent.Builder().build();
+    GnssMeasurementsEvent events2 = new GnssMeasurementsEvent.Builder().build();
+
+    locationManager.registerGnssMeasurementsCallback(Runnable::run, listener1);
+    locationManager.registerGnssMeasurementsCallback(
+        new GnssMeasurementRequest.Builder().build(), Runnable::run, listener2);
+
+    shadowLocationManager.simulateGnssMeasurementsEvent(events1);
+    inOrder1.verify(listener1).onGnssMeasurementsReceived(events1);
+    inOrder2.verify(listener2).onGnssMeasurementsReceived(events1);
+
+    locationManager.unregisterGnssMeasurementsCallback(listener2);
+
+    shadowLocationManager.simulateGnssMeasurementsEvent(events2);
+    inOrder1.verify(listener1).onGnssMeasurementsReceived(events2);
+    inOrder2.verify(listener2, never()).onGnssMeasurementsReceived(events2);
+
+    locationManager.unregisterGnssMeasurementsCallback(listener1);
+
+    shadowLocationManager.simulateGnssMeasurementsEvent(events1);
+    inOrder1.verify(listener1, never()).onGnssMeasurementsReceived(events1);
+    inOrder2.verify(listener2, never()).onGnssMeasurementsReceived(events1);
   }
 
   @Test
