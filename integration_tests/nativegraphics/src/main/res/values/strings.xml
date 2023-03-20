@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2008 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="permlab_testGranted">Test Granted</string>
+    <string name="permdesc_testGranted">Used for running CTS tests, for testing operations
+        where we have the permission.</string>
+    <string name="permlab_testDynamic">Test Dynamic</string>
+    <string name="permdesc_testDynamic">Used for running CTS tests, for testing adding
+        dynamic permissions.</string>
+    <string name="permlab_testDenied">Test Denied</string>
+    <string name="permdesc_testDenied">Used for running CTS tests, for testing operations
+        where we do not have the permission.</string>
+    <string name="explain">1. click start. \n2. if above image shaked, then press pass button,
+         else press failed button.</string>
+    <string name="text_view_hello">Hello! Text view!</string>
+    <string name="text_view_hello_two_lines">Hello! \nText view!</string>
+    <string name="text_view_simple_hint">This is a hint.</string>
+    <string name="text_view_hint">This is a string for testing hint of textview.</string>
+    <string name="activity_forwarding">App/Forwarding</string>
+    <string name="forwarding">$$$</string>
+    <string name="go">Go</string>
+    <string name="back">Back</string>
+    <string name="forward_target">
+        Press back button and notice we don\'t see the previous activity.
+    </string>
+    <string name="edit_text">testing</string>
+    <string name="text">DialogTest</string>
+    <string name="text_country">Country</string>
+    <string name="text_name">Name</string>
+    <string name="hello_world">Hello, World!</string>
+    <string name="hello_android">Hello, Android!</string>
+    <string name="alert_dialog_username">Name:</string>
+    <string name="alert_dialog_password">Password:</string>
+    <string name="alert_dialog_positive">Positive</string>
+    <string name="alert_dialog_negative">Negative</string>
+    <string name="alert_dialog_neutral">Neutral</string>
+    <string name="notify">Notify </string>
+    <string name="tabs_1">testing</string>
+    <string name="table_layout_first">first</string>
+    <string name="table_layout_second">second</string>
+    <string name="table_layout_third">third</string>
+    <string name="table_layout_long">Very long to make the string out of the screen</string>
+    <string name="chronometer_text">Test Chronometer</string>
+    <string name="am">AM</string>
+    <string name="pm">PM</string>
+    <string name="viewgroup_test">ViewGroup test</string>
+    <string name="viewanimator_test">ViewAnimator test</string>
+    <string name="id_ok">OK</string>
+    <string name="id_cancel">Cancel</string>
+    <string name="context_test_string1">This is %s string.</string>
+    <string name="context_test_string2">This is test string.</string>
+    <string name="animationutils_test_instructions">Choose different animations</string>
+    <string name="animationutils_test_alpha">Alpha animation</string>
+    <string name="animationutils_test_scale">Scale animation</string>
+    <string name="animationutils_test_rotate">Rotate animation</string>
+    <string name="animationutils_test_translate">Translate animation</string>
+    <string name="animationutils_test_set">Animation set</string>
+    <string name="animationutils_test_layout">Layout animation</string>
+    <string name="animationutils_test_gridlayout">Grid layout animation</string>
+    <string name="twolinelistitem_test_text1">text1</string>
+    <string name="twolinelistitem_test_text2">text2</string>
+    <string name="metadata_text">metadata text</string>
+    <string name="horizontal_text_1">horizontal 1</string>
+    <string name="horizontal_text_2">horizontal 2</string>
+    <string name="horizontal_text_3">horizontal 3</string>
+    <string name="vertical_text_1">vertical 1</string>
+    <string name="vertical_text_2">vertical 2</string>
+    <string name="vertical_text_3">vertical 3</string>
+    <string name="reference">here</string>
+    <string name="coerceIntegerToString">100</string>
+    <string name="coerceBooleanToString">true</string>
+    <string name="coerceColorToString">#fff</string>
+    <string name="coerceFloatToString">100.0</string>
+    <string name="coerceDimensionToString">100px</string>
+    <string name="coerceFractionToString">100<xliff:g id="percent">%</xliff:g></string>
+    <string name="formattedStringNone">Format[]</string>
+    <string name="formattedStringOne">Format[<xliff:g id="format">%d</xliff:g>]</string>
+    <string name="formattedStringTwo">Format[<xliff:g id="format">%3$d,%2$s</xliff:g>]</string>
+    <string name="checkboxpref_key">checkboxpref_key</string>
+   <string name="checkboxpref_title">title of preference</string>
+   <string name="checkboxpref_summary">summary of preference</string>
+   <string name="checkboxpref_summary_on">summary on of preference</string>
+   <string name="checkboxpref_summary_off">summary off of preference</string>
+   <string name="checkboxpref_depend">checkboxpref_depend</string>
+   <string name="checkboxpref_depend_title"> depend title of preference</string>
+   <string name="checkboxpref_depend_summary"> depend summary of preference</string>
+   <string name="edittextpref_key">edittextpref_key</string>
+   <string name="edittextpref_default_value">default value of preference</string>
+   <string name="edittextpref_title">title of edit text preference</string>
+   <string name="edittextpref_summary">summary of edit text preference</string>
+   <string name="edittextpref_dialog_title">dialog title of edit text preference</string>
+   <string name="edittextpref_text">text of  edit text preference</string>
+   <string name="listpref_key">listpref_key</string>
+   <string name="listpref_title">title of list preference</string>
+   <string name="listpref_summary">summary of list preference</string>
+   <string name="listpref_dialogtitle">dialog title of list preference</string>
+   <string name="easy">Easy</string>
+   <string name="medium">Medium</string>
+   <string name="hard">Hard</string>
+   <string name="footer_view">Footer view</string>
+   <string name="header_view">Header view</string>
+   <string name="dialogpref_title">title of dialog preference </string>
+   <string name="dialogpref_dialog_title">dialog title of dialog preference </string>
+   <string name="dialogpref_key">dialogpref_key</string>
+   <string name="dialogpref_default_value">default value of dialog preference</string>
+   <string name="dialogpref_summary">summary of dialog preference</string>
+   <string name="dialogpref_message">message of dialog preference</string>
+   <string name="dialogpref_sure">Sure</string>
+   <string name="dialogpref_cancel">Cancel</string>
+   <string name="pref_key">pref_key</string>
+   <string name="pref_title">title of preference</string>
+   <string name="pref_summary">summary of preference</string>
+   <string name="pref_depend_key">pref_depend_key</string>
+   <string name="pref_depend_title"> depend title of preference</string>
+   <string name="pref_depend_summary"> depend summary of preference</string>
+   <string name="android_intent_action_preference">android.intent.action.PREFERENCE</string>
+   <string name="def_pref_key">def_pref_key</string>
+   <string name="def_pref_title">default preference</string>
+   <string name="def_pref_summary">This is default preference of cts</string>
+   <string name="relative_view1">view 1</string>
+   <string name="relative_view2">view 2</string>
+   <string name="relative_view3">view 3</string>
+   <string name="relative_view4">view 4</string>
+   <string name="relative_view5">view 5</string>
+   <string name="relative_view6">view 6</string>
+   <string name="relative_view7">view 7</string>
+   <string name="relative_view8">view 8</string>
+   <string name="relative_view9">view 9</string>
+   <string name="relative_view10">view 10</string>
+   <string name="relative_view11">view 11</string>
+   <string name="relative_view12">view 12</string>
+   <string name="relative_view13">view 13</string>
+   <string name="country">Country:</string>
+   <string name="symbol">Symbol:</string>
+   <string name="country_warning">No such country registered</string>
+   <string name="version_cur">base</string>
+   <string name="version_old">base</string>
+   <string name="version_v3">base</string>
+   <string name="authenticator_label">Android CTS</string>
+   <string name="search_label">Android CTS</string>
+   <string name="tag1">tag 1</string>
+   <string name="tag2">tag 2</string>
+
+   <string name="button">Button</string>
+   <string name="holo_test">Holo Test</string>
+   <string name="holo_generator">Holo Generator</string>
+   <string name="holo_light_test">Holo Light Test</string>
+   <string name="holo_light_generator">Holo Light Generator</string>
+   <string name="reference_image">Reference Image: </string>
+   <string name="generated_image">Generated Image: </string>
+   <string name="themes_prompt">Select a Theme:</string>
+   <string name="sample_text">Sample text goes here. I wanted something creative and whimsical
+but then I just got bored...</string>
+    <string name="long_text">This is a really long string which exceeds the width of the view.
+New devices have a much larger screen which actually enables long strings to be displayed
+with no fading. I have made this string longer to fix this case. If you are correcting this
+text, I would love to see the kind of devices you guys now use! Guys, maybe some devices need longer string!
+I think so, so how about double this string, like copy and paste!
+This is a really long string which exceeds the width of the view.
+New devices have a much larger screen which actually enables long strings to be displayed
+with no fading. I have made this string longer to fix this case. If you are correcting this
+text, I would love to see the kind of devices you guys now use! Guys, maybe some devices need longer string!
+I think so, so how about double this string, like copy and paste! </string>
+    <string name="rectangle200">"M 0,0 l 200,0 l 0, 200 l -200, 0 z"</string>
+    <string name="twoLinePathData">"M 0,0 v 100 M 0,0 h 100"</string>
+    <string name="round_box">"m2.10001,-6c-1.9551,0 -0.5,0.02499 -2.10001,0.02499c-1.575,0 0.0031,-0.02499 -1.95,-0.02499c-2.543,0 -4,2.2816 -4,4.85001c0,3.52929 0.25,6.25 5.95,6.25c5.7,0 6,-2.72071 6,-6.25c0,-2.56841 -1.35699,-4.85001 -3.89999,-4.85001"</string>
+    <string name="heart">"m4.5,-7c-1.95509,0 -3.83009,1.26759 -4.5,3c-0.66991,-1.73241 -2.54691,-3 -4.5,-3c-2.543,0 -4.5,1.93159 -4.5,4.5c0,3.5293 3.793,6.2578 9,11.5c5.207,-5.2422 9,-7.9707 9,-11.5c0,-2.56841 -1.957,-4.5 -4.5,-4.5"</string>
+    <string name="last_screenshot">last_screenshot</string>
+    <string name="current_screenshot">current_screenshot</string>
+</resources>

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2008 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <style name="Whatever">
+        <item name="type1">true</item>
+        <item name="type2">false</item>
+        <item name="type3">#ff0000ff</item>
+        <item name="type4">#ff00ff00</item>
+        <item name="type5">0.75px</item>
+        <item name="type6">10px</item>
+        <item name="type7">18px</item>
+        <item name="type8">@drawable/pass</item>
+        <item name="type9">3.14</item>
+        <item name="type10">100%</item>
+        <item name="type11">365</item>
+        <item name="type12">86400</item>
+        <item name="type13">@string/hello_android</item>
+        <item name="type14">TypedArray Test!</item>
+        <item name="type15">@array/difficultyLevel</item>
+        <item name="type16">Typed Value!</item>
+    </style>
+
+    <style name="TextViewWithoutColorAndAppearance">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TextViewWithColorButWithOutAppearance">
+        <item name="android:textColor">#ff0000ff</item>
+    </style>
+
+    <style name="TextViewWithColorAndAppearance">
+        <item name="android:textColor">#ff0000ff</item>
+        <item name="android:textAppearance">@style/TextAppearance.WithColor</item>
+    </style>
+
+    <style name="TextViewWithoutColorButWithAppearance">
+        <item name="android:textAppearance">@style/TextAppearance.WithColor</item>
+    </style>
+
+    <style name="TextAppearance" parent="android:TextAppearance">
+    </style>
+
+    <style name="TextAppearance.WithColor">
+        <item name="android:textColor">#ffff0000</item>
+    </style>
+
+    <style name="TextAppearance.All">
+        <item name="android:textColor">@drawable/black</item>
+        <item name="android:textSize">20px</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColorHint">@drawable/red</item>
+        <item name="android:textColorLink">@drawable/blue</item>
+        <item name="android:textColorHighlight">@drawable/yellow</item>
+    </style>
+
+    <style name="TextAppearance.Colors">
+        <item name="android:textColor">@drawable/black</item>
+        <item name="android:textColorHint">@drawable/blue</item>
+        <item name="android:textColorLink">@drawable/yellow</item>
+        <item name="android:textColorHighlight">@drawable/red</item>
+    </style>
+
+    <style name="TextAppearance.NotColors">
+        <item name="android:textSize">17px</item>
+        <item name="android:typeface">sans</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="TextAppearance.Style">
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="TestEnum1">
+        <item name="testEnum">val1</item>
+    </style>
+
+    <style name="TestEnum2">
+        <item name="testEnum">val2</item>
+    </style>
+
+    <style name="TestEnum10">
+        <item name="testEnum">val10</item>
+    </style>
+
+    <style name="TestFlag1">
+        <item name="testFlags">bit1</item>
+    </style>
+
+    <style name="TestFlag2">
+        <item name="testFlags">bit2</item>
+    </style>
+
+    <style name="TestFlag31">
+        <item name="testFlags">bit31</item>
+    </style>
+
+    <style name="TestFlag1And2">
+        <item name="testFlags">bit1|bit2</item>
+    </style>
+
+    <style name="TestFlag1And2And31">
+        <item name="testFlags">bit1|bit2|bit31</item>
+    </style>
+
+    <style name="TestEnum1.EmptyInherit" />
+
+    <style name="Theme_AlertDialog">
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <style name="TestProgressBar">
+        <item name="android:indeterminateOnly">false</item>
+        <item name="android:progressDrawable">@android:drawable/progress_horizontal</item>
+        <item name="android:indeterminateDrawable">@android:drawable/progress_horizontal</item>
+        <item name="android:minHeight">20dip</item>
+        <item name="android:maxHeight">20dip</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="Test_Theme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:panelColorForeground">#ff000000</item>
+        <item name="android:panelColorBackground">#ffffffff</item>
+    </style>
+
+    <style name="Theme_OverrideOuter">
+        <item name="themeType">1</item>
+    </style>
+
+    <style name="Theme_OverrideInner">
+        <item name="themeType">2</item>
+        <item name="themeOverrideAttr">@style/Theme_OverrideAttr</item>
+    </style>
+
+    <style name="Theme_OverrideAttr">
+        <item name="themeType">3</item>
+    </style>
+    
+    <style name="Theme_ThemedDrawableTest">
+        <item name="themeBoolean">true</item>
+        <item name="themeColor">@android:color/black</item>
+        <item name="themeFloat">1.0</item>
+        <item name="themeAngle">45.0</item>
+        <item name="themeInteger">1</item>
+        <item name="themeDimension">1px</item>
+        <item name="themeDrawable">@drawable/icon_black</item>
+        <item name="themeBitmap">@drawable/icon_black</item>
+        <item name="themeNinePatch">@drawable/ninepatch_0</item>
+        <item name="themeGravity">48</item>
+        <item name="themeTileMode">2</item>
+        <item name="themeType">0</item>
+        <item name="themeVectorDrawableFillColor">#F00F</item>
+    </style>
+
+    <attr name="colorPrimary" format="reference|color" />
+    <attr name="colorPrimaryDark" format="reference|color" />
+    <attr name="colorAccent" format="reference|color" />
+
+    <style name="Theme_MixedGradientTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- overwrite the default gradient type to be radial in the theme -->
+        <item name="GradientType">1</item>
+    </style>
+
+    <!-- default gradient type of linear -->
+    <attr name="GradientType" format="integer">0</attr>
+
+    <style name="WhiteBackgroundNoWindowAnimation"
+           parent="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowOverscan">true</item>
+        <item name="android:fadingEdge">none</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowContentTransitions">false</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+
+</resources>
