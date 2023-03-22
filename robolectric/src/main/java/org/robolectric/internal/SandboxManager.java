@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
@@ -49,8 +50,10 @@ public class SandboxManager {
       Sdk sdk,
       ResourcesMode resourcesMode,
       LooperMode.Mode looperMode,
-      SQLiteMode.Mode sqliteMode) {
-    SandboxKey key = new SandboxKey(instrumentationConfig, sdk, resourcesMode, looperMode);
+      SQLiteMode.Mode sqliteMode,
+      GraphicsMode.Mode graphicsMode) {
+    SandboxKey key =
+        new SandboxKey(instrumentationConfig, sdk, resourcesMode, looperMode, graphicsMode);
 
     AndroidSandbox androidSandbox = sandboxesByKey.get(key);
     if (androidSandbox == null) {
@@ -79,16 +82,19 @@ public class SandboxManager {
     private final InstrumentationConfiguration instrumentationConfiguration;
     private final ResourcesMode resourcesMode;
     private final LooperMode.Mode looperMode;
+    private final GraphicsMode.Mode graphicsMode;
 
     public SandboxKey(
         InstrumentationConfiguration instrumentationConfiguration,
         Sdk sdk,
         ResourcesMode resourcesMode,
-        LooperMode.Mode looperMode) {
+        LooperMode.Mode looperMode,
+        GraphicsMode.Mode graphicsMode) {
       this.sdk = sdk;
       this.instrumentationConfiguration = instrumentationConfiguration;
       this.resourcesMode = resourcesMode;
       this.looperMode = looperMode;
+      this.graphicsMode = graphicsMode;
     }
 
     @Override
@@ -103,12 +109,14 @@ public class SandboxManager {
       return resourcesMode == that.resourcesMode
           && Objects.equals(sdk, that.sdk)
           && Objects.equals(instrumentationConfiguration, that.instrumentationConfiguration)
-          && looperMode == that.looperMode;
+          && looperMode == that.looperMode
+          && graphicsMode == that.graphicsMode;
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(sdk, instrumentationConfiguration, resourcesMode, looperMode);
+      return Objects.hash(
+          sdk, instrumentationConfiguration, resourcesMode, looperMode, graphicsMode);
     }
   }
 }
