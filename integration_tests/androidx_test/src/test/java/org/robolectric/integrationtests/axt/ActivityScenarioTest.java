@@ -9,9 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import androidx.appcompat.R;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.R;
 import androidx.lifecycle.Lifecycle.State;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
@@ -69,7 +69,7 @@ public class ActivityScenarioTest {
     @Override
     public void onStop() {
       super.onStop();
-      callbacks.add("onStop");
+      callbacks.add("onStop " + isChangingConfigurations());
     }
 
     @Override
@@ -134,10 +134,18 @@ public class ActivityScenarioTest {
       assertThat(activityScenario).isNotNull();
       activityScenario.moveToState(State.CREATED);
       activityScenario.moveToState(State.RESUMED);
-      assertThat(callbacks)
-          .containsExactly(
-              "onCreate", "onStart", "onPostCreate", "onResume", "onWindowFocusChanged true",
-              "onPause", "onStop", "onRestart", "onStart", "onResume");
+    assertThat(callbacks)
+        .containsExactly(
+            "onCreate",
+            "onStart",
+            "onPostCreate",
+            "onResume",
+            "onWindowFocusChanged true",
+            "onPause",
+            "onStop false",
+            "onRestart",
+            "onStart",
+            "onResume");
   }
 
   @Test
@@ -218,6 +226,16 @@ public class ActivityScenarioTest {
         activity ->
             assertThat(activity.getSupportFragmentManager().findFragmentById(android.R.id.content))
                 .isNotSameInstanceAs(fragment));
+  }
+
+  @Test
+  public void recreate_isChangingConfigurations() {
+    try (ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launch(TranscriptActivity.class)) {
+      activityScenario.recreate();
+
+      assertThat(callbacks).contains("onStop true");
+    }
   }
 
   @Config(minSdk = JELLY_BEAN_MR2)
