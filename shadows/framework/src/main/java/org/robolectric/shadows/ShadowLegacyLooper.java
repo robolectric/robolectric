@@ -62,12 +62,6 @@ public class ShadowLegacyLooper extends ShadowLooper {
       // ignore if realistic looper
       return;
     }
-    // Blech. We need to keep the main looper because somebody might refer to it in a static
-    // field. The other loopers need to be wrapped in WeakReferences so that they are not prevented
-    // from being garbage collected.
-    if (!isMainThread()) {
-      throw new IllegalStateException("you should only be calling this from the main thread!");
-    }
     synchronized (loopingLoopers) {
       for (Looper looper : loopingLoopers.values()) {
         synchronized (looper) {

@@ -27,6 +27,7 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -279,8 +280,8 @@ public class ShadowActivityThread {
 
   @Resetter
   public static void reset() {
-    reflector(_ActivityThread_.class, RuntimeEnvironment.getActivityThread())
-        .getActivities()
-        .clear();
+    Object activityThread = RuntimeEnvironment.getActivityThread();
+    Objects.requireNonNull(activityThread, "ShadowActivityThread.reset: ActivityThread not set");
+    reflector(_ActivityThread_.class, activityThread).getActivities().clear();
   }
 }

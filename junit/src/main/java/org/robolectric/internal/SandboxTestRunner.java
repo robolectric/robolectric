@@ -295,11 +295,7 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
                 throw Util.sneakyThrow(throwable);
               } finally {
                 Thread.currentThread().setContextClassLoader(priorContextClassLoader);
-                try {
-                  finallyAfterTest(method);
-                } catch (Exception e) {
-                  e.printStackTrace();
-                }
+                finallyAfterTest(method);
                 reportPerfStats(perfStatsCollector);
                 perfStatsCollector.reset();
               }
