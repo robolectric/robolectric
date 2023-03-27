@@ -121,6 +121,18 @@ public class ShadowSpeechRecognizerTest {
     assertNoErrorLogs();
   }
 
+  /** Verify that isDestroyed is corrected set by destroy and unset by startListening */
+  @Test
+  public void startListeningThenDestroyAndStartListening() {
+    startListening();
+    assertThat(shadowOf(speechRecognizer).isDestroyed()).isFalse();
+    speechRecognizer.destroy();
+    shadowOf(getMainLooper()).idle();
+    assertThat(shadowOf(speechRecognizer).isDestroyed()).isTrue();
+    startListening();
+    assertThat(shadowOf(speechRecognizer).isDestroyed()).isFalse();
+  }
+
   /** Verify the startlistening flow works when using custom component name. */
   @Test
   public void startListeningWithCustomComponent() {
