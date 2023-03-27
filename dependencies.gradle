@@ -11,7 +11,7 @@ ext {
     axtCoreVersion='1.5.0'
     axtTruthVersion='1.5.0'
     espressoVersion='3.5.1'
-    axtJunitVersion='1.1.4'
+    axtJunitVersion='1.1.5'
     axtTestServicesVersion='1.4.2'
 
     // AndroidX versions
