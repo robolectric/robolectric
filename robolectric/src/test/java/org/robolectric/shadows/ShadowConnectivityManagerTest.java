@@ -10,12 +10,15 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.LinkProperties;
 import android.net.Network;
@@ -321,6 +324,10 @@ public class ShadowConnectivityManagerTest {
     };
   }
 
+  private static PendingIntent createSimplePendingIntent() {
+    return PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0);
+  }
+
   @Test
   @Config(minSdk = LOLLIPOP)
   public void requestNetwork_shouldAddCallback() throws Exception {
@@ -336,6 +343,15 @@ public class ShadowConnectivityManagerTest {
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
     connectivityManager.registerNetworkCallback(builder.build(), callback);
     assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void registerCallback_withPendingIntent_shouldAddCallback() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    PendingIntent pendingIntent = createSimplePendingIntent();
+    connectivityManager.registerNetworkCallback(builder.build(), pendingIntent);
+    assertThat(shadowOf(connectivityManager).getNetworkCallbackPendingIntents()).hasSize(1);
   }
 
   @Test
@@ -389,10 +405,34 @@ public class ShadowConnectivityManagerTest {
     assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).isEmpty();
   }
 
+  @Test
+  @Config(minSdk = M)
+  public void unregisterCallback_withPendingIntent_shouldRemoveCallbacks() throws Exception {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    // Add two pendingIntents, should treat them as equal based on Intent#filterEquals
+    PendingIntent pendingIntent1 = createSimplePendingIntent();
+    PendingIntent pendingIntent2 = createSimplePendingIntent();
+    connectivityManager.registerNetworkCallback(builder.build(), pendingIntent1);
+    connectivityManager.registerNetworkCallback(builder.build(), pendingIntent2);
+
+    assertThat(shadowOf(connectivityManager).getNetworkCallbackPendingIntents()).hasSize(1);
+    connectivityManager.unregisterNetworkCallback(pendingIntent2);
+    assertThat(shadowOf(connectivityManager).getNetworkCallbackPendingIntents()).isEmpty();
+  }
+
   @Test(expected=IllegalArgumentException.class) @Config(minSdk = LOLLIPOP)
   public void unregisterCallback_shouldNotAllowNullCallback() throws Exception {
     // Verify that exception is thrown.
     connectivityManager.unregisterNetworkCallback((ConnectivityManager.NetworkCallback) null);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void unregisterCallback_withPendingIntent_shouldNotAllowNullCallback() throws Exception {
+    // Verify that exception is thrown.
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> connectivityManager.unregisterNetworkCallback((PendingIntent) null));
   }
 
   @Test
