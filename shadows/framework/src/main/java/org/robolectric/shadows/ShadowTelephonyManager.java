@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -20,7 +21,9 @@ import static android.telephony.PhoneStateListener.LISTEN_SERVICE_STATE;
 import static android.telephony.TelephonyManager.CALL_STATE_IDLE;
 import static android.telephony.TelephonyManager.CALL_STATE_RINGING;
 
+import android.Manifest.permission;
 import android.annotation.CallSuper;
+import android.app.ActivityThread;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -64,11 +67,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 @Implements(value = TelephonyManager.class, looseSignatures = true)
@@ -146,6 +151,7 @@ public class ShadowTelephonyManager {
   private static int callComposerStatus = 0;
   private VisualVoicemailSmsParams lastVisualVoicemailSmsParams;
   private VisualVoicemailSmsFilterSettings visualVoicemailSmsFilterSettings;
+  private boolean emergencyCallbackMode;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -522,6 +528,23 @@ public class ShadowTelephonyManager {
     if (!readPhoneStatePermission) {
       throw new SecurityException();
     }
+  }
+
+  private void checkReadPrivilegedPhoneStatePermission() {
+    if (!checkPermission(permission.READ_PRIVILEGED_PHONE_STATE)) {
+      throw new SecurityException();
+    }
+  }
+
+  static ShadowInstrumentation getShadowInstrumentation() {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return Shadow.extract(activityThread.getInstrumentation());
+  }
+
+  static boolean checkPermission(String permission) {
+    return getShadowInstrumentation()
+            .checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid())
+        == PERMISSION_GRANTED;
   }
 
   @Implementation
@@ -1157,6 +1180,22 @@ public class ShadowTelephonyManager {
     }
 
     return false;
+  }
+
+  /**
+   * Emergency Callback Mode (ECBM) is typically set by the carrier, for a time window of 5 minutes
+   * after the last outgoing emergency call. The user can exit ECBM via a system notification.
+   *
+   * @param emergencyCallbackMode whether the device is in ECBM or not.
+   */
+  public void setEmergencyCallbackMode(boolean emergencyCallbackMode) {
+    this.emergencyCallbackMode = emergencyCallbackMode;
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.O)
+  protected boolean getEmergencyCallbackMode() {
+    checkReadPrivilegedPhoneStatePermission();
+    return emergencyCallbackMode;
   }
 
   @Implementation(minSdk = Build.VERSION_CODES.Q)

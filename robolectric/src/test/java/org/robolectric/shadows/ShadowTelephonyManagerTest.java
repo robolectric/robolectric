@@ -45,6 +45,8 @@ import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowTelephonyManager.createTelephonyDisplayInfo;
 
+import android.Manifest.permission;
+import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -101,6 +103,8 @@ public class ShadowTelephonyManagerTest {
   public void setUp() throws Exception {
     telephonyManager = (TelephonyManager) getApplication().getSystemService(TELEPHONY_SERVICE);
     shadowTelephonyManager = Shadow.extract(telephonyManager);
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .grantPermissions(permission.READ_PRIVILEGED_PHONE_STATE);
   }
 
   @Test
@@ -1039,5 +1043,29 @@ public class ShadowTelephonyManagerTest {
     ShadowServiceManager.setServiceAvailability(Context.TELEPHONY_SERVICE, false);
 
     assertThrows(IllegalStateException.class, () -> telephonyManager.isEmergencyNumber("911"));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void
+      getEmergencyCallbackMode_noReadPrivilegedPhoneStatePermission_throwsSecurityException() {
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .denyPermissions(permission.READ_PRIVILEGED_PHONE_STATE);
+
+    assertThrows(SecurityException.class, () -> telephonyManager.getEmergencyCallbackMode());
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getEmergencyCallback_wasSetToTrue_returnsTrue() {
+    shadowTelephonyManager.setEmergencyCallbackMode(true);
+
+    assertThat(telephonyManager.getEmergencyCallbackMode()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getEmergencyCallback_notSet_returnsFalse() {
+    assertThat(telephonyManager.getEmergencyCallbackMode()).isFalse();
   }
 }
