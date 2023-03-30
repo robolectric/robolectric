@@ -146,6 +146,39 @@ public final class EspressoIdlingResourceTest {
     }
   }
 
+  @SuppressWarnings("FutureReturnValueIgnored")
+  @Test
+  public void onIdle_looperPostsToMainThread_shouldWaitForTheTaskOnMainThreadToFinish()
+      throws Exception {
+    HandlerThread handlerThread = new HandlerThread("Test");
+    try {
+      handlerThread.start();
+      Handler handler = new Handler(handlerThread.getLooper());
+      CountDownLatch handlerStarted = new CountDownLatch(1);
+      CountDownLatch releaseHandler = new CountDownLatch(1);
+      AtomicBoolean mainThreadPosted = new AtomicBoolean(false);
+      handler.post(
+          () -> {
+            handlerStarted.countDown();
+            try {
+              releaseHandler.await();
+              new Handler(Looper.getMainLooper()).post(() -> mainThreadPosted.set(true));
+            } catch (InterruptedException e) {
+              // Ignore
+            }
+          });
+      handlerStarted.await();
+      idlingRegistry.registerLooperAsIdlingResource(handlerThread.getLooper());
+
+      executor.submit(releaseHandler::countDown);
+      onIdle();
+
+      assertThat(mainThreadPosted.get()).isTrue();
+    } finally {
+      handlerThread.quit();
+    }
+  }
+
   private static class NamedIdleResource implements IdlingResource {
     final String name;
     final AtomicBoolean isIdle;
