@@ -1208,6 +1208,26 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
+  public void testSimulateLocation_Batch() {
+    Location loc1 = createLocation(MY_PROVIDER);
+    Location loc2 = createLocation(MY_PROVIDER);
+
+    TestLocationListener myListener = new TestLocationListener();
+
+    locationManager.requestLocationUpdates(MY_PROVIDER, 0, 0, myListener);
+    shadowLocationManager.simulateLocation(MY_PROVIDER, loc1, loc2);
+    locationManager.removeUpdates(myListener);
+
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(myListener.locations)
+        .comparingElementsUsing(equality())
+        .containsExactly(loc1, loc2)
+        .inOrder();
+    assertThat(locationManager.getLastKnownLocation(MY_PROVIDER)).isEqualTo(loc2);
+  }
+
+  @Test
   public void testLocationUpdates_NullListener() {
     try {
       locationManager.requestSingleUpdate(GPS_PROVIDER, null, null);
@@ -1329,6 +1349,14 @@ public class ShadowLocationManagerTest {
     locationManager.removeUpdates(listener2.pendingIntent);
     assertThat(shadowLocationManager.getLocationUpdatePendingIntents(MY_PROVIDER)).isEmpty();
     assertThat(shadowLocationManager.getLocationUpdatePendingIntents(GPS_PROVIDER)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.O)
+  public void testGetGnssBatchSize() {
+    assertThat(locationManager.getGnssBatchSize()).isEqualTo(0);
+    shadowLocationManager.setGnssBatchSize(5);
+    assertThat(locationManager.getGnssBatchSize()).isEqualTo(5);
   }
 
   @Test
