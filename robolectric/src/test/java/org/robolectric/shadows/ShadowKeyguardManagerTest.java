@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.KEYGUARD_SERVICE;
+import static android.content.Context.POWER_SERVICE;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -13,7 +14,9 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
+import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
@@ -27,12 +30,13 @@ public class ShadowKeyguardManagerTest {
   private static final int USER_ID = 1001;
 
   private KeyguardManager manager;
+  private PowerManager powerManager;
 
   @Before
   public void setUp() {
-    manager =
-        (KeyguardManager)
-            ApplicationProvider.getApplicationContext().getSystemService(KEYGUARD_SERVICE);
+    Context context = ApplicationProvider.getApplicationContext();
+    manager = (KeyguardManager) context.getSystemService(KEYGUARD_SERVICE);
+    powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
   }
 
   @Test
@@ -150,6 +154,34 @@ public class ShadowKeyguardManagerTest {
     shadowOf(manager).setKeyguardLocked(false);
 
     verify(mockCallback).onDismissSucceeded();
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void requestDismissKeyguard_turnScreenOnTrue_turnsScreenOn() {
+    shadowOf(powerManager).turnScreenOn(false);
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    activity.setTurnScreenOn(true);
+
+    manager.requestDismissKeyguard(activity, null);
+
+    assertThat(powerManager.isScreenOn()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void requestDismissKeyguard_turnScreenOnFalse_doesNotTurnScreenOn() {
+    shadowOf(powerManager).turnScreenOn(false);
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    activity.setTurnScreenOn(false);
+
+    manager.requestDismissKeyguard(activity, null);
+
+    assertThat(
+            ((PowerManager)
+                    ApplicationProvider.getApplicationContext().getSystemService(POWER_SERVICE))
+                .isScreenOn())
+        .isFalse();
   }
 
   @Test
