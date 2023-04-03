@@ -28,7 +28,7 @@ error-prone-javac = "9+181-r4173-1"
 error-prone-gradle = "3.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "1.8.10"
+kotlin = "1.9.0-Beta"
 
 # https://github.com/diffplug/spotless/blob/main/CHANGES.md
 spotless-gradle = "6.19.0"
