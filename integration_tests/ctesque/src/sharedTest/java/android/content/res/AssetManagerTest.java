@@ -8,14 +8,13 @@ import android.os.ParcelFileDescriptor;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.io.CharStreams;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
@@ -25,9 +24,6 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 @DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class AssetManagerTest {
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   private AssetManager assetManager;
 
@@ -70,8 +66,10 @@ public class AssetManagerTest {
   @Test
   public void openFd_shouldProvideFileDescriptorForAsset() throws Exception {
     AssetFileDescriptor assetFileDescriptor = assetManager.openFd("assetsHome.txt");
-    assertThat(CharStreams.toString(new InputStreamReader(assetFileDescriptor.createInputStream(), UTF_8)))
-        .isEqualTo("assetsHome!");
+    FileInputStream fis = assetFileDescriptor.createInputStream();
+    InputStreamReader isr = new InputStreamReader(fis, UTF_8);
+    String actual = CharStreams.toString(isr);
+    assertThat(actual).isEqualTo("assetsHome!");
     assertThat(assetFileDescriptor.getLength()).isEqualTo(11);
   }
 
@@ -84,6 +82,7 @@ public class AssetManagerTest {
                 + "open_shouldProvideFileDescriptor.txt");
     FileOutputStream output = new FileOutputStream(file);
     output.write("hi".getBytes());
+    output.close();
 
     ParcelFileDescriptor parcelFileDescriptor =
         ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
