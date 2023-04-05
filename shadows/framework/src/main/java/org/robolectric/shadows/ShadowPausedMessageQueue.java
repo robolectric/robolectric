@@ -56,7 +56,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     int ptr = (int) nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener = () -> nativeWake(ptr);
-    ShadowPausedSystemClock.addListener(clockListener);
+    ShadowPausedSystemClock.addStaticListener(clockListener);
   }
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
@@ -232,6 +232,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     } else {
       reflector(MessageQueueReflector.class, realQueue).quit();
     }
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR2)
+  protected void quit(boolean allowed) {
+    reflector(MessageQueueReflector.class, realQueue).quit(allowed);
+    ShadowPausedSystemClock.removeListener(clockListener);
   }
 
   private boolean isQuitting() {

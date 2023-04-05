@@ -38,6 +38,9 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   private static long currentTimeMillis = INITIAL_TIME;
 
   private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
+  // hopefully temporary list of clock listeners that are NOT cleared between tests
+  // This is needed to accomodate Loopers which are not reset between tests
+  private static final List<Listener> staticListeners = new CopyOnWriteArrayList<>();
 
   /**
    * Callback for clock updates
@@ -52,6 +55,11 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
 
   static void removeListener(Listener listener) {
     listeners.remove(listener);
+    staticListeners.remove(listener);
+  }
+
+  static void addStaticListener(Listener listener) {
+    staticListeners.add(listener);
   }
 
   /** Advances the current time by given millis, without sleeping the current thread/ */
@@ -60,7 +68,14 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
     synchronized (ShadowPausedSystemClock.class) {
       currentTimeMillis += millis;
     }
+    informListeners();
+  }
+
+  private static void informListeners() {
     for (Listener listener : listeners) {
+      listener.onClockAdvanced();
+    }
+    for (Listener listener : staticListeners) {
       listener.onClockAdvanced();
     }
   }
@@ -83,9 +98,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
         currentTimeMillis = millis;
       }
     }
-    for (Listener listener : listeners) {
-      listener.onClockAdvanced();
-    }
+    informListeners();
     return true;
   }
 
