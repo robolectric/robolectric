@@ -21,12 +21,6 @@ tasks.withType(GenerateModuleMetadata).configureEach {
 }
 
 compileKotlin {
-    // Use java/main classes directory to replace default kotlin/main to
-    // avoid d8 error when dexing & desugaring kotlin classes with non-exist
-    // kotlin/main directory because utils module doesn't have kotlin code
-    // in production. If utils module starts to add Kotlin code in main source
-    // set, we can remove this destinationDirectory modification.
-    destinationDirectory = file("${projectDir}/build/classes/java/main")
     compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 }
 
