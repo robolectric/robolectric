@@ -1,20 +1,31 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioTrack.ERROR_BAD_VALUE;
+import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
+import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.annotation.NonNull;
+import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
+import android.os.Parcel;
 import android.util.Log;
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -50,10 +61,18 @@ public class ShadowAudioTrack {
 
   protected static final int DEFAULT_MIN_BUFFER_SIZE = 1024;
 
+  // Copied from native code
+  // https://cs.android.com/android/platform/superproject/+/android13-release:frameworks/base/core/jni/android_media_AudioTrack.cpp?q=AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED
+  private static final int AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED = -20;
+
   private static final String TAG = "ShadowAudioTrack";
-  private static int minBufferSize = DEFAULT_MIN_BUFFER_SIZE;
+  private static final Set<Integer> directSupportedEncodings =
+      Collections.synchronizedSet(new HashSet<>());
+
   private static final List<OnAudioDataWrittenListener> audioDataWrittenListeners =
       new CopyOnWriteArrayList<>();
+  private static int minBufferSize = DEFAULT_MIN_BUFFER_SIZE;
+
   private int numBytesReceived;
   @RealObject AudioTrack audioTrack;
 
@@ -67,11 +86,51 @@ public class ShadowAudioTrack {
     minBufferSize = bufferSize;
   }
 
+  /**
+   * Adds support for direct playback of a non-PCM {@code encoding}. As a result, calling {@link
+   * AudioTrack#isDirectPlaybackSupported(AudioFormat, AudioAttributes)} for an {@link AudioFormat}
+   * of the same encoding, will return {@code true}. The {@link AudioAttributes} are ignored.
+   *
+   * <p>Note that calling this method mutates static state, so make sure to clear the state with
+   * {@link #clearDirectPlaybackSupportedEncodings()}, for example in a Junit {@link
+   * org.junit.After} method.
+   *
+   * @param encoding One of {@link AudioFormat} {@code ENCODING_} values excluding PCM encodings. If
+   *     {@code encoding} is PCM, the method will throw an {@link IllegalArgumentException}.
+   */
+  public static void addDirectPlaybackSupport(int encoding) {
+    if (isPcm(encoding)) {
+      throw new IllegalArgumentException("Encoding is PCM: " + encoding);
+    }
+    directSupportedEncodings.add(encoding);
+  }
+
+  /**
+   * Clears all encodings that have been added for direct playback support with {@link
+   * #addDirectPlaybackSupport(int)}.
+   */
+  @Resetter
+  public static void clearDirectPlaybackSupportedEncodings() {
+    directSupportedEncodings.clear();
+  }
+
   @Implementation(minSdk = N, maxSdk = P)
   protected static int native_get_FCC_8() {
     // Return the value hard-coded in native code:
     // https://cs.android.com/android/platform/superproject/+/android-7.1.1_r41:system/media/audio/include/system/audio.h;l=42;drc=57a4158dc4c4ce62bc6a2b8a0072ba43305548d4
     return 8;
+  }
+
+  @Implementation(minSdk = Q)
+  protected static boolean native_is_direct_output_supported(
+      int encoding,
+      int sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int contentType,
+      int usage,
+      int flags) {
+    return directSupportedEncodings.contains(encoding);
   }
 
   /** Returns a predefined or default minimum buffer size. Audio format and config are neglected. */
@@ -81,24 +140,136 @@ public class ShadowAudioTrack {
     return minBufferSize;
   }
 
+  @Implementation(minSdk = P, maxSdk = Q)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int[] sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId,
+      long nativeAudioTrack,
+      boolean offload) {
+    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+      return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
+    }
+    return AudioTrack.SUCCESS;
+  }
+
+  @Implementation(minSdk = R, maxSdk = R)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int[] sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId,
+      long nativeAudioTrack,
+      boolean offload,
+      int encapsulationMode,
+      Object tunerConfiguration) {
+    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+      return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
+    }
+    return AudioTrack.SUCCESS;
+  }
+
+  @Implementation(minSdk = S, maxSdk = TIRAMISU)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int[] sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId,
+      long nativeAudioTrack,
+      boolean offload,
+      int encapsulationMode,
+      Object tunerConfiguration,
+      String opPackageName) {
+    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+      return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
+    }
+    return AudioTrack.SUCCESS;
+  }
+
+  @Implementation(minSdk = CUR_DEVELOPMENT)
+  protected int native_setup(
+      Object /*WeakReference<AudioTrack>*/ audioTrack,
+      Object /*AudioAttributes*/ attributes,
+      int[] sampleRate,
+      int channelMask,
+      int channelIndexMask,
+      int audioFormat,
+      int buffSizeInBytes,
+      int mode,
+      int[] sessionId,
+      @NonNull Parcel attributionSource,
+      long nativeAudioTrack,
+      boolean offload,
+      int encapsulationMode,
+      Object tunerConfiguration,
+      @NonNull String opPackageName) {
+    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+      return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
+    }
+    return AudioTrack.SUCCESS;
+  }
+
   /**
-   * Always return the number of bytes to write. This method returns immedidately even with {@link
-   * AudioTrack#WRITE_BLOCKING}
+   * Returns the number of bytes to write. This method returns immediately even with {@link
+   * AudioTrack#WRITE_BLOCKING}. If the {@link AudioTrack} instance was created with a non-PCM
+   * encoding and the encoding can no longer be played directly, the method will return {@link
+   * AudioTrack#ERROR_DEAD_OBJECT};
    */
   @Implementation(minSdk = M)
   protected final int native_write_byte(
       byte[] audioData, int offsetInBytes, int sizeInBytes, int format, boolean isBlocking) {
+    int encoding = audioTrack.getAudioFormat();
+    if (!isPcm(encoding) && !directSupportedEncodings.contains(encoding)) {
+      return ERROR_DEAD_OBJECT;
+    }
     return sizeInBytes;
   }
 
   /**
-   * Always return the number of bytes to write except with invalid parameters. Assumes AudioTrack
-   * is already initialized (object properly created). Do not block even if AudioTrack in offload
-   * mode is in STOPPING play state. This method returns immediately even with {@link
-   * AudioTrack#WRITE_BLOCKING}
+   * Returns the number of bytes to write. This method returns immediately even with {@link
+   * AudioTrack#WRITE_BLOCKING}. If the {@link AudioTrack} instance was created with a non-PCM
+   * encoding and the encoding can no longer be played directly, the method will return {@link
+   * AudioTrack#ERROR_DEAD_OBJECT};
+   */
+  @Implementation(minSdk = Q)
+  protected int native_write_native_bytes(
+      ByteBuffer audioData, int positionInBytes, int sizeInBytes, int format, boolean blocking) {
+    int encoding = audioTrack.getAudioFormat();
+    if (!isPcm(encoding) && !directSupportedEncodings.contains(encoding)) {
+      return ERROR_DEAD_OBJECT;
+    }
+    return sizeInBytes;
+  }
+
+  /**
+   * Returns the number of bytes to write, except with invalid parameters. If the {@link AudioTrack}
+   * was created for a non-PCM encoding that can no longer be played directly, it returns {@link
+   * AudioTrack#ERROR_DEAD_OBJECT}. Assumes {@link AudioTrack} is already initialized (object
+   * properly created). Do not block even if {@link AudioTrack} in offload mode is in STOPPING play
+   * state. This method returns immediately even with {@link AudioTrack#WRITE_BLOCKING}
    */
   @Implementation(minSdk = LOLLIPOP)
   protected int write(@NonNull ByteBuffer audioData, int sizeInBytes, @WriteMode int writeMode) {
+    int encoding = audioTrack.getAudioFormat();
+    if (!isPcm(encoding) && !directSupportedEncodings.contains(encoding)) {
+      return ERROR_DEAD_OBJECT;
+    }
     if (writeMode != WRITE_BLOCKING && writeMode != WRITE_NON_BLOCKING) {
       Log.e(TAG, "ShadowAudioTrack.write() called with invalid blocking mode");
       return ERROR_BAD_VALUE;
@@ -150,5 +321,18 @@ public class ShadowAudioTrack {
   @Resetter
   public static void resetTest() {
     audioDataWrittenListeners.clear();
+  }
+
+  private static boolean isPcm(int encoding) {
+    switch (encoding) {
+      case AudioFormat.ENCODING_PCM_8BIT:
+      case AudioFormat.ENCODING_PCM_16BIT:
+      case AudioFormat.ENCODING_PCM_24BIT_PACKED:
+      case AudioFormat.ENCODING_PCM_32BIT:
+      case AudioFormat.ENCODING_PCM_FLOAT:
+        return true;
+      default:
+        return false;
+    }
   }
 }
