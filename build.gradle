@@ -117,7 +117,7 @@ task aggregateDocs {
     dependsOn ':aggregateJsondocs'
 }
 
-task prefetchSdks() {
+tasks.register('prefetchSdks') {
     AndroidSdk.ALL_SDKS.each { androidSdk ->
         doLast {
             println("Prefetching ${androidSdk.coordinates}...")
@@ -136,7 +136,7 @@ task prefetchSdks() {
     }
 }
 
-task prefetchInstrumentedSdks() {
+tasks.register('prefetchInstrumentedSdks') {
     AndroidSdk.ALL_SDKS.each { androidSdk ->
         doLast {
             println("Prefetching ${androidSdk.preinstrumentedCoordinates}...")
@@ -166,7 +166,7 @@ private void shellExec(String mvnCommand) {
     if (process.exitValue() != 0) System.exit(1)
 }
 
-task prefetchDependencies() {
+tasks.register('prefetchDependencies') {
     doLast {
         allprojects.each { p ->
             p.configurations.each { config ->
