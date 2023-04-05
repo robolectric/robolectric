@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
@@ -13,7 +14,7 @@ spotless {
     }
 }
 
-tasks.withType(GenerateModuleMetadata) {
+tasks.withType(GenerateModuleMetadata).configureEach {
     // We don't want to release gradle module metadata now to avoid
     // potential compatibility problems.
     enabled = false
@@ -26,7 +27,7 @@ compileKotlin {
     // in production. If utils module starts to add Kotlin code in main source
     // set, we can remove this destinationDirectory modification.
     destinationDirectory = file("${projectDir}/build/classes/java/main")
-    compilerOptions.jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 }
 
 afterEvaluate {
