@@ -21,7 +21,7 @@ dependencies {
     implementation project(":sandbox")
 }
 
-task instrumentAll {
+tasks.register('instrumentAll') {
     dependsOn ':prefetchSdks'
     dependsOn 'build'
 
@@ -42,11 +42,11 @@ task instrumentAll {
     }
 }
 
-task('sourcesJar', type: Jar) {
+tasks.register('sourcesJar', Jar) {
     archiveClassifier = "sources"
 }
 
-task('javadocJar', type: Jar) {
+tasks.register('javadocJar', Jar) {
     archiveClassifier = "javadoc"
 }
 
