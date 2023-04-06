@@ -1163,6 +1163,65 @@ public class ShadowLocationManagerTest {
         .inOrder();
   }
 
+  @Config(minSdk = VERSION_CODES.S)
+  @Test
+  public void testRequestFlush_listener() {
+    TestLocationListener listener = new TestLocationListener();
+
+    try {
+      locationManager.requestFlush(GPS_PROVIDER, listener, 0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(listener.flushes).isEmpty();
+    }
+
+    locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, listener);
+    locationManager.requestFlush(GPS_PROVIDER, listener, 1);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(listener.flushes).containsExactly(1);
+  }
+
+  @Config(minSdk = VERSION_CODES.S)
+  @Test
+  public void testRequestFlush_pendingIntent() {
+    TestLocationReceiver listener = new TestLocationReceiver(context);
+
+    try {
+      locationManager.requestFlush(GPS_PROVIDER, listener.pendingIntent, 0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(listener.flushes).isEmpty();
+    }
+
+    locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, listener.pendingIntent);
+    locationManager.requestFlush(GPS_PROVIDER, listener.pendingIntent, 1);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(listener.flushes).containsExactly(1);
+  }
+
+  @Config(minSdk = VERSION_CODES.S)
+  @Test
+  public void testRequestFlush_pendingIntent_canceled() {
+    TestLocationReceiver listener = new TestLocationReceiver(context);
+
+    try {
+      locationManager.requestFlush(GPS_PROVIDER, listener.pendingIntent, 0);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(listener.flushes).isEmpty();
+    }
+
+    locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, listener.pendingIntent);
+    listener.pendingIntent.cancel();
+    locationManager.requestFlush(GPS_PROVIDER, listener.pendingIntent, 1);
+    shadowOf(Looper.getMainLooper()).idle();
+
+    assertThat(shadowLocationManager.getLocationRequests(GPS_PROVIDER)).isEmpty();
+    assertThat(listener.flushes).isEmpty();
+  }
+
   @Test
   public void testSimulateLocation_FastestInterval() {
     Location loc1 = createLocation(MY_PROVIDER);
@@ -1668,6 +1727,7 @@ public class ShadowLocationManagerTest {
     private final PendingIntent pendingIntent;
     private final ArrayList<Boolean> providerEnableds = new ArrayList<>();
     private final ArrayList<Location> locations = new ArrayList<>();
+    private final ArrayList<Integer> flushes = new ArrayList<>();
 
     private TestLocationReceiver(Context context) {
       Intent intent = new Intent(Integer.toString(random.nextInt()));
@@ -1682,6 +1742,9 @@ public class ShadowLocationManagerTest {
       }
       if (intent.hasExtra(LocationManager.KEY_PROVIDER_ENABLED)) {
         providerEnableds.add(intent.getBooleanExtra(LocationManager.KEY_PROVIDER_ENABLED, false));
+      }
+      if (intent.hasExtra(LocationManager.KEY_FLUSH_COMPLETE)) {
+        flushes.add(intent.getIntExtra(LocationManager.KEY_FLUSH_COMPLETE, -1));
       }
     }
   }
@@ -1698,6 +1761,7 @@ public class ShadowLocationManagerTest {
   private static class TestLocationListener implements LocationListener {
     final ArrayList<Boolean> providerEnableds = new ArrayList<>();
     final ArrayList<Location> locations = new ArrayList<>();
+    final ArrayList<Integer> flushes = new ArrayList<>();
 
     @Override
     public void onLocationChanged(Location location) {
@@ -1716,6 +1780,11 @@ public class ShadowLocationManagerTest {
     @Override
     public void onProviderDisabled(String s) {
       providerEnableds.add(false);
+    }
+
+    @Override
+    public void onFlushComplete(int requestCode) {
+      flushes.add(requestCode);
     }
   }
 

@@ -887,6 +887,26 @@ public class ShadowLocationManager {
     }
   }
 
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void requestFlush(String provider, LocationListener listener, int requestCode) {
+    ProviderEntry entry = getProviderEntry(provider);
+    if (entry == null) {
+      throw new IllegalArgumentException("unknown provider \"" + provider + "\"");
+    }
+
+    entry.requestFlush(listener, requestCode);
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected void requestFlush(String provider, PendingIntent pendingIntent, int requestCode) {
+    ProviderEntry entry = getProviderEntry(provider);
+    if (entry == null) {
+      throw new IllegalArgumentException("unknown provider \"" + provider + "\"");
+    }
+
+    entry.requestFlush(pendingIntent, requestCode);
+  }
+
   /**
    * Returns the list of {@link LocationRequest} currently registered under the given provider.
    * Clients compiled against the public Android SDK should only use this method on S+, clients
@@ -1737,6 +1757,23 @@ public class ShadowLocationManager {
       Iterables.removeIf(locationTransports, transport -> transport.getKey() == key);
     }
 
+    public void requestFlush(Object key, int requestCode) {
+      LocationTransport<?> transport;
+      synchronized (this) {
+        transport = Iterables.tryFind(locationTransports, t -> t.getKey() == key).orNull();
+      }
+
+      if (transport == null) {
+        throw new IllegalArgumentException("unregistered listener cannot be flushed");
+      }
+
+      if (!transport.invokeOnFlush(requestCode)) {
+        synchronized (this) {
+          Iterables.removeIf(locationTransports, current -> current == transport);
+        }
+      }
+    }
+
     @Override
     public boolean equals(Object o) {
       if (o instanceof ProviderEntry) {
@@ -1993,11 +2030,23 @@ public class ShadowLocationManager {
       }
     }
 
+    // return false if this listener should be removed by this invocation
+    public boolean invokeOnFlush(int requestCode) {
+      try {
+        onFlushComplete(requestCode);
+        return true;
+      } catch (CanceledException e) {
+        return false;
+      }
+    }
+
     abstract void onLocation(Location location) throws CanceledException;
 
     abstract void onLocations(List<Location> locations) throws CanceledException;
 
     abstract void onProviderEnabled(String provider, boolean enabled) throws CanceledException;
+
+    abstract void onFlushComplete(int requestCode) throws CanceledException;
   }
 
   private static final class LocationListenerTransport extends LocationTransport<LocationListener> {
@@ -2011,12 +2060,12 @@ public class ShadowLocationManager {
     }
 
     @Override
-    public void onLocation(Location location) {
+    void onLocation(Location location) {
       executor.execute(() -> getKey().onLocationChanged(location));
     }
 
     @Override
-    public void onLocations(List<Location> locations) {
+    void onLocations(List<Location> locations) {
       executor.execute(
           () -> {
             if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
@@ -2030,7 +2079,7 @@ public class ShadowLocationManager {
     }
 
     @Override
-    public void onProviderEnabled(String provider, boolean enabled) {
+    void onProviderEnabled(String provider, boolean enabled) {
       executor.execute(
           () -> {
             if (enabled) {
@@ -2039,6 +2088,11 @@ public class ShadowLocationManager {
               getKey().onProviderDisabled(provider);
             }
           });
+    }
+
+    @Override
+    void onFlushComplete(int requestCode) {
+      executor.execute(() -> getKey().onFlushComplete(requestCode));
     }
   }
 
@@ -2054,14 +2108,14 @@ public class ShadowLocationManager {
     }
 
     @Override
-    public void onLocation(Location location) throws CanceledException {
+    void onLocation(Location location) throws CanceledException {
       Intent intent = new Intent();
       intent.putExtra(LocationManager.KEY_LOCATION_CHANGED, new Location(location));
       getKey().send(context, 0, intent);
     }
 
     @Override
-    public void onLocations(List<Location> locations) throws CanceledException {
+    void onLocations(List<Location> locations) throws CanceledException {
       if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.S) {
         Intent intent = new Intent();
         intent.putExtra(LocationManager.KEY_LOCATION_CHANGED, locations.get(locations.size() - 1));
@@ -2075,9 +2129,16 @@ public class ShadowLocationManager {
     }
 
     @Override
-    public void onProviderEnabled(String provider, boolean enabled) throws CanceledException {
+    void onProviderEnabled(String provider, boolean enabled) throws CanceledException {
       Intent intent = new Intent();
       intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, enabled);
+      getKey().send(context, 0, intent);
+    }
+
+    @Override
+    void onFlushComplete(int requestCode) throws CanceledException {
+      Intent intent = new Intent();
+      intent.putExtra(LocationManager.KEY_FLUSH_COMPLETE, requestCode);
       getKey().send(context, 0, intent);
     }
   }
