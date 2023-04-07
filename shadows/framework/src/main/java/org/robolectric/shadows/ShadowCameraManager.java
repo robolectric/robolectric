@@ -77,7 +77,18 @@ public class ShadowCameraManager {
     cameraTorches.put(cameraId, enabled);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.S)
+  @Implementation(minSdk = Build.VERSION_CODES.CUR_DEVELOPMENT)
+  protected CameraDevice openCameraDeviceUserAsync(
+      String cameraId,
+      CameraDevice.StateCallback callback,
+      Executor executor,
+      final int uid,
+      final int oomScoreOffset,
+      boolean overrideToPortrait) {
+    return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.S, maxSdk = Build.VERSION_CODES.TIRAMISU)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,

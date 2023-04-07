@@ -99,6 +99,7 @@ public class ShadowDisplayEventReceiver {
   @Implementation(minSdk = CUR_DEVELOPMENT)
   protected static long nativeInit(
       WeakReference<DisplayEventReceiver> receiver,
+      WeakReference<Object> vsyncEventData,
       MessageQueue msgQueue,
       int vsyncSource,
       int eventRegistration,
