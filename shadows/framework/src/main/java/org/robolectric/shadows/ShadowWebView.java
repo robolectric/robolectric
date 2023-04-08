@@ -569,7 +569,7 @@ public class ShadowWebView extends ShadowViewGroup {
    *
    * @param canGoBack Value to return from {@code android.webkit.WebView#canGoBack()}
    * @deprecated Do not depend on this method as it will be removed in a future update. The
-   *     preferered method is to populate a fake web history to use for going back.
+   *     preferred method is to populate a fake web history to use for going back.
    */
   @Deprecated
   public void setCanGoBack(boolean canGoBack) {
