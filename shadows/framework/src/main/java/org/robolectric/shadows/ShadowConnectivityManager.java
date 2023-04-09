@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.app.PendingIntent;
 import android.net.ConnectivityManager;
 import android.net.ConnectivityManager.OnNetworkActiveListener;
 import android.net.LinkProperties;
@@ -40,6 +41,8 @@ public class ShadowConnectivityManager {
   private final Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<>();
 
   private HashSet<ConnectivityManager.NetworkCallback> networkCallbacks = new HashSet<>();
+  private final HashSet<PendingIntent> networkCallbackPendingIntents = new HashSet<>();
+
   private final Map<Integer, Network> netIdToNetwork = new HashMap<>();
   private final Map<Integer, NetworkInfo> netIdToNetworkInfo = new HashMap<>();
   private Network processBoundNetwork;
@@ -84,6 +87,10 @@ public class ShadowConnectivityManager {
     return networkCallbacks;
   }
 
+  public Set<PendingIntent> getNetworkCallbackPendingIntents() {
+    return networkCallbackPendingIntents;
+  }
+
   /**
    * @return networks and their connectivity status which was reported with {@link
    *     #reportNetworkConnectivity}.
@@ -104,6 +111,11 @@ public class ShadowConnectivityManager {
       ConnectivityManager.NetworkCallback networkCallback,
       Handler handler) {
     networkCallbacks.add(networkCallback);
+  }
+
+  @Implementation(minSdk = M)
+  protected void registerNetworkCallback(NetworkRequest request, PendingIntent pendingIntent) {
+    networkCallbackPendingIntents.add(pendingIntent);
   }
 
   @Implementation(minSdk = LOLLIPOP)
@@ -148,6 +160,16 @@ public class ShadowConnectivityManager {
     }
     if (networkCallbacks.contains(networkCallback)) {
       networkCallbacks.remove(networkCallback);
+    }
+  }
+
+  @Implementation(minSdk = M)
+  protected void unregisterNetworkCallback(PendingIntent pendingIntent) {
+    if (pendingIntent == null) {
+      throw new IllegalArgumentException("Invalid NetworkCallback");
+    }
+    if (networkCallbackPendingIntents.contains(pendingIntent)) {
+      networkCallbackPendingIntents.remove(pendingIntent);
     }
   }
 

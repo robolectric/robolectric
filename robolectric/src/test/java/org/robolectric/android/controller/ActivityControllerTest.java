@@ -389,6 +389,38 @@ public class ActivityControllerTest {
   }
 
   @Test
+  public void isChangingConfiguration() {
+    try (ActivityController<ConfigChangeActivity> controller =
+        Robolectric.buildActivity(ConfigChangeActivity.class)) {
+
+      controller.recreate();
+
+      assertThat(transcript).containsExactly("onPause true", "onStop true", "onDestroy true");
+    }
+  }
+
+  private static class ConfigChangeActivity extends Activity {
+
+    @Override
+    public void onPause() {
+      super.onPause();
+      transcript.add("onPause " + isChangingConfigurations());
+    }
+
+    @Override
+    public void onStop() {
+      super.onStop();
+      transcript.add("onStop " + isChangingConfigurations());
+    }
+
+    @Override
+    public void onDestroy() {
+      super.onDestroy();
+      transcript.add("onDestroy " + isChangingConfigurations());
+    }
+  }
+
+  @Test
   public void windowFocusChanged() {
     controller.setup();
     assertThat(transcript).doesNotContain("finishedOnWindowFocusChanged");

@@ -405,6 +405,11 @@ public class ShadowDisplay {
       throw new UnsupportedOperationException("HDR capabilities are not supported below Android N");
     }
 
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
+      reflector(DisplayModeReflector.class, realObject.getMode())
+          .setSupportedHdrTypes(supportedHdrTypes);
+    }
+
     ShadowDisplayManager.changeDisplay(
         displayId,
         displayConfig -> {
@@ -473,5 +478,11 @@ public class ShadowDisplay {
 
     @Accessor("mFlags")
     void setFlags(int flags);
+  }
+
+  @ForType(Display.Mode.class)
+  interface DisplayModeReflector {
+    @Accessor("mSupportedHdrTypes")
+    void setSupportedHdrTypes(int[] types);
   }
 }

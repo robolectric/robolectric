@@ -38,6 +38,7 @@ public class ShadowSpeechRecognizer {
   private Intent recognizerIntent;
   private RecognitionListener recognitionListener;
   private static boolean isOnDeviceRecognitionAvailable = true;
+  private boolean isRecognizerDestroyed = false;
 
   private /*RecognitionSupportCallback*/ Object recognitionSupportCallback;
   private Executor recognitionSupportExecutor;
@@ -56,10 +57,21 @@ public class ShadowSpeechRecognizer {
     return recognizerIntent;
   }
 
+  /** Returns true iff the destroy method of was invoked for the recognizer. */
+  public boolean isDestroyed() {
+    return isRecognizerDestroyed;
+  }
+
   @Resetter
   public static void reset() {
     latestSpeechRecognizer = null;
     isOnDeviceRecognitionAvailable = true;
+  }
+
+  @Implementation
+  protected void destroy() {
+    isRecognizerDestroyed = true;
+    reflector(SpeechRecognizerReflector.class, realSpeechRecognizer).destroy();
   }
 
   @Implementation
@@ -75,6 +87,10 @@ public class ShadowSpeechRecognizer {
   @Implementation
   protected void startListening(Intent recognizerIntent) {
     this.recognizerIntent = recognizerIntent;
+    // from the implementation of {@link SpeechRecognizer#startListening} it seems that it allows
+    // running the method on an already destroyed object, so we replicate the same by resetting
+    // isRecognizerDestroyed
+    isRecognizerDestroyed = false;
     // the real implementation connects to a service
     // simulate the resulting behavior once the service is connected
     Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -191,6 +207,9 @@ public class ShadowSpeechRecognizer {
     @Static
     @Direct
     SpeechRecognizer createSpeechRecognizer(Context context, ComponentName serviceComponent);
+
+    @Direct
+    void destroy();
 
     @Accessor("mService")
     void setService(IRecognitionService service);

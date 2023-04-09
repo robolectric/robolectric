@@ -769,7 +769,7 @@ public class CppAssetManager2 {
     out_entry_.type_flags = type_flags;
     out_entry_.type_string_ref = new StringPoolRef(best_package.GetTypeStringPool(), best_type.id - 1);
     out_entry_.entry_string_ref =
-        new StringPoolRef(best_package.GetKeyStringPool(), best_entry.key.index);
+        new StringPoolRef(best_package.GetKeyStringPool(), best_entry.getKeyIndex());
     out_entry_.dynamic_ref_table = package_group.dynamic_ref_table;
     out_entry.set(out_entry_);
     return best_cookie;

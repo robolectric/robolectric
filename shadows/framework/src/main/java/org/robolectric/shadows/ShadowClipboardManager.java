@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -42,6 +43,11 @@ public class ShadowClipboardManager {
     for (OnPrimaryClipChangedListener listener : listeners) {
       listener.onPrimaryClipChanged();
     }
+  }
+
+  @Implementation(minSdk = P)
+  protected void clearPrimaryClip() {
+    setPrimaryClip(null);
   }
 
   @Implementation

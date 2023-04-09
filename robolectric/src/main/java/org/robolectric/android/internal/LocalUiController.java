@@ -177,7 +177,6 @@ public class LocalUiController implements UiController {
     Set<IdlingResourceProxy> activeResources = new HashSet<>();
     long startTimeNanos = System.nanoTime();
 
-    shadowMainLooper.idle();
     while (true) {
       // Gather the list of resources that are not idling.
       for (IdlingResourceProxy resource : idlingResources) {
@@ -196,13 +195,13 @@ public class LocalUiController implements UiController {
             });
       }
       // If all are idle then just return, we're done.
-      if (activeResources.isEmpty()) {
+      if (activeResources.isEmpty() && shadowMainLooper.isIdle()) {
         break;
       }
       // While the resources that weren't idle haven't transitioned to idle continue to loop the
       // main looper waiting for any new messages. Once all resources have transitioned to idle loop
       // around again to make sure all resources are idle at the same time.
-      while (!activeResources.isEmpty()) {
+      do {
         long elapsedTimeMs = NANOSECONDS.toMillis(System.nanoTime() - startTimeNanos);
         if (elapsedTimeMs >= idlingResourceErrorTimeoutMs) {
           throw new IdlingResourceTimeoutException(idlingResourceNames(activeResources));
@@ -210,7 +209,7 @@ public class LocalUiController implements UiController {
         // Poll the queue and suspend the thread until we get new messages or the idle transition.
         shadowMainLooper.poll(idlingResourceErrorTimeoutMs - elapsedTimeMs);
         shadowMainLooper.idle();
-      }
+      } while (!activeResources.isEmpty());
     }
   }
 
