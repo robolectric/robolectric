@@ -4,23 +4,16 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
-import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardDismissCallback;
-import android.content.Context;
 import android.content.Intent;
-import android.os.PowerManager;
 import java.util.HashSet;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.ForType;
 
 @Implements(KeyguardManager.class)
 public class ShadowKeyguardManager {
@@ -35,7 +28,6 @@ public class ShadowKeyguardManager {
   private static boolean isDeviceSecure;
   private static Intent confirmFactoryResetCredentialIntent;
   private static KeyguardManager.KeyguardDismissCallback callback;
-  @RealObject private KeyguardManager realObject;
 
   /**
    * For tests, returns the value set via {@link #setinRestrictedInputMode(boolean)}, or false by
@@ -48,27 +40,16 @@ public class ShadowKeyguardManager {
     return inRestrictedInputMode;
   }
 
-  /**
-   * This function invokes onDismissError regardless of whether the activity is visible. To invoke
-   * onDismissCancelled or onDismissSucceeded, call {@link setKeyguardLocked}. If the callback is
-   * null, it will not be invoked.
-   */
   @Implementation(minSdk = O)
   protected void requestDismissKeyguard(
       Activity activity, KeyguardManager.KeyguardDismissCallback callback) {
-    if (shadowOf(activity).getTurnScreenOn()) {
-      shadowOf(
-              (PowerManager)
-                  reflector(KeyguardManagerReflector.class, realObject)
-                      .getContext()
-                      .getSystemService(Context.POWER_SERVICE))
-          .turnScreenOn(true);
-    }
-    if (ShadowKeyguardManager.callback != null) {
-      callback.onDismissError();
-    }
     if (isKeyguardLocked) {
+      if (ShadowKeyguardManager.callback != null) {
+        callback.onDismissError();
+      }
       ShadowKeyguardManager.callback = callback;
+    } else {
+      callback.onDismissError();
     }
   }
 
@@ -294,12 +275,5 @@ public class ShadowKeyguardManager {
     isKeyguardSecure = false;
     isDeviceSecure = false;
     callback = null;
-  }
-
-  /** Reflector interface for {@link KeyguardManager} 's internals. */
-  @ForType(KeyguardManager.class)
-  private interface KeyguardManagerReflector {
-    @Accessor("mContext")
-    Context getContext();
   }
 }
