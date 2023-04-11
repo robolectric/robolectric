@@ -11,6 +11,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationCallback;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationResult;
 import android.hardware.fingerprint.FingerprintManager.CryptoObject;
+import android.os.Build.VERSION_CODES;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.security.Signature;
@@ -111,5 +112,11 @@ public class ShadowFingerprintManagerTest {
     shadowOf(manager).setIsHardwareDetected(true);
 
     assertThat(manager.isHardwareDetected()).isTrue();
+  }
+
+  @Test
+  @Config(sdk = VERSION_CODES.S)
+  public void getSensorPropertiesInternal_notNull() {
+    assertThat(manager.getSensorPropertiesInternal()).isNotNull();
   }
 }
