@@ -40,7 +40,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 
 ```groovy
 testImplementation "junit:junit:4.13.2"
-testImplementation "org.robolectric:robolectric:4.10-alpha-1"
+testImplementation "org.robolectric:robolectric:4.10"
 ```
 
 ## Building And Contributing
@@ -79,18 +79,3 @@ Run compatibility test suites on opening Emulator:
 
     ./gradlew connectedCheck
 
-### Using Snapshots
-
-If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
-
-#### build.gradle:
-
-```groovy
-repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-}
-
-dependencies {
-    testImplementation "org.robolectric:robolectric:4.10-SNAPSHOT"
-}
-```
