@@ -6,6 +6,8 @@ import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -13,6 +15,7 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -27,6 +30,12 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   private static final int AUDIO_ENCODING_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
   private ShadowAudioTrack shadowAudioTrack;
   private byte[] dataWrittenToShadowAudioTrack;
+
+  @After
+  public void tearDown() {
+    // Clean up any static state changes.
+    ShadowAudioTrack.clearDirectPlaybackSupportedEncodings();
+  }
 
   @Test
   public void multichannelAudio_isSupported() {
@@ -170,6 +179,131 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
     int written = audioTrack.write(byteBuffer, 10, WRITE_NON_BLOCKING);
 
     assertThat(written).isEqualTo(ERROR_BAD_VALUE);
+  }
+
+  @Test
+  public void addDirectPlaybackSupport_forPcmEncoding_throws() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_PCM_8BIT));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_PCM_16BIT));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_PCM_24BIT_PACKED));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_PCM_32BIT));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_PCM_FLOAT));
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isDirectPlaybackSupported() {
+    AudioFormat ac3Format = new AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_AC3).build();
+    AudioAttributes audioAttributes = new AudioAttributes.Builder().build();
+
+    assertThat(AudioTrack.isDirectPlaybackSupported(ac3Format, audioAttributes)).isFalse();
+
+    ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_AC3);
+
+    assertThat(AudioTrack.isDirectPlaybackSupported(ac3Format, audioAttributes)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void clearDirectPlaybackSupportedEncodings() {
+    AudioFormat ac3Format = new AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_AC3).build();
+    AudioAttributes audioAttributes = new AudioAttributes.Builder().build();
+    ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_AC3);
+    assertThat(AudioTrack.isDirectPlaybackSupported(ac3Format, audioAttributes)).isTrue();
+
+    ShadowAudioTrack.clearDirectPlaybackSupportedEncodings();
+
+    assertThat(AudioTrack.isDirectPlaybackSupported(ac3Format, audioAttributes)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void createInstance_withSurroundEncodingButNotSupportedDirectly_throws() {
+    AudioFormat surroundAudioFormat =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+
+    assertFalse(
+        AudioTrack.isDirectPlaybackSupported(
+            surroundAudioFormat, new AudioAttributes.Builder().build()));
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            new AudioTrack.Builder()
+                .setAudioFormat(surroundAudioFormat)
+                .setBufferSizeInBytes(65536)
+                .build());
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void write_withEncodingSupportedDirectly_succeeds() {
+    ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_AC3);
+
+    AudioTrack audioTrack =
+        new AudioTrack.Builder()
+            .setAudioFormat(
+                new AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_AC3)
+                    .setSampleRate(48000)
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+                    .build())
+            .setAudioAttributes(new AudioAttributes.Builder().build())
+            .setBufferSizeInBytes(32 * 1024)
+            .build();
+
+    assertThat(audioTrack.write(new byte[128], 0, 128)).isEqualTo(128);
+    assertThat(audioTrack.write(new byte[128], 0, 128, AudioTrack.WRITE_BLOCKING)).isEqualTo(128);
+    assertThat(audioTrack.write(ByteBuffer.allocate(128), 128, AudioTrack.WRITE_BLOCKING))
+        .isEqualTo(128);
+    assertThat(audioTrack.write(ByteBuffer.allocateDirect(128), 128, AudioTrack.WRITE_BLOCKING))
+        .isEqualTo(128);
+    assertThat(audioTrack.write(ByteBuffer.allocate(128), 128, AudioTrack.WRITE_BLOCKING, 0L))
+        .isEqualTo(128);
+    assertThat(audioTrack.write(ByteBuffer.allocateDirect(128), 128, AudioTrack.WRITE_BLOCKING, 0L))
+        .isEqualTo(128);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void write_withEncodingNoLongerSupportedDirectly_returnsErrorDeadObject() {
+    ShadowAudioTrack.addDirectPlaybackSupport(AudioFormat.ENCODING_AC3);
+    AudioTrack audioTrack =
+        new AudioTrack.Builder()
+            .setAudioFormat(
+                new AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_AC3)
+                    .setSampleRate(48000)
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+                    .build())
+            .setAudioAttributes(new AudioAttributes.Builder().build())
+            .setBufferSizeInBytes(32 * 1024)
+            .build();
+
+    ShadowAudioTrack.clearDirectPlaybackSupportedEncodings();
+
+    assertThat(audioTrack.write(new byte[128], 0, 128)).isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
+    assertThat(audioTrack.write(new byte[128], 0, 128, AudioTrack.WRITE_BLOCKING))
+        .isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
+    assertThat(audioTrack.write(ByteBuffer.allocate(128), 128, AudioTrack.WRITE_BLOCKING))
+        .isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
+    assertThat(audioTrack.write(ByteBuffer.allocateDirect(128), 128, AudioTrack.WRITE_BLOCKING))
+        .isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
+    assertThat(audioTrack.write(ByteBuffer.allocateDirect(128), 128, AudioTrack.WRITE_BLOCKING, 0L))
+        .isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
   }
 
   @Override
