@@ -13,12 +13,14 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
+import android.media.PlaybackParams;
 import android.os.Parcel;
 import android.util.Log;
 import java.nio.ByteBuffer;
@@ -74,6 +76,7 @@ public class ShadowAudioTrack {
   private static int minBufferSize = DEFAULT_MIN_BUFFER_SIZE;
 
   private int numBytesReceived;
+  private PlaybackParams playbackParams;
   @RealObject AudioTrack audioTrack;
 
   /**
@@ -255,6 +258,17 @@ public class ShadowAudioTrack {
       return ERROR_DEAD_OBJECT;
     }
     return sizeInBytes;
+  }
+
+  @Implementation(minSdk = M)
+  public void setPlaybackParams(@NonNull PlaybackParams params) {
+    playbackParams = checkNotNull(params, "Illegal null params");
+  }
+
+  @Implementation(minSdk = M)
+  @NonNull
+  protected final PlaybackParams getPlaybackParams() {
+    return playbackParams;
   }
 
   /**

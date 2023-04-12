@@ -4,6 +4,7 @@ import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -13,6 +14,7 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.media.PlaybackParams;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
 import org.junit.After;
@@ -179,6 +181,21 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
     int written = audioTrack.write(byteBuffer, 10, WRITE_NON_BLOCKING);
 
     assertThat(written).isEqualTo(ERROR_BAD_VALUE);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getPlaybackParams_withSetPlaybackParams_returnsSetPlaybackParams() {
+    PlaybackParams playbackParams =
+        new PlaybackParams()
+            .allowDefaults()
+            .setSpeed(1.0f)
+            .setPitch(1.0f)
+            .setAudioFallbackMode(PlaybackParams.AUDIO_FALLBACK_MODE_FAIL);
+    AudioTrack audioTrack = getSampleAudioTrack();
+    audioTrack.setPlaybackParams(playbackParams);
+
+    assertThat(audioTrack.getPlaybackParams()).isEqualTo(playbackParams);
   }
 
   @Test
