@@ -15,7 +15,7 @@ ext {
     axtTestServicesVersion='1.4.2'
 
     // AndroidX versions
-    coreVersion='1.9.0'
+    coreVersion='1.10.0'
     appCompatVersion='1.6.1'
     constraintlayoutVersion='2.1.4'
     windowVersion='1.0.0'
