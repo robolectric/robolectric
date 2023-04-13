@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.R;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -78,6 +79,8 @@ public class ShadowInputManager {
 
   @Resetter
   public static void reset() {
-    ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
+    if (SDK_INT < ShadowBuild.UPSIDE_DOWN_CAKE) {
+      ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
+    }
   }
 }
