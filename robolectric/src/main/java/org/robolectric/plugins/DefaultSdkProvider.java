@@ -82,6 +82,7 @@ public class DefaultSdkProvider implements SdkProvider {
     knownSdks.put(S, new DefaultSdk(S, "12", "7732740", "REL", 9));
     knownSdks.put(S_V2, new DefaultSdk(S_V2, "12.1", "8229987", "REL", 9));
     knownSdks.put(TIRAMISU, new DefaultSdk(TIRAMISU, "13", "9030017", "Tiramisu", 9));
+    knownSdks.put(34, new DefaultSdk(34, "14", "U", "Upside Down Cake", 17));
   }
 
   @Override
