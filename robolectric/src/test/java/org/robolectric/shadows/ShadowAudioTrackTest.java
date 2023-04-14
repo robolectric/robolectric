@@ -17,7 +17,6 @@ import android.media.AudioTrack;
 import android.media.PlaybackParams;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -32,12 +31,6 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
   private static final int AUDIO_ENCODING_FORMAT = AudioFormat.ENCODING_PCM_16BIT;
   private ShadowAudioTrack shadowAudioTrack;
   private byte[] dataWrittenToShadowAudioTrack;
-
-  @After
-  public void tearDown() {
-    // Clean up any static state changes.
-    ShadowAudioTrack.clearDirectPlaybackSupportedEncodings();
-  }
 
   @Test
   public void multichannelAudio_isSupported() {

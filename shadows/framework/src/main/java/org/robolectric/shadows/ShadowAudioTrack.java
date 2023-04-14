@@ -94,10 +94,6 @@ public class ShadowAudioTrack {
    * AudioTrack#isDirectPlaybackSupported(AudioFormat, AudioAttributes)} for an {@link AudioFormat}
    * of the same encoding, will return {@code true}. The {@link AudioAttributes} are ignored.
    *
-   * <p>Note that calling this method mutates static state, so make sure to clear the state with
-   * {@link #clearDirectPlaybackSupportedEncodings()}, for example in a Junit {@link
-   * org.junit.After} method.
-   *
    * @param encoding One of {@link AudioFormat} {@code ENCODING_} values excluding PCM encodings. If
    *     {@code encoding} is PCM, the method will throw an {@link IllegalArgumentException}.
    */
@@ -112,7 +108,6 @@ public class ShadowAudioTrack {
    * Clears all encodings that have been added for direct playback support with {@link
    * #addDirectPlaybackSupport(int)}.
    */
-  @Resetter
   public static void clearDirectPlaybackSupportedEncodings() {
     directSupportedEncodings.clear();
   }
@@ -335,6 +330,7 @@ public class ShadowAudioTrack {
   @Resetter
   public static void resetTest() {
     audioDataWrittenListeners.clear();
+    clearDirectPlaybackSupportedEncodings();
   }
 
   private static boolean isPcm(int encoding) {
