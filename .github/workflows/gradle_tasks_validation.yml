@@ -47,7 +47,7 @@ jobs:
       - uses: gradle/gradle-build-action@v2
 
       - name: Run aggregateDocs
-        run: SKIP_NATIVERUNTIME_BUILD=true ./gradlew clean aggregateDocs # building the native runtime is not required for checking javadoc
+        run: ./gradlew clean aggregateDocs
 
   run_instrumentAll:
     runs-on: ubuntu-20.04
@@ -67,7 +67,7 @@ jobs:
       - uses: gradle/gradle-build-action@v2
 
       - name: Run :preinstrumented:instrumentAll
-        run: SKIP_NATIVERUNTIME_BUILD=true ./gradlew :preinstrumented:instrumentAll
+        run: ./gradlew :preinstrumented:instrumentAll
 
       - name: Run :preinstrumented:instrumentAll with SDK 33
-        run: SKIP_NATIVERUNTIME_BUILD=true PREINSTRUMENTED_SDK_VERSIONS=33 ./gradlew :preinstrumented:instrumentAll
+        run: PREINSTRUMENTED_SDK_VERSIONS=33 ./gradlew :preinstrumented:instrumentAll
