@@ -3,11 +3,9 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.R;
 
 import android.media.AudioAttributes;
-import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.PrimitiveSegment;
-import android.os.vibrator.VibrationEffectSegment;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,10 +23,10 @@ public class ShadowVibrator {
   static boolean cancelled;
   static long milliseconds;
   protected static long[] pattern;
-  protected static final List<VibrationEffectSegment> vibrationEffectSegments = new ArrayList<>();
+  protected static final List<Object> vibrationEffectSegments = new ArrayList<>();
   protected static final List<PrimitiveEffect> primitiveEffects = new ArrayList<>();
   protected static final List<Integer> supportedPrimitives = new ArrayList<>();
-  @Nullable protected static VibrationAttributes vibrationAttributesFromLastVibration;
+  @Nullable protected static Object vibrationAttributesFromLastVibration;
   @Nullable protected static AudioAttributes audioAttributesFromLastVibration;
   static int repeat;
   static boolean hasVibrator = true;
@@ -84,11 +82,6 @@ public class ShadowVibrator {
     return repeat;
   }
 
-  /** Returns the last list of {@link VibrationEffectSegment}. */
-  public List<VibrationEffectSegment> getVibrationEffectSegments() {
-    return vibrationEffectSegments;
-  }
-
   /** Returns the last list of {@link PrimitiveSegment} vibrations in {@link PrimitiveEffect}. */
   @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
   public List<PrimitiveEffect> getPrimitiveSegmentsInPrimitiveEffects() {
@@ -125,9 +118,9 @@ public class ShadowVibrator {
     supportedPrimitives.addAll(primitives);
   }
 
-  /** Returns the {@link VibrationAttributes} from the last vibration. */
+  /** Returns the {@link android.os.VibrationAttributes} from the last vibration. */
   @Nullable
-  public VibrationAttributes getVibrationAttributesFromLastVibration() {
+  public Object getVibrationAttributesFromLastVibration() {
     return vibrationAttributesFromLastVibration;
   }
 
