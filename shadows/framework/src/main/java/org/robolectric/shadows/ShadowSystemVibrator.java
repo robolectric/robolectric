@@ -15,9 +15,9 @@ import android.media.AudioAttributes;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemVibrator;
-import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.vibrator.VibrationEffectSegment;
+import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Optional;
 import org.robolectric.RuntimeEnvironment;
@@ -25,7 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = SystemVibrator.class, isInAndroidSdk = false)
+@Implements(value = SystemVibrator.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowSystemVibrator extends ShadowVibrator {
 
   private final Handler handler = new Handler(Looper.getMainLooper());
@@ -133,11 +133,14 @@ public class ShadowSystemVibrator extends ShadowVibrator {
 
   @Implementation(minSdk = S)
   protected void vibrate(
-      int uid,
-      String opPkg,
-      VibrationEffect effect,
-      String reason,
-      VibrationAttributes attributes) {
+      Object uid, Object opPkg, Object effect, Object reason, Object attributes) {
+    Preconditions.checkArgument(uid instanceof Integer);
+    Preconditions.checkArgument(opPkg == null || opPkg instanceof String);
+    // The SystemVibrator#vibrate needs effect NonNull.
+    Preconditions.checkArgument(effect instanceof VibrationEffect);
+    Preconditions.checkArgument(reason == null || reason instanceof String);
+    // The SystemVibrator#vibrate needs attributes NonNull.
+    Preconditions.checkArgument(attributes instanceof android.os.VibrationAttributes);
     if (effect instanceof VibrationEffect.Composed) {
       VibrationEffect.Composed composedEffect = (VibrationEffect.Composed) effect;
       vibrationAttributesFromLastVibration = attributes;
