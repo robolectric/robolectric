@@ -28,7 +28,6 @@ class CheckApiChangesPlugin implements Plugin<Project> {
             project.checkApiChanges.from.each {
                 project.dependencies.checkApiChangesFrom(it) {
                     transitive = false
-                    force = true
                 }
             }
 
