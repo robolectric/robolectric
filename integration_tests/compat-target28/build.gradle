@@ -14,6 +14,7 @@ spotless {
 
 android {
     compileSdk 28
+    namespace 'org.robolectric.integrationtests.compattarget28'
 
     defaultConfig {
         minSdk 16

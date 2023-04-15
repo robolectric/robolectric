@@ -7,6 +7,7 @@ apply plugin: GradleManagedDevicePlugin
 
 android {
     compileSdk 33
+    namespace 'org.robolectric.integrationtests.ctesque'
 
     defaultConfig {
         minSdk 16

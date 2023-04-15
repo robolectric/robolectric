@@ -5,6 +5,7 @@ apply plugin: AndroidProjectConfigPlugin
 
 android {
     compileSdk 33
+    namespace 'org.robolectric.integrationtests.memoryleaks'
 
     defaultConfig {
         minSdk 16
