@@ -132,48 +132,6 @@ public class ShadowVibratorTest {
 
   @Config(minSdk = S)
   @Test
-  public void getVibrationEffectSegments_composeOnce_shouldReturnSameFragment() {
-    vibrator.vibrate(
-        VibrationEffect.startComposition()
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.5f, /* delay= */ 20)
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.7f, /* delay= */ 50)
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)
-            .compose());
-
-    assertThat(shadowOf(vibrator).getVibrationEffectSegments())
-        .isEqualTo(
-            ImmutableList.of(
-                new PrimitiveSegment(EFFECT_CLICK, /* scale= */ 0.5f, /* delay= */ 20),
-                new PrimitiveSegment(EFFECT_CLICK, /* scale= */ 0.7f, /* delay= */ 50),
-                new PrimitiveSegment(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)));
-  }
-
-  @Config(minSdk = S)
-  @Test
-  public void getVibrationEffectSegments_composeTwice_shouldReturnTheLastComposition() {
-    vibrator.vibrate(
-        VibrationEffect.startComposition()
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.5f, /* delay= */ 20)
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.7f, /* delay= */ 50)
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)
-            .compose());
-    vibrator.vibrate(
-        VibrationEffect.startComposition()
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.4f, /* delay= */ 120)
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150)
-            .addPrimitive(EFFECT_CLICK, /* scale= */ 1f, /* delay= */ 2150)
-            .compose());
-
-    assertThat(shadowOf(vibrator).getVibrationEffectSegments())
-        .isEqualTo(
-            ImmutableList.of(
-                new PrimitiveSegment(EFFECT_CLICK, /* scale= */ 0.4f, /* delay= */ 120),
-                new PrimitiveSegment(EFFECT_CLICK, /* scale= */ 0.9f, /* delay= */ 150),
-                new PrimitiveSegment(EFFECT_CLICK, /* scale= */ 1f, /* delay= */ 2150)));
-  }
-
-  @Config(minSdk = S)
-  @Test
   public void getPrimitiveSegmentsInPrimitiveEffects_composeOnce_shouldReturnSameFragment() {
     vibrator.vibrate(
         VibrationEffect.startComposition()

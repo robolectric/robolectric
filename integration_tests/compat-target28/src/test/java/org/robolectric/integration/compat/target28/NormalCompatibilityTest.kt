@@ -1,7 +1,9 @@
 package org.robolectric.integration.compat.target28
 
 import android.content.Context
+import android.content.Context.VIBRATOR_SERVICE
 import android.os.Build
+import android.os.Vibrator
 import android.speech.SpeechRecognizer
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -46,5 +48,10 @@ class NormalCompatibilityTest {
   @Test
   fun `Create speech recognizer succeed`() {
     assertThat(SpeechRecognizer.createSpeechRecognizer(application)).isNotNull()
+  }
+
+  @Test
+  fun `Get default Vibrator succeed`() {
+    assertThat(application.getSystemService(VIBRATOR_SERVICE) as Vibrator).isNotNull()
   }
 }
