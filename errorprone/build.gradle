@@ -24,7 +24,7 @@ dependencies {
     implementation "com.google.errorprone:error_prone_refaster:$errorproneVersion"
     implementation "com.google.errorprone:error_prone_check_api:$errorproneVersion"
     compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
-    compileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
+    compileOnly(AndroidSdk.MAX_SDK.coordinates)
 
     annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
     annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
@@ -41,5 +41,5 @@ dependencies {
     testImplementation("com.google.errorprone:error_prone_test_helpers:${errorproneVersion}") {
         exclude group: 'junit', module: 'junit' // because it depends on a snapshot!?
     }
-    testCompileOnly(AndroidSdk.MAX_SDK.coordinates) { force = true }
+    testCompileOnly(AndroidSdk.MAX_SDK.coordinates)
 }

@@ -23,7 +23,7 @@ dependencies {
     // We should keep httpclient version for low level API compatibility.
     earlyRuntime "org.apache.httpcomponents:httpcore:4.0.1"
     api "org.apache.httpcomponents:httpclient:4.0.3"
-    compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
+    compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)
 
     testImplementation project(":robolectric")
     testImplementation "junit:junit:${junitVersion}"
@@ -31,7 +31,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:${mockitoVersion}"
     testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
 
-    testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates) { force = true }
+    testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)
     testRuntimeOnly AndroidSdk.S.coordinates
 }
 
