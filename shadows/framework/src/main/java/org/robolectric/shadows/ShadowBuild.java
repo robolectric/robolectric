@@ -22,6 +22,8 @@ public class ShadowBuild {
   private static String radioVersionOverride = null;
   private static String serialOverride = Build.UNKNOWN;
 
+  public static final int UPSIDE_DOWN_CAKE = 34;
+
   /**
    * Sets the value of the {@link Build#DEVICE} field.
    *
