@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -63,7 +62,7 @@ public class ShadowSoundPool {
     return 1;
   }
 
-  @Implementation(minSdk = CUR_DEVELOPMENT)
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
   protected int _play(
       int soundID,
       float leftVolume,

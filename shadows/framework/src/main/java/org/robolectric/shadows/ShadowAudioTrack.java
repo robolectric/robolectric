@@ -4,7 +4,6 @@ import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -200,7 +199,7 @@ public class ShadowAudioTrack {
     return AudioTrack.SUCCESS;
   }
 
-  @Implementation(minSdk = CUR_DEVELOPMENT)
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,

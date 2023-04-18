@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -70,7 +69,7 @@ public class ShadowImageReader {
     return nativeImageSetup(image);
   }
 
-  @Implementation(minSdk = CUR_DEVELOPMENT)
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
   protected int nativeImageSetup(Object /* Image */ image) {
     return nativeImageSetup((Image) image);
   }
