@@ -263,6 +263,13 @@ public class ShadowTelephonyManager {
   }
 
   /** Call state may be specified via {@link #setCallState(int)}. */
+  @Implementation(minSdk = S)
+  protected int getCallStateForSubscription() {
+    checkReadPhoneStatePermission();
+    return callState;
+  }
+
+  /** Call state may be specified via {@link #setCallState(int)}. */
   @Implementation
   protected int getCallState() {
     checkReadPhoneStatePermission();
