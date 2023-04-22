@@ -2,11 +2,11 @@ package org.robolectric.android;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.google.common.truth.TruthJUnit.assume;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import android.app.Application;
 import android.content.res.XmlResourceParser;
@@ -276,7 +276,7 @@ public class XmlResourceParserImplTest {
 
   @Test
   public void testIsWhitespace() throws Exception {
-    assumeTrue(RuntimeEnvironment.useLegacyResources());
+    assume().that(RuntimeEnvironment.useLegacyResources()).isTrue();
 
     XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
     assertThat(parserImpl.isWhitespace("bar")).isFalse();

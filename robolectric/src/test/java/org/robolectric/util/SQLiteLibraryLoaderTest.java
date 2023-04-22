@@ -1,8 +1,8 @@
 package org.robolectric.util;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeTrue;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.After;
@@ -56,7 +56,7 @@ public class SQLiteLibraryLoaderTest {
 
   @Test
   public void shouldExtractNativeLibrary() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     assertThat(loader.isLoaded()).isFalse();
     loader.doLoad();
     assertThat(loader.isLoaded()).isTrue();
