@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
@@ -46,7 +46,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
-    assumeTrue(!useLegacy());
+    assume().that(useLegacy()).isFalse();
     expectedException.expect(FileNotFoundException.class);
     expectedException.expectMessage(
         "This file can not be opened as a file descriptor; it is probably compressed");
@@ -79,7 +79,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
-    assumeTrue(useLegacy());
+    assume().that(useLegacy()).isTrue();
 
     expectedException.expect(IOException.class);
     expectedException.expectMessage(
@@ -90,7 +90,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
-    assumeTrue(useLegacy());
+    assume().that(useLegacy()).isTrue();
 
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Resource ID #0xffffffff");
@@ -102,7 +102,7 @@ public class ShadowAssetManagerTest {
   @Test
   public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched()
       throws IOException {
-    if (!useLegacy()) return;
+    assume().that(useLegacy()).isTrue();
     expectedException.expect(Resources.NotFoundException.class);
     expectedException.expectMessage("Resource ID #0xffffffff");
 
@@ -113,8 +113,7 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "mdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
-    if (!useLegacy()) return;
-
+    assume().that(useLegacy()).isTrue();
     InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(8141);
   }
@@ -122,8 +121,7 @@ public class ShadowAssetManagerTest {
   @Test
   @Config(qualifiers = "hdpi")
   public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
-    if (!useLegacy()) return;
-
+    assume().that(useLegacy()).isTrue();
     InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
     assertThat(countBytes(inputStream)).isEqualTo(23447);
   }
@@ -178,8 +176,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void attrsToTypedArray_shouldAllowMockedAttributeSets() {
-    if (!useLegacy()) return;
-
+    assume().that(useLegacy()).isTrue();
     AttributeSet mockAttributeSet = mock(AttributeSet.class);
     when(mockAttributeSet.getAttributeCount()).thenReturn(1);
     when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
@@ -191,7 +188,7 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage() {
-    if (!useLegacy()) return;
+    assume().that(useLegacy()).isTrue();
     expectedException.expect(RuntimeException.class);
     expectedException.expectMessage(
         "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme in theme with applied"

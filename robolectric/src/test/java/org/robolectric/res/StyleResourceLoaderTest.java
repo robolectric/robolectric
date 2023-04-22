@@ -2,7 +2,7 @@ package org.robolectric.res;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.util.TestUtil.sdkResources;
 
 import org.junit.Before;
@@ -18,14 +18,16 @@ public class StyleResourceLoaderTest {
 
   @Before
   public void setUp() throws Exception {
-    assumeTrue(RuntimeEnvironment.useLegacyResources());
+    assume().that(RuntimeEnvironment.useLegacyResources()).isTrue();
     ResourcePath resourcePath = sdkResources(JELLY_BEAN);
     resourceTable = new ResourceTableFactory().newResourceTable("android", resourcePath);
   }
 
   @Test
   public void testStyleDataIsLoadedCorrectly() throws Exception {
-    TypedResource typedResource = resourceTable.getValue(new ResName("android", "style", "Theme_Holo"), new ResTable_config());
+    TypedResource typedResource =
+        resourceTable.getValue(
+            new ResName("android", "style", "Theme_Holo"), new ResTable_config());
     StyleData styleData = (StyleData) typedResource.getData();
     assertThat(styleData.getName()).isEqualTo("Theme_Holo");
     assertThat(styleData.getParent()).isEqualTo("Theme");

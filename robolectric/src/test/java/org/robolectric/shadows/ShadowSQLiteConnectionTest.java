@@ -3,8 +3,8 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 import static org.robolectric.annotation.SQLiteMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLegacySQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
@@ -64,7 +64,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void testSqlConversion() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     assertThat(convertSQLWithLocalizedUnicodeCollator("select * from `routine`"))
         .isEqualTo("select * from `routine`");
 
@@ -88,7 +88,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void testSQLWithLocalizedOrUnicodeCollatorShouldBeSortedAsNoCase() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     database.execSQL("insert into routine(name) values ('الصحافة اليدوية')");
     database.execSQL("insert into routine(name) values ('Hand press 1')");
     database.execSQL("insert into routine(name) values ('hand press 2')");
@@ -116,28 +116,28 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void nativeOpen_addsConnectionToPool() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     assertThat(conn).isNotNull();
     assertWithMessage("open").that(conn.isOpen()).isTrue();
   }
 
   @Test
   public void nativeClose_closesConnection() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     ShadowLegacySQLiteConnection.nativeClose(ptr);
     assertWithMessage("open").that(conn.isOpen()).isFalse();
   }
 
   @Test
   public void reset_closesConnection() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     ShadowLegacySQLiteConnection.reset();
     assertWithMessage("open").that(conn.isOpen()).isFalse();
   }
 
   @Test
   public void reset_clearsConnectionCache() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     final Map<Long, SQLiteConnection> connectionsMap =
         ReflectionHelpers.getField(connections, "connectionsMap");
 
@@ -149,7 +149,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void reset_clearsStatementCache() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     final Map<Long, SQLiteStatement> statementsMap =
         ReflectionHelpers.getField(connections, "statementsMap");
 
@@ -161,7 +161,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void error_resultsInSpecificExceptionWithCause() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     try {
       database.execSQL("insert into routine(name) values ('Hand press 1')");
       ContentValues values = new ContentValues(1);
@@ -178,7 +178,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void interruption_doesNotConcurrentlyModifyDatabase() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     Thread.currentThread().interrupt();
     try {
       database.execSQL("insert into routine(name) values ('الصحافة اليدوية')");
@@ -190,7 +190,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void test_setUseInMemoryDatabase() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     assertThat(conn.isMemoryDatabase()).isFalse();
     ShadowSQLiteConnection.setUseInMemoryDatabase(true);
     SQLiteDatabase inMemoryDb = createDatabase("in_memory.db");
@@ -201,7 +201,7 @@ public class ShadowSQLiteConnectionTest {
 
   @Test
   public void cancel_shouldCancelAllStatements() {
-    assumeTrue(SQLiteLibraryLoader.isOsSupported());
+    assume().that(SQLiteLibraryLoader.isOsSupported()).isTrue();
     SQLiteStatement statement1 =
         database.compileStatement("insert into routine(name) values ('Hand press 1')");
     SQLiteStatement statement2 =

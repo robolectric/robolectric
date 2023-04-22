@@ -3,9 +3,9 @@ package org.robolectric.android;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.animation.Animator;
@@ -31,7 +31,7 @@ public class DrawableResourceLoaderTest {
 
   @Before
   public void setup() throws Exception {
-    assumeTrue(useLegacy());
+    assume().that(useLegacy()).isTrue();
     resources = ApplicationProvider.getApplicationContext().getResources();
   }
 

@@ -2,7 +2,7 @@ package org.robolectric.nativeruntime;
 
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static com.google.common.truth.TruthJUnit.assume;
 
 import android.database.CursorWindow;
 import android.database.sqlite.SQLiteDatabase;
@@ -33,8 +33,8 @@ public final class DefaultNativeRuntimeLoaderTest {
 
   @Test
   public void extracts_fontsAndIcuData() {
-    assumeTrue(hasResource("fonts"));
-    assumeTrue(hasResource("icu/icudt68l.dat"));
+    assume().that(hasResource("fonts")).isTrue();
+    assume().that(hasResource("icu/icudt68l.dat")).isTrue();
     DefaultNativeRuntimeLoader defaultNativeRuntimeLoader = new DefaultNativeRuntimeLoader();
     defaultNativeRuntimeLoader.ensureLoaded();
     // Check that extraction of some key files worked.
