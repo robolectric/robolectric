@@ -11,5 +11,5 @@ dependencies {
     testImplementation "com.google.truth:truth:${truthVersion}"
     testImplementation "org.conscrypt:conscrypt-openjdk-uber:2.5.2"
     testImplementation "com.squareup.okhttp3:okhttp"
-    testImplementation platform("com.squareup.okhttp3:okhttp-bom:4.10.0")
+    testImplementation platform("com.squareup.okhttp3:okhttp-bom:4.11.0")
 }
