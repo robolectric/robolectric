@@ -26,7 +26,7 @@ public class ShadowBuild {
    * Temporary constant for VERSION_CODES.UPSIDE_DOWN_CAKE. Will be removed and replaced once the
    * constant is available upstream.
    */
-  public static final int UPSIDE_DOWN_CAKE = 10000;
+  public static final int UPSIDE_DOWN_CAKE = 34;
 
   /**
    * Sets the value of the {@link Build#DEVICE} field.
