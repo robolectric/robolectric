@@ -994,8 +994,70 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void isOffloadSupported_withoutSupport() {
+    assertThat(
+            AudioManager.isOffloadedPlaybackSupported(
+                new AudioFormat.Builder().setEncoding(AudioFormat.ENCODING_AC3).build(),
+                new AudioAttributes.Builder().build()))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q, maxSdk = R)
+  public void isOffloadSupported_withSetOffloadSupported() {
+    AudioFormat format =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+    AudioAttributes attributes = new AudioAttributes.Builder().build();
+    assertThat(AudioManager.isOffloadedPlaybackSupported(format, attributes)).isFalse();
+
+    ShadowAudioSystem.setOffloadSupported(format, attributes, true);
+
+    assertThat(AudioManager.isOffloadedPlaybackSupported(format, attributes)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q, maxSdk = R)
+  public void isOffloadSupported_withSetOffloadSupportedAddedAndRemoved() {
+    AudioFormat format =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+    AudioAttributes attributes = new AudioAttributes.Builder().build();
+    ShadowAudioSystem.setOffloadSupported(format, attributes, true);
+    assertThat(AudioManager.isOffloadedPlaybackSupported(format, attributes)).isTrue();
+
+    ShadowAudioSystem.setOffloadSupported(format, attributes, false);
+
+    assertThat(AudioManager.isOffloadedPlaybackSupported(format, attributes)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = S)
-  public void getPlaybackOffloadSupport_withSetDirectPlaybackSupport_returnsOffloadSupported() {
+  public void isOffloadSupported_withSetOffloadPlaybackSupport() {
+    AudioFormat format =
+        new AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_AC3)
+            .setSampleRate(48000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_5POINT1)
+            .build();
+    AudioAttributes attributes = new AudioAttributes.Builder().build();
+    assertThat(AudioManager.isOffloadedPlaybackSupported(format, attributes)).isFalse();
+
+    ShadowAudioSystem.setOffloadPlaybackSupport(format, attributes, AudioSystem.OFFLOAD_SUPPORTED);
+
+    assertThat(AudioManager.isOffloadedPlaybackSupported(format, attributes)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlaybackOffloadSupport_withSetOffloadSupport_returnsOffloadSupported() {
     AudioFormat audioFormat =
         new AudioFormat.Builder()
             .setSampleRate(48_000)
@@ -1008,7 +1070,7 @@ public class ShadowAudioManagerTest {
             .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .build();
-    ShadowAudioSystem.setDirectPlaybackSupport(
+    ShadowAudioSystem.setOffloadPlaybackSupport(
         audioFormat, audioAttributes, AudioSystem.OFFLOAD_SUPPORTED);
 
     int playbackOffloadSupport =
@@ -1038,27 +1100,6 @@ public class ShadowAudioManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void getPlaybackOffloadSupport_withDifferentAudioAttrUsage_returnsOffloadNotSupported() {
-    AudioFormat audioFormat =
-        new AudioFormat.Builder()
-            .setSampleRate(48_000)
-            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
-            .build();
-    AudioAttributes audioAttributes =
-        new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build();
-    ShadowAudioSystem.setDirectPlaybackSupport(
-        audioFormat, audioAttributes, AudioSystem.OFFLOAD_SUPPORTED);
-
-    audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build();
-    int playbackOffloadSupport =
-        AudioManager.getPlaybackOffloadSupport(audioFormat, audioAttributes);
-
-    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.OFFLOAD_NOT_SUPPORTED);
-  }
-
-  @Test
-  @Config(minSdk = S)
   public void getPlaybackOffloadSupport_withSameAudioAttrUsage_returnsOffloadSupported() {
     AudioFormat audioFormat =
         new AudioFormat.Builder()
@@ -1072,7 +1113,7 @@ public class ShadowAudioManagerTest {
             .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .build();
-    ShadowAudioSystem.setDirectPlaybackSupport(
+    ShadowAudioSystem.setOffloadPlaybackSupport(
         audioFormat, audioAttributes, AudioSystem.OFFLOAD_SUPPORTED);
 
     AudioAttributes audioAttributes2 =

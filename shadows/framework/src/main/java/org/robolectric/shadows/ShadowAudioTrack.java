@@ -12,6 +12,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
@@ -20,8 +21,12 @@ import android.media.AudioFormat;
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
 import android.media.PlaybackParams;
+import android.os.Build.VERSION;
 import android.os.Parcel;
 import android.util.Log;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashSet;
@@ -67,7 +72,11 @@ public class ShadowAudioTrack {
   private static final int AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED = -20;
 
   private static final String TAG = "ShadowAudioTrack";
-  private static final Set<Integer> directSupportedEncodings =
+  /** Direct playback support checked from {@link #native_is_direct_output_supported}. */
+  private static final Multimap<AudioFormatInfo, AudioAttributesInfo> directSupportedFormats =
+      Multimaps.synchronizedMultimap(HashMultimap.create());
+  /** Non-PCM encodings allowed for creating an AudioTrack instance. */
+  private static final Set<Integer> allowedNonPcmEncodings =
       Collections.synchronizedSet(new HashSet<>());
 
   private static final List<OnAudioDataWrittenListener> audioDataWrittenListeners =
@@ -89,26 +98,58 @@ public class ShadowAudioTrack {
   }
 
   /**
-   * Adds support for direct playback of a non-PCM {@code encoding}. As a result, calling {@link
-   * AudioTrack#isDirectPlaybackSupported(AudioFormat, AudioAttributes)} for an {@link AudioFormat}
-   * of the same encoding, will return {@code true}. The {@link AudioAttributes} are ignored.
+   * Adds support for direct playback for the pair of {@link AudioFormat} and {@link
+   * AudioAttributes} where the format encoding must be non-PCM. Calling {@link
+   * AudioTrack#isDirectPlaybackSupported(AudioFormat, AudioAttributes)} will return {@code true}
+   * for matching {@link AudioFormat} and {@link AudioAttributes}. The matching is performed against
+   * the format's {@linkplain AudioFormat#getEncoding() encoding}, {@linkplain
+   * AudioFormat#getSampleRate() sample rate}, {@linkplain AudioFormat#getChannelMask() channel
+   * mask} and {@linkplain AudioFormat#getChannelIndexMask() channel index mask}, and the
+   * attribute's {@linkplain AudioAttributes#getContentType() content type}, {@linkplain
+   * AudioAttributes#getUsage() usage} and {@linkplain AudioAttributes#getFlags() flags}.
    *
-   * @param encoding One of {@link AudioFormat} {@code ENCODING_} values excluding PCM encodings. If
-   *     {@code encoding} is PCM, the method will throw an {@link IllegalArgumentException}.
+   * @param format The {@link AudioFormat}, which must be of a non-PCM encoding. If the encoding is
+   *     PCM, the method will throw an {@link IllegalArgumentException}.
+   * @param attr The {@link AudioAttributes}.
    */
-  public static void addDirectPlaybackSupport(int encoding) {
-    if (isPcm(encoding)) {
-      throw new IllegalArgumentException("Encoding is PCM: " + encoding);
-    }
-    directSupportedEncodings.add(encoding);
+  public static void addDirectPlaybackSupport(
+      @NonNull AudioFormat format, @NonNull AudioAttributes attr) {
+    checkNotNull(format);
+    checkNotNull(attr);
+    checkArgument(!isPcm(format.getEncoding()));
+
+    directSupportedFormats.put(
+        new AudioFormatInfo(
+            format.getEncoding(),
+            format.getSampleRate(),
+            format.getChannelMask(),
+            format.getChannelIndexMask()),
+        new AudioAttributesInfo(attr.getContentType(), attr.getUsage(), attr.getFlags()));
   }
 
   /**
    * Clears all encodings that have been added for direct playback support with {@link
-   * #addDirectPlaybackSupport(int)}.
+   * #addDirectPlaybackSupport}.
    */
-  public static void clearDirectPlaybackSupportedEncodings() {
-    directSupportedEncodings.clear();
+  public static void clearDirectPlaybackSupportedFormats() {
+    directSupportedFormats.clear();
+  }
+
+  /**
+   * Add a non-PCM encoding for which {@link AudioTrack} instances are allowed to be created.
+   *
+   * @param encoding One of {@link AudioFormat} {@code ENCODING_} constants that represents a
+   *     non-PCM encoding. If {@code encoding} is PCM, this method throws an {@link
+   *     IllegalArgumentException}.
+   */
+  public static void addAllowedNonPcmEncoding(int encoding) {
+    checkArgument(!isPcm(encoding));
+    allowedNonPcmEncodings.add(encoding);
+  }
+
+  /** Clears all encodings that have been added with {@link #addAllowedNonPcmEncoding(int)}. */
+  public static void clearAllowedNonPcmEncodings() {
+    allowedNonPcmEncodings.clear();
   }
 
   @Implementation(minSdk = N, maxSdk = P)
@@ -127,7 +168,9 @@ public class ShadowAudioTrack {
       int contentType,
       int usage,
       int flags) {
-    return directSupportedEncodings.contains(encoding);
+    return directSupportedFormats.containsEntry(
+        new AudioFormatInfo(encoding, sampleRate, channelMask, channelIndexMask),
+        new AudioAttributesInfo(contentType, usage, flags));
   }
 
   /** Returns a predefined or default minimum buffer size. Audio format and config are neglected. */
@@ -150,7 +193,8 @@ public class ShadowAudioTrack {
       int[] sessionId,
       long nativeAudioTrack,
       boolean offload) {
-    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+    // If offload, AudioTrack.Builder.build() has checked offload support via AudioSystem.
+    if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
     return AudioTrack.SUCCESS;
@@ -171,7 +215,8 @@ public class ShadowAudioTrack {
       boolean offload,
       int encapsulationMode,
       Object tunerConfiguration) {
-    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+    // If offload, AudioTrack.Builder.build() has checked offload support via AudioSystem.
+    if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
     return AudioTrack.SUCCESS;
@@ -193,7 +238,8 @@ public class ShadowAudioTrack {
       int encapsulationMode,
       Object tunerConfiguration,
       String opPackageName) {
-    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+    // If offload, AudioTrack.Builder.build() has checked offload support via AudioSystem.
+    if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
     return AudioTrack.SUCCESS;
@@ -216,7 +262,8 @@ public class ShadowAudioTrack {
       int encapsulationMode,
       Object tunerConfiguration,
       @NonNull String opPackageName) {
-    if (!isPcm(audioFormat) && !directSupportedEncodings.contains(audioFormat)) {
+    // If offload, AudioTrack.Builder.build() has checked offload support via AudioSystem.
+    if (!offload && !isPcm(audioFormat) && !allowedNonPcmEncodings.contains(audioFormat)) {
       return AUDIOTRACK_ERROR_SETUP_NATIVEINITFAILED;
     }
     return AudioTrack.SUCCESS;
@@ -232,23 +279,10 @@ public class ShadowAudioTrack {
   protected final int native_write_byte(
       byte[] audioData, int offsetInBytes, int sizeInBytes, int format, boolean isBlocking) {
     int encoding = audioTrack.getAudioFormat();
-    if (!isPcm(encoding) && !directSupportedEncodings.contains(encoding)) {
-      return ERROR_DEAD_OBJECT;
-    }
-    return sizeInBytes;
-  }
-
-  /**
-   * Returns the number of bytes to write. This method returns immediately even with {@link
-   * AudioTrack#WRITE_BLOCKING}. If the {@link AudioTrack} instance was created with a non-PCM
-   * encoding and the encoding can no longer be played directly, the method will return {@link
-   * AudioTrack#ERROR_DEAD_OBJECT};
-   */
-  @Implementation(minSdk = Q)
-  protected int native_write_native_bytes(
-      ByteBuffer audioData, int positionInBytes, int sizeInBytes, int format, boolean blocking) {
-    int encoding = audioTrack.getAudioFormat();
-    if (!isPcm(encoding) && !directSupportedEncodings.contains(encoding)) {
+    // Assume that offload support does not change during the lifetime of the instance.
+    if ((VERSION.SDK_INT < 29 || !audioTrack.isOffloadedPlayback())
+        && !isPcm(encoding)
+        && !allowedNonPcmEncodings.contains(encoding)) {
       return ERROR_DEAD_OBJECT;
     }
     return sizeInBytes;
@@ -275,7 +309,10 @@ public class ShadowAudioTrack {
   @Implementation(minSdk = LOLLIPOP)
   protected int write(@NonNull ByteBuffer audioData, int sizeInBytes, @WriteMode int writeMode) {
     int encoding = audioTrack.getAudioFormat();
-    if (!isPcm(encoding) && !directSupportedEncodings.contains(encoding)) {
+    // Assume that offload support does not change during the lifetime of the instance.
+    if ((VERSION.SDK_INT < 29 || !audioTrack.isOffloadedPlayback())
+        && !isPcm(encoding)
+        && !allowedNonPcmEncodings.contains(encoding)) {
       return ERROR_DEAD_OBJECT;
     }
     if (writeMode != WRITE_BLOCKING && writeMode != WRITE_NON_BLOCKING) {
@@ -329,7 +366,8 @@ public class ShadowAudioTrack {
   @Resetter
   public static void resetTest() {
     audioDataWrittenListeners.clear();
-    clearDirectPlaybackSupportedEncodings();
+    clearDirectPlaybackSupportedFormats();
+    clearAllowedNonPcmEncodings();
   }
 
   private static boolean isPcm(int encoding) {
@@ -342,6 +380,89 @@ public class ShadowAudioTrack {
         return true;
       default:
         return false;
+    }
+  }
+
+  /**
+   * Specific fields from {@link AudioFormat} that are used for detection of direct playback
+   * support.
+   *
+   * @see #native_is_direct_output_supported
+   */
+  private static class AudioFormatInfo {
+    private final int encoding;
+    private final int sampleRate;
+    private final int channelMask;
+    private final int channelIndexMask;
+
+    public AudioFormatInfo(int encoding, int sampleRate, int channelMask, int channelIndexMask) {
+      this.encoding = encoding;
+      this.sampleRate = sampleRate;
+      this.channelMask = channelMask;
+      this.channelIndexMask = channelIndexMask;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof AudioFormatInfo)) {
+        return false;
+      }
+
+      AudioFormatInfo other = (AudioFormatInfo) o;
+      return encoding == other.encoding
+          && sampleRate == other.sampleRate
+          && channelMask == other.channelMask
+          && channelIndexMask == other.channelIndexMask;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = encoding;
+      result = 31 * result + sampleRate;
+      result = 31 * result + channelMask;
+      result = 31 * result + channelIndexMask;
+      return result;
+    }
+  }
+
+  /**
+   * Specific fields from {@link AudioAttributes} used for detection of direct playback support.
+   *
+   * @see #native_is_direct_output_supported
+   */
+  private static class AudioAttributesInfo {
+    private final int contentType;
+    private final int usage;
+    private final int flags;
+
+    public AudioAttributesInfo(int contentType, int usage, int flags) {
+      this.contentType = contentType;
+      this.usage = usage;
+      this.flags = flags;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof AudioAttributesInfo)) {
+        return false;
+      }
+
+      AudioAttributesInfo other = (AudioAttributesInfo) o;
+      return contentType == other.contentType && usage == other.usage && flags == other.flags;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = contentType;
+      result = 31 * result + usage;
+      result = 31 * result + flags;
+      return result;
     }
   }
 }
