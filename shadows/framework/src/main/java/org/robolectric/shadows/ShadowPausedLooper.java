@@ -317,6 +317,23 @@ public final class ShadowPausedLooper extends ShadowLooper {
   }
 
   /**
+   * A future change will make Robolectric put Loopers that throw uncaught exceptions in their loop
+   * method into an error state, where any future posting to the looper's queue will throw an error.
+   *
+   * <p>This API allows you to disable this behavior. Note this is a permanent setting - it is not
+   * reset between tests.
+   *
+   * <p>Currently this method is a no-op, but will be implemented in a forthcoming change.
+   *
+   * @deprecated this method only exists to accommodate legacy tests with preexisting issues.
+   *     Silently discarding exceptions is not recommended, and can lead to deadlocks.
+   */
+  @Deprecated
+  public static void setIgnoreUncaughtExceptions(boolean shouldIgnore) {
+    // stub, to be implemented
+  }
+
+  /**
    * If the given {@code lastMessageRead} is not null and the queue is now idle, get the idle
    * handlers and run them. This synchronization mirrors what happens in the real message queue
    * next() method, but does not block after running the idle handlers.
