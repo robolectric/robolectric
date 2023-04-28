@@ -50,6 +50,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Config.Implementation;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
+import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.AndroidSandbox.TestEnvironmentSpec;
 import org.robolectric.internal.ResourcesMode;
 import org.robolectric.internal.ShadowProvider;
@@ -163,10 +164,10 @@ public class RobolectricTestRunnerTest {
     assertThat(events)
         .containsExactly(
             "started: first",
-            "failure: ShadowActivityThread.reset: ActivityThread not set",
+            "failure: fake error in setUpApplicationState",
             "finished: first",
             "started: second",
-            "failure: ShadowActivityThread.reset: ActivityThread not set",
+            "failure: fake error in setUpApplicationState",
             "finished: second")
         .inOrder();
   }
@@ -337,6 +338,9 @@ public class RobolectricTestRunnerTest {
     @Override
     public void setUpApplicationState(Method method,
         Configuration configuration, AndroidManifest appManifest) {
+      // ConfigurationRegistry.instance is required for resetters.
+      Config config = configuration.get(Config.class);
+      ConfigurationRegistry.instance = new ConfigurationRegistry(configuration.map());
       throw new RuntimeException("fake error in setUpApplicationState");
     }
   }
