@@ -818,6 +818,24 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void setDataEnabledForReasonChangesIsDataEnabledForReason() {
+    int correctReason = TelephonyManager.DATA_ENABLED_REASON_POLICY;
+    int incorrectReason = TelephonyManager.DATA_ENABLED_REASON_USER;
+
+    assertThat(telephonyManager.isDataEnabledForReason(correctReason)).isTrue();
+    assertThat(telephonyManager.isDataEnabledForReason(incorrectReason)).isTrue();
+
+    telephonyManager.setDataEnabledForReason(correctReason, false);
+    assertThat(telephonyManager.isDataEnabledForReason(correctReason)).isFalse();
+    assertThat(telephonyManager.isDataEnabledForReason(incorrectReason)).isTrue();
+
+    telephonyManager.setDataEnabledForReason(correctReason, true);
+    assertThat(telephonyManager.isDataEnabledForReason(correctReason)).isTrue();
+    assertThat(telephonyManager.isDataEnabledForReason(incorrectReason)).isTrue();
+  }
+
+  @Test
   public void setDataStateChangesDataState() {
     assertThat(telephonyManager.getDataState()).isEqualTo(TelephonyManager.DATA_DISCONNECTED);
     shadowOf(telephonyManager).setDataState(TelephonyManager.DATA_CONNECTING);

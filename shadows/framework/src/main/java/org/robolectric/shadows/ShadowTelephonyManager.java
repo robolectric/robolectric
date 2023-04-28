@@ -63,9 +63,11 @@ import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -141,6 +143,7 @@ public class ShadowTelephonyManager {
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
+  private final Set<Integer> dataDisabledReasons = new HashSet<>();
   private boolean isRttSupported;
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
   private boolean hearingAidCompatibilitySupported = false;
@@ -1222,12 +1225,39 @@ public class ShadowTelephonyManager {
   }
 
   /**
+   * Implementation for {@link TelephonyManager#isDataEnabledForReason}.
+   *
+   * @return True by default, unless reason is set to false with {@link
+   *     TelephonyManager#setDataEnabledForReason}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.S)
+  protected boolean isDataEnabledForReason(@TelephonyManager.DataEnabledReason int reason) {
+    checkReadPhoneStatePermission();
+    return !dataDisabledReasons.contains(reason);
+  }
+
+  /**
    * Implementation for {@link TelephonyManager#setDataEnabled}. Marked as public in order to allow
    * it to be used as a test API.
    */
   @Implementation(minSdk = Build.VERSION_CODES.O)
   public void setDataEnabled(boolean enabled) {
-    dataEnabled = enabled;
+    setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, enabled);
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#setDataEnabledForReason}. Marked as public in order
+   * to allow it to be used as a test API.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.S)
+  public void setDataEnabledForReason(
+      @TelephonyManager.DataEnabledReason int reason, boolean enabled) {
+    if (enabled) {
+      dataDisabledReasons.remove(reason);
+    } else {
+      dataDisabledReasons.add(reason);
+    }
+    dataEnabled = dataDisabledReasons.isEmpty();
   }
 
   /**
