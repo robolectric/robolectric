@@ -225,4 +225,18 @@ public class SQLiteDatabaseTest {
     c.close();
     assertThat(sorted).containsExactly("aaa", "abc", "ABC", "bbb").inOrder();
   }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
+  public void regex_selection() {
+    ContentValues values = new ContentValues();
+    values.put("first_column", "test");
+    database.insert("table_name", null, values);
+    String select = "first_column regexp ?";
+    String[] selectArgs = {
+      "test",
+    };
+    assertThat(database.delete("table_name", select, selectArgs)).isEqualTo(1);
+  }
 }
