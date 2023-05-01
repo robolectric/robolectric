@@ -66,7 +66,7 @@ dependencies {
   api project(":utils:reflector")
   api "com.google.guava:guava:$guavaJREVersion"
 
-  implementation "org.robolectric:nativeruntime-dist-compat:1.0.0"
+  implementation "org.robolectric:nativeruntime-dist-compat:1.0.1"
 
   annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
   compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
