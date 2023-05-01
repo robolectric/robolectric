@@ -19,7 +19,7 @@ ext {
     appCompatVersion='1.6.1'
     constraintlayoutVersion='2.1.4'
     windowVersion='1.0.0'
-    fragmentVersion='1.5.5'
+    fragmentVersion='1.5.7'
 
     truthVersion='1.1.3'
 
