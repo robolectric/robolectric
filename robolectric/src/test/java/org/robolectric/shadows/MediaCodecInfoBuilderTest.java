@@ -14,6 +14,7 @@ import android.media.MediaCodecInfo.CodecCapabilities;
 import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
+import android.util.Range;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,6 +30,10 @@ public class MediaCodecInfoBuilderTest {
   private static final String VP9_DECODER_NAME = "test.decoder.vp9";
   private static final String MULTIFORMAT_ENCODER_NAME = "test.encoder.multiformat";
 
+  private static final int WIDTH = 1920;
+  private static final int HEIGHT = 1080;
+  private static final Range<Integer> DEFAULT_SUPPORTED_VIDEO_SIZE_RANGE = new Range<>(2, 896);
+
   private static final MediaFormat AAC_MEDIA_FORMAT =
       createMediaFormat(
           MIMETYPE_AUDIO_AAC, new String[] {CodecCapabilities.FEATURE_DynamicTimestamp});
@@ -37,6 +42,9 @@ public class MediaCodecInfoBuilderTest {
           MIMETYPE_AUDIO_OPUS, new String[] {CodecCapabilities.FEATURE_AdaptivePlayback});
   private static final MediaFormat AVC_MEDIA_FORMAT =
       createMediaFormat(MIMETYPE_VIDEO_AVC, new String[] {CodecCapabilities.FEATURE_IntraRefresh});
+  private static final MediaFormat AVC_MEDIA_FORMAT_WITH_RESOLUTION =
+      createMediaFormat(
+          MIMETYPE_VIDEO_AVC, WIDTH, HEIGHT, new String[] {CodecCapabilities.FEATURE_IntraRefresh});
   private static final MediaFormat VP9_MEDIA_FORMAT =
       createMediaFormat(
           MIMETYPE_VIDEO_VP9,
@@ -123,6 +131,10 @@ public class MediaCodecInfoBuilderTest {
     assertThat(codecCapabilities.getMimeType()).isEqualTo(MIMETYPE_VIDEO_AVC);
     assertThat(codecCapabilities.getAudioCapabilities()).isNull();
     assertThat(codecCapabilities.getVideoCapabilities()).isNotNull();
+    assertThat(codecCapabilities.getVideoCapabilities().getSupportedWidths())
+        .isEqualTo(DEFAULT_SUPPORTED_VIDEO_SIZE_RANGE);
+    assertThat(codecCapabilities.getVideoCapabilities().getSupportedHeights())
+        .isEqualTo(DEFAULT_SUPPORTED_VIDEO_SIZE_RANGE);
     assertThat(codecCapabilities.getEncoderCapabilities()).isNotNull();
     assertThat(codecCapabilities.isFeatureSupported(CodecCapabilities.FEATURE_IntraRefresh))
         .isTrue();
@@ -132,6 +144,24 @@ public class MediaCodecInfoBuilderTest {
     assertThat(codecCapabilities.profileLevels).isEqualTo(AVC_PROFILE_LEVELS);
     assertThat(codecCapabilities.colorFormats).hasLength(AVC_COLOR_FORMATS.length);
     assertThat(codecCapabilities.colorFormats).isEqualTo(AVC_COLOR_FORMATS);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void canCreateVideoEncoderCapabilities_supportedFormatResolutionIsSet() {
+    CodecCapabilities codecCapabilities =
+        MediaCodecInfoBuilder.CodecCapabilitiesBuilder.newBuilder()
+            .setMediaFormat(AVC_MEDIA_FORMAT_WITH_RESOLUTION)
+            .setIsEncoder(true)
+            .setProfileLevels(AVC_PROFILE_LEVELS)
+            .setColorFormats(AVC_COLOR_FORMATS)
+            .build();
+
+    assertThat(codecCapabilities.getVideoCapabilities()).isNotNull();
+    assertThat(codecCapabilities.getVideoCapabilities().getSupportedWidths())
+        .isEqualTo(new Range<>(1, WIDTH));
+    assertThat(codecCapabilities.getVideoCapabilities().getSupportedHeights())
+        .isEqualTo(new Range<>(1, HEIGHT));
   }
 
   @Test
@@ -348,6 +378,26 @@ public class MediaCodecInfoBuilderTest {
   private static MediaFormat createMediaFormat(String mime, String[] features) {
     MediaFormat mediaFormat = new MediaFormat();
     mediaFormat.setString(MediaFormat.KEY_MIME, mime);
+    for (String feature : features) {
+      mediaFormat.setFeatureEnabled(feature, true);
+    }
+    return mediaFormat;
+  }
+
+  /**
+   * Create a sample {@link MediaFormat}.
+   *
+   * @param mime one of MIMETYPE_* from {@link MediaFormat}.
+   * @param width The width of the content (in pixels).
+   * @param height The height of the content (in pixels).
+   * @param features an array of CodecCapabilities.FEATURE_ features to be enabled.
+   */
+  private static MediaFormat createMediaFormat(
+      String mime, int width, int height, String[] features) {
+    MediaFormat mediaFormat = new MediaFormat();
+    mediaFormat.setString(MediaFormat.KEY_MIME, mime);
+    mediaFormat.setInteger(MediaFormat.KEY_WIDTH, width);
+    mediaFormat.setInteger(MediaFormat.KEY_HEIGHT, height);
     for (String feature : features) {
       mediaFormat.setFeatureEnabled(feature, true);
     }

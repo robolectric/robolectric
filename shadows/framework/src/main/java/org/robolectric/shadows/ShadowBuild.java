@@ -23,6 +23,12 @@ public class ShadowBuild {
   private static String serialOverride = Build.UNKNOWN;
 
   /**
+   * Temporary constant for VERSION_CODES.UPSIDE_DOWN_CAKE. Will be removed and replaced once the
+   * constant is available upstream.
+   */
+  public static final int UPSIDE_DOWN_CAKE = 34;
+
+  /**
    * Sets the value of the {@link Build#DEVICE} field.
    *
    * <p>It will be reset for the next test.

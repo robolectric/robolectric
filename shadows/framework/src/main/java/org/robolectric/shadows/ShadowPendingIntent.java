@@ -333,6 +333,18 @@ public class ShadowPendingIntent {
     return (flags & FLAG_IMMUTABLE) > 0;
   }
 
+  @Implementation
+  protected boolean isTargetedToPackage() {
+    // This is weird and we know it. See:
+    // https://googleplex-android.googlesource.com/platform/frameworks/base/+/f24a737c89de326199eb6d9f5912eae24b5514e6/services/core/java/com/android/server/am/ActivityManagerService.java#5377
+    for (Intent intent : savedIntents) {
+      if (intent.getPackage() != null && intent.getComponent() != null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   /**
    * @return {@code true} iff sending this PendingIntent will start an activity
    * @deprecated prefer {@link #isActivity} which was added to {@link PendingIntent} in API 31

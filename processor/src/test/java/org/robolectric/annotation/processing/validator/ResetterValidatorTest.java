@@ -12,7 +12,8 @@ import org.junit.runners.JUnit4;
 public class ResetterValidatorTest {
   @Test
   public void resetterWithoutImplements_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowResetterWithoutImplements";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowResetterWithoutImplements";
     assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
@@ -22,7 +23,8 @@ public class ResetterValidatorTest {
 
   @Test
   public void nonStaticResetter_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowResetterNonStatic";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowResetterNonStatic";
     assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
@@ -32,7 +34,8 @@ public class ResetterValidatorTest {
 
   @Test
   public void nonPublicResetter_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowResetterNonPublic";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowResetterNonPublic";
     assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
@@ -42,12 +45,27 @@ public class ResetterValidatorTest {
 
   @Test
   public void resetterWithParameters_shouldNotCompile() {
-    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowResetterWithParameters";
+    final String testClass =
+        "org.robolectric.annotation.processing.shadows.ShadowResetterWithParameters";
     assertAbout(singleClass())
       .that(testClass)
       .failsToCompile()
       .withErrorContaining("@Resetter methods must not have parameters")
       .onLine(11);
+  }
+
+  @Test
+  public void twoValidResetters_shouldNotCompile() {
+    final String testClass = "org.robolectric.annotation.processing.shadows.ShadowWithTwoResetters";
+
+    assertAbout(singleClass())
+        .that(testClass)
+        .failsToCompile()
+        .withErrorContaining(
+            "Duplicate @Resetter methods found on"
+                + " org.robolectric.annotation.processing.shadows.ShadowWithTwoResetters:"
+                + " resetter_method_one() and resetter_method_two().")
+        .onLine(13);
   }
 
   @Test

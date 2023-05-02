@@ -1,5 +1,6 @@
 package org.robolectric.annotation.processing;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newTreeMap;
 import static com.google.common.collect.Sets.newTreeSet;
@@ -127,6 +128,10 @@ public class RobolectricModel {
     }
 
     public void addResetter(TypeElement shadowTypeElement, ExecutableElement elem) {
+      checkState(
+          !resetterMap.containsKey(shadowTypeElement.getQualifiedName().toString()),
+          "Trying to register a duplicate resetter on %s",
+          shadowTypeElement.getQualifiedName());
       registerType(shadowTypeElement);
 
       resetterMap.put(shadowTypeElement.getQualifiedName().toString(),

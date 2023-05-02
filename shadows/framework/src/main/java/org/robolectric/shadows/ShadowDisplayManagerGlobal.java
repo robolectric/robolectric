@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -85,7 +84,7 @@ public class ShadowDisplayManagerGlobal {
     displayManagerGlobal.setDm(displayManager);
     displayManagerGlobal.setLock(new Object());
     List<Handler> displayListeners =
-        RuntimeEnvironment.getApiLevel() < CUR_DEVELOPMENT
+        RuntimeEnvironment.getApiLevel() < ShadowBuild.UPSIDE_DOWN_CAKE
             ? new ArrayList<>()
             : new CopyOnWriteArrayList<>();
     displayManagerGlobal.setDisplayListeners(displayListeners);

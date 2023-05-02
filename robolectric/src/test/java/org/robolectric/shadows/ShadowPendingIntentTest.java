@@ -934,4 +934,30 @@ public class ShadowPendingIntentTest {
                 .toString())
         .startsWith("PendingIntent");
   }
+
+  @Test
+  public void isTargetedToPackage_returnsFalse() {
+    Intent embedded = new Intent().setComponent(new ComponentName("pkg", "cls")).setPackage("pkg");
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, embedded, 0);
+
+    assertThat(pendingIntent.isTargetedToPackage()).isFalse();
+  }
+
+  @Test
+  public void isTargetedToPackage_returnsTrue_whenOnlyComponentSet() {
+    Intent embedded = new Intent().setComponent(new ComponentName("pkg", "cls"));
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, embedded, 0);
+
+    // This is weird but the implementation checks both component and package and this method should
+    // really be named `isNotExplicitIntentWithPackageSet`.
+    assertThat(pendingIntent.isTargetedToPackage()).isTrue();
+  }
+
+  @Test
+  public void isTargetedToPackage_returnsTrue() {
+    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, new Intent("ACTION!"), 0);
+
+    // This is weird as well. `isTargetedToPackage` is really `isNotExplicitIntent`.
+    assertThat(pendingIntent.isTargetedToPackage()).isTrue();
+  }
 }

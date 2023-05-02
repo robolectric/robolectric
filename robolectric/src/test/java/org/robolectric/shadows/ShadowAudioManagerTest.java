@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +25,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
+import android.media.AudioSystem;
 import android.media.MediaRecorder.AudioSource;
 import android.media.audiopolicy.AudioPolicy;
 import androidx.test.core.app.ApplicationProvider;
@@ -989,6 +991,149 @@ public class ShadowAudioManagerTest {
     int audioSessionId2 = audioManager.generateAudioSessionId();
 
     assertThat(audioSessionId).isNotEqualTo(audioSessionId2);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlaybackOffloadSupport_withSetDirectPlaybackSupport_returnsOffloadSupported() {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48_000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build();
+    ShadowAudioSystem.setDirectPlaybackSupport(
+        audioFormat, audioAttributes, AudioSystem.OFFLOAD_SUPPORTED);
+
+    int playbackOffloadSupport =
+        AudioManager.getPlaybackOffloadSupport(audioFormat, audioAttributes);
+
+    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.OFFLOAD_SUPPORTED);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      getPlaybackOffloadSupport_withoutSetDirectPlaybackSupport_returnsOffloadNotSupported() {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48_000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build();
+
+    int playbackOffloadSupport =
+        AudioManager.getPlaybackOffloadSupport(audioFormat, audioAttributes);
+
+    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.OFFLOAD_NOT_SUPPORTED);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlaybackOffloadSupport_withDifferentAudioAttrUsage_returnsOffloadNotSupported() {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48_000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build();
+    ShadowAudioSystem.setDirectPlaybackSupport(
+        audioFormat, audioAttributes, AudioSystem.OFFLOAD_SUPPORTED);
+
+    audioAttributes = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).build();
+    int playbackOffloadSupport =
+        AudioManager.getPlaybackOffloadSupport(audioFormat, audioAttributes);
+
+    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.OFFLOAD_NOT_SUPPORTED);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getPlaybackOffloadSupport_withSameAudioAttrUsage_returnsOffloadSupported() {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48_000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build();
+    ShadowAudioSystem.setDirectPlaybackSupport(
+        audioFormat, audioAttributes, AudioSystem.OFFLOAD_SUPPORTED);
+
+    AudioAttributes audioAttributes2 =
+        new AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+            .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build();
+    int playbackOffloadSupport =
+        AudioManager.getPlaybackOffloadSupport(audioFormat, audioAttributes2);
+
+    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.OFFLOAD_SUPPORTED);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getDirectPlaybackSupport_withSetDirectPlaybackSupport_returnsOffloadSupported() {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48_000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build();
+    ShadowAudioSystem.setDirectPlaybackSupport(
+        audioFormat, audioAttributes, AudioSystem.DIRECT_OFFLOAD_SUPPORTED);
+
+    int playbackOffloadSupport =
+        AudioManager.getDirectPlaybackSupport(audioFormat, audioAttributes);
+
+    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.DIRECT_OFFLOAD_SUPPORTED);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getDirectPlaybackSupport_withShadowAudioSystemReset_returnsOffloadNotSupported() {
+    AudioFormat audioFormat =
+        new AudioFormat.Builder()
+            .setSampleRate(48_000)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .setEncoding(AudioFormat.ENCODING_AAC_HE_V2)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build();
+    ShadowAudioSystem.setDirectPlaybackSupport(
+        audioFormat, audioAttributes, AudioSystem.DIRECT_OFFLOAD_SUPPORTED);
+    ShadowAudioSystem.reset();
+
+    int playbackOffloadSupport =
+        AudioManager.getDirectPlaybackSupport(audioFormat, audioAttributes);
+
+    assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.DIRECT_NOT_SUPPORTED);
   }
 
   private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {

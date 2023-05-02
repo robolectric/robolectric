@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.companion.AssociationInfo;
 import android.net.MacAddress;
@@ -78,7 +78,7 @@ public class AssociationInfoBuilder {
   }
 
   public AssociationInfo build() {
-    if (RuntimeEnvironment.getApiLevel() < CUR_DEVELOPMENT) {
+    if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
     return new AssociationInfo(
         id,
         userId,

@@ -374,6 +374,21 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void shouldGiveCallStateForSubscription() {
+    PhoneStateListener listener = mock(PhoneStateListener.class);
+    telephonyManager.listen(listener, LISTEN_CALL_STATE);
+
+    shadowOf(telephonyManager).setCallState(CALL_STATE_RINGING, "911");
+    assertEquals(CALL_STATE_RINGING, telephonyManager.getCallStateForSubscription());
+    verify(listener).onCallStateChanged(CALL_STATE_RINGING, "911");
+
+    shadowOf(telephonyManager).setCallState(CALL_STATE_OFFHOOK, "911");
+    assertEquals(CALL_STATE_OFFHOOK, telephonyManager.getCallStateForSubscription());
+    verify(listener).onCallStateChanged(CALL_STATE_OFFHOOK, null);
+  }
+
+  @Test
   public void shouldGiveCallState() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
     telephonyManager.listen(listener, LISTEN_CALL_STATE);
@@ -800,6 +815,24 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.isDataEnabled()).isFalse();
     shadowOf(telephonyManager).setDataEnabled(true);
     assertThat(telephonyManager.isDataEnabled()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setDataEnabledForReasonChangesIsDataEnabledForReason() {
+    int correctReason = TelephonyManager.DATA_ENABLED_REASON_POLICY;
+    int incorrectReason = TelephonyManager.DATA_ENABLED_REASON_USER;
+
+    assertThat(telephonyManager.isDataEnabledForReason(correctReason)).isTrue();
+    assertThat(telephonyManager.isDataEnabledForReason(incorrectReason)).isTrue();
+
+    telephonyManager.setDataEnabledForReason(correctReason, false);
+    assertThat(telephonyManager.isDataEnabledForReason(correctReason)).isFalse();
+    assertThat(telephonyManager.isDataEnabledForReason(incorrectReason)).isTrue();
+
+    telephonyManager.setDataEnabledForReason(correctReason, true);
+    assertThat(telephonyManager.isDataEnabledForReason(correctReason)).isTrue();
+    assertThat(telephonyManager.isDataEnabledForReason(incorrectReason)).isTrue();
   }
 
   @Test

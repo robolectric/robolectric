@@ -12,6 +12,7 @@ import android.database.sqlite.SQLiteException;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SdkSuppress;
+import androidx.test.filters.Suppress;
 import com.google.common.base.Ascii;
 import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
@@ -174,7 +175,8 @@ public class SQLiteDatabaseTest {
   }
 
   // TODO(hoisie): This test crashes in emulators, enable when it is fixed in Android.
-  @SdkSuppress(minSdkVersion = 34)
+  // Use Suppress here to stop it from running on emulators, but not on Robolectric
+  @Suppress
   @Test
   public void cursorWindow_finalize_concurrentStressTest() throws Throwable {
     final PrintStream originalErr = System.err;
@@ -222,5 +224,19 @@ public class SQLiteDatabaseTest {
     }
     c.close();
     assertThat(sorted).containsExactly("aaa", "abc", "ABC", "bbb").inOrder();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
+  public void regex_selection() {
+    ContentValues values = new ContentValues();
+    values.put("first_column", "test");
+    database.insert("table_name", null, values);
+    String select = "first_column regexp ?";
+    String[] selectArgs = {
+      "test",
+    };
+    assertThat(database.delete("table_name", select, selectArgs)).isEqualTo(1);
   }
 }

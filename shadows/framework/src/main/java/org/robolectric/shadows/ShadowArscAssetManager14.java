@@ -1,10 +1,8 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.CUR_DEVELOPMENT;
 
 import android.annotation.Nullable;
 import android.content.res.AssetManager;
-import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 // TODO: update path to released version.
@@ -13,7 +11,7 @@ import org.robolectric.annotation.Implements;
 
 @Implements(
     value = AssetManager.class,
-    minSdk = VERSION_CODES.CUR_DEVELOPMENT,
+    minSdk = ShadowBuild.UPSIDE_DOWN_CAKE,
     shadowPicker = ShadowAssetManager.Picker.class)
 @SuppressWarnings("NewApi")
 public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
@@ -27,7 +25,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   //                                    jint smallest_screen_width_dp, jint screen_width_dp,
   //                                    jint screen_height_dp, jint screen_layout, jint ui_mode,
   //                                    jint color_mode, jint major_version) {
-  @Implementation(minSdk = CUR_DEVELOPMENT)
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,

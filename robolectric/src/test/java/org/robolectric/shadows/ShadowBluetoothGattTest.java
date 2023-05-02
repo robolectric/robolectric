@@ -281,6 +281,15 @@ public class ShadowBluetoothGattTest {
 
   @Test
   @Config(minSdk = O)
+  public void getService_afterAddService() {
+    shadowOf(bluetoothGatt).addDiscoverableService(service1);
+    assertThat(bluetoothGatt.discoverServices()).isFalse();
+    assertThat(bluetoothGatt.getService(service1.getUuid())).isEqualTo(service1);
+    assertThat(bluetoothGatt.getService(service2.getUuid())).isNull();
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void discoverServices_clearsService() {
     shadowOf(bluetoothGatt).setGattCallback(callback);
     shadowOf(bluetoothGatt).addDiscoverableService(service1);
@@ -556,5 +565,25 @@ public class ShadowBluetoothGattTest {
     assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
     assertThat(resultState).isEqualTo(BluetoothProfile.STATE_DISCONNECTED);
     assertThat(resultAction).isEqualTo(ACTION_CONNECTION);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void allowCharacteristicNotification_canSetNotification() {
+    service1.addCharacteristic(characteristicWithReadProperty);
+    shadowOf(bluetoothGatt).addDiscoverableService(service1);
+    shadowOf(bluetoothGatt).allowCharacteristicNotification(characteristicWithReadProperty);
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, true))
+        .isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void disallowCharacteristicNotification_cannotSetNotification() {
+    service1.addCharacteristic(characteristicWithReadProperty);
+    shadowOf(bluetoothGatt).addDiscoverableService(service1);
+    shadowOf(bluetoothGatt).disallowCharacteristicNotification(characteristicWithReadProperty);
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, true))
+        .isFalse();
   }
 }

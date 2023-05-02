@@ -83,6 +83,7 @@ public class ShadowUserManager {
   @RealObject private UserManager realObject;
   private UserManagerState userManagerState;
   private Boolean managedProfile;
+  private Boolean cloneProfile;
   private boolean userUnlocked = true;
   private boolean isSystemUser = true;
 
@@ -305,15 +306,20 @@ public class ShadowUserManager {
     }
   }
 
-  /** Add a profile to be returned by {@link #getProfiles(int)}.* */
+  /** Add a profile to be returned by {@link #getProfiles(int)}. */
   public void addProfile(
       int userHandle, int profileUserHandle, String profileName, int profileFlags) {
+    UserInfo profileUserInfo = new UserInfo(profileUserHandle, profileName, profileFlags);
+    addProfile(userHandle, profileUserHandle, profileUserInfo);
+  }
+
+  /** Add a profile to be returned by {@link #getProfiles(int)}. */
+  public void addProfile(int userHandle, int profileUserHandle, UserInfo profileUserInfo) {
     // Don't override serial number set by setSerialNumberForUser()
     if (!userManagerState.userSerialNumbers.containsKey(profileUserHandle)) {
       // use UserHandle id as serial number unless setSerialNumberForUser() is used
       userManagerState.userSerialNumbers.put(profileUserHandle, (long) profileUserHandle);
     }
-    UserInfo profileUserInfo = new UserInfo(profileUserHandle, profileName, profileFlags);
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       profileUserInfo.profileGroupId = userHandle;
       UserInfo parentUserInfo = getUserInfo(userHandle);
@@ -406,6 +412,34 @@ public class ShadowUserManager {
   /** Setter for {@link UserManager#isManagedProfile()}. */
   public void setManagedProfile(boolean managedProfile) {
     this.managedProfile = managedProfile;
+  }
+
+  /**
+   * If permissions are enforced (see {@link #enforcePermissionChecks(boolean)}) and the application
+   * doesn't have the {@link android.Manifest.permission#MANAGE_USERS} permission, throws a {@link
+   * SecurityManager} exception.
+   *
+   * @return true if the user is clone, or the value specified via {@link #setCloneProfile(boolean)}
+   * @see #enforcePermissionChecks(boolean)
+   * @see #setCloneProfile(boolean)
+   */
+  @Implementation(minSdk = S)
+  protected boolean isCloneProfile() {
+    if (enforcePermissions && !hasManageUsersPermission()) {
+      throw new SecurityException("You need MANAGE_USERS permission to: check isCloneProfile");
+    }
+
+    if (cloneProfile != null) {
+      return cloneProfile;
+    }
+
+    UserInfo info = getUserInfo(context.getUserId());
+    return info != null && info.isCloneProfile();
+  }
+
+  /** Setter for {@link UserManager#isCloneProfile()}. */
+  public void setCloneProfile(boolean cloneProfile) {
+    this.cloneProfile = cloneProfile;
   }
 
   @Implementation(minSdk = R)

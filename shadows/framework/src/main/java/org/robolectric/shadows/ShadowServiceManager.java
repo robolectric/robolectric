@@ -59,6 +59,7 @@ import android.net.IIpSecService;
 import android.net.INetworkPolicyManager;
 import android.net.INetworkScoreService;
 import android.net.ITetheringConnector;
+import android.net.IVpnManager;
 import android.net.nsd.INsdManager;
 import android.net.vcn.IVcnManagementService;
 import android.net.wifi.IWifiManager;
@@ -209,6 +210,7 @@ public class ShadowServiceManager {
       addBinderService(Context.VCN_MANAGEMENT_SERVICE, IVcnManagementService.class);
       addBinderService(Context.TRANSLATION_MANAGER_SERVICE, ITranslationManager.class);
       addBinderService(Context.SENSOR_PRIVACY_SERVICE, ISensorPrivacyManager.class);
+      addBinderService(Context.VPN_MANAGEMENT_SERVICE, IVpnManager.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= TIRAMISU) {
       addBinderService(Context.AMBIENT_CONTEXT_SERVICE, IAmbientContextManager.class);

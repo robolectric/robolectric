@@ -10,6 +10,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCodecInfo.EncoderCapabilities;
 import android.media.MediaCodecInfo.VideoCapabilities;
 import android.media.MediaFormat;
+import android.util.Range;
 import com.google.common.base.Preconditions;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;
@@ -266,6 +267,17 @@ public class MediaCodecInfoBuilder {
       void setFlagsSupported(int flagsSupported);
     }
 
+    /** Accessor interface for {@link VideoCapabilities}'s internals. */
+    @ForType(VideoCapabilities.class)
+    interface VideoCapabilitiesReflector {
+
+      @Accessor("mWidthRange")
+      void setWidthRange(Range<Integer> range);
+
+      @Accessor("mHeightRange")
+      void setHeightRange(Range<Integer> range);
+    }
+
     public CodecCapabilities build() {
       Preconditions.checkNotNull(mediaFormat, "mediaFormat is not set.");
       Preconditions.checkNotNull(profileLevels, "profileLevels is not set.");
@@ -298,6 +310,16 @@ public class MediaCodecInfoBuilder {
 
       if (isVideoCodec) {
         VideoCapabilities videoCaps = createDefaultVideoCapabilities(caps, mediaFormat);
+        VideoCapabilitiesReflector videoCapsReflector =
+            Reflector.reflector(VideoCapabilitiesReflector.class, videoCaps);
+        if (mediaFormat.containsKey(MediaFormat.KEY_WIDTH)) {
+          videoCapsReflector.setWidthRange(
+              new Range<>(1, mediaFormat.getInteger(MediaFormat.KEY_WIDTH)));
+        }
+        if (mediaFormat.containsKey(MediaFormat.KEY_HEIGHT)) {
+          videoCapsReflector.setHeightRange(
+              new Range<>(1, mediaFormat.getInteger(MediaFormat.KEY_HEIGHT)));
+        }
         capsReflector.setVideoCaps(videoCaps);
       } else {
         AudioCapabilities audioCaps = createDefaultAudioCapabilities(caps, mediaFormat);

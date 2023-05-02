@@ -813,7 +813,7 @@ public class ShadowNativePaint {
         paintPtr, text, start, count, ctxStart, ctxCount, isRtl, outMetrics);
   }
 
-  @Implementation(minSdk = 10000)
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
   protected static float nGetRunCharacterAdvance(
       long paintPtr,
       char[] text,

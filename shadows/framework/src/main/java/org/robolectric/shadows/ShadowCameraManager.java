@@ -77,7 +77,7 @@ public class ShadowCameraManager {
     cameraTorches.put(cameraId, enabled);
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.CUR_DEVELOPMENT)
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,

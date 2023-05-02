@@ -10,6 +10,8 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationCallback;
 import android.hardware.fingerprint.FingerprintManager.AuthenticationResult;
 import android.hardware.fingerprint.FingerprintManager.CryptoObject;
+import android.hardware.fingerprint.FingerprintSensorPropertiesInternal;
+import android.os.Build.VERSION_CODES;
 import android.os.CancellationSignal;
 import android.os.Handler;
 import android.util.Log;
@@ -182,5 +184,10 @@ public class ShadowFingerprintManager {
   @Implementation(minSdk = M)
   protected boolean isHardwareDetected() {
     return this.isHardwareDetected;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected List<FingerprintSensorPropertiesInternal> getSensorPropertiesInternal() {
+    return new ArrayList<>();
   }
 }
