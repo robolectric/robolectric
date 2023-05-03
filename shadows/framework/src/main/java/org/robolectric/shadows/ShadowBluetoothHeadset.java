@@ -3,13 +3,17 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
+import static java.util.stream.Collectors.toCollection;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
@@ -21,7 +25,8 @@ import org.robolectric.annotation.Implements;
 @NotThreadSafe
 @Implements(value = BluetoothHeadset.class)
 public class ShadowBluetoothHeadset {
-  private final List<BluetoothDevice> connectedDevices = new ArrayList<>();
+
+  private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();
   private boolean allowsSendVendorSpecificResultCode = true;
   private BluetoothDevice activeBluetoothDevice;
   private boolean isVoiceRecognitionSupported = true;
@@ -32,12 +37,29 @@ public class ShadowBluetoothHeadset {
    */
   @Implementation
   protected List<BluetoothDevice> getConnectedDevices() {
-    return connectedDevices;
+    return bluetoothDevices.entrySet().stream()
+        .filter(entry -> entry.getValue() == BluetoothProfile.STATE_CONNECTED)
+        .map(Entry::getKey)
+        .collect(toCollection(ArrayList::new));
   }
 
   /** Adds the given BluetoothDevice to the shadow's list of "connected devices" */
   public void addConnectedDevice(BluetoothDevice device) {
-    connectedDevices.add(device);
+    addDevice(device, BluetoothProfile.STATE_CONNECTED);
+  }
+
+  /**
+   * Adds the provided BluetoothDevice to the shadow profile's device list with an associated
+   * connectionState. The provided connection state will be returned by {@link
+   * ShadowBluetoothHeadset#getConnectionState}.
+   */
+  public void addDevice(BluetoothDevice bluetoothDevice, int connectionState) {
+    bluetoothDevices.put(bluetoothDevice, connectionState);
+  }
+
+  /** Remove the given BluetoothDevice from the shadow profile's device list */
+  public void removeDevice(BluetoothDevice bluetoothDevice) {
+    bluetoothDevices.remove(bluetoothDevice);
   }
 
   /**
@@ -49,9 +71,7 @@ public class ShadowBluetoothHeadset {
    */
   @Implementation
   protected int getConnectionState(BluetoothDevice device) {
-    return connectedDevices.contains(device)
-        ? BluetoothProfile.STATE_CONNECTED
-        : BluetoothProfile.STATE_DISCONNECTED;
+    return bluetoothDevices.getOrDefault(device, BluetoothProfile.STATE_DISCONNECTED);
   }
 
   /**
@@ -63,7 +83,7 @@ public class ShadowBluetoothHeadset {
    */
   @Implementation
   protected boolean startVoiceRecognition(BluetoothDevice bluetoothDevice) {
-    if (bluetoothDevice == null || !connectedDevices.contains(bluetoothDevice)) {
+    if (bluetoothDevice == null || !getConnectedDevices().contains(bluetoothDevice)) {
       return false;
     }
     if (activeBluetoothDevice != null) {
@@ -113,7 +133,7 @@ public class ShadowBluetoothHeadset {
     if (command == null) {
       throw new IllegalArgumentException("Command cannot be null");
     }
-    return allowsSendVendorSpecificResultCode && connectedDevices.contains(device);
+    return allowsSendVendorSpecificResultCode && getConnectedDevices().contains(device);
   }
 
   @Nullable
