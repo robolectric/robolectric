@@ -60,22 +60,6 @@ public class ShadowDisplayEventReceiver {
 
   @RealObject protected DisplayEventReceiver realReceiver;
   @ReflectorObject private DisplayEventReceiverReflector displayEventReceiverReflector;
-  private static VsyncEventDataReflector vsyncEventDataReflector;
-  private static FrameTimelineReflector frameTimelineReflector;
-
-  private static synchronized VsyncEventDataReflector getVsyncEventDataReflector() {
-    if (vsyncEventDataReflector == null) {
-      vsyncEventDataReflector = reflector(VsyncEventDataReflector.class);
-    }
-    return vsyncEventDataReflector;
-  }
-
-  private static synchronized FrameTimelineReflector getFrameTimelineReflector() {
-    if (frameTimelineReflector == null) {
-      frameTimelineReflector = reflector(FrameTimelineReflector.class);
-    }
-    return frameTimelineReflector;
-  }
 
   @Implementation(minSdk = O, maxSdk = Q)
   protected static long nativeInit(
@@ -254,7 +238,7 @@ public class ShadowDisplayEventReceiver {
   }
 
   private static Object /* VsyncEventData */ newVsyncEventData() {
-    VsyncEventDataReflector vsyncEventDataReflector = getVsyncEventDataReflector();
+    VsyncEventDataReflector vsyncEventDataReflector = reflector(VsyncEventDataReflector.class);
     if (RuntimeEnvironment.getApiLevel() < TIRAMISU) {
       return vsyncEventDataReflector.newVsyncEventData(
           /* id= */ 1, /* frameDeadline= */ 10, /* frameInterval= */ 1);
@@ -266,7 +250,7 @@ public class ShadowDisplayEventReceiver {
           Class.forName("android.view.DisplayEventReceiver$VsyncEventData$FrameTimeline");
 
       int timelineArrayLength = RuntimeEnvironment.getApiLevel() == TIRAMISU ? 1 : 7;
-      FrameTimelineReflector frameTimelineReflector = getFrameTimelineReflector();
+      FrameTimelineReflector frameTimelineReflector = reflector(FrameTimelineReflector.class);
       Object timelineArray = Array.newInstance(frameTimelineClass, timelineArrayLength);
       for (int i = 0; i < timelineArrayLength; i++) {
         Array.set(timelineArray, i, frameTimelineReflector.newFrameTimeline(1, 1, 10));
