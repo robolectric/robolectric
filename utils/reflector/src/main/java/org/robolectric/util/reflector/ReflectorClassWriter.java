@@ -15,6 +15,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -29,6 +30,8 @@ class ReflectorClassWriter extends ClassWriter {
   private static final Type CLASS_TYPE = Type.getType(Class.class);
   private static final Type FIELD_TYPE = Type.getType(Field.class);
   private static final Type METHOD_TYPE = Type.getType(Method.class);
+  private static final Type CONSTRUCTOR_TYPE = Type.getType(java.lang.reflect.Constructor.class);
+
   private static final Type STRING_TYPE = Type.getType(String.class);
   private static final Type STRINGBUILDER_TYPE = Type.getType(StringBuilder.class);
 
@@ -45,6 +48,8 @@ class ReflectorClassWriter extends ClassWriter {
       findMethod(Class.class, "getDeclaredField", new Class<?>[] {String.class});
   private static final org.objectweb.asm.commons.Method CLASS$GET_DECLARED_METHOD =
       findMethod(Class.class, "getDeclaredMethod", new Class<?>[] {String.class, Class[].class});
+  private static final org.objectweb.asm.commons.Method CLASS$GET_DECLARED_CONSTRUCTOR =
+      findMethod(Class.class, "getDeclaredConstructor", new Class<?>[] {Class[].class});
   private static final org.objectweb.asm.commons.Method ACCESSIBLE_OBJECT$SET_ACCESSIBLE =
       findMethod(AccessibleObject.class, "setAccessible", new Class<?>[] {boolean.class});
   private static final org.objectweb.asm.commons.Method FIELD$GET =
@@ -53,6 +58,9 @@ class ReflectorClassWriter extends ClassWriter {
       findMethod(Field.class, "set", new Class<?>[] {Object.class, Object.class});
   private static final org.objectweb.asm.commons.Method METHOD$INVOKE =
       findMethod(Method.class, "invoke", new Class<?>[] {Object.class, Object[].class});
+  private static final org.objectweb.asm.commons.Method CONSTRUCTOR$NEWINSTANCE =
+      findMethod(
+          java.lang.reflect.Constructor.class, "newInstance", new Class<?>[] {Object[].class});
   private static final org.objectweb.asm.commons.Method THROWABLE$GET_CAUSE =
       findMethod(Throwable.class, "getCause", new Class<?>[] {});
   private static final org.objectweb.asm.commons.Method OBJECT_INIT =
@@ -118,8 +126,11 @@ class ReflectorClassWriter extends ClassWriter {
       if (method.isDefault()) continue;
 
       Accessor accessor = method.getAnnotation(Accessor.class);
+      Constructor constructor = method.getAnnotation(Constructor.class);
       if (accessor != null) {
         new AccessorMethodWriter(method, accessor).write();
+      } else if (constructor != null) {
+        new ConstructorMethodWriter(method).write();
       } else {
         new ReflectorMethodWriter(method).write();
       }
@@ -251,6 +262,135 @@ class ReflectorClassWriter extends ClassWriter {
     }
   }
 
+  private class ConstructorMethodWriter extends BaseAdapter {
+
+    private final String constructorRefName;
+    private final Type[] targetParamTypes;
+
+    private ConstructorMethodWriter(Method method) {
+      super(method);
+      int myMethodNumber = nextMethodNumber++;
+      this.constructorRefName = "constructor" + myMethodNumber;
+      this.targetParamTypes = resolveParamTypes(iMethod);
+    }
+
+    void write() {
+      // write field to hold method reference...
+      visitField(
+          ACC_PRIVATE | ACC_STATIC,
+          constructorRefName,
+          CONSTRUCTOR_TYPE.getDescriptor(),
+          null,
+          null);
+
+      visitCode();
+
+      // pseudocode:
+      //   try {
+      //     return constructorN.newInstance(*args);
+      //   } catch (InvocationTargetException e) {
+      //     throw e.getCause();
+      //   } catch (ReflectiveOperationException e) {
+      //     throw new AssertionError("Error invoking reflector method in ClassLoader " +
+      // Instrumentation.class.getClassLoader(), e);
+      //   }
+      Label tryStart = new Label();
+      Label tryEnd = new Label();
+      Label handleInvocationTargetException = new Label();
+      visitTryCatchBlock(
+          tryStart,
+          tryEnd,
+          handleInvocationTargetException,
+          INVOCATION_TARGET_EXCEPTION_TYPE.getInternalName());
+      Label handleReflectiveOperationException = new Label();
+      visitTryCatchBlock(
+          tryStart,
+          tryEnd,
+          handleReflectiveOperationException,
+          REFLECTIVE_OPERATION_EXCEPTION_TYPE.getInternalName());
+
+      mark(tryStart);
+      loadOriginalConstructorRef();
+      loadArgArray();
+      invokeVirtual(CONSTRUCTOR_TYPE, CONSTRUCTOR$NEWINSTANCE);
+      mark(tryEnd);
+
+      castForReturn(iMethod.getReturnType());
+      returnValue();
+
+      mark(handleInvocationTargetException);
+
+      int exceptionLocalVar = newLocal(THROWABLE_TYPE);
+      storeLocal(exceptionLocalVar);
+      loadLocal(exceptionLocalVar);
+      invokeVirtual(THROWABLE_TYPE, THROWABLE$GET_CAUSE);
+      throwException();
+      mark(handleReflectiveOperationException);
+      exceptionLocalVar = newLocal(REFLECTIVE_OPERATION_EXCEPTION_TYPE);
+      storeLocal(exceptionLocalVar);
+      newInstance(STRINGBUILDER_TYPE);
+      dup();
+      invokeConstructor(STRINGBUILDER_TYPE, OBJECT_INIT);
+      push("Error invoking reflector method in ClassLoader ");
+      invokeVirtual(STRINGBUILDER_TYPE, STRINGBUILDER$APPEND);
+      push(targetType);
+      invokeVirtual(CLASS_TYPE, CLASS$GET_CLASS_LOADER);
+      invokeStatic(STRING_TYPE, STRING$VALUE_OF);
+      invokeVirtual(STRINGBUILDER_TYPE, STRINGBUILDER$APPEND);
+      invokeVirtual(STRINGBUILDER_TYPE, STRINGBUILDER$TO_STRING);
+      int messageLocalVar = newLocal(STRING_TYPE);
+      storeLocal(messageLocalVar);
+      newInstance(ASSERTION_ERROR_TYPE);
+      dup();
+      loadLocal(messageLocalVar);
+      loadLocal(exceptionLocalVar);
+      invokeConstructor(ASSERTION_ERROR_TYPE, ASSERTION_ERROR_INIT);
+      throwException();
+
+      endMethod();
+    }
+
+    private void loadOriginalConstructorRef() {
+      // pseudocode:
+      //   if (constructorN == null) {
+      //     constructorN = targetClass.getDeclaredConstructor(paramTypes);
+      //     constructorN.setAccessible(true);
+      //   }
+      // -> constructor reference on stack
+      getStatic(reflectorType, constructorRefName, CONSTRUCTOR_TYPE);
+      dup();
+      Label haveConstructorRef = newLabel();
+      ifNonNull(haveConstructorRef);
+      pop();
+
+      // pseudocode:
+      //   targetClass.getDeclaredConstructor(paramTypes);
+      push(targetType);
+      Type[] paramTypes = targetParamTypes;
+      push(paramTypes.length);
+      newArray(CLASS_TYPE);
+      for (int i = 0; i < paramTypes.length; i++) {
+        dup();
+        push(i);
+        push(paramTypes[i]);
+        arrayStore(CLASS_TYPE);
+      }
+      invokeVirtual(CLASS_TYPE, CLASS$GET_DECLARED_CONSTRUCTOR);
+
+      // pseudocode:
+      //   <constructor>.setAccessible(true);
+      dup();
+      push(true);
+      invokeVirtual(CONSTRUCTOR_TYPE, ACCESSIBLE_OBJECT$SET_ACCESSIBLE);
+
+      // pseudocode:
+      //   constructorN = constructor;
+      dup();
+      putStatic(reflectorType, constructorRefName, CONSTRUCTOR_TYPE);
+      mark(haveConstructorRef);
+    }
+  }
+
   private class ReflectorMethodWriter extends BaseAdapter {
 
     private final String methodRefName;
@@ -375,35 +515,6 @@ class ReflectorClassWriter extends ClassWriter {
       putStatic(reflectorType, methodRefName, METHOD_TYPE);
       mark(haveMethodRef);
     }
-
-    private Type[] resolveParamTypes(Method iMethod) {
-      Class<?>[] iParamTypes = iMethod.getParameterTypes();
-      Annotation[][] paramAnnotations = iMethod.getParameterAnnotations();
-
-      Type[] targetParamTypes = new Type[iParamTypes.length];
-      for (int i = 0; i < iParamTypes.length; i++) {
-        Class<?> paramType = findWithType(paramAnnotations[i]);
-        if (paramType == null) {
-          paramType = iParamTypes[i];
-        }
-        targetParamTypes[i] = Type.getType(paramType);
-      }
-      return targetParamTypes;
-    }
-
-    private Class<?> findWithType(Annotation[] paramAnnotation) {
-      for (Annotation annotation : paramAnnotation) {
-        if (annotation instanceof WithType) {
-          String withTypeName = ((WithType) annotation).value();
-          try {
-            return Class.forName(withTypeName, true, iClass.getClassLoader());
-          } catch (ClassNotFoundException e1) {
-            // it's okay, ignore
-          }
-        }
-      }
-      return null;
-    }
   }
 
   private static String[] getInternalNames(final Class<?>[] types) {
@@ -493,6 +604,36 @@ class ReflectorClassWriter extends ClassWriter {
 
     void loadNull() {
       visitInsn(Opcodes.ACONST_NULL);
+    }
+
+    protected Type[] resolveParamTypes(Method iMethod) {
+      Class<?>[] iParamTypes = iMethod.getParameterTypes();
+      Annotation[][] paramAnnotations = iMethod.getParameterAnnotations();
+
+      Type[] targetParamTypes = new Type[iParamTypes.length];
+      for (int i = 0; i < iParamTypes.length; i++) {
+        Class<?> paramType = findWithType(paramAnnotations[i]);
+        if (paramType == null) {
+          paramType = iParamTypes[i];
+        }
+        targetParamTypes[i] = Type.getType(paramType);
+      }
+      return targetParamTypes;
+    }
+
+    @Nullable
+    private Class<?> findWithType(Annotation[] paramAnnotation) {
+      for (Annotation annotation : paramAnnotation) {
+        if (annotation instanceof WithType) {
+          String withTypeName = ((WithType) annotation).value();
+          try {
+            return Class.forName(withTypeName, true, iClass.getClassLoader());
+          } catch (ClassNotFoundException e1) {
+            // it's okay, ignore
+          }
+        }
+      }
+      return null;
     }
   }
 }

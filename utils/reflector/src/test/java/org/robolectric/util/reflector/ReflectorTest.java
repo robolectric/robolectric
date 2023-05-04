@@ -133,6 +133,25 @@ public class ReflectorTest {
     time("saved accessor", 10_000_000, () -> fieldBySavedReflector(accessor));
   }
 
+  @Ignore
+  @Test
+  public void constructorPerf() {
+    SomeClass i = new SomeClass("c");
+
+    System.out.println("reflection = " + Collections.singletonList(methodByReflectionHelpers(i)));
+    System.out.println("accessor = " + Collections.singletonList(methodByReflector(i)));
+
+    _SomeClass_ accessor = reflector(_SomeClass_.class, i);
+
+    time("ReflectionHelpers", 10_000_000, this::constructorByReflectionHelpers);
+    time("accessor", 10_000_000, () -> constructorByReflector());
+    time("saved accessor", 10_000_000, () -> constructorBySavedReflector(accessor));
+
+    time("ReflectionHelpers", 10_000_000, () -> constructorByReflectionHelpers());
+    time("accessor", 10_000_000, () -> constructorByReflector());
+    time("saved accessor", 10_000_000, () -> constructorBySavedReflector(accessor));
+  }
+
   @Test
   public void nonExistentMethod_throwsAssertionError() {
     SomeClass i = new SomeClass("c");
@@ -141,6 +160,11 @@ public class ReflectorTest {
         assertThrows(AssertionError.class, () -> accessor.nonExistentMethod("a", "b", "c"));
     assertThat(ex).hasMessageThat().startsWith("Error invoking reflector method in ClassLoader ");
     assertThat(ex).hasCauseThat().isInstanceOf(NoSuchMethodException.class);
+  }
+
+  @Test
+  public void reflector_constructor() {
+    assertThat(staticReflector.newSomeClass("sdfsdf")).isNotNull();
   }
 
   //////////////////////
@@ -169,6 +193,9 @@ public class ReflectorTest {
 
     @Accessor("mD")
     int getD();
+
+    @Constructor
+    SomeClass newSomeClass(String c);
 
     String someMethod(String a, String b);
 
@@ -249,6 +276,20 @@ public class ReflectorTest {
 
   private String methodBySavedReflector(_SomeClass_ reflector) {
     return reflector.someMethod("a", "b");
+  }
+
+  private SomeClass constructorByReflectionHelpers() {
+    return ReflectionHelpers.callConstructor(
+        SomeClass.class, ClassParameter.from(String.class, "a"));
+  }
+
+  private SomeClass constructorByReflector() {
+    _SomeClass_ accessor = reflector(_SomeClass_.class);
+    return accessor.newSomeClass("a");
+  }
+
+  private SomeClass constructorBySavedReflector(_SomeClass_ reflector) {
+    return reflector.newSomeClass("a");
   }
 
   private String fieldByReflectionHelpers(SomeClass o) {
