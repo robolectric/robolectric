@@ -10,6 +10,7 @@ import java.lang.invoke.MethodType;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.ConstantDynamic;
@@ -229,10 +230,8 @@ public class ClassInstrumentor {
       if ((node instanceof LdcInsnNode && ((LdcInsnNode) node).cst instanceof ConstantDynamic)) {
         ConstantDynamic cst = (ConstantDynamic) ((LdcInsnNode) node).cst;
         return cst.getName().equals("$jacocoData");
-      } else if (insns.length > 1
-          && insns[0] instanceof LabelNode
-          && insns[1] instanceof MethodInsnNode) {
-        return "$jacocoInit".equals(((MethodInsnNode) insns[1]).name);
+      } else if (node instanceof MethodInsnNode) {
+        return Objects.equals(((MethodInsnNode) node).name, "$jacocoInit");
       }
     }
     return false;
