@@ -4,6 +4,7 @@ import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
@@ -526,10 +527,8 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void testIdleNotStuck_whenThreadCrashes() throws Exception {
-    HandlerThread thread = new HandlerThread("WillCrash");
-    thread.start();
-    Looper looper = thread.getLooper();
+  public void idle_looperPaused_idleHandlerThrowsException() throws Exception {
+    Looper looper = handlerThread.getLooper();
     shadowOf(looper).pause();
     new Handler(looper)
         .post(
@@ -537,12 +536,69 @@ public class ShadowPausedLooperTest {
               Looper.myQueue()
                   .addIdleHandler(
                       () -> {
-                        throw new RuntimeException();
+                        throw new IllegalStateException();
                       });
             });
-    shadowOf(looper).idle();
-    thread.join(5_000);
-    assertThat(thread.getState()).isEqualTo(Thread.State.TERMINATED);
+    assertThrows(IllegalStateException.class, () -> shadowOf(looper).idle());
+    handlerThread.join(5_000);
+    assertThat(handlerThread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void idle_looperPaused_runnableThrowsException() throws Exception {
+    Looper looper = handlerThread.getLooper();
+    shadowOf(looper).pause();
+    new Handler(looper)
+        .post(
+            () -> {
+              throw new IllegalStateException();
+            });
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(looper).idle());
+    handlerThread.join(5_000);
+    assertThat(handlerThread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void idle_looperRunning_runnableThrowsException() throws Exception {
+    Looper looper = handlerThread.getLooper();
+    new Handler(looper)
+        .post(
+            () -> {
+              throw new IllegalStateException();
+            });
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(looper).idle());
+    handlerThread.join(5_000);
+    assertThat(handlerThread.getState()).isEqualTo(Thread.State.TERMINATED);
+  }
+
+  @Test
+  public void post_throws_if_looper_died() throws Exception {
+    Looper looper = handlerThread.getLooper();
+    new Handler(looper)
+        .post(
+            () -> {
+              throw new IllegalStateException();
+            });
+    handlerThread.join(5_000);
+    assertThat(handlerThread.getState()).isEqualTo(Thread.State.TERMINATED);
+
+    assertThrows(IllegalStateException.class, () -> new Handler(looper).post(() -> {}));
+  }
+
+  @Test
+  public void idle_throws_if_looper_died() throws Exception {
+    Looper looper = handlerThread.getLooper();
+    new Handler(looper)
+        .post(
+            () -> {
+              throw new IllegalStateException();
+            });
+    handlerThread.join(5_000);
+    assertThat(handlerThread.getState()).isEqualTo(Thread.State.TERMINATED);
+
+    assertThrows(IllegalStateException.class, () -> shadowOf(looper).idle());
   }
 
   @Test

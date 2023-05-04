@@ -22,9 +22,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
@@ -36,8 +34,6 @@ public class ShadowBluetoothHeadsetTest {
   private BluetoothDevice device2;
   private BluetoothHeadset bluetoothHeadset;
   private Application context;
-
-  @Rule public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() throws Exception {
@@ -58,6 +54,41 @@ public class ShadowBluetoothHeadsetTest {
     shadowOf(bluetoothHeadset).addConnectedDevice(device2);
 
     assertThat(bluetoothHeadset.getConnectedDevices()).containsExactly(device1, device2);
+  }
+
+  @Test
+  public void getConnectedDevices_doesNotReturnDevicesInNonConnectedStates() {
+    shadowOf(bluetoothHeadset).addDevice(device1, BluetoothProfile.STATE_CONNECTING);
+    shadowOf(bluetoothHeadset).addDevice(device2, BluetoothProfile.STATE_DISCONNECTING);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).isEmpty();
+  }
+
+  @Test
+  public void getConnectionState_returnsStoredConnectionState() {
+    shadowOf(bluetoothHeadset).addDevice(device1, BluetoothProfile.STATE_CONNECTING);
+    shadowOf(bluetoothHeadset).addDevice(device2, BluetoothProfile.STATE_DISCONNECTING);
+
+    assertThat(bluetoothHeadset.getConnectionState(device1))
+        .isEqualTo(BluetoothProfile.STATE_CONNECTING);
+    assertThat(bluetoothHeadset.getConnectionState(device2))
+        .isEqualTo(BluetoothProfile.STATE_DISCONNECTING);
+  }
+
+  @Test
+  public void removeDevice_getConnectionStateReturnsDisconnected() {
+    shadowOf(bluetoothHeadset).addConnectedDevice(device1);
+    shadowOf(bluetoothHeadset).removeDevice(device1);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).isEmpty();
+  }
+
+  @Test
+  public void removeDevice_getConnectedDevicesReturnsEmpty() {
+    shadowOf(bluetoothHeadset).addConnectedDevice(device1);
+    shadowOf(bluetoothHeadset).removeDevice(device1);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).isEmpty();
   }
 
   @Test

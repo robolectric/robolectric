@@ -38,6 +38,8 @@ public class Reflector {
   private static final boolean DEBUG = false;
   private static final AtomicInteger COUNTER = new AtomicInteger();
   private static final Map<Class<?>, Constructor<?>> cache = new ConcurrentHashMap<>();
+  private static final Map<Class<?>, Object> staticReflectorCache = new ConcurrentHashMap<>();
+
   /**
    * Returns an object which provides accessors for invoking otherwise inaccessible static methods
    * and fields.
@@ -56,6 +58,10 @@ public class Reflector {
    * @param target the target object
    */
   public static <T> T reflector(Class<T> iClass, Object target) {
+    if (target == null && staticReflectorCache.containsKey(iClass)) {
+      return (T) staticReflectorCache.get(iClass);
+    }
+
     Class<?> targetClass = determineTargetClass(iClass);
 
     Constructor<? extends T> ctor = (Constructor<? extends T>) cache.get(iClass);
@@ -68,11 +74,15 @@ public class Reflector {
                     () -> Reflector.<T>createReflectorClass(iClass, targetClass));
         ctor = reflectorClass.getConstructor(targetClass);
         ctor.setAccessible(true);
+        cache.put(iClass, ctor);
       }
 
-      cache.put(iClass, ctor);
+      T instance = ctor.newInstance(target);
+      if (target == null) {
+        staticReflectorCache.put(iClass, instance);
+      }
+      return instance;
 
-      return ctor.newInstance(target);
     } catch (NoSuchMethodException
         | InstantiationException
         | IllegalAccessException
