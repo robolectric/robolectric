@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import java.io.PrintStream;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Direct;
@@ -29,10 +29,10 @@ public class ShadowViewGroup extends ShadowView {
         () -> {
           reflector(ViewGroupReflector.class, realViewGroup).addView(child, index, params);
         };
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      addViewRunnable.run();
-    } else {
+    if (ShadowLooper.looperMode() == Mode.LEGACY) {
       shadowMainLooper().runPaused(addViewRunnable);
+    } else {
+      addViewRunnable.run();
     }
   }
 

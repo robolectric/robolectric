@@ -528,31 +528,29 @@ public class ShadowView {
 
   @Implementation
   protected boolean post(Runnable action) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return reflector(_View_.class, realView).post(action);
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowApplication.getInstance().getForegroundThreadScheduler().post(action);
       return true;
+    } else {
+      return reflector(_View_.class, realView).post(action);
     }
   }
 
   @Implementation
   protected boolean postDelayed(Runnable action, long delayMills) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return reflector(_View_.class, realView).postDelayed(action, delayMills);
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowApplication.getInstance()
           .getForegroundThreadScheduler()
           .postDelayed(action, delayMills);
       return true;
+    } else {
+      return reflector(_View_.class, realView).postDelayed(action, delayMills);
     }
   }
 
   @Implementation
   protected void postInvalidateDelayed(long delayMilliseconds) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      reflector(_View_.class, realView).postInvalidateDelayed(delayMilliseconds);
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowApplication.getInstance()
           .getForegroundThreadScheduler()
           .postDelayed(
@@ -563,17 +561,19 @@ public class ShadowView {
                 }
               },
               delayMilliseconds);
+    } else {
+      reflector(_View_.class, realView).postInvalidateDelayed(delayMilliseconds);
     }
   }
 
   @Implementation
   protected boolean removeCallbacks(Runnable callback) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return reflector(_View_.class, realView).removeCallbacks(callback);
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowLegacyLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
       shadowLooper.getScheduler().remove(callback);
       return true;
+    } else {
+      return reflector(_View_.class, realView).removeCallbacks(callback);
     }
   }
 

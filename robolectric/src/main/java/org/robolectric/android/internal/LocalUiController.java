@@ -157,7 +157,7 @@ public class LocalUiController implements UiController {
 
   @Override
   public void loopMainThreadUntilIdle() {
-    if (!ShadowLooper.looperMode().equals(LooperMode.Mode.PAUSED)) {
+    if (ShadowLooper.looperMode().equals(LooperMode.Mode.LEGACY)) {
       shadowMainLooper().idle();
     } else {
       ImmutableSet<IdlingResourceProxy> idlingResources = syncIdlingResources();
