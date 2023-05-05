@@ -331,6 +331,48 @@ public class ShadowSubscriptionManagerTest {
         .isEqualTo("123");
   }
 
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumberWithSource_phoneNumberNotSet_returnsEmptyString() {
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_UICC))
+        .isEqualTo("");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_CARRIER))
+        .isEqualTo("");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_IMS))
+        .isEqualTo("");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumberWithSource_setPhoneNumber_returnsPhoneNumber() {
+    shadowOf(subscriptionManager)
+        .setPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, "123");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_UICC))
+        .isEqualTo("123");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_CARRIER))
+        .isEqualTo("123");
+    assertThat(
+            subscriptionManager.getPhoneNumber(
+                SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
+                SubscriptionManager.PHONE_NUMBER_SOURCE_IMS))
+        .isEqualTo("123");
+  }
+
   private static class DummySubscriptionsChangedListener
       extends SubscriptionManager.OnSubscriptionsChangedListener {
     private int subscriptionChangedCount;
