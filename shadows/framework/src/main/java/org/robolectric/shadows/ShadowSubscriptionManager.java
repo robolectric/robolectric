@@ -405,6 +405,17 @@ public class ShadowSubscriptionManager {
     return phoneNumberMap.getOrDefault(subscriptionId, "");
   }
 
+  /**
+   * Returns the phone number for the given {@code subscriptionId}, or an empty string if not
+   * available. {@code source} is ignored and will return the same as {@link #getPhoneNumber(int)}.
+   *
+   * <p>The phone number can be set by {@link #setPhoneNumber(int, String)}
+   */
+  @Implementation(minSdk = TIRAMISU)
+  protected String getPhoneNumber(int subscriptionId, int source) {
+    return getPhoneNumber(subscriptionId);
+  }
+
   /** Sets the phone number returned by {@link #getPhoneNumber(int)}. */
   public void setPhoneNumber(int subscriptionId, String phoneNumber) {
     phoneNumberMap.put(subscriptionId, phoneNumber);
