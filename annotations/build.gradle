@@ -5,6 +5,6 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    compileOnly libs.findbugs.jsr305
     compileOnly AndroidSdk.MAX_SDK.coordinates
 }

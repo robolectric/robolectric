@@ -5,12 +5,12 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
-    api "org.ow2.asm:asm:${asmVersion}"
-    api "org.ow2.asm:asm-commons:${asmVersion}"
-    api "org.ow2.asm:asm-util:${asmVersion}"
+    api libs.asm
+    api libs.asm.commons
+    api libs.asm.util
     api project(":utils")
 
     testImplementation project(":shadowapi")
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
+    testImplementation libs.junit4
+    testImplementation libs.truth
 }

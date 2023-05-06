@@ -26,8 +26,8 @@ dependencies {
     testImplementation project(":robolectric")
     testImplementation project(":integration_tests:agp:testsupport")
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation("androidx.test:core:$axtCoreVersion")
-    testImplementation("androidx.test:runner:$axtRunnerVersion")
-    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
+    testImplementation libs.junit4
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.runner
+    testImplementation libs.androidx.test.ext.junit
 }

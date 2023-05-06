@@ -11,6 +11,6 @@ dependencies {
     api project(":shadowapi")
     api project(":utils:reflector")
 
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    compileOnly "junit:junit:${junitVersion}"
+    compileOnly libs.findbugs.jsr305
+    compileOnly libs.junit4
 }

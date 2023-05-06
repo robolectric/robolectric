@@ -5,8 +5,8 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
-    annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
-    annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
+    annotationProcessor libs.auto.service
+    annotationProcessor libs.error.prone.core
 
     api project(":annotations")
     api project(":junit")
@@ -17,32 +17,33 @@ dependencies {
     api project(":utils:reflector")
     api project(":plugins:maven-dependency-resolver")
     api "javax.inject:javax.inject:1"
-    compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
+    compileOnly libs.auto.service.annotations
     api "javax.annotation:javax.annotation-api:1.3.2"
 
     // We need to have shadows-framework.jar on the runtime system classpath so ServiceLoader
     //   can find its META-INF/services/org.robolectric.shadows.ShadowAdapter.
     api project(":shadows:framework")
 
-    implementation 'org.conscrypt:conscrypt-openjdk-uber:2.5.2'
-    api "org.bouncycastle:bcprov-jdk18on:1.73"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    implementation libs.conscrypt.openjdk.uber
+    api libs.bcprov.jdk18on
+    compileOnly libs.findbugs.jsr305
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
-    compileOnly "junit:junit:${junitVersion}"
+    compileOnly libs.junit4
+
     api "androidx.test:monitor:$axtMonitorVersion@aar"
     implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion@aar"
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "com.google.truth.extensions:truth-java8-extension:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
-    testImplementation "org.hamcrest:hamcrest-junit:2.0.0.0"
+    testImplementation libs.junit4
+    testImplementation libs.truth
+    testImplementation libs.truth.java8.extension
+    testImplementation libs.mockito
+    testImplementation libs.hamcrest.junit
     testImplementation "androidx.test:core:$axtCoreVersion@aar"
     testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
     testImplementation "androidx.test.ext:truth:$axtTruthVersion@aar"
     testImplementation "androidx.test:runner:$axtRunnerVersion@aar"
-    testImplementation("com.google.guava:guava:$guavaJREVersion")
+    testImplementation libs.guava
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }

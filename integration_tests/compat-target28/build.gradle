@@ -31,10 +31,10 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation libs.kotlin.stdlib
 
     testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation libs.junit4
+    testImplementation libs.truth
 }

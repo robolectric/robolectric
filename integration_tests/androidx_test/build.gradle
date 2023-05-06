@@ -42,33 +42,33 @@ android {
 }
 
 dependencies {
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.constraintlayout:constraintlayout:$constraintlayoutVersion"
-    implementation "androidx.multidex:multidex:$multidexVersion"
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.multidex
 
     // Testing dependencies
     testImplementation project(":robolectric")
-    testImplementation "androidx.test:runner:$axtRunnerVersion"
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "androidx.test:rules:$axtRulesVersion"
-    testImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-    testImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    testImplementation "androidx.test.ext:truth:$axtTruthVersion"
-    testImplementation "androidx.test:core:$axtCoreVersion"
-    testImplementation "androidx.fragment:fragment:$fragmentVersion"
-    testImplementation "androidx.fragment:fragment-testing:$fragmentVersion"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "com.google.truth:truth:$truthVersion"
+    testImplementation libs.androidx.test.runner
+    testImplementation libs.junit4
+    testImplementation libs.androidx.test.rules
+    testImplementation libs.androidx.test.espresso.intents
+    testImplementation libs.androidx.test.espresso.core
+    testImplementation libs.androidx.test.ext.truth
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.fragment
+    testImplementation libs.androidx.fragment.testing
+    testImplementation libs.androidx.test.ext.junit
+    testImplementation libs.truth
 
     androidTestImplementation project(':annotations')
-    androidTestImplementation "androidx.test:runner:$axtRunnerVersion"
-    androidTestImplementation "junit:junit:$junitVersion"
-    androidTestImplementation "androidx.test:rules:$axtRulesVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
-    androidTestImplementation "androidx.test.ext:truth:$axtTruthVersion"
-    androidTestImplementation "androidx.test:core:$axtCoreVersion"
-    androidTestImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    androidTestImplementation "com.google.truth:truth:$truthVersion"
-    androidTestUtil "androidx.test.services:test-services:$axtTestServicesVersion"
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.junit4
+    androidTestImplementation libs.androidx.test.rules
+    androidTestImplementation libs.androidx.test.espresso.intents
+    androidTestImplementation libs.androidx.test.espresso.core
+    androidTestImplementation libs.androidx.test.ext.truth
+    androidTestImplementation libs.androidx.test.core
+    androidTestImplementation libs.androidx.test.ext.junit
+    androidTestImplementation libs.truth
+    androidTestUtil libs.androidx.test.services
 }

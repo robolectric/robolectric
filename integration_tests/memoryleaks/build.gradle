@@ -29,7 +29,7 @@ dependencies {
     // Testing dependencies
     testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation "com.google.guava:guava-testlib:$guavaJREVersion"
-    testImplementation "androidx.fragment:fragment:$fragmentVersion"
+    testImplementation libs.junit4
+    testImplementation libs.guava.testlib
+    testImplementation libs.androidx.fragment
 }

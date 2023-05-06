@@ -3,6 +3,8 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 apply plugin: "jacoco"
 
+def jacocoVersion = libs.versions.jacoco.get()
+
 jacoco {
     toolVersion = jacocoVersion
 }
@@ -18,7 +20,7 @@ dependencies {
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
 
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:$junitVersion"
+    testImplementation libs.junit4
     testImplementation "org.jacoco:org.jacoco.agent:$jacocoVersion:runtime"
 }
 

@@ -26,9 +26,9 @@ dependencies {
     compileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)
 
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.junit4
+    testImplementation libs.truth
+    testImplementation libs.mockito
     testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
 
     testCompileOnly(AndroidSdk.LOLLIPOP_MR1.coordinates)

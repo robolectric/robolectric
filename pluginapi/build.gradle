@@ -5,11 +5,11 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
-    compileOnly 'com.google.code.findbugs:jsr305:3.0.2'
+    compileOnly libs.findbugs.jsr305
     api project(":annotations")
-    api "com.google.guava:guava:$guavaJREVersion"
+    api libs.guava
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.junit4
+    testImplementation libs.truth
+    testImplementation libs.mockito
 }

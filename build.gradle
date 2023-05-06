@@ -11,11 +11,11 @@ buildscript {
 
     dependencies {
         gradle
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath libs.android.gradle
         classpath 'net.ltgt.gradle:gradle-errorprone-plugin:3.1.0'
         classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:6.18.0"
+        classpath libs.kotlin.gradle
+        classpath libs.spotless.gradle
     }
 }
 

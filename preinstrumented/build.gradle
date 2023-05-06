@@ -17,7 +17,7 @@ java {
 }
 
 dependencies {
-    implementation "com.google.guava:guava:$guavaJREVersion"
+    implementation libs.guava
     implementation project(":sandbox")
 }
 
