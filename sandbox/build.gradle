@@ -5,24 +5,24 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
-    annotationProcessor "com.google.auto.service:auto-service:$autoServiceVersion"
-    annotationProcessor "com.google.errorprone:error_prone_core:$errorproneVersion"
+    annotationProcessor libs.auto.service
+    annotationProcessor libs.error.prone.core
 
     api project(":annotations")
     api project(":utils")
     api project(":shadowapi")
     api project(":utils:reflector")
-    compileOnly "com.google.auto.service:auto-service-annotations:$autoServiceVersion"
+    compileOnly libs.auto.service.annotations
     api "javax.annotation:javax.annotation-api:1.3.2"
     api "javax.inject:javax.inject:1"
 
-    api "org.ow2.asm:asm:${asmVersion}"
-    api "org.ow2.asm:asm-commons:${asmVersion}"
-    api "com.google.guava:guava:$guavaJREVersion"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+    api libs.asm
+    api libs.asm.commons
+    api libs.guava
+    compileOnly libs.findbugs.jsr305
 
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.junit4
+    testImplementation libs.truth
+    testImplementation libs.mockito
     testImplementation project(":junit")
 }

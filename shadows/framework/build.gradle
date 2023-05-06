@@ -15,6 +15,8 @@ configurations {
     sqlite4java
 }
 
+def sqlite4javaVersion = libs.versions.sqlite4java.get()
+
 task copySqliteNatives(type: Copy) {
     from project.configurations.sqlite4java {
         include '**/*.dll'
@@ -47,20 +49,21 @@ dependencies {
     api project(":shadowapi")
     api project(":utils")
     api project(":utils:reflector")
+
     api "androidx.test:monitor:$axtMonitorVersion@aar"
 
-    implementation "com.google.errorprone:error_prone_annotations:$errorproneVersion"
-    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
-    api "com.almworks.sqlite4java:sqlite4java:$sqlite4javaVersion"
+    implementation libs.error.prone.annotations
+    compileOnly libs.findbugs.jsr305
+    api libs.sqlite4java
     compileOnly(AndroidSdk.MAX_SDK.coordinates)
     api "com.ibm.icu:icu4j:73.1"
-    api "androidx.annotation:annotation:1.3.0"
-    api "com.google.auto.value:auto-value-annotations:1.10.1"
-    annotationProcessor "com.google.auto.value:auto-value:1.10.1"
+    api libs.androidx.annotation
+    api libs.auto.value.annotations
+    annotationProcessor libs.auto.value
 
-    sqlite4java "com.almworks.sqlite4java:libsqlite4java-osx:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-amd64:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x64:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:libsqlite4java-linux-i386:$sqlite4javaVersion"
-    sqlite4java "com.almworks.sqlite4java:sqlite4java-win32-x86:$sqlite4javaVersion"
+    sqlite4java libs.sqlite4java.osx
+    sqlite4java libs.sqlite4java.linux.amd64
+    sqlite4java libs.sqlite4java.win32.x64
+    sqlite4java libs.sqlite4java.linux.i386
+    sqlite4java libs.sqlite4java.win32.x86
 }

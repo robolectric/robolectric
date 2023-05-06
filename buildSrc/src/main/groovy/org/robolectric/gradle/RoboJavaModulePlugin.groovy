@@ -13,8 +13,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         if (!skipErrorprone) {
           apply plugin: "net.ltgt.errorprone"
           project.dependencies {
-            errorprone("com.google.errorprone:error_prone_core:$errorproneVersion")
-            errorproneJavac("com.google.errorprone:javac:$errorproneJavacVersion")
+            errorprone(libs.error.prone.core)
+            errorproneJavac(libs.error.prone.javac)
           }
         }
 

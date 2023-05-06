@@ -26,19 +26,19 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:$appCompatVersion")
-    implementation("androidx.window:window:$windowVersion")
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.window
 
     // Testing dependencies
     testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
-    testImplementation "junit:junit:$junitVersion"
-    testImplementation("androidx.test:core:$axtCoreVersion")
-    testImplementation("androidx.core:core:$coreVersion")
-    testImplementation("androidx.test:runner:$axtRunnerVersion")
-    testImplementation("androidx.test:rules:$axtRulesVersion")
-    testImplementation("androidx.test.espresso:espresso-intents:$espressoVersion")
-    testImplementation("androidx.test.ext:truth:$axtTruthVersion")
-    testImplementation("androidx.test.ext:junit:$axtJunitVersion")
-    testImplementation("com.google.truth:truth:$truthVersion")
+    testImplementation libs.junit4
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.core
+    testImplementation libs.androidx.test.runner
+    testImplementation libs.androidx.test.rules
+    testImplementation libs.androidx.test.espresso.intents
+    testImplementation libs.androidx.test.ext.truth
+    testImplementation libs.androidx.test.ext.junit
+    testImplementation libs.truth
 }

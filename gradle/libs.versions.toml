@@ -1,0 +1,166 @@
+[versions]
+# https://developer.android.com/studio/releases
+android-gradle = "7.4.2"
+
+# https://github.com/google/conscrypt/tags
+conscrypt = "2.5.2"
+
+# https://github.com/bcgit/bc-java/tags
+bouncycastle = "1.73"
+
+# https://github.com/findbugsproject/findbugs/tags
+findbugs-jsr305 = "3.0.2"
+
+# https://github.com/hamcrest/JavaHamcrest/releases
+hamcrest = "2.0.0.0"
+
+# https://github.com/google/error-prone/releases
+error-prone = "2.18.0"
+error-prone-javac = "9+181-r4173-1"
+
+# https://kotlinlang.org/docs/releases.html#release-details
+kotlin = "1.8.10"
+
+# https://github.com/diffplug/spotless/blob/main/CHANGES.md
+spotless-gradle = "6.18.0"
+
+# https://asm.ow2.io/versions.html
+asm = "9.5"
+
+# https://github.com/google/auto/releases
+auto-common = "1.2.1"
+auto-service = "1.0.1"
+auto-value = "1.10.1"
+
+compile-testing = "0.21.0"
+
+# https://github.com/google/guava/releases
+guava-jre = "31.1-jre"
+
+# https://github.com/google/gson/releases
+gson = "2.10.1"
+
+# https://github.com/google/truth/releases
+truth = "1.1.3"
+
+jacoco = "0.8.8"
+
+# https://junit.org/junit4/
+junit4 = "4.13.2"
+
+# https://github.com/mockito/mockito/releases
+mockito = "4.11.0"
+
+# https://github.com/mockk/mockk/releases
+mockk = "1.13.5"
+
+sqlite4java = "1.0.392"
+
+# https://developer.android.com/jetpack/androidx/versions
+androidx-annotation = "1.3.0"
+androidx-appcompat = "1.6.1"
+androidx-constraintlayout = "2.1.4"
+androidx-core = "1.10.0"
+androidx-fragment = "1.5.7"
+androidx-multidex = "2.0.1"
+androidx-window = "1.0.0"
+
+# https://github.com/android/android-test/tags
+androidx-test-annotation = "1.0.1"
+androidx-test-core = "1.5.0"
+androidx-test-espresso = "3.5.1"
+androidx-test-ext-junit = "1.1.5"
+androidx-test-ext-truth = "1.5.0"
+androidx-test-monitor="1.6.1"
+androidx-test-orchestrator="1.4.2"
+androidx-test-runner = "1.5.2"
+androidx-test-services = "1.4.2"
+
+
+[libraries]
+android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
+
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+
+auto-common = { module = "com.google.auto:auto-common", version.ref = "auto-common" }
+auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "auto-service" }
+auto-service = { module = "com.google.auto.service:auto-service", version.ref = "auto-service" }
+auto-value-annotations = { module = "com.google.auto.value:auto-value-annotations", version.ref = "auto-value" }
+auto-value = { module = "com.google.auto.value:auto-value", version.ref = "auto-value" }
+
+asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
+asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
+asm-util = { module = "org.ow2.asm:asm-util", version.ref = "asm" }
+asm-tree = { module = "org.ow2.asm:asm-tree", version.ref = "asm" }
+
+compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
+
+error-prone-core =  { module = "com.google.errorprone:error_prone_core", version.ref = "error-prone" }
+error-prone-annotations = { module = "com.google.errorprone:error_prone_annotation", version.ref = "error-prone" }
+error-prone-refaster= { module = "com.google.errorprone:error_prone_refaster", version.ref = "error-prone" }
+error-prone-check-api = { module = "com.google.errorprone:error_prone_check_api", version.ref = "error-prone" }
+error-prone-test-helpers = { module = "com.google.errorprone:error_prone_test_helpers", version.ref = "error-prone" }
+error-prone-javac =  { module = "com.google.errorprone:javac", version.ref = "error-prone-javac" }
+
+conscrypt-openjdk-uber = { module = "org.conscrypt:conscrypt-openjdk-uber", version.ref = "conscrypt" }
+bcprov-jdk18on = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
+findbugs-jsr305 = { module = "com.google.code.findbugs:jsr305", version.ref = "findbugs-jsr305" }
+
+guava = { module = "com.google.guava:guava", version.ref = "guava-jre" }
+guava-testlib = { module = "com.google.guava:guava-testlib", version.ref = "guava-jre" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+hamcrest-junit = { module = "org.hamcrest:hamcrest-junit", version.ref = "hamcrest" }
+
+jacoco-agent = { module = "org.jacoco:org.jacoco.agent", version.ref = "jacoco" }
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+
+sqlite4java = { module = "com.almworks.sqlite4java:sqlite4java", version.ref = "sqlite4java" }
+sqlite4java-osx = { module = "com.almworks.sqlite4java:libsqlite4java-osx", version.ref = "sqlite4java" }
+sqlite4java-linux-amd64 = { module = "com.almworks.sqlite4java:libsqlite4java-linux-amd64", version.ref = "sqlite4java" }
+sqlite4java-win32-x64 = { module = "com.almworks.sqlite4java:sqlite4java-win32-x64", version.ref = "sqlite4java" }
+sqlite4java-linux-i386 = { module = "com.almworks.sqlite4java:libsqlite4java-linux-i386", version.ref = "sqlite4java" }
+sqlite4java-win32-x86 = { module = "com.almworks.sqlite4java:sqlite4java-win32-x86", version.ref = "sqlite4java" }
+
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
+truth-java8-extension = { module = "com.google.truth.extensions:truth-java8-extension", version.ref = "truth" }
+
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
+androidx-core = { module = "androidx.core:core", version.ref = "androidx-core" }
+androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment" }
+androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
+androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "androidx-multidex" }
+androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
+
+androidx-test-annotation = { module = "androidx.test:annotation", version.ref = "androidx-test-annotation" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
+androidx-test-monitor = { module = "androidx.test:monitor", version.ref = "androidx-test-monitor" }
+androidx-test-orchestrator = { module = "androidx.test:orchestrator", version.ref = "androidx-test-orchestrator" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidx-test-core" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
+androidx-test-services = { module = "androidx.test.services:test-services", version.ref = "androidx-test-services" }
+androidx-test-services-storage = { module = "androidx.test.services:storage", version.ref = "androidx-test-services" }
+
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-accessibility = { module = "androidx.test.espresso:espresso-accessibility", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-remote = { module = "androidx.test.espresso:espresso-remote", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-web = { module = "androidx.test.espresso:espresso-web", version.ref = "androidx-test-espresso" }
+
+androidx-test-espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-idling-concurrent = { module = "androidx.test.espresso.idling:idling-concurrent", version.ref = "androidx-test-espresso" }
+androidx-test-espresso-idling-net = { module = "androidx.test.espresso.idling:idling-net", version.ref = "androidx-test-espresso" }
+
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-test-ext-junit" }
+androidx-test-ext-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-ext-truth" }
+
+
+[plugins]

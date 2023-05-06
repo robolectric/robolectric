@@ -7,8 +7,8 @@ dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
 
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "com.google.truth:truth:${truthVersion}"
+    testImplementation libs.junit4
+    testImplementation libs.truth
 
     testImplementation "org.powermock:powermock-module-junit4:2.0.9"
     testImplementation "org.powermock:powermock-module-junit4-rule:2.0.9"

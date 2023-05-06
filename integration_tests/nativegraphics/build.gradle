@@ -33,9 +33,9 @@ dependencies {
     testImplementation AndroidSdk.MAX_SDK.coordinates
     testImplementation project(':robolectric')
 
-    testImplementation "androidx.core:core:$coreVersion"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion"
-    testImplementation "com.google.truth:truth:${truthVersion}"
-    testImplementation "junit:junit:${junitVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation libs.androidx.core
+    testImplementation libs.androidx.test.ext.junit
+    testImplementation libs.truth
+    testImplementation libs.junit4
+    testImplementation libs.mockito
 }
