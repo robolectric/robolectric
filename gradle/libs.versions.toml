@@ -43,7 +43,7 @@ gson = "2.10.1"
 # https://github.com/google/truth/releases
 truth = "1.1.3"
 
-jacoco = "0.8.8"
+jacoco = "0.8.10"
 
 # https://junit.org/junit4/
 junit4 = "4.13.2"
