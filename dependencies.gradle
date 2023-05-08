@@ -1,5 +1,5 @@
 ext {
-    apiCompatVersion = '4.10'
+    apiCompatVersion = '4.10.2'
 
     // https://github.com/gradle/gradle/issues/21267
     axtCoreVersion = libs.versions.androidx.test.core.get()
