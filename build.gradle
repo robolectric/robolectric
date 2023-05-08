@@ -12,8 +12,8 @@ buildscript {
     dependencies {
         gradle
         classpath libs.android.gradle
-        classpath 'net.ltgt.gradle:gradle-errorprone-plugin:3.1.0'
-        classpath 'com.netflix.nebula:gradle-aggregate-javadocs-plugin:3.0.1'
+        classpath libs.error.prone.gradle
+        classpath libs.aggregate.javadocs.gradle
         classpath libs.kotlin.gradle
         classpath libs.spotless.gradle
     }

@@ -66,7 +66,7 @@ dependencies {
   api project(":utils:reflector")
   api libs.guava
 
-  implementation "org.robolectric:nativeruntime-dist-compat:1.0.1"
+  implementation libs.robolectric.nativeruntime.dist.compat
 
   annotationProcessor libs.auto.service
   compileOnly libs.auto.service.annotations
