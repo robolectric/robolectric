@@ -56,14 +56,10 @@ dependencies {
     compileOnly libs.findbugs.jsr305
     api libs.sqlite4java
     compileOnly(AndroidSdk.MAX_SDK.coordinates)
-    api "com.ibm.icu:icu4j:73.1"
+    api libs.icu4j
     api libs.androidx.annotation
     api libs.auto.value.annotations
     annotationProcessor libs.auto.value
 
-    sqlite4java libs.sqlite4java.osx
-    sqlite4java libs.sqlite4java.linux.amd64
-    sqlite4java libs.sqlite4java.win32.x64
-    sqlite4java libs.sqlite4java.linux.i386
-    sqlite4java libs.sqlite4java.win32.x86
+    sqlite4java libs.bundles.sqlite4java.native
 }

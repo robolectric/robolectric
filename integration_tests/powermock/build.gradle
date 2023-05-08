@@ -10,8 +10,5 @@ dependencies {
     testImplementation libs.junit4
     testImplementation libs.truth
 
-    testImplementation "org.powermock:powermock-module-junit4:2.0.9"
-    testImplementation "org.powermock:powermock-module-junit4-rule:2.0.9"
-    testImplementation "org.powermock:powermock-api-mockito2:2.0.9"
-    testImplementation "org.powermock:powermock-classloading-xstream:2.0.9"
+    testImplementation libs.bundles.powermock
 }

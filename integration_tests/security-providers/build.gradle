@@ -10,6 +10,6 @@ dependencies {
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation libs.truth
     testImplementation libs.conscrypt.openjdk.uber
-    testImplementation "com.squareup.okhttp3:okhttp"
-    testImplementation platform("com.squareup.okhttp3:okhttp-bom:4.11.0")
+    testImplementation libs.okhttp
+    testImplementation platform(libs.okhttp.bom)
 }

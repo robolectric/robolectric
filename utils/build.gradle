@@ -49,8 +49,8 @@ afterEvaluate {
 dependencies {
     api project(":annotations")
     api project(":pluginapi")
-    api "javax.inject:javax.inject:1"
-    api "javax.annotation:javax.annotation-api:1.3.2"
+    api libs.javax.inject
+    api libs.javax.annotation.api
 
     // For @VisibleForTesting and ByteStreams
     implementation libs.guava
