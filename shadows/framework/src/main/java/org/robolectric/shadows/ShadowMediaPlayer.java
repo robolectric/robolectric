@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TreeMap;
 import org.robolectric.annotation.Implementation;
@@ -112,8 +113,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   private static final Map<DataSource, Exception> exceptions = new HashMap<>();
   private static final Map<DataSource, MediaInfo> mediaInfoMap = new HashMap<>();
 
-  private static final MediaInfoProvider DEFAULT_MEDIA_INFO_PROVIDER = mediaInfoMap::get;
-  private static MediaInfoProvider mediaInfoProvider = DEFAULT_MEDIA_INFO_PROVIDER;
+  private static Optional<MediaInfoProvider> mediaInfoProvider = Optional.empty();
 
   @RealObject private MediaPlayer player;
 
@@ -650,7 +650,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * @see #setDataSource(DataSource)
    */
   public void doSetDataSource(DataSource dataSource) {
-    MediaInfo mediaInfo = mediaInfoProvider.get(dataSource);
+    MediaInfo mediaInfo = getMediaInfo(dataSource);
     if (mediaInfo == null) {
       throw new IllegalArgumentException(
           "Don't know what to do with dataSource "
@@ -663,17 +663,16 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   }
 
   public static MediaInfo getMediaInfo(DataSource dataSource) {
-    return mediaInfoProvider.get(dataSource);
+    if (mediaInfoMap.containsKey(dataSource)) {
+      return mediaInfoMap.get(dataSource);
+    }
+    return mediaInfoProvider.map(provider -> provider.get(dataSource)).orElse(null);
   }
 
   /**
    * Adds a {@link MediaInfo} for a {@link DataSource}.
-   *
-   * <p>This overrides any {@link MediaInfoProvider} previously set by calling {@link
-   * #setMediaInfoProvider}, i.e., the provider will not be used for any {@link DataSource}.
    */
   public static void addMediaInfo(DataSource dataSource, MediaInfo info) {
-    ShadowMediaPlayer.mediaInfoProvider = DEFAULT_MEDIA_INFO_PROVIDER;
     mediaInfoMap.put(dataSource, info);
   }
 
@@ -685,7 +684,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
    * {@link MediaInfo} provided by this {@link MediaInfoProvider} will be used instead.
    */
   public static void setMediaInfoProvider(MediaInfoProvider mediaInfoProvider) {
-    ShadowMediaPlayer.mediaInfoProvider = mediaInfoProvider;
+    ShadowMediaPlayer.mediaInfoProvider = Optional.of(mediaInfoProvider);
   }
 
   public static void addException(DataSource dataSource, RuntimeException e) {
@@ -1536,7 +1535,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
   @Resetter
   public static void resetStaticState() {
     createListener = null;
-    mediaInfoProvider = DEFAULT_MEDIA_INFO_PROVIDER;
+    mediaInfoProvider = Optional.empty();
     exceptions.clear();
     mediaInfoMap.clear();
     DataSource.reset();
