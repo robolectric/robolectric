@@ -11,6 +11,9 @@ import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioSystem;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.Table;
 import com.google.common.collect.Tables;
 import java.util.Optional;
@@ -30,11 +33,29 @@ public class ShadowAudioSystem {
   /**
    * Table to store key-pair of {@link AudioFormat} and {@link AudioAttributes#getUsage()} with
    * value of support for Direct Playback. Used with {@link #setDirectPlaybackSupport(AudioFormat,
-   * AudioAttributes, int)}, {@link #getOffloadSupport(AudioFormat, AudioAttributes)}, and {@link
-   * #getDirectPlaybackSupport(AudioFormat, AudioAttributes)}.
+   * AudioAttributes, int)}, and {@link #getDirectPlaybackSupport(AudioFormat, AudioAttributes)}.
    */
   private static final Table<AudioFormat, Integer, Integer> directPlaybackSupportTable =
       Tables.synchronizedTable(HashBasedTable.create());
+  /**
+   * Table to store pair of {@link OffloadSupportFormat} and {@link
+   * AudioAttributes#getVolumeControlStream()} with a value of Offload Playback support. Used with
+   * {@link #native_get_offload_support}. The table uses {@link OffloadSupportFormat} rather than
+   * {@link AudioFormat} because {@link #native_get_offload_support} does not pass all the fields
+   * needed to reliably reconstruct {@link AudioFormat} instances.
+   */
+  private static final Table<OffloadSupportFormat, Integer, Integer> offloadPlaybackSupportTable =
+      Tables.synchronizedTable(HashBasedTable.create());
+
+  /**
+   * Multimap to store whether a pair of {@link OffloadSupportFormat} and {@link
+   * AudioAttributes#getVolumeControlStream()} ()} support offloaded playback. Used with {@link
+   * #native_is_offload_supported}. The map uses {@link OffloadSupportFormat} keys rather than
+   * {@link AudioFormat} because {@link #native_is_offload_supported} does not pass all the fields
+   * needed to reliably reconstruct {@link AudioFormat} instances.
+   */
+  private static final Multimap<OffloadSupportFormat, Integer> offloadSupportedMap =
+      Multimaps.synchronizedMultimap(HashMultimap.create());
 
   @Implementation(minSdk = S)
   protected static int native_getMaxChannelCount() {
@@ -60,12 +81,8 @@ public class ShadowAudioSystem {
 
   /**
    * Sets direct playback support for a key-pair of {@link AudioFormat} and {@link AudioAttributes}.
-   * As a result, calling {@link #getOffloadSupport} or {@link #getDirectPlaybackSupport} with the
-   * same pair of {@link AudioFormat} and {@link AudioAttributes} values will return the cached
-   * support value.
-   *
-   * <p>Note that calling this method mutates static state so after use one must call {@link
-   * #reset()} (e.g. in a JUnit @After method).
+   * As a result, calling {@link #getDirectPlaybackSupport} with the same pair of {@link
+   * AudioFormat} and {@link AudioAttributes} values will return the cached support value.
    *
    * @param format the audio format (codec, sample rate, channels)
    * @param attr the {@link AudioAttributes} to be used for playback
@@ -77,32 +94,10 @@ public class ShadowAudioSystem {
    *     and {@link AudioSystem#DIRECT_BITSTREAM_SUPPORTED}
    */
   public static void setDirectPlaybackSupport(
-      @NonNull AudioFormat format,
-      @NonNull AudioAttributes attr,
-      @NonNull int directPlaybackSupport) {
+      @NonNull AudioFormat format, @NonNull AudioAttributes attr, int directPlaybackSupport) {
     checkNotNull(format, "Illegal null AudioFormat");
     checkNotNull(attr, "Illegal null AudioAttributes");
-    synchronized (directPlaybackSupportTable) {
-      directPlaybackSupportTable.put(format, attr.getUsage(), directPlaybackSupport);
-    }
-  }
-
-  /**
-   * Retrieves the stored direct playback support for the {@link AudioFormat} and {@link
-   * AudioAttributes}. If no value was stored for the key-pair then {@link
-   * AudioSystem#OFFLOAD_NOT_SUPPORTED} is returned.
-   *
-   * @param format the audio format (codec, sample rate, channels) to be used for playback
-   * @param attr the {@link AudioAttributes} to be used for playback
-   * @return the level of offload playback support for the format and attributes.
-   */
-  @Implementation(minSdk = S)
-  protected static int getOffloadSupport(
-      @NonNull AudioFormat format, @NonNull AudioAttributes attr) {
-    synchronized (directPlaybackSupportTable) {
-      return Optional.ofNullable(directPlaybackSupportTable.get(format, attr.getUsage()))
-          .orElse(AudioSystem.OFFLOAD_NOT_SUPPORTED);
-    }
+    directPlaybackSupportTable.put(format, attr.getUsage(), directPlaybackSupport);
   }
 
   /**
@@ -117,16 +112,122 @@ public class ShadowAudioSystem {
   @Implementation(minSdk = TIRAMISU)
   protected static int getDirectPlaybackSupport(
       @NonNull AudioFormat format, @NonNull AudioAttributes attr) {
-    synchronized (directPlaybackSupportTable) {
-      return Optional.ofNullable(directPlaybackSupportTable.get(format, attr.getUsage()))
-          .orElse(AudioSystem.DIRECT_NOT_SUPPORTED);
+    return Optional.ofNullable(directPlaybackSupportTable.get(format, attr.getUsage()))
+        .orElse(AudioSystem.DIRECT_NOT_SUPPORTED);
+  }
+
+  /**
+   * Sets offload playback support for a key-pair of {@link AudioFormat} and {@link
+   * AudioAttributes}. As a result, calling {@link AudioSystem#getOffloadSupport} with the same pair
+   * of {@link AudioFormat} and {@link AudioAttributes} values will return the cached support value.
+   *
+   * @param format the audio format (codec, sample rate, channels)
+   * @param attr the {@link AudioAttributes} to be used for playback
+   * @param offloadSupport the level of offload playback support to save for the format and
+   *     attribute pair. Must be one of {@link AudioSystem#OFFLOAD_NOT_SUPPORTED}, {@link
+   *     AudioSystem#OFFLOAD_SUPPORTED} or {@link AudioSystem#OFFLOAD_GAPLESS_SUPPORTED}.
+   */
+  public static void setOffloadPlaybackSupport(
+      @NonNull AudioFormat format, @NonNull AudioAttributes attr, int offloadSupport) {
+    checkNotNull(format, "Illegal null AudioFormat");
+    checkNotNull(attr, "Illegal null AudioAttributes");
+    offloadPlaybackSupportTable.put(
+        new OffloadSupportFormat(
+            format.getEncoding(),
+            format.getSampleRate(),
+            format.getChannelMask(),
+            format.getChannelIndexMask()),
+        attr.getVolumeControlStream(),
+        offloadSupport);
+  }
+
+  /**
+   * Sets whether offload playback is supported for a key-pair of {@link AudioFormat} and {@link
+   * AudioAttributes}. As a result, calling {@link AudioSystem#isOffloadSupported} with the same
+   * pair of {@link AudioFormat} and {@link AudioAttributes} values will return {@code supported}.
+   *
+   * @param format the audio format (codec, sample rate, channels)
+   * @param attr the {@link AudioAttributes} to be used for playback
+   */
+  public static void setOffloadSupported(
+      @NonNull AudioFormat format, @NonNull AudioAttributes attr, boolean supported) {
+    OffloadSupportFormat offloadSupportFormat =
+        new OffloadSupportFormat(
+            format.getEncoding(),
+            format.getSampleRate(),
+            format.getChannelMask(),
+            format.getChannelIndexMask());
+    if (supported) {
+      offloadSupportedMap.put(offloadSupportFormat, attr.getVolumeControlStream());
+    } else {
+      offloadSupportedMap.remove(offloadSupportFormat, attr.getVolumeControlStream());
     }
+  }
+
+  @Implementation(minSdk = Q, maxSdk = R)
+  protected static boolean native_is_offload_supported(
+      int encoding, int sampleRate, int channelMask, int channelIndexMask, int streamType) {
+    return offloadSupportedMap.containsEntry(
+        new OffloadSupportFormat(encoding, sampleRate, channelMask, channelIndexMask), streamType);
+  }
+
+  @Implementation(minSdk = S)
+  protected static int native_get_offload_support(
+      int encoding, int sampleRate, int channelMask, int channelIndexMask, int streamType) {
+    return Optional.ofNullable(
+            offloadPlaybackSupportTable.get(
+                new OffloadSupportFormat(encoding, sampleRate, channelMask, channelIndexMask),
+                streamType))
+        .orElse(AudioSystem.OFFLOAD_NOT_SUPPORTED);
   }
 
   @Resetter
   public static void reset() {
-    synchronized (directPlaybackSupportTable) {
-      directPlaybackSupportTable.clear();
+    directPlaybackSupportTable.clear();
+    offloadPlaybackSupportTable.clear();
+    offloadSupportedMap.clear();
+  }
+
+  /**
+   * Struct to hold specific values from {@link AudioFormat} which are used in {@link
+   * #native_get_offload_support} and {@link #native_is_offload_supported}.
+   */
+  private static class OffloadSupportFormat {
+    public final int encoding;
+    public final int sampleRate;
+    public final int channelMask;
+    public final int channelIndexMask;
+
+    public OffloadSupportFormat(
+        int encoding, int sampleRate, int channelMask, int channelIndexMask) {
+      this.encoding = encoding;
+      this.sampleRate = sampleRate;
+      this.channelMask = channelMask;
+      this.channelIndexMask = channelIndexMask;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof OffloadSupportFormat)) {
+        return false;
+      }
+      OffloadSupportFormat that = (OffloadSupportFormat) o;
+      return encoding == that.encoding
+          && sampleRate == that.sampleRate
+          && channelMask == that.channelMask
+          && channelIndexMask == that.channelIndexMask;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = encoding;
+      result = 31 * result + sampleRate;
+      result = 31 * result + channelMask;
+      result = 31 * result + channelIndexMask;
+      return result;
     }
   }
 }
