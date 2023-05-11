@@ -57,13 +57,17 @@ public class CellInfoLteBuilder {
   }
 
   public CellInfoLte build() {
+    int apiLevel = RuntimeEnvironment.getApiLevel();
     if (cellIdentity == null) {
-      cellIdentity = CellIdentityLteBuilder.getDefaultInstance();
+      if (apiLevel > Build.VERSION_CODES.Q) {
+        cellIdentity = CellIdentityLteBuilder.getDefaultInstance();
+      } else {
+        cellIdentity = CellIdentityLteBuilder.newBuilder().build();
+      }
     }
     if (cellSignalStrength == null) {
       cellSignalStrength = CellSignalStrengthLteBuilder.getDefaultInstance();
     }
-    int apiLevel = RuntimeEnvironment.getApiLevel();
     CellInfoLteReflector cellInfoLteReflector = reflector(CellInfoLteReflector.class);
     if (apiLevel < Build.VERSION_CODES.TIRAMISU) {
       CellInfoLte cellInfo = cellInfoLteReflector.newCellInfoLte();
