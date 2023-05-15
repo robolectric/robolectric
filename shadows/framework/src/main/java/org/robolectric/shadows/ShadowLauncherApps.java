@@ -49,6 +49,7 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowLauncherApps {
   private List<ShortcutInfo> shortcuts = new ArrayList<>();
   private final Multimap<UserHandle, String> enabledPackages = HashMultimap.create();
+  private final Multimap<UserHandle, ComponentName> enabledActivities = HashMultimap.create();
   private final Multimap<UserHandle, LauncherActivityInfo> shortcutActivityList =
       HashMultimap.create();
   private final Multimap<UserHandle, LauncherActivityInfo> activityList = HashMultimap.create();
@@ -99,6 +100,17 @@ public class ShadowLauncherApps {
    */
   public void addEnabledPackage(UserHandle userHandle, String packageName) {
     enabledPackages.put(userHandle, packageName);
+  }
+
+  /**
+   * Sets an activity referenced by ComponentName as enabled, to be checked by {@link
+   * #isActivityEnabled(ComponentName, UserHandle)}.
+   *
+   * @param userHandle the user handle to be set.
+   * @param componentName the component name of the activity to be enabled.
+   */
+  public void setActivityEnabled(UserHandle userHandle, ComponentName componentName) {
+    enabledActivities.put(userHandle, componentName);
   }
 
   /**
@@ -246,10 +258,9 @@ public class ShadowLauncherApps {
         "This method is not currently supported in Robolectric.");
   }
 
-  @Implementation
+  @Implementation(minSdk = L)
   protected boolean isActivityEnabled(ComponentName component, UserHandle user) {
-    throw new UnsupportedOperationException(
-        "This method is not currently supported in Robolectric.");
+    return enabledActivities.containsEntry(user, component);
   }
 
   /**

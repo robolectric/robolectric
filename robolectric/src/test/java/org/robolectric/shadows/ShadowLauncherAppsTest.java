@@ -198,6 +198,20 @@ public class ShadowLauncherAppsTest {
   }
 
   @Test
+  @Config(minSdk = L)
+  public void testIsActivityEnabled() {
+    ComponentName c1 = new ComponentName(ApplicationProvider.getApplicationContext(), "Activity1");
+    ComponentName c2 = new ComponentName(ApplicationProvider.getApplicationContext(), "Activity2");
+    ComponentName c3 = new ComponentName("other", "Activity1");
+    assertThat(launcherApps.isActivityEnabled(c1, USER_HANDLE)).isFalse();
+
+    shadowOf(launcherApps).setActivityEnabled(USER_HANDLE, c1);
+    assertThat(launcherApps.isActivityEnabled(c1, USER_HANDLE)).isTrue();
+    assertThat(launcherApps.isActivityEnabled(c2, USER_HANDLE)).isFalse();
+    assertThat(launcherApps.isActivityEnabled(c3, USER_HANDLE)).isFalse();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void testGetApplicationInfo_packageNotFound() throws Exception {
     Throwable throwable =
