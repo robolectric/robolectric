@@ -94,8 +94,8 @@ class DeployedRoboJavaModulePlugin implements Plugin<Project> {
                     url = project.version.endsWith("-SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
 
                     credentials {
-                        username = System.properties["sonatype-login"] ?: System.env['sonatypeLogin']
-                        password = System.properties["sonatype-password"] ?: System.env['sonatypePassword']
+                        username = System.properties["sonatype-login"] ?: System.env['SONATYPE_LOGIN']
+                        password = System.properties["sonatype-password"] ?: System.env['SONATYPE_PASSWORD']
                     }
                 }
             }

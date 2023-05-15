@@ -49,8 +49,8 @@ if (System.getenv('PUBLISH_NATIVERUNTIME_DIST_COMPAT') == "true") {
         url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
         credentials {
-          username = System.properties["sonatype-login"] ?: System.env['sonatypeLogin']
-          password = System.properties["sonatype-password"] ?: System.env['sonatypePassword']
+          username = System.properties["sonatype-login"] ?: System.env['SONATYPE_LOGIN']
+          password = System.properties["sonatype-password"] ?: System.env['SONATYPE_PASSWORD']
         }
       }
     }
