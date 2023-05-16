@@ -636,6 +636,119 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void setAvailableCommunicationDevices_withCallbackRegistered_noNotificationCallback()
+      throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager).setAvailableCommunicationDevices(Collections.singletonList(device));
+
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      addAvailableCommunicationDevice_withCallbackRegisteredAndNoDevice_deviceAddedAndNotifiesCallback()
+          throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager)
+        .addAvailableCommunicationDevice(device, /* notifyAudioDeviceCallbacks= */ true);
+
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {device});
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      addAvailableCommunicationDeviceNoCallbackNotification_withCallbackRegisteredAndNoDevice_noNotificationCallback()
+          throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager)
+        .addAvailableCommunicationDevice(device, /* notifyAudioDeviceCallbacks= */ false);
+
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      addAvailableCommunicationDevice_withCallbackRegisteredAndDevicePresent_noNotificationCallback()
+          throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager).setAvailableCommunicationDevices(Collections.singletonList(device));
+
+    shadowOf(audioManager)
+        .addAvailableCommunicationDevice(device, /* notifyAudioDeviceCallbacks= */ true);
+
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      removeAvailableCommunicationDevice_withCallbackRegisteredAndDevicePresent_deviceRemovedAndNotifiesCallback()
+          throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager).setAvailableCommunicationDevices(Collections.singletonList(device));
+
+    shadowOf(audioManager)
+        .removeAvailableCommunicationDevice(device, /* notifyAudioDeviceCallbacks= */ true);
+
+    verify(callback).onAudioDevicesRemoved(new AudioDeviceInfo[] {device});
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      removeAvailableCommunicationDeviceNoCallbackNotification_withCallbackRegisteredAndDevicePresent_noNotificationCallback()
+          throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager).setAvailableCommunicationDevices(Collections.singletonList(device));
+
+    shadowOf(audioManager)
+        .removeAvailableCommunicationDevice(device, /* notifyAudioDeviceCallbacks= */ false);
+
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void
+      removeAvailableCommunicationDevice_withCallbackRegisteredAndNoDevice_noNotificationCallback()
+          throws Exception {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+
+    AudioDeviceInfo device = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
+    shadowOf(audioManager)
+        .removeAvailableCommunicationDevice(device, /* notifyAudioDeviceCallbacks= */ true);
+
+    verifyNoMoreInteractions(callback);
+  }
+
+  @Test
   @Config(minSdk = M)
   public void getDevices_criteriaInputs_getsAllInputDevices() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(AudioDeviceInfo.TYPE_BLUETOOTH_SCO);
