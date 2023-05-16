@@ -52,6 +52,7 @@ import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.TelephonyManager.CellInfoCallback;
 import android.telephony.VisualVoicemailSmsFilterSettings;
+import android.telephony.emergency.EmergencyNumber;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -59,6 +60,7 @@ import com.google.common.base.Ascii;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -155,6 +157,7 @@ public class ShadowTelephonyManager {
   private VisualVoicemailSmsParams lastVisualVoicemailSmsParams;
   private VisualVoicemailSmsFilterSettings visualVoicemailSmsFilterSettings;
   private boolean emergencyCallbackMode;
+  private static Map<Integer, List<EmergencyNumber>> emergencyNumbersList;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -172,6 +175,7 @@ public class ShadowTelephonyManager {
   @Resetter
   public static void reset() {
     callComposerStatus = 0;
+    emergencyNumbersList = null;
   }
 
   @Implementation(minSdk = S)
@@ -1410,5 +1414,26 @@ public class ShadowTelephonyManager {
     public PendingIntent getSentIntent() {
       return sentIntent;
     }
+  }
+
+  /**
+   * Sets the emergency numbers list returned by {@link TelephonyManager#getEmergencyNumberList}.
+   */
+  public static void setEmergencyNumberList(
+      Map<Integer, List<EmergencyNumber>> emergencyNumbersList) {
+    ShadowTelephonyManager.emergencyNumbersList = emergencyNumbersList;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#getEmergencyNumberList}.
+   *
+   * @return an immutable map by default, unless set with {@link #setEmergencyNumberList}.
+   */
+  @Implementation(minSdk = R)
+  protected Map<Integer, List<EmergencyNumber>> getEmergencyNumberList() {
+    if (ShadowTelephonyManager.emergencyNumbersList != null) {
+      return ShadowTelephonyManager.emergencyNumbersList;
+    }
+    return ImmutableMap.of();
   }
 }
