@@ -141,7 +141,8 @@ public class ReflectionHelpersTest {
   }
 
   @Test
-  public void callInstanceMethodReflectively_whenMultipleSignaturesExistForAMethodName_callsMethodWithCorrectSignature() {
+  public void
+      callInstanceMethodReflectively_whenMultipleSignaturesExistForAMethodName_callsMethodWithCorrectSignature() {
     ExampleDescendant example = new ExampleDescendant();
     int returnNumber =
         ReflectionHelpers.callInstanceMethod(
@@ -282,23 +283,35 @@ public class ReflectionHelpersTest {
   }
 
   @Test
-  public void callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
-    ExampleClass ec = ReflectionHelpers.callConstructor(ExampleClass.class, ClassParameter.from(int.class, 16));
+  public void
+      callConstructorReflectively_whenMultipleSignaturesExistForTheConstructor_callsConstructorWithCorrectSignature() {
+    ExampleClass ec =
+        ReflectionHelpers.callConstructor(ExampleClass.class, ClassParameter.from(int.class, 16));
     assertWithMessage("index").that(ec.index).isEqualTo(16);
     assertWithMessage("name").that(ec.name).isNull();
   }
 
-  @SuppressWarnings("serial")
-  private static class TestError extends Error {
+  @Test
+  public void callHasField_withstaticandregularmember() {
+    assertWithMessage("has field failed for member: unusedName")
+        .that(ReflectionHelpers.hasField(FieldTestClass.class, "unusedName"))
+        .isTrue();
+    assertWithMessage("has field failed for member: unusedStaticName")
+        .that(ReflectionHelpers.hasField(FieldTestClass.class, "unusedStaticName"))
+        .isTrue();
+    assertWithMessage("has field failed for non existant member: noname")
+        .that(ReflectionHelpers.hasField(FieldTestClass.class, "noname"))
+        .isFalse();
   }
 
   @SuppressWarnings("serial")
-  private static class TestException extends Exception {
-  }
+  private static class TestError extends Error {}
 
   @SuppressWarnings("serial")
-  private static class TestRuntimeException extends RuntimeException {
-  }
+  private static class TestException extends Exception {}
+
+  @SuppressWarnings("serial")
+  private static class TestRuntimeException extends RuntimeException {}
 
   @SuppressWarnings("unused")
   private static class ExampleBase {
@@ -405,5 +418,12 @@ public class ReflectionHelpersTest {
     private ExampleClass(int index) {
       this.index = index;
     }
+  }
+
+  private static class FieldTestClass {
+    public String unusedName;
+    public static String unusedStaticName = "unusedStaticNameValue";
+
+    private FieldTestClass() {}
   }
 }

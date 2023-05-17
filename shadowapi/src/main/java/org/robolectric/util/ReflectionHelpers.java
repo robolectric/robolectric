@@ -10,7 +10,6 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 /** Collection of helper methods for calling methods and accessing fields reflectively. */
 @SuppressWarnings(value = {"unchecked", "TypeParameterUnusedInFormals", "NewApi"})
@@ -45,9 +44,10 @@ public class ReflectionHelpers {
    * <p>The returned object will be an instance of the given class, but all methods will return
    * either the "default" value for primitives, or another deep proxy for non-primitive types.
    *
-   * <p>This should be used rarely, for cases where we need to create deep proxies in order not
-   * to crash. The inner proxies are impossible to configure, so there is no way to create
-   * meaningful behavior from a deep proxy. It serves mainly to prevent Null Pointer Exceptions.
+   * <p>This should be used rarely, for cases where we need to create deep proxies in order not to
+   * crash. The inner proxies are impossible to configure, so there is no way to create meaningful
+   * behavior from a deep proxy. It serves mainly to prevent Null Pointer Exceptions.
+   *
    * @param clazz the class to provide a proxy instance of.
    * @return a new "Deep Proxy" instance of the given class.
    */
@@ -127,7 +127,8 @@ public class ReflectionHelpers {
    * @param fieldName The field name.
    * @param fieldNewValue New value.
    */
-  public static void setField(final Object object, final String fieldName, final Object fieldNewValue) {
+  public static void setField(
+      final Object object, final String fieldName, final Object fieldNewValue) {
     try {
       traverseClassHierarchy(
           object.getClass(),
@@ -152,13 +153,30 @@ public class ReflectionHelpers {
    * @param fieldName The field name.
    * @param fieldNewValue New value.
    */
-  public static void setField(Class<?> type, final Object object, final String fieldName, final Object fieldNewValue) {
+  public static void setField(
+      Class<?> type, final Object object, final String fieldName, final Object fieldNewValue) {
     try {
       Field field = type.getDeclaredField(fieldName);
       field.setAccessible(true);
       field.set(object, fieldNewValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Reflectively check if a class has a given field (static or non static).
+   *
+   * @param clazz Target class.
+   * @param fieldName The field name.
+   * @return boolean to indicate whether the field exists or not in clazz.
+   */
+  public static boolean hasField(Class<?> clazz, String fieldName) {
+    try {
+      Field field = clazz.getDeclaredField(fieldName);
+      return (field != null);
+    } catch (NoSuchFieldException e) {
+      return false;
     }
   }
 
@@ -392,7 +410,9 @@ public class ReflectionHelpers {
   public static <T> T newInstance(Class<T> cl) {
     try {
       return cl.getDeclaredConstructor().newInstance();
-    } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
+    } catch (InstantiationException
+        | IllegalAccessException
+        | NoSuchMethodException
         | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
@@ -465,15 +485,15 @@ public class ReflectionHelpers {
    */
   public static class ClassParameter<V> {
     public final Class<? extends V> clazz;
-    public final V val;
+    public final V value;
 
-    public ClassParameter(Class<? extends V> clazz, V val) {
+    public ClassParameter(Class<? extends V> clazz, V value) {
       this.clazz = clazz;
-      this.val = val;
+      this.value = value;
     }
 
-    public static <V> ClassParameter<V> from(Class<? extends V> clazz, V val) {
-      return new ClassParameter<>(clazz, val);
+    public static <V> ClassParameter<V> from(Class<? extends V> clazz, V value) {
+      return new ClassParameter<>(clazz, value);
     }
 
     public static ClassParameter<?>[] fromComponentLists(Class<?>[] classes, Object[] values) {
@@ -496,7 +516,7 @@ public class ReflectionHelpers {
     public static Object[] getValues(ClassParameter<?>... classParameters) {
       Object[] values = new Object[classParameters.length];
       for (int i = 0; i < classParameters.length; i++) {
-        Object paramValue = classParameters[i].val;
+        Object paramValue = classParameters[i].value;
         values[i] = paramValue;
       }
       return values;
@@ -510,15 +530,15 @@ public class ReflectionHelpers {
    */
   public static class StringParameter<V> {
     public final String className;
-    public final V val;
+    public final V value;
 
-    public StringParameter(String className, V val) {
+    public StringParameter(String className, V value) {
       this.className = className;
-      this.val = val;
+      this.value = value;
     }
 
-    public static <V> StringParameter<V> from(String className, V val) {
-      return new StringParameter<>(className, val);
+    public static <V> StringParameter<V> from(String className, V value) {
+      return new StringParameter<>(className, value);
     }
   }
 }

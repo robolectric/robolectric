@@ -187,6 +187,6 @@ public class AndroidInterceptorsIntegrationTest {
         callsite
             .dynamicInvoker()
             .invokeWithArguments(
-                Arrays.stream(params).map(param -> param.val).collect(Collectors.toList()));
+                Arrays.stream(params).map(param -> param.value).collect(Collectors.toList()));
   }
 }
