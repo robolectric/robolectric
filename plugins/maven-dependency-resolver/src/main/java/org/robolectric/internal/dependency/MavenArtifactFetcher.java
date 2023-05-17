@@ -2,6 +2,7 @@ package org.robolectric.internal.dependency;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.base.Strings;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
@@ -24,6 +25,7 @@ import java.net.URLConnection;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import javax.annotation.Nonnull;
 import org.robolectric.util.Logger;
 
 /**
@@ -82,15 +84,27 @@ public class MavenArtifactFetcher {
                   return Futures.immediateFuture(null);
                 }
                 createArtifactSubdirectory(artifact, localRepositoryDir);
-                boolean pomValid =
+                ValidationResult pomResult =
                     validateStagedFiles(artifact.pomPath(), artifact.pomSha512Path());
-                if (!pomValid) {
-                  throw new AssertionError("SHA512 mismatch for POM file fetched in " + artifact);
+                if (!pomResult.isSuccess()) {
+                  throw new AssertionError(
+                      "SHA-512 mismatch for POM file for "
+                          + artifact
+                          + ", expected SHA-512="
+                          + pomResult.expectedHashCode()
+                          + ", actual SHA-512="
+                          + pomResult.calculatedHashCode());
                 }
-                boolean jarValid =
+                ValidationResult jarResult =
                     validateStagedFiles(artifact.jarPath(), artifact.jarSha512Path());
-                if (!jarValid) {
-                  throw new AssertionError("SHA512 mismatch for JAR file fetched in " + artifact);
+                if (!jarResult.isSuccess()) {
+                  throw new AssertionError(
+                      "SHA-512 mismatch for POM file for "
+                          + artifact
+                          + ", expected SHA-512="
+                          + jarResult.expectedHashCode()
+                          + ", actual SHA-512="
+                          + jarResult.calculatedHashCode());
                 }
                 Logger.info(
                     String.format(
@@ -123,7 +137,8 @@ public class MavenArtifactFetcher {
     new File(repositoryDir, artifact.pomSha512Path()).delete();
   }
 
-  private boolean validateStagedFiles(String filePath, String sha512Path) throws IOException {
+  private ValidationResult validateStagedFiles(String filePath, String sha512Path)
+      throws IOException {
     File tempFile = new File(this.stagingRepositoryDir, filePath);
     File sha512File = new File(this.stagingRepositoryDir, sha512Path);
 
@@ -131,7 +146,24 @@ public class MavenArtifactFetcher {
         HashCode.fromString(new String(Files.asByteSource(sha512File).read(), UTF_8));
 
     HashCode actual = Files.asByteSource(tempFile).hash(Hashing.sha512());
-    return expected.equals(actual);
+    return ValidationResult.create(expected.equals(actual), expected.toString(), actual.toString());
+  }
+
+  @AutoValue
+  abstract static class ValidationResult {
+    abstract boolean isSuccess();
+
+    @Nonnull
+    abstract String expectedHashCode();
+
+    @Nonnull
+    abstract String calculatedHashCode();
+
+    static ValidationResult create(
+        boolean isSuccess, String expectedHashCode, String calculatedHashCode) {
+      return new AutoValue_MavenArtifactFetcher_ValidationResult(
+          isSuccess, expectedHashCode, calculatedHashCode);
+    }
   }
 
   private void createArtifactSubdirectory(MavenJarArtifact artifact, File repositoryDir)
@@ -218,6 +250,9 @@ public class MavenArtifactFetcher {
       try (InputStream inputStream = connection.getInputStream();
           FileOutputStream outputStream = new FileOutputStream(localFile)) {
         ByteStreams.copy(inputStream, outputStream);
+        // Ensure all contents are written to disk.
+        outputStream.flush();
+        outputStream.getFD().sync();
       }
       return Futures.immediateFuture(null);
     }

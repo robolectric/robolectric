@@ -255,8 +255,16 @@ public class ShadowDisplayEventReceiver {
       for (int i = 0; i < timelineArrayLength; i++) {
         Array.set(timelineArray, i, frameTimelineReflector.newFrameTimeline(1, 1, 10));
       }
-      return vsyncEventDataReflector.newVsyncEventData(
-          timelineArray, /* preferredFrameTimelineIndex= */ 0, /* frameInterval= */ 1);
+      if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
+        return vsyncEventDataReflector.newVsyncEventData(
+            timelineArray, /* preferredFrameTimelineIndex= */ 0, /* frameInterval= */ 1);
+      } else {
+        return vsyncEventDataReflector.newVsyncEventData(
+            timelineArray,
+            /* preferredFrameTimelineIndex= */ 0,
+            timelineArrayLength,
+            /* frameInterval= */ 1);
+      }
     } catch (ClassNotFoundException e) {
       throw new LinkageError("Unable to construct VsyncEventData", e);
     }
@@ -298,6 +306,14 @@ public class ShadowDisplayEventReceiver {
         @WithType("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
             Object frameTimelineArray,
         int preferredFrameTimelineIndex,
+        long frameInterval);
+
+    @Constructor
+    Object newVsyncEventData(
+        @WithType("[Landroid.view.DisplayEventReceiver$VsyncEventData$FrameTimeline;")
+            Object frameTimelineArray,
+        int preferredFrameTimelineIndex,
+        int timelineArrayLength,
         long frameInterval);
   }
 

@@ -70,7 +70,8 @@ public class ShadowUserManagerTest {
     UserHandle anotherProfile = newUserHandle(2);
     shadowOf(userManager).addUserProfile(anotherProfile);
 
-    assertThat(userManager.getUserProfiles()).containsExactly(Process.myUserHandle(), anotherProfile);
+    assertThat(userManager.getUserProfiles())
+        .containsExactly(Process.myUserHandle(), anotherProfile);
   }
 
   @Test
@@ -267,7 +268,8 @@ public class ShadowUserManagerTest {
     try {
       userManager.isManagedProfile();
       fail("Expected exception");
-    } catch (SecurityException expected) {}
+    } catch (SecurityException expected) {
+    }
 
     setPermissions(permission.MANAGE_USERS);
 
@@ -344,8 +346,8 @@ public class ShadowUserManagerTest {
   @Config(minSdk = R)
   public void getUserHandles() {
     assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).size()).isEqualTo(1);
-    assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).get(0).myUserId())
-        .isEqualTo(UserHandle.USER_SYSTEM);
+    shadowOf(userManager).getUserHandles(/* excludeDying= */ true).get(0);
+    assertThat(UserHandle.myUserId()).isEqualTo(UserHandle.USER_SYSTEM);
 
     UserHandle expectedUserHandle = shadowOf(userManager).addUser(10, "secondary_user", 0);
     assertThat(shadowOf(userManager).getUserHandles(/* excludeDying= */ true).size()).isEqualTo(2);
@@ -602,6 +604,34 @@ public class ShadowUserManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void removeSecondaryUser_noExistingUser_doesNotRemove() {
+    assertThat(shadowOf(userManager).removeUser(UserHandle.of(10))).isFalse();
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void removeUserWhenPossible_twoUsersRemoveOne_hasOneUserLeft() {
+    shadowOf(userManager).addUser(10, "secondary_user", 0);
+    assertThat(
+            userManager.removeUserWhenPossible(
+                UserHandle.of(10), /* overrideDevicePolicy= */ false))
+        .isEqualTo(UserManager.REMOVE_RESULT_REMOVED);
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void removeUserWhenPossible_nonExistingUser_fails() {
+    assertThat(
+            userManager.removeUserWhenPossible(
+                UserHandle.of(10), /* overrideDevicePolicy= */ false))
+        .isEqualTo(UserManager.REMOVE_RESULT_ERROR_UNKNOWN);
+    assertThat(userManager.getUserCount()).isEqualTo(1);
+  }
+
+  @Test
   @Config(minSdk = JELLY_BEAN_MR1)
   public void switchToSecondaryUser() {
     shadowOf(userManager).addUser(10, "secondary_user", 0);
@@ -690,8 +720,8 @@ public class ShadowUserManagerTest {
   @Config(minSdk = LOLLIPOP)
   public void getProfiles_addedProfile_containsProfile() {
     shadowOf(userManager).addUser(TEST_USER_HANDLE, "", 0);
-    shadowOf(userManager).addProfile(
-        TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
+    shadowOf(userManager)
+        .addProfile(TEST_USER_HANDLE, PROFILE_USER_HANDLE, PROFILE_USER_NAME, PROFILE_USER_FLAGS);
 
     // getProfiles(userId) include user itself and asssociated profiles.
     assertThat(userManager.getProfiles(TEST_USER_HANDLE).get(0).id).isEqualTo(TEST_USER_HANDLE);
@@ -880,7 +910,6 @@ public class ShadowUserManagerTest {
     assertThat(UserManager.supportsMultipleUsers()).isTrue();
   }
 
-
   @Test
   @Config(minSdk = Q)
   public void getUserSwitchability_shouldReturnLastSetSwitchability() {
@@ -889,8 +918,7 @@ public class ShadowUserManagerTest {
         .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
     assertThat(userManager.getUserSwitchability())
         .isEqualTo(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
-    shadowOf(userManager)
-        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    shadowOf(userManager).setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
     assertThat(userManager.getUserSwitchability()).isEqualTo(UserManager.SWITCHABILITY_STATUS_OK);
   }
 
@@ -910,8 +938,7 @@ public class ShadowUserManagerTest {
     shadowOf(userManager)
         .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED);
     assertThat(userManager.canSwitchUsers()).isFalse();
-    shadowOf(userManager)
-        .setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
+    shadowOf(userManager).setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
     assertThat(userManager.canSwitchUsers()).isTrue();
   }
 
@@ -919,7 +946,7 @@ public class ShadowUserManagerTest {
   @Config(minSdk = Q)
   public void getUserName_shouldReturnSetUserName() {
     shadowOf(userManager).setUserSwitchability(UserManager.SWITCHABILITY_STATUS_OK);
-    shadowOf(userManager).addUser(10, PROFILE_USER_NAME, /* flags = */ 0);
+    shadowOf(userManager).addUser(10, PROFILE_USER_NAME, /* flags= */ 0);
     shadowOf(userManager).switchUser(10);
     assertThat(userManager.getUserName()).isEqualTo(PROFILE_USER_NAME);
   }
@@ -930,7 +957,7 @@ public class ShadowUserManagerTest {
     userManager.setUserIcon(TEST_USER_ICON);
     assertThat(userManager.getUserIcon()).isEqualTo(TEST_USER_ICON);
 
-    shadowOf(userManager).addUser(10, PROFILE_USER_NAME, /* flags = */ 0);
+    shadowOf(userManager).addUser(10, PROFILE_USER_NAME, /* flags= */ 0);
     shadowOf(userManager).switchUser(10);
     assertThat(userManager.getUserIcon()).isNull();
   }

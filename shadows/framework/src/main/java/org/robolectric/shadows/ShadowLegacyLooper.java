@@ -58,7 +58,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
   @Resetter
   public static synchronized void resetThreadLoopers() {
     // do not use looperMode() here, because its cached value might already have been reset
-    if (ConfigurationRegistry.get(LooperMode.Mode.class) == LooperMode.Mode.PAUSED) {
+    if (ConfigurationRegistry.get(LooperMode.Mode.class) != LooperMode.Mode.LEGACY) {
       // ignore if realistic looper
       return;
     }

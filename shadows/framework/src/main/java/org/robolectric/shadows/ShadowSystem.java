@@ -13,10 +13,10 @@ public class ShadowSystem {
    */
   @SuppressWarnings("unused")
   public static long nanoTime() {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis());
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       return ShadowLegacySystemClock.nanoTime();
+    } else {
+      return TimeUnit.MILLISECONDS.toNanos(SystemClock.uptimeMillis());
     }
   }
 
@@ -27,10 +27,10 @@ public class ShadowSystem {
    */
   @SuppressWarnings("unused")
   public static long currentTimeMillis() {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return SystemClock.uptimeMillis();
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       return ShadowLegacySystemClock.currentTimeMillis();
+    } else {
+      return SystemClock.uptimeMillis();
     }
   }
 }

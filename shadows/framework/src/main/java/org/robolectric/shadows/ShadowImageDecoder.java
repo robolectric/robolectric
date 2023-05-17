@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorSpace;
+import android.graphics.ColorSpace.Named;
 import android.graphics.ImageDecoder;
 import android.graphics.ImageDecoder.DecodeException;
 import android.graphics.ImageDecoder.Source;
@@ -247,14 +248,16 @@ public class ShadowImageDecoder {
   static String ImageDecoder_nGetMimeType(long nativePtr) {
     CppImageDecoder decoder = NATIVE_IMAGE_DECODER_REGISTRY.getNativeObject(nativePtr);
     // return encodedFormatToString(decoder.mCodec.getEncodedFormat());
-    throw new UnsupportedOperationException();
+    // TODO: fix this properly. Just hardcode to png for now or just remove GraphicsMode.LEGACY
+    return "image/png";
   }
 
   static ColorSpace ImageDecoder_nGetColorSpace(long nativePtr) {
     // auto colorType = codec.computeOutputColorType(codec.getInfo().colorType());
     // sk_sp<SkColorSpace> colorSpace = codec.computeOutputColorSpace(colorType);
     // return GraphicsJNI.getColorSpace(colorSpace, colorType);
-    throw new UnsupportedOperationException();
+    // TODO: fix this properly. Just hardcode to SRGB for now or just remove GraphicsMode.LEGACY
+    return ColorSpace.get(Named.SRGB);
   }
 
   // native method implementations...

@@ -112,6 +112,15 @@ public class ShadowPaint {
   }
 
   @Implementation
+  protected void setStrikeThruText(boolean strikeThruText) {
+    if (strikeThruText) {
+      setFlags(flags | Paint.STRIKE_THRU_TEXT_FLAG);
+    } else {
+      setFlags(flags & ~Paint.STRIKE_THRU_TEXT_FLAG);
+    }
+  }
+
+  @Implementation
   protected Shader setShader(Shader shader) {
     this.shader = shader;
     return shader;

@@ -66,10 +66,10 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemNanoTime_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      SystemClock.setCurrentTimeMillis(200);
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
+    } else {
+      SystemClock.setCurrentTimeMillis(200);
     }
 
     long nanoTime = invokeDynamic(System.class, "nanoTime", long.class);
@@ -78,10 +78,10 @@ public class AndroidInterceptorsIntegrationTest {
 
   @Test
   public void systemCurrentTimeMillis_shouldReturnShadowClockTime() throws Throwable {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      SystemClock.setCurrentTimeMillis(200);
-    } else {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       ShadowSystemClock.setNanoTime(Duration.ofMillis(200).toNanos());
+    } else {
+      SystemClock.setCurrentTimeMillis(200);
     }
 
     long currentTimeMillis = invokeDynamic(System.class, "currentTimeMillis", long.class);
@@ -187,6 +187,6 @@ public class AndroidInterceptorsIntegrationTest {
         callsite
             .dynamicInvoker()
             .invokeWithArguments(
-                Arrays.stream(params).map(param -> param.val).collect(Collectors.toList()));
+                Arrays.stream(params).map(param -> param.value).collect(Collectors.toList()));
   }
 }

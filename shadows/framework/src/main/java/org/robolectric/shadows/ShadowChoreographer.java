@@ -55,13 +55,13 @@ public abstract class ShadowChoreographer {
    * <p>Only works in {@link LooperMode.Mode#PAUSED} looper mode.
    */
   public static void setFrameDelay(Duration delay) {
-    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
+    checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     frameDelay = delay;
   }
 
   /** See {@link #setFrameDelay(Duration)}. */
   public static Duration getFrameDelay() {
-    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
+    checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     return frameDelay;
   }
 
@@ -73,13 +73,13 @@ public abstract class ShadowChoreographer {
    * <p>Only works in {@link LooperMode.Mode#PAUSED} looper mode.
    */
   public static void setPaused(boolean paused) {
-    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
+    checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     isPaused = paused;
   }
 
   /** See {@link #setPaused(boolean)}. */
   public static boolean isPaused() {
-    checkState(ShadowLooper.looperMode().equals(Mode.PAUSED), "Looper must be %s", Mode.PAUSED);
+    checkState(!ShadowLooper.looperMode().equals(Mode.LEGACY), "Looper cannot be %s", Mode.LEGACY);
     return isPaused;
   }
 
@@ -110,11 +110,11 @@ public abstract class ShadowChoreographer {
    */
   @Deprecated
   public static void setPostFrameCallbackDelay(int delayMillis) {
-    if (looperMode() == Mode.PAUSED) {
+    if (looperMode() == Mode.LEGACY) {
+      ShadowLegacyChoreographer.setPostFrameCallbackDelay(delayMillis);
+    } else {
       setPaused(delayMillis != 0);
       setFrameDelay(Duration.ofMillis(delayMillis == 0 ? 1 : delayMillis));
-    } else {
-      ShadowLegacyChoreographer.setPostFrameCallbackDelay(delayMillis);
     }
   }
 

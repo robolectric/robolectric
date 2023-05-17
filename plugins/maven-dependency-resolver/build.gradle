@@ -49,7 +49,9 @@ afterEvaluate {
 dependencies {
     api project(":pluginapi")
     api project(":utils")
+    api libs.auto.value.annotations
     api libs.guava
+    annotationProcessor libs.auto.value
 
     testImplementation libs.junit4
     testImplementation libs.mockito

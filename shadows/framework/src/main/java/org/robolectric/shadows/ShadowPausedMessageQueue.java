@@ -59,7 +59,16 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     invokeConstructor(MessageQueue.class, realQueue, from(boolean.class, quitAllowed));
     int ptr = (int) nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
-    clockListener = () -> nativeWake(ptr);
+    clockListener =
+        () -> {
+          synchronized (realQueue) {
+            // only wake up the Looper thread if queue is non empty to reduce contention if many
+            // Looper threads are active
+            if (getMessages() != null) {
+              nativeWake(ptr);
+            }
+          }
+        };
     ShadowPausedSystemClock.addStaticListener(clockListener);
   }
 

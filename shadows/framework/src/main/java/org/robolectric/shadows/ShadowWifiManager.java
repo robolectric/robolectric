@@ -6,6 +6,8 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static java.util.stream.Collectors.toList;
 
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
@@ -20,14 +22,19 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.AddNetworkResult;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.Pair;
 import com.google.common.collect.ImmutableList;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -75,6 +82,8 @@ public class ShadowWifiManager {
   @RealObject WifiManager wifiManager;
   private WifiConfiguration apConfig;
   private SoftApConfiguration softApConfig;
+  private final Object pnoRequestLock = new Object();
+  private PnoScanRequest outstandingPnoScanRequest = null;
 
   @Implementation
   protected boolean setWifiEnabled(boolean wifiEnabled) {
@@ -720,6 +729,178 @@ public class ShadowWifiManager {
       this.seqNum = seqNum;
       this.score = score;
       this.predictionHorizonSec = predictionHorizonSec;
+    }
+  }
+
+  /** Informs the {@link WifiManager} of a list of PNO {@link ScanResult}. */
+  public void networksFoundFromPnoScan(List<ScanResult> scanResults) {
+    synchronized (pnoRequestLock) {
+      List<ScanResult> scanResultsCopy = List.copyOf(scanResults);
+      if (outstandingPnoScanRequest == null
+          || outstandingPnoScanRequest.ssids.stream()
+              .noneMatch(
+                  ssid ->
+                      scanResultsCopy.stream()
+                          .anyMatch(scanResult -> scanResult.getWifiSsid().equals(ssid)))) {
+        return;
+      }
+      Executor executor = outstandingPnoScanRequest.executor;
+      InternalPnoScanResultsCallback callback = outstandingPnoScanRequest.callback;
+      executor.execute(() -> callback.onScanResultsAvailable(scanResultsCopy));
+      Intent intent = createPnoScanResultsBroadcastIntent();
+      getContext().sendBroadcast(intent);
+      executor.execute(
+          () ->
+              callback.onRemoved(
+                  InternalPnoScanResultsCallback.REMOVE_PNO_CALLBACK_RESULTS_DELIVERED));
+      outstandingPnoScanRequest = null;
+    }
+  }
+
+  // Object needs to be used here since PnoScanResultsCallback is hidden. The looseSignatures spec
+  // requires that all args are of type Object.
+  @Implementation(minSdk = TIRAMISU)
+  @HiddenApi
+  protected void setExternalPnoScanRequest(
+      Object ssids, Object frequencies, Object executor, Object callback) {
+    synchronized (pnoRequestLock) {
+      if (callback == null) {
+        throw new IllegalArgumentException("callback cannot be null");
+      }
+
+      List<WifiSsid> pnoSsids = (List<WifiSsid>) ssids;
+      int[] pnoFrequencies = (int[]) frequencies;
+      Executor pnoExecutor = (Executor) executor;
+      InternalPnoScanResultsCallback pnoCallback = new InternalPnoScanResultsCallback(callback);
+
+      if (pnoExecutor == null) {
+        throw new IllegalArgumentException("executor cannot be null");
+      }
+      if (pnoSsids == null || pnoSsids.isEmpty()) {
+        // The real WifiServiceImpl throws an IllegalStateException in this case, so keeping it the
+        // same for consistency.
+        throw new IllegalStateException("Ssids can't be null or empty");
+      }
+      if (pnoSsids.size() > 2) {
+        throw new IllegalArgumentException("Ssid list can't be greater than 2");
+      }
+      if (pnoFrequencies != null && pnoFrequencies.length > 10) {
+        throw new IllegalArgumentException("Length of frequencies must be smaller than 10");
+      }
+      int uid = Binder.getCallingUid();
+      String packageName = getContext().getPackageName();
+
+      if (outstandingPnoScanRequest != null) {
+        pnoExecutor.execute(
+            () ->
+                pnoCallback.onRegisterFailed(
+                    uid == outstandingPnoScanRequest.uid
+                        ? InternalPnoScanResultsCallback.REGISTER_PNO_CALLBACK_ALREADY_REGISTERED
+                        : InternalPnoScanResultsCallback.REGISTER_PNO_CALLBACK_RESOURCE_BUSY));
+        return;
+      }
+
+      outstandingPnoScanRequest =
+          new PnoScanRequest(pnoSsids, pnoFrequencies, pnoExecutor, pnoCallback, packageName, uid);
+      pnoExecutor.execute(pnoCallback::onRegisterSuccess);
+    }
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  @HiddenApi
+  protected void clearExternalPnoScanRequest() {
+    synchronized (pnoRequestLock) {
+      if (outstandingPnoScanRequest != null
+          && outstandingPnoScanRequest.uid == Binder.getCallingUid()) {
+        InternalPnoScanResultsCallback callback = outstandingPnoScanRequest.callback;
+        outstandingPnoScanRequest.executor.execute(
+            () ->
+                callback.onRemoved(
+                    InternalPnoScanResultsCallback.REMOVE_PNO_CALLBACK_UNREGISTERED));
+        outstandingPnoScanRequest = null;
+      }
+    }
+  }
+
+  private static class PnoScanRequest {
+    private final List<WifiSsid> ssids;
+    private final List<Integer> frequencies;
+    private final Executor executor;
+    private final InternalPnoScanResultsCallback callback;
+    private final String packageName;
+    private final int uid;
+
+    private PnoScanRequest(
+        List<WifiSsid> ssids,
+        int[] frequencies,
+        Executor executor,
+        InternalPnoScanResultsCallback callback,
+        String packageName,
+        int uid) {
+      this.ssids = List.copyOf(ssids);
+      this.frequencies =
+          frequencies == null ? List.of() : Arrays.stream(frequencies).boxed().collect(toList());
+      this.executor = executor;
+      this.callback = callback;
+      this.packageName = packageName;
+      this.uid = uid;
+    }
+  }
+
+  private Intent createPnoScanResultsBroadcastIntent() {
+    Intent intent = new Intent(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+    intent.putExtra(WifiManager.EXTRA_RESULTS_UPDATED, true);
+    intent.setPackage(outstandingPnoScanRequest.packageName);
+    return intent;
+  }
+
+  private static class InternalPnoScanResultsCallback {
+    static final int REGISTER_PNO_CALLBACK_ALREADY_REGISTERED = 1;
+    static final int REGISTER_PNO_CALLBACK_RESOURCE_BUSY = 2;
+    static final int REMOVE_PNO_CALLBACK_RESULTS_DELIVERED = 1;
+    static final int REMOVE_PNO_CALLBACK_UNREGISTERED = 2;
+
+    final Object callback;
+    final Method availableCallback;
+    final Method successCallback;
+    final Method failedCallback;
+    final Method removedCallback;
+
+    InternalPnoScanResultsCallback(Object callback) {
+      this.callback = callback;
+      try {
+        Class<?> pnoCallbackClass = callback.getClass();
+        availableCallback = pnoCallbackClass.getMethod("onScanResultsAvailable", List.class);
+        successCallback = pnoCallbackClass.getMethod("onRegisterSuccess");
+        failedCallback = pnoCallbackClass.getMethod("onRegisterFailed", int.class);
+        removedCallback = pnoCallbackClass.getMethod("onRemoved", int.class);
+      } catch (NoSuchMethodException e) {
+        throw new IllegalArgumentException("callback is not of type PnoScanResultsCallback", e);
+      }
+    }
+
+    void onScanResultsAvailable(List<ScanResult> scanResults) {
+      invokeCallback(availableCallback, scanResults);
+    }
+
+    void onRegisterSuccess() {
+      invokeCallback(successCallback);
+    }
+
+    void onRegisterFailed(int reason) {
+      invokeCallback(failedCallback, reason);
+    }
+
+    void onRemoved(int reason) {
+      invokeCallback(removedCallback, reason);
+    }
+
+    void invokeCallback(Method method, Object... args) {
+      try {
+        method.invoke(callback, args);
+      } catch (IllegalAccessException | InvocationTargetException e) {
+        throw new IllegalStateException("Failed to invoke " + method.getName(), e);
+      }
     }
   }
 }

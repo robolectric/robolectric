@@ -71,6 +71,15 @@ public class ShadowPaintTest {
   }
 
   @Test
+  public void shouldSetStrikeThruText() {
+    Paint paint = new Paint();
+    paint.setStrikeThruText(true);
+    assertThat(paint.isStrikeThruText()).isTrue();
+    paint.setStrikeThruText(false);
+    assertThat(paint.isStrikeThruText()).isFalse();
+  }
+
+  @Test
   public void measureTextActuallyMeasuresLength() {
     Paint paint = new Paint();
     assertThat(paint.measureText("Hello")).isEqualTo(5.0f);
