@@ -25,6 +25,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
+/** Shadow for {@link SystemVibrator}. */
 @Implements(value = SystemVibrator.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowSystemVibrator extends ShadowVibrator {
 
