@@ -48,7 +48,10 @@ afterEvaluate {
 dependencies {
     api project(":pluginapi")
     api project(":utils")
+    api "com.google.auto.value:auto-value-annotations:1.10.1"
     api "com.google.guava:guava:$guavaJREVersion"
+
+    annotationProcessor "com.google.auto.value:auto-value:1.10.1"
 
     testImplementation "junit:junit:$junitVersion"
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
