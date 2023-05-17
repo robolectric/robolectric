@@ -22,7 +22,7 @@ aggregate-javadocs-gradle = "3.0.1"
 
 # https://github.com/google/error-prone/releases
 error-prone = "2.19.1"
-error-prone-javac = "9+181-r4173-1"
+error-prone-javac = "1+"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
 error-prone-gradle = "3.1.0"
