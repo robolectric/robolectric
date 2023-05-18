@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -33,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.res.android.Ref;
 import org.robolectric.shadow.api.Shadow;
@@ -619,6 +621,43 @@ public class ShadowPausedLooperTest {
 
     assertThat(backgroundThreadPosted.get()).isTrue();
     assertThat(foregroundThreadReceived.get()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void runOneTask_ignoreSyncBarrier() {
+    int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
+
+    final AtomicBoolean wasRun = new AtomicBoolean(false);
+    new Handler(Looper.getMainLooper()).post(() -> wasRun.set(true));
+
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    shadowPausedLooper.runOneTask();
+
+    // tasks should not be executed when blocked by a sync barrier
+    assertThat(wasRun.get()).isFalse();
+    // sync barrier will throw if the barrier was not found.
+    Looper.getMainLooper().getQueue().removeSyncBarrier(barrier);
+
+    shadowPausedLooper.runOneTask();
+    assertThat(wasRun.get()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.P)
+  public void runOneTask_ignoreSyncBarrier_with_async() {
+    int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
+
+    final AtomicBoolean wasRun = new AtomicBoolean(false);
+    Handler.createAsync(Looper.getMainLooper()).post(() -> wasRun.set(true));
+
+    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
+    shadowPausedLooper.runOneTask();
+
+    // tasks should be executed as the handler is async
+    assertThat(wasRun.get()).isTrue();
+    // sync barrier will throw if the barrier was not found.
+    Looper.getMainLooper().getQueue().removeSyncBarrier(barrier);
   }
 
   private static class BlockingRunnable implements Runnable {
