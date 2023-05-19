@@ -316,7 +316,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
         return Duration.ZERO;
       }
       while (next != null) {
-        when = shadowOfMsg(next).getWhen();
+        if (next.getTarget() != null) {
+          when = shadowOfMsg(next).getWhen();
+        }
         next = shadowOfMsg(next).internalGetNext();
       }
     }
@@ -342,7 +344,9 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     synchronized (realQueue) {
       Message next = getMessages();
       while (next != null) {
-        count++;
+        if (next.getTarget() != null) {
+          count++;
+        }
         next = shadowOfMsg(next).internalGetNext();
       }
     }
@@ -356,12 +360,24 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
    */
   Message getNextIgnoringWhen() {
     synchronized (realQueue) {
-      Message head = getMessages();
-      if (head != null) {
-        Message next = shadowOfMsg(head).internalGetNext();
-        reflector(MessageQueueReflector.class, realQueue).setMessages(next);
+      Message prev = null;
+      Message msg = getMessages();
+      // Head is blocked on synchronization barrier, find next asynchronous message.
+      if (msg != null && msg.getTarget() == null) {
+        do {
+          prev = msg;
+          msg = shadowOfMsg(msg).internalGetNext();
+        } while (msg != null && !msg.isAsynchronous());
       }
-      return head;
+      if (msg != null) {
+        Message next = shadowOfMsg(msg).internalGetNext();
+        if (prev == null) {
+          reflector(MessageQueueReflector.class, realQueue).setMessages(next);
+        } else {
+          ReflectionHelpers.setField(prev, "next", next);
+        }
+      }
+      return msg;
     }
   }
 

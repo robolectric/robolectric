@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -21,6 +20,8 @@ import org.robolectric.internal.bytecode.ClassNodeProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
 import org.robolectric.util.inject.Injector;
+import org.robolectric.versioning.AndroidVersionInitTools;
+import org.robolectric.versioning.AndroidVersions.AndroidRelease;
 
 /** Runs Robolectric invokedynamic instrumentation on an android-all jar. */
 public class JarInstrumentor {
@@ -146,14 +147,7 @@ public class JarInstrumentor {
   }
 
   private int getJarAndroidSDKVersion(JarFile jarFile) throws IOException {
-    ZipEntry buildProp = jarFile.getEntry("build.prop");
-    Properties buildProps = new Properties();
-    buildProps.load(jarFile.getInputStream(buildProp));
-    String codename = buildProps.getProperty("ro.build.version.codename");
-    // Check for a prerelease SDK.
-    if (!"REL".equals(codename)) {
-      return 10000;
-    }
-    return Integer.parseInt(buildProps.getProperty("ro.build.version.sdk"));
+    AndroidRelease release = AndroidVersionInitTools.computeReleaseVersion(jarFile);
+    return release.getSdkInt();
   }
 }
