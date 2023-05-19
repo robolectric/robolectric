@@ -19,6 +19,7 @@ java {
 dependencies {
     implementation libs.guava
     implementation project(":sandbox")
+    implementation project(":shadows:versioning")
 }
 
 tasks.register('instrumentAll') {

@@ -1,23 +1,5 @@
 package org.robolectric.plugins;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
-import static android.os.Build.VERSION_CODES.N_MR1;
-import static android.os.Build.VERSION_CODES.O;
-import static android.os.Build.VERSION_CODES.O_MR1;
-import static android.os.Build.VERSION_CODES.P;
-import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.R;
-import static android.os.Build.VERSION_CODES.S;
-import static android.os.Build.VERSION_CODES.S_V2;
-import static android.os.Build.VERSION_CODES.TIRAMISU;
-
 import com.google.auto.service.AutoService;
 import com.google.common.base.Preconditions;
 import java.net.URL;
@@ -35,6 +17,23 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
+import org.robolectric.versioning.AndroidVersions.J;
+import org.robolectric.versioning.AndroidVersions.JMR1;
+import org.robolectric.versioning.AndroidVersions.JMR2;
+import org.robolectric.versioning.AndroidVersions.K;
+import org.robolectric.versioning.AndroidVersions.L;
+import org.robolectric.versioning.AndroidVersions.LMR1;
+import org.robolectric.versioning.AndroidVersions.M;
+import org.robolectric.versioning.AndroidVersions.N;
+import org.robolectric.versioning.AndroidVersions.NMR1;
+import org.robolectric.versioning.AndroidVersions.O;
+import org.robolectric.versioning.AndroidVersions.OMR1;
+import org.robolectric.versioning.AndroidVersions.P;
+import org.robolectric.versioning.AndroidVersions.Q;
+import org.robolectric.versioning.AndroidVersions.R;
+import org.robolectric.versioning.AndroidVersions.S;
+import org.robolectric.versioning.AndroidVersions.Sv2;
+import org.robolectric.versioning.AndroidVersions.T;
 
 /**
  * Robolectric's default {@link SdkProvider}.
@@ -65,23 +64,23 @@ public class DefaultSdkProvider implements SdkProvider {
   }
 
   protected void populateSdks(TreeMap<Integer, Sdk> knownSdks) {
-    knownSdks.put(JELLY_BEAN, new DefaultSdk(JELLY_BEAN, "4.1.2_r1", "r1", "REL", 8));
-    knownSdks.put(JELLY_BEAN_MR1, new DefaultSdk(JELLY_BEAN_MR1, "4.2.2_r1.2", "r1", "REL", 8));
-    knownSdks.put(JELLY_BEAN_MR2, new DefaultSdk(JELLY_BEAN_MR2, "4.3_r2", "r1", "REL", 8));
-    knownSdks.put(KITKAT, new DefaultSdk(KITKAT, "4.4_r1", "r2", "REL", 8));
-    knownSdks.put(LOLLIPOP, new DefaultSdk(LOLLIPOP, "5.0.2_r3", "r0", "REL", 8));
-    knownSdks.put(LOLLIPOP_MR1, new DefaultSdk(LOLLIPOP_MR1, "5.1.1_r9", "r2", "REL", 8));
-    knownSdks.put(M, new DefaultSdk(M, "6.0.1_r3", "r1", "REL", 8));
-    knownSdks.put(N, new DefaultSdk(N, "7.0.0_r1", "r1", "REL", 8));
-    knownSdks.put(N_MR1, new DefaultSdk(N_MR1, "7.1.0_r7", "r1", "REL", 8));
-    knownSdks.put(O, new DefaultSdk(O, "8.0.0_r4", "r1", "REL", 8));
-    knownSdks.put(O_MR1, new DefaultSdk(O_MR1, "8.1.0", "4611349", "REL", 8));
-    knownSdks.put(P, new DefaultSdk(P, "9", "4913185-2", "REL", 8));
-    knownSdks.put(Q, new DefaultSdk(Q, "10", "5803371", "REL", 9));
-    knownSdks.put(R, new DefaultSdk(R, "11", "6757853", "REL", 9));
-    knownSdks.put(S, new DefaultSdk(S, "12", "7732740", "REL", 9));
-    knownSdks.put(S_V2, new DefaultSdk(S_V2, "12.1", "8229987", "REL", 9));
-    knownSdks.put(TIRAMISU, new DefaultSdk(TIRAMISU, "13", "9030017", "Tiramisu", 9));
+    knownSdks.put(J.SDK_INT, new DefaultSdk(J.SDK_INT, "4.1.2_r1", "r1", "REL", 8));
+    knownSdks.put(JMR1.SDK_INT, new DefaultSdk(JMR1.SDK_INT, "4.2.2_r1.2", "r1", "REL", 8));
+    knownSdks.put(JMR2.SDK_INT, new DefaultSdk(JMR2.SDK_INT, "4.3_r2", "r1", "REL", 8));
+    knownSdks.put(K.SDK_INT, new DefaultSdk(K.SDK_INT, "4.4_r1", "r2", "REL", 8));
+    knownSdks.put(L.SDK_INT, new DefaultSdk(L.SDK_INT, "5.0.2_r3", "r0", "REL", 8));
+    knownSdks.put(LMR1.SDK_INT, new DefaultSdk(LMR1.SDK_INT, "5.1.1_r9", "r2", "REL", 8));
+    knownSdks.put(M.SDK_INT, new DefaultSdk(M.SDK_INT, "6.0.1_r3", "r1", "REL", 8));
+    knownSdks.put(N.SDK_INT, new DefaultSdk(N.SDK_INT, "7.0.0_r1", "r1", "REL", 8));
+    knownSdks.put(NMR1.SDK_INT, new DefaultSdk(NMR1.SDK_INT, "7.1.0_r7", "r1", "REL", 8));
+    knownSdks.put(O.SDK_INT, new DefaultSdk(O.SDK_INT, "8.0.0_r4", "r1", "REL", 8));
+    knownSdks.put(OMR1.SDK_INT, new DefaultSdk(OMR1.SDK_INT, "8.1.0", "4611349", "REL", 8));
+    knownSdks.put(P.SDK_INT, new DefaultSdk(P.SDK_INT, "9", "4913185-2", "REL", 8));
+    knownSdks.put(Q.SDK_INT, new DefaultSdk(Q.SDK_INT, "10", "5803371", "REL", 9));
+    knownSdks.put(R.SDK_INT, new DefaultSdk(R.SDK_INT, "11", "6757853", "REL", 9));
+    knownSdks.put(S.SDK_INT, new DefaultSdk(S.SDK_INT, "12", "7732740", "REL", 9));
+    knownSdks.put(Sv2.SDK_INT, new DefaultSdk(Sv2.SDK_INT, "12.1", "8229987", "REL", 9));
+    knownSdks.put(T.SDK_INT, new DefaultSdk(T.SDK_INT, "13", "9030017", "Tiramisu", 9));
   }
 
   @Override
