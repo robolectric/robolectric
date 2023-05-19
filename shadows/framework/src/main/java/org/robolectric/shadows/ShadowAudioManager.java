@@ -93,6 +93,7 @@ public class ShadowAudioManager {
   private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
   private List<AudioDeviceInfo> inputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
+  private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
 
   public ShadowAudioManager() {
@@ -451,6 +452,23 @@ public class ShadowAudioManager {
   }
 
   /**
+   * Sets the list of available communication devices represented by {@link AudioDeviceInfo}.
+   *
+   * <p>The previous list of communication devices is replaced and no notifications of the list of
+   * {@link AudioDeviceCallback} is done.
+   *
+   * <p>To add/remove devices one by one and trigger notifications for the list of {@link
+   * AudioDeviceCallback} please use one of the following methods {@link
+   * #addOutputDevice(AudioDeviceInfo, boolean)}, {@link #removeOutputDevice(AudioDeviceInfo,
+   * boolean)}.
+   */
+  @TargetApi(VERSION_CODES.S)
+  public void setAvailableCommunicationDevices(
+      List<AudioDeviceInfo> availableCommunicationDevices) {
+    this.availableCommunicationDevices = new ArrayList<>(availableCommunicationDevices);
+  }
+
+  /**
    * Adds an input {@link AudioDeviceInfo} and notifies the list of {@link AudioDeviceCallback} if
    * the device was not present before and indicated by {@code notifyAudioDeviceCallbacks}.
    */
@@ -497,6 +515,36 @@ public class ShadowAudioManager {
   }
 
   /**
+   * Adds an available communication {@link AudioDeviceInfo} and notifies the list of {@link
+   * AudioDeviceCallback} if the device was not present before and indicated by {@code
+   * notifyAudioDeviceCallbacks}.
+   */
+  @TargetApi(VERSION_CODES.S)
+  public void addAvailableCommunicationDevice(
+      AudioDeviceInfo communicationDevice, boolean notifyAudioDeviceCallbacks) {
+    boolean changed =
+        !this.availableCommunicationDevices.contains(communicationDevice)
+            && this.availableCommunicationDevices.add(communicationDevice);
+    if (changed && notifyAudioDeviceCallbacks) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(communicationDevice), /* added= */ true);
+    }
+  }
+
+  /**
+   * Removes an available communication {@link AudioDeviceInfo} and notifies the list of {@link
+   * AudioDeviceCallback} if the device was present before and indicated by {@code
+   * notifyAudioDeviceCallbacks}.
+   */
+  @TargetApi(VERSION_CODES.S)
+  public void removeAvailableCommunicationDevice(
+      AudioDeviceInfo communicationDevice, boolean notifyAudioDeviceCallbacks) {
+    boolean changed = this.availableCommunicationDevices.remove(communicationDevice);
+    if (changed && notifyAudioDeviceCallbacks) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(communicationDevice), /* added= */ false);
+    }
+  }
+
+  /**
    * Registers an {@link AudioDeviceCallback} object to receive notifications of changes to the set
    * of connected audio devices.
    *
@@ -504,8 +552,10 @@ public class ShadowAudioManager {
    *
    * @see #addInputDevice(AudioDeviceInfo, boolean)
    * @see #addOutputDevice(AudioDeviceInfo, boolean)
+   * @see #addAvailableCommunicationDevice(AudioDeviceInfo, boolean)
    * @see #removeInputDevice(AudioDeviceInfo, boolean)
    * @see #removeOutputDevice(AudioDeviceInfo, boolean)
+   * @see #removeAvailableCommunicationDevice(AudioDeviceInfo, boolean)
    */
   @Implementation(minSdk = M)
   protected void registerAudioDeviceCallback(AudioDeviceCallback callback, Handler handler) {
@@ -520,8 +570,10 @@ public class ShadowAudioManager {
    *
    * @see #addInputDevice(AudioDeviceInfo, boolean)
    * @see #addOutputDevice(AudioDeviceInfo, boolean)
+   * @see #addAvailableCommunicationDevice(AudioDeviceInfo, boolean)
    * @see #removeInputDevice(AudioDeviceInfo, boolean)
    * @see #removeOutputDevice(AudioDeviceInfo, boolean)
+   * @see #removeAvailableCommunicationDevice(AudioDeviceInfo, boolean)
    */
   @Implementation(minSdk = M)
   protected void unregisterAudioDeviceCallback(AudioDeviceCallback callback) {
@@ -561,6 +613,11 @@ public class ShadowAudioManager {
   @Implementation(minSdk = S)
   protected void clearCommunicationDevice() {
     this.communicationDevice = null;
+  }
+
+  @Implementation(minSdk = S)
+  protected List<AudioDeviceInfo> getAvailableCommunicationDevices() {
+    return availableCommunicationDevices;
   }
 
   @Implementation(minSdk = M)
