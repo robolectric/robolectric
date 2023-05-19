@@ -1,5 +1,6 @@
 package org.robolectric;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.annotation.IdRes;
@@ -11,6 +12,7 @@ import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
 import javax.annotation.Nullable;
@@ -104,6 +106,9 @@ public class Robolectric {
    */
   public static <T extends Activity> ActivityController<T> buildActivity(
       Class<T> activityClass, Intent intent, @Nullable Bundle activityOptions) {
+    checkState(
+        Thread.currentThread() == Looper.getMainLooper().getThread(),
+        "buildActivity must be called on main Looper thread");
     return ActivityController.of(
         ReflectionHelpers.callConstructor(activityClass), intent, activityOptions);
   }
