@@ -79,3 +79,17 @@ Run compatibility test suites on opening Emulator:
 
     ./gradlew connectedCheck
 
+### Using Snapshots
+
+If you would like to live on the bleeding edge, you can try running against a snapshot build. Keep in mind that snapshots represent the most recent changes on master and may contain bugs.
+
+#### build.gradle:
+
+```groovy
+repositories {
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+dependencies {
+    testImplementation "org.robolectric:robolectric:4.11-SNAPSHOT"
+}
+```
