@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_IN;
 import static android.util.TypedValue.COMPLEX_UNIT_MM;
@@ -506,8 +505,7 @@ public class ResourcesTest {
 
   @Test
   @SdkSuppress(minSdkVersion = LOLLIPOP)
-  // TODO: fix on android U
-  @Config(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
+  @Config(minSdk = LOLLIPOP)
   public void getIdentifier_material() {
     int id = Resources.getSystem().getIdentifier("btn_check_material_anim", "drawable", "android");
     assertThat(id).isGreaterThan(0);

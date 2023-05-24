@@ -524,32 +524,79 @@ public class LoadedArsc {
         return 0;
       }
 
+      // for (const auto& type_entry : type_spec->type_entries) {
       for (ResTable_type iter : type_spec.types) {
+        // const incfs::verified_map_ptr<ResTable_type>& type = type_entry.type;
         ResTable_type type = iter;
+        // const size_t entry_count = dtohl(type->entryCount);
         int entry_count = type.entryCount;
+        // const auto entry_offsets = type.offset(dtohs(type->header.headerSize));
 
+        // for (size_t entry_idx = 0; entry_idx < entry_count; entry_idx++) {
         for (int entry_idx = 0; entry_idx < entry_count; entry_idx++) {
-          // const uint32_t* entry_offsets = reinterpret_cast<const uint32_t*>(
-          //     reinterpret_cast<const uint8_t*>(type.type) + dtohs(type.type.header.headerSize));
-          // ResTable_type entry_offsets = new ResTable_type(type.myBuf(),
-          //     type.myOffset() + type.header.headerSize);
-          // int offset = dtohl(entry_offsets[entry_idx]);
-          int offset = dtohl(type.entryOffset(entry_idx));
+          // uint32_t offset;
+          int offset;
+          // uint16_t res_idx;
+          short res_idx;
+          // if (type->flags & ResTable_type::FLAG_SPARSE) {
+          if (isTruthy(type.flags & ResTable_type.FLAG_SPARSE)) {
+            // auto sparse_entry = entry_offsets.convert<ResTable_sparseTypeEntry>() + entry_idx;
+
+            ResTable_sparseTypeEntry sparse_entry =
+                new ResTable_sparseTypeEntry(
+                    type.myBuf(), type.myOffset() + entry_idx * ResTable_sparseTypeEntry.SIZEOF);
+            // if (!sparse_entry) {
+            //   return base::unexpected(IOError::PAGES_MISSING);
+            // }
+            // TODO: implement above
+            // offset = dtohs(sparse_entry->offset) * 4u;
+            offset = dtohs(sparse_entry.offset) * 4;
+            // res_idx  = dtohs(sparse_entry->idx);
+            res_idx = dtohs(sparse_entry.idx);
+            // } else if (type->flags & ResTable_type::FLAG_OFFSET16) {
+          } else if (isTruthy(type.flags & ResTable_type.FLAG_OFFSET16)) {
+            // auto entry = entry_offsets.convert<uint16_t>() + entry_idx;
+            int entry = type.entryOffset(entry_idx);
+            // if (!entry) {
+            //   return base::unexpected(IOError::PAGES_MISSING);
+            // }
+            // offset = offset_from16(entry.value());
+            offset = entry;
+            // res_idx = entry_idx;
+            res_idx = (short) entry_idx;
+          } else {
+            // auto entry = entry_offsets.convert<uint32_t>() + entry_idx;
+            int entry = type.entryOffset(entry_idx);
+            // if (!entry) {
+            //   return base::unexpected(IOError::PAGES_MISSING);
+            // }
+            // offset = dtohl(entry.value());
+            offset = dtohl(entry);
+            res_idx = (short) entry_idx;
+          }
+
           if (offset != ResTable_type.NO_ENTRY) {
-            // const ResTable_entry* entry =
-            //     reinterpret_cast<const ResTable_entry*>(reinterpret_cast<const uint8_t*>(type.type) +
-            //     dtohl(type.type.entriesStart) + offset);
+            // auto entry = type.offset(dtohl(type->entriesStart) +
+            // offset).convert<ResTable_entry>();
             ResTable_entry entry =
-                new ResTable_entry(type.myBuf(), type.myOffset() +
-                    dtohl(type.entriesStart) + offset);
+                new ResTable_entry(
+                    type.myBuf(), type.myOffset() + dtohl(type.entriesStart) + offset);
+            // if (!entry) {
+            //   return base::unexpected(IOError::PAGES_MISSING);
+            // }
+            // TODO implement above
+            // if (entry->key() == static_cast<uint32_t>(*key_idx)) {
             if (dtohl(entry.getKeyIndex()) == key_idx) {
-              // The package ID will be overridden by the caller (due to runtime assignment of package
+              // The package ID will be overridden by the caller (due to runtime assignment of
+              // package
               // IDs for shared libraries).
-              return make_resid((byte) 0x00, (byte) (type_idx + type_id_offset_ + 1), (short) entry_idx);
+              // return make_resid(0x00, *type_idx + type_id_offset_ + 1, res_idx);
+              return make_resid((byte) 0x00, (byte) (type_idx + type_id_offset_ + 1), res_idx);
             }
           }
         }
       }
+      // return base::unexpected(std::nullopt);
       return 0;
     }
 
