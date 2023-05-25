@@ -17,6 +17,12 @@ import org.robolectric.annotation.Config;
 public class ShadowBuildTest {
 
   @Test
+  public void setBoard() {
+    ShadowBuild.setBoard("test_board");
+    assertThat(Build.BOARD).isEqualTo("test_board");
+  }
+
+  @Test
   public void setDevice() {
     ShadowBuild.setDevice("test_device");
     assertThat(Build.DEVICE).isEqualTo("test_device");
