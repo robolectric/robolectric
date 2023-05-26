@@ -65,6 +65,7 @@
   <attr name="attributeReferencingAnAttribute" format="reference"/>
   <attr name="circularReference" format="reference"/>
   <attr name="title" format="string"/>
+  <attr name="loaderIcon" format="reference"/>
 
   <declare-styleable name="CustomStateView">
     <attr name="stateFoo" format="boolean" />
