@@ -38,6 +38,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.truth.IterableSubject;
 import com.google.common.util.concurrent.SettableFuture;
 import java.util.ArrayList;
@@ -150,6 +151,31 @@ public class ShadowContextWrapperTest {
   }
 
   @Test
+  public void sendBroadcast_shouldSendIntentToReceiverMatchesPackageName() throws Exception {
+    String dummyPackage = "dummy.package";
+    Context contextWithPackageName = contextWithPackageName(dummyPackage);
+    shadowOf(InstrumentationRegistry.getInstrumentation()).setRequireIntentPackageNameMatches(true);
+
+    BroadcastReceiver larryReceiver = broadcastReceiver("Larry");
+    contextWithPackageName.registerReceiver(larryReceiver, intentFilter("foo"));
+
+    BroadcastReceiver bobReceiver = broadcastReceiver("Bob");
+    contextWrapper.registerReceiver(bobReceiver, intentFilter("foo"));
+
+    contextWrapper.sendBroadcast(new Intent("foo").setPackage(dummyPackage));
+    shadowMainLooper().idle();
+    asyncAssertThat(transcript).containsExactly("Larry notified of foo");
+    transcript.clear();
+  }
+
+  private Context contextWithPackageName(String packageName) throws NameNotFoundException {
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = packageName;
+    shadowOf(contextWrapper.getPackageManager()).installPackage(packageInfo);
+    return contextWrapper.createPackageContext(packageInfo.packageName, 0);
+  }
+
+  @Test
   public void sendBroadcast_supportsLegacyExactPermissionMatch() {
     BroadcastReceiver receiver = broadcastReceiver("Larry");
     contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), "validPermission", null);
@@ -187,7 +213,7 @@ public class ShadowContextWrapperTest {
         /* broadcastPermission= */ null,
         /* scheduler= */ null);
 
-    contextWrapper.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ "larryPermission");
+    contextWrapper.sendBroadcast(new Intent("foo"), /* receiverPermission= */ "larryPermission");
 
     asyncAssertThat(transcript).containsExactly("Larry notified of foo");
   }
@@ -207,7 +233,7 @@ public class ShadowContextWrapperTest {
         /* scheduler= */ null);
 
     Context broadcaster = contextWithPermission("broadcasterPackage", "larryPermission");
-    broadcaster.sendBroadcast(new Intent("foo"), /*receiverPermission=*/ null);
+    broadcaster.sendBroadcast(new Intent("foo"), /* receiverPermission= */ null);
 
     asyncAssertThat(transcript).containsExactly("Larry notified of foo");
   }

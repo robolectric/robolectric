@@ -123,6 +123,7 @@ public class ShadowInstrumentation {
   // This will default to False in the future to correctly mirror real Android behavior.
   private boolean unbindServiceCallsOnServiceDisconnected = true;
   @Nullable private UiAutomation uiAutomation;
+  private boolean requireIntentPackageNameMatches = false;
 
   @Implementation(minSdk = P)
   protected Activity startActivitySync(Intent intent, Bundle options) {
@@ -344,7 +345,8 @@ public class ShadowInstrumentation {
     }
 
     for (Wrapper wrapper : copy) {
-      if (broadcastReceiverMatchesIntent(context, wrapper, intent, receiverPermission)) {
+      if (broadcastReceiverMatchesIntent(
+          context, wrapper, intent, receiverPermission, requireIntentPackageNameMatches)) {
         result.add(wrapper);
       }
     }
@@ -353,7 +355,11 @@ public class ShadowInstrumentation {
   }
 
   private static boolean broadcastReceiverMatchesIntent(
-      Context broadcastContext, Wrapper wrapper, Intent intent, String receiverPermission) {
+      Context broadcastContext,
+      Wrapper wrapper,
+      Intent intent,
+      String receiverPermission,
+      boolean requireIntentPackageNameMatches) {
     String intentClass =
         intent.getComponent() != null ? intent.getComponent().getClassName() : null;
     boolean matchesIntentClass =
@@ -369,6 +375,11 @@ public class ShadowInstrumentation {
         TextUtils.equals(receiverPermission, wrapper.broadcastPermission);
     boolean hasPermission = hasPermissionFromManifest || hasPermissionForBackwardsCompatibility;
 
+    boolean matchPackage =
+        !requireIntentPackageNameMatches
+            || intent.getPackage() == null
+            || Objects.equals(wrapper.context.getPackageName(), intent.getPackage());
+
     boolean matchesAction = wrapper.intentFilter.matchAction(intent.getAction());
 
     final int match =
@@ -376,7 +387,8 @@ public class ShadowInstrumentation {
     boolean matchesDataAndType =
         match != IntentFilter.NO_MATCH_DATA && match != IntentFilter.NO_MATCH_TYPE;
 
-    return matchesIntentClass || (hasPermission && matchesAction && matchesDataAndType);
+    return matchesIntentClass
+        || (hasPermission && matchPackage && matchesAction && matchesDataAndType);
   }
 
   /** A null {@code requiredPermission} indicates that no permission is required. */
@@ -1172,6 +1184,19 @@ public class ShadowInstrumentation {
       this.target = target;
       this.requestCode = requestCode;
     }
+  }
+
+  /**
+   * Configures whether the intent's package name is matched when dispatching intents. To match
+   * Android behavior configure matching to true, when set to false intents are dispatched to
+   * receivers even if the package name specified by the intent does not match context package name
+   * the receiver is registered on.
+   *
+   * <p>Defaults to false for legacy behavior. The default may change to true in the future, and the
+   * method may be removed.
+   */
+  public void setRequireIntentPackageNameMatches(boolean matches) {
+    requireIntentPackageNameMatches = matches;
   }
 
   public static Instrumentation getInstrumentation() {
