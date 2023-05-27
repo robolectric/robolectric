@@ -40,6 +40,10 @@ jar {
     dependsOn copySqliteNatives
 }
 
+javadoc {
+    dependsOn copySqliteNatives
+}
+
 dependencies {
     api project(":annotations")
     api project(":nativeruntime")
