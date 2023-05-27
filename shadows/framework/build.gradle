@@ -17,7 +17,7 @@ configurations {
 
 def sqlite4javaVersion = libs.versions.sqlite4java.get()
 
-task copySqliteNatives(type: Copy) {
+tasks.register('copySqliteNatives', Copy) {
     from project.configurations.sqlite4java {
         include '**/*.dll'
         include '**/*.so'
