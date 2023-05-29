@@ -31,7 +31,7 @@ error-prone-gradle = "3.1.0"
 kotlin = "1.8.10"
 
 # https://github.com/diffplug/spotless/blob/main/CHANGES.md
-spotless-gradle = "6.18.0"
+spotless-gradle = "6.19.0"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
