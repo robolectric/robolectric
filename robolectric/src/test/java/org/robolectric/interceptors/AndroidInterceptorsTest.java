@@ -27,7 +27,8 @@ public class AndroidInterceptorsTest {
             new MethodRef("java.util.Locale", "adjustLanguageCode"),
             new MethodRef("java.io.FileDescriptor", "release$"),
             new MethodRef("java.io.FileDescriptor", "getInt$"),
-            new MethodRef("java.io.FileDescriptor", "setInt$"));
+            new MethodRef("java.io.FileDescriptor", "setInt$"),
+            new MethodRef("javax.crypto.Cipher", "getCurrentSpi"));
   }
 
   @Test
