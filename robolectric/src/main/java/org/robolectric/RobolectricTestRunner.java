@@ -76,6 +76,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     new SecureRandom();
     // Fixes an issue using AWT-backed graphics shadows when using X11 forwarding.
     System.setProperty("java.awt.headless", "true");
+    // Fixes a performance regression in caused by the addition of RSA modulus
+    // validation introduced in Bouncy Castle 1.71.
+    // https://github.com/bcgit/bc-java/issues/1144
+    System.setProperty("org.bouncycastle.rsa.max_mr_tests", "0");
   }
 
   protected static Injector.Builder defaultInjector() {
