@@ -97,7 +97,7 @@ public class ShadowPowerManager {
   }
 
   /**
-   * @deprecated Use {@link #setIsInteractive(boolean)} instead.
+   * @deprecated Use {@link #turnScreenOn(boolean)} instead.
    */
   @Deprecated
   public void setIsScreenOn(boolean screenOn) {
