@@ -18,12 +18,14 @@ import android.graphics.ColorSpace.Rgb.TransferParameters;
 import android.graphics.Matrix;
 import android.hardware.HardwareBuffer;
 import android.os.Parcel;
+import android.os.Parcelable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -33,6 +35,7 @@ import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -374,6 +377,16 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     int[] pixels = new int[width * height];
     realBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
+
+    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+      Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
+      if (gainmap != null) {
+        p.writeBoolean(true);
+        p.writeTypedObject((Parcelable) gainmap, flags);
+      } else {
+        p.writeBoolean(false);
+      }
+    }
   }
 
   @Implementation
@@ -413,9 +426,30 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return bitmap;
   }
 
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  protected void setGainmap(Object gainmap) {
+    reflector(BitmapReflector.class, realBitmap).checkRecycled("Bitmap is recycled");
+    reflector(BitmapReflector.class, realBitmap).setGainmap(gainmap);
+  }
+
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  protected boolean hasGainmap() {
+    reflector(BitmapReflector.class, realBitmap).checkRecycled("Bitmap is recycled");
+    return reflector(BitmapReflector.class, realBitmap).getGainmap() != null;
+  }
+
   @ForType(Bitmap.class)
-  interface BitmapReflector {
+  protected interface BitmapReflector {
     void checkRecycled(String errorMessage);
+
+    @Accessor("mNativePtr")
+    long getNativePtr();
+
+    @Accessor("mGainmap")
+    void setGainmap(Object gainmap);
+
+    @Direct
+    Object getGainmap();
   }
 
   @Override
