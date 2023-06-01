@@ -29,6 +29,15 @@ public class ShadowBuild {
   public static final int UPSIDE_DOWN_CAKE = 34;
 
   /**
+   * Sets the value of the {@link Build#BOARD} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setBoard(String board) {
+    ReflectionHelpers.setStaticField(Build.class, "BOARD", board);
+  }
+
+  /**
    * Sets the value of the {@link Build#DEVICE} field.
    *
    * <p>It will be reset for the next test.

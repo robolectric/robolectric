@@ -503,6 +503,14 @@ public class ResourcesTest {
     assertThat(id).isEqualTo(0);
   }
 
+  @Test
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
+  @Config(minSdk = LOLLIPOP)
+  public void getIdentifier_material() {
+    int id = Resources.getSystem().getIdentifier("btn_check_material_anim", "drawable", "android");
+    assertThat(id).isGreaterThan(0);
+  }
+
   /**
    * Public framework symbols are defined here:
    * https://android.googlesource.com/platform/frameworks/base/+/master/core/res/res/values/public.xml

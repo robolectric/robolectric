@@ -3,6 +3,7 @@ package org.robolectric;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.fail;
+import static org.robolectric.annotation.Config.NEWEST_SDK;
 import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
@@ -13,6 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.AttributeResource;
 
 /** Tests for {@link Robolectric#buildAttributeSet()} */
@@ -50,7 +52,9 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.text, AttributeResource.NULL_VALUE)
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "text", 0))
+    assertThat(
+            roboAttributeSet.getAttributeResourceValue(
+                ANDROID_RES_NS_PREFIX + "com.some.namespace", "text", 0))
         .isEqualTo(0);
   }
 
@@ -60,7 +64,9 @@ public class AttributeSetBuilderTest {
         .addAttribute(android.R.attr.id, "@+id/text1")
         .build();
 
-    assertThat(roboAttributeSet.getAttributeResourceValue(ANDROID_RES_NS_PREFIX + "com.some.other.namespace", "id", 0))
+    assertThat(
+            roboAttributeSet.getAttributeResourceValue(
+                ANDROID_RES_NS_PREFIX + "com.some.other.namespace", "id", 0))
         .isEqualTo(0);
   }
 
@@ -128,7 +134,9 @@ public class AttributeSetBuilderTest {
     AttributeSet roboAttributeSet =  Robolectric.buildAttributeSet()
         .build();
 
-    assertThat(roboAttributeSet.getAttributeBooleanValue(ANDROID_RES_NS_PREFIX + "com.some.namespace", "isSugary", true))
+    assertThat(
+            roboAttributeSet.getAttributeBooleanValue(
+                ANDROID_RES_NS_PREFIX + "com.some.namespace", "isSugary", true))
         .isTrue();
   }
 
@@ -403,4 +411,15 @@ public class AttributeSetBuilderTest {
     }
   }
 
+  @Test
+  // buildAttributeSet always uses resource table from latest SDK
+  @Config(sdk = NEWEST_SDK)
+  public void attrWithIconReference() {
+    AttributeSet roboAttributeSet =
+        Robolectric.buildAttributeSet()
+            .addAttribute(R.attr.loaderIcon, "@android:drawable/ic_menu_save")
+            .build();
+
+    assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.loaderIcon);
+  }
 }

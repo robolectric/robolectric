@@ -691,7 +691,9 @@ public class ShadowPendingIntent {
   public static void reset() {
     synchronized (lock) {
       createdIntents.clear();
+      parceledPendingIntents.clear();
     }
+
   }
 
   @ForType(PendingIntent.class)

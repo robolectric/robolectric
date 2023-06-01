@@ -9,16 +9,6 @@
 
   <application>
     <activity
-        android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
-        android:exported="true"/>
-    <activity
-        android:name="org.robolectric.integrationtests.axt.EspressoActivity"
-        android:exported="true"/>
-    <activity
-        android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
-        android:exported="true"/>
-
-    <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$LifecycleOwnerActivity"
         android:exported="true"/>
     <activity
@@ -27,9 +17,6 @@
     <activity-alias
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"
         android:targetActivity="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity" />
-    <activity
-        android:name="org.robolectric.integrationtests.axt.IntentsTest$ResultCapturingActivity"
-        android:exported = "true"/>
   </application>
 
   <instrumentation

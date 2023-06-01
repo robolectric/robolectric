@@ -10,6 +10,8 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -90,6 +92,29 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void
+      addOnSubscriptionsChangedListener_whenHasExecutorParameter_shouldCallbackImmediately() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    shadowOf(subscriptionManager)
+        .addOnSubscriptionsChangedListener(new Handler(Looper.getMainLooper())::post, listener);
+
+    assertThat(listener.subscriptionChangedCount).isEqualTo(1);
+  }
+
+  @Test
+  public void addOnSubscriptionsChangedListener_whenHasExecutorParameter_shouldAddListener() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    shadowOf(subscriptionManager)
+        .addOnSubscriptionsChangedListener(new Handler(Looper.getMainLooper())::post, listener);
+
+    shadowOf(subscriptionManager)
+        .setActiveSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
+
+    assertThat(listener.subscriptionChangedCount).isEqualTo(2);
+  }
+
+  @Test
   public void removeOnSubscriptionsChangedListener_shouldRemoveListener() {
     DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
     DummySubscriptionsChangedListener listener2 = new DummySubscriptionsChangedListener();
@@ -103,6 +128,21 @@ public class ShadowSubscriptionManagerTest {
 
     assertThat(listener.subscriptionChangedCount).isEqualTo(1);
     assertThat(listener2.subscriptionChangedCount).isEqualTo(2);
+  }
+
+  @Test
+  public void hasOnSubscriptionsChangedListener_whenListenerNotExist_shouldReturnFalse() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+
+    assertThat(shadowOf(subscriptionManager).hasOnSubscriptionsChangedListener(listener)).isFalse();
+  }
+
+  @Test
+  public void hasOnSubscriptionsChangedListener_whenListenerExist_shouldReturnTrue() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    shadowOf(subscriptionManager).addOnSubscriptionsChangedListener(listener);
+
+    assertThat(shadowOf(subscriptionManager).hasOnSubscriptionsChangedListener(listener)).isTrue();
   }
 
   @Test
