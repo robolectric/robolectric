@@ -15,7 +15,7 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowTimeManager} */
 @RunWith(RobolectricTestRunner.class)
-@Config(sdk = Build.VERSION_CODES.S)
+@Config(minSdk = Build.VERSION_CODES.S)
 public final class ShadowTimeManagerTest {
 
   @Test
