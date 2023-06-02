@@ -1,0 +1,42 @@
+name: Validate commit message
+
+on:
+  pull_request:
+    branches: [ master, google ]
+
+permissions:
+  contents: read
+
+jobs:
+  validate_commit_message:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Validate commit title
+        run: |
+          # Check that the commit title isn't excessively long.
+          commit_title="$(git log -1 --pretty=format:'%s')"
+          if [ "${#commit_title}" -gt 120 ]; then
+            echo "Error: The title of commit is too long"
+            exit 1
+          fi
+
+          lowercase_title="$(echo $commit_title | awk '{print tolower($0)}')"
+          # Check that the commit title isn't 'internal' (ignore case)
+          if [ "$lowercase_title" = "internal" ]; then
+            echo "Error: '$commit_title' is not a valid commit title"
+            exit 1
+          fi
+
+      - name: Validate commit body
+        run: |
+          # Check that the commit has a body
+          commit_body="$(git log -1 --pretty=format:'%b')"
+          if [ -z "$commit_body" ]; then
+            echo "Error: The commit message should have a descriptive body"
+            exit 1
+          fi
