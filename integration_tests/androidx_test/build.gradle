@@ -55,6 +55,7 @@ dependencies {
     testImplementation libs.androidx.test.espresso.core
     testImplementation libs.androidx.test.ext.truth
     testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.biometric
     testImplementation libs.androidx.fragment
     testImplementation libs.androidx.fragment.testing
     testImplementation libs.androidx.test.ext.junit
