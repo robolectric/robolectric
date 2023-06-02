@@ -80,6 +80,8 @@ public class ShadowUserManager {
   private static boolean isMultiUserSupported = false;
   private static boolean isHeadlessSystemUserMode = false;
 
+  private final Object lock = new Object();
+
   @RealObject private UserManager realObject;
   private UserManagerState userManagerState;
   private Boolean managedProfile;
@@ -484,8 +486,10 @@ public class ShadowUserManager {
 
   @Implementation(minSdk = LOLLIPOP)
   protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
-    Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());
-    return bundle != null && bundle.getBoolean(restrictionKey);
+    synchronized (lock) {
+      Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());
+      return bundle != null && bundle.getBoolean(restrictionKey);
+    }
   }
 
   /**
@@ -496,7 +500,9 @@ public class ShadowUserManager {
   @Implementation(minSdk = JELLY_BEAN_MR2)
   protected void setUserRestriction(String key, boolean value, UserHandle userHandle) {
     Bundle bundle = getUserRestrictionsForUser(userHandle);
-    bundle.putBoolean(key, value);
+    synchronized (lock) {
+      bundle.putBoolean(key, value);
+    }
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR2)
@@ -524,12 +530,14 @@ public class ShadowUserManager {
   }
 
   private Bundle getUserRestrictionsForUser(UserHandle userHandle) {
-    Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());
-    if (bundle == null) {
-      bundle = new Bundle();
-      userManagerState.userRestrictions.put(userHandle.getIdentifier(), bundle);
+    synchronized (lock) {
+      Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());
+      if (bundle == null) {
+        bundle = new Bundle();
+        userManagerState.userRestrictions.put(userHandle.getIdentifier(), bundle);
+      }
+      return bundle;
     }
-    return bundle;
   }
 
   /**
