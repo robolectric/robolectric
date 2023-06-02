@@ -69,7 +69,7 @@ public class ShadowInputMethodManager {
     return showSoftInput(view, flags, null);
   }
 
-  @Implementation(maxSdk = R)
+  @Implementation
   protected boolean showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
     setSoftInputVisibility(true);
     return true;
