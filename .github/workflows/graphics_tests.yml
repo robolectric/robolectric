@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   graphics_tests:
-    runs-on: self-hosted
+    runs-on: macos-12
 
     steps:
       - uses: actions/checkout@v3
