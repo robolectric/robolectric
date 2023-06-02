@@ -115,7 +115,7 @@ public class ShadowTimeManager {
             .setConfigureAutoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
             .setConfigureGeoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED);
 
-    if (RuntimeEnvironment.getApiLevel() == ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
       ReflectionHelpers.callInstanceMethod(
           timeZoneCapabilitiesBuilder,
           "setUseLocationEnabled",
