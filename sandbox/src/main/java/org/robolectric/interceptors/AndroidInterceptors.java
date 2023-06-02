@@ -24,8 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import javax.annotation.Nullable;
-import javax.crypto.Cipher;
-import javax.crypto.CipherSpi;
 import org.robolectric.fakes.CleanerCompat;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.MethodRef;
@@ -48,7 +46,6 @@ public class AndroidInterceptors {
                 new FileDescriptorInterceptor(),
                 new NoOpInterceptor(),
                 new SocketInterceptor(),
-                new CipherInterceptor(),
                 new ReferenceRefersToInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
@@ -465,35 +462,6 @@ public class AndroidInterceptors {
         throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(
           getClass(), "getFileDescriptor", methodType(FileDescriptor.class, Socket.class));
-    }
-  }
-
-  /** Intercepts calls to methods in {@link javax.crypto.Cipher} not present in the OpenJDK. */
-  public static class CipherInterceptor extends Interceptor {
-    public CipherInterceptor() {
-      super(new MethodRef(Cipher.class, "getCurrentSpi"));
-    }
-
-    @Nullable
-    static CipherSpi getCurrentSpi() {
-      return null;
-    }
-
-    @Override
-    public Function<Object, Object> handle(MethodSignature methodSignature) {
-      return new Function<Object, Object>() {
-        @Override
-        public Object call(Class<?> theClass, Object value, Object[] params) {
-          return getCurrentSpi();
-        }
-      };
-    }
-
-    @Override
-    public MethodHandle getMethodHandle(String methodName, MethodType type)
-        throws NoSuchMethodException, IllegalAccessException {
-      return lookup.findStatic(
-          getClass(), "getCurrentSpi", methodType(CipherSpi.class, void.class));
     }
   }
 
