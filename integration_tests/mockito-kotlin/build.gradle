@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
@@ -9,6 +10,14 @@ spotless {
         target '**/*.kt'
         ktfmt('0.42').googleStyle()
     }
+}
+
+compileKotlin {
+    compilerOptions.jvmTarget = JvmTarget.JVM_1_8
+}
+
+compileTestKotlin {
+    compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 }
 
 dependencies {

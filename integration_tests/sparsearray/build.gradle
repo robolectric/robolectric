@@ -26,11 +26,13 @@ android {
         targetCompatibility = '1.8'
     }
 
-    android {
-        testOptions {
-            unitTests {
-                includeAndroidResources = true
-            }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
         }
     }
 }
