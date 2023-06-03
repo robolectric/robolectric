@@ -153,18 +153,20 @@ public class AndroidTestEnvironment implements TestEnvironment {
       loggingInitialized = true;
     }
 
-    ConscryptMode.Mode conscryptMode = configuration.get(ConscryptMode.Mode.class);
-    Security.removeProvider(CONSCRYPT_PROVIDER);
-    if (conscryptMode != ConscryptMode.Mode.OFF) {
-
-      Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-      if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
-        Security.insertProviderAt(new OpenSSLProvider(), 1);
-      }
+    // Installing BC provider first.
+    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+      // The position is 1-based, so 1 is the top position.
+      // See
+      // https://docs.oracle.com/javase/8/docs/api/java/security/Security.html#insertProviderAt-java.security.Provider-int-.
+      Security.insertProviderAt(new BouncyCastleProvider(), 1);
     }
 
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+    ConscryptMode.Mode conscryptMode = configuration.get(ConscryptMode.Mode.class);
+    Security.removeProvider(CONSCRYPT_PROVIDER);
+    // If user enables ConscryptMode, installing it Conscrypt provider with higher priority.
+    if (conscryptMode != ConscryptMode.Mode.OFF
+        && Security.getProvider(CONSCRYPT_PROVIDER) == null) {
+      Security.insertProviderAt(new OpenSSLProvider(), 1);
     }
 
     android.content.res.Configuration androidConfiguration =

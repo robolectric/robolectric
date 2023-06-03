@@ -121,7 +121,6 @@ public class AndroidTestEnvironmentTest {
   @ConscryptMode(ON)
   public void testWhenConscryptModeOn_ConscryptInstalled()
       throws CertificateException, NoSuchAlgorithmException {
-
     bootstrapWrapper.callSetUpApplicationState();
     CertificateFactory factory = CertificateFactory.getInstance("X.509");
     assertThat(factory.getProvider().getName()).isEqualTo("Conscrypt");
@@ -142,7 +141,6 @@ public class AndroidTestEnvironmentTest {
   @ConscryptMode(OFF)
   public void testWhenConscryptModeOff_ConscryptNotInstalled()
       throws CertificateException, NoSuchAlgorithmException {
-
     bootstrapWrapper.callSetUpApplicationState();
     CertificateFactory factory = CertificateFactory.getInstance("X.509");
     assertThat(factory.getProvider().getName()).isNotEqualTo("Conscrypt");
@@ -154,7 +152,6 @@ public class AndroidTestEnvironmentTest {
   @Test
   @ConscryptMode(OFF)
   public void testWhenConscryptModeOff_BouncyCastleInstalled() throws GeneralSecurityException {
-
     bootstrapWrapper.callSetUpApplicationState();
     MessageDigest digest = MessageDigest.getInstance("SHA256");
     assertThat(digest.getProvider().getName()).isEqualTo(BouncyCastleProvider.PROVIDER_NAME);
