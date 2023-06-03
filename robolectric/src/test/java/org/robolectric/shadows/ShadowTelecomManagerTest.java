@@ -532,6 +532,22 @@ public class ShadowTelecomManagerTest {
     assertThat(telecomService.getVoiceMailNumber(phoneAccountHandle)).isNull();
   }
 
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void getLine1Number() {
+    // Check initial state
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    assertThat(telecomService.getLine1Number(phoneAccountHandle)).isNull();
+
+    // After setting
+    shadowOf(telecomService).setLine1Number(phoneAccountHandle, "123");
+    assertThat(telecomService.getLine1Number(phoneAccountHandle)).isEqualTo("123");
+
+    // After reset
+    shadowOf(telecomService).setLine1Number(phoneAccountHandle, null);
+    assertThat(telecomService.getLine1Number(phoneAccountHandle)).isNull();
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return new PhoneAccountHandle(
         new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),

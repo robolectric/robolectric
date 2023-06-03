@@ -78,6 +78,7 @@ public class ShadowTelecomManager {
 
   private final LinkedHashMap<PhoneAccountHandle, PhoneAccount> accounts = new LinkedHashMap<>();
   private final LinkedHashMap<PhoneAccountHandle, String> voicemailNumbers = new LinkedHashMap<>();
+  private final LinkedHashMap<PhoneAccountHandle, String> line1Numbers = new LinkedHashMap<>();
 
   private final List<IncomingCallRecord> incomingCalls = new ArrayList<>();
   private final List<OutgoingCallRecord> outgoingCalls = new ArrayList<>();
@@ -325,7 +326,11 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected String getLine1Number(PhoneAccountHandle accountHandle) {
-    return null;
+    return line1Numbers.get(accountHandle);
+  }
+
+  public void setLine1Number(PhoneAccountHandle accountHandle, String number) {
+    line1Numbers.put(accountHandle, number);
   }
 
   /** Sets the return value for {@link TelecomManager#isInCall}. */
