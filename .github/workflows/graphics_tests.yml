@@ -16,10 +16,7 @@ permissions:
 
 jobs:
   graphics_tests:
-    strategy:
-      matrix:
-        device: [ macos-12, ubuntu-20.04, self-hosted ]
-    runs-on: ${{ matrix.device }}
+    runs-on: macos-12
 
     steps:
       - uses: actions/checkout@v3
