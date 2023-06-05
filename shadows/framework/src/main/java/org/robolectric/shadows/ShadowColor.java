@@ -29,7 +29,17 @@ public class ShadowColor {
 
   @Implementation
   protected static int HSVToColor(int alpha, float hsv[]) {
-    int rgb = java.awt.Color.HSBtoRGB(hsv[0] / 360, hsv[1], hsv[2]);
+    int rgb = java.awt.Color.HSBtoRGB(hsv[0] / 360, pin(hsv[1]), pin(hsv[2]));
     return Color.argb(alpha, Color.red(rgb), Color.green(rgb), Color.blue(rgb));
+  }
+
+  private static float pin(float value) {
+    if (value < 0.0f) {
+      return 0.0f;
+    }
+    if (value > 1.0) {
+      return 1.0f;
+    }
+    return value;
   }
 }

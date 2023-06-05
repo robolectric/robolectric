@@ -74,4 +74,16 @@ public class ShadowColorTest {
 
       assertThat(Color.HSVToColor(hsv)).isEqualTo(Color.RED);
   }
+
+  @Test
+  public void HSVToColorValueShouldBePinned() {
+    assertThat(Color.HSVToColor(new float[] {0f, 0f, -1.0f})).isEqualTo(Color.BLACK);
+    assertThat(Color.HSVToColor(new float[] {0f, 0f, 2.0f})).isEqualTo(Color.WHITE);
+  }
+
+  @Test
+  public void HSVToColorSaturationShouldBePinned() {
+    assertThat(Color.HSVToColor(new float[] {0f, -1.0f, 0.5f})).isEqualTo(0xff808080);
+    assertThat(Color.HSVToColor(new float[] {0f, 2.0f, 0.5f})).isEqualTo(0xff800000);
+  }
 }
