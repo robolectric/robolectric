@@ -79,6 +79,8 @@ public class AssociationInfoBuilder {
 
   public AssociationInfo build() {
     try {
+      MacAddress macAddress =
+          deviceMacAddress == null ? null : MacAddress.fromString(deviceMacAddress);
       if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
         // We have two different constructors for AssociationInfo across
         // T branches. aosp has the constructor that takes a new "revoked" parameter.
@@ -92,7 +94,7 @@ public class AssociationInfoBuilder {
               ClassParameter.from(int.class, id),
               ClassParameter.from(int.class, userId),
               ClassParameter.from(String.class, packageName),
-              ClassParameter.from(MacAddress.class, MacAddress.fromString(deviceMacAddress)),
+              ClassParameter.from(MacAddress.class, macAddress),
               ClassParameter.from(CharSequence.class, displayName),
               ClassParameter.from(String.class, deviceProfile),
               ClassParameter.from(boolean.class, selfManaged),
@@ -106,7 +108,7 @@ public class AssociationInfoBuilder {
               ClassParameter.from(int.class, id),
               ClassParameter.from(int.class, userId),
               ClassParameter.from(String.class, packageName),
-              ClassParameter.from(MacAddress.class, MacAddress.fromString(deviceMacAddress)),
+              ClassParameter.from(MacAddress.class, macAddress),
               ClassParameter.from(CharSequence.class, displayName),
               ClassParameter.from(String.class, deviceProfile),
               ClassParameter.from(boolean.class, selfManaged),
@@ -120,7 +122,7 @@ public class AssociationInfoBuilder {
             ClassParameter.from(int.class, id),
             ClassParameter.from(int.class, userId),
             ClassParameter.from(String.class, packageName),
-            ClassParameter.from(MacAddress.class, MacAddress.fromString(deviceMacAddress)),
+            ClassParameter.from(MacAddress.class, macAddress),
             ClassParameter.from(CharSequence.class, displayName),
             ClassParameter.from(String.class, deviceProfile),
             ClassParameter.from(Class.forName("android.companion.AssociatedDevice"), null),
