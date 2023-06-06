@@ -1137,4 +1137,16 @@ public class ShadowTelephonyManagerTest {
         ImmutableMap.of(0, ImmutableList.of(emergencyNumber)));
     assertThat(telephonyManager.getEmergencyNumberList().get(0)).containsExactly(emergencyNumber);
   }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSubscriptionIdForPhoneAccountHandle() {
+    int subscriptionId = 123;
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+    shadowOf(telephonyManager)
+        .setPhoneAccountHandleSubscriptionId(phoneAccountHandle, subscriptionId);
+    assertEquals(subscriptionId, telephonyManager.getSubscriptionId(phoneAccountHandle));
+  }
 }
