@@ -95,6 +95,7 @@ public class ShadowTelephonyManager {
   private final Map<PhoneAccountHandle, Uri> voicemailRingtoneUriMap = new HashMap<>();
   private final Map<PhoneAccountHandle, TelephonyManager> phoneAccountToTelephonyManagers =
       new HashMap<>();
+  private final Map<PhoneAccountHandle, Integer> phoneAccountHandleSubscriptionId = new HashMap<>();
 
   private PhoneStateListener lastListener;
   private /*TelephonyCallback*/ Object lastTelephonyCallback;
@@ -1093,6 +1094,16 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSubscriberId()}. */
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
+  }
+
+  @Implementation(minSdk = R)
+  protected int getSubscriptionId(PhoneAccountHandle handle) {
+    checkReadPhoneStatePermission();
+    return phoneAccountHandleSubscriptionId.get(handle);
+  }
+
+  public void setPhoneAccountHandleSubscriptionId(PhoneAccountHandle handle, int subscriptionId) {
+    phoneAccountHandleSubscriptionId.put(handle, subscriptionId);
   }
 
   /** Returns the value set by {@link #setVisualVoicemailPackageName(String)}. */
