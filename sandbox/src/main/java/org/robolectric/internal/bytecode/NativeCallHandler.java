@@ -56,7 +56,12 @@ public class NativeCallHandler {
         new BufferedReader(new FileReader(exemptionsFile.getPath(), UTF_8))) {
       String line;
       while ((line = reader.readLine()) != null) {
-        descriptors.add(line.trim());
+        // Sanitize input. Ignore empty lines and commented lines starting with #.
+        line = sanitize(line.trim());
+        if (line.isEmpty() || line.charAt(0) == '#') {
+          continue;
+        }
+        descriptors.add(line);
       }
     }
     System.out.println(
@@ -109,7 +114,8 @@ public class NativeCallHandler {
       @Nonnull String descriptor, @Nonnull String className, @Nonnull String methodName) {
     // The shadow message is merely a hint based on the last component of the FQCN, which is
     // typically the pattern used for shadow classes.
-    String shadowHint = "Shadow" + className.replaceAll("[^.]+\\.", "") + ".java";
+    String shadowHint =
+        "Shadow" + className.replaceAll("[^.]+\\.", "").replaceAll("\\$.*", "") + ".java";
     // The message below tries to educate the user that shadow overrides are not necessarily
     // needed nor desired for trivial cases that are better covered by a no-op return operation.
     return "Unexpected Robolectric native method call to '"
@@ -123,7 +129,7 @@ public class NativeCallHandler {
         + "Option 2: If this method just needs to trivially return 0 or null, please add an"
         + " exemption entry for\n"
         + "   "
-        + descriptor
+        + sanitize(descriptor)
         + "\n"
         + "to exemption file "
         + getExemptionFileName();

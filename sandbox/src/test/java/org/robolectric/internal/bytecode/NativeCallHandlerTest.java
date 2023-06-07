@@ -49,6 +49,12 @@ public class NativeCallHandlerTest {
       writer.write("libcore.io.Linux#fchmod(Ljava/io/FileDescriptor;I)V\n");
       writer.write("android.graphics.fonts.Font^Builder#nAddAxis(JIF)V\n");
       writer.write("org.example.MyClass#someOtherMethod()V\n");
+      // empty or white-space lines are ignored
+      writer.write("\n");
+      writer.write("  \t \n");
+      // A # prefix denotes a comment and is ignored too
+      writer.write("# org.example.Ignored#comment()V\n");
+      writer.write("  # org.example.Ignored#thisIsACommentToo()V  \n");
     }
 
     // Create handler, which loads exemptions from file. ThrowOnNatives is enabled.
@@ -61,6 +67,12 @@ public class NativeCallHandlerTest {
 
     // Test non-exempted methods
     assertThat(handler.shouldThrow("org.example.MyClass#someOtherMethod(II)V")).isTrue();
+
+    // Empty lines and comments are ignored and not present in the exemption list.
+    assertThat(handler.shouldThrow("")).isTrue();
+    assertThat(handler.shouldThrow("  \t ")).isTrue();
+    assertThat(handler.shouldThrow("# org.example.Ignored#comment()V")).isTrue();
+    assertThat(handler.shouldThrow("  # org.example.Ignored#thisIsACommentToo()V  ")).isTrue();
   }
 
   @Test
@@ -190,17 +202,17 @@ public class NativeCallHandlerTest {
     // Test generated exception message for non-exempted methods.
     assertThat(
             handler.getExceptionMessage(
-                "org.example.MyClass#someOtherMethod(II)V",
-                "org.example.MyClass",
+                "org.example.MyClass$1#someOtherMethod(II)V",
+                "org.example.MyClass$1",
                 "someOtherMethod"))
         .isEqualTo(
             "Unexpected Robolectric native method call to"
-                + " 'org.example.MyClass#someOtherMethod()'.\n"
+                + " 'org.example.MyClass$1#someOtherMethod()'.\n"
                 + "Option 1: If customizing this method is useful, add an implementation in"
                 + " ShadowMyClass.java.\n"
                 + "Option 2: If this method just needs to trivially return 0 or null, please add an"
                 + " exemption entry for\n"
-                + "   org.example.MyClass#someOtherMethod(II)V\n"
+                + "   org.example.MyClass^1#someOtherMethod(II)V\n"
                 + "to exemption file natives.txt");
   }
 }
