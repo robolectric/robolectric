@@ -1,15 +1,16 @@
-package org.robolectric.shadows;
+package android.graphics;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.graphics.Color;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.internal.DoNotInstrument;
 
+/** Compatibility tests for {@link Color} */
+@DoNotInstrument
 @RunWith(AndroidJUnit4.class)
-public class ShadowColorTest {
-
+public class ColorTest {
   @Test
   public void testRgb() {
     int color = Color.rgb(160, 160, 160);
@@ -69,10 +70,10 @@ public class ShadowColorTest {
 
   @Test
   public void HSVToColorShouldReverseColorToHSV() {
-      float[] hsv = new float[3];
-      Color.colorToHSV(Color.RED, hsv);
+    float[] hsv = new float[3];
+    Color.colorToHSV(Color.RED, hsv);
 
-      assertThat(Color.HSVToColor(hsv)).isEqualTo(Color.RED);
+    assertThat(Color.HSVToColor(hsv)).isEqualTo(Color.RED);
   }
 
   @Test
