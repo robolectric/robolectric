@@ -35,6 +35,11 @@ public class ShadowCarrierConfigManager {
     return new PersistableBundle();
   }
 
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  protected PersistableBundle getConfigForSubId(int subId, String... keys) {
+    return getConfigForSubId(subId);
+  }
+
   public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
     this.readPhoneStatePermission = readPhoneStatePermission;
   }
