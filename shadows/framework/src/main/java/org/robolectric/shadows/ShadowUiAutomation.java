@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -133,6 +134,11 @@ public class ShadowUiAutomation {
       screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
     }
     return screenshot;
+  }
+
+  @Implementation
+  protected void waitForIdle(long idleTimeoutMillis, long globalTimeoutMillis) {
+    ShadowLooper.getShadowMainLooper().idleFor(idleTimeoutMillis, TimeUnit.MILLISECONDS);
   }
 
   /**
