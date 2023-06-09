@@ -18,14 +18,20 @@ public class ShadowLocaleList {
   @Resetter
   public static void reset() {
     LocaleListReflector localeListReflector = reflector(LocaleListReflector.class);
-    localeListReflector.setLastDefaultLocale(null);
-    localeListReflector.setDefaultLocaleList(null);
-    localeListReflector.setDefaultAdjustedLocaleList(null);
-    localeListReflector.setLastExplicitlySetLocaleList(null);
+    synchronized (localeListReflector.getLock()) {
+      localeListReflector.setLastDefaultLocale(null);
+      localeListReflector.setDefaultLocaleList(null);
+      localeListReflector.setDefaultAdjustedLocaleList(null);
+      localeListReflector.setLastExplicitlySetLocaleList(null);
+    }
   }
 
   @ForType(LocaleList.class)
   interface LocaleListReflector {
+    @Static
+    @Accessor("sLock")
+    Object getLock();
+
     @Static
     @Accessor("sLastDefaultLocale")
     void setLastDefaultLocale(Locale lastDefaultLocal);
