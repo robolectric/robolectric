@@ -26,6 +26,7 @@ android {
 }
 
 dependencies {
+    implementation libs.kotlinx.coroutines.android
     implementation libs.androidx.appcompat
     implementation libs.androidx.window
 
