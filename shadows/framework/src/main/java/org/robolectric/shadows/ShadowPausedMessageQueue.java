@@ -461,10 +461,11 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       Message msg = getMessages();
       while (msg != null) {
         boolean unused = msgProcessor.apply(msg.getCallback());
-        ShadowMessage shadowMsg = Shadow.extract(msg);
-        msg.recycle();
-        msg = shadowMsg.getNext();
+        Message next = shadowOfMsg(msg).internalGetNext();
+        shadowOfMsg(msg).recycleUnchecked();
+        msg = next;
       }
+      reflector(MessageQueueReflector.class, realQueue).setMessages(null);
     }
   }
 
