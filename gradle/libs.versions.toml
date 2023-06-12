@@ -30,6 +30,9 @@ error-prone-gradle = "3.1.0"
 # https://kotlinlang.org/docs/releases.html#release-details
 kotlin = "1.9.0-RC"
 
+# https://github.com/Kotlin/kotlinx.coroutines/releases/
+kotlinx-coroutines = '1.7.1'
+
 # https://github.com/diffplug/spotless/blob/main/CHANGES.md
 spotless-gradle = "6.19.0"
 
@@ -96,7 +99,7 @@ androidx-constraintlayout = "2.1.4"
 androidx-core = "1.10.1"
 androidx-fragment = "1.6.0"
 androidx-multidex = "2.0.1"
-androidx-window = "1.0.0"
+androidx-window = "1.1.0"
 
 # https://github.com/android/android-test/tags
 androidx-test-annotation = "1.0.1"
@@ -119,6 +122,7 @@ kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines"}
 
 auto-common = { module = "com.google.auto:auto-common", version.ref = "auto-common" }
 auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "auto-service" }
