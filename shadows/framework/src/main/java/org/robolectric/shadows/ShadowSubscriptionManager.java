@@ -521,6 +521,11 @@ public class ShadowSubscriptionManager {
       return this;
     }
 
+    public SubscriptionInfoBuilder setIsOpportunistic(boolean isOpportunistic) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsOpportunistic", isOpportunistic);
+      return this;
+    }
+
     public SubscriptionInfoBuilder setMnc(String mnc) {
       if (VERSION.SDK_INT < Q) {
         ReflectionHelpers.setField(subscriptionInfo, "mMnc", Integer.valueOf(mnc));
