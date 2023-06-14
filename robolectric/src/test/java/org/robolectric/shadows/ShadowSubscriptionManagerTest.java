@@ -157,6 +157,16 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  public void getActiveSubscriptionInfo_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+    assertThrows(
+        SecurityException.class,
+        () ->
+            shadowOf(subscriptionManager)
+                .getActiveSubscriptionInfo(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID));
+  }
+
+  @Test
   public void getActiveSubscriptionInfoList_shouldReturnInfoList() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
@@ -370,6 +380,17 @@ public class ShadowSubscriptionManagerTest {
         .setPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID, "123");
     assertThat(subscriptionManager.getPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID))
         .isEqualTo("123");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getPhoneNumber_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneNumbersPermission(false);
+    assertThrows(
+        SecurityException.class,
+        () ->
+            shadowOf(subscriptionManager)
+                .getPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID));
   }
 
   @Test
