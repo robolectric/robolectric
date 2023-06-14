@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
@@ -11,7 +12,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import java.util.Map;
 import org.robolectric.RuntimeEnvironment;
@@ -47,6 +47,15 @@ public class ShadowNfcAdapter {
       return null;
     }
     return reflector(NfcAdapterReflector.class).getNfcAdapter(context);
+  }
+
+  /** Factory method for creating a mock NfcAdapter.Tag */
+  public static Tag createMockTag() {
+    if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
+      return Tag.createMockTag(new byte[0], new int[0], new Bundle[0]);
+    } else {
+      return reflector(TagReflector.class).createMockTag(new byte[0], new int[0], new Bundle[0], 0);
+    }
   }
 
   @Implementation
@@ -221,7 +230,7 @@ public class ShadowNfcAdapter {
     }
     if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
       nfcAdapterReflector.setHasNfcFeature(false);
-      if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.TIRAMISU) {
+      if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
         nfcAdapterReflector.setHasBeamFeature(false);
       }
     }
@@ -248,5 +257,10 @@ public class ShadowNfcAdapter {
     @Direct
     @Static
     NfcAdapter getNfcAdapter(Context context);
+  }
+
+  @ForType(Tag.class)
+  interface TagReflector {
+    Tag createMockTag(byte[] id, int[] techList, Bundle[] techListExtras, long cookie);
   }
 }
