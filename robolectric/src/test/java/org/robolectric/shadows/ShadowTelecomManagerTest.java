@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -266,6 +267,19 @@ public class ShadowTelecomManagerTest {
 
   @Test
   @Config(minSdk = M)
+  public void testPlaceCall_noPermission_throwsSecurityException() {
+    shadowOf(telecomService).setCallPhonePermission(false);
+
+    Bundle extras = new Bundle();
+    extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, createHandle("id"));
+
+    assertThrows(
+        SecurityException.class,
+        () -> telecomService.placeCall(Uri.parse("tel:+1-201-555-0123"), extras));
+  }
+
+  @Test
+  @Config(minSdk = M)
   public void testAllowPlaceCall() {
     shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
 
@@ -414,6 +428,13 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  public void setTtySupported_noPermission_throwsSecurityException() {
+    shadowOf(telecomService).setReadPhoneStatePermission(false);
+
+    assertThrows(SecurityException.class, () -> telecomService.isTtySupported());
+  }
+
+  @Test
   public void canSetAndGetIsInCall() {
     shadowOf(telecomService).setIsInCall(true);
     assertThat(telecomService.isInCall()).isTrue();
@@ -546,6 +567,15 @@ public class ShadowTelecomManagerTest {
     // After reset
     shadowOf(telecomService).setLine1Number(phoneAccountHandle, null);
     assertThat(telecomService.getLine1Number(phoneAccountHandle)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP_MR1)
+  public void getLine1Number_noPermission_throwsSecurityException() {
+    shadowOf(telecomService).setReadPhoneStatePermission(false);
+
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    assertThrows(SecurityException.class, () -> telecomService.getLine1Number(phoneAccountHandle));
   }
 
   private static PhoneAccountHandle createHandle(String id) {
