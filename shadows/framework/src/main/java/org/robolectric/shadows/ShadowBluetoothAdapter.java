@@ -22,6 +22,7 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothStatusCodes;
 import android.bluetooth.IBluetoothManager;
+import android.bluetooth.IBluetoothProfileServiceConnection;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.AttributionSource;
@@ -29,6 +30,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelUuid;
+import android.os.RemoteException;
 import android.provider.Settings;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -129,7 +131,9 @@ public class ShadowBluetoothAdapter {
   /** Requires LooseSignatures because of {@link AttributionSource} parameter */
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected static Object createAdapter(Object attributionSource) {
-    IBluetoothManager service = ReflectionHelpers.createNullProxy(IBluetoothManager.class);
+    IBluetoothManager service =
+        ReflectionHelpers.createDelegatingProxy(
+            IBluetoothManager.class, new BluetoothManagerDelegate());
     return ReflectionHelpers.callConstructor(
         BluetoothAdapter.class,
         ClassParameter.from(IBluetoothManager.class, service),
@@ -737,5 +741,40 @@ public class ShadowBluetoothAdapter {
     @Accessor("sBluetoothLeScanner")
     @Static
     void setSBluetoothLeScanner(BluetoothLeScanner scanner);
+  }
+
+  // Any BluetoothAdapter calls which need to invoke BluetoothManager methods can delegate those
+  // calls to this class. The default behavior for any methods not defined in this class is a no-op.
+  @SuppressWarnings("unused")
+  private static class BluetoothManagerDelegate {
+    /**
+     * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
+     * automatically invoke the service connected callback.
+     */
+    public boolean bindBluetoothProfileService(
+        int bluetoothProfile, String serviceName, IBluetoothProfileServiceConnection proxy) {
+      if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+        return false;
+      }
+      try {
+        proxy.onServiceConnected(null, null);
+      } catch (RemoteException e) {
+        return false;
+      }
+      return true;
+    }
+
+    /**
+     * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
+     * automatically invoke the service disconnected callback.
+     */
+    public void unbindBluetoothProfileService(
+        int bluetoothProfile, IBluetoothProfileServiceConnection proxy) {
+      try {
+        proxy.onServiceDisconnected(null);
+      } catch (RemoteException e) {
+        // nothing to do
+      }
+    }
   }
 }
