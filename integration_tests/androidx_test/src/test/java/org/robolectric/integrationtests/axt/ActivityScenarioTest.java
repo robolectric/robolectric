@@ -2,6 +2,7 @@ package org.robolectric.integrationtests.axt;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.app.Activity;
 import android.app.UiAutomation;
@@ -262,6 +263,20 @@ public class ActivityScenarioTest {
                 .isEqualTo(Configuration.ORIENTATION_LANDSCAPE);
             assertThat(activity).isNotSameInstanceAs(originalActivity);
           });
+    }
+  }
+
+  @Test
+  public void onActivityExceptionPropagated() {
+    try (ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launch(TranscriptActivity.class)) {
+      assertThrows(
+          IllegalStateException.class,
+          () ->
+              activityScenario.onActivity(
+                  activity -> {
+                    throw new IllegalStateException("test");
+                  }));
     }
   }
 }
