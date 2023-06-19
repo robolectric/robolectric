@@ -41,7 +41,7 @@ apache-http-client = "4.0.3"
 asm = "9.5"
 
 # https://github.com/google/auto/releases
-auto-common = "1.2.1"
+auto-common = "1.2.2"
 auto-service = "1.1.1"
 auto-value = "1.10.1"
 
