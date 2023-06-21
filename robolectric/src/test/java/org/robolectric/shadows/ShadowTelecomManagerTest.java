@@ -578,6 +578,34 @@ public class ShadowTelecomManagerTest {
     assertThrows(SecurityException.class, () -> telecomService.getLine1Number(phoneAccountHandle));
   }
 
+  @Test
+  public void handleMmi_defaultValueFalse() {
+    assertThat(telecomService.handleMmi("123")).isFalse();
+  }
+
+  @Test
+  public void handleMmi() {
+    shadowOf(telecomService).setHandleMmiValue(true);
+
+    assertThat(telecomService.handleMmi("123")).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void handleMmiWithHandle_defaultValueFalse() {
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+    assertThat(telecomService.handleMmi("123", phoneAccountHandle)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void handleMmiWithHandle() {
+    shadowOf(telecomService).setHandleMmiValue(true);
+    PhoneAccountHandle phoneAccountHandle = createHandle("id1");
+
+    assertThat(telecomService.handleMmi("123", phoneAccountHandle)).isTrue();
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return new PhoneAccountHandle(
         new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),

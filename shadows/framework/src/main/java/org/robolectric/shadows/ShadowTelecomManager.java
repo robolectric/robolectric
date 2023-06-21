@@ -94,6 +94,7 @@ public class ShadowTelecomManager {
   private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
   private boolean readPhoneStatePermission = true;
   private boolean callPhonePermission = true;
+  private boolean handleMmiValue = false;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -602,14 +603,18 @@ public class ShadowTelecomManager {
         ServiceController.of(ReflectionHelpers.callConstructor(clazz), null).create().get());
   }
 
+  public void setHandleMmiValue(boolean handleMmiValue) {
+    this.handleMmiValue = handleMmiValue;
+  }
+
   @Implementation
   protected boolean handleMmi(String dialString) {
-    return false;
+    return handleMmiValue;
   }
 
   @Implementation(minSdk = M)
   protected boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
-    return false;
+    return handleMmiValue;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
