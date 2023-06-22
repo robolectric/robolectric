@@ -15,6 +15,7 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowMediaStoreTest {
   private static final String AUTHORITY = "authority";
+  private static final String INCORRECT_AUTHORITY = "incorrect_authority";
   private static final String CURRENT_MEDIA_COLLECTION_ID = "media_collection_id";
 
   @Test
@@ -51,5 +52,22 @@ public class ShadowMediaStoreTest {
     ShadowMediaStore.clearCloudMediaChangedEventList();
 
     assertThat(ShadowMediaStore.getCloudMediaChangedEvents()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void isCurrentCloudMediaProviderAuthority_withCorrectAuthority_returnsTrue() {
+    ShadowMediaStore.setCurrentCloudMediaProviderAuthority(AUTHORITY);
+
+    assertThat(MediaStore.isCurrentCloudMediaProviderAuthority(null, AUTHORITY)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void isCurrentCloudMediaProviderAuthority_withIncorrectAuthority_returnsFalse() {
+    ShadowMediaStore.setCurrentCloudMediaProviderAuthority(AUTHORITY);
+
+    assertThat(MediaStore.isCurrentCloudMediaProviderAuthority(null, INCORRECT_AUTHORITY))
+        .isFalse();
   }
 }

@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory.Options;
 import android.net.Uri;
 import android.provider.MediaStore;
+import androidx.annotation.Nullable;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -25,11 +26,13 @@ public class ShadowMediaStore {
 
   private static Bitmap stubBitmap = null;
   private static final List<CloudMediaChangedEvent> cloudMediaChangedEventList = new ArrayList<>();
+  @Nullable private static String currentCloudMediaProviderAuthority = null;
 
   @Resetter
   public static void reset() {
     stubBitmap = null;
     cloudMediaChangedEventList.clear();
+    currentCloudMediaProviderAuthority = null;
   }
 
   /** Shadow for {@link MediaStore.Images}. */
@@ -135,5 +138,16 @@ public class ShadowMediaStore {
     public abstract String authority();
 
     public abstract String currentMediaCollectionId();
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected static boolean isCurrentCloudMediaProviderAuthority(
+      ContentResolver resolver, String authority) {
+    return currentCloudMediaProviderAuthority.equals(authority);
+  }
+
+  /** Mutator method to set the value of the current cloud media provider authority. */
+  public static void setCurrentCloudMediaProviderAuthority(@Nullable String authority) {
+    currentCloudMediaProviderAuthority = authority;
   }
 }
