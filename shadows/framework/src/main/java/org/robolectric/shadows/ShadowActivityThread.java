@@ -79,7 +79,13 @@ public class ShadowActivityThread {
             } else if (method.getName().equals("notifyPackageUse")) {
               return null;
             } else if (method.getName().equals("getPackageInstaller")) {
-              return null;
+              try {
+                Class<?> iPackageInstallerClass =
+                    classLoader.loadClass("android.content.pm.IPackageInstaller");
+                return ReflectionHelpers.createNullProxy(iPackageInstallerClass);
+              } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+              }
             } else if (method.getName().equals("hasSystemFeature")) {
               String featureName = (String) args[0];
               return RuntimeEnvironment.getApplication()
