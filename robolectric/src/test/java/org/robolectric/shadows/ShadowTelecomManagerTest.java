@@ -94,6 +94,14 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  public void getPhoneAccount_noPermission_throwsSecurityException() {
+    shadowOf(telecomService).setReadPhoneStatePermission(false);
+
+    PhoneAccountHandle handler = createHandle("id");
+    assertThrows(SecurityException.class, () -> telecomService.getPhoneAccount(handler));
+  }
+
+  @Test
   public void clearAccounts() {
     PhoneAccountHandle anotherPackageHandle =
         createHandle("some.other.package", "OtherConnectionService", "id");
@@ -154,6 +162,14 @@ public class ShadowTelecomManagerTest {
     List<PhoneAccountHandle> callCapablePhoneAccounts = telecomService.getCallCapablePhoneAccounts();
     assertThat(callCapablePhoneAccounts).contains(callCapableHandle);
     assertThat(callCapablePhoneAccounts).doesNotContain(notCallCapableHandler);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void getCallCapablePhoneAccounts_noPermission_throwsSecurityException() {
+    shadowOf(telecomService).setReadPhoneStatePermission(false);
+
+    assertThrows(SecurityException.class, () -> telecomService.getCallCapablePhoneAccounts());
   }
 
   @Test

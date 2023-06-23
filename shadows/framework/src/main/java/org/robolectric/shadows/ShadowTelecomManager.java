@@ -172,6 +172,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = M)
   protected List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
+    checkReadPhoneStatePermission();
     return this.getCallCapablePhoneAccounts(false);
   }
 
@@ -220,6 +221,7 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
+    checkReadPhoneStatePermission();
     return accounts.get(account);
   }
 
