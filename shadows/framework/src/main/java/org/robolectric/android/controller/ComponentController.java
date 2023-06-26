@@ -25,6 +25,7 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
     this.intent = intent;
   }
 
+  @SuppressWarnings("unchecked")
   public ComponentController(T component) {
     myself = (C) this;
     this.component = component;
