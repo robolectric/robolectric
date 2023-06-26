@@ -266,10 +266,12 @@ public class ShadowPowerManagerTest {
 
     String rebootReason = "reason";
     powerManager.reboot(rebootReason);
+    powerManager.reboot(null);
 
-    assertThat(shadowOf(powerManager).getTimesRebooted()).isEqualTo(1);
-    assertThat(shadowOf(powerManager).getRebootReasons()).hasSize(1);
-    assertThat(shadowOf(powerManager).getRebootReasons()).contains(rebootReason);
+    assertThat(shadowOf(powerManager).getTimesRebooted()).isEqualTo(2);
+    assertThat(shadowOf(powerManager).getRebootReasons())
+        .containsExactly(rebootReason, null)
+        .inOrder();
   }
 
   @Test

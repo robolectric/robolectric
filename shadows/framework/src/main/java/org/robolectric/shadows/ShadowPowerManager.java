@@ -30,7 +30,6 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
 import android.os.WorkSource;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -67,8 +66,8 @@ public class ShadowPowerManager {
   @PowerManager.LocationPowerSaveMode
   private int locationMode = PowerManager.LOCATION_MODE_ALL_DISABLED_WHEN_SCREEN_OFF;
 
-  private List<String> rebootReasons = new ArrayList<String>();
-  private Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
+  private final List<String> rebootReasons = new ArrayList<>();
+  private final Map<String, Boolean> ignoringBatteryOptimizations = new HashMap<>();
 
   private int thermalStatus = 0;
   // Intentionally use Object instead of PowerManager.OnThermalStatusChangedListener to avoid
@@ -333,7 +332,7 @@ public class ShadowPowerManager {
   }
 
   @Implementation
-  protected void reboot(String reason) {
+  protected void reboot(@Nullable String reason) {
     if (RuntimeEnvironment.getApiLevel() >= R
         && "userspace".equals(reason)
         && !isRebootingUserspaceSupported()) {
@@ -348,9 +347,11 @@ public class ShadowPowerManager {
     return rebootReasons.size();
   }
 
-  /** Returns the list of reasons for each reboot, in chronological order. */
-  public ImmutableList<String> getRebootReasons() {
-    return ImmutableList.copyOf(rebootReasons);
+  /**
+   * Returns the list of reasons for each reboot, in chronological order. May contain {@code null}.
+   */
+  public List<String> getRebootReasons() {
+    return new ArrayList<>(rebootReasons);
   }
 
   /** Sets the value returned by {@link #isAmbientDisplayAvailable()}. */
