@@ -162,6 +162,21 @@ public class ShadowBluetoothGatt {
   }
 
   /**
+   * Requests an MTU size used for a given conneciton.
+   *
+   * @param mtu a new MTU size to be used.
+   * @return true if the new MTU value has been requested successfully.
+   */
+  @Implementation(minSdk = LOLLIPOP)
+  protected boolean requestMtu(int mtu) {
+    if (this.getGattCallback() != null) {
+      this.getGattCallback().onMtuChanged(this.realBluetoothGatt, mtu, BluetoothGatt.GATT_SUCCESS);
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Request a connection parameter update.
    *
    * @param priority Request a specific connection priority. Must be one of {@link
