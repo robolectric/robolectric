@@ -5,8 +5,11 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.telephony.NetworkRegistrationInfo;
 import android.telephony.ServiceState;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -17,56 +20,45 @@ import org.robolectric.util.ReflectionHelpers;
 @Config(minSdk = P)
 public class ServiceStateBuilderTest {
 
-  static final int INT_VALUE = 10;
-  static final String STRING_VALUE = "string";
   static final int[] INT_ARRAY = {1, 2, 3};
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setVoiceRegStateAndBuild_isSetInResultingObject() {
     // These public APIs expected to be available in all SDKs in range.
-    ServiceState serviceState =
-        ServiceStateBuilder.newBuilder().setVoiceRegState(INT_VALUE).build();
-    assertThat(serviceState.getVoiceRegState()).isEqualTo(INT_VALUE);
+    ServiceState serviceState = ServiceStateBuilder.newBuilder().setVoiceRegState(10).build();
+    assertThat(serviceState.getVoiceRegState()).isEqualTo(10);
   }
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setDataRegStateAndBuild_isSetInResultingObject() {
-    ServiceState serviceState = ServiceStateBuilder.newBuilder().setDataRegState(INT_VALUE).build();
-    assertThat(serviceState.getDataRegState()).isEqualTo(INT_VALUE);
+    ServiceState serviceState = ServiceStateBuilder.newBuilder().setDataRegState(10).build();
+    assertThat(serviceState.getDataRegState()).isEqualTo(10);
   }
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setIsManualSelectionAndBuild_isSetInResultingObject() {
     ServiceState serviceState = ServiceStateBuilder.newBuilder().setIsManualSelection(true).build();
     assertThat(serviceState.getIsManualSelection()).isTrue();
   }
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setRoamingAndBuild_isSetInResultingObject() {
     ServiceState serviceState = ServiceStateBuilder.newBuilder().setRoaming(true).build();
     assertThat(serviceState.getRoaming()).isTrue();
   }
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setEmergencyOnlyAndBuild_isSetInResultingObject() {
     ServiceState serviceState = ServiceStateBuilder.newBuilder().setEmergencyOnly(true).build();
     assertThat(serviceState.isEmergencyOnly()).isTrue();
   }
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setChannelNumberAndBuild_isSetInResultingObject() {
-    ServiceState serviceState =
-        ServiceStateBuilder.newBuilder().setChannelNumber(INT_VALUE).build();
-    assertThat(serviceState.getChannelNumber()).isEqualTo(INT_VALUE);
+    ServiceState serviceState = ServiceStateBuilder.newBuilder().setChannelNumber(10).build();
+    assertThat(serviceState.getChannelNumber()).isEqualTo(10);
   }
 
-  @Config(minSdk = P)
   @Test
   public void testServiceStateBuilder_setCellBandwidthsAndBuild_isSetInResultingObject() {
     ServiceState serviceState =
@@ -77,21 +69,18 @@ public class ServiceStateBuilderTest {
   @Config(minSdk = Q)
   @Test
   public void testServiceStateBuilder_setNrFrequencyRangeAndBuild_isSetInResultingObject() {
-    ServiceState serviceState =
-        ServiceStateBuilder.newBuilder().setNrFrequencyRange(INT_VALUE).build();
-    assertThat(serviceState.getNrFrequencyRange()).isEqualTo(INT_VALUE);
+    ServiceState serviceState = ServiceStateBuilder.newBuilder().setNrFrequencyRange(10).build();
+    assertThat(serviceState.getNrFrequencyRange()).isEqualTo(10);
   }
 
   @Config(minSdk = R)
   @Test
   public void testServiceStateBuilder_setOperatorNameAndBuild_isSetInResultingObject() {
     ServiceState serviceState =
-        ServiceStateBuilder.newBuilder()
-            .setOperatorName(STRING_VALUE, STRING_VALUE, STRING_VALUE)
-            .build();
-    assertThat(serviceState.getOperatorAlphaLong()).isEqualTo(STRING_VALUE);
-    assertThat(serviceState.getOperatorAlphaShort()).isEqualTo(STRING_VALUE);
-    assertThat(serviceState.getOperatorNumeric()).isEqualTo(STRING_VALUE);
+        ServiceStateBuilder.newBuilder().setOperatorName("string", "string", "string").build();
+    assertThat(serviceState.getOperatorAlphaLong()).isEqualTo("string");
+    assertThat(serviceState.getOperatorAlphaShort()).isEqualTo("string");
+    assertThat(serviceState.getOperatorNumeric()).isEqualTo("string");
   }
 
   @Config(minSdk = R)
@@ -119,5 +108,19 @@ public class ServiceStateBuilderTest {
         ServiceStateBuilder.newBuilder().setIsUsingCarrierAggregation(true).build();
     assertThat((boolean) ReflectionHelpers.getField(serviceState, "mIsUsingCarrierAggregation"))
         .isTrue();
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void
+      testServiceStateBuilder_setNetworkRegistrationInfoListAndBuild_isSetInResultingObjectField() {
+    List<NetworkRegistrationInfo> networkRegistrationInfoList = new ArrayList<>();
+    networkRegistrationInfoList.add(new NetworkRegistrationInfo.Builder().build());
+    ServiceState serviceState =
+        ServiceStateBuilder.newBuilder()
+            .setNetworkRegistrationInfoList(networkRegistrationInfoList)
+            .build();
+    assertThat(serviceState.getNetworkRegistrationInfoList())
+        .isEqualTo(networkRegistrationInfoList);
   }
 }
