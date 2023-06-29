@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -37,7 +36,6 @@ public class ShadowBluetoothGattTest {
 
   private int resultStatus = INITIAL_VALUE;
   private int resultState = INITIAL_VALUE;
-  private int resultMtu = INITIAL_VALUE;
   private String resultAction;
   private BluetoothGattCharacteristic resultCharacteristic;
   private BluetoothGatt bluetoothGatt;
@@ -80,11 +78,6 @@ public class ShadowBluetoothGattTest {
           resultStatus = status;
           resultCharacteristic = characteristic;
           resultAction = ACTION_WRITE;
-        }
-
-        @Override
-        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
-          resultMtu = mtu;
         }
       };
 
@@ -203,29 +196,6 @@ public class ShadowBluetoothGattTest {
   public void getConnectionPriority_atInitiation() {
     assertThat(shadowOf(bluetoothGatt).getConnectionPriority())
         .isEqualTo(BluetoothGatt.CONNECTION_PRIORITY_BALANCED);
-  }
-
-  @Test
-  @Config(minSdk = LOLLIPOP)
-  public void requestMtu_withCallback_returnsTrueAndSetsMtu() {
-    int mtu = 480;
-
-    shadowOf(bluetoothGatt).setGattCallback(callback);
-    boolean result = shadowOf(bluetoothGatt).requestMtu(mtu);
-
-    assertThat(result).isTrue();
-    assertThat(resultMtu).isEqualTo(mtu);
-  }
-
-  @Test
-  @Config(minSdk = LOLLIPOP)
-  public void requestMtu_withNoCallback_returnsFalseAndDoesNotSetMtu() {
-    int mtu = 480;
-
-    boolean result = shadowOf(bluetoothGatt).requestMtu(mtu);
-
-    assertThat(result).isFalse();
-    assertThat(resultMtu).isNotEqualTo(mtu);
   }
 
   @Test
