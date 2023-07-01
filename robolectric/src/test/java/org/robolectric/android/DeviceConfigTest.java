@@ -7,6 +7,7 @@ import android.content.res.Configuration;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.Locale;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -98,12 +99,22 @@ public class DeviceConfigTest {
   @Test
   @Config(minSdk = VERSION_CODES.N)
   public void applyRules_rtlScript() {
-    applyQualifiers("he");
+    String language = "he";
+    applyQualifiers(language);
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
-
+    // Locale's constructor has always converted three language codes to their earlier, obsoleted
+    // forms: he maps to iw, yi maps to ji, and id maps to in. Since Java SE 17, this is no longer
+    // the case. Each language maps to its new form; iw maps to he, ji maps to yi, and in maps to
+    // id.
+    // See
+    // https://stackoverflow.com/questions/8202406/locale-code-for-hebrew-reference-to-other-locale-codes/70882234#70882234,
+    // and https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Locale.html.
+    // To make sure this test can work with different JDK versions, using the following workaround.
+    Locale locale = new Locale(language);
     assertThat(asQualifierString())
         .isEqualTo(
-            "iw-ldrtl-sw320dp-w320dp-h470dp-normal-notlong-notround-"
+            locale.getLanguage()
+                + "-ldrtl-sw320dp-w320dp-h470dp-normal-notlong-notround-"
                 + optsForO
                 + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
