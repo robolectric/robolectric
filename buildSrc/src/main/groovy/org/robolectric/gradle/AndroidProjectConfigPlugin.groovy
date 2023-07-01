@@ -28,6 +28,19 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
                     .findAll { k,v -> k.startsWith("robolectric.") }
                     .collect { k,v -> "-D$k=$v" }
             jvmArgs = forwardedSystemProperties
+            jvmArgs += [
+                    '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+                    '--add-opens=java.base/java.io=ALL-UNNAMED',
+                    '--add-opens=java.base/java.net=ALL-UNNAMED',
+                    '--add-opens=java.base/java.security=ALL-UNNAMED',
+                    '--add-opens=java.base/java.text=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util=ALL-UNNAMED',
+                    '--add-opens=java.desktop/java.awt.font=ALL-UNNAMED',
+                    '--add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+                    '--add-opens=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+                    '--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+            ]
 
             doFirst {
                 if (!forwardedSystemProperties.isEmpty()) {
