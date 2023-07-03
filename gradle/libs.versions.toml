@@ -51,7 +51,7 @@ auto-value = "1.10.2"
 compile-testing = "0.21.0"
 
 # https://github.com/google/guava/releases
-guava-jre = "32.0.1-jre"
+guava-jre = "32.1.1-jre"
 
 # https://github.com/google/gson/releases
 gson = "2.10.1"

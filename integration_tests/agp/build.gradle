@@ -21,6 +21,12 @@ android {
 }
 
 dependencies {
+    // See change log at https://github.com/google/guava/releases/tag/v32.1.0.
+    modules {
+        module("com.google.guava:listenablefuture") {
+            replacedBy("com.google.guava:guava", "listenablefuture is part of guava")
+        }
+    }
     // Testing dependencies
     testImplementation project(path: ':testapp')
     testImplementation project(":robolectric")
