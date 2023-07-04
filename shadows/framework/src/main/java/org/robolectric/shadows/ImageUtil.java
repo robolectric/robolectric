@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Locale;
 import javax.imageio.IIOException;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -33,7 +34,30 @@ public class ImageUtil {
   private static final String FORMAT_NAME_PNG = "png";
   private static boolean initialized;
 
+  /** Image information descriptor. */
+  public static class ImageInfo {
+
+    public final int width;
+    public final int height;
+    public final String mimeType;
+
+    ImageInfo(int width, int height, String mimeType) {
+      this.width = width;
+      this.height = height;
+      this.mimeType = mimeType;
+    }
+  }
+
   static Point getImageSizeFromStream(InputStream is) {
+    ImageInfo info = getImageInfoFromStream(is);
+    if (info == null) {
+      return null;
+    } else {
+      return new Point(info.width, info.height);
+    }
+  }
+
+  static ImageInfo getImageInfoFromStream(InputStream is) {
     if (!initialized) {
       // Stops ImageIO from creating temp files when reading images
       // from input stream.
@@ -49,7 +73,10 @@ public class ImageUtil {
       ImageReader reader = readers.next();
       try {
         reader.setInput(imageStream);
-        return new Point(reader.getWidth(0), reader.getHeight(0));
+        return new ImageInfo(
+            reader.getWidth(0),
+            reader.getHeight(0),
+            "image/" + reader.getFormatName().toLowerCase(Locale.US));
       } finally {
         reader.dispose();
       }
@@ -84,7 +111,7 @@ public class ImageUtil {
         format = reader.getFormatName();
         int minIndex = reader.getMinIndex();
         BufferedImage image = reader.read(minIndex);
-        return RobolectricBufferedImage.create(image, ("image/" + format).toLowerCase());
+        return RobolectricBufferedImage.create(image, ("image/" + format).toLowerCase(Locale.US));
       } finally {
         reader.dispose();
       }
