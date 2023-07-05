@@ -52,7 +52,7 @@ public class ShadowMimeTypeMap {
     return null;
   }
 
-  public void addExtensionMimeTypMapping(String extension, String mimeType) {
+  public void addExtensionMimeTypeMapping(String extension, String mimeType) {
     extensionToMimeTypeMap.put(extension, mimeType);
     mimeTypeToExtensionMap.put(mimeType, extension);
   }
