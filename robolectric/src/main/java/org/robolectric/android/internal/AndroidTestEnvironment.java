@@ -83,6 +83,7 @@ import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadows.ShadowPackageManager;
 import org.robolectric.shadows.ShadowPackageParser;
 import org.robolectric.shadows.ShadowPackageParser._Package_;
+import org.robolectric.shadows.ShadowPausedLooper;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
@@ -184,13 +185,13 @@ public class AndroidTestEnvironment implements TestEnvironment {
             : androidConfiguration.locale;
     Locale.setDefault(locale);
 
-    // Looper needs to be prepared before the activity thread is created
-    if (Looper.myLooper() == null) {
-      Looper.prepareMainLooper();
-    }
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
+      if (Looper.myLooper() == null) {
+        Looper.prepareMainLooper();
+      }
       ShadowLooper.getShadowMainLooper().resetScheduler();
     } else {
+      ShadowPausedLooper.resetLoopers();
       RuntimeEnvironment.setMasterScheduler(new LooperDelegatingScheduler(Looper.getMainLooper()));
     }
 
@@ -198,9 +199,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     RuntimeEnvironment.setAndroidFrameworkJarPath(sdkJarPath);
     Bootstrap.setDisplayConfiguration(androidConfiguration, displayMetrics);
-    RuntimeEnvironment.setActivityThread(ReflectionHelpers.callConstructor(ActivityThread.class));
-    ReflectionHelpers.setStaticField(
-        ActivityThread.class, "sMainThreadHandler", new Handler(Looper.myLooper()));
 
     Instrumentation instrumentation = createInstrumentation();
     InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
@@ -549,35 +547,39 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   private Instrumentation createInstrumentation() {
-    final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
-    final _ActivityThread_ activityThreadReflector =
-        reflector(_ActivityThread_.class, activityThread);
-
     Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
-    activityThreadReflector.setInstrumentation(androidInstrumentation);
+    androidInstrumentation.runOnMainSync(
+        () -> {
+          ActivityThread activityThread = ReflectionHelpers.callConstructor(ActivityThread.class);
+          ReflectionHelpers.setStaticField(
+              ActivityThread.class, "sMainThreadHandler", new Handler(Looper.getMainLooper()));
+          reflector(_ActivityThread_.class, activityThread)
+              .setInstrumentation(androidInstrumentation);
+          RuntimeEnvironment.setActivityThread(activityThread);
 
-    Application dummyInitialApplication = new Application();
-    final ComponentName dummyInitialComponent =
-        new ComponentName("", androidInstrumentation.getClass().getSimpleName());
-    // TODO Move the API check into a helper method inside ShadowInstrumentation
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
-      reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(
-              activityThread,
-              dummyInitialApplication,
-              dummyInitialApplication,
-              dummyInitialComponent,
-              null);
-    } else {
-      reflector(_Instrumentation_.class, androidInstrumentation)
-          .init(
-              activityThread,
-              dummyInitialApplication,
-              dummyInitialApplication,
-              dummyInitialComponent,
-              null,
-              null);
-    }
+          Application dummyInitialApplication = new Application();
+          final ComponentName dummyInitialComponent =
+              new ComponentName("", androidInstrumentation.getClass().getSimpleName());
+          // TODO Move the API check into a helper method inside ShadowInstrumentation
+          if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
+            reflector(_Instrumentation_.class, androidInstrumentation)
+                .init(
+                    activityThread,
+                    dummyInitialApplication,
+                    dummyInitialApplication,
+                    dummyInitialComponent,
+                    null);
+          } else {
+            reflector(_Instrumentation_.class, androidInstrumentation)
+                .init(
+                    activityThread,
+                    dummyInitialApplication,
+                    dummyInitialApplication,
+                    dummyInitialComponent,
+                    null,
+                    null);
+          }
+        });
 
     androidInstrumentation.onCreate(new Bundle());
     return androidInstrumentation;
@@ -599,7 +601,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   @Override
   public void tearDownApplication() {
     if (RuntimeEnvironment.application != null) {
-      RuntimeEnvironment.application.onTerminate();
+      ShadowInstrumentation.runOnMainSyncNoIdle(RuntimeEnvironment.getApplication()::onTerminate);
       ShadowInstrumentation.getInstrumentation().finish(1, new Bundle());
     }
   }

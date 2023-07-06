@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadow.api.ShadowPicker;
 
 public class LooperShadowPicker<T> implements ShadowPicker<T> {
@@ -15,11 +14,15 @@ public class LooperShadowPicker<T> implements ShadowPicker<T> {
   }
 
   @Override
+  @SuppressWarnings("deprecation") // This is Robolectric library code
   public Class<? extends T> pickShadowClass() {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.PAUSED) {
-      return pausedShadowClass;
-    } else {
-      return legacyShadowClass;
+    switch (ShadowLooper.looperMode()) {
+      case LEGACY:
+        return legacyShadowClass;
+      case PAUSED:
+      case INSTRUMENTATION_TEST:
+        return pausedShadowClass;
     }
+    throw new UnsupportedOperationException("Unrecognized looperMode " + ShadowLooper.looperMode());
   }
 }
