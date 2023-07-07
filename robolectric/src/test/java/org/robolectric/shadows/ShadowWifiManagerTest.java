@@ -642,6 +642,38 @@ public class ShadowWifiManagerTest {
 
   @Test
   @Config(minSdk = Q)
+  public void isWpa3SaeSupportedAndConfigurable() {
+    assertThat(wifiManager.isWpa3SaeSupported()).isFalse();
+    shadowOf(wifiManager).setWpa3SaeSupported(true);
+    assertThat(wifiManager.isWpa3SaeSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void isWpa3SaePublicKeySupportedAndConfigurable() {
+    assertThat(wifiManager.isWpa3SaePublicKeySupported()).isFalse();
+    shadowOf(wifiManager).setWpa3SaePublicKeySupported(true);
+    assertThat(wifiManager.isWpa3SaePublicKeySupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void isWpa3SaeH2eSupportedAndConfigurable() {
+    assertThat(wifiManager.isWpa3SaeH2eSupported()).isFalse();
+    shadowOf(wifiManager).setWpa3SaeH2eSupported(true);
+    assertThat(wifiManager.isWpa3SaeH2eSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void isWpa3SuiteBSupportedAndConfigurable() {
+    assertThat(wifiManager.isWpa3SuiteBSupported()).isFalse();
+    shadowOf(wifiManager).setWpa3SuiteBSupported(true);
+    assertThat(wifiManager.isWpa3SuiteBSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
   public void testAddOnWifiUsabilityStatsListener() {
     // GIVEN
     WifiManager.OnWifiUsabilityStatsListener mockListener =
