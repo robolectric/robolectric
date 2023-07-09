@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 11
 
       - uses: gradle/gradle-build-action@v2
 
@@ -42,7 +42,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 14
 
       - uses: gradle/gradle-build-action@v2
 
@@ -62,7 +62,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: 11
 
       - uses: gradle/gradle-build-action@v2
 
