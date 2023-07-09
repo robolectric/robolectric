@@ -18,7 +18,7 @@ jobs:
   graphics_tests:
     strategy:
       matrix:
-        device: [ macos-12, ubuntu-20.04, self-hosted ]
+        device: [ macos-12, ubuntu-22.04, self-hosted ]
     runs-on: ${{ matrix.device }}
 
     steps:
