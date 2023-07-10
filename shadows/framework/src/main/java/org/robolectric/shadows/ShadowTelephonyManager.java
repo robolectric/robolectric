@@ -109,7 +109,7 @@ public class ShadowTelephonyManager {
   private String networkCountryIso;
   private String networkOperator = "";
   private Locale simLocale;
-  private String simOperator;
+  private String simOperator = "";
   private String simOperatorName;
   private String simSerialNumber;
   private boolean readPhoneStatePermission = true;
