@@ -108,6 +108,7 @@ public class ShadowTelephonyManager {
   private String networkOperatorName = "";
   private String networkCountryIso;
   private String networkOperator = "";
+  private String networkSpecifier = "";
   private Locale simLocale;
   private String simOperator = "";
   private String simOperatorName;
@@ -421,6 +422,15 @@ public class ShadowTelephonyManager {
   @Implementation
   protected String getNetworkOperator() {
     return networkOperator;
+  }
+
+  public void setNetworkSpecifier(String networkSpecifier) {
+    this.networkSpecifier = networkSpecifier;
+  }
+
+  @Implementation(minSdk = O)
+  protected String getNetworkSpecifier() {
+    return networkSpecifier;
   }
 
   @Implementation

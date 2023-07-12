@@ -326,6 +326,13 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void shouldGiveNetworkSpecifier() {
+    shadowOf(telephonyManager).setNetworkSpecifier("SomeSpecifier");
+    assertEquals("SomeSpecifier", telephonyManager.getNetworkSpecifier());
+  }
+
+  @Test
   public void shouldGiveLine1Number() {
     shadowOf(telephonyManager).setLine1Number("123-244-2222");
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
