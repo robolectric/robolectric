@@ -143,7 +143,7 @@ public class ShadowTelephonyManager {
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
-  private /*UiccCardInfo[]*/ Object uiccCardsInfo;
+  private /*UiccCardInfo[]*/ Object uiccCardsInfo = new ArrayList<>();
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
