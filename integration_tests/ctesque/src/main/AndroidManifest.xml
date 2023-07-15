@@ -2,8 +2,7 @@
 <!--
   Manifest for ctesque tests
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.ctesque">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
   <application />
 </manifest>
