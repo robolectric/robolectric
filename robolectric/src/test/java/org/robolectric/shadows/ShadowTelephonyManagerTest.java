@@ -353,6 +353,15 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void
+      getDeviceIdForSlot_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+          throws Exception {
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
+    assertThrows(SecurityException.class, () -> telephonyManager.getDeviceId(1));
+  }
+
+  @Test
   public void shouldGivePhoneType() {
     shadowOf(telephonyManager).setPhoneType(TelephonyManager.PHONE_TYPE_CDMA);
     assertEquals(TelephonyManager.PHONE_TYPE_CDMA, telephonyManager.getPhoneType());

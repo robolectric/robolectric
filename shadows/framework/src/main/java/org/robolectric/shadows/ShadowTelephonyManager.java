@@ -903,6 +903,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = M)
   protected String getDeviceId(int slot) {
+    checkReadPhoneStatePermission();
     return slotIndexToDeviceId.get(slot);
   }
 
