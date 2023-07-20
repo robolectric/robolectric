@@ -1,17 +1,26 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.app.Dialog;
+import android.app.VoiceInteractor;
+import android.app.VoiceInteractor.PickOptionRequest.Option;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.service.voice.VoiceInteractionSession;
+import android.service.voice.VoiceInteractionSession.CommandRequest;
+import android.service.voice.VoiceInteractionSession.Request;
+import com.android.internal.app.IVoiceInteractorCallback;
+import com.android.internal.app.IVoiceInteractorRequest;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -127,6 +136,62 @@ public class ShadowVoiceInteractionSession {
     startVoiceActivityException = exception;
   }
 
+  /**
+   * Simulates the creation of the {@link VoiceInteractionSession.CommandRequest} related to the
+   * provided {@link VoiceInteractor.CommandRequest}, as if it was being created by the framework.
+   * The method calls {@link VoiceInteractionSession#onRequestCommand(CommandRequest)} with newly
+   * created {@link VoiceInteractionSession.CommandRequest}.
+   *
+   * @param commandRequest: Command request sent by a third-party application.
+   * @param packageName: Package name of the application that initiated the request.
+   * @param uid: User ID of the application that initiated the request.
+   * @return newly created {@link VoiceInteractionSession.CommandRequest}
+   */
+  public CommandRequest sendCommandRequest(
+      @Nonnull VoiceInteractor.CommandRequest commandRequest,
+      @Nonnull String packageName,
+      int uid) {
+    String command = ReflectionHelpers.getField(commandRequest, "mCommand");
+    Bundle extras = ReflectionHelpers.getField(commandRequest, "mArgs");
+
+    IVoiceInteractorCallback callback = new ShadowVoiceInteractorCallback(commandRequest);
+
+    CommandRequest internalCommandRequest =
+        createCommandRequest(packageName, uid, callback, command, extras);
+    realSession.onRequestCommand(internalCommandRequest);
+    return internalCommandRequest;
+  }
+
+  /**
+   * Creates the {@link VoiceInteractionSession.CommandRequest}.
+   *
+   * @param packageName: Package name of the application that initiated the request.
+   * @param uid: User ID of the application that initiated the request.
+   * @param callback: IVoiceInteractorCallback.
+   * @param command: RequestCommand command.
+   * @param extras: Additional extra information that was supplied as part of the request.
+   * @return created {@link VoiceInteractionSession.CommandRequest}.
+   */
+  private CommandRequest createCommandRequest(
+      @Nonnull String packageName,
+      int uid,
+      @Nonnull IVoiceInteractorCallback callback,
+      @Nonnull String command,
+      @Nonnull Bundle extras) {
+    CommandRequest commandRequest =
+        callConstructor(
+            CommandRequest.class,
+            ClassParameter.from(String.class, packageName),
+            ClassParameter.from(int.class, uid),
+            ClassParameter.from(IVoiceInteractorCallback.class, callback),
+            ClassParameter.from(VoiceInteractionSession.class, realSession),
+            ClassParameter.from(String.class, command),
+            ClassParameter.from(Bundle.class, extras));
+    ReflectionHelpers.callInstanceMethod(
+        realSession, "addRequest", ClassParameter.from(Request.class, commandRequest));
+    return commandRequest;
+  }
+
   // Extends com.android.internal.app.IVoiceInteractionManagerService.Stub
   private class FakeVoiceInteractionManagerService {
 
@@ -175,6 +240,50 @@ public class ShadowVoiceInteractionSession {
     public void finish(IBinder token) {
       ReflectionHelpers.callInstanceMethod(realSession, "doDestroy");
       isFinishing = true;
+    }
+  }
+
+  private static class ShadowVoiceInteractorCallback implements IVoiceInteractorCallback {
+    private final VoiceInteractor.CommandRequest commandRequest;
+
+    ShadowVoiceInteractorCallback(VoiceInteractor.CommandRequest commandRequest) {
+      this.commandRequest = commandRequest;
+    }
+
+    @Override
+    public void deliverConfirmationResult(
+        IVoiceInteractorRequest request, boolean confirmed, Bundle result) throws RemoteException {}
+
+    @Override
+    public void deliverPickOptionResult(
+        IVoiceInteractorRequest request, boolean finished, Option[] selections, Bundle result)
+        throws RemoteException {}
+
+    @Override
+    public void deliverCompleteVoiceResult(IVoiceInteractorRequest request, Bundle result)
+        throws RemoteException {}
+
+    @Override
+    public void deliverAbortVoiceResult(IVoiceInteractorRequest request, Bundle result)
+        throws RemoteException {}
+
+    @Override
+    public void deliverCommandResult(
+        IVoiceInteractorRequest request, boolean finished, Bundle result) throws RemoteException {
+      commandRequest.onCommandResult(finished, result);
+    }
+
+    @Override
+    public void deliverCancel(IVoiceInteractorRequest request) throws RemoteException {
+      commandRequest.onCancel();
+    }
+
+    @Override
+    public void destroy() throws RemoteException {}
+
+    @Override
+    public IBinder asBinder() {
+      return null;
     }
   }
 }
