@@ -34,7 +34,7 @@ kotlin = "1.9.0"
 kotlinx-coroutines = '1.7.2'
 
 # https://github.com/diffplug/spotless/blob/main/CHANGES.md
-spotless-gradle = "6.19.0"
+spotless-gradle = "6.20.0"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
