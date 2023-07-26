@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowDrawable;
@@ -70,5 +71,52 @@ public class ShadowNativeAnimatedVectorDrawableTest {
     ShadowDrawable shadowDrawable = Shadow.extract(drawable);
     assertEquals(
         R.drawable.animation_vector_drawable_grouping_1, shadowDrawable.getCreatedFromResId());
+  }
+
+  @Test
+  public void start_isRunning_returnsTrue() throws Exception {
+    // Setup AnimatedVectorDrawable from xml file
+    XmlPullParser parser = resources.getXml(RES_ID);
+    AttributeSet attrs = Xml.asAttributeSet(parser);
+
+    int type;
+    while ((type = parser.next()) != XmlPullParser.START_TAG
+        && type != XmlPullParser.END_DOCUMENT) {
+      // Empty loop
+    }
+
+    if (type != XmlPullParser.START_TAG) {
+      throw new XmlPullParserException("No start tag found");
+    }
+    AnimatedVectorDrawable drawable = new AnimatedVectorDrawable();
+    drawable.inflate(resources, parser, attrs);
+
+    drawable.start();
+
+    assertEquals(true, Shadows.shadowOf(drawable).isStartInitiated());
+  }
+
+  @Test
+  public void stop_returnsFalse() throws Exception {
+    // Setup AnimatedVectorDrawable from xml file
+    XmlPullParser parser = resources.getXml(RES_ID);
+    AttributeSet attrs = Xml.asAttributeSet(parser);
+
+    int type;
+    while ((type = parser.next()) != XmlPullParser.START_TAG
+        && type != XmlPullParser.END_DOCUMENT) {
+      // Empty loop
+    }
+
+    if (type != XmlPullParser.START_TAG) {
+      throw new XmlPullParserException("No start tag found");
+    }
+    AnimatedVectorDrawable drawable = new AnimatedVectorDrawable();
+    drawable.inflate(resources, parser, attrs);
+
+    drawable.start();
+    drawable.stop();
+
+    assertEquals(false, Shadows.shadowOf(drawable).isStartInitiated());
   }
 }
