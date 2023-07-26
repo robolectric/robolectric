@@ -153,6 +153,35 @@ public class ShadowMatrixTest {
   }
 
   @Test
+  public void testGetSetValues_withLargeArray() {
+    final Matrix matrix = new Matrix();
+    final float[] values = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f};
+    matrix.setValues(values);
+    final float[] matrixValues = new float[10];
+    matrix.getValues(matrixValues);
+    // First 9 elements should match.
+    for (int i = 0; i < 9; i++) {
+      assertThat(matrixValues[i]).isEqualTo(values[i]);
+    }
+    // The last element should not have been set.
+    assertThat(matrixValues[9]).isEqualTo(0);
+  }
+
+  @Test(expected = ArrayIndexOutOfBoundsException.class)
+  public void testGetValues_withSmallArray() {
+    final Matrix matrix = new Matrix();
+    final float[] matrixValues = new float[8];
+    matrix.getValues(matrixValues);
+  }
+
+  @Test(expected = ArrayIndexOutOfBoundsException.class)
+  public void testSetValues_withSmallArray() {
+    final Matrix matrix = new Matrix();
+    final float[] values = {0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f};
+    matrix.setValues(values);
+  }
+
+  @Test
   public void testSet() {
     final Matrix matrix1 = new Matrix();
     matrix1.postScale(2.0f, 2.0f);
