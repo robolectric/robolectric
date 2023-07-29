@@ -21,6 +21,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
@@ -54,6 +56,8 @@ public class ShadowImsMmTelManager {
       new MmTelCapabilities(); // start with empty
   private int imsRegistrationTech = ImsRegistrationImplBase.REGISTRATION_TECH_NONE;
   private int subId;
+  private Consumer<Integer> stateCallback;
+  private Consumer<Integer> transportTypeCallback;
 
   @Implementation(maxSdk = VERSION_CODES.R)
   protected void __constructor__(int subId) {
@@ -202,6 +206,31 @@ public class ShadowImsMmTelManager {
           .getValue()
           .execute(() -> entry.getKey().onTechnologyChangeFailed(imsRadioTech, imsReasonInfo));
     }
+  }
+
+  public Consumer<Integer> getRegistrationStateCallback() {
+    return stateCallback;
+  }
+
+  @HiddenApi
+  @Implementation(minSdk = VERSION_CODES.R)
+  public void getRegistrationState(Executor executor, Consumer<Integer> stateCallback) {
+    this.stateCallback = stateCallback;
+  }
+
+  public Consumer<Integer> getRegistrationTransportTypeCallback() {
+    return transportTypeCallback;
+  }
+
+  @RequiresPermission(
+      anyOf = {
+        Manifest.permission.READ_PRIVILEGED_PHONE_STATE,
+        Manifest.permission.READ_PRECISE_PHONE_STATE
+      })
+  @Implementation(minSdk = VERSION_CODES.R)
+  public void getRegistrationTransportType(
+      Executor executor, Consumer<Integer> transportTypeCallback) {
+    this.transportTypeCallback = transportTypeCallback;
   }
 
   @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
