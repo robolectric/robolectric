@@ -30,8 +30,7 @@ public class AudioDeviceInfoBuilder {
    * Sets the device type.
    *
    * @param type The device type. The possible values are the constants defined as <a
-   *     href=https://cs.android.com/android/platform/superproject/+/master:frameworks/base/media/java/android/media/AudioDeviceInfo.java?q=AudioDeviceType>
-   *     {@code AudioDeviceInfo.AudioDeviceType}</a>
+   *     href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/media/java/android/media/AudioDeviceInfo.java?q=AudioDeviceType">AudioDeviceInfo.AudioDeviceType</a>
    */
   public AudioDeviceInfoBuilder setType(int type) {
     this.type = type;

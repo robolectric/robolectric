@@ -6,9 +6,7 @@ import android.text.TextUtils.TruncateAt;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-/**
- * Implement {@lint TextUtils#ellipsize} by truncating the text.
- */
+/** Implement {@link TextUtils#ellipsize} by truncating the text. */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextUtils.class)
 public class ShadowTextUtils {

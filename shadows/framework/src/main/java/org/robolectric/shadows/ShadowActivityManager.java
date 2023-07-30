@@ -207,7 +207,7 @@ public class ShadowActivityManager {
    * Sets the values to be returned by {@link #getAppTasks()}.
    *
    * @see #getAppTasks()
-   * @param tasks List of app tasks.
+   * @param appTasks List of app tasks.
    */
   public void setAppTasks(List<ActivityManager.AppTask> appTasks) {
     this.appTasks.clear();
