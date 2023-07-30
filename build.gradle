@@ -102,17 +102,17 @@ gradle.projectsEvaluated {
     }
 }
 
-task aggregateJsondocs(type: Copy) {
-    gradle.projectsEvaluated {
+gradle.projectsEvaluated {
+    tasks.register('aggregateJsondocs', Copy) {
         project.subprojects.findAll { it.plugins.hasPlugin(ShadowsPlugin) }.each { subproject ->
             dependsOn subproject.tasks["compileJava"]
             from "${subproject.buildDir}/docs/json"
         }
+        into "$buildDir/docs/json"
     }
-    into "$buildDir/docs/json"
 }
 
-task aggregateDocs {
+tasks.register('aggregateDocs') {
     dependsOn ':aggregateJavadocs'
     dependsOn ':aggregateJsondocs'
 }
