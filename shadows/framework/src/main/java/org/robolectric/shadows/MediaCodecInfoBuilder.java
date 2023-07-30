@@ -191,9 +191,8 @@ public class MediaCodecInfoBuilder {
      *
      * @param mediaFormat a {@link MediaFormat} supported by the codec. It is a requirement for
      *     mediaFormat to have {@link MediaFormat.KEY_MIME} set. Other keys are optional.
-     * @throws {@link NullPointerException} if mediaFormat is null.
-     * @throws {@link IllegalArgumentException} if mediaFormat does not have {@link
-     *     MediaFormat.KEY_MIME}.
+     * @throws NullPointerException if mediaFormat is null.
+     * @throws IllegalArgumentException if mediaFormat does not have {@link MediaFormat.KEY_MIME}.
      */
     public CodecCapabilitiesBuilder setMediaFormat(MediaFormat mediaFormat) {
       Preconditions.checkNotNull(mediaFormat);
@@ -220,7 +219,7 @@ public class MediaCodecInfoBuilder {
      *
      * @param profileLevels an array of {@link MediaCodecInfo.CodecProfileLevel} supported by the
      *     codec.
-     * @throws {@link NullPointerException} if profileLevels is null.
+     * @throws NullPointerException if profileLevels is null.
      */
     public CodecCapabilitiesBuilder setProfileLevels(CodecProfileLevel[] profileLevels) {
       this.profileLevels = Preconditions.checkNotNull(profileLevels);

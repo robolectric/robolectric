@@ -110,7 +110,7 @@ public class ShadowBiometricManager {
    *
    * @param type to set the authenticatorType
    * @see <a
-   *     href="https://developer.android.com/reference/android/hardware/biometrics/BiometricManager#canAuthenticate(int)"
+   *     href="https://developer.android.com/reference/android/hardware/biometrics/BiometricManager#canAuthenticate(int)">BiometricManager#canAuthenticate(int)</a>
    */
   public void setAuthenticatorType(int type) {
     authenticatorType = type;

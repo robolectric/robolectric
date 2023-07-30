@@ -24,7 +24,8 @@ import org.robolectric.util.reflector.ForType;
  * <p>In {@link LooperMode.Mode.LEGACY}, each Message is associated with a Runnable posted to the
  * {@link Scheduler}.
  *
- * @see ShadowLooper, ShadowLegacyMessageQueue
+ * @see ShadowLooper
+ * @see ShadowLegacyMessageQueue
  */
 @Implements(value = Message.class, isInAndroidSdk = false)
 public class ShadowLegacyMessage extends ShadowMessage {

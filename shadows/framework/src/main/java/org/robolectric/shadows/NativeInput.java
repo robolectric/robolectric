@@ -34,8 +34,10 @@ import org.robolectric.res.android.Ref;
  * Java representation of framework native input Transliterated from oreo-mr1 (SDK 27)
  * frameworks/native/include/input/Input.h and libs/input/Input.cpp
  *
- * @see <a href="https://android.googlesource.com/platform/frameworks/native/+/oreo-mr1-release/include/input/Input.h">include/input/Input.h</a>
- * @see <a href="https://android.googlesource.com/platform/frameworks/native/+/oreo-mr1-release/libs/input/Input.cpp>libs/input/Input.cpp</a>
+ * @see <a
+ *     href="https://android.googlesource.com/platform/frameworks/native/+/oreo-mr1-release/include/input/Input.h">include/input/Input.h</a>
+ * @see <a
+ *     href="https://android.googlesource.com/platform/frameworks/native/+/oreo-mr1-release/libs/input/Input.cpp">libs/input/Input.cpp</a>
  */
 public class NativeInput {
 
