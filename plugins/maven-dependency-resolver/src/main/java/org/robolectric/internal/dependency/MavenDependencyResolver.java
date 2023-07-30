@@ -35,7 +35,7 @@ import org.xml.sax.SAXException;
  * client library here could create conflicts with the ones in the Android system.
  *
  * @see <a href="https://maven.apache.org/ant-tasks/">maven-ant-tasks</a>
- * @see <a href="https://maven.apache.org/resolver/index.html">Maven Resolver</a></a>
+ * @see <a href="https://maven.apache.org/resolver/index.html">Maven Resolver</a>
  */
 public class MavenDependencyResolver implements DependencyResolver {
 
