@@ -98,7 +98,7 @@ androidx-appcompat = "1.6.1"
 androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.10.1"
-androidx-fragment = "1.6.0"
+androidx-fragment = "1.6.1"
 androidx-multidex = "2.0.1"
 androidx-window = "1.1.0"
 
