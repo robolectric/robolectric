@@ -58,6 +58,8 @@ import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
+import android.telephony.ModemInfo;
+import android.telephony.PhoneCapability;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
@@ -1047,6 +1049,21 @@ public class ShadowTelephonyManagerTest {
         callback);
 
     assertThat(shadowTelephonyManager.getBootstrapAuthenticationCallback()).isEqualTo(callback);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void setPhoneCapability() {
+    ModemInfo modemInfo1 = ModemInfoFactory.create(0);
+    ModemInfo modemInfo2 = ModemInfoFactory.create(1);
+    ImmutableList<ModemInfo> logicalModemList = ImmutableList.of(modemInfo1, modemInfo2);
+    int[] deviceNrCapabilities = new int[0];
+    PhoneCapability dsdaCapability =
+        PhoneCapabilityFactory.create(2, 1, logicalModemList, false, deviceNrCapabilities);
+
+    shadowTelephonyManager.setPhoneCapability(dsdaCapability);
+
+    assertThat(telephonyManager.getPhoneCapability()).isEqualTo(dsdaCapability);
   }
 
   @Test

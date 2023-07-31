@@ -169,6 +169,8 @@ public class ShadowTelephonyManager {
    */
   private Object callback;
 
+  private /*PhoneCapability*/ Object phoneCapability;
+
   {
     resetSimStates();
     resetSimCountryIsos();
@@ -205,6 +207,16 @@ public class ShadowTelephonyManager {
       Object e,
       Object callback) {
     this.callback = callback;
+  }
+
+  public void setPhoneCapability(/*PhoneCapability*/ Object phoneCapability) {
+    this.phoneCapability = phoneCapability;
+  }
+
+  @Implementation(minSdk = S)
+  @HiddenApi
+  public /*PhoneCapability*/ Object getPhoneCapability() {
+    return phoneCapability;
   }
 
   @Implementation
