@@ -32,6 +32,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class ShadowSubscriptionManager {
 
   private boolean readPhoneStatePermission = true;
+  private boolean readPhoneNumbersPermission = true;
   public static final int INVALID_PHONE_INDEX =
       ReflectionHelpers.getStaticField(SubscriptionManager.class, "INVALID_PHONE_INDEX");
 
@@ -178,9 +179,12 @@ public class ShadowSubscriptionManager {
   /**
    * Returns subscription that were set via {@link #setActiveSubscriptionInfoList} if it can find
    * one with the specified id or null if none found.
+   *
+   * <p>An exception will be thrown if the READ_PHONE_STATE permission has not been granted.
    */
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected SubscriptionInfo getActiveSubscriptionInfo(int subId) {
+    checkReadPhoneStatePermission();
     if (subscriptionList == null) {
       return null;
     }
@@ -417,13 +421,31 @@ public class ShadowSubscriptionManager {
   }
 
   /**
+   * When set to false methods requiring {@link android.Manifest.permission.READ_PHONE_NUMBERS}
+   * permission will throw a {@link SecurityException}. By default it's set to true for backwards
+   * compatibility.
+   */
+  public void setReadPhoneNumbersPermission(boolean readPhoneNumbersPermission) {
+    this.readPhoneNumbersPermission = readPhoneNumbersPermission;
+  }
+
+  private void checkReadPhoneNumbersPermission() {
+    if (!readPhoneNumbersPermission) {
+      throw new SecurityException();
+    }
+  }
+
+  /**
    * Returns the phone number for the given {@code subscriptionId}, or an empty string if not
    * available.
    *
    * <p>The phone number can be set by {@link #setPhoneNumber(int, String)}
+   *
+   * <p>An exception will be thrown if the READ_PHONE_NUMBERS permission has not been granted.
    */
   @Implementation(minSdk = TIRAMISU)
   protected String getPhoneNumber(int subscriptionId) {
+    checkReadPhoneNumbersPermission();
     return phoneNumberMap.getOrDefault(subscriptionId, "");
   }
 
@@ -518,6 +540,11 @@ public class ShadowSubscriptionManager {
 
     public SubscriptionInfoBuilder setIsEmbedded(boolean isEmbedded) {
       ReflectionHelpers.setField(subscriptionInfo, "mIsEmbedded", isEmbedded);
+      return this;
+    }
+
+    public SubscriptionInfoBuilder setIsOpportunistic(boolean isOpportunistic) {
+      ReflectionHelpers.setField(subscriptionInfo, "mIsOpportunistic", isOpportunistic);
       return this;
     }
 

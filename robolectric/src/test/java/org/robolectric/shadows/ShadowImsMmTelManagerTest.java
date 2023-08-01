@@ -17,6 +17,7 @@ import android.telephony.ims.RegistrationManager;
 import android.telephony.ims.feature.MmTelFeature.MmTelCapabilities;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.ArraySet;
+import java.util.function.Consumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -238,6 +239,21 @@ public class ShadowImsMmTelManagerTest {
       assertThat(e.getCode()).isEqualTo(ImsException.CODE_ERROR_UNSUPPORTED_OPERATION);
       assertThat(e).hasMessageThat().contains("IMS not available on device.");
     }
+  }
+
+  @Test
+  public void getRegistrationState() {
+    Consumer<Integer> stateCallback = state -> {};
+    shadowImsMmTelManager.getRegistrationState(Runnable::run, stateCallback);
+    assertThat(shadowImsMmTelManager.getRegistrationStateCallback()).isEqualTo(stateCallback);
+  }
+
+  @Test
+  public void getRegistrationTransportType() {
+    Consumer<Integer> transportTypeCallback = state -> {};
+    shadowImsMmTelManager.getRegistrationTransportType(Runnable::run, transportTypeCallback);
+    assertThat(shadowImsMmTelManager.getRegistrationTransportTypeCallback())
+        .isEqualTo(transportTypeCallback);
   }
 
   @Test

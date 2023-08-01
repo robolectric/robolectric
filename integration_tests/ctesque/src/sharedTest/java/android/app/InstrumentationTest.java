@@ -2,6 +2,7 @@ package android.app;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 
 import android.os.Handler;
@@ -47,5 +48,17 @@ public final class InstrumentationTest {
             });
 
     assertThat(events).containsExactly("before runOnMainSync", "in runOnMainSync").inOrder();
+  }
+
+  @Test
+  public void runOnMainSync_propagatesException() {
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            getInstrumentation()
+                .runOnMainSync(
+                    () -> {
+                      throw new IllegalStateException("test");
+                    }));
   }
 }

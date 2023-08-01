@@ -63,6 +63,7 @@ import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity.IntentForResult;
@@ -1180,5 +1181,23 @@ public class ShadowInstrumentation {
       return activityThread.getInstrumentation();
     }
     return null;
+  }
+
+  /**
+   * Executes a runnable depending on the LooperMode.
+   *
+   * <p>For INSTRUMENTATION_TEST mode, will post the runnable to the instrumentation thread and
+   * block the caller's thread until that runnable is executed.
+   *
+   * <p>For other modes, simply executes the runnable.
+   *
+   * @param runnable a runnable to be executed
+   */
+  public static void runOnMainSyncNoIdle(Runnable runnable) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST) {
+      checkNotNull(getInstrumentation()).runOnMainSync(runnable);
+    } else {
+      runnable.run();
+    }
   }
 }

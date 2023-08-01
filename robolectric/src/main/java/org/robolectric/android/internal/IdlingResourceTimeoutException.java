@@ -2,6 +2,7 @@ package org.robolectric.android.internal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import androidx.test.internal.platform.util.TestOutputEmitter;
 import com.google.common.annotations.Beta;
 import java.util.List;
 import java.util.Locale;
@@ -15,10 +16,12 @@ import java.util.Locale;
  * <p>Note: This API may be removed in the future in favor of using espresso's exception directly.
  */
 @Beta
+@SuppressWarnings("RestrictTo")
 public final class IdlingResourceTimeoutException extends RuntimeException {
   public IdlingResourceTimeoutException(List<String> resourceNames) {
     super(
         String.format(
             Locale.ROOT, "Wait for %s to become idle timed out", checkNotNull(resourceNames)));
+    TestOutputEmitter.dumpThreadStates("ThreadState-IdlingResTimeoutExcep.txt");
   }
 }

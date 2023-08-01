@@ -33,7 +33,10 @@ import org.robolectric.android.util.concurrent.BackgroundExecutor;
  *   assertThat(Looper.myLooper()).isEqualTo(Looper.getMainLooper());
  * }
  * </pre>
+ *
+ * @deprecated use LooperMode.Mode.INSTRUMENTATION_TEST instead
  */
+@Deprecated
 public final class BackgroundTestRule implements TestRule {
 
   /** Annotation for test methods that need to be executed in a background thread. */

@@ -3,7 +3,9 @@ package org.robolectric.shadows;
 import android.view.displayhash.DisplayHash;
 import android.view.displayhash.DisplayHashManager;
 import android.view.displayhash.VerifiedDisplayHash;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -13,6 +15,7 @@ import org.robolectric.annotation.Implements;
 public class ShadowDisplayHashManager {
 
   private static VerifiedDisplayHash verifyDisplayHashResult;
+  private static Set<String> supportedHashAlgorithms = ImmutableSet.of("PHASH");
 
   /**
    * Sets the {@link VerifiedDisplayHash} that's going to be returned by following
@@ -22,9 +25,23 @@ public class ShadowDisplayHashManager {
     ShadowDisplayHashManager.verifyDisplayHashResult = verifyDisplayHashResult;
   }
 
+  /**
+   * Sets the return value of #getSupportedHashAlgorithms.
+   *
+   * <p>If null is provided, getSupportedHashAlgorithms will throw a RuntimeException.
+   */
+  public static void setSupportedHashAlgorithms(Collection<String> supportedHashAlgorithms) {
+    if (supportedHashAlgorithms == null) {
+      ShadowDisplayHashManager.supportedHashAlgorithms = null;
+    } else {
+      ShadowDisplayHashManager.supportedHashAlgorithms =
+          ImmutableSet.copyOf(supportedHashAlgorithms);
+    }
+  }
+
   @Implementation(minSdk = 31)
   protected Set<String> getSupportedHashAlgorithms() {
-    return ImmutableSet.of("PHASH");
+    return Preconditions.checkNotNull(supportedHashAlgorithms);
   }
 
   @Implementation(minSdk = 31)

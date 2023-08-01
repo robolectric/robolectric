@@ -118,6 +118,20 @@ public @interface LooperMode {
     PAUSED,
 
     /**
+     * A mode that simulates an android instrumentation test threading model, which has a separate
+     * test thread distinct from the main looper thread.
+     *
+     * <p>Otherwise it is quite similar to PAUSED mode. The clock time is still fixed, and you can
+     * use shadowLooper methods to pause, unpause, and wait for any looper to be idle.
+     *
+     * <p>It is recommended to use this mode in tests that mostly use androidx.test APIs, which will
+     * support being called directly on the main thread or on the test thread. Most org.robolectric
+     * APIs that interact with the android UI (e.g. ActivityController) will raise an exception if
+     * called off the main thread.
+     */
+    INSTRUMENTATION_TEST,
+
+    /**
      * Currently not supported.
      *
      * <p>In future, will have free running threads with an automatically increasing clock.

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +25,11 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 public class ShadowGeocoderTest {
 
+  private static final String GEOCODER_ERROR_MESSAGE = "Failed to get location";
+
   private Geocoder geocoder;
   private List<Address> decodedAddresses;
+  private String errorMessage = "";
 
   @Before
   public void setUp() throws Exception {
@@ -106,6 +110,34 @@ public class ShadowGeocoderTest {
     } catch (IllegalArgumentException thrown) {
       assertThat(thrown).hasMessageThat().contains(Double.toString(-211.0));
     }
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getFromLocation_onError() {
+    ShadowGeocoder shadowGeocoder = shadowOf(geocoder);
+
+    List<Address> list =
+        Arrays.asList(new Address(Locale.getDefault()), new Address(Locale.CANADA));
+    shadowGeocoder.setFromLocation(list);
+    shadowGeocoder.setErrorMessage(GEOCODER_ERROR_MESSAGE);
+
+    GeocodeListener geocodeListener =
+        new GeocodeListener() {
+          @Override
+          public void onGeocode(List<Address> list) {
+            decodedAddresses = list;
+          }
+
+          @Override
+          public void onError(@Nullable String message) {
+            errorMessage = message;
+          }
+        };
+
+    geocoder.getFromLocation(90.0, 90.0, 1, geocodeListener);
+    assertThat(decodedAddresses).isNull();
+    assertThat(errorMessage).isEqualTo(GEOCODER_ERROR_MESSAGE);
   }
 
   @Test

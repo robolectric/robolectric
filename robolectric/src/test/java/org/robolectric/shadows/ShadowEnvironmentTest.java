@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -35,6 +36,30 @@ public class ShadowEnvironmentTest {
     assertThat(Environment.getExternalStorageState()).isEqualTo(Environment.MEDIA_REMOVED);
     ShadowEnvironment.setExternalStorageState(Environment.MEDIA_MOUNTED);
     assertThat(Environment.getExternalStorageState()).isEqualTo(Environment.MEDIA_MOUNTED);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getStorageDirectory_storageDirectoryUnset_shouldReturnDefaultDirectory() {
+    assertThat(Environment.getStorageDirectory().getAbsolutePath()).isEqualTo("/storage");
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setStorageDirectory_shouldReturnDirectory() {
+    // state prior to override
+    File defaultDir = Environment.getStorageDirectory();
+    // override
+    Path expectedPath = FileSystems.getDefault().getPath("/tmp", "foo");
+    ShadowEnvironment.setStorageDirectory(expectedPath);
+    File override = Environment.getStorageDirectory();
+    assertThat(override.getAbsolutePath()).isEqualTo(expectedPath.toAbsolutePath().toString());
+
+    // restore default value by supplying {@code null}
+    ShadowEnvironment.setStorageDirectory(null);
+
+    // verify default
+    assertThat(defaultDir).isEqualTo(Environment.getStorageDirectory());
   }
 
   @Test

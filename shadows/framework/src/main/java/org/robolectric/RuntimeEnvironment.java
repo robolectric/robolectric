@@ -21,6 +21,7 @@ import org.robolectric.android.Bootstrap;
 import org.robolectric.android.ConfigurationV25;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.shadows.ShadowDisplayManager;
+import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
@@ -39,10 +40,10 @@ public class RuntimeEnvironment {
    *     incompatible with {@link org.robolectric.annotation.experimental.LazyApplication} and
    *     Robolectric makes no guarantees if a test *modifies* this field during execution.
    */
-  @Deprecated public static Application application;
+  @Deprecated public static volatile Application application;
 
   private static volatile Thread mainThread;
-  private static Object activityThread;
+  private static volatile Object activityThread;
   private static int apiLevel;
   private static Scheduler masterScheduler;
   private static ResourceTable systemResourceTable;
@@ -76,7 +77,7 @@ public class RuntimeEnvironment {
     if (application == null) {
       synchronized (supplierLock) {
         if (applicationSupplier != null) {
-          application = applicationSupplier.get();
+          ShadowInstrumentation.runOnMainSyncNoIdle(() -> application = applicationSupplier.get());
         }
       }
     }

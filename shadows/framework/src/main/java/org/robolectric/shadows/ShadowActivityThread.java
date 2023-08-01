@@ -14,10 +14,12 @@ import android.app.ActivityThread.ActivityClientRecord;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.app.ResultInfo;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.ComponentInfoFlags;
 import android.content.res.Configuration;
 import android.os.IBinder;
 import com.android.internal.content.ReferrerIntent;
@@ -79,12 +81,29 @@ public class ShadowActivityThread {
             } else if (method.getName().equals("notifyPackageUse")) {
               return null;
             } else if (method.getName().equals("getPackageInstaller")) {
-              return null;
+              try {
+                Class<?> iPackageInstallerClass =
+                    classLoader.loadClass("android.content.pm.IPackageInstaller");
+                return ReflectionHelpers.createNullProxy(iPackageInstallerClass);
+              } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+              }
             } else if (method.getName().equals("hasSystemFeature")) {
               String featureName = (String) args[0];
               return RuntimeEnvironment.getApplication()
                   .getPackageManager()
                   .hasSystemFeature(featureName);
+            } else if (method.getName().equals("getServiceInfo")) {
+              ComponentName componentName = (ComponentName) args[0];
+              if (args[1] instanceof ComponentInfoFlags) {
+                return RuntimeEnvironment.getApplication()
+                    .getPackageManager()
+                    .getServiceInfo(componentName, (ComponentInfoFlags) args[1]);
+              } else {
+                return RuntimeEnvironment.getApplication()
+                    .getPackageManager()
+                    .getServiceInfo(componentName, ((Number) args[1]).intValue());
+              }
             }
             throw new UnsupportedOperationException("sorry, not supporting " + method + " yet!");
           }

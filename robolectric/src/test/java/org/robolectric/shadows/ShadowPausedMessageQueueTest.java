@@ -92,6 +92,21 @@ public class ShadowPausedMessageQueueTest {
     assertMainQueueEmptyAndAdd();
   }
 
+  @Test
+  public void drainQueue_withMultipleMsg() {
+    Message msg1 = Message.obtain(new Handler(), 1);
+    shadowQueue.doEnqueueMessage(msg1, 1);
+    Message msg3 = Message.obtain(new Handler(), 3);
+    shadowQueue.doEnqueueMessage(msg3, 3);
+
+    shadowQueue.drainQueue(input -> true);
+
+    Message msg2 = Message.obtain(new Handler(), 2);
+    shadowQueue.doEnqueueMessage(msg2, 2);
+
+    assertThat(shadowQueue.getNextIgnoringWhen().what).isEqualTo(2);
+  }
+
   private void assertMainQueueEmptyAndAdd() {
     MessageQueue mainQueue = Looper.getMainLooper().getQueue();
     ShadowPausedMessageQueue shadowPausedMessageQueue = Shadow.extract(mainQueue);

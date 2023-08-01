@@ -73,6 +73,10 @@ public class ShadowWifiManager {
   private boolean startScanSucceeds = true;
   private boolean is5GHzBandSupported = false;
   private boolean isStaApConcurrencySupported = false;
+  private boolean isWpa3SaeSupported = false;
+  private boolean isWpa3SaeH2eSupported = false;
+  private boolean isWpa3SaePublicKeySupported = false;
+  private boolean isWpa3SuiteBSupported = false;
   private AtomicInteger activeLockCount = new AtomicInteger(0);
   private final BitSet readOnlyNetworkIds = new BitSet();
   private final ConcurrentHashMap<WifiManager.OnWifiUsabilityStatsListener, Executor>
@@ -128,7 +132,7 @@ public class ShadowWifiManager {
     this.is5GHzBandSupported = is5GHzBandSupported;
   }
 
-  /** Returns last value provided to #setStaApConcurrencySupported. */
+  /** Returns last value provided to {@link #setStaApConcurrencySupported}. */
   @Implementation(minSdk = R)
   protected boolean isStaApConcurrencySupported() {
     return isStaApConcurrencySupported;
@@ -137,6 +141,50 @@ public class ShadowWifiManager {
   /** Sets whether STA/AP concurrency is supported. */
   public void setStaApConcurrencySupported(boolean isStaApConcurrencySupported) {
     this.isStaApConcurrencySupported = isStaApConcurrencySupported;
+  }
+
+  /** Returns last value provided to {@link #setWpa3SaeSupported}. */
+  @Implementation(minSdk = Q)
+  protected boolean isWpa3SaeSupported() {
+    return isWpa3SaeSupported;
+  }
+
+  /** Sets whether WPA3-Personal SAE is supported. */
+  public void setWpa3SaeSupported(boolean isWpa3SaeSupported) {
+    this.isWpa3SaeSupported = isWpa3SaeSupported;
+  }
+
+  /** Returns last value provided to {@link #setWpa3SaePublicKeySupported}. */
+  @Implementation(minSdk = S)
+  protected boolean isWpa3SaePublicKeySupported() {
+    return isWpa3SaePublicKeySupported;
+  }
+
+  /** Sets whether WPA3 SAE Public Key is supported. */
+  public void setWpa3SaePublicKeySupported(boolean isWpa3SaePublicKeySupported) {
+    this.isWpa3SaePublicKeySupported = isWpa3SaePublicKeySupported;
+  }
+
+  /** Returns last value provided to {@link #setWpa3SaeH2eSupported}. */
+  @Implementation(minSdk = S)
+  protected boolean isWpa3SaeH2eSupported() {
+    return isWpa3SaeH2eSupported;
+  }
+
+  /** Sets whether WPA3 SAE Hash-to-Element is supported. */
+  public void setWpa3SaeH2eSupported(boolean isWpa3SaeH2eSupported) {
+    this.isWpa3SaeH2eSupported = isWpa3SaeH2eSupported;
+  }
+
+  /** Returns last value provided to {@link #setWpa3SuiteBSupported}. */
+  @Implementation(minSdk = Q)
+  protected boolean isWpa3SuiteBSupported() {
+    return isWpa3SuiteBSupported;
+  }
+
+  /** Sets whether WPA3-Enterprise Suite-B-192 is supported. */
+  public void setWpa3SuiteBSupported(boolean isWpa3SuiteBSupported) {
+    this.isWpa3SuiteBSupported = isWpa3SuiteBSupported;
   }
 
   /** Sets the connection info as the provided {@link WifiInfo}. */

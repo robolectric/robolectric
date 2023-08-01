@@ -92,6 +92,9 @@ public class ShadowTelecomManager {
   private boolean isInCall;
   private boolean ttySupported;
   private PhoneAccountHandle userSelectedOutgoingPhoneAccount;
+  private boolean readPhoneStatePermission = true;
+  private boolean callPhonePermission = true;
+  private boolean handleMmiValue = false;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -169,6 +172,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = M)
   protected List<PhoneAccountHandle> getCallCapablePhoneAccounts() {
+    checkReadPhoneStatePermission();
     return this.getCallCapablePhoneAccounts(false);
   }
 
@@ -217,6 +221,7 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected PhoneAccount getPhoneAccount(PhoneAccountHandle account) {
+    checkReadPhoneStatePermission();
     return accounts.get(account);
   }
 
@@ -326,6 +331,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = LOLLIPOP_MR1)
   protected String getLine1Number(PhoneAccountHandle accountHandle) {
+    checkReadPhoneStatePermission();
     return line1Numbers.get(accountHandle);
   }
 
@@ -392,6 +398,7 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected boolean isTtySupported() {
+    checkReadPhoneStatePermission();
     return ttySupported;
   }
 
@@ -486,6 +493,7 @@ public class ShadowTelecomManager {
 
   @Implementation(minSdk = M)
   protected void placeCall(Uri address, Bundle extras) {
+    checkCallPhonePermission();
     OutgoingCallRecord call = new OutgoingCallRecord(address, extras);
     outgoingCalls.add(call);
 
@@ -597,14 +605,18 @@ public class ShadowTelecomManager {
         ServiceController.of(ReflectionHelpers.callConstructor(clazz), null).create().get());
   }
 
+  public void setHandleMmiValue(boolean handleMmiValue) {
+    this.handleMmiValue = handleMmiValue;
+  }
+
   @Implementation
   protected boolean handleMmi(String dialString) {
-    return false;
+    return handleMmiValue;
   }
 
   @Implementation(minSdk = M)
   protected boolean handleMmi(String dialString, PhoneAccountHandle accountHandle) {
-    return false;
+    return handleMmiValue;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -702,6 +714,36 @@ public class ShadowTelecomManager {
 
       // Keep the deprecated "bundle" name around for a while.
       this.bundle = this.extras;
+    }
+  }
+
+  /**
+   * When set to false methods requiring {@link android.Manifest.permission.READ_PHONE_STATE}
+   * permission will throw a {@link SecurityException}. By default it's set to true for backwards
+   * compatibility.
+   */
+  public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
+    this.readPhoneStatePermission = readPhoneStatePermission;
+  }
+
+  private void checkReadPhoneStatePermission() {
+    if (!readPhoneStatePermission) {
+      throw new SecurityException();
+    }
+  }
+
+  /**
+   * When set to false methods requiring {@link android.Manifest.permission.CALL_PHONE} permission
+   * will throw a {@link SecurityException}. By default it's set to true for backwards
+   * compatibility.
+   */
+  public void setCallPhonePermission(boolean callPhonePermission) {
+    this.callPhonePermission = callPhonePermission;
+  }
+
+  private void checkCallPhonePermission() {
+    if (!callPhonePermission) {
+      throw new SecurityException();
     }
   }
 

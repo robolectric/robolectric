@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
@@ -88,24 +89,31 @@ public class ShadowUiAutomation {
 
   @Implementation
   protected boolean setRotation(int rotation) {
-    if (rotation == UiAutomation.ROTATION_FREEZE_CURRENT
-        || rotation == UiAutomation.ROTATION_UNFREEZE) {
-      return true;
-    }
-    Display display = ShadowDisplay.getDefaultDisplay();
-    int currentRotation = display.getRotation();
-    boolean isRotated =
-        (rotation == ROTATION_FREEZE_0 || rotation == ROTATION_FREEZE_180)
-            != (currentRotation == ROTATION_FREEZE_0 || currentRotation == ROTATION_FREEZE_180);
-    shadowOf(display).setRotation(rotation);
-    if (isRotated) {
-      int currentOrientation = Resources.getSystem().getConfiguration().orientation;
-      String rotationQualifier =
-          "+" + (currentOrientation == Configuration.ORIENTATION_PORTRAIT ? "land" : "port");
-      ShadowDisplayManager.changeDisplay(display.getDisplayId(), rotationQualifier);
-      RuntimeEnvironment.setQualifiers(rotationQualifier);
-    }
-    return true;
+    AtomicBoolean result = new AtomicBoolean(false);
+    ShadowInstrumentation.runOnMainSyncNoIdle(
+        () -> {
+          if (rotation == UiAutomation.ROTATION_FREEZE_CURRENT
+              || rotation == UiAutomation.ROTATION_UNFREEZE) {
+            result.set(true);
+            return;
+          }
+          Display display = ShadowDisplay.getDefaultDisplay();
+          int currentRotation = display.getRotation();
+          boolean isRotated =
+              (rotation == ROTATION_FREEZE_0 || rotation == ROTATION_FREEZE_180)
+                  != (currentRotation == ROTATION_FREEZE_0
+                      || currentRotation == ROTATION_FREEZE_180);
+          shadowOf(display).setRotation(rotation);
+          if (isRotated) {
+            int currentOrientation = Resources.getSystem().getConfiguration().orientation;
+            String rotationQualifier =
+                "+" + (currentOrientation == Configuration.ORIENTATION_PORTRAIT ? "land" : "port");
+            ShadowDisplayManager.changeDisplay(display.getDisplayId(), rotationQualifier);
+            RuntimeEnvironment.setQualifiers(rotationQualifier);
+          }
+          result.set(true);
+        });
+    return result.get();
   }
 
   @Implementation

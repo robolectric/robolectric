@@ -20,7 +20,6 @@ public abstract class ComponentController<C extends ComponentController<C, T>, T
 
   protected boolean attached;
 
-  @SuppressWarnings("unchecked")
   public ComponentController(T component, Intent intent) {
     this(component);
     this.intent = intent;

@@ -6,6 +6,7 @@ import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build;
+import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -24,25 +25,30 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.Scheduler;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /**
- * The shadow Looper for {@link LooperMode.Mode.PAUSED}.
+ * The shadow Looper for {@link LooperMode.Mode.PAUSED and @link
+ * LooperMode.Mode.INSTRUMENTATION_TEST}.
  *
  * <p>This shadow differs from the legacy {@link ShadowLegacyLooper} in the following ways:\ - Has
  * no connection to {@link org.robolectric.util.Scheduler}. Its APIs are standalone - The main
- * looper is always paused. Posted messages are not executed unless {@link #idle()} is called. -
- * Just like in real Android, each looper has its own thread, and posted tasks get executed in that
+ * looper is always paused in PAUSED MODE but can be unpaused in INSTRUMENTATION_TEST mode. When a
+ * looper is paused, posted messages to it are not executed unless {@link #idle()} is called. - Just
+ * like in real Android, each looper has its own thread, and posted tasks get executed in that
  * thread. - - There is only a single {@link SystemClock} value that all loopers read from. Unlike
  * legacy behavior where each {@link org.robolectric.util.Scheduler} kept their own clock value.
  *
@@ -122,7 +128,8 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void unPause() {
-    if (realLooper == Looper.getMainLooper()) {
+    if (realLooper == Looper.getMainLooper()
+        && looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
       throw new UnsupportedOperationException("main looper cannot be unpaused");
     }
     executeOnLooper(new UnPauseRunnable());
@@ -164,7 +171,9 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   @Override
   public void idleIfPaused() {
-    idle();
+    if (isPaused()) {
+      idle();
+    }
   }
 
   @Override
@@ -202,11 +211,12 @@ public final class ShadowPausedLooper extends ShadowLooper {
   // compatibility for now
   @Override
   public void runPaused(Runnable runnable) {
-    if (isPaused && Thread.currentThread() == realLooper.getThread()) {
+    if (Thread.currentThread() == realLooper.getThread()) {
       // just run
       runnable.run();
     } else {
-      throw new UnsupportedOperationException();
+      throw new UnsupportedOperationException(
+          "this method can only be called on " + realLooper.getThread().getName());
     }
   }
 
@@ -256,17 +266,76 @@ public final class ShadowPausedLooper extends ShadowLooper {
   }
 
   @Resetter
+  @SuppressWarnings("deprecation") // This is Robolectric library code
   public static synchronized void resetLoopers() {
-    // do not use looperMode() here, because its cached value might already have been reset
-    if (ConfigurationRegistry.get(LooperMode.Mode.class) != LooperMode.Mode.PAUSED) {
-      // ignore if not realistic looper
+    // Do not use looperMode() here, because its cached value might already have been reset
+    LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
+
+    if (looperMode == LooperMode.Mode.LEGACY) {
       return;
     }
 
-    Collection<Looper> loopersCopy = new ArrayList(loopingLoopers);
-    for (Looper looper : loopersCopy) {
-      ShadowPausedMessageQueue shadowQueue = Shadow.extract(looper.getQueue());
-      shadowQueue.reset();
+    createMainThreadAndLooperIfNotAlive();
+    for (Looper looper : getLoopers()) {
+      ShadowPausedLooper shadowPausedLooper = Shadow.extract(looper);
+      shadowPausedLooper.resetLooperToInitialState();
+    }
+  }
+
+  private static synchronized void createMainThreadAndLooperIfNotAlive() {
+    Looper mainLooper = Looper.getMainLooper();
+
+    switch (ConfigurationRegistry.get(LooperMode.Mode.class)) {
+      case INSTRUMENTATION_TEST:
+        if (mainLooper == null || !mainLooper.getThread().isAlive()) {
+          ConditionVariable mainThreadPrepared = new ConditionVariable();
+          Thread mainThread =
+              new Thread(String.format("SDK %d Main Thread", RuntimeEnvironment.getApiLevel())) {
+                @Override
+                public void run() {
+                  if (mainLooper == null) {
+                    Looper.prepareMainLooper();
+                  } else {
+                    ShadowPausedMessageQueue shadowQueue = Shadow.extract(mainLooper.getQueue());
+                    shadowQueue.reset();
+                    reflector(LooperReflector.class, mainLooper).setThread(Thread.currentThread());
+                    reflector(LooperReflector.class).getThreadLocal().set(mainLooper);
+                  }
+                  mainThreadPrepared.open();
+                  Looper.loop();
+                }
+              };
+          mainThread.start();
+          mainThreadPrepared.block();
+          Thread.currentThread()
+              .setName(String.format("SDK %d Test Thread", RuntimeEnvironment.getApiLevel()));
+        }
+        break;
+      case PAUSED:
+        if (Looper.myLooper() == null) {
+          Looper.prepareMainLooper();
+        }
+        break;
+      default:
+        throw new UnsupportedOperationException(
+            "Only supports INSTRUMENTATION_TEST and PAUSED LooperMode.");
+    }
+  }
+
+  private synchronized void resetLooperToInitialState() {
+    // Do not use looperMode() here, because its cached value might already have been reset
+    LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
+
+    ShadowPausedMessageQueue shadowQueue = Shadow.extract(realLooper.getQueue());
+    shadowQueue.reset();
+
+    boolean canBeUnpaused =
+        !(realLooper == Looper.getMainLooper()
+            && looperMode != LooperMode.Mode.INSTRUMENTATION_TEST);
+    if (canBeUnpaused && realLooper.getThread().isAlive()) {
+      if (isPaused()) {
+        unPause();
+      }
     }
   }
 
@@ -274,7 +343,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
   protected static void prepareMainLooper() {
     reflector(LooperReflector.class).prepareMainLooper();
     ShadowPausedLooper pausedLooper = Shadow.extract(Looper.getMainLooper());
-    pausedLooper.isPaused = true;
+    pausedLooper.isPaused = looperMode() == Mode.PAUSED;
   }
 
   @Implementation
@@ -463,7 +532,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
         runnable.run();
       }
     } else {
-      if (realLooper.equals(Looper.getMainLooper())) {
+      if (looperMode() == LooperMode.Mode.PAUSED && realLooper.equals(Looper.getMainLooper())) {
         throw new UnsupportedOperationException(
             "main looper can only be controlled from main thread");
       }
@@ -549,5 +618,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Direct
     void loop();
+
+    @Accessor("mThread")
+    void setThread(Thread thread);
+
+    @Accessor("sThreadLocal")
+    ThreadLocal<Looper> getThreadLocal();
   }
 }
