@@ -18,25 +18,40 @@ import org.robolectric.annotation.Config;
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowJobServiceTest {
-
   private JobService jobService;
-  @Mock
-  private JobParameters params;
+  @Mock private JobParameters params;
 
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    jobService = new JobService() {
-      @Override
-      public boolean onStartJob(JobParameters params) {
-        return false;
-      }
+    jobService =
+        new JobService() {
+          @Override
+          public boolean onStartJob(JobParameters params) {
+            return false;
+          }
 
-      @Override
-      public boolean onStopJob(JobParameters params) {
-        return false;
-      }
-    };
+          @Override
+          public boolean onStopJob(JobParameters params) {
+            return false;
+          }
+        };
+  }
+
+  @Test
+  @Config(minSdk = 34)
+  public void updateEstimatedNetworkBytes() {
+    shadowOf(jobService)
+        .updateEstimatedNetworkBytes(params, /* downloadBytes= */ 10L, /* uploadBytes= */ 0L);
+    // If we make it here, the call above did not throw
+  }
+
+  @Test
+  @Config(minSdk = 34)
+  public void updateTransferredNetworkBytes() {
+    shadowOf(jobService)
+        .updateEstimatedNetworkBytes(params, /* downloadBytes= */ 1000L, /* uploadBytes= */ 0L);
+    // If we make it here, the call above did not throw
   }
 
   @Test

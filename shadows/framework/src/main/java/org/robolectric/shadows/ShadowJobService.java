@@ -28,6 +28,16 @@ public class ShadowJobService extends ShadowService {
       Notification notification,
       int jobEndNotificationPolicy) {}
 
+  /** Stubbed out for now, as the real implementation throws an NPE when executed in Robolectric. */
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  protected void updateEstimatedNetworkBytes(
+      JobParameters params, long downloadBytes, long uploadBytes) {}
+
+  /** Stubbed out for now, as the real implementation throws an NPE when executed in Robolectric. */
+  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  protected void updateTransferredNetworkBytes(
+      JobParameters params, long downloadBytes, long uploadBytes) {}
+
   /**
    * Returns whether the job has finished running. When using this shadow this returns true after
    * {@link #jobFinished(JobParameters, boolean)} is called.
