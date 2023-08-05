@@ -230,7 +230,7 @@ public class ShadowPendingIntent {
       // Copy the last intent before filling it in to avoid modifying this PendingIntent.
       intentsToSend = Arrays.copyOf(savedIntents, savedIntents.length);
       Intent lastIntentCopy = new Intent(intentsToSend[intentsToSend.length - 1]);
-      lastIntentCopy.fillIn(intent, 0);
+      lastIntentCopy.fillIn(intent, flags);
       intentsToSend[intentsToSend.length - 1] = lastIntentCopy;
     } else {
       intentsToSend = savedIntents;
