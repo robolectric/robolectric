@@ -277,6 +277,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Package parsedPackage = loadAppPackage(config, appManifest);
 
     ApplicationInfo applicationInfo = parsedPackage.applicationInfo;
+    Class<? extends Application> applicationClass =
+        getApplicationClass(appManifest, config, applicationInfo);
+    applicationInfo.className = applicationClass.getName();
 
     ComponentName actualComponentName =
         new ComponentName(
@@ -304,8 +307,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     Bootstrap.setUpDisplay();
     activityThread.applyConfigurationToResources(androidConfiguration);
 
-    Application application = createApplication(appManifest, config, applicationInfo);
-    RuntimeEnvironment.setConfiguredApplicationClass(application.getClass());
+    Application application = ReflectionHelpers.callConstructor(applicationClass);
+    RuntimeEnvironment.setConfiguredApplicationClass(applicationClass);
 
     RuntimeEnvironment.application = application;
 
@@ -472,13 +475,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
   }
 
   @VisibleForTesting
-  static Application createApplication(
-      AndroidManifest appManifest, Config config, ApplicationInfo applicationInfo) {
-    return ReflectionHelpers.callConstructor(
-        getApplicationClass(appManifest, config, applicationInfo));
-  }
-
-  private static Class<? extends Application> getApplicationClass(
+  static Class<? extends Application> getApplicationClass(
       AndroidManifest appManifest, Config config, ApplicationInfo applicationInfo) {
     Class<? extends Application> applicationClass = null;
     if (config != null && !Config.Builder.isDefaultApplication(config.application())) {
