@@ -58,7 +58,6 @@ import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
-import android.telephony.ModemInfo;
 import android.telephony.PhoneCapability;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
@@ -533,7 +532,7 @@ public class ShadowTelephonyManagerTest {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
             new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
-    Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
+    Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment= */ null);
 
     shadowOf(telephonyManager).setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
 
@@ -546,7 +545,7 @@ public class ShadowTelephonyManagerTest {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
             new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
-    Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment = */ null);
+    Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment= */ null);
 
     // Note: Using the real manager to set, instead of the shadow.
     telephonyManager.setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
@@ -1053,17 +1052,12 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = S)
-  public void setPhoneCapability() {
-    ModemInfo modemInfo1 = ModemInfoFactory.create(0);
-    ModemInfo modemInfo2 = ModemInfoFactory.create(1);
-    ImmutableList<ModemInfo> logicalModemList = ImmutableList.of(modemInfo1, modemInfo2);
-    int[] deviceNrCapabilities = new int[0];
-    PhoneCapability dsdaCapability =
-        PhoneCapabilityFactory.create(2, 1, logicalModemList, false, deviceNrCapabilities);
+  public void setPhoneCapability_returnsPhoneCapability() {
+    PhoneCapability phoneCapability = PhoneCapabilityFactory.create(2, 1, false, new int[0]);
 
-    shadowTelephonyManager.setPhoneCapability(dsdaCapability);
+    shadowTelephonyManager.setPhoneCapability(phoneCapability);
 
-    assertThat(telephonyManager.getPhoneCapability()).isEqualTo(dsdaCapability);
+    assertThat(telephonyManager.getPhoneCapability()).isEqualTo(phoneCapability);
   }
 
   @Test
