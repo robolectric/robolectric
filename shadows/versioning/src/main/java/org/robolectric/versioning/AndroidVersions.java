@@ -738,6 +738,9 @@ public final class AndroidVersions {
     try {
       Field activeCodeFields = targetClass.getDeclaredField("ACTIVE_CODENAMES");
       String[] activeCodeNames = (String[]) activeCodeFields.get(null);
+      if (activeCodeNames == null) {
+        return new ArrayList<>();
+      }
       return asList(activeCodeNames);
     } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException ex) {
       return new ArrayList<>();
