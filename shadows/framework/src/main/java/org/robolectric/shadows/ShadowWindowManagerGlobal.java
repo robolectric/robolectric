@@ -21,6 +21,7 @@ import android.view.View;
 import android.view.WindowManagerGlobal;
 import androidx.annotation.Nullable;
 import java.lang.reflect.Proxy;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -151,6 +152,9 @@ public class ShadowWindowManagerGlobal {
     @Static
     @Accessor("sUseBLASTAdapter")
     void setUseBlastAdapter(boolean useBlastAdapter);
+
+    @Accessor("mViews")
+    List<View> getWindowViews();
   }
 
   private static class WindowSessionDelegate {
