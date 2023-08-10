@@ -35,7 +35,6 @@ import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -424,32 +423,6 @@ public class ShadowNativeBitmap extends ShadowBitmap {
       bitmap = bitmap.copy(parceledConfig, false);
     }
     return bitmap;
-  }
-
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
-  protected void setGainmap(Object gainmap) {
-    reflector(BitmapReflector.class, realBitmap).checkRecycled("Bitmap is recycled");
-    reflector(BitmapReflector.class, realBitmap).setGainmap(gainmap);
-  }
-
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
-  protected boolean hasGainmap() {
-    reflector(BitmapReflector.class, realBitmap).checkRecycled("Bitmap is recycled");
-    return reflector(BitmapReflector.class, realBitmap).getGainmap() != null;
-  }
-
-  @ForType(Bitmap.class)
-  protected interface BitmapReflector {
-    void checkRecycled(String errorMessage);
-
-    @Accessor("mNativePtr")
-    long getNativePtr();
-
-    @Accessor("mGainmap")
-    void setGainmap(Object gainmap);
-
-    @Direct
-    Object getGainmap();
   }
 
   @Override

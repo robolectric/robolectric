@@ -10,6 +10,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Bitmap;
 import android.graphics.ColorSpace;
@@ -19,6 +20,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.DisplayMetrics;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -681,6 +683,16 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     int[] pixels = new int[width * height];
     getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
+
+    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+      Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
+      if (gainmap != null) {
+        p.writeBoolean(true);
+        p.writeTypedObject((Parcelable) gainmap, flags);
+      } else {
+        p.writeBoolean(false);
+      }
+    }
   }
 
   @Implementation
