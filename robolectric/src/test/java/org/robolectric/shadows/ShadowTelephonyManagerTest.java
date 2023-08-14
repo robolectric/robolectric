@@ -173,6 +173,13 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  public void shouldGiveDeviceSoftwareVersion() {
+    String testSoftwareVersion = "getDeviceSoftwareVersion";
+    shadowOf(telephonyManager).setDeviceSoftwareVersion(testSoftwareVersion);
+    assertEquals(testSoftwareVersion, telephonyManager.getDeviceSoftwareVersion());
+  }
+
+  @Test
   @Config(minSdk = O)
   public void getImei() {
     String testImei = "4test imei";
@@ -360,6 +367,14 @@ public class ShadowTelephonyManagerTest {
           throws Exception {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     assertThrows(SecurityException.class, () -> telephonyManager.getDeviceId(1));
+  }
+
+  @Test
+  public void
+      getDeviceSoftwareVersion_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+          throws Exception {
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
+    assertThrows(SecurityException.class, () -> telephonyManager.getDeviceSoftwareVersion());
   }
 
   @Test

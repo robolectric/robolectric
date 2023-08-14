@@ -102,6 +102,7 @@ public class ShadowTelephonyManager {
   private int lastEventFlags;
 
   private String deviceId;
+  private String deviceSoftwareVersion;
   private String imei;
   private String meid;
   private String groupIdLevel1;
@@ -347,6 +348,16 @@ public class ShadowTelephonyManager {
 
   public void setDeviceId(String newDeviceId) {
     deviceId = newDeviceId;
+  }
+
+  @Implementation
+  protected String getDeviceSoftwareVersion() {
+    checkReadPhoneStatePermission();
+    return deviceSoftwareVersion;
+  }
+
+  public void setDeviceSoftwareVersion(String newDeviceSoftwareVersion) {
+    deviceSoftwareVersion = newDeviceSoftwareVersion;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
