@@ -875,6 +875,24 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void setTtyModeSupportedChangesIsTtyModeSupported() {
+    shadowOf(telephonyManager).setTtyModeSupported(false);
+    assertThat(telephonyManager.isTtyModeSupported()).isFalse();
+    shadowOf(telephonyManager).setTtyModeSupported(true);
+    assertThat(telephonyManager.isTtyModeSupported()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      isTtyModeSupported_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+          throws Exception {
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
+    assertThrows(SecurityException.class, () -> telephonyManager.isTtyModeSupported());
+  }
+
+  @Test
   @Config(minSdk = O)
   public void sendDialerSpecialCode() {
     shadowOf(telephonyManager).sendDialerSpecialCode("1234");

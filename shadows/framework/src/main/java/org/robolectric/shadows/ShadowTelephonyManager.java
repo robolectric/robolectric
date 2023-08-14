@@ -149,6 +149,7 @@ public class ShadowTelephonyManager {
   private boolean dataEnabled = false;
   private final Set<Integer> dataDisabledReasons = new HashSet<>();
   private boolean isRttSupported;
+  private boolean isTtyModeSupported;
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
   private boolean hearingAidCompatibilitySupported = false;
   private int requestCellInfoUpdateErrorCode = 0;
@@ -1311,6 +1312,22 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #isRttSupported()} */
   public void setRttSupported(boolean isRttSupported) {
     this.isRttSupported = isRttSupported;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isTtyModeSupported}.
+   *
+   * @return False by default, unless set with {@link #setTtyModeSupported(boolean)}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.M)
+  protected boolean isTtyModeSupported() {
+    checkReadPhoneStatePermission();
+    return isTtyModeSupported;
+  }
+
+  /** Sets the value to be returned by {@link #isTtyModeSupported()} */
+  public void setTtyModeSupported(boolean isTtyModeSupported) {
+    this.isTtyModeSupported = isTtyModeSupported;
   }
 
   /**
