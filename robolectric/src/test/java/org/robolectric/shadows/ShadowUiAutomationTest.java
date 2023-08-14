@@ -17,6 +17,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 
 /** Test for {@link ShadowUiAutomation}. */
 @Config(minSdk = JELLY_BEAN_MR2)
@@ -101,5 +102,17 @@ public class ShadowUiAutomationTest {
     assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_0);
     assertThat(Resources.getSystem().getConfiguration().orientation)
         .isEqualTo(Configuration.ORIENTATION_PORTRAIT);
+  }
+
+  @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
+  @Test
+  public void setAnimationScale_zero_instrumentationTestLooperMode() throws Exception {
+    setAnimationScale_zero();
+  }
+
+  @LooperMode(LooperMode.Mode.INSTRUMENTATION_TEST)
+  @Test
+  public void setRotation_freeze90_rotatesToLandscape_instrumentationTestLooperMode() {
+    setRotation_freeze90_rotatesToLandscape();
   }
 }
