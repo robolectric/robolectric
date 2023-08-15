@@ -143,7 +143,7 @@ public class ShadowUiAutomation {
                     Bitmap.createBitmap(
                         rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
                 Canvas windowCanvas = new Canvas(window);
-                ShadowInstrumentation.runOnMainSyncNoIdle(() -> rootView.draw(windowCanvas));
+                rootView.draw(windowCanvas);
                 screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
               }
               return screenshot;
