@@ -63,7 +63,7 @@ public class ShadowNativeFontsFontFamily {
       return FontFamilyBuilderNatives.nBuild(builderPtr, langTags, variant, isCustomFallback);
     }
 
-    @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+    @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE, maxSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
     protected static long nBuild(
         long builderPtr,
         String langTags,
