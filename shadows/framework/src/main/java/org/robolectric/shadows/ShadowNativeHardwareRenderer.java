@@ -19,6 +19,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererNatives;
 import org.robolectric.shadows.ShadowNativeHardwareRenderer.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link HardwareRenderer} that is backed by native code */
 @Implements(
@@ -370,7 +371,7 @@ public class ShadowNativeHardwareRenderer {
         presentationDeadlineNanos);
   }
 
-  @Implementation(minSdk = 10000)
+  @Implementation(minSdk = U.SDK_INT)
   protected static void nInitDisplayInfo(
       int width,
       int height,
