@@ -34,8 +34,6 @@ dependencies {
     api libs.javax.inject
     api libs.javax.annotation.api
 
-    // For @VisibleForTesting and ByteStreams
-    implementation libs.guava
     compileOnly libs.findbugs.jsr305
 
     testCompileOnly libs.auto.service.annotations

@@ -1,6 +1,5 @@
 package org.robolectric.util;
 
-import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,9 +36,10 @@ public class Util {
         version.substring(0, dotPos > -1 ? dotPos : dashPos > -1 ? dashPos : version.length()));
   }
 
+  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"}) // not relevant, always runs on JVM
   public static void copy(InputStream in, OutputStream out) throws IOException {
     try {
-      ByteStreams.copy(in, out);
+      in.transferTo(out);
     } finally {
       in.close();
     }
@@ -52,9 +52,10 @@ public class Util {
    * @return The bytes read from the stream.
    * @throws IOException Error reading from stream.
    */
+  @SuppressWarnings({"AndroidJdkLibsChecker", "NewApi"}) // not relevant, always runs on JVM
   public static byte[] readBytes(InputStream is) throws IOException {
     try {
-      return ByteStreams.toByteArray(is);
+      return is.readAllBytes();
     } finally {
       is.close();
     }
