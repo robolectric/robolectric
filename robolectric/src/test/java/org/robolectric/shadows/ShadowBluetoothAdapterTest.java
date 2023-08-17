@@ -48,6 +48,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Unit tests for {@link ShadowBluetoothAdapter} */
 @RunWith(AndroidJUnit4.class)
@@ -785,7 +786,7 @@ public class ShadowBluetoothAdapterTest {
         .isEqualTo(BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED);
   }
 
-  @Config(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void getProfileProxy_serviceListenerInvoked() throws Exception {
     shadowOf((Application) getApplicationContext()).grantPermissions(permission.BLUETOOTH);
@@ -814,7 +815,7 @@ public class ShadowBluetoothAdapterTest {
     assertThat(proxyQueue.take()).isInstanceOf(BluetoothHeadset.class);
   }
 
-  @Config(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void getProfileProxy_adapterDisabled_serviceListenerNotInvoked() {
     shadowOf((Application) getApplicationContext()).grantPermissions(permission.BLUETOOTH);
@@ -827,7 +828,7 @@ public class ShadowBluetoothAdapterTest {
     verify(listener, never()).onServiceConnected(anyInt(), any(BluetoothProfile.class));
   }
 
-  @Config(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Config(minSdk = U.SDK_INT)
   @Test
   public void disconnectProfileProxy_serviceListenerInvoked() throws Exception {
     shadowOf((Application) getApplicationContext()).grantPermissions(permission.BLUETOOTH);

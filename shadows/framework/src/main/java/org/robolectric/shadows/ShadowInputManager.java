@@ -22,6 +22,7 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link InputManager} */
 @Implements(value = InputManager.class, looseSignatures = true)
@@ -116,7 +117,7 @@ public class ShadowInputManager {
 
   @Resetter
   public static void reset() {
-    if (SDK_INT < ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (SDK_INT < U.SDK_INT) {
       ReflectionHelpers.setStaticField(InputManager.class, "sInstance", null);
     }
   }

@@ -32,6 +32,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow class for {@link CameraManager} */
 @Implements(value = CameraManager.class, minSdk = VERSION_CODES.LOLLIPOP)
@@ -77,7 +78,7 @@ public class ShadowCameraManager {
     cameraTorches.put(cameraId, enabled);
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,

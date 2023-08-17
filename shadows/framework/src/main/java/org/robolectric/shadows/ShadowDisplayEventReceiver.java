@@ -35,6 +35,7 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow of {@link DisplayEventReceiver}. The {@link Choreographer} is a subclass of {@link
@@ -95,7 +96,7 @@ public class ShadowDisplayEventReceiver {
     return nativeInit(receiver, msgQueue);
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected static long nativeInit(
       WeakReference<DisplayEventReceiver> receiver,
       WeakReference<Object> vsyncEventData,

@@ -14,6 +14,7 @@ import org.robolectric.shadows.ShadowBitmap.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Base class for {@link Bitmap} shadows. */
 @Implements(value = Bitmap.class, shadowPicker = Picker.class, looseSignatures = true)
@@ -134,13 +135,13 @@ public abstract class ShadowBitmap {
 
   public abstract void setDescription(String s);
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void setGainmap(Object gainmap) {
     Preconditions.checkState(!realBitmap.isRecycled(), "Bitmap is recycled");
     reflector(BitmapReflector.class, realBitmap).setGainmap(gainmap);
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected boolean hasGainmap() {
     Preconditions.checkState(!realBitmap.isRecycled(), "Bitmap is recycled");
     return reflector(BitmapReflector.class, realBitmap).getGainmap() != null;

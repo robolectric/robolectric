@@ -37,6 +37,7 @@ import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Bitmap} that is backed by native code */
 @Implements(value = Bitmap.class, looseSignatures = true, minSdk = O, isInAndroidSdk = false)
@@ -377,7 +378,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     realBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
 
-    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
       if (gainmap != null) {
         p.writeBoolean(true);

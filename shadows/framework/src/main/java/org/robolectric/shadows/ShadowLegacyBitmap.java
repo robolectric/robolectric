@@ -42,6 +42,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = Bitmap.class, isInAndroidSdk = false)
@@ -684,7 +685,7 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
     getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
 
-    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
       if (gainmap != null) {
         p.writeBoolean(true);

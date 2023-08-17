@@ -11,6 +11,7 @@ import java.util.HashMap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(value = CarrierConfigManager.class, minSdk = M)
 public class ShadowCarrierConfigManager {
@@ -39,7 +40,7 @@ public class ShadowCarrierConfigManager {
   /**
    * @see #getConfigForSubId(int). Currently the 'keys' parameter is ignored.
    */
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected PersistableBundle getConfigForSubId(int subId, String... keys) {
     // TODO: consider implementing the logic in telephony service
     // CarrierConfigLoader#getConfigSubsetForSubIdWithFeature

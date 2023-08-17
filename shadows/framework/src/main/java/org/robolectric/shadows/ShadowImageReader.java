@@ -24,6 +24,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link android.media.ImageReader} */
 @Implements(value = ImageReader.class, looseSignatures = true)
@@ -69,7 +70,7 @@ public class ShadowImageReader {
     return nativeImageSetup(image);
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected int nativeImageSetup(Object /* Image */ image) {
     return nativeImageSetup((Image) image);
   }

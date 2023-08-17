@@ -17,6 +17,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.PaintNatives;
 import org.robolectric.shadows.ShadowNativePaint.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Paint} that is backed by native code */
 @Implements(
@@ -813,7 +814,7 @@ public class ShadowNativePaint {
         paintPtr, text, start, count, ctxStart, ctxCount, isRtl, outMetrics);
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected static float nGetRunCharacterAdvance(
       long paintPtr,
       char[] text,
