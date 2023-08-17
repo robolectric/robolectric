@@ -126,6 +126,7 @@ public class ShadowTelephonyManager {
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
   private int dataState = TelephonyManager.DATA_DISCONNECTED;
+  private int dataActivity = TelephonyManager.DATA_ACTIVITY_NONE;
   private String incomingPhoneNumber = null;
   private boolean isSmsCapable = true;
   private boolean voiceCapable = true;
@@ -340,6 +341,24 @@ public class ShadowTelephonyManager {
   /** Sets the data state returned by {@link #getDataState()}. */
   public void setDataState(int dataState) {
     this.dataState = dataState;
+  }
+
+  /**
+   * Data activity may be specified via {@link #setDataActivity(int)}. If no override is set, this
+   * defaults to {@link TelephonyManager#DATA_ACTIVITY_NONE}.
+   */
+  @Implementation
+  protected int getDataActivity() {
+    return dataActivity;
+  }
+
+  /**
+   * Sets the value to be returned by calls to {@link #getDataActivity()}. This <b>should</b>
+   * correspond to one of the {@code DATA_ACTIVITY_*} constants defined on {@link TelephonyManager},
+   * but this is not enforced.
+   */
+  public void setDataActivity(int dataActivity) {
+    this.dataActivity = dataActivity;
   }
 
   @Implementation

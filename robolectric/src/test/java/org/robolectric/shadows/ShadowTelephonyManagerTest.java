@@ -881,6 +881,15 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  public void setDataActivityChangesDataActivity() {
+    assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_NONE);
+    shadowOf(telephonyManager).setDataActivity(TelephonyManager.DATA_ACTIVITY_IN);
+    assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_IN);
+    shadowOf(telephonyManager).setDataActivity(TelephonyManager.DATA_ACTIVITY_OUT);
+    assertThat(telephonyManager.getDataActivity()).isEqualTo(TelephonyManager.DATA_ACTIVITY_OUT);
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void setRttSupportedChangesIsRttSupported() {
     shadowOf(telephonyManager).setRttSupported(false);
