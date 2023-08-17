@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
@@ -40,6 +39,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.versioning.AndroidVersionInitTools;
 
 /** Encapsulates a collection of Android framework jars. */
 public class SdkStore {
@@ -248,26 +248,14 @@ public class SdkStore {
     /**
      * Determine the API level for this SDK jar by inspecting its {@code build.prop} file.
      *
-     * <p>If the {@code ro.build.version.codename} value isn't {@code REL}, this is an unreleased
-     * SDK, which is represented as 10000 (see {@link
-     * android.os.Build.VERSION_CODES#CUR_DEVELOPMENT}.
-     *
-     * @return the API level, or 10000
+     * @return the API level
      */
     private int readSdkInt() {
-      Properties properties = new Properties();
-      try (InputStream inputStream = jarFile.getInputStream(jarFile.getJarEntry("build.prop"))) {
-        properties.load(inputStream);
+      try {
+        return AndroidVersionInitTools.computeReleaseVersion(jarFile).getSdkInt();
       } catch (IOException e) {
         throw new RuntimeException("failed to read build.prop from " + path);
       }
-      int sdkInt = Integer.parseInt(properties.getProperty("ro.build.version.sdk"));
-      String codename = properties.getProperty("ro.build.version.codename");
-      if (!"REL".equals(codename)) {
-        sdkInt = 10000;
-      }
-
-      return sdkInt;
     }
 
     private JarFile ensureJar() {

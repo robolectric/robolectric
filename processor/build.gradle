@@ -34,6 +34,7 @@ tasks['classes'].dependsOn(generateSdksFile)
 dependencies {
     api project(":annotations")
     api project(":shadowapi")
+    implementation project(":shadows:versioning")
 
     compileOnly libs.findbugs.jsr305
     api libs.asm
