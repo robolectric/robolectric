@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES;
 import static android.os.Build.VERSION_CODES.O;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
@@ -10,10 +11,13 @@ import android.app.Application;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
+import android.companion.DeviceNotAssociatedException;
 import android.content.ComponentName;
 import android.content.IntentSender;
+import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.base.Ascii;
 import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,16 +32,18 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 public class ShadowCompanionDeviceManagerTest {
 
   private static final String MAC_ADDRESS = "AA:BB:CC:DD:FF:EE";
+  private static final String PACKAGE_NAME = "org.robolectric";
 
+  private final Application application = getApplicationContext();
   private CompanionDeviceManager companionDeviceManager;
   private ShadowCompanionDeviceManager shadowCompanionDeviceManager;
   private ComponentName componentName;
 
   @Before
   public void setUp() throws Exception {
-    companionDeviceManager = getApplicationContext().getSystemService(CompanionDeviceManager.class);
+    companionDeviceManager = application.getSystemService(CompanionDeviceManager.class);
     shadowCompanionDeviceManager = shadowOf(companionDeviceManager);
-    componentName = new ComponentName(getApplicationContext(), Application.class);
+    componentName = new ComponentName(application, Application.class);
   }
 
   @Test
@@ -194,6 +200,68 @@ public class ShadowCompanionDeviceManagerTest {
   public void notifyDeviceAppeared() {
     ReflectionHelpers.callInstanceMethod(
         companionDeviceManager, "notifyDeviceAppeared", ClassParameter.from(int.class, 1));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testStartObservingDevicePresence_deviceNotAssociated() {
+    assertThrows(
+        DeviceNotAssociatedException.class,
+        () -> companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testStartObservingDevicePresence_deviceAssociated() {
+    shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
+
+    companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_systemApi() {
+    shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
+
+    companionDeviceManager.associate(
+        PACKAGE_NAME, MacAddress.fromString(MAC_ADDRESS), new byte[] {0x01});
+    assertThat(companionDeviceManager.getAssociations()).contains(Ascii.toLowerCase(MAC_ADDRESS));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_systemApi_permissionDenied() {
+    shadowOf(application).denyPermissions(ASSOCIATE_COMPANION_DEVICES);
+
+    assertThrows(
+        SecurityException.class,
+        () ->
+            companionDeviceManager.associate(
+                PACKAGE_NAME, MacAddress.fromString(MAC_ADDRESS), new byte[] {0x01}));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_systemApi_badPackageName() {
+    shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
+
+    assertThrows(
+        SecurityException.class,
+        () ->
+            companionDeviceManager.associate(
+                "some.package", MacAddress.fromString(MAC_ADDRESS), new byte[] {0x01}));
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_systemApi_badCertificate() {
+    shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
+
+    assertThrows(
+        SecurityException.class,
+        () ->
+            companionDeviceManager.associate(
+                PACKAGE_NAME, MacAddress.fromString(MAC_ADDRESS), null));
   }
 
   private CompanionDeviceManager.Callback createCallback() {

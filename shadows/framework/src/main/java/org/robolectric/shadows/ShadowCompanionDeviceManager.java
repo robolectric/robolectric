@@ -1,12 +1,17 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
+import android.Manifest.permission;
+import android.app.ActivityThread;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
+import android.companion.DeviceNotAssociatedException;
 import android.content.ComponentName;
+import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import androidx.annotation.Nullable;
@@ -18,8 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
 
 /** Shadow for CompanionDeviceManager. */
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
@@ -101,6 +108,33 @@ public class ShadowCompanionDeviceManager {
     associate(request, callback, /* handler= */ null);
   }
 
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void associate(String packageName, MacAddress macAddress, byte[] certificate) {
+    if (!checkPermission(permission.ASSOCIATE_COMPANION_DEVICES)) {
+      throw new SecurityException("Permission ASSOCIATE_COMPANION_DEVICES not granted");
+    }
+    if (!RuntimeEnvironment.getApplication().getPackageName().equals(packageName)) {
+      throw new SecurityException("Calling application package does not equal packageName");
+    }
+    if (certificate == null) {
+      // Check the null case for now as {@link PackageManager#hasSigningCertificate} is not yet
+      // supported.
+      throw new SecurityException("Certificate is null");
+    }
+    associations.add(
+        RoboAssociationInfo.builder().setDeviceMacAddress(macAddress.toString()).build());
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void startObservingDevicePresence(String deviceAddress) {
+    for (RoboAssociationInfo association : associations) {
+      if (Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+        return;
+      }
+    }
+    throw new DeviceNotAssociatedException("Association does not exist");
+  }
+
   public AssociationRequest getLastAssociationRequest() {
     return lastAssociationRequest;
   }
@@ -154,6 +188,15 @@ public class ShadowCompanionDeviceManager {
         info.isNotifyOnDeviceNearby(),
         info.getTimeApprovedMs(),
         info.getLastTimeConnectedMs());
+  }
+
+  private static boolean checkPermission(String permission) {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
+    return shadowInstrumentation.checkPermission(
+            permission, android.os.Process.myPid(), android.os.Process.myUid())
+        == PERMISSION_GRANTED;
   }
 
   /**
