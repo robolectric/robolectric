@@ -908,6 +908,15 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void hasCarrierPrivilegesWithSubId() {
+    int subId = 3;
+    assertThat(telephonyManager.hasCarrierPrivileges(subId)).isFalse();
+    shadowOf(telephonyManager).setHasCarrierPrivileges(subId, true);
+    assertThat(telephonyManager.hasCarrierPrivileges(subId)).isTrue();
+  }
+
+  @Test
   @Config(minSdk = O)
   public void sendDialerSpecialCode() {
     shadowOf(telephonyManager).sendDialerSpecialCode("1234");

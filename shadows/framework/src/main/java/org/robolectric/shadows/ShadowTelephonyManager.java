@@ -55,6 +55,7 @@ import android.telephony.VisualVoicemailSmsFilterSettings;
 import android.telephony.emergency.EmergencyNumber;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import com.google.common.base.Ascii;
 import com.google.common.base.Preconditions;
@@ -151,6 +152,7 @@ public class ShadowTelephonyManager {
   private final Set<Integer> dataDisabledReasons = new HashSet<>();
   private boolean isRttSupported;
   private boolean isTtyModeSupported;
+  private final SparseBooleanArray subIdToHasCarrierPrivileges = new SparseBooleanArray();
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
   private boolean hearingAidCompatibilitySupported = false;
   private int requestCellInfoUpdateErrorCode = 0;
@@ -1339,6 +1341,25 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #isTtyModeSupported()} */
   public void setTtyModeSupported(boolean isTtyModeSupported) {
     this.isTtyModeSupported = isTtyModeSupported;
+  }
+
+  /**
+   * @return False by default, unless set with {@link #setHasCarrierPrivileges(int, boolean)}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @HiddenApi
+  protected boolean hasCarrierPrivileges(int subId) {
+    return subIdToHasCarrierPrivileges.get(subId);
+  }
+
+  public void setHasCarrierPrivileges(boolean hasCarrierPrivileges) {
+    int subId = ReflectionHelpers.callInstanceMethod(realTelephonyManager, "getSubId");
+    setHasCarrierPrivileges(subId, hasCarrierPrivileges);
+  }
+
+  /** Sets the {@code hasCarrierPrivileges} for the given {@code subId}. */
+  public void setHasCarrierPrivileges(int subId, boolean hasCarrierPrivileges) {
+    subIdToHasCarrierPrivileges.put(subId, hasCarrierPrivileges);
   }
 
   /**
