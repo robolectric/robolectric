@@ -82,7 +82,7 @@ libphonenumber = "8.13.18"
 mockito = "4.11.0"
 
 # https://github.com/mockk/mockk/releases
-mockk = "1.13.5"
+mockk = "1.13.7"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.11.0"
