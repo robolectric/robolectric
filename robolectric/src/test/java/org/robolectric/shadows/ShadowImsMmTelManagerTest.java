@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowImsMmTelManager} */
 @RunWith(RobolectricTestRunner.class)
@@ -33,7 +34,7 @@ public class ShadowImsMmTelManagerTest {
 
   @Before
   public void setup() {
-    shadowImsMmTelManager = new ShadowImsMmTelManager();
+    shadowImsMmTelManager = Shadow.extract(ImsMmTelManager.createForSubscriptionId(5));
   }
 
   @Test
@@ -498,7 +499,6 @@ public class ShadowImsMmTelManagerTest {
 
   @Test
   public void getSubscriptionId() {
-    shadowImsMmTelManager.__constructor__(5);
     assertThat(shadowImsMmTelManager.getSubscriptionId()).isEqualTo(5);
   }
 }

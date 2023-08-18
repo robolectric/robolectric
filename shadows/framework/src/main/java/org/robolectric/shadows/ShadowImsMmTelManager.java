@@ -25,7 +25,9 @@ import java.util.function.Consumer;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -55,14 +57,9 @@ public class ShadowImsMmTelManager {
   private MmTelCapabilities mmTelCapabilitiesAvailable =
       new MmTelCapabilities(); // start with empty
   private int imsRegistrationTech = ImsRegistrationImplBase.REGISTRATION_TECH_NONE;
-  private int subId;
   private Consumer<Integer> stateCallback;
   private Consumer<Integer> transportTypeCallback;
-
-  @Implementation(maxSdk = VERSION_CODES.R)
-  protected void __constructor__(int subId) {
-    this.subId = subId;
-  }
+  @RealObject private ImsMmTelManager realImsMmTelManager;
 
   /**
    * Sets whether IMS is available on the device. Setting this to false will cause {@link
@@ -277,7 +274,7 @@ public class ShadowImsMmTelManager {
 
   /** Get subscription id */
   public int getSubscriptionId() {
-    return subId;
+    return reflector(ImsMmTelManagerReflector.class, realImsMmTelManager).getSubId();
   }
 
   /** Returns only one instance per subscription id. */
@@ -303,6 +300,9 @@ public class ShadowImsMmTelManager {
 
   @ForType(ImsMmTelManager.class)
   interface ImsMmTelManagerReflector {
+
+    @Accessor("mSubId")
+    int getSubId();
 
     @Static
     @Direct
