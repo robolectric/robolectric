@@ -125,8 +125,37 @@ public class ShadowCompanionDeviceManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAddAssociation_byAssociationInfo_defaultValue() {
+    AssociationInfoBuilder infoBuilder =
+        AssociationInfoBuilder.newBuilder()
+            .setId(1)
+            .setUserId(1)
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setDisplayName("displayName")
+            .setSystemDataSyncFlags(-1);
+    AssociationInfo info = infoBuilder.build();
+
+    AssociationInfoBuilder expectedInfoBuilder =
+        AssociationInfoBuilder.newBuilder()
+            .setId(1)
+            .setUserId(1)
+            .setDeviceMacAddress(MAC_ADDRESS)
+            .setDisplayName("displayName")
+            .setSelfManaged(false)
+            .setNotifyOnDeviceNearby(false)
+            .setApprovedMs(0)
+            .setLastTimeConnectedMs(0)
+            .setSystemDataSyncFlags(-1);
+    AssociationInfo expectedInfo = expectedInfoBuilder.build();
+    assertThat(companionDeviceManager.getAssociations()).isEmpty();
+    shadowCompanionDeviceManager.addAssociation(info);
+    assertThat(companionDeviceManager.getMyAssociations()).contains(expectedInfo);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void testAddAssociation_byAssociationInfo() {
-    AssociationInfo info =
+    AssociationInfoBuilder infoBuilder =
         AssociationInfoBuilder.newBuilder()
             .setId(1)
             .setUserId(1)
@@ -136,8 +165,27 @@ public class ShadowCompanionDeviceManagerTest {
             .setSelfManaged(false)
             .setNotifyOnDeviceNearby(false)
             .setApprovedMs(0)
-            .setLastTimeConnectedMs(0)
-            .build();
+            .setLastTimeConnectedMs(0);
+    Object associatedDeviceValue = null;
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
+      try {
+        Class<?> associatedDeviceClazz = Class.forName("android.companion.AssociatedDevice");
+        associatedDeviceValue = ReflectionHelpers.newInstance(associatedDeviceClazz);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+      infoBuilder = infoBuilder.setAssociatedDevice(associatedDeviceValue);
+    }
+    int systemDataSyncFlagsValue = 1;
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mSystemDataSyncFlags")) {
+      infoBuilder = infoBuilder.setSystemDataSyncFlags(systemDataSyncFlagsValue);
+    }
+    AssociationInfo info = infoBuilder.build();
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mSystemDataSyncFlags")) {
+      int systemDataSyncFlags =
+          ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
+      assertThat(systemDataSyncFlags).isEqualTo(systemDataSyncFlagsValue);
+    }
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
     shadowCompanionDeviceManager.addAssociation(info);
     assertThat(companionDeviceManager.getMyAssociations()).contains(info);
