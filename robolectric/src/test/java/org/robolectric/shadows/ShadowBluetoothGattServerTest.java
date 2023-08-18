@@ -109,6 +109,16 @@ public class ShadowBluetoothGattServerTest {
   }
 
   @Test
+  public void test_getResponses_acceptsNull() {
+    shadowOf(server).sendResponse(device, 0, 0, 0, RESPONSE_VALUE1);
+    assertThat(shadowOf(server).getResponses()).hasSize(1);
+    shadowOf(server).sendResponse(device, 0, 0, 0, null);
+    assertThat(shadowOf(server).getResponses()).hasSize(2);
+    assertThat(shadowOf(server).getResponses().get(0)).isEqualTo(RESPONSE_VALUE1);
+    assertThat(shadowOf(server).getResponses().get(1)).isEqualTo(null);
+  }
+
+  @Test
   public void test_isConnectedToDevice_initially() {
     assertThat(shadowOf(server).isConnectedToDevice(device)).isFalse();
   }

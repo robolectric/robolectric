@@ -116,7 +116,11 @@ public class ShadowBluetoothGattServer {
   public List<byte[]> getResponses() {
     List<byte[]> responsesCopy = new ArrayList<>();
     for (byte[] response : this.responses) {
-      responsesCopy.add(response.clone());
+      if (response != null) {
+        responsesCopy.add(response.clone());
+      } else {
+        responsesCopy.add(null);
+      }
     }
     return responsesCopy;
   }
