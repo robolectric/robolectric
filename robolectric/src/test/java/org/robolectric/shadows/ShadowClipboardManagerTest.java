@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.content.ClipboardManager.OnPrimaryClipChangedListener;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -10,8 +11,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.os.SystemClock;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -125,5 +128,28 @@ public class ShadowClipboardManagerTest {
     clipboardManager.clearPrimaryClip();
 
     verify(listener).onPrimaryClipChanged();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldSetTimestampForClip() {
+    long currentUptimeMs = SystemClock.uptimeMillis();
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(47));
+    ClipData clip = ClipData.newPlainText(null, "BLARG?");
+    clipboardManager.setPrimaryClip(clip);
+    assertThat(clipboardManager.getPrimaryClipDescription()).isNotNull();
+    assertThat(clipboardManager.getPrimaryClipDescription().getTimestamp())
+        .isEqualTo(currentUptimeMs + 47 * 1000);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void shouldSetTimestampForText() {
+    long currentUptimeMs = SystemClock.uptimeMillis();
+    ShadowSystemClock.advanceBy(Duration.ofSeconds(42));
+    clipboardManager.setText("BLARG!!!");
+    assertThat(clipboardManager.getPrimaryClipDescription()).isNotNull();
+    assertThat(clipboardManager.getPrimaryClipDescription().getTimestamp())
+        .isEqualTo(currentUptimeMs + 42 * 1000);
   }
 }

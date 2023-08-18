@@ -1,21 +1,27 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE;
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.Charset.defaultCharset;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.io.Files;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -23,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowParcelFileDescriptor.FileDescriptorFromParcelUnavailableException;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
@@ -343,5 +350,88 @@ public class ShadowParcelFileDescriptorTest {
     pfd.close();
 
     assertThrows(IllegalStateException.class, () -> pfd.getFd());
+  }
+
+  @Test
+  public void testCanMarshalUnmarshal_closedByFlagUponWrite() throws Exception {
+    Files.asCharSink(file, defaultCharset()).write("foo");
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(file.delete()).isTrue();
+    ParcelFileDescriptor clone = dupViaParcel(pfd, PARCELABLE_WRITE_RETURN_VALUE);
+    assertThat(pfd.getFileDescriptor().valid()).isFalse();
+    assertThat(readLine(clone.getFileDescriptor())).isEqualTo("foo");
+  }
+
+  @Test
+  public void testCanMarshalUnmarshal_closedAfterWrite() throws Exception {
+    Files.asCharSink(file, defaultCharset()).write("foo");
+    pfd = ParcelFileDescriptor.open(file, 0);
+    assertThat(file.delete()).isTrue();
+    ParcelFileDescriptor clone = dupViaParcel(pfd, 0);
+    assertThat(pfd.getFileDescriptor().valid()).isTrue();
+    pfd.close();
+    assertThat(readLine(clone.getFileDescriptor())).isEqualTo("foo");
+  }
+
+  @Test
+  public void testCanMarshalUnmarshal_canClosePendingDup() throws Exception {
+    Files.asCharSink(file, defaultCharset()).write("foo");
+    pfd = ParcelFileDescriptor.open(file, 0);
+    assertThat(file.delete()).isTrue();
+    ParcelFileDescriptor clone = dupViaParcel(pfd, 0);
+    clone.close();
+    assertThat(readLine(pfd.getFileDescriptor())).isEqualTo("foo");
+  }
+
+  @Test
+  public void testCanMarshalUnmarshal_marshalTwice() throws Exception {
+    Files.asCharSink(file, defaultCharset()).write("bar");
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(file.delete()).isTrue();
+    Parcel parcel = Parcel.obtain();
+    pfd.writeToParcel(parcel, 0);
+    parcel.setDataPosition(0);
+    ParcelFileDescriptor clone1 = ParcelFileDescriptor.CREATOR.createFromParcel(parcel);
+    parcel.setDataPosition(0);
+    ParcelFileDescriptor clone2 = ParcelFileDescriptor.CREATOR.createFromParcel(parcel);
+    pfd.close();
+    assertThat(readLine(clone1.getFileDescriptor())).isEqualTo("bar");
+    assertThrows(
+        FileDescriptorFromParcelUnavailableException.class, () -> clone2.getFileDescriptor());
+    parcel.recycle();
+  }
+
+  @Test
+  public void testCanMarshalUnmarshal_chained() throws Exception {
+    Files.asCharSink(file, defaultCharset()).write("foo");
+    pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    assertThat(file.delete()).isTrue();
+
+    ParcelFileDescriptor pfd2 = dupViaParcel(pfd, 0);
+    ParcelFileDescriptor pfd3 = dupViaParcel(pfd2, 0);
+
+    pfd.close(); // Makes our data available to anyone downstream on the chain.
+
+    assertThat(readLine(pfd3.getFileDescriptor())).isEqualTo("foo");
+    assertThrows(
+        FileDescriptorFromParcelUnavailableException.class, () -> pfd2.getFileDescriptor());
+  }
+
+  private static String readLine(FileDescriptor fd) throws IOException {
+    try (BufferedReader reader =
+        new BufferedReader(new InputStreamReader(new FileInputStream(fd), defaultCharset()))) {
+      return reader.readLine();
+    }
+  }
+
+  private static ParcelFileDescriptor dupViaParcel(ParcelFileDescriptor src, int flags) {
+    Parcel parcel = Parcel.obtain();
+    try {
+      src.writeToParcel(parcel, flags);
+      parcel.setDataPosition(0);
+      return ParcelFileDescriptor.CREATOR.createFromParcel(parcel);
+    } finally {
+      parcel.recycle();
+    }
   }
 }

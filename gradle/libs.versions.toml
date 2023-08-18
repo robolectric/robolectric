@@ -9,7 +9,7 @@ android-gradle = "7.4.2"
 conscrypt = "2.5.2"
 
 # https://github.com/bcgit/bc-java/tags
-bouncycastle = "1.75"
+bouncycastle = "1.76"
 
 # https://github.com/findbugsproject/findbugs/tags
 findbugs-jsr305 = "3.0.2"
@@ -21,7 +21,7 @@ hamcrest = "2.0.0.0"
 aggregate-javadocs-gradle = "3.0.1"
 
 # https://github.com/google/error-prone/releases
-error-prone = "2.20.0"
+error-prone = "2.21.1"
 error-prone-javac = "9+181-r4173-1"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
@@ -31,10 +31,10 @@ error-prone-gradle = "3.1.0"
 kotlin = "1.9.0"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
-kotlinx-coroutines = '1.7.2'
+kotlinx-coroutines = '1.7.3'
 
 # https://github.com/diffplug/spotless/blob/main/CHANGES.md
-spotless-gradle = "6.19.0"
+spotless-gradle = "6.20.0"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
@@ -46,12 +46,12 @@ asm = "9.5"
 # https://github.com/google/auto/releases
 auto-common = "1.2.2"
 auto-service = "1.1.1"
-auto-value = "1.10.2"
+auto-value = "1.10.3"
 
 compile-testing = "0.21.0"
 
 # https://github.com/google/guava/releases
-guava-jre = "32.1.1-jre"
+guava-jre = "32.1.2-jre"
 
 # https://github.com/google/gson/releases
 gson = "2.10.1"
@@ -76,13 +76,13 @@ jetbrains-annotations = "24.0.1"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.15"
+libphonenumber = "8.13.18"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
 
 # https://github.com/mockk/mockk/releases
-mockk = "1.13.5"
+mockk = "1.13.7"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.11.0"
@@ -98,7 +98,7 @@ androidx-appcompat = "1.6.1"
 androidx-biometric = "1.1.0"
 androidx-constraintlayout = "2.1.4"
 androidx-core = "1.10.1"
-androidx-fragment = "1.6.0"
+androidx-fragment = "1.6.1"
 androidx-multidex = "2.0.1"
 androidx-window = "1.1.0"
 

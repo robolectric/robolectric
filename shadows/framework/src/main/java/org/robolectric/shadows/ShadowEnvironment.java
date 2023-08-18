@@ -6,6 +6,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Environment;
@@ -24,7 +25,9 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @Implements(Environment.class)
 @SuppressWarnings("NewApi")
@@ -37,6 +40,7 @@ public class ShadowEnvironment {
   private static Path tmpExternalFilesDirBase;
   private static final List<File> externalDirs = new ArrayList<>();
   private static Map<Path, String> storageState = new HashMap<>();
+  private static Path rootStorageDirectory;
 
   static Path EXTERNAL_CACHE_DIR;
   static Path EXTERNAL_FILES_DIR;
@@ -74,11 +78,33 @@ public class ShadowEnvironment {
   }
 
   /**
-   * Sets the return value of {@link #getExternalStorageDirectory()}.  Note that
-   * the default value provides a directory that is usable in the test environment.
-   * If the test app uses this method to override that default directory, please
-   * clean up any files written to that directory, as the Robolectric environment
-   * will not purge that directory when the test ends.
+   * Sets the return value of {@link #getStorageDirectory()}. This can be used for example, when
+   * testing code paths that need to perform regex matching on this directory.
+   *
+   * <p>Note that the default value provides a directory that is usable in the test environment. If
+   * the test app uses this method to override that default directory, please clean up any files
+   * written to that directory, as the Robolectric environment will not purge that directory when
+   * the test ends.
+   *
+   * @param directory Path to return from {@link #getStorageDirectory()}.
+   */
+  public static void setStorageDirectory(Path directory) {
+    rootStorageDirectory = directory;
+  }
+
+  @Implementation(minSdk = R)
+  protected static File getStorageDirectory() {
+    if (rootStorageDirectory == null) {
+      return reflector(EnvironmentReflector.class).getStorageDirectory();
+    }
+    return rootStorageDirectory.toFile();
+  }
+
+  /**
+   * Sets the return value of {@link #getExternalStorageDirectory()}. Note that the default value
+   * provides a directory that is usable in the test environment. If the test app uses this method
+   * to override that default directory, please clean up any files written to that directory, as the
+   * Robolectric environment will not purge that directory when the test ends.
    *
    * @param directory Path to return from {@link #getExternalStorageDirectory()}.
    */
@@ -140,6 +166,7 @@ public class ShadowEnvironment {
   @Resetter
   public static void reset() {
 
+    rootStorageDirectory = null;
     EXTERNAL_CACHE_DIR = null;
     EXTERNAL_FILES_DIR = null;
 
@@ -300,5 +327,12 @@ public class ShadowEnvironment {
 
     @Accessor("mExternalStorageAndroidData")
     void setExternalStorageAndroidData(File file);
+  }
+
+  @ForType(Environment.class)
+  interface EnvironmentReflector {
+    @Static
+    @Direct
+    File getStorageDirectory();
   }
 }

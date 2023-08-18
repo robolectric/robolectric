@@ -1,12 +1,10 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.Activity;
 import android.app.Application;
@@ -16,7 +14,6 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
-import android.os.Bundle;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,7 +23,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
@@ -205,22 +201,9 @@ public class ShadowNfcAdapterTest {
         callback,
         NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_SKIP_NDEF_CHECK,
         /* extras= */ null);
-    Tag tag = createMockTag();
+    Tag tag = ShadowNfcAdapter.createMockTag();
     shadowOf(adapter).dispatchTagDiscovered(tag);
 
     verify(callback).onTagDiscovered(same(tag));
-  }
-
-  private static Tag createMockTag() {
-    if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
-      return Tag.createMockTag(new byte[0], new int[0], new Bundle[0]);
-    } else {
-      return reflector(TagReflector.class).createMockTag(new byte[0], new int[0], new Bundle[0], 0);
-    }
-  }
-
-  @ForType(Tag.class)
-  interface TagReflector {
-    public Tag createMockTag(byte[] id, int[] techList, Bundle[] techListExtras, long cookie);
   }
 }

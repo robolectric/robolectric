@@ -19,7 +19,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
           ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: build
     strategy:
       fail-fast: false
@@ -149,7 +149,7 @@ jobs:
             **/build/outputs/*/connected/*
 
   publish-to-snapshots:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       SONATYPE_LOGIN: ${{ secrets.SONATYPE_LOGIN }}
       SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

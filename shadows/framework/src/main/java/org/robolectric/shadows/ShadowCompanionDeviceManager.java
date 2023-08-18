@@ -147,7 +147,7 @@ public class ShadowCompanionDeviceManager {
         info.getId(),
         info.getUserId(),
         info.getPackageName(),
-        info.getDeviceMacAddress().toString(),
+        info.getDeviceMacAddress() == null ? null : info.getDeviceMacAddress().toString(),
         info.getDisplayName(),
         info.getDeviceProfile(),
         info.isSelfManaged(),

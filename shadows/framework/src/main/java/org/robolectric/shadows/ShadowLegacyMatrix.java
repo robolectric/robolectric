@@ -426,7 +426,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
     }
 
     private SimpleMatrix(float[] values) {
-      if (values.length != 9) {
+      if (values.length < 9) {
         throw new ArrayIndexOutOfBoundsException();
       }
       mValues = Arrays.copyOf(values, 9);

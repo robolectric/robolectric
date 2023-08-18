@@ -58,6 +58,8 @@ import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
+import android.telephony.ModemInfo;
+import android.telephony.PhoneCapability;
 import android.telephony.PhoneStateListener;
 import android.telephony.ServiceState;
 import android.telephony.SignalStrength;
@@ -326,6 +328,13 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void shouldGiveNetworkSpecifier() {
+    shadowOf(telephonyManager).setNetworkSpecifier("SomeSpecifier");
+    assertEquals("SomeSpecifier", telephonyManager.getNetworkSpecifier());
+  }
+
+  @Test
   public void shouldGiveLine1Number() {
     shadowOf(telephonyManager).setLine1Number("123-244-2222");
     assertEquals("123-244-2222", telephonyManager.getLine1Number());
@@ -343,6 +352,15 @@ public class ShadowTelephonyManagerTest {
       throws Exception {
     shadowOf(telephonyManager).setReadPhoneStatePermission(false);
     telephonyManager.getDeviceId();
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void
+      getDeviceIdForSlot_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted()
+          throws Exception {
+    shadowOf(telephonyManager).setReadPhoneStatePermission(false);
+    assertThrows(SecurityException.class, () -> telephonyManager.getDeviceId(1));
   }
 
   @Test
@@ -1034,6 +1052,21 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = S)
+  public void setPhoneCapability() {
+    ModemInfo modemInfo1 = ModemInfoFactory.create(0);
+    ModemInfo modemInfo2 = ModemInfoFactory.create(1);
+    ImmutableList<ModemInfo> logicalModemList = ImmutableList.of(modemInfo1, modemInfo2);
+    int[] deviceNrCapabilities = new int[0];
+    PhoneCapability dsdaCapability =
+        PhoneCapabilityFactory.create(2, 1, logicalModemList, false, deviceNrCapabilities);
+
+    shadowTelephonyManager.setPhoneCapability(dsdaCapability);
+
+    assertThat(telephonyManager.getPhoneCapability()).isEqualTo(dsdaCapability);
+  }
+
+  @Test
   @Config(minSdk = O)
   public void sendVisualVoicemailSms_shouldStoreLastSendSmsParameters() {
     telephonyManager.sendVisualVoicemailSms("destAddress", 0, "message", null);
@@ -1136,5 +1169,17 @@ public class ShadowTelephonyManagerTest {
     ShadowTelephonyManager.setEmergencyNumberList(
         ImmutableMap.of(0, ImmutableList.of(emergencyNumber)));
     assertThat(telephonyManager.getEmergencyNumberList().get(0)).containsExactly(emergencyNumber);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSubscriptionIdForPhoneAccountHandle() {
+    int subscriptionId = 123;
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+    shadowOf(telephonyManager)
+        .setPhoneAccountHandleSubscriptionId(phoneAccountHandle, subscriptionId);
+    assertEquals(subscriptionId, telephonyManager.getSubscriptionId(phoneAccountHandle));
   }
 }

@@ -2,7 +2,6 @@ package org.robolectric.android.internal;
 
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadow.api.Shadow.extract;
-import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.app.Activity;
 import android.app.Application;
@@ -33,11 +32,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowInstrumentation;
+import org.robolectric.shadows.ShadowLooper;
 
 /**
  * A Robolectric instrumentation that acts like a slimmed down {@link
@@ -48,7 +54,6 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   private static final String TAG = "RoboInstrumentation";
 
-  private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
   private final ActivityLifecycleMonitorImpl lifecycleMonitor = new ActivityLifecycleMonitorImpl();
   private final ApplicationLifecycleMonitorImpl applicationMonitor =
       new ApplicationLifecycleMonitorImpl();
@@ -79,7 +84,7 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   @Override
   public void waitForIdleSync() {
-    shadowMainLooper().idle();
+    shadowOf(Looper.getMainLooper()).idle();
   }
 
   @Override
@@ -108,22 +113,28 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException("Could not load activity " + ai.name, e);
     }
-
-    ActivityController<? extends Activity> controller =
-        Robolectric.buildActivity(activityClass, intent, activityOptions).create();
-    if (controller.get().isFinishing()) {
-      controller.destroy();
-    } else {
-      createdActivities.add(controller);
-      controller
-          .start()
-          .postCreate(null)
-          .resume()
-          .visible()
-          .windowFocusChanged(true)
-          .topActivityResumed(true);
-    }
-    return controller;
+    AtomicReference<ActivityController<? extends Activity>> activityControllerReference =
+        new AtomicReference<>();
+    ShadowInstrumentation.runOnMainSyncNoIdle(
+        () -> {
+          ActivityController<? extends Activity> controller =
+              Robolectric.buildActivity(activityClass, intent, activityOptions);
+          activityControllerReference.set(controller);
+          controller.create();
+          if (controller.get().isFinishing()) {
+            controller.destroy();
+          } else {
+            createdActivities.add(controller);
+            controller
+                .start()
+                .postCreate(null)
+                .resume()
+                .visible()
+                .windowFocusChanged(true)
+                .topActivityResumed(true);
+          }
+        });
+    return activityControllerReference.get();
   }
 
   @Override
@@ -136,10 +147,47 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
     applicationMonitor.signalLifecycleChange(app, ApplicationStage.CREATED);
   }
 
+  /**
+   * Executes a runnable on the main thread, blocking until it is complete.
+   *
+   * <p>When in INSTUMENTATION_TEST Looper mode, the runnable is posted to the main handler and the
+   * caller's thread blocks until that runnable has finished. When a Throwable is thrown in the
+   * runnable, the exception is propagated back to the caller's thread. If it is an unchecked
+   * throwable, it will be rethrown as is. If it is a checked exception, it will be rethrown as a
+   * {@link RuntimeException}.
+   *
+   * <p>For other Looper modes, the main looper is idled and then the runnable is executed in the
+   * caller's thread.
+   *
+   * @param runnable a runnable to be executed on the main thread
+   */
   @Override
-  public void runOnMainSync(Runnable runner) {
-    shadowMainLooper().idle();
-    runner.run();
+  public void runOnMainSync(Runnable runnable) {
+    if (ShadowLooper.looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
+      waitForIdleSync();
+      runnable.run();
+      return;
+    }
+
+    FutureTask<Void> wrappedRunnable = new FutureTask<>(runnable, null);
+    new Handler(Looper.getMainLooper()).post(wrappedRunnable);
+    while (!wrappedRunnable.isDone()) {
+      ShadowLooper.runMainLooperToNextTask();
+    }
+
+    try {
+      wrappedRunnable.get();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } catch (ExecutionException e) {
+      Throwable cause = e.getCause();
+      if (cause instanceof RuntimeException) {
+        throw (RuntimeException) cause;
+      } else if (cause instanceof Error) {
+        throw (Error) cause;
+      }
+      throw new RuntimeException(cause);
+    }
   }
 
   /** {@inheritDoc} */
@@ -218,21 +266,48 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
   private void postDispatchActivityResult(
       ShadowActivity shadowActivity, String target, int requestCode, ActivityResult ar) {
-    mainThreadHandler.post(
-        new Runnable() {
-          @Override
-          public void run() {
-            shadowActivity.internalCallDispatchActivityResult(
-                target, requestCode, ar.getResultCode(), ar.getResultData());
-          }
-        });
+    new Handler(Looper.getMainLooper())
+        .post(
+            new Runnable() {
+              @Override
+              public void run() {
+                shadowActivity.internalCallDispatchActivityResult(
+                    target, requestCode, ar.getResultCode(), ar.getResultData());
+              }
+            });
   }
 
   private ActivityResult stubResultFor(Intent intent) {
-    if (IntentStubberRegistry.isLoaded()) {
-      return IntentStubberRegistry.getInstance().getActivityResultForIntent(intent);
+    if (!IntentStubberRegistry.isLoaded()) {
+      return null;
     }
-    return null;
+
+    FutureTask<ActivityResult> task =
+        new FutureTask<ActivityResult>(
+            new Callable<ActivityResult>() {
+              @Override
+              public ActivityResult call() throws Exception {
+                return IntentStubberRegistry.getInstance().getActivityResultForIntent(intent);
+              }
+            });
+    ShadowInstrumentation.runOnMainSyncNoIdle(task);
+
+    try {
+      return task.get();
+    } catch (ExecutionException e) {
+      String msg = String.format("Could not retrieve stub result for intent %s", intent);
+      // Preserve original exception
+      if (e.getCause() instanceof RuntimeException) {
+        Log.w(TAG, msg, e);
+        throw (RuntimeException) e.getCause();
+      } else if (e.getCause() != null) {
+        throw new RuntimeException(msg, e.getCause());
+      } else {
+        throw new RuntimeException(msg, e);
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /** {@inheritDoc} */

@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   run_checkForApiChanges:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew checkForApiChanges
 
   run_aggregateDocs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3
@@ -49,8 +49,25 @@ jobs:
       - name: Run aggregateDocs
         run: ./gradlew clean aggregateDocs
 
+  run_javadocJar:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 11
+
+      - uses: gradle/gradle-build-action@v2
+
+      - name: Run javadocJar
+        run: ./gradlew clean javadocJar
+
   run_instrumentAll:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v3

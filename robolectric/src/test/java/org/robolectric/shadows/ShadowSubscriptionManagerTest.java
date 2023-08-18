@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
@@ -153,6 +154,16 @@ public class ShadowSubscriptionManagerTest {
 
     assertThat(shadowOf(subscriptionManager).getActiveSubscriptionInfo(123))
         .isSameInstanceAs(expectedSubscriptionInfo);
+  }
+
+  @Test
+  public void getActiveSubscriptionInfo_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneStatePermission(false);
+    assertThrows(
+        SecurityException.class,
+        () ->
+            shadowOf(subscriptionManager)
+                .getActiveSubscriptionInfo(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID));
   }
 
   @Test
@@ -373,6 +384,17 @@ public class ShadowSubscriptionManagerTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
+  public void getPhoneNumber_shouldThrowExceptionWhenNoPermissions() {
+    shadowOf(subscriptionManager).setReadPhoneNumbersPermission(false);
+    assertThrows(
+        SecurityException.class,
+        () ->
+            shadowOf(subscriptionManager)
+                .getPhoneNumber(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID));
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
   public void getPhoneNumberWithSource_phoneNumberNotSet_returnsEmptyString() {
     assertThat(
             subscriptionManager.getPhoneNumber(
@@ -411,6 +433,28 @@ public class ShadowSubscriptionManagerTest {
                 SubscriptionManager.DEFAULT_SUBSCRIPTION_ID,
                 SubscriptionManager.PHONE_NUMBER_SOURCE_IMS))
         .isEqualTo("123");
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setIsOpportunistic_shouldReturnFalse() {
+    assertThat(
+            ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+                .setIsOpportunistic(false)
+                .buildSubscriptionInfo()
+                .isOpportunistic())
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setIsOpportunistic_shouldReturnTrue() {
+    assertThat(
+            ShadowSubscriptionManager.SubscriptionInfoBuilder.newBuilder()
+                .setIsOpportunistic(true)
+                .buildSubscriptionInfo()
+                .isOpportunistic())
+        .isTrue();
   }
 
   private static class DummySubscriptionsChangedListener

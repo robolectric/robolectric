@@ -95,6 +95,7 @@ public class ShadowTelephonyManager {
   private final Map<PhoneAccountHandle, Uri> voicemailRingtoneUriMap = new HashMap<>();
   private final Map<PhoneAccountHandle, TelephonyManager> phoneAccountToTelephonyManagers =
       new HashMap<>();
+  private final Map<PhoneAccountHandle, Integer> phoneAccountHandleSubscriptionId = new HashMap<>();
 
   private PhoneStateListener lastListener;
   private /*TelephonyCallback*/ Object lastTelephonyCallback;
@@ -107,8 +108,9 @@ public class ShadowTelephonyManager {
   private String networkOperatorName = "";
   private String networkCountryIso;
   private String networkOperator = "";
+  private String networkSpecifier = "";
   private Locale simLocale;
-  private String simOperator;
+  private String simOperator = "";
   private String simOperatorName;
   private String simSerialNumber;
   private boolean readPhoneStatePermission = true;
@@ -141,7 +143,7 @@ public class ShadowTelephonyManager {
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
   private /*UiccSlotInfo[]*/ Object uiccSlotInfos;
-  private /*UiccCardInfo[]*/ Object uiccCardsInfo;
+  private /*UiccCardInfo[]*/ Object uiccCardsInfo = new ArrayList<>();
   private String visualVoicemailPackageName = null;
   private SignalStrength signalStrength;
   private boolean dataEnabled = false;
@@ -166,6 +168,8 @@ public class ShadowTelephonyManager {
    * <p>XXX Look into using the real types if we're now compiling against S
    */
   private Object callback;
+
+  private /*PhoneCapability*/ Object phoneCapability;
 
   {
     resetSimStates();
@@ -203,6 +207,16 @@ public class ShadowTelephonyManager {
       Object e,
       Object callback) {
     this.callback = callback;
+  }
+
+  public void setPhoneCapability(/*PhoneCapability*/ Object phoneCapability) {
+    this.phoneCapability = phoneCapability;
+  }
+
+  @Implementation(minSdk = S)
+  @HiddenApi
+  public /*PhoneCapability*/ Object getPhoneCapability() {
+    return phoneCapability;
   }
 
   @Implementation
@@ -420,6 +434,15 @@ public class ShadowTelephonyManager {
   @Implementation
   protected String getNetworkOperator() {
     return networkOperator;
+  }
+
+  public void setNetworkSpecifier(String networkSpecifier) {
+    this.networkSpecifier = networkSpecifier;
+  }
+
+  @Implementation(minSdk = O)
+  protected String getNetworkSpecifier() {
+    return networkSpecifier;
   }
 
   @Implementation
@@ -892,6 +915,7 @@ public class ShadowTelephonyManager {
    */
   @Implementation(minSdk = M)
   protected String getDeviceId(int slot) {
+    checkReadPhoneStatePermission();
     return slotIndexToDeviceId.get(slot);
   }
 
@@ -1093,6 +1117,16 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSubscriberId()}. */
   public void setSubscriberId(String subscriberId) {
     this.subscriberId = subscriberId;
+  }
+
+  @Implementation(minSdk = R)
+  protected int getSubscriptionId(PhoneAccountHandle handle) {
+    checkReadPhoneStatePermission();
+    return phoneAccountHandleSubscriptionId.get(handle);
+  }
+
+  public void setPhoneAccountHandleSubscriptionId(PhoneAccountHandle handle, int subscriptionId) {
+    phoneAccountHandleSubscriptionId.put(handle, subscriptionId);
   }
 
   /** Returns the value set by {@link #setVisualVoicemailPackageName(String)}. */
