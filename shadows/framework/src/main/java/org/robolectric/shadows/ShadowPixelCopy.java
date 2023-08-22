@@ -64,8 +64,7 @@ public class ShadowPixelCopy {
       @NonNull Bitmap dest,
       @NonNull OnPixelCopyFinishedListener listener,
       @NonNull Handler listenerThread) {
-    takeScreenshot(source, dest, null);
-    alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
+    request(source, null, dest, listener, listenerThread);
   }
 
   @Implementation
@@ -78,7 +77,16 @@ public class ShadowPixelCopy {
     if (srcRect != null && srcRect.isEmpty()) {
       throw new IllegalArgumentException("sourceRect is empty");
     }
-    takeScreenshot(source, dest, srcRect);
+    View view = source.getDecorView();
+    Rect adjustedSrcRect = null;
+    if (srcRect != null) {
+      adjustedSrcRect = new Rect(srcRect);
+      int[] locationInWindow = new int[2];
+      view.getLocationInWindow(locationInWindow);
+      // offset the srcRect by the decor view's location in the window
+      adjustedSrcRect.offset(-locationInWindow[0], -locationInWindow[1]);
+    }
+    takeScreenshot(view, dest, adjustedSrcRect);
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
@@ -94,7 +102,14 @@ public class ShadowPixelCopy {
     }
 
     View view = findViewForSurface(checkNotNull(source));
-    takeScreenshot(view, dest, srcRect);
+    Rect adjustedSrcRect = null;
+    if (srcRect != null) {
+      adjustedSrcRect = new Rect(srcRect);
+      int[] locationInSurface = ShadowView.getLocationInSurfaceCompat(view);
+      // offset the srcRect by the decor view's location in the surface
+      adjustedSrcRect.offset(-locationInSurface[0], -locationInSurface[1]);
+    }
+    takeScreenshot(view, dest, adjustedSrcRect);
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
@@ -112,14 +127,8 @@ public class ShadowPixelCopy {
         "Could not find view for surface. Is it attached to a window?");
   }
 
-  private static void takeScreenshot(Window window, Bitmap screenshot, @Nullable Rect srcRect) {
-    validateBitmap(screenshot);
-
-    // Draw the view to a bitmap in the canvas that is the size of the view itself.
-    takeScreenshot(window.getDecorView(), screenshot, srcRect);
-  }
-
   private static void takeScreenshot(View view, Bitmap screenshot, @Nullable Rect srcRect) {
+    validateBitmap(screenshot);
     Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
     Canvas screenshotCanvas = new Canvas(bitmap);
     view.draw(screenshotCanvas);
@@ -140,7 +149,7 @@ public class ShadowPixelCopy {
     listenerThread.post(() -> listener.onPixelCopyFinished(result));
   }
 
-  private static void validateBitmap(Bitmap bitmap) {
+  private static Bitmap validateBitmap(Bitmap bitmap) {
     if (bitmap == null) {
       throw new IllegalArgumentException("Bitmap cannot be null");
     }
@@ -150,5 +159,6 @@ public class ShadowPixelCopy {
     if (!bitmap.isMutable()) {
       throw new IllegalArgumentException("Bitmap is immutable");
     }
+    return bitmap;
   }
 }

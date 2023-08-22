@@ -353,6 +353,9 @@ public class ShadowViewRootImpl {
     @Accessor("mSurface")
     Surface getSurface();
 
+    @Accessor("mWindowAttributes")
+    WindowManager.LayoutParams getWindowAttributes();
+
     // <= JELLY_BEAN
     void dispatchResized(
         int w,
