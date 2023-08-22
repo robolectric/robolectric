@@ -37,7 +37,9 @@ public class ShadowCompanionDeviceManager {
   protected final Set<ComponentName> hasNotificationAccess = new HashSet<>();
   protected ComponentName lastRequestedNotificationAccess;
   protected AssociationRequest lastAssociationRequest;
+  protected MacAddress lastSystemApiAssociationMacAddress;
   protected CompanionDeviceManager.Callback lastAssociationCallback;
+  protected String lastObservingDevicePresenceDeviceAddress;
 
   private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
@@ -113,6 +115,7 @@ public class ShadowCompanionDeviceManager {
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected void associate(String packageName, MacAddress macAddress, byte[] certificate) {
+    lastSystemApiAssociationMacAddress = macAddress;
     if (!checkPermission(permission.ASSOCIATE_COMPANION_DEVICES)) {
       throw new SecurityException("Permission ASSOCIATE_COMPANION_DEVICES not granted");
     }
@@ -130,6 +133,7 @@ public class ShadowCompanionDeviceManager {
 
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
   protected void startObservingDevicePresence(String deviceAddress) {
+    lastObservingDevicePresenceDeviceAddress = deviceAddress;
     for (RoboAssociationInfo association : associations) {
       if (Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
         return;
@@ -138,16 +142,64 @@ public class ShadowCompanionDeviceManager {
     throw new DeviceNotAssociatedException("Association does not exist");
   }
 
+  /**
+   * This method will return the last {@link AssociationRequest} passed to {@code
+   * CompanionDeviceManager#associate(AssociationRequest, CompanionDeviceManager.Callback, Handler)}
+   * or {@code CompanionDeviceManager#associate(AssociationRequest, Executor,
+   * CompanionDeviceManager.Callback, Handler)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@code associate} and will be set
+   * if that method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
   public AssociationRequest getLastAssociationRequest() {
     return lastAssociationRequest;
   }
 
+  /**
+   * This method will return the last {@link CompanionDeviceManager.Callback} passed to {@code
+   * CompanionDeviceManager#associate(AssociationRequest, CompanionDeviceManager.Callback, Handler)}
+   * or {@code CompanionDeviceManager#associate(AssociationRequest, Executor,
+   * CompanionDeviceManager.Callback, Handler)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@code associate} and will be set
+   * if that method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
   public CompanionDeviceManager.Callback getLastAssociationCallback() {
     return lastAssociationCallback;
   }
 
+  /**
+   * If an association is set, this method will return the last {@link ComponentName} passed to
+   * {@code CompanionDeviceManager#requestNotificationAccess(ComponentName)}.
+   */
   public ComponentName getLastRequestedNotificationAccess() {
     return lastRequestedNotificationAccess;
+  }
+
+  /**
+   * Returns the last {@link MacAddress} passed to systemApi {@code associate}.
+   *
+   * <p>Note that the value returned is only changed when calling {@code associate} and will be set
+   * if that method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
+  public MacAddress getLastSystemApiAssociationMacAddress() {
+    return lastSystemApiAssociationMacAddress;
+  }
+
+  /**
+   * Returns the last device address passed to {@link
+   * CompanionDeviceManager#startObservingDevicePresence(String)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@link
+   * CompanionDeviceManager#startObservingDevicePresence(String)} and will still be set in the event
+   * that this method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
+  public String getLastObservingDevicePresenceDeviceAddress() {
+    return lastObservingDevicePresenceDeviceAddress;
   }
 
   private void checkHasAssociation() {
