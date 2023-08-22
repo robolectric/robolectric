@@ -257,8 +257,8 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(
             TestWithTwoMethods.class,
-            RobolectricTestRunner.defaultInjector()
-                .bind(PerfStatsReporter[].class, new PerfStatsReporter[]{reporter})
+            SingleSdkRobolectricTestRunner.defaultInjector()
+                .bind(PerfStatsReporter[].class, new PerfStatsReporter[] {reporter})
                 .build());
 
     runner.run(notifier);
@@ -275,7 +275,7 @@ public class RobolectricTestRunnerTest {
     RobolectricTestRunner runner =
         new SingleSdkRobolectricTestRunner(
             TestThatFails.class,
-            RobolectricTestRunner.defaultInjector()
+            SingleSdkRobolectricTestRunner.defaultInjector()
                 .bind(PerfStatsReporter[].class, new PerfStatsReporter[] {reporter})
                 .build());
 
