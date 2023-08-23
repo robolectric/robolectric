@@ -46,7 +46,9 @@ import org.robolectric.util.reflector.Static;
 @SystemApi
 public class ShadowImsMmTelManager {
 
-  protected static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
+  private static final Map<Integer, ImsMmTelManager> existingInstances = new ArrayMap<>();
+  private static final Map<Integer, Integer> subIdToRegistrationTransportTypeMap = new ArrayMap<>();
+  private static final Map<Integer, Integer> subIdToRegistrationStateMap = new ArrayMap<>();
 
   private final Map<ImsMmTelManager.RegistrationCallback, Executor>
       registrationCallbackExecutorMap = new ArrayMap<>();
@@ -205,6 +207,10 @@ public class ShadowImsMmTelManager {
     }
   }
 
+  public static void setRegistrationState(int subId, int registrationState) {
+    subIdToRegistrationStateMap.put(subId, registrationState);
+  }
+
   public Consumer<Integer> getRegistrationStateCallback() {
     return stateCallback;
   }
@@ -213,6 +219,14 @@ public class ShadowImsMmTelManager {
   @Implementation(minSdk = VERSION_CODES.R)
   public void getRegistrationState(Executor executor, Consumer<Integer> stateCallback) {
     this.stateCallback = stateCallback;
+    int subId = getSubscriptionId();
+    if (subIdToRegistrationStateMap.containsKey(getSubscriptionId())) {
+      stateCallback.accept(subIdToRegistrationStateMap.get(subId));
+    }
+  }
+
+  public static void setRegistrationTransportType(int subId, int registrationTransportType) {
+    subIdToRegistrationTransportTypeMap.put(subId, registrationTransportType);
   }
 
   public Consumer<Integer> getRegistrationTransportTypeCallback() {
@@ -228,6 +242,10 @@ public class ShadowImsMmTelManager {
   public void getRegistrationTransportType(
       Executor executor, Consumer<Integer> transportTypeCallback) {
     this.transportTypeCallback = transportTypeCallback;
+    int subId = getSubscriptionId();
+    if (subIdToRegistrationTransportTypeMap.containsKey(getSubscriptionId())) {
+      transportTypeCallback.accept(subIdToRegistrationTransportTypeMap.get(subId));
+    }
   }
 
   @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
@@ -294,8 +312,10 @@ public class ShadowImsMmTelManager {
   }
 
   @Resetter
-  public static void clearExistingInstances() {
+  public static void clearExistingInstancesAndStates() {
     existingInstances.clear();
+    subIdToRegistrationTransportTypeMap.clear();
+    subIdToRegistrationStateMap.clear();
   }
 
   @ForType(ImsMmTelManager.class)
