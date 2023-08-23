@@ -17,7 +17,6 @@ import android.content.IntentSender;
 import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import com.google.common.base.Ascii;
 import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Test;
@@ -252,64 +251,98 @@ public class ShadowCompanionDeviceManagerTest {
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void testStartObservingDevicePresence_deviceNotAssociated() {
+  public void testStartObservingDevicePresence_deviceNotAssociated_throwsException() {
     assertThrows(
         DeviceNotAssociatedException.class,
         () -> companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS));
+    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceDeviceAddress())
+        .isEqualTo(MAC_ADDRESS);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void testStartObservingDevicePresence_deviceAssociated() {
+  public void testStartObservingDevicePresence_deviceAssociated_presenceObserved() {
     shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
 
     companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
+    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceDeviceAddress())
+        .isEqualTo(MAC_ADDRESS);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void testAssociate_systemApi() {
+  public void
+      testGetLastObservingDevicePresenceDeviceAddress_startObservingDevicePresenceNotCalled_returnsNull() {
+    assertThat(shadowCompanionDeviceManager.getLastObservingDevicePresenceDeviceAddress()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_systemApi_deviceAssociated() {
+    MacAddress macAddress = MacAddress.fromString(MAC_ADDRESS);
     shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
 
-    companionDeviceManager.associate(
-        PACKAGE_NAME, MacAddress.fromString(MAC_ADDRESS), new byte[] {0x01});
-    assertThat(companionDeviceManager.getAssociations()).contains(Ascii.toLowerCase(MAC_ADDRESS));
+    companionDeviceManager.associate(PACKAGE_NAME, macAddress, new byte[] {0x01});
+    assertThat(companionDeviceManager.getAssociations()).contains(macAddress.toString());
+    assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress())
+        .isEqualTo(macAddress);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void testAssociate_systemApi_permissionDenied() {
+  public void testGetLastSystemApiAssociationMacAddress_associateCalled_returnsLastMacAddress() {
+    MacAddress macAddress = MacAddress.fromString(MAC_ADDRESS);
+    shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
+
+    companionDeviceManager.associate(PACKAGE_NAME, macAddress, new byte[] {0x01});
+    assertThat(companionDeviceManager.getAssociations()).contains(macAddress.toString());
+    assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress())
+        .isEqualTo(macAddress);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testGetLastSystemApiAssociationMacAddress_associateNotCalled_returnsNull() {
+    assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.TIRAMISU)
+  public void testAssociate_systemApi_permissionDeniedDeviceNotAssociated() {
+    MacAddress macAddress = MacAddress.fromString(MAC_ADDRESS);
     shadowOf(application).denyPermissions(ASSOCIATE_COMPANION_DEVICES);
 
     assertThrows(
         SecurityException.class,
-        () ->
-            companionDeviceManager.associate(
-                PACKAGE_NAME, MacAddress.fromString(MAC_ADDRESS), new byte[] {0x01}));
+        () -> companionDeviceManager.associate(PACKAGE_NAME, macAddress, new byte[] {0x01}));
+    assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress())
+        .isEqualTo(macAddress);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void testAssociate_systemApi_badPackageName() {
+  public void testAssociate_systemApi_badPackageNameDeviceNotAssociated() {
+    MacAddress macAddress = MacAddress.fromString(MAC_ADDRESS);
     shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
 
     assertThrows(
         SecurityException.class,
-        () ->
-            companionDeviceManager.associate(
-                "some.package", MacAddress.fromString(MAC_ADDRESS), new byte[] {0x01}));
+        () -> companionDeviceManager.associate("some.package", macAddress, new byte[] {0x01}));
+    assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress())
+        .isEqualTo(macAddress);
   }
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
-  public void testAssociate_systemApi_badCertificate() {
+  public void testAssociate_systemApi_badCertificateDeviceNotAssociated() {
+    MacAddress macAddress = MacAddress.fromString(MAC_ADDRESS);
     shadowOf(application).grantPermissions(ASSOCIATE_COMPANION_DEVICES);
 
     assertThrows(
         SecurityException.class,
-        () ->
-            companionDeviceManager.associate(
-                PACKAGE_NAME, MacAddress.fromString(MAC_ADDRESS), null));
+        () -> companionDeviceManager.associate(PACKAGE_NAME, macAddress, null));
+    assertThat(shadowCompanionDeviceManager.getLastSystemApiAssociationMacAddress())
+        .isEqualTo(macAddress);
   }
 
   private CompanionDeviceManager.Callback createCallback() {
