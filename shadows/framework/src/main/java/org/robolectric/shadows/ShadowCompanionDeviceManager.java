@@ -135,7 +135,8 @@ public class ShadowCompanionDeviceManager {
   protected void startObservingDevicePresence(String deviceAddress) {
     lastObservingDevicePresenceDeviceAddress = deviceAddress;
     for (RoboAssociationInfo association : associations) {
-      if (Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+      if (association.deviceMacAddress() != null
+          && Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
         return;
       }
     }

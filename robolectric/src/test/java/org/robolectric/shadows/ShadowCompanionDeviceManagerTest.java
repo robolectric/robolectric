@@ -252,6 +252,10 @@ public class ShadowCompanionDeviceManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void testStartObservingDevicePresence_deviceNotAssociated_throwsException() {
+    // Ensure that startObservingDevicePresence handles associations with null MAC addresses.
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder().setId(10).setDisplayName("displayName").build();
+    shadowCompanionDeviceManager.addAssociation(info);
     assertThrows(
         DeviceNotAssociatedException.class,
         () -> companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS));
@@ -262,6 +266,10 @@ public class ShadowCompanionDeviceManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void testStartObservingDevicePresence_deviceAssociated_presenceObserved() {
+    // Ensure that startObservingDevicePresence handles associations with null MAC addresses.
+    AssociationInfo info =
+        AssociationInfoBuilder.newBuilder().setId(10).setDisplayName("displayName").build();
+    shadowCompanionDeviceManager.addAssociation(info);
     shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
 
     companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);
