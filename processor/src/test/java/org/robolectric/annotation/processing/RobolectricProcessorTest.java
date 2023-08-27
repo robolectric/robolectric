@@ -87,13 +87,15 @@ public class RobolectricProcessorTest {
   @Test
   public void generatedFile_shouldComplainAboutNonStaticInnerClasses() {
     assertAbout(javaSources())
-      .that(ImmutableList.of(
-          SHADOW_PROVIDER_SOURCE,
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowOuterDummyWithErrs.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .failsToCompile()
-      .withErrorContaining("inner shadow classes must be static");
+        .that(
+            ImmutableList.of(
+                SHADOW_PROVIDER_SOURCE,
+                SHADOW_EXTRACTOR_SOURCE,
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowOuterDummyWithErrs.java")))
+        .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
+        .failsToCompile()
+        .withErrorContaining("inner shadow classes must be static");
   }
 
   @Test
@@ -113,10 +115,12 @@ public class RobolectricProcessorTest {
   @Test
   public void generatedFile_shouldNotGenerateShadowOfMethodsForExcludedClasses() {
     assertAbout(javaSources())
-        .that(ImmutableList.of(
-            SHADOW_PROVIDER_SOURCE,
-            SHADOW_EXTRACTOR_SOURCE,
-            forResource("org/robolectric/annotation/processing/shadows/ShadowExcludedFromAndroidSdk.java")))
+        .that(
+            ImmutableList.of(
+                SHADOW_PROVIDER_SOURCE,
+                SHADOW_EXTRACTOR_SOURCE,
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowExcludedFromAndroidSdk.java")))
         .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
         .compilesWithoutError()
         .and()
@@ -181,15 +185,17 @@ public class RobolectricProcessorTest {
   @Test
   public void shouldGenerateGenericShadowOf() {
     assertAbout(javaSources())
-      .that(ImmutableList.of(
-          SHADOW_PROVIDER_SOURCE,
-          SHADOW_EXTRACTOR_SOURCE,
-          forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
-          forResource("org/robolectric/annotation/processing/shadows/ShadowParameterizedDummy.java")))
-      .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
-      .compilesWithoutError()
-      .and()
-      .generatesSources(forResource("org/robolectric/Robolectric_Parameterized.java"));
+        .that(
+            ImmutableList.of(
+                SHADOW_PROVIDER_SOURCE,
+                SHADOW_EXTRACTOR_SOURCE,
+                forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowParameterizedDummy.java")))
+        .processedWith(new RobolectricProcessor(DEFAULT_OPTS))
+        .compilesWithoutError()
+        .and()
+        .generatesSources(forResource("org/robolectric/Robolectric_Parameterized.java"));
   }
 
   @Test
@@ -206,5 +212,27 @@ public class RobolectricProcessorTest {
     .compilesWithoutError()
     .and()
     .generatesSources(forResource("org/robolectric/Robolectric_EmptyProvidedPackageNames.java"));
+  }
+
+  @Test
+  public void generatedShadowProvider_minimalPackageNames() {
+    Map<String, String> options = new HashMap<>(DEFAULT_OPTS);
+    options.put(SHOULD_INSTRUMENT_PKG_OPT, "true");
+
+    assertAbout(javaSources())
+        .that(
+            ImmutableList.of(
+                SHADOW_PROVIDER_SOURCE,
+                SHADOW_EXTRACTOR_SOURCE,
+                forResource("org/robolectric/annotation/processing/shadows/ShadowDummy.java"),
+                forResource("org/robolectric/annotation/processing/shadows/ShadowDummy2.java"),
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowInnerPackageDummy.java"),
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowClassNameOnly.java")))
+        .processedWith(new RobolectricProcessor(options))
+        .compilesWithoutError()
+        .and()
+        .generatesSources(forResource("org/robolectric/Robolectric_MinimalPackages.java"));
   }
 }
