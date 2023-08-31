@@ -46,6 +46,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
@@ -457,6 +458,112 @@ public final class ShadowDevicePolicyManagerTest {
 
   @Test
   @Config(minSdk = LOLLIPOP)
+  public void setApplicationHiddenShouldFailForNeitherOwnerNorDelegated() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not hidden
+    String nonHiddenApp = "com.example.non.hidden";
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = nonHiddenApp;
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = nonHiddenApp;
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Create a component that is neither device owner nor delegated
+    String notDelegatedApp = "com.example.not.delegated.app";
+    ComponentName notDelegatedComponent = new ComponentName(notDelegatedApp, "Activity");
+
+    // Then DevicePolicyManager#setApplicationHidden should fail with SecurityException
+    try {
+      devicePolicyManager.setApplicationHidden(
+          notDelegatedComponent, nonHiddenApp, /* hidden= */ true);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setApplicationHiddenShouldFailForNeitherOwnerNorDelegatedAdminIsNull() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not hidden
+    String nonHiddenApp = "com.example.non.hidden";
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = nonHiddenApp;
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = nonHiddenApp;
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Then DevicePolicyManager#setApplicationHidden should fail with SecurityException
+    try {
+      devicePolicyManager.setApplicationHidden(null, nonHiddenApp, /* hidden= */ true);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setApplicationHiddenShouldFailForNeitherOwnerNorCallerDelegated() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not hidden
+    String nonHiddenApp = "com.example.non.hidden";
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = nonHiddenApp;
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = nonHiddenApp;
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Delegate DELEGATION_PACKAGE_ACCESS scope to an app but not caller
+    String delegatedApp = "com.example.not.caller";
+    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+
+    // Then DevicePolicyManager#setApplicationHidden should fail with SecurityException
+    try {
+      devicePolicyManager.setApplicationHidden(null, nonHiddenApp, /* hidden= */ true);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setApplicationHiddenShouldWorkAsIntendedForCallerDelegatedPackages() {
+    // GIVEN the caller is the device owner, and thus an active admin
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not hidden
+    String nonHiddenApp = "com.example.non.hidden";
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = nonHiddenApp;
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = nonHiddenApp;
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Delegate DELEGATION_PACKAGE_ACCESS scope to another app such that the delegated app
+    // has the access to call setApplicationHidden
+    String delegatedApp = context.getPackageName();
+    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+
+    // Then DevicePolicyManager#setApplicationHidden is called to hide the app,
+    // it should return true
+    devicePolicyManager.setApplicationHidden(null, nonHiddenApp, /* hidden= */ true);
+    assertThat(devicePolicyManager.isApplicationHidden(null, nonHiddenApp)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
   public void wasPackageEverHiddenShouldReturnFalseForPackageNeverHidden() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -649,6 +756,106 @@ public final class ShadowDevicePolicyManagerTest {
 
     // THEN the restrictions should be set correctly
     Bundle actualRestrictions = devicePolicyManager.getApplicationRestrictions(testComponent, app);
+    assertThat(actualRestrictions.getString("key", "default value")).isEqualTo("value");
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setApplicationRestrictionsShouldFailForNeitherOwnerNorDelegated() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an application restriction bundle
+    Bundle restrictions = new Bundle();
+    restrictions.putString("key", "value");
+
+    // GIVEN an app which the restriction is set to
+    String app = "com.example.app";
+
+    // Create a component that is neither device owner nor delegated
+    String notDelegatedApp = "com.example.not.delegated.app";
+    ComponentName notDelegatedComponent = new ComponentName(notDelegatedApp, "Activity");
+
+    // Then DevicePolicyManager#setApplicationRestrictions should fail with SecurityException
+    try {
+      devicePolicyManager.setApplicationRestrictions(notDelegatedComponent, app, restrictions);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = LOLLIPOP)
+  public void setApplicationRestrictionsShouldFailForNeitherOwnerNorDelegatedAdminIsNull() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an application restriction bundle
+    Bundle restrictions = new Bundle();
+    restrictions.putString("key", "value");
+
+    // GIVEN an app which the restriction is set to
+    String app = "com.example.app";
+
+    // Then DevicePolicyManager#setApplicationRestrictions should fail with SecurityException
+    try {
+      devicePolicyManager.setApplicationRestrictions(null, app, restrictions);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setApplicationRestrictionsShouldFailForNeitherOwnerNorCallerDelegated() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an application restriction bundle
+    Bundle restrictions = new Bundle();
+    restrictions.putString("key", "value");
+
+    // GIVEN an app which the restriction is set to
+    String app = "com.example.app";
+
+    // Delegate DELEGATION_APP_RESTRICTIONS scope to an app but not caller
+    String delegatedApp = "com.example.not.caller";
+    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+
+    // Then DevicePolicyManager#setApplicationRestrictions should fail with SecurityException
+    try {
+      devicePolicyManager.setApplicationRestrictions(null, app, restrictions);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setApplicationRestrictionsShouldWorkAsIntendedForCallerDelegatedPackages() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an application restriction bundle
+    Bundle restrictions = new Bundle();
+    restrictions.putString("key", "value");
+
+    // GIVEN an app which the restriction is set to
+    String app = "com.example.app";
+
+    // Delegate DELEGATION_APP_RESTRICTIONS scope to another app such that the delegated app
+    // has the access to call setApplicationRestriction
+    String delegatedApp = context.getPackageName();
+    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+
+    // WHEN DevicePolicyManager#setApplicationRestrictions is called to set the restrictions
+    // to the app
+    devicePolicyManager.setApplicationRestrictions(null, app, restrictions);
+
+    // THEN the restrictions should be set correctly
+    Bundle actualRestrictions = devicePolicyManager.getApplicationRestrictions(null, app);
     assertThat(actualRestrictions.getString("key", "default value")).isEqualTo("value");
   }
 
@@ -1569,6 +1776,109 @@ public final class ShadowDevicePolicyManagerTest {
     devicePolicyManager.setPackagesSuspended(testComponent, new String[] {"package"}, false);
 
     assertThat(devicePolicyManager.isPackageSuspended(testComponent, "package")).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setPackagesSuspended_failForNeitherOwnerNorDelegated() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not suspended
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "package";
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "package";
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Create a component that is neither device owner nor delegated
+    String notDelegatedApp = "com.example.not.delegated.app";
+    ComponentName notDelegatedComponent = new ComponentName(notDelegatedApp, "Activity");
+
+    // Then DevicePolicyManager#setPackagesSuspended should fail with SecurityException
+    try {
+      devicePolicyManager.setPackagesSuspended(
+          notDelegatedComponent, new String[] {"package"}, /* suspended= */ true);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setPackagesSuspended_failForNeitherOwnerNorDelegatedAdminIsNull() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not suspended
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "package";
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "package";
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Then DevicePolicyManager#setPackagesSuspended should fail with SecurityException
+    try {
+      devicePolicyManager.setPackagesSuspended(
+          null, new String[] {"package"}, /* suspended= */ true);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setPackagesSuspended_failForNeitherOwnerNorCallerDelegated() {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not suspended
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "package";
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "package";
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Delegate DELEGATION_PACKAGE_ACCESS scope to an app but not caller
+    String delegatedApp = "com.example.not.caller";
+    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+
+    // Then DevicePolicyManager#setPackagesSuspended should fail with SecurityException
+    try {
+      devicePolicyManager.setPackagesSuspended(
+          null, new String[] {"package"}, /* suspended= */ true);
+      fail("expected SecurityException");
+    } catch (SecurityException expected) {
+    }
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void setPackagesSuspended_callerDelegatedPackages() throws Exception {
+    // GIVEN the caller is the device owner
+    shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
+
+    // GIVEN an app and it is not suspended
+    PackageInfo packageInfo = new PackageInfo();
+    packageInfo.packageName = "package";
+    ApplicationInfo applicationInfo = new ApplicationInfo();
+    applicationInfo.packageName = "package";
+    packageInfo.applicationInfo = applicationInfo;
+    shadowOf(packageManager).installPackage(packageInfo);
+
+    // Delegate DELEGATION_PACKAGE_ACCESS scope to another app such that the delegated app
+    // has the access to call setPackageSuspended
+    String delegatedApp = context.getPackageName();
+    List<String> scopes = Arrays.asList(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    devicePolicyManager.setDelegatedScopes(testComponent, delegatedApp, scopes);
+
+    // Then DevicePolicyManager#setPackageSuspended is called to suspend the package
+    devicePolicyManager.setPackagesSuspended(null, new String[] {"package"}, /* suspended= */ true);
+    assertThat(devicePolicyManager.isPackageSuspended(null, "package")).isTrue();
   }
 
   @Test
