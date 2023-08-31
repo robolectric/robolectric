@@ -4,6 +4,7 @@ import static android.content.Context.ACCESSIBILITY_SERVICE;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -197,6 +198,50 @@ public class ShadowAccessibilityManagerTest {
     assertThat(enabled.get()).isEqualTo(true);
     shadowOf(accessibilityManager).setTouchExplorationEnabled(false);
     assertThat(enabled.get()).isEqualTo(false);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getRecommendedTimeoutMillis_default() {
+    int flags =
+        AccessibilityManager.FLAG_CONTENT_ICONS
+            | AccessibilityManager.FLAG_CONTENT_TEXT
+            | AccessibilityManager.FLAG_CONTENT_CONTROLS;
+
+    assertThat(accessibilityManager.getRecommendedTimeoutMillis(1, flags)).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getRecommendedTimeoutMillis_interactive() {
+    int flags =
+        AccessibilityManager.FLAG_CONTENT_ICONS
+            | AccessibilityManager.FLAG_CONTENT_TEXT
+            | AccessibilityManager.FLAG_CONTENT_CONTROLS;
+    shadowOf(accessibilityManager).setNonInteractiveUiTimeout(2);
+    shadowOf(accessibilityManager).setInteractiveUiTimeout(3);
+
+    assertThat(accessibilityManager.getRecommendedTimeoutMillis(1, flags)).isEqualTo(3);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getRecommendedTimeoutMillis_nonInteractive() {
+    int flags = AccessibilityManager.FLAG_CONTENT_ICONS | AccessibilityManager.FLAG_CONTENT_TEXT;
+    shadowOf(accessibilityManager).setNonInteractiveUiTimeout(2);
+    shadowOf(accessibilityManager).setInteractiveUiTimeout(3);
+
+    assertThat(accessibilityManager.getRecommendedTimeoutMillis(1, flags)).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getRecommendedTimeoutMillis_empty() {
+    int flags = 0;
+    shadowOf(accessibilityManager).setNonInteractiveUiTimeout(2);
+    shadowOf(accessibilityManager).setInteractiveUiTimeout(3);
+
+    assertThat(accessibilityManager.getRecommendedTimeoutMillis(1, flags)).isEqualTo(1);
   }
 
   private static class TestAccessibilityStateChangeListener
