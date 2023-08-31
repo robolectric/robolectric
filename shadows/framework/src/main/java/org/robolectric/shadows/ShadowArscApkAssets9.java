@@ -3,30 +3,25 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Util.ATRACE_NAME;
 import static org.robolectric.res.android.Util.JNI_TRUE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.NonNull;
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Objects;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.res.android.ApkAssetsCache;
 import org.robolectric.res.android.Asset;
 import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLTree;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
@@ -70,10 +65,6 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   protected static final String FRAMEWORK_APK_PATH =
       ReflectionHelpers.getStaticField(AssetManager.class, "FRAMEWORK_APK_PATH");
 
-  private static final HashMap<Key, WeakReference<ApkAssets>> cachedApkAssets =
-      new HashMap<>();
-  private static final HashMap<Key, Long> cachedNativePtrs = new HashMap<>();
-
   @RealObject private ApkAssets realApkAssets;
 
   long getNativePtr() {
@@ -83,111 +74,16 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   /** Reflector interface for {@link ApkAssets}'s internals. */
   @ForType(ApkAssets.class)
   interface _ApkAssets_ {
-
-    @Static
-    @Direct
-    ApkAssets loadFromPath(String path);
-
     @Static
     @Direct
     ApkAssets loadFromPath(String finalPath, boolean system);
 
     @Static
     @Direct
-    ApkAssets loadFromPath(String path, boolean system, boolean forceSharedLibrary);
-
-    @Static
-    @Direct
     ApkAssets loadFromPath(String finalPath, int flags);
-
-    @Static
-    @Direct
-    ApkAssets loadFromPath(
-        FileDescriptor fd, String friendlyName, boolean system, boolean forceSharedLibrary);
 
     @Accessor("mNativePtr")
     long getNativePtr();
-  }
-
-
-  /**
-   * Caching key for {@link ApkAssets}.
-   */
-  protected static class Key {
-    private final FileDescriptor fd;
-    private final String path;
-    private final boolean system;
-    private final boolean load_as_shared_library;
-    private final boolean overlay;
-
-    public Key(
-        FileDescriptor fd,
-        String path,
-        boolean system,
-        boolean load_as_shared_library,
-        boolean overlay) {
-      this.fd = fd;
-      this.path = path;
-      this.system = system;
-      this.load_as_shared_library = load_as_shared_library;
-      this.overlay = overlay;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null || getClass() != o.getClass()) {
-        return false;
-      }
-      Key key = (Key) o;
-      return system == key.system &&
-          load_as_shared_library == key.load_as_shared_library &&
-          overlay == key.overlay &&
-          Objects.equals(fd, key.fd) &&
-          Objects.equals(path, key.path);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(fd, path, system, load_as_shared_library, overlay);
-    }
-  }
-
-  @FunctionalInterface
-  protected interface ApkAssetMaker {
-    ApkAssets call();
-  }
-
-  protected static ApkAssets getFromCacheOrLoad(Key key, ApkAssetMaker callable) {
-    synchronized (cachedApkAssets) {
-      WeakReference<ApkAssets> cachedRef = cachedApkAssets.get(key);
-      ApkAssets apkAssets;
-      if (cachedRef != null) {
-        apkAssets = cachedRef.get();
-        if (apkAssets != null) {
-          return apkAssets;
-        } else {
-          cachedApkAssets.remove(key);
-          long nativePtr = cachedNativePtrs.remove(key);
-          Registries.NATIVE_APK_ASSETS_REGISTRY.unregister(nativePtr);
-        }
-      }
-
-      apkAssets = callable.call();
-      cachedApkAssets.put(key, new WeakReference<>(apkAssets));
-      long nativePtr = ((ShadowArscApkAssets9) Shadow.extract(apkAssets)).getNativePtr();
-      cachedNativePtrs.put(key, nativePtr);
-      return apkAssets;
-    }
-  }
-
-  @Implementation
-  protected static ApkAssets loadFromPath(@NonNull String path) throws IOException {
-    return getFromCacheOrLoad(
-        new Key(null, path, false, false, false),
-        () -> reflector(_ApkAssets_.class).loadFromPath(path));
   }
 
   /**
@@ -196,58 +92,19 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
    */
   @Implementation(maxSdk = Q)
   protected static ApkAssets loadFromPath(String path, boolean system) throws IOException {
-    System.out.println(
-        "Called loadFromPath("
-            + path
-            + ", "
-            + system
-            + "); mode="
-            + (RuntimeEnvironment.useLegacyResources() ? "legacy" : "binary")
-            + " sdk="
-            + RuntimeEnvironment.getApiLevel());
-
     if (FRAMEWORK_APK_PATH.equals(path)) {
       path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
 
-    String finalPath = path;
-    return getFromCacheOrLoad(
-        new Key(null, path, system, false, false),
-        () -> reflector(_ApkAssets_.class).loadFromPath(finalPath, system));
-  }
-
-  @Implementation(maxSdk = Q)
-  @NonNull
-  protected static ApkAssets loadFromPath(
-      @NonNull String path, boolean system, boolean forceSharedLibrary) throws IOException {
-    return getFromCacheOrLoad(
-        new Key(null, path, system, forceSharedLibrary, false),
-        () -> reflector(_ApkAssets_.class).loadFromPath(path, system, forceSharedLibrary));
+    return reflector(_ApkAssets_.class).loadFromPath(path, system);
   }
 
   @Implementation(minSdk = R)
   protected static ApkAssets loadFromPath(String path, int flags) throws IOException {
-    boolean system = (flags & PROPERTY_SYSTEM) == PROPERTY_SYSTEM;
-
     if (FRAMEWORK_APK_PATH.equals(path)) {
       path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
-
-    String finalPath = path;
-    return getFromCacheOrLoad(
-        new Key(null, path, system, false, false),
-        () -> reflector(_ApkAssets_.class).loadFromPath(finalPath, flags));
-  }
-
-  @Implementation(maxSdk = Q)
-  protected static ApkAssets loadFromFd(
-      FileDescriptor fd, String friendlyName, boolean system, boolean forceSharedLibrary)
-      throws IOException {
-    return getFromCacheOrLoad(
-        new Key(fd, friendlyName, system, forceSharedLibrary, false),
-        () ->
-            reflector(_ApkAssets_.class)
-                .loadFromPath(fd, friendlyName, system, forceSharedLibrary));
+    return reflector(_ApkAssets_.class).loadFromPath(path, flags);
   }
 
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
@@ -258,6 +115,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       String path, boolean system, boolean forceSharedLib, boolean overlay) throws IOException {
     if (path == null) {
       return 0;
+    }
+
+    long cachedApkAssetsPtr = ApkAssetsCache.get(path, system, RuntimeEnvironment.getApiLevel());
+    if (cachedApkAssetsPtr != -1) {
+      return cachedApkAssetsPtr;
     }
 
     ATRACE_NAME(String.format("LoadApkAssets(%s)", path));
@@ -281,7 +143,9 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       String error_msg = String.format("Failed to load asset path %s", path);
       throw new IOException(error_msg);
     }
-    return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
+    long ptr = Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
+    ApkAssetsCache.put(path, system, RuntimeEnvironment.getApiLevel(), ptr);
+    return ptr;
   }
 
   @Implementation(minSdk = R)
@@ -399,7 +263,4 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // }
   //
   // }  // namespace android
-
-  @Implementation(minSdk = S)
-  protected void close() {}
 }
