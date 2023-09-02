@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.junit.AssumptionViolatedException;
@@ -374,7 +373,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
               () -> roboMethod.getTestEnvironment().resetState());
     } finally {
       roboMethod.testLifecycle = null;
-      roboMethod.clearContext();
     }
   }
 
@@ -604,26 +602,22 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     }
   }
 
-  /**
-   * Fields in this class must be serializable using <a
-   * href="https://x-stream.github.io/">XStream</a>.
-   */
+  /** A {@link FrameworkMethod} subclass that contains data required to run Robolectric tests. */
   public static class RobolectricFrameworkMethod extends FrameworkMethod {
-
-    private static final AtomicInteger NEXT_ID = new AtomicInteger();
-    private static final Map<Integer, TestExecutionContext> CONTEXT = new HashMap<>();
-
-    private final int id;
 
     private final int apiLevel;
     @Nonnull private final AndroidManifest appManifest;
     @Nonnull private final Configuration configuration;
     @Nonnull private final ResourcesMode resourcesMode;
     @Nonnull private final ResModeStrategy defaultResModeStrategy;
+    @Nonnull private final Sdk sdk;
+
     private final boolean alwaysIncludeVariantMarkersInName;
 
     private boolean includeVariantMarkersInTestName = true;
-    TestLifecycle testLifecycle;
+    TestLifecycle<?> testLifecycle;
+    Sandbox sandbox;
+    TestEnvironment testEnvironment;
 
     protected RobolectricFrameworkMethod(RobolectricFrameworkMethod other) {
       this(
@@ -655,10 +649,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       this.resourcesMode = resourcesMode;
       this.defaultResModeStrategy = defaultResModeStrategy;
       this.alwaysIncludeVariantMarkersInName = alwaysIncludeVariantMarkersInName;
-
-      // external storage for things that can't go through a serialization cycle e.g. for PowerMock.
-      this.id = NEXT_ID.getAndIncrement();
-      CONTEXT.put(id, new TestExecutionContext(sdk));
+      this.sdk = sdk;
     }
 
     @Override
@@ -689,22 +680,20 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     @Nonnull
     public Sdk getSdk() {
-      return getContext().sdk;
+      return sdk;
     }
 
     void setStuff(Sandbox sandbox, TestEnvironment testEnvironment) {
-      TestExecutionContext context = getContext();
-      context.sandbox = sandbox;
-      context.testEnvironment = testEnvironment;
+      this.sandbox = sandbox;
+      this.testEnvironment = testEnvironment;
     }
 
     Sandbox getSandbox() {
-      return getContext().sandbox;
+      return sandbox;
     }
 
     TestEnvironment getTestEnvironment() {
-      TestExecutionContext context = getContext();
-      return context == null ? null : context.testEnvironment;
+      return testEnvironment;
     }
 
     public boolean isLegacy() {
@@ -713,20 +702,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     public ResourcesMode getResourcesMode() {
       return resourcesMode;
-    }
-
-    private TestExecutionContext getContext() {
-      return CONTEXT.get(id);
-    }
-
-    private void clearContext() {
-      CONTEXT.remove(id);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-      super.finalize();
-      clearContext();
     }
 
     @Override
@@ -756,17 +731,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     @Nonnull
     public Configuration getConfiguration() {
       return configuration;
-    }
-
-    private static class TestExecutionContext {
-
-      private final Sdk sdk;
-      private Sandbox sandbox;
-      private TestEnvironment testEnvironment;
-
-      TestExecutionContext(Sdk sdk) {
-        this.sdk = sdk;
-      }
     }
   }
 }
