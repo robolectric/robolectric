@@ -585,4 +585,35 @@ public class ShadowBluetoothDeviceTest {
 
     assertThat(device.isInSilenceMode()).isTrue();
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT_WATCH)
+  public void setDeviceConnected_isConnected() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setConnected(true);
+
+    assertThat(device.isConnected()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT_WATCH)
+  public void setDeviceNotConnected_isNotConnected() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    shadowOf(device).setConnected(false);
+
+    assertThat(device.isConnected()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.KITKAT_WATCH)
+  public void notSetDeviceNotConnected_isNotConnectedByDefault() {
+    shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
+    BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
+
+    assertThat(device.isConnected()).isFalse();
+  }
 }

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -74,6 +75,7 @@ public class ShadowBluetoothDevice {
   private final Map<Integer, byte[]> metadataMap = new HashMap<>();
   private int batteryLevel = BluetoothDevice.BATTERY_LEVEL_BLUETOOTH_OFF;
   private boolean isInSilenceMode = false;
+  private boolean isConnected = false;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -417,6 +419,15 @@ public class ShadowBluetoothDevice {
     checkForBluetoothConnectPermission();
     this.isInSilenceMode = isInSilenceMode;
     return true;
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected boolean isConnected() {
+    return isConnected;
+  }
+
+  public void setConnected(boolean isConnected) {
+    this.isConnected = isConnected;
   }
 
   @Implementation(minSdk = Q)
