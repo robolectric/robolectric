@@ -47,6 +47,25 @@ public class ShadowUwbAdapterStateListenerTest {
   }
 
   @Test
+  public void testSetEnabledTrueTwice_callbackInvokedOnlyOnce() {
+    AdapterStateListener adapterStateListener = (AdapterStateListener) adapterStateListenerObject;
+    adapterStateListener.setEnabled(false);
+    AdapterStateCallback mockAdapterStateCallback = mock(AdapterStateCallback.class);
+    PausedExecutorService executorService = new PausedExecutorService();
+    adapterStateListener.register(executorService, mockAdapterStateCallback);
+
+    adapterStateListener.setEnabled(true);
+    executorService.runAll();
+    adapterStateListener.setEnabled(true);
+    executorService.runAll();
+
+    verify(mockAdapterStateCallback)
+        .onStateChanged(
+            AdapterStateCallback.STATE_ENABLED_INACTIVE,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
+  }
+
+  @Test
   public void testOnAdapterStateChanged_stateIsUpdated() {
     AdapterStateListener adapterStateListener = (AdapterStateListener) adapterStateListenerObject;
 
@@ -83,6 +102,14 @@ public class ShadowUwbAdapterStateListenerTest {
             adapterStateListener.getAdapterState(),
             AdapterStateCallback.STATE_CHANGED_REASON_ERROR_UNKNOWN);
 
+    adapterStateListener.setEnabled(true);
+    executorService.runAll();
+
+    verify(mockAdapterStateCallback)
+        .onStateChanged(
+            AdapterStateCallback.STATE_ENABLED_INACTIVE,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
+
     adapterStateListener.onAdapterStateChanged(
         AdapterStateCallback.STATE_ENABLED_ACTIVE,
         AdapterStateCallback.STATE_CHANGED_REASON_SESSION_STARTED);
@@ -92,6 +119,14 @@ public class ShadowUwbAdapterStateListenerTest {
         .onStateChanged(
             AdapterStateCallback.STATE_ENABLED_ACTIVE,
             AdapterStateCallback.STATE_CHANGED_REASON_SESSION_STARTED);
+
+    adapterStateListener.setEnabled(false);
+    executorService.runAll();
+
+    verify(mockAdapterStateCallback)
+        .onStateChanged(
+            AdapterStateCallback.STATE_DISABLED,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
 
     adapterStateListener.unregister(mockAdapterStateCallback);
     adapterStateListener.onAdapterStateChanged(
