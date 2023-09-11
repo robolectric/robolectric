@@ -123,6 +123,9 @@ public class ShadowSurface {
             .postEventFromNative((Object) new WeakReference<>(surfaceTexture));
       }
     }
+    if (canvas != null && canvas.isHardwareAccelerated()) {
+      surfaceReflector.unlockCanvasAndPost(canvas);
+    }
     canvasLocked.set(false);
   }
 
@@ -160,5 +163,8 @@ public class ShadowSurface {
 
     @Direct
     Canvas lockHardwareCanvas();
+
+    @Direct
+    void unlockCanvasAndPost(Canvas canvas);
   }
 }
