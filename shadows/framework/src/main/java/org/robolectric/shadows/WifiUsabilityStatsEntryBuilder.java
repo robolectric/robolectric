@@ -117,42 +117,44 @@ public class WifiUsabilityStatsEntryBuilder {
           ClassParameter.from(boolean.class, isSameRegisteredCell),
           ClassParameter.from(SparseArray.class, new SparseArray<>())); // new in >T
     } else {
-      return new WifiUsabilityStatsEntry(
-          timeStampMillis,
-          rssi,
-          linkSpeedMbps,
-          totalTxSuccess,
-          totalTxRetries,
-          totalTxBad,
-          totalRxSuccess,
-          totalRadioOnTimeMillis,
-          totalRadioTxTimeMillis,
-          totalRadioRxTimeMillis,
-          totalScanTimeMillis,
-          totalNanScanTimeMillis,
-          totalBackgroundScanTimeMillis,
-          totalRoamScanTimeMillis,
-          totalPnoScanTimeMillis,
-          totalHotspot2ScanTimeMillis,
-          totalCcaBusyFreqTimeMillis,
-          totalRadioOnFreqTimeMillis,
-          totalBeaconRx,
-          probeStatusSinceLastUpdate,
-          probeElapsedTimeSinceLastUpdateMillis,
-          probeMcsRateSinceLastUpdate,
-          rxLinkSpeedMbps,
-          timeSliceDutyCycleInPercent,
-          new ContentionTimeStats[] {},
-          new RateStats[] {},
-          new RadioStats[] {},
-          CHANNEL_UTILIZATION_RATIO,
-          isThroughputSufficient,
-          isWifiScoringEnabled,
-          isCellularDataAvailable,
-          cellularDataNetworkType,
-          cellularSignalStrengthDbm,
-          cellularSignalStrengthDb,
-          isSameRegisteredCell);
+      return ReflectionHelpers.callConstructor(
+          WifiUsabilityStatsEntry.class,
+          ClassParameter.from(long.class, timeStampMillis),
+          ClassParameter.from(int.class, rssi),
+          ClassParameter.from(int.class, linkSpeedMbps),
+          ClassParameter.from(long.class, totalTxSuccess),
+          ClassParameter.from(long.class, totalTxRetries),
+          ClassParameter.from(long.class, totalTxBad),
+          ClassParameter.from(long.class, totalRxSuccess),
+          ClassParameter.from(long.class, totalRadioOnTimeMillis),
+          ClassParameter.from(long.class, totalRadioTxTimeMillis),
+          ClassParameter.from(long.class, totalRadioRxTimeMillis),
+          ClassParameter.from(long.class, totalScanTimeMillis),
+          ClassParameter.from(long.class, totalNanScanTimeMillis),
+          ClassParameter.from(long.class, totalBackgroundScanTimeMillis),
+          ClassParameter.from(long.class, totalRoamScanTimeMillis),
+          ClassParameter.from(long.class, totalPnoScanTimeMillis),
+          ClassParameter.from(long.class, totalHotspot2ScanTimeMillis),
+          ClassParameter.from(long.class, totalCcaBusyFreqTimeMillis),
+          ClassParameter.from(long.class, totalRadioOnFreqTimeMillis),
+          ClassParameter.from(long.class, totalBeaconRx),
+          ClassParameter.from(int.class, probeStatusSinceLastUpdate),
+          ClassParameter.from(int.class, probeElapsedTimeSinceLastUpdateMillis),
+          ClassParameter.from(int.class, probeMcsRateSinceLastUpdate),
+          ClassParameter.from(int.class, rxLinkSpeedMbps),
+          ClassParameter.from(int.class, timeSliceDutyCycleInPercent), // new in T
+          ClassParameter.from(
+              ContentionTimeStats[].class, new ContentionTimeStats[] {}), // new in T
+          ClassParameter.from(RateStats[].class, new RateStats[] {}), // new in T
+          ClassParameter.from(RadioStats[].class, new RadioStats[] {}), // new in T
+          ClassParameter.from(int.class, CHANNEL_UTILIZATION_RATIO), // new in T
+          ClassParameter.from(boolean.class, isThroughputSufficient), // new in T
+          ClassParameter.from(boolean.class, isWifiScoringEnabled), // new in T
+          ClassParameter.from(boolean.class, isCellularDataAvailable), // new in T
+          ClassParameter.from(int.class, cellularDataNetworkType),
+          ClassParameter.from(int.class, cellularSignalStrengthDbm),
+          ClassParameter.from(int.class, cellularSignalStrengthDb),
+          ClassParameter.from(boolean.class, isSameRegisteredCell));
     }
   }
 

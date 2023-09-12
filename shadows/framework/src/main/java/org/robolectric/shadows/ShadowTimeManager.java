@@ -89,7 +89,12 @@ public class ShadowTimeManager {
           ClassParameter.from(
               Class.forName("android.app.time.TimeZoneConfiguration"), timeZoneConfiguration));
     } else {
-      return new TimeZoneCapabilitiesAndConfig(timeZoneCapabilities, timeZoneConfiguration);
+      return ReflectionHelpers.callConstructor(
+          TimeZoneCapabilitiesAndConfig.class,
+          ClassParameter.from(
+              Class.forName("android.app.time.TimeZoneCapabilities"), timeZoneCapabilities),
+          ClassParameter.from(
+              Class.forName("android.app.time.TimeZoneConfiguration"), timeZoneConfiguration));
     }
   }
 
@@ -127,9 +132,11 @@ public class ShadowTimeManager {
           ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
       return timeZoneCapabilitiesBuilder.build();
     } else {
-      return timeZoneCapabilitiesBuilder
-          .setSuggestManualTimeZoneCapability(Capabilities.CAPABILITY_POSSESSED)
-          .build();
+      ReflectionHelpers.callInstanceMethod(
+          timeZoneCapabilitiesBuilder,
+          "setSuggestManualTimeZoneCapability",
+          ClassParameter.from(int.class, Capabilities.CAPABILITY_POSSESSED));
+      return timeZoneCapabilitiesBuilder.build();
     }
   }
 }

@@ -19,6 +19,8 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -52,9 +54,21 @@ public class ShadowNfcAdapter {
   /** Factory method for creating a mock NfcAdapter.Tag */
   public static Tag createMockTag() {
     if (RuntimeEnvironment.getApiLevel() <= TIRAMISU) {
-      return Tag.createMockTag(new byte[0], new int[0], new Bundle[0]);
+      return ReflectionHelpers.callStaticMethod(
+          Tag.class,
+          "createMockTag",
+          ClassParameter.from(byte[].class, new byte[0]),
+          ClassParameter.from(int[].class, new int[0]),
+          ClassParameter.from(Bundle[].class, new Bundle[0]));
+
     } else {
-      return reflector(TagReflector.class).createMockTag(new byte[0], new int[0], new Bundle[0], 0);
+      return ReflectionHelpers.callStaticMethod(
+          Tag.class,
+          "createMockTag",
+          ClassParameter.from(byte[].class, new byte[0]),
+          ClassParameter.from(int[].class, new int[0]),
+          ClassParameter.from(Bundle[].class, new Bundle[0]),
+          ClassParameter.from(long.class, 0));
     }
   }
 

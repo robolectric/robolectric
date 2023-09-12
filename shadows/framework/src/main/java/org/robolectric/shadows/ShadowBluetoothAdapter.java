@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothAdapter.STATE_ON;
+import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -305,6 +306,11 @@ public class ShadowBluetoothAdapter {
   protected boolean disable() {
     setState(BluetoothAdapter.STATE_OFF);
     return true;
+  }
+
+  @Implementation(minSdk = JELLY_BEAN_MR1)
+  protected boolean disable(boolean persist) {
+    return disable();
   }
 
   @Implementation
