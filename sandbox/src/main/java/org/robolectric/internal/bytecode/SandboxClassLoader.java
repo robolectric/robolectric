@@ -35,6 +35,7 @@ public class SandboxClassLoader extends URLClassLoader {
   private final ClassInstrumentor classInstrumentor;
   private final ClassNodeProvider classNodeProvider;
   private final String dumpClassesDirectory;
+  private boolean isClosed;
 
   /** Constructor for use by tests. */
   SandboxClassLoader(InstrumentationConfiguration config) {
@@ -126,7 +127,9 @@ public class SandboxClassLoader extends URLClassLoader {
       if (loadedClass != null) {
         return loadedClass;
       }
-
+      if (isClosed) {
+        throw new ClassNotFoundException("This ClassLoader is closed");
+      }
       if (config.shouldAcquire(name)) {
         loadedClass =
             PerfStatsCollector.getInstance()
@@ -204,5 +207,12 @@ public class SandboxClassLoader extends URLClassLoader {
         definePackage(pckgName, null, null, null, null, null, null, null);
       }
     }
+  }
+
+  @Override
+  public void close() throws IOException {
+    super.close();
+    resourceProvider.close();
+    isClosed = true;
   }
 }

@@ -37,12 +37,17 @@ public class SandboxManager {
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
     final int cacheSize = sdkCollection.getSupportedSdks().size() * CACHE_SIZE_FACTOR;
-    sandboxesByKey = new LinkedHashMap<SandboxKey, AndroidSandbox>() {
-      @Override
-      protected boolean removeEldestEntry(Map.Entry<SandboxKey, AndroidSandbox> eldest) {
-        return size() > cacheSize;
-      }
-    };
+    sandboxesByKey =
+        new LinkedHashMap<SandboxKey, AndroidSandbox>() {
+          @Override
+          protected boolean removeEldestEntry(Map.Entry<SandboxKey, AndroidSandbox> eldest) {
+            boolean toRemove = size() > cacheSize;
+            if (toRemove) {
+              eldest.getValue().shutdown();
+            }
+            return toRemove;
+          }
+        };
   }
 
   public synchronized AndroidSandbox getAndroidSandbox(
