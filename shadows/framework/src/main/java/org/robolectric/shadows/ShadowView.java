@@ -20,6 +20,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
@@ -55,6 +56,7 @@ import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 import org.robolectric.util.reflector.Accessor;
@@ -147,6 +149,22 @@ public class ShadowView {
   public static String innerText(View view) {
     ShadowView shadowView = Shadow.extract(view);
     return shadowView.innerText();
+  }
+
+  static int[] getLocationInSurfaceCompat(View view) {
+    int[] locationInSurface = new int[2];
+    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      view.getLocationInSurface(locationInSurface);
+    } else {
+      view.getLocationInWindow(locationInSurface);
+      Rect surfaceInsets =
+          reflector(ViewRootImplReflector.class, view.getViewRootImpl())
+              .getWindowAttributes()
+              .surfaceInsets;
+      locationInSurface[0] += surfaceInsets.left;
+      locationInSurface[1] += surfaceInsets.top;
+    }
+    return locationInSurface;
   }
 
   // Only override up to kitkat, while this version exists after kitkat it just calls through to the

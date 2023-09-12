@@ -37,6 +37,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Implementation of {@link android.media.MediaCodec} which supports both asynchronous and
@@ -408,7 +409,7 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void invalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void invalidateByteBufferLocked(
       @Nullable ByteBuffer[] buffers, int index, boolean input) {}
 
@@ -416,14 +417,14 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void validateInputByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void validateInputByteBufferLocked(@Nullable ByteBuffer[] buffers, int index) {}
 
   /** Prevents calling Android-only methods on basic ByteBuffer objects. */
   @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void revalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index) {}
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void revalidateByteBuffer(@Nullable ByteBuffer[] buffers, int index, boolean input) {}
 
   /**
@@ -441,7 +442,7 @@ public class ShadowMediaCodec {
     }
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void validateOutputByteBufferLocked(
       @Nullable ByteBuffer[] buffers, int index, @NonNull BufferInfo info) {
     validateOutputByteBuffer(buffers, index, info);
@@ -451,14 +452,14 @@ public class ShadowMediaCodec {
   @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void invalidateByteBuffers(@Nullable ByteBuffer[] buffers) {}
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void invalidateByteBuffersLocked(@Nullable ByteBuffer[] buffers) {}
 
   /** Prevents attempting to free non-direct ByteBuffer objects. */
   @Implementation(minSdk = LOLLIPOP, maxSdk = TIRAMISU)
   protected void freeByteBuffer(@Nullable ByteBuffer buffer) {}
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected void freeByteBufferLocked(@Nullable ByteBuffer buffer) {}
 
   /** Shadows CodecBuffer to prevent attempting to free non-direct ByteBuffer objects. */

@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
 public final class AssociationInfoBuilderTest {
@@ -22,10 +23,20 @@ public final class AssociationInfoBuilderTest {
   private static final boolean NOTIFY_ON_DEVICE_NEARBY = true;
   private static final long APPROVED_MS = 1234L;
   private static final long LAST_TIME_CONNECTED_MS = 5678L;
+  private static final int SYSTEM_DATA_SYNC_FALGS = 7;
 
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void obtain() {
+    Object associatedDeviceValue = null;
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
+      try {
+        Class<?> associatedDeviceClazz = Class.forName("android.companion.AssociatedDevice");
+        associatedDeviceValue = ReflectionHelpers.newInstance(associatedDeviceClazz);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
     AssociationInfo info =
         AssociationInfoBuilder.newBuilder()
             .setId(ID)
@@ -33,11 +44,13 @@ public final class AssociationInfoBuilderTest {
             .setPackageName(PACKAGE_NAME)
             .setDeviceMacAddress(DEVICE_MAC_ADDRESS)
             .setDisplayName(DISPLAY_NAME)
+            .setAssociatedDevice(associatedDeviceValue)
             .setDeviceProfile(DEVICE_PROFILE)
             .setSelfManaged(SELF_MANAGED)
             .setNotifyOnDeviceNearby(NOTIFY_ON_DEVICE_NEARBY)
             .setApprovedMs(APPROVED_MS)
             .setLastTimeConnectedMs(LAST_TIME_CONNECTED_MS)
+            .setSystemDataSyncFlags(SYSTEM_DATA_SYNC_FALGS)
             .build();
 
     assertThat(info.getId()).isEqualTo(ID);
@@ -50,5 +63,13 @@ public final class AssociationInfoBuilderTest {
     assertThat(info.isNotifyOnDeviceNearby()).isEqualTo(NOTIFY_ON_DEVICE_NEARBY);
     assertThat(info.getTimeApprovedMs()).isEqualTo(APPROVED_MS);
     assertThat(info.getLastTimeConnectedMs()).isEqualTo(LAST_TIME_CONNECTED_MS);
+
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
+      Object associatedDevice = ReflectionHelpers.callInstanceMethod(info, "getAssociatedDevice");
+      assertThat(associatedDevice).isEqualTo(associatedDeviceValue);
+      int systemDataSyncFlags =
+          ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
+      assertThat(systemDataSyncFlags).isEqualTo(SYSTEM_DATA_SYNC_FALGS);
+    }
   }
 }

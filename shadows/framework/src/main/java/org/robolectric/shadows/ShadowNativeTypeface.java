@@ -33,6 +33,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Typeface} that is backed by native code */
 @Implements(value = Typeface.class, looseSignatures = true, minSdk = O, isInAndroidSdk = false)
@@ -202,7 +203,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeWriteTypefaces(buffer, nativePtrs);
   }
 
-  @Implementation(minSdk = 10000)
+  @Implementation(minSdk = U.SDK_INT)
   protected static int nativeWriteTypefaces(ByteBuffer buffer, int position, long[] nativePtrs) {
     return nativeWriteTypefaces(buffer, nativePtrs);
   }
@@ -212,7 +213,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeReadTypefaces(buffer);
   }
 
-  @Implementation(minSdk = 10000)
+  @Implementation(minSdk = U.SDK_INT)
   protected static long[] nativeReadTypefaces(ByteBuffer buffer, int position) {
     return nativeReadTypefaces(buffer);
   }

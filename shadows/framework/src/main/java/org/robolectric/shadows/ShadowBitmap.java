@@ -1,15 +1,26 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import com.google.common.base.Preconditions;
 import java.io.InputStream;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowBitmap.Picker;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Base class for {@link Bitmap} shadows. */
-@Implements(value = Bitmap.class, shadowPicker = Picker.class)
+@Implements(value = Bitmap.class, shadowPicker = Picker.class, looseSignatures = true)
 public abstract class ShadowBitmap {
+
+  @RealObject Bitmap realBitmap;
 
   /**
    * Returns a textual representation of the appearance of the object.
@@ -123,6 +134,33 @@ public abstract class ShadowBitmap {
   public abstract String getDescription();
 
   public abstract void setDescription(String s);
+
+  @Implementation(minSdk = U.SDK_INT)
+  protected void setGainmap(Object gainmap) {
+    Preconditions.checkState(!realBitmap.isRecycled(), "Bitmap is recycled");
+    reflector(BitmapReflector.class, realBitmap).setGainmap(gainmap);
+  }
+
+  @Implementation(minSdk = U.SDK_INT)
+  protected boolean hasGainmap() {
+    Preconditions.checkState(!realBitmap.isRecycled(), "Bitmap is recycled");
+    return reflector(BitmapReflector.class, realBitmap).getGainmap() != null;
+  }
+
+  /** Reflector for {@link Bitmap}. */
+  @ForType(Bitmap.class)
+  protected interface BitmapReflector {
+    void checkRecycled(String errorMessage);
+
+    @Accessor("mNativePtr")
+    long getNativePtr();
+
+    @Accessor("mGainmap")
+    void setGainmap(Object gainmap);
+
+    @Direct
+    Object getGainmap();
+  }
 
   /** Shadow picker for {@link Bitmap}. */
   public static final class Picker extends GraphicsShadowPicker<Object> {

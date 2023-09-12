@@ -21,6 +21,7 @@ import org.robolectric.nativeruntime.BaseCanvasNatives;
 import org.robolectric.shadows.ShadowNativeBaseCanvas.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link BaseCanvas} that is backed by native code */
 @Implements(
@@ -685,7 +686,7 @@ public class ShadowNativeBaseCanvas extends ShadowCanvas {
     BaseCanvasNatives.nPunchHole(renderer, left, top, right, bottom, rx, ry);
   }
 
-  @Implementation(minSdk = 10000)
+  @Implementation(minSdk = U.SDK_INT)
   protected static void nPunchHole(
       long renderer,
       float left,

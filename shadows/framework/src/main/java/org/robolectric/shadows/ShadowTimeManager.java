@@ -17,6 +17,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for internal Android {@code TimeManager} class introduced in S. */
 @Implements(value = TimeManager.class, minSdk = VERSION_CODES.S, isInAndroidSdk = false)
@@ -53,7 +54,7 @@ public class ShadowTimeManager {
       throws ClassNotFoundException {
     Objects.requireNonNull(timeZoneConfiguration, "timeZoneConfiguration was not set");
 
-    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       Object telephonyAlgoStatus =
           ReflectionHelpers.callConstructor(
               Class.forName("android.app.time.TelephonyTimeZoneAlgorithmStatus"),
@@ -115,7 +116,7 @@ public class ShadowTimeManager {
             .setConfigureAutoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED)
             .setConfigureGeoDetectionEnabledCapability(Capabilities.CAPABILITY_POSSESSED);
 
-    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       ReflectionHelpers.callInstanceMethod(
           timeZoneCapabilitiesBuilder,
           "setUseLocationEnabled",

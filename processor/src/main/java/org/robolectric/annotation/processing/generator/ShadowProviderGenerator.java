@@ -3,6 +3,7 @@ package org.robolectric.annotation.processing.generator;
 import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -193,8 +194,10 @@ public class ShadowProviderGenerator extends Generator {
     writer.println("  @Override");
     writer.println("  public String[] getProvidedPackageNames() {");
     writer.println("    return new String[] {");
-    if (shouldInstrumentPackages) {
-      writer.println("      " + Joiner.on(",\n      ").join(model.getShadowedPackages()));
+    Collection<String> shadowedPackages = model.getShadowedPackages();
+    if (shouldInstrumentPackages && !shadowedPackages.isEmpty()) {
+      writer.println(
+          "      \"" + Joiner.on("\",\n      \"").join(model.getShadowedPackages()) + "\"");
     }
     writer.println("    };");
     writer.println("  }");

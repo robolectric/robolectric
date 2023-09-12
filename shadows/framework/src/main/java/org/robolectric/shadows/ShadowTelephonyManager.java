@@ -55,6 +55,7 @@ import android.telephony.VisualVoicemailSmsFilterSettings;
 import android.telephony.emergency.EmergencyNumber;
 import android.text.TextUtils;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 import com.google.common.base.Ascii;
 import com.google.common.base.Preconditions;
@@ -102,6 +103,7 @@ public class ShadowTelephonyManager {
   private int lastEventFlags;
 
   private String deviceId;
+  private String deviceSoftwareVersion;
   private String imei;
   private String meid;
   private String groupIdLevel1;
@@ -124,6 +126,7 @@ public class ShadowTelephonyManager {
   private CellLocation cellLocation = null;
   private int callState = CALL_STATE_IDLE;
   private int dataState = TelephonyManager.DATA_DISCONNECTED;
+  private int dataActivity = TelephonyManager.DATA_ACTIVITY_NONE;
   private String incomingPhoneNumber = null;
   private boolean isSmsCapable = true;
   private boolean voiceCapable = true;
@@ -149,6 +152,8 @@ public class ShadowTelephonyManager {
   private boolean dataEnabled = false;
   private final Set<Integer> dataDisabledReasons = new HashSet<>();
   private boolean isRttSupported;
+  private boolean isTtyModeSupported;
+  private final SparseBooleanArray subIdToHasCarrierPrivileges = new SparseBooleanArray();
   private final List<String> sentDialerSpecialCodes = new ArrayList<>();
   private boolean hearingAidCompatibilitySupported = false;
   private int requestCellInfoUpdateErrorCode = 0;
@@ -338,6 +343,24 @@ public class ShadowTelephonyManager {
     this.dataState = dataState;
   }
 
+  /**
+   * Data activity may be specified via {@link #setDataActivity(int)}. If no override is set, this
+   * defaults to {@link TelephonyManager#DATA_ACTIVITY_NONE}.
+   */
+  @Implementation
+  protected int getDataActivity() {
+    return dataActivity;
+  }
+
+  /**
+   * Sets the value to be returned by calls to {@link #getDataActivity()}. This <b>should</b>
+   * correspond to one of the {@code DATA_ACTIVITY_*} constants defined on {@link TelephonyManager},
+   * but this is not enforced.
+   */
+  public void setDataActivity(int dataActivity) {
+    this.dataActivity = dataActivity;
+  }
+
   @Implementation
   protected String getDeviceId() {
     checkReadPhoneStatePermission();
@@ -346,6 +369,16 @@ public class ShadowTelephonyManager {
 
   public void setDeviceId(String newDeviceId) {
     deviceId = newDeviceId;
+  }
+
+  @Implementation
+  protected String getDeviceSoftwareVersion() {
+    checkReadPhoneStatePermission();
+    return deviceSoftwareVersion;
+  }
+
+  public void setDeviceSoftwareVersion(String newDeviceSoftwareVersion) {
+    deviceSoftwareVersion = newDeviceSoftwareVersion;
   }
 
   @Implementation(minSdk = LOLLIPOP_MR1)
@@ -1311,6 +1344,41 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #isRttSupported()} */
   public void setRttSupported(boolean isRttSupported) {
     this.isRttSupported = isRttSupported;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isTtyModeSupported}.
+   *
+   * @return False by default, unless set with {@link #setTtyModeSupported(boolean)}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.M)
+  protected boolean isTtyModeSupported() {
+    checkReadPhoneStatePermission();
+    return isTtyModeSupported;
+  }
+
+  /** Sets the value to be returned by {@link #isTtyModeSupported()} */
+  public void setTtyModeSupported(boolean isTtyModeSupported) {
+    this.isTtyModeSupported = isTtyModeSupported;
+  }
+
+  /**
+   * @return False by default, unless set with {@link #setHasCarrierPrivileges(int, boolean)}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.N)
+  @HiddenApi
+  protected boolean hasCarrierPrivileges(int subId) {
+    return subIdToHasCarrierPrivileges.get(subId);
+  }
+
+  public void setHasCarrierPrivileges(boolean hasCarrierPrivileges) {
+    int subId = ReflectionHelpers.callInstanceMethod(realTelephonyManager, "getSubId");
+    setHasCarrierPrivileges(subId, hasCarrierPrivileges);
+  }
+
+  /** Sets the {@code hasCarrierPrivileges} for the given {@code subId}. */
+  public void setHasCarrierPrivileges(int subId, boolean hasCarrierPrivileges) {
+    subIdToHasCarrierPrivileges.put(subId, hasCarrierPrivileges);
   }
 
   /**

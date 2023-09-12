@@ -145,4 +145,36 @@ public class ShadowPaintTest {
     Paint paint = new Paint();
     assertThat(paint.getTextScaleX()).isEqualTo(1f);
   }
+
+  @Test
+  public void testSetFilterBitmapFlag() {
+    Paint paint = new Paint();
+    paint.setFlags(paint.getFlags() | Paint.FILTER_BITMAP_FLAG);
+    assertThat(paint.isFilterBitmap()).isTrue();
+    assertThat(paint.getFlags() & Paint.FILTER_BITMAP_FLAG).isNotEqualTo(0);
+  }
+
+  @Test
+  public void testClearFilterBitmapFlag() {
+    Paint paint = new Paint();
+    paint.setFlags(paint.getFlags() & ~Paint.FILTER_BITMAP_FLAG);
+    assertThat(paint.isFilterBitmap()).isFalse();
+    assertThat(paint.getFlags() & Paint.FILTER_BITMAP_FLAG).isEqualTo(0);
+  }
+
+  @Test
+  public void testSetFilterBitmap() {
+    Paint paint = new Paint();
+    paint.setFilterBitmap(true);
+    assertThat(paint.isFilterBitmap()).isTrue();
+    assertThat(paint.getFlags() & Paint.FILTER_BITMAP_FLAG).isNotEqualTo(0);
+  }
+
+  @Test
+  public void testClearFilterBitmap() {
+    Paint paint = new Paint();
+    paint.setFilterBitmap(false);
+    assertThat(paint.isFilterBitmap()).isFalse();
+    assertThat(paint.getFlags() & Paint.FILTER_BITMAP_FLAG).isEqualTo(0);
+  }
 }

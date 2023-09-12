@@ -52,7 +52,10 @@ public class ShadowMimeTypeMap {
     return null;
   }
 
-  // TODO(juliansull) Remove this after Robolectric Sync
+  /**
+   * @deprecated use addExtensionMimeTypeMapping
+   */
+  @Deprecated
   public void addExtensionMimeTypMapping(String extension, String mimeType) {
     addExtensionMimeTypeMapping(extension, mimeType);
   }

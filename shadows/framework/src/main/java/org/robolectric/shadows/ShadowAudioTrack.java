@@ -37,6 +37,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Implementation of a couple methods in {@link AudioTrack}. Only a couple methods are supported,
@@ -245,7 +246,7 @@ public class ShadowAudioTrack {
     return AudioTrack.SUCCESS;
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected int native_setup(
       Object /*WeakReference<AudioTrack>*/ audioTrack,
       Object /*AudioAttributes*/ attributes,

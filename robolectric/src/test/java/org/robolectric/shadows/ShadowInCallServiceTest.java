@@ -86,9 +86,7 @@ public class ShadowInCallServiceTest {
 
   @Test
   @TargetApi(P)
-  @Config(
-      minSdk = P,
-      shadows = {ShadowBluetoothDevice.class})
+  @Config(minSdk = P)
   public void requestBluetoothAudio_getBluetoothAudio() {
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance("00:11:22:33:AA:BB");
     ShadowInCallService shadowInCallService = shadowOf(inCallService);

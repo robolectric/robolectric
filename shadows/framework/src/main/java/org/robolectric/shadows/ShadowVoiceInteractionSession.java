@@ -195,8 +195,20 @@ public class ShadowVoiceInteractionSession {
   // Extends com.android.internal.app.IVoiceInteractionManagerService.Stub
   private class FakeVoiceInteractionManagerService {
 
+    // Removed in Android U
     // @Override
     public boolean showSessionFromSession(IBinder token, Bundle args, int flags) {
+      return showSessionFromSessionImpl(args, flags);
+    }
+
+    // Added in Android U
+    // @Override
+    public boolean showSessionFromSession(
+        IBinder token, Bundle args, int flags, String attributionTag) {
+      return showSessionFromSessionImpl(args, flags);
+    }
+
+    private boolean showSessionFromSessionImpl(Bundle args, int flags) {
       try {
         Class<?> callbackClass =
             Class.forName("com.android.internal.app.IVoiceInteractionSessionShowCallback");

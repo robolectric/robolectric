@@ -18,6 +18,7 @@ import android.view.Display;
 import android.view.HandlerActionQueue;
 import android.view.IWindowSession;
 import android.view.InsetsState;
+import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewRootImpl;
@@ -306,6 +307,10 @@ public class ShadowViewRootImpl {
     }
   }
 
+  Surface getSurface() {
+    return reflector(ViewRootImplReflector.class, realObject).getSurface();
+  }
+
   /** Reflector interface for {@link ViewRootImpl}'s internals. */
   @ForType(ViewRootImpl.class)
   protected interface ViewRootImplReflector {
@@ -344,6 +349,12 @@ public class ShadowViewRootImpl {
 
     @Accessor("mSurfaceControl")
     SurfaceControl getSurfaceControl();
+
+    @Accessor("mSurface")
+    Surface getSurface();
+
+    @Accessor("mWindowAttributes")
+    WindowManager.LayoutParams getWindowAttributes();
 
     // <= JELLY_BEAN
     void dispatchResized(

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.annotation.SuppressLint;
 import android.os.Build.VERSION_CODES;
+import android.telephony.AccessNetworkConstants;
 import android.telephony.ims.ImsException;
 import android.telephony.ims.ImsMmTelManager;
 import android.telephony.ims.ImsMmTelManager.CapabilityCallback;
@@ -17,23 +18,28 @@ import android.telephony.ims.RegistrationManager;
 import android.telephony.ims.feature.MmTelFeature.MmTelCapabilities;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.ArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowImsMmTelManager} */
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = VERSION_CODES.Q)
 public class ShadowImsMmTelManagerTest {
 
+  private static final int SUBSCRIPTION_ID = 5;
+
   private ShadowImsMmTelManager shadowImsMmTelManager;
 
   @Before
   public void setup() {
-    shadowImsMmTelManager = new ShadowImsMmTelManager();
+    shadowImsMmTelManager =
+        Shadow.extract(ImsMmTelManager.createForSubscriptionId(SUBSCRIPTION_ID));
   }
 
   @Test
@@ -242,14 +248,40 @@ public class ShadowImsMmTelManagerTest {
   }
 
   @Test
-  public void getRegistrationState() {
+  public void getRegistrationState_setAsRegistered_returnsRegistrationStateRegistered() {
+    AtomicInteger registrationState = new AtomicInteger();
+    Consumer<Integer> stateCallback = registrationState::set;
+    ShadowImsMmTelManager.setRegistrationState(
+        SUBSCRIPTION_ID, RegistrationManager.REGISTRATION_STATE_REGISTERED);
+
+    shadowImsMmTelManager.getRegistrationState(Runnable::run, stateCallback);
+
+    assertThat(registrationState.intValue())
+        .isEqualTo(RegistrationManager.REGISTRATION_STATE_REGISTERED);
+  }
+
+  @Test
+  public void getRegistrationStateCallback() {
     Consumer<Integer> stateCallback = state -> {};
     shadowImsMmTelManager.getRegistrationState(Runnable::run, stateCallback);
     assertThat(shadowImsMmTelManager.getRegistrationStateCallback()).isEqualTo(stateCallback);
   }
 
   @Test
-  public void getRegistrationTransportType() {
+  public void getRegistrationTransportType_setAsWlan_returnsTransportTypeWlan() {
+    AtomicInteger registrationTransportType = new AtomicInteger();
+    Consumer<Integer> stateCallback = registrationTransportType::set;
+    ShadowImsMmTelManager.setRegistrationTransportType(
+        SUBSCRIPTION_ID, AccessNetworkConstants.TRANSPORT_TYPE_WLAN);
+
+    shadowImsMmTelManager.getRegistrationTransportType(Runnable::run, stateCallback);
+
+    assertThat(registrationTransportType.intValue())
+        .isEqualTo(AccessNetworkConstants.TRANSPORT_TYPE_WLAN);
+  }
+
+  @Test
+  public void getRegistrationTransportTypeCallback() {
     Consumer<Integer> transportTypeCallback = state -> {};
     shadowImsMmTelManager.getRegistrationTransportType(Runnable::run, transportTypeCallback);
     assertThat(shadowImsMmTelManager.getRegistrationTransportTypeCallback())
@@ -490,15 +522,40 @@ public class ShadowImsMmTelManagerTest {
     assertThat(imsMmTelManager1).isEqualTo(ShadowImsMmTelManager.createForSubscriptionId(1));
     assertThat(imsMmTelManager2).isEqualTo(ShadowImsMmTelManager.createForSubscriptionId(2));
 
-    ShadowImsMmTelManager.clearExistingInstances();
+    ShadowImsMmTelManager.clearExistingInstancesAndStates();
 
     assertThat(imsMmTelManager1).isNotEqualTo(ShadowImsMmTelManager.createForSubscriptionId(1));
     assertThat(imsMmTelManager2).isNotEqualTo(ShadowImsMmTelManager.createForSubscriptionId(2));
   }
 
   @Test
+  public void clearExistingInstancesAndStates_statesAreCleared() {
+    AtomicInteger registrationState = new AtomicInteger();
+    Consumer<Integer> stateCallback = registrationState::set;
+    ShadowImsMmTelManager.setRegistrationState(
+        SUBSCRIPTION_ID, RegistrationManager.REGISTRATION_STATE_REGISTERED);
+
+    ShadowImsMmTelManager.clearExistingInstancesAndStates();
+    shadowImsMmTelManager.getRegistrationState(Runnable::run, stateCallback);
+
+    assertThat(registrationState.intValue()).isEqualTo(0);
+  }
+
+  @Test
+  public void clearExistingInstancesAndStates_typesAreCleared() {
+    AtomicInteger registrationTransportType = new AtomicInteger();
+    Consumer<Integer> stateCallback = registrationTransportType::set;
+    ShadowImsMmTelManager.setRegistrationTransportType(
+        SUBSCRIPTION_ID, AccessNetworkConstants.TRANSPORT_TYPE_WLAN);
+
+    ShadowImsMmTelManager.clearExistingInstancesAndStates();
+    shadowImsMmTelManager.getRegistrationTransportType(Runnable::run, stateCallback);
+
+    assertThat(registrationTransportType.intValue()).isEqualTo(0);
+  }
+
+  @Test
   public void getSubscriptionId() {
-    shadowImsMmTelManager.__constructor__(5);
-    assertThat(shadowImsMmTelManager.getSubscriptionId()).isEqualTo(5);
+    assertThat(shadowImsMmTelManager.getSubscriptionId()).isEqualTo(SUBSCRIPTION_ID);
   }
 }

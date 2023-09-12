@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.uwb.UwbManager.AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY;
+
 import android.os.Build.VERSION_CODES;
 import android.uwb.AdapterStateListener;
 import android.uwb.UwbManager.AdapterStateCallback;
@@ -28,10 +30,15 @@ public class ShadowUwbAdapterStateListener {
    */
   @Implementation
   protected void setEnabled(boolean isEnabled) {
+    // For all states except DISABLED, we treat them as enabled already.
+    if (isEnabled == (adapterState != AdapterStateCallback.STATE_DISABLED)) {
+      return;
+    }
     adapterState =
         isEnabled
             ? AdapterStateCallback.STATE_ENABLED_INACTIVE
             : AdapterStateCallback.STATE_DISABLED;
+    onAdapterStateChanged(adapterState, STATE_CHANGED_REASON_SYSTEM_POLICY);
   }
 
   /**

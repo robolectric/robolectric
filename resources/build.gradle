@@ -9,6 +9,7 @@ dependencies {
     api project(":annotations")
     api project(":pluginapi")
 
+    api libs.auto.value.annotations
     api libs.guava
     compileOnly libs.findbugs.jsr305
 
@@ -16,4 +17,6 @@ dependencies {
     testImplementation libs.truth
     testImplementation libs.compile.testing
     testImplementation libs.mockito
+
+    annotationProcessor libs.auto.value
 }

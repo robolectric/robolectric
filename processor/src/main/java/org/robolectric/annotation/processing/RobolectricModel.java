@@ -9,7 +9,10 @@ import com.google.auto.common.MoreTypes;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimaps;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -326,7 +329,7 @@ public class RobolectricModel {
   }
 
   public Collection<String> getShadowedPackages() {
-    Set<String> packages = new TreeSet<>();
+    List<String> packages = new ArrayList<>();
     for (ShadowInfo shadowInfo : shadowTypes.values()) {
       String packageName = shadowInfo.getActualPackage();
 
@@ -335,7 +338,22 @@ public class RobolectricModel {
         continue;
       }
 
-      packages.add("\"" + packageName + "\"");
+      packages.add(packageName);
+    }
+    if (packages.isEmpty()) {
+      return packages;
+    }
+    // Remove redundant packages, e.g. remove 'android.os.storage' if 'android.os' is present.
+    Collections.sort(packages);
+    Iterator<String> iterator = packages.iterator();
+    String cur = iterator.next();
+    while (iterator.hasNext()) {
+      String element = iterator.next();
+      if (element.startsWith(cur)) {
+        iterator.remove();
+      } else {
+        cur = element;
+      }
     }
     return packages;
   }

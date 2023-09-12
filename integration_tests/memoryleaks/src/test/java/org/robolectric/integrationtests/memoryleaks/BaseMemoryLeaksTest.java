@@ -3,7 +3,9 @@ package org.robolectric.integrationtests.memoryleaks;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
 import android.os.Looper;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -14,8 +16,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 /**
  * A test that verifies that activities and fragments become GC candidates after being destroyed, or
@@ -124,6 +128,16 @@ public abstract class BaseMemoryLeaksTest {
     } else {
       assertNotLeaking(awr::get);
     }
+  }
+
+  @Test
+  public void typedArrayData() {
+    assertNotLeaking(
+        () -> {
+          Context context = RuntimeEnvironment.getApplication();
+          TypedArray typedArray = context.obtainStyledAttributes(new int[] {});
+          return ReflectionHelpers.getField(typedArray, "mData");
+        });
   }
 
   public abstract <T> void assertNotLeaking(Callable<T> potentiallyLeakingCallable);

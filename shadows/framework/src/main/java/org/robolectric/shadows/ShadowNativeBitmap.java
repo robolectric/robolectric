@@ -35,9 +35,9 @@ import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.NativeAllocationRegistryNatives;
 import org.robolectric.util.reflector.Accessor;
-import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Bitmap} that is backed by native code */
 @Implements(value = Bitmap.class, looseSignatures = true, minSdk = O, isInAndroidSdk = false)
@@ -378,7 +378,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     realBitmap.getPixels(pixels, 0, width, 0, 0, width, height);
     p.writeIntArray(pixels);
 
-    if (RuntimeEnvironment.getApiLevel() >= ShadowBuild.UPSIDE_DOWN_CAKE) {
+    if (RuntimeEnvironment.getApiLevel() >= U.SDK_INT) {
       Object gainmap = reflector(BitmapReflector.class, realBitmap).getGainmap();
       if (gainmap != null) {
         p.writeBoolean(true);
@@ -424,32 +424,6 @@ public class ShadowNativeBitmap extends ShadowBitmap {
       bitmap = bitmap.copy(parceledConfig, false);
     }
     return bitmap;
-  }
-
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
-  protected void setGainmap(Object gainmap) {
-    reflector(BitmapReflector.class, realBitmap).checkRecycled("Bitmap is recycled");
-    reflector(BitmapReflector.class, realBitmap).setGainmap(gainmap);
-  }
-
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
-  protected boolean hasGainmap() {
-    reflector(BitmapReflector.class, realBitmap).checkRecycled("Bitmap is recycled");
-    return reflector(BitmapReflector.class, realBitmap).getGainmap() != null;
-  }
-
-  @ForType(Bitmap.class)
-  protected interface BitmapReflector {
-    void checkRecycled(String errorMessage);
-
-    @Accessor("mNativePtr")
-    long getNativePtr();
-
-    @Accessor("mGainmap")
-    void setGainmap(Object gainmap);
-
-    @Direct
-    Object getGainmap();
   }
 
   @Override

@@ -10,6 +10,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
 import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Sets.newConcurrentHashSet;
 import static java.util.Comparator.comparingInt;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -26,7 +27,6 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.IBinder;
-import android.os.Looper;
 import android.provider.Settings;
 import android.view.Display;
 import android.view.InputEvent;
@@ -41,11 +41,11 @@ import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import org.robolectric.RuntimeEnvironment;
@@ -120,27 +120,37 @@ public class ShadowUiAutomation {
   protected void throwIfNotConnectedLocked() {}
 
   @Implementation
-  protected Bitmap takeScreenshot() {
+  protected Bitmap takeScreenshot() throws Exception {
     if (!ShadowView.useRealGraphics()) {
       return null;
     }
-    Point displaySize = new Point();
-    ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
-    Bitmap screenshot = Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
-    Canvas screenshotCanvas = new Canvas(screenshot);
-    Paint paint = new Paint();
-    for (Root root : getViewRoots().reverse()) {
-      View rootView = root.getRootView();
-      if (rootView.getWidth() <= 0 || rootView.getHeight() <= 0) {
-        continue;
-      }
-      Bitmap window =
-          Bitmap.createBitmap(rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-      Canvas windowCanvas = new Canvas(window);
-      rootView.draw(windowCanvas);
-      screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
-    }
-    return screenshot;
+
+    FutureTask<Bitmap> screenshotTask =
+        new FutureTask<>(
+            () -> {
+              Point displaySize = new Point();
+              ShadowDisplay.getDefaultDisplay().getRealSize(displaySize);
+              Bitmap screenshot =
+                  Bitmap.createBitmap(displaySize.x, displaySize.y, Bitmap.Config.ARGB_8888);
+              Canvas screenshotCanvas = new Canvas(screenshot);
+              Paint paint = new Paint();
+              for (Root root : getViewRoots().reverse()) {
+                View rootView = root.getRootView();
+                if (rootView.getWidth() <= 0 || rootView.getHeight() <= 0) {
+                  continue;
+                }
+                Bitmap window =
+                    Bitmap.createBitmap(
+                        rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas windowCanvas = new Canvas(window);
+                rootView.draw(windowCanvas);
+                screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
+              }
+              return screenshot;
+            });
+
+    ShadowInstrumentation.runOnMainSyncNoIdle(screenshotTask);
+    return screenshotTask.get();
   }
 
   /**
@@ -149,14 +159,18 @@ public class ShadowUiAutomation {
    * UiAutomation} API, this method is provided for backwards compatibility with SDK < 18.
    */
   public static boolean injectInputEvent(InputEvent event) {
-    checkState(Looper.myLooper() == Looper.getMainLooper(), "Expecting to be on main thread!");
-    if (event instanceof MotionEvent) {
-      return injectMotionEvent((MotionEvent) event);
-    } else if (event instanceof KeyEvent) {
-      return injectKeyEvent((KeyEvent) event);
-    } else {
-      throw new IllegalArgumentException("Unrecognized event type: " + event);
-    }
+    AtomicBoolean result = new AtomicBoolean(false);
+    ShadowInstrumentation.runOnMainSyncNoIdle(
+        () -> {
+          if (event instanceof MotionEvent) {
+            result.set(injectMotionEvent((MotionEvent) event));
+          } else if (event instanceof KeyEvent) {
+            result.set(injectKeyEvent((KeyEvent) event));
+          } else {
+            throw new IllegalArgumentException("Unrecognized event type: " + event);
+          }
+        });
+    return result.get();
   }
 
   @Implementation
@@ -259,12 +273,15 @@ public class ShadowUiAutomation {
   }
 
   private static Set<IBinder> getStartedActivityTokens() {
-    ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
-    return ImmutableSet.<Activity>builder()
-        .addAll(monitor.getActivitiesInStage(Stage.STARTED))
-        .addAll(monitor.getActivitiesInStage(Stage.RESUMED))
-        .build()
-        .stream()
+    Set<Activity> startedActivities = newConcurrentHashSet();
+    ShadowInstrumentation.runOnMainSyncNoIdle(
+        () -> {
+          ActivityLifecycleMonitor monitor = ActivityLifecycleMonitorRegistry.getInstance();
+          startedActivities.addAll(monitor.getActivitiesInStage(Stage.STARTED));
+          startedActivities.addAll(monitor.getActivitiesInStage(Stage.RESUMED));
+        });
+
+    return startedActivities.stream()
         .map(activity -> activity.getWindow().getDecorView().getApplicationWindowToken())
         .collect(toSet());
   }

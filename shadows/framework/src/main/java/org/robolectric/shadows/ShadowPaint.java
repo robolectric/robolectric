@@ -342,6 +342,17 @@ public class ShadowPaint {
   }
 
   @Implementation
+  protected final boolean isFilterBitmap() {
+    return (flags & Paint.FILTER_BITMAP_FLAG) == Paint.FILTER_BITMAP_FLAG;
+  }
+
+  @Implementation
+  protected final void setFilterBitmap(boolean filterBitmap) {
+    this.flags =
+        (flags & ~Paint.FILTER_BITMAP_FLAG) | (filterBitmap ? Paint.FILTER_BITMAP_FLAG : 0);
+  }
+
+  @Implementation
   protected PathEffect getPathEffect() {
     return pathEffect;
   }

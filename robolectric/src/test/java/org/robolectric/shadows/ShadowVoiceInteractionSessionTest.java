@@ -47,6 +47,16 @@ public class ShadowVoiceInteractionSessionTest {
   }
 
   @Test
+  @Config(minSdk = 34)
+  public void isWindowShowing_afterShowSdk34_returnsTrue() {
+    shadowSession.create();
+
+    session.show(new Bundle(), /* flags= */ 0);
+
+    assertThat(shadowSession.isWindowShowing()).isTrue();
+  }
+
+  @Test
   public void isWindowShowing_afterShowThenHide_returnsFalse() {
     shadowSession.create();
 

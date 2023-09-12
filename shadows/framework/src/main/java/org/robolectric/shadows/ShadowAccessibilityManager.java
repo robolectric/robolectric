@@ -128,6 +128,16 @@ public class ShadowAccessibilityManager {
     return Collections.unmodifiableList(accessibilityServiceList);
   }
 
+  public void setInteractiveUiTimeout(int interactiveUiTimeoutMillis) {
+    ReflectionHelpers.setField(
+        realAccessibilityManager, "mInteractiveUiTimeout", interactiveUiTimeoutMillis);
+  }
+
+  public void setNonInteractiveUiTimeout(int nonInteractiveUiTimeoutMillis) {
+    ReflectionHelpers.setField(
+        realAccessibilityManager, "mNonInteractiveUiTimeout", nonInteractiveUiTimeoutMillis);
+  }
+
   public void setAccessibilityServiceList(List<ServiceInfo> accessibilityServiceList) {
     this.accessibilityServiceList = new ArrayList<>(accessibilityServiceList);
   }

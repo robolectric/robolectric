@@ -4,13 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.robolectric.annotation.internal.DoNotInstrument;
 import org.robolectric.annotation.internal.Instrument;
@@ -317,13 +320,36 @@ public class InstrumentationConfiguration {
       return this;
     }
 
+    @SuppressWarnings("AndroidJdkLibsChecker")
+    public InstrumentationConfiguration build() {
+      // Remove redundant packages, e.g. remove 'android.os' if 'android.' is present.
+      List<String> minimalPackages = new ArrayList<>(instrumentedPackages);
+      if (!instrumentedPackages.isEmpty()) {
+        Collections.sort(minimalPackages);
+        Iterator<String> iterator = minimalPackages.iterator();
+        String cur = iterator.next();
+        while (iterator.hasNext()) {
+          String element = iterator.next();
+          if (element.startsWith(cur)) {
+            iterator.remove();
+          } else {
+            cur = element;
+          }
+        }
+      }
+      // Remove redundant classes that are already specified by a package. We do this to avoid
+      // unnecessarily creating sandboxes if a class is specified to be instrumented via
+      // '@Config(shadows=...)'.
+      List<String> minimalClasses =
+          instrumentedClasses.stream()
+              .filter(className -> minimalPackages.stream().noneMatch(className::startsWith))
+              .collect(Collectors.toList());
 
-      public InstrumentationConfiguration build() {
       return new InstrumentationConfiguration(
           classNameTranslations,
           interceptedMethods,
-          instrumentedPackages,
-          instrumentedClasses,
+          minimalPackages,
+          minimalClasses,
           classesToNotAcquire,
           packagesToNotAcquire,
           classesToNotInstrument,

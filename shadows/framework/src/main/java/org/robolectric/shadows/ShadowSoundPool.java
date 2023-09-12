@@ -22,6 +22,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @Implements(SoundPool.class)
 public class ShadowSoundPool {
@@ -62,7 +63,7 @@ public class ShadowSoundPool {
     return 1;
   }
 
-  @Implementation(minSdk = ShadowBuild.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = U.SDK_INT)
   protected int _play(
       int soundID,
       float leftVolume,

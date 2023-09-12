@@ -107,6 +107,16 @@ public class ShadowSurfaceTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void lockHardwareCanvas_multipleTimes() {
+    Canvas canvas = surface.lockHardwareCanvas();
+    surface.unlockCanvasAndPost(canvas);
+    canvas = surface.lockHardwareCanvas();
+    assertThat(canvas.isHardwareAccelerated()).isTrue();
+    surface.unlockCanvasAndPost(canvas);
+  }
+
+  @Test
   public void unlockCanvasAndPost_triggersFrameUpdateInSurfaceTexture() {
     AtomicBoolean listenerCallBackCalled = new AtomicBoolean(false);
 

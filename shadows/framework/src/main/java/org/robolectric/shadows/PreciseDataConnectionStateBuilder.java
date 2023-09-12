@@ -36,7 +36,7 @@ public class PreciseDataConnectionStateBuilder {
   }
 
   public PreciseDataConnectionStateBuilder setTransportType(int transportType) {
-    this.transportType = networkType;
+    this.transportType = transportType;
     return this;
   }
 

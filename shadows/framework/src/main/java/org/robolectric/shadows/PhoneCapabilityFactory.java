@@ -1,23 +1,23 @@
 package org.robolectric.shadows;
 
-import android.telephony.ModemInfo;
 import android.telephony.PhoneCapability;
-import java.util.List;
+import java.util.ArrayList;
 
 /** Factory to create PhoneCapability. */
 public final class PhoneCapabilityFactory {
 
-  /** Create PhoneCapability. */
+  /** Creates PhoneCapability. */
   public static PhoneCapability create(
       int maxActiveVoiceSubscriptions,
       int maxActiveDataSubscriptions,
-      List<ModemInfo> logicalModemList,
       boolean networkValidationBeforeSwitchSupported,
       int[] deviceNrCapabilities) {
     return new PhoneCapability(
         maxActiveVoiceSubscriptions,
         maxActiveDataSubscriptions,
-        logicalModemList,
+        // Since ModemInfo is an @hide object, there is no reason for an external object to be able
+        // to declare it, using an empty ArrayList as the parameter here.
+        /* List<ModemInfo> */ new ArrayList<>(),
         networkValidationBeforeSwitchSupported,
         deviceNrCapabilities);
   }

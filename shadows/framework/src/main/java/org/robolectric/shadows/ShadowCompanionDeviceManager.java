@@ -1,12 +1,17 @@
 package org.robolectric.shadows;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
+import android.Manifest.permission;
+import android.app.ActivityThread;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
+import android.companion.DeviceNotAssociatedException;
 import android.content.ComponentName;
+import android.net.MacAddress;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import androidx.annotation.Nullable;
@@ -18,8 +23,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for CompanionDeviceManager. */
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
@@ -29,7 +37,11 @@ public class ShadowCompanionDeviceManager {
   protected final Set<ComponentName> hasNotificationAccess = new HashSet<>();
   protected ComponentName lastRequestedNotificationAccess;
   protected AssociationRequest lastAssociationRequest;
+  protected MacAddress lastSystemApiAssociationMacAddress;
   protected CompanionDeviceManager.Callback lastAssociationCallback;
+  protected String lastObservingDevicePresenceDeviceAddress;
+
+  private static final int DEFAULT_SYSTEMDATASYNCFLAGS = -1;
 
   @Implementation
   @SuppressWarnings("JdkCollectors") // toImmutableList is only supported in Java 8+.
@@ -101,16 +113,94 @@ public class ShadowCompanionDeviceManager {
     associate(request, callback, /* handler= */ null);
   }
 
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void associate(String packageName, MacAddress macAddress, byte[] certificate) {
+    lastSystemApiAssociationMacAddress = macAddress;
+    if (!checkPermission(permission.ASSOCIATE_COMPANION_DEVICES)) {
+      throw new SecurityException("Permission ASSOCIATE_COMPANION_DEVICES not granted");
+    }
+    if (!RuntimeEnvironment.getApplication().getPackageName().equals(packageName)) {
+      throw new SecurityException("Calling application package does not equal packageName");
+    }
+    if (certificate == null) {
+      // Check the null case for now as {@link PackageManager#hasSigningCertificate} is not yet
+      // supported.
+      throw new SecurityException("Certificate is null");
+    }
+    associations.add(
+        RoboAssociationInfo.builder().setDeviceMacAddress(macAddress.toString()).build());
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected void startObservingDevicePresence(String deviceAddress) {
+    lastObservingDevicePresenceDeviceAddress = deviceAddress;
+    for (RoboAssociationInfo association : associations) {
+      if (association.deviceMacAddress() != null
+          && Ascii.equalsIgnoreCase(deviceAddress, association.deviceMacAddress())) {
+        return;
+      }
+    }
+    throw new DeviceNotAssociatedException("Association does not exist");
+  }
+
+  /**
+   * This method will return the last {@link AssociationRequest} passed to {@code
+   * CompanionDeviceManager#associate(AssociationRequest, CompanionDeviceManager.Callback, Handler)}
+   * or {@code CompanionDeviceManager#associate(AssociationRequest, Executor,
+   * CompanionDeviceManager.Callback, Handler)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@code associate} and will be set
+   * if that method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
   public AssociationRequest getLastAssociationRequest() {
     return lastAssociationRequest;
   }
 
+  /**
+   * This method will return the last {@link CompanionDeviceManager.Callback} passed to {@code
+   * CompanionDeviceManager#associate(AssociationRequest, CompanionDeviceManager.Callback, Handler)}
+   * or {@code CompanionDeviceManager#associate(AssociationRequest, Executor,
+   * CompanionDeviceManager.Callback, Handler)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@code associate} and will be set
+   * if that method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
   public CompanionDeviceManager.Callback getLastAssociationCallback() {
     return lastAssociationCallback;
   }
 
+  /**
+   * If an association is set, this method will return the last {@link ComponentName} passed to
+   * {@code CompanionDeviceManager#requestNotificationAccess(ComponentName)}.
+   */
   public ComponentName getLastRequestedNotificationAccess() {
     return lastRequestedNotificationAccess;
+  }
+
+  /**
+   * Returns the last {@link MacAddress} passed to systemApi {@code associate}.
+   *
+   * <p>Note that the value returned is only changed when calling {@code associate} and will be set
+   * if that method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
+  public MacAddress getLastSystemApiAssociationMacAddress() {
+    return lastSystemApiAssociationMacAddress;
+  }
+
+  /**
+   * Returns the last device address passed to {@link
+   * CompanionDeviceManager#startObservingDevicePresence(String)}.
+   *
+   * <p>Note that the value returned is only changed when calling {@link
+   * CompanionDeviceManager#startObservingDevicePresence(String)} and will still be set in the event
+   * that this method throws an exception. Moreover, this value will unchanged if disassociate is
+   * called.
+   */
+  public String getLastObservingDevicePresenceDeviceAddress() {
+    return lastObservingDevicePresenceDeviceAddress;
   }
 
   private void checkHasAssociation() {
@@ -135,14 +225,22 @@ public class ShadowCompanionDeviceManager {
         .setDeviceMacAddress(info.deviceMacAddress())
         .setDisplayName(info.displayName())
         .setDeviceProfile(info.deviceProfile())
+        .setAssociatedDevice(info.associatedDevice())
         .setSelfManaged(info.selfManaged())
         .setNotifyOnDeviceNearby(info.notifyOnDeviceNearby())
         .setApprovedMs(info.timeApprovedMs())
         .setLastTimeConnectedMs(info.lastTimeConnectedMs())
+        .setSystemDataSyncFlags(info.systemDataSyncFlags())
         .build();
   }
 
   private RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
+    Object associatedDevice = null;
+    int systemDataSyncFlags = DEFAULT_SYSTEMDATASYNCFLAGS;
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
+      associatedDevice = ReflectionHelpers.callInstanceMethod(info, "getAssociatedDevice");
+      systemDataSyncFlags = ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
+    }
     return RoboAssociationInfo.create(
         info.getId(),
         info.getUserId(),
@@ -150,10 +248,21 @@ public class ShadowCompanionDeviceManager {
         info.getDeviceMacAddress() == null ? null : info.getDeviceMacAddress().toString(),
         info.getDisplayName(),
         info.getDeviceProfile(),
+        associatedDevice,
         info.isSelfManaged(),
         info.isNotifyOnDeviceNearby(),
         info.getTimeApprovedMs(),
-        info.getLastTimeConnectedMs());
+        info.getLastTimeConnectedMs(),
+        systemDataSyncFlags);
+  }
+
+  private static boolean checkPermission(String permission) {
+    ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    ShadowInstrumentation shadowInstrumentation =
+        Shadow.extract(activityThread.getInstrumentation());
+    return shadowInstrumentation.checkPermission(
+            permission, android.os.Process.myPid(), android.os.Process.myUid())
+        == PERMISSION_GRANTED;
   }
 
   /**
@@ -178,6 +287,9 @@ public class ShadowCompanionDeviceManager {
     @Nullable
     public abstract String deviceProfile();
 
+    @Nullable
+    public abstract Object associatedDevice();
+
     public abstract boolean selfManaged();
 
     public abstract boolean notifyOnDeviceNearby();
@@ -186,6 +298,8 @@ public class ShadowCompanionDeviceManager {
 
     public abstract long lastTimeConnectedMs();
 
+    public abstract int systemDataSyncFlags();
+
     public static Builder builder() {
       return new AutoValue_ShadowCompanionDeviceManager_RoboAssociationInfo.Builder()
           .setId(1)
@@ -193,7 +307,8 @@ public class ShadowCompanionDeviceManager {
           .setSelfManaged(false)
           .setNotifyOnDeviceNearby(false)
           .setTimeApprovedMs(0)
-          .setLastTimeConnectedMs(0);
+          .setLastTimeConnectedMs(0)
+          .setSystemDataSyncFlags(DEFAULT_SYSTEMDATASYNCFLAGS);
     }
 
     public static RoboAssociationInfo create(
@@ -203,10 +318,12 @@ public class ShadowCompanionDeviceManager {
         String deviceMacAddress,
         CharSequence displayName,
         String deviceProfile,
+        Object associatedDevice,
         boolean selfManaged,
         boolean notifyOnDeviceNearby,
         long timeApprovedMs,
-        long lastTimeConnectedMs) {
+        long lastTimeConnectedMs,
+        int systemDataSyncFlags) {
       return RoboAssociationInfo.builder()
           .setId(id)
           .setUserId(userId)
@@ -214,10 +331,12 @@ public class ShadowCompanionDeviceManager {
           .setDeviceMacAddress(deviceMacAddress)
           .setDisplayName(displayName)
           .setDeviceProfile(deviceProfile)
+          .setAssociatedDevice(associatedDevice)
           .setSelfManaged(selfManaged)
           .setNotifyOnDeviceNearby(notifyOnDeviceNearby)
           .setTimeApprovedMs(timeApprovedMs)
           .setLastTimeConnectedMs(lastTimeConnectedMs)
+          .setSystemDataSyncFlags(systemDataSyncFlags)
           .build();
     }
 
@@ -238,11 +357,15 @@ public class ShadowCompanionDeviceManager {
 
       public abstract Builder setSelfManaged(boolean selfManaged);
 
+      public abstract Builder setAssociatedDevice(Object device);
+
       public abstract Builder setNotifyOnDeviceNearby(boolean notifyOnDeviceNearby);
 
       public abstract Builder setTimeApprovedMs(long timeApprovedMs);
 
       public abstract Builder setLastTimeConnectedMs(long lastTimeConnectedMs);
+
+      public abstract Builder setSystemDataSyncFlags(int flags);
 
       public abstract RoboAssociationInfo build();
     }

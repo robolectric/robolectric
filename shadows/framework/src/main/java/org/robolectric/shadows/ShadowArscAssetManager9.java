@@ -35,7 +35,6 @@ import android.content.res.Configuration;
 import android.content.res.Configuration.NativeConfig;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.util.ArraySet;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import dalvik.system.VMRuntime;
@@ -101,8 +100,6 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   private static CppAssetManager2 systemCppAssetManager2;
   private static long systemCppAssetManager2Ref;
   private static boolean inNonSystemConstructor;
-  private static ApkAssets[] cachedSystemApkAssets;
-  private static ArraySet<ApkAssets> cachedSystemApkAssetsSet;
 
   @RealObject AssetManager realAssetManager;
 
@@ -204,33 +201,6 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   // jclass g_stringClass = nullptr;
   //
   // // ----------------------------------------------------------------------------
-
-  @Implementation(maxSdk = Q)
-  protected static void createSystemAssetsInZygoteLocked() {
-    _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
-    AssetManager sSystem = _assetManagerStatic_.getSystem();
-    if (sSystem != null) {
-      return;
-    }
-
-    if (systemCppAssetManager2 == null) {
-      // first time! let the framework create a CppAssetManager2 and an AssetManager, which we'll
-      // hang on to.
-      reflector(AssetManagerReflector.class).createSystemAssetsInZygoteLocked();
-      cachedSystemApkAssets = _assetManagerStatic_.getSystemApkAssets();
-      cachedSystemApkAssetsSet = _assetManagerStatic_.getSystemApkAssetsSet();
-    } else {
-      // reuse the shared system CppAssetManager2; create a new AssetManager around it.
-      _assetManagerStatic_.setSystemApkAssets(cachedSystemApkAssets);
-      _assetManagerStatic_.setSystemApkAssetsSet(cachedSystemApkAssetsSet);
-
-      sSystem =
-          ReflectionHelpers.callConstructor(
-              AssetManager.class, ClassParameter.from(boolean.class, true /*sentinel*/));
-      sSystem.setApkAssets(cachedSystemApkAssets, false /*invalidateCaches*/);
-      ReflectionHelpers.setStaticField(AssetManager.class, "sSystem", sSystem);
-    }
-  }
 
   @Resetter
   public static void reset() {

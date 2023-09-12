@@ -54,6 +54,7 @@ import android.os.UserHandle;
 import android.text.TextUtils;
 import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -126,6 +127,7 @@ public class ShadowDevicePolicyManager {
   private final Set<String> affiliationIds = new HashSet<>();
   private final Map<PackageAndPermission, Boolean> appPermissionGrantedMap = new HashMap<>();
   private final Map<PackageAndPermission, Integer> appPermissionGrantStateMap = new HashMap<>();
+  private final Map<String, Set<String>> delegatedScopePackagesMap = new HashMap<>();
   private final Map<ComponentName, byte[]> passwordResetTokens = new HashMap<>();
   private final Map<ComponentName, Set<Integer>> adminPolicyGrantedMap = new HashMap<>();
   private final Map<ComponentName, CharSequence> shortSupportMessageMap = new HashMap<>();
@@ -243,7 +245,11 @@ public class ShadowDevicePolicyManager {
 
   @Implementation(minSdk = LOLLIPOP)
   protected boolean setApplicationHidden(ComponentName admin, String packageName, boolean hidden) {
-    enforceActiveAdmin(admin);
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    } else {
+      enforceCallerDelegated(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    }
     if (packagesToFailForSetApplicationHidden.contains(packageName)) {
       return false;
     }
@@ -268,7 +274,11 @@ public class ShadowDevicePolicyManager {
 
   @Implementation(minSdk = LOLLIPOP)
   protected boolean isApplicationHidden(ComponentName admin, String packageName) {
-    enforceActiveAdmin(admin);
+    if (admin != null) {
+      enforceActiveAdmin(admin);
+    } else {
+      enforceCallerDelegated(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
+    }
     return applicationPackageManager.getApplicationHiddenSettingAsUser(
         packageName, Process.myUserHandle());
   }
@@ -449,7 +459,11 @@ public class ShadowDevicePolicyManager {
 
   @Implementation(minSdk = LOLLIPOP)
   protected Bundle getApplicationRestrictions(ComponentName admin, String packageName) {
-    enforceDeviceOwnerOrProfileOwner(admin);
+    if (admin != null) {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    } else {
+      enforceCallerDelegated(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    }
     return getApplicationRestrictions(packageName);
   }
 
@@ -463,7 +477,11 @@ public class ShadowDevicePolicyManager {
   @Implementation(minSdk = LOLLIPOP)
   protected void setApplicationRestrictions(
       ComponentName admin, String packageName, Bundle applicationRestrictions) {
-    enforceDeviceOwnerOrProfileOwner(admin);
+    if (admin != null) {
+      enforceDeviceOwnerOrProfileOwner(admin);
+    } else {
+      enforceCallerDelegated(DevicePolicyManager.DELEGATION_APP_RESTRICTIONS);
+    }
     setApplicationRestrictions(packageName, applicationRestrictions);
   }
 
@@ -491,6 +509,42 @@ public class ShadowDevicePolicyManager {
   private void enforceActiveAdmin(ComponentName admin) {
     if (!deviceAdmins.contains(admin)) {
       throw new SecurityException("[" + admin + "] is not an active device admin");
+    }
+  }
+
+  private boolean hasPackage(String caller, String packageName) {
+    if (caller == null) {
+      return false;
+    }
+    return caller.contains(packageName);
+  }
+
+  private void enforceCallerDelegated(String targetScope) {
+    if (!delegatedScopePackagesMap.containsKey(targetScope)
+        || delegatedScopePackagesMap.get(targetScope).isEmpty()) {
+      throw new SecurityException(targetScope + " is not delegated to any package.");
+    }
+    String caller = context.getPackageName();
+    for (String packageName : delegatedScopePackagesMap.get(targetScope)) {
+      if (hasPackage(caller, packageName)) {
+        return;
+      }
+    }
+    throw new SecurityException("[" + caller + "] is not delegated with" + targetScope);
+  }
+
+  @Implementation(minSdk = O)
+  protected void setDelegatedScopes(
+      ComponentName admin, String delegatePackage, List<String> scopes) {
+    enforceDeviceOwnerOrProfileOwner(admin);
+    for (String scope : scopes) {
+      if (delegatedScopePackagesMap.containsKey(scope)) {
+        Set<String> allowPackages = delegatedScopePackagesMap.get(scope);
+        allowPackages.add(delegatePackage);
+      } else {
+        ImmutableSet<String> allowPackages = ImmutableSet.of(delegatePackage);
+        delegatedScopePackagesMap.put(scope, allowPackages);
+      }
     }
   }
 
@@ -536,6 +590,8 @@ public class ShadowDevicePolicyManager {
       ComponentName admin, String[] packageNames, boolean suspended) {
     if (admin != null) {
       enforceDeviceOwnerOrProfileOwner(admin);
+    } else {
+      enforceCallerDelegated(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
     }
     if (packageNames == null) {
       throw new NullPointerException("package names cannot be null");
@@ -563,6 +619,8 @@ public class ShadowDevicePolicyManager {
       throws NameNotFoundException {
     if (admin != null) {
       enforceDeviceOwnerOrProfileOwner(admin);
+    } else {
+      enforceCallerDelegated(DevicePolicyManager.DELEGATION_PACKAGE_ACCESS);
     }
     // Throws NameNotFoundException
     context.getPackageManager().getPackageInfo(packageName, 0);

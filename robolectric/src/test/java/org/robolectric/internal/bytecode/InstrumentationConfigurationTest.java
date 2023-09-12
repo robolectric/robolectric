@@ -180,6 +180,30 @@ public class InstrumentationConfigurationTest {
 
   }
 
+  @Test
+  public void removesRedundantPackageAndClassConfig() throws Exception {
+    InstrumentationConfiguration config1 =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("a.b")
+            .addInstrumentedPackage("a.")
+            .addInstrumentedPackage("a.c")
+            .addInstrumentedClass("a.SomeClass")
+            .addInstrumentedClass("a.b.SomeClass")
+            .build();
+
+    InstrumentationConfiguration config2 =
+        InstrumentationConfiguration.newBuilder()
+            .addInstrumentedPackage("a.x")
+            .addInstrumentedPackage("a.")
+            .addInstrumentedPackage("a.y")
+            .addInstrumentedClass("a.c.AnotherClass")
+            .addInstrumentedClass("a.d.AnotherClass")
+            .build();
+
+    // The builder should remove redundant config, and both configs instrument the 'a.' package.
+    assertThat(config1).isEqualTo(config2);
+  }
+
   private static ClassDetails wrap(final String className) {
     ClassDetails info = mock(ClassDetails.class);
     when(info.getName()).thenReturn(className);

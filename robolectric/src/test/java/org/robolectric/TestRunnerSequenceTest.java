@@ -84,25 +84,6 @@ public class TestRunnerSequenceTest {
     StateHolder.transcript.clear();
   }
 
-  @Test public void shouldReleaseAllStateAfterClassSoWeDontLeakMemory() throws Exception {
-    final List<RobolectricTestRunner.RobolectricFrameworkMethod> methods = new ArrayList<>();
-
-    RobolectricTestRunner robolectricTestRunner = new Runner(SimpleTest.class) {
-      @Override
-      protected void finallyAfterTest(FrameworkMethod method) {
-        super.finallyAfterTest(method);
-
-        RobolectricFrameworkMethod roboMethod = (RobolectricFrameworkMethod) method;
-        assertThat(roboMethod.getTestEnvironment()).isNull();
-        assertThat(roboMethod.testLifecycle).isNull();
-        methods.add(roboMethod);
-      }
-    };
-
-    robolectricTestRunner.run(new RunNotifier());
-    assertThat(methods).isNotEmpty();
-  }
-
   @Config(application = TestRunnerSequenceTest.MyApplication.class)
   public static class SimpleTest {
     @Test public void shouldDoNothingMuch() throws Exception {
