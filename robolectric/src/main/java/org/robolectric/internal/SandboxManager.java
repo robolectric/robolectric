@@ -12,6 +12,7 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.plugins.SdkCollection;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.inject.AutoFactory;
 
 /** Manager of sandboxes. */
@@ -43,6 +44,7 @@ public class SandboxManager {
           protected boolean removeEldestEntry(Map.Entry<SandboxKey, AndroidSandbox> eldest) {
             boolean toRemove = size() > cacheSize;
             if (toRemove) {
+              PerfStatsCollector.getInstance().incrementCount("evictSandbox");
               eldest.getValue().shutdown();
             }
             return toRemove;
