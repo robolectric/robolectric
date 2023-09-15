@@ -2,8 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.app.VoiceInteractor.CommandRequest;
 import android.content.Intent;
@@ -18,7 +20,7 @@ import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowVoiceInteractionSession}. */
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = Q)
+@Config(sdk = {Q, R, 34})
 public class ShadowVoiceInteractionSessionTest {
 
   private VoiceInteractionSession session;
@@ -64,6 +66,15 @@ public class ShadowVoiceInteractionSessionTest {
     session.hide();
 
     assertThat(shadowSession.isWindowShowing()).isFalse();
+  }
+
+  @Test
+  public void startAssistantActivity_exceptionSet_throws() {
+    shadowSession.create();
+
+    shadowSession.setStartAssistantActivityException(new SecurityException());
+
+    assertThrows(SecurityException.class, () -> session.startAssistantActivity(new Intent()));
   }
 
   @Test
