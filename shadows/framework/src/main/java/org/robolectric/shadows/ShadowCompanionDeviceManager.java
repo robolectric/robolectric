@@ -28,6 +28,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow for CompanionDeviceManager. */
 @Implements(value = CompanionDeviceManager.class, minSdk = VERSION_CODES.O)
@@ -218,20 +219,39 @@ public class ShadowCompanionDeviceManager {
 
   /** Convert {@link RoboAssociationInfo} to actual {@link AssociationInfo}. */
   private AssociationInfo createAssociationInfo(RoboAssociationInfo info) {
-    return AssociationInfoBuilder.newBuilder()
-        .setId(info.id())
-        .setUserId(info.userId())
-        .setPackageName(info.packageName())
-        .setDeviceMacAddress(info.deviceMacAddress())
-        .setDisplayName(info.displayName())
-        .setDeviceProfile(info.deviceProfile())
-        .setAssociatedDevice(info.associatedDevice())
-        .setSelfManaged(info.selfManaged())
-        .setNotifyOnDeviceNearby(info.notifyOnDeviceNearby())
-        .setApprovedMs(info.timeApprovedMs())
-        .setLastTimeConnectedMs(info.lastTimeConnectedMs())
-        .setSystemDataSyncFlags(info.systemDataSyncFlags())
-        .build();
+    AssociationInfoBuilder aiBuilder =
+        AssociationInfoBuilder.newBuilder()
+            .setId(info.id())
+            .setUserId(info.userId())
+            .setPackageName(info.packageName())
+            .setDeviceMacAddress(info.deviceMacAddress())
+            .setDisplayName(info.displayName())
+            .setDeviceProfile(info.deviceProfile())
+            .setAssociatedDevice(info.associatedDevice())
+            .setSelfManaged(info.selfManaged())
+            .setNotifyOnDeviceNearby(info.notifyOnDeviceNearby())
+            .setApprovedMs(info.timeApprovedMs())
+            .setLastTimeConnectedMs(info.lastTimeConnectedMs());
+
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
+      ReflectionHelpers.callInstanceMethod(
+          aiBuilder, "setTag", ClassParameter.from(String.class, info.tag()));
+    }
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mAssociatedDevice")) {
+      ReflectionHelpers.callInstanceMethod(
+          aiBuilder,
+          "setAssociatedDevice",
+          ClassParameter.from(Object.class, info.associatedDevice()));
+      ReflectionHelpers.callInstanceMethod(
+          aiBuilder,
+          "setSystemDataSyncFlags",
+          ClassParameter.from(int.class, info.systemDataSyncFlags()));
+    }
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
+      ReflectionHelpers.callInstanceMethod(
+          aiBuilder, "setRevoked", ClassParameter.from(boolean.class, info.revoked()));
+    }
+    return aiBuilder.build();
   }
 
   private RoboAssociationInfo createShadowAssociationInfo(AssociationInfo info) {
@@ -241,16 +261,26 @@ public class ShadowCompanionDeviceManager {
       associatedDevice = ReflectionHelpers.callInstanceMethod(info, "getAssociatedDevice");
       systemDataSyncFlags = ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
     }
+    boolean revoked = false;
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
+      revoked = ReflectionHelpers.callInstanceMethod(info, "isRevoked");
+    }
+    String tag = "";
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
+      tag = ReflectionHelpers.callInstanceMethod(info, "getTag");
+    }
     return RoboAssociationInfo.create(
         info.getId(),
         info.getUserId(),
         info.getPackageName(),
+        tag,
         info.getDeviceMacAddress() == null ? null : info.getDeviceMacAddress().toString(),
         info.getDisplayName(),
         info.getDeviceProfile(),
         associatedDevice,
         info.isSelfManaged(),
         info.isNotifyOnDeviceNearby(),
+        revoked,
         info.getTimeApprovedMs(),
         info.getLastTimeConnectedMs(),
         systemDataSyncFlags);
@@ -279,6 +309,9 @@ public class ShadowCompanionDeviceManager {
     public abstract String packageName();
 
     @Nullable
+    public abstract String tag();
+
+    @Nullable
     public abstract String deviceMacAddress();
 
     @Nullable
@@ -294,6 +327,8 @@ public class ShadowCompanionDeviceManager {
 
     public abstract boolean notifyOnDeviceNearby();
 
+    public abstract boolean revoked();
+
     public abstract long timeApprovedMs();
 
     public abstract long lastTimeConnectedMs();
@@ -306,6 +341,8 @@ public class ShadowCompanionDeviceManager {
           .setUserId(1)
           .setSelfManaged(false)
           .setNotifyOnDeviceNearby(false)
+          .setRevoked(false)
+          .setAssociatedDevice(null)
           .setTimeApprovedMs(0)
           .setLastTimeConnectedMs(0)
           .setSystemDataSyncFlags(DEFAULT_SYSTEMDATASYNCFLAGS);
@@ -315,12 +352,14 @@ public class ShadowCompanionDeviceManager {
         int id,
         int userId,
         String packageName,
+        String tag,
         String deviceMacAddress,
         CharSequence displayName,
         String deviceProfile,
         Object associatedDevice,
         boolean selfManaged,
         boolean notifyOnDeviceNearby,
+        boolean revoked,
         long timeApprovedMs,
         long lastTimeConnectedMs,
         int systemDataSyncFlags) {
@@ -328,6 +367,7 @@ public class ShadowCompanionDeviceManager {
           .setId(id)
           .setUserId(userId)
           .setPackageName(packageName)
+          .setTag(tag)
           .setDeviceMacAddress(deviceMacAddress)
           .setDisplayName(displayName)
           .setDeviceProfile(deviceProfile)
@@ -335,6 +375,7 @@ public class ShadowCompanionDeviceManager {
           .setSelfManaged(selfManaged)
           .setNotifyOnDeviceNearby(notifyOnDeviceNearby)
           .setTimeApprovedMs(timeApprovedMs)
+          .setRevoked(revoked)
           .setLastTimeConnectedMs(lastTimeConnectedMs)
           .setSystemDataSyncFlags(systemDataSyncFlags)
           .build();
@@ -349,6 +390,8 @@ public class ShadowCompanionDeviceManager {
 
       public abstract Builder setPackageName(String packageName);
 
+      public abstract Builder setTag(String tag);
+
       public abstract Builder setDeviceMacAddress(String deviceMacAddress);
 
       public abstract Builder setDisplayName(CharSequence displayName);
@@ -360,6 +403,8 @@ public class ShadowCompanionDeviceManager {
       public abstract Builder setAssociatedDevice(Object device);
 
       public abstract Builder setNotifyOnDeviceNearby(boolean notifyOnDeviceNearby);
+
+      public abstract Builder setRevoked(boolean revoked);
 
       public abstract Builder setTimeApprovedMs(long timeApprovedMs);
 

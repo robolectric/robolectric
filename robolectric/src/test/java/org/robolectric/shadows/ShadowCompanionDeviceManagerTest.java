@@ -142,6 +142,7 @@ public class ShadowCompanionDeviceManagerTest {
             .setDisplayName("displayName")
             .setSelfManaged(false)
             .setNotifyOnDeviceNearby(false)
+            .setRevoked(false)
             .setApprovedMs(0)
             .setLastTimeConnectedMs(0)
             .setSystemDataSyncFlags(-1);
@@ -176,15 +177,33 @@ public class ShadowCompanionDeviceManagerTest {
       infoBuilder = infoBuilder.setAssociatedDevice(associatedDeviceValue);
     }
     int systemDataSyncFlagsValue = 1;
+    String newTagValue = "newTag";
+    boolean revokedValue = true;
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mSystemDataSyncFlags")) {
       infoBuilder = infoBuilder.setSystemDataSyncFlags(systemDataSyncFlagsValue);
     }
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
+      infoBuilder = infoBuilder.setTag(newTagValue);
+    }
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
+      infoBuilder = infoBuilder.setRevoked(revokedValue);
+    }
+
     AssociationInfo info = infoBuilder.build();
     if (ReflectionHelpers.hasField(AssociationInfo.class, "mSystemDataSyncFlags")) {
       int systemDataSyncFlags =
           ReflectionHelpers.callInstanceMethod(info, "getSystemDataSyncFlags");
       assertThat(systemDataSyncFlags).isEqualTo(systemDataSyncFlagsValue);
     }
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mTag")) {
+      String tag = ReflectionHelpers.callInstanceMethod(info, "getTag");
+      assertThat(tag).isEqualTo(newTagValue);
+    }
+    if (ReflectionHelpers.hasField(AssociationInfo.class, "mRevoked")) {
+      boolean revoked = ReflectionHelpers.callInstanceMethod(info, "isRevoked");
+      assertThat(revoked).isEqualTo(revokedValue);
+    }
+
     assertThat(companionDeviceManager.getAssociations()).isEmpty();
     shadowCompanionDeviceManager.addAssociation(info);
     assertThat(companionDeviceManager.getMyAssociations()).contains(info);
@@ -252,10 +271,6 @@ public class ShadowCompanionDeviceManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void testStartObservingDevicePresence_deviceNotAssociated_throwsException() {
-    // Ensure that startObservingDevicePresence handles associations with null MAC addresses.
-    AssociationInfo info =
-        AssociationInfoBuilder.newBuilder().setId(10).setDisplayName("displayName").build();
-    shadowCompanionDeviceManager.addAssociation(info);
     assertThrows(
         DeviceNotAssociatedException.class,
         () -> companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS));
@@ -266,10 +281,6 @@ public class ShadowCompanionDeviceManagerTest {
   @Test
   @Config(minSdk = VERSION_CODES.TIRAMISU)
   public void testStartObservingDevicePresence_deviceAssociated_presenceObserved() {
-    // Ensure that startObservingDevicePresence handles associations with null MAC addresses.
-    AssociationInfo info =
-        AssociationInfoBuilder.newBuilder().setId(10).setDisplayName("displayName").build();
-    shadowCompanionDeviceManager.addAssociation(info);
     shadowCompanionDeviceManager.addAssociation(MAC_ADDRESS);
 
     companionDeviceManager.startObservingDevicePresence(MAC_ADDRESS);

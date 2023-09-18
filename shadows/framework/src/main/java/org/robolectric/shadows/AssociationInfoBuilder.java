@@ -14,6 +14,7 @@ public class AssociationInfoBuilder {
   private int id;
   private int userId;
   private String packageName;
+  private String tag;
   private String deviceMacAddress;
   private CharSequence displayName;
   private String deviceProfile;
@@ -21,6 +22,9 @@ public class AssociationInfoBuilder {
   private boolean selfManaged;
   private boolean notifyOnDeviceNearby;
   private long approvedMs;
+  // We have two different constructors for AssociationInfo across
+  // T branches. aosp has the constructor that takes a new "revoked" parameter.
+  private boolean revoked;
   private long lastTimeConnectedMs;
   private int systemDataSyncFlags;
 
@@ -42,6 +46,11 @@ public class AssociationInfoBuilder {
 
   public AssociationInfoBuilder setPackageName(String packageName) {
     this.packageName = packageName;
+    return this;
+  }
+
+  public AssociationInfoBuilder setTag(String tag) {
+    this.tag = tag;
     return this;
   }
 
@@ -80,6 +89,11 @@ public class AssociationInfoBuilder {
     return this;
   }
 
+  public AssociationInfoBuilder setRevoked(boolean revoked) {
+    this.revoked = revoked;
+    return this;
+  }
+
   public AssociationInfoBuilder setLastTimeConnectedMs(long lastTimeConnectedMs) {
     this.lastTimeConnectedMs = lastTimeConnectedMs;
     return this;
@@ -112,7 +126,7 @@ public class AssociationInfoBuilder {
               ClassParameter.from(String.class, deviceProfile),
               ClassParameter.from(boolean.class, selfManaged),
               ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(boolean.class, false /*revoked only supported in aosp*/),
+              ClassParameter.from(boolean.class, revoked /*revoked only supported in aosp*/),
               ClassParameter.from(long.class, approvedMs),
               ClassParameter.from(long.class, lastTimeConnectedMs));
         } else {
@@ -144,7 +158,7 @@ public class AssociationInfoBuilder {
                   Class.forName("android.companion.AssociatedDevice"), associatedDevice),
               ClassParameter.from(boolean.class, selfManaged),
               ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(boolean.class, false /*revoked*/),
+              ClassParameter.from(boolean.class, revoked),
               ClassParameter.from(long.class, approvedMs),
               ClassParameter.from(long.class, lastTimeConnectedMs),
               ClassParameter.from(int.class, systemDataSyncFlags));
@@ -159,7 +173,7 @@ public class AssociationInfoBuilder {
               ClassParameter.from(String.class, deviceProfile),
               ClassParameter.from(boolean.class, selfManaged),
               ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-              ClassParameter.from(boolean.class, false /*revoked*/),
+              ClassParameter.from(boolean.class, revoked),
               ClassParameter.from(long.class, approvedMs),
               ClassParameter.from(long.class, lastTimeConnectedMs));
         }
@@ -169,7 +183,7 @@ public class AssociationInfoBuilder {
             ClassParameter.from(int.class, id),
             ClassParameter.from(int.class, userId),
             ClassParameter.from(String.class, packageName),
-            ClassParameter.from(String.class, null /* tag */),
+            ClassParameter.from(String.class, tag),
             ClassParameter.from(MacAddress.class, macAddress),
             ClassParameter.from(CharSequence.class, displayName),
             ClassParameter.from(String.class, deviceProfile),
@@ -177,7 +191,7 @@ public class AssociationInfoBuilder {
                 Class.forName("android.companion.AssociatedDevice"), associatedDevice),
             ClassParameter.from(boolean.class, selfManaged),
             ClassParameter.from(boolean.class, notifyOnDeviceNearby),
-            ClassParameter.from(boolean.class, false /*revoked*/),
+            ClassParameter.from(boolean.class, revoked),
             ClassParameter.from(long.class, approvedMs),
             ClassParameter.from(long.class, lastTimeConnectedMs),
             ClassParameter.from(int.class, systemDataSyncFlags));
