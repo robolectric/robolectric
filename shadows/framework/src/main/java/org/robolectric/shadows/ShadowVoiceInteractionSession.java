@@ -36,6 +36,7 @@ public class ShadowVoiceInteractionSession {
 
   private boolean isFinishing;
   @Nullable private RuntimeException startVoiceActivityException;
+  @Nullable private RuntimeException startAssistantActivityException;
   @RealObject private VoiceInteractionSession realSession;
 
   /**
@@ -137,6 +138,14 @@ public class ShadowVoiceInteractionSession {
   }
 
   /**
+   * Sets a {@link RuntimeException} that should be thrown when {@link
+   * VoiceInteractionSession#startAssistantActivity(Intent)} is invoked.
+   */
+  public void setStartAssistantActivityException(RuntimeException exception) {
+    startAssistantActivityException = exception;
+  }
+
+  /**
    * Simulates the creation of the {@link VoiceInteractionSession.CommandRequest} related to the
    * provided {@link VoiceInteractor.CommandRequest}, as if it was being created by the framework.
    * The method calls {@link VoiceInteractionSession#onRequestCommand(CommandRequest)} with newly
@@ -232,8 +241,20 @@ public class ShadowVoiceInteractionSession {
       return true;
     }
 
+    // Removed in Android U
     // @Override
     public int startVoiceActivity(IBinder token, Intent intent, String resolvedType) {
+      return startVoiceActivityImpl(intent);
+    }
+
+    // Added in Android U
+    // @Override
+    public int startVoiceActivity(
+        IBinder token, Intent intent, String resolvedType, String callingFeatureId) {
+      return startVoiceActivityImpl(intent);
+    }
+
+    private int startVoiceActivityImpl(Intent intent) {
       RuntimeException exception = startVoiceActivityException;
       if (exception != null) {
         throw exception;
@@ -242,8 +263,32 @@ public class ShadowVoiceInteractionSession {
       return 0;
     }
 
+    // Removed in Android R
     // @Override
     public int startAssistantActivity(IBinder token, Intent intent, String resolvedType) {
+      return startAssistantActivityImpl(intent);
+    }
+
+    // Added in Android R
+    // Removed in Android U
+    // @Override
+    public int startAssistantActivity(
+        IBinder token, Intent intent, String resolvedType, String callingFeatureId) {
+      return startAssistantActivityImpl(intent);
+    }
+
+    // Added in Android U
+    // @Override
+    public int startAssistantActivity(
+        IBinder token, Intent intent, String resolvedType, String callingFeatureId, Bundle bundle) {
+      return startAssistantActivityImpl(intent);
+    }
+
+    private int startAssistantActivityImpl(Intent intent) {
+      RuntimeException exception = startAssistantActivityException;
+      if (exception != null) {
+        throw exception;
+      }
       assistantActivityIntents.add(intent);
       return 0;
     }
