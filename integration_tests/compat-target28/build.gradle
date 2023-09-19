@@ -17,7 +17,7 @@ android {
     namespace 'org.robolectric.integrationtests.compattarget28'
 
     defaultConfig {
-        minSdk 16
+        minSdk 19
         // We must keep targetSdk to 28 for compatibility testing purpose
         targetSdk 28
     }

@@ -169,37 +169,4 @@ public final class AndroidVersionsTest {
     assertThat(new AndroidVersions.K().getVersion()).isEqualTo("4.4");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("K");
   }
-
-  @Test
-  @Config(sdk = 18)
-  public void testStandardInitializationJMR2() {
-    assertThat(VERSION.SDK_INT).isEqualTo(18);
-    assertThat(VERSION.RELEASE).isEqualTo("4.3");
-    assertThat(VERSION.CODENAME).isEqualTo("REL");
-    assertThat(AndroidVersions.JMR2.SHORT_CODE).isEqualTo("JMR2");
-    assertThat(new AndroidVersions.JMR2().getVersion()).isEqualTo("4.3");
-    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("JMR2");
-  }
-
-  @Test
-  @Config(sdk = 17)
-  public void testStandardInitializationJMR1() {
-    assertThat(VERSION.SDK_INT).isEqualTo(17);
-    assertThat(VERSION.RELEASE).isEqualTo("4.2.2");
-    assertThat(VERSION.CODENAME).isEqualTo("REL");
-    assertThat(AndroidVersions.JMR1.SHORT_CODE).isEqualTo("JMR1");
-    assertThat(new AndroidVersions.JMR1().getVersion()).isEqualTo("4.2");
-    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("JMR1");
-  }
-
-  @Test
-  @Config(sdk = 16)
-  public void testStandardInitializationJ() {
-    assertThat(VERSION.SDK_INT).isEqualTo(16);
-    assertThat(VERSION.RELEASE).isEqualTo("4.1.2");
-    assertThat(VERSION.CODENAME).isEqualTo("REL");
-    assertThat(AndroidVersions.J.SHORT_CODE).isEqualTo("J");
-    assertThat(new AndroidVersions.J().getVersion()).isEqualTo("4.1");
-    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("J");
-  }
 }
