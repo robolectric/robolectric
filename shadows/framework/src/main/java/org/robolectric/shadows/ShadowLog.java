@@ -235,6 +235,7 @@ public class ShadowLog {
     logsByTag.clear();
     tagToLevel.clear();
     wtfIsFatal = false;
+    timeSupplier = null;
   }
 
   @SuppressWarnings("CatchAndPrintStackTrace")
