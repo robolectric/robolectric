@@ -325,4 +325,24 @@ public class ShadowLogTest {
       ShadowLog.stream = old;
     }
   }
+
+  @Test
+  public void resetShouldClearTimeSupplier() {
+    ShadowLog.setTimeSupplier(() -> "15 June 1977 20:17");
+    ShadowLog.reset();
+
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    PrintStream old = ShadowLog.stream;
+    try {
+      ShadowLog.stream = new PrintStream(bos);
+      Log.d("tag", "msg");
+      assertThat(new String(bos.toByteArray(), UTF_8))
+          .isEqualTo("D/tag: msg" + LINE_SEPARATOR.value());
+
+      Log.w("tag", new RuntimeException());
+      assertThat(new String(bos.toByteArray(), UTF_8)).contains("RuntimeException");
+    } finally {
+      ShadowLog.stream = old;
+    }
+  }
 }
