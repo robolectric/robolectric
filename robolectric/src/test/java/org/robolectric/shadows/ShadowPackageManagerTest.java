@@ -4562,6 +4562,21 @@ public class ShadowPackageManagerTest {
     assertThat(after).isFalse();
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void setDefaultBrowserPackageNameAsUser_getConsistent() {
+    ShadowApplicationPackageManager pm = (ShadowApplicationPackageManager) shadowOf(packageManager);
+
+    boolean isSuccessful = pm.setDefaultBrowserPackageNameAsUser(TEST_PACKAGE_NAME, 0);
+
+    String defaultBrowserPackageNameUserAvailable = pm.getDefaultBrowserPackageNameAsUser(0);
+    String defaultBrowserPackageNameUserNotAvailable = pm.getDefaultBrowserPackageNameAsUser(10);
+
+    assertThat(isSuccessful).isTrue();
+    assertThat(defaultBrowserPackageNameUserAvailable).isEqualTo(TEST_PACKAGE_NAME);
+    assertThat(defaultBrowserPackageNameUserNotAvailable).isNull();
+  }
+
   public String[] setPackagesSuspended(
       String[] packageNames,
       boolean suspended,

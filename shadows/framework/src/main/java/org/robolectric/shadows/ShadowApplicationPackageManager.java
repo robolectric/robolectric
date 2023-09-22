@@ -141,6 +141,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @RealObject private ApplicationPackageManager realObject;
   private final List<String> clearedApplicationUserDataPackages = new ArrayList<>();
+  // A map of UserIDs to default browsers.
+  private final HashMap<Integer, String> defaultBrowsers = new HashMap<>();
 
   @Implementation
   public List<PackageInfo> getInstalledPackages(int flags) {
@@ -1843,12 +1845,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
   @Implementation(minSdk = N)
   protected String getDefaultBrowserPackageNameAsUser(int userId) {
-    return null;
+    return defaultBrowsers.get(userId);
   }
 
   @Implementation(minSdk = N)
   protected boolean setDefaultBrowserPackageNameAsUser(String packageName, int userId) {
-    return false;
+    defaultBrowsers.put(userId, packageName);
+    return true;
   }
 
   @Implementation(minSdk = M)
