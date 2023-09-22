@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -26,6 +27,7 @@ import android.media.audiopolicy.AudioPolicy;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Parcel;
+import android.view.KeyEvent;
 import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -95,6 +97,7 @@ public class ShadowAudioManager {
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
+  private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -862,6 +865,29 @@ public class ShadowAudioManager {
     p.writeInt(16000); // mSampleRate
     p.writeInt(AudioFormat.CHANNEL_OUT_MONO); // mChannelMask
     p.writeInt(0); // mChannelIndexMask
+  }
+
+  /**
+   * Sends a simulated key event for a media button.
+   *
+   * <p>Instead of sending the media event to the media system service, from where it would be
+   * routed to a media app, this shadow method only records the events to be verified through {@link
+   * #getDispatchedMediaKeyEvents()}.
+   */
+  @Implementation(minSdk = KITKAT)
+  protected void dispatchMediaKeyEvent(KeyEvent keyEvent) {
+    if (keyEvent == null) {
+      throw new NullPointerException("keyEvent is null");
+    }
+    dispatchedMediaKeyEvents.add(keyEvent);
+  }
+
+  public List<KeyEvent> getDispatchedMediaKeyEvents() {
+    return new ArrayList<>(dispatchedMediaKeyEvents);
+  }
+
+  public void clearDispatchedMediaKeyEvents() {
+    dispatchedMediaKeyEvents.clear();
   }
 
   public static class AudioFocusRequest {
