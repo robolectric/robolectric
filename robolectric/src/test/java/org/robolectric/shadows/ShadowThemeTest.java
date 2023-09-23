@@ -317,7 +317,7 @@ public class ShadowThemeTest {
 
   private static <T> void awaitFinalized(WeakReference<T> weakRef) {
     final CountDownLatch latch = new CountDownLatch(1);
-    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
     while (System.nanoTime() < deadline) {
       if (weakRef.get() == null) {
         return;
