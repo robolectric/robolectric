@@ -3,6 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
   package="org.robolectric.nativeruntime">
 
-  <uses-sdk android:minSdkVersion="16" android:targetSdkVersion="33"/>
+  <uses-sdk android:minSdkVersion="19" android:targetSdkVersion="33"/>
   <application />
 </manifest>

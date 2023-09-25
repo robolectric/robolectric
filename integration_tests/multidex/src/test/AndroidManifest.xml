@@ -4,7 +4,7 @@
     package="org.robolectric.integrationtests.multidex">
 
   <uses-sdk
-      android:minSdkVersion="14"
+      android:minSdkVersion="19"
       android:targetSdkVersion="27"/>
 
   <application />

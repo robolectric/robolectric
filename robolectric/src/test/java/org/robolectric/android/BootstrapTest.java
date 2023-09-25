@@ -34,7 +34,7 @@ import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.view.Surface.ROTATION_0;
@@ -326,15 +326,6 @@ public class BootstrapTest {
   }
 
   @Test
-  @Config(sdk = JELLY_BEAN)
-  public void applyQualifiers_densityOnJellyBean() {
-    Bootstrap.applyQualifiers("hdpi", RuntimeEnvironment.getApiLevel(), configuration,
-        displayMetrics);
-    assertThat(displayMetrics.density).isEqualTo(1.5f);
-    assertThat(displayMetrics.densityDpi).isEqualTo(240);
-  }
-
-  @Test
   public void applyQualifiers_shouldSetLocaleScript() throws Exception {
     Bootstrap.applyQualifiers("b+sr+Latn", RuntimeEnvironment.getApiLevel(),
         configuration, displayMetrics);
@@ -345,7 +336,7 @@ public class BootstrapTest {
   }
 
   @Test
-  @Config(sdk = JELLY_BEAN_MR1)
+  @Config(sdk = KITKAT)
   public void applyQualifiers_rtlPseudoLocale_shouldSetLayoutDirection() {
     Bootstrap.applyQualifiers(
         "ar-rXB", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);

@@ -1,8 +1,7 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.UiAutomation;
@@ -23,7 +22,7 @@ import org.robolectric.annotation.LooperMode;
 @Config(minSdk = JELLY_BEAN_MR2)
 @RunWith(AndroidJUnit4.class)
 public class ShadowUiAutomationTest {
-  @Config(sdk = JELLY_BEAN_MR1)
+  @Config(sdk = KITKAT)
   @Test
   public void setAnimationScale_zero() throws Exception {
     ShadowUiAutomation.setAnimationScaleCompat(0);
@@ -35,7 +34,7 @@ public class ShadowUiAutomationTest {
     assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(0);
   }
 
-  @Config(sdk = JELLY_BEAN_MR1)
+  @Config(sdk = KITKAT)
   @Test
   public void setAnimationScale_one() throws Exception {
     ShadowUiAutomation.setAnimationScaleCompat(1);
@@ -46,31 +45,6 @@ public class ShadowUiAutomationTest {
         .isEqualTo(1);
     assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(1);
   }
-
-  @Config(sdk = JELLY_BEAN)
-  @Test
-  public void setAnimationScale_zero_jellyBean() throws Exception {
-    ShadowUiAutomation.setAnimationScaleCompat(0);
-
-    ContentResolver cr = ApplicationProvider.getApplicationContext().getContentResolver();
-    assertThat(Settings.System.getFloat(cr, Settings.System.ANIMATOR_DURATION_SCALE)).isEqualTo(0);
-    assertThat(Settings.System.getFloat(cr, Settings.System.TRANSITION_ANIMATION_SCALE))
-        .isEqualTo(0);
-    assertThat(Settings.System.getFloat(cr, Settings.System.WINDOW_ANIMATION_SCALE)).isEqualTo(0);
-  }
-
-  @Config(sdk = JELLY_BEAN)
-  @Test
-  public void setAnimationScale_one_jellyBean() throws Exception {
-    ShadowUiAutomation.setAnimationScaleCompat(1);
-
-    ContentResolver cr = ApplicationProvider.getApplicationContext().getContentResolver();
-    assertThat(Settings.System.getFloat(cr, Settings.System.ANIMATOR_DURATION_SCALE)).isEqualTo(1);
-    assertThat(Settings.System.getFloat(cr, Settings.System.TRANSITION_ANIMATION_SCALE))
-        .isEqualTo(1);
-    assertThat(Settings.System.getFloat(cr, Settings.System.WINDOW_ANIMATION_SCALE)).isEqualTo(1);
-  }
-
   @Test
   public void setRotation_freeze90_rotatesToLandscape() {
     UiAutomation uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation();

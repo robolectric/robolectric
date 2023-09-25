@@ -117,24 +117,30 @@ public class RobolectricTestRunnerTest {
 
   @Test
   public void testsWithUnsupportedSdkShouldBeIgnored() throws Exception {
-    RobolectricTestRunner runner = new RobolectricTestRunner(
-        TestWithTwoMethods.class,
-        defaultInjector()
-            .bind(SdkProvider.class, () ->
-                Arrays.asList(TestUtil.getSdkCollection().getSdk(17),
-                    new StubSdk(18, false)))
-            .build());
+    RobolectricTestRunner runner =
+        new RobolectricTestRunner(
+            TestWithTwoMethods.class,
+            defaultInjector()
+                .bind(
+                    SdkProvider.class,
+                    () ->
+                        Arrays.asList(
+                            TestUtil.getSdkCollection().getSdk(33), new StubSdk(34, false)))
+                .build());
     runner.run(notifier);
-    assertThat(events).containsExactly(
-        "started: first[17]", "finished: first[17]",
-        "started: first",
-        "ignored: first: Failed to create a Robolectric sandbox: unsupported",
-        "finished: first",
-        "started: second[17]", "finished: second[17]",
-        "started: second",
-        "ignored: second: Failed to create a Robolectric sandbox: unsupported",
-        "finished: second"
-    ).inOrder();
+    assertThat(events)
+        .containsExactly(
+            "started: first[33]",
+            "finished: first[33]",
+            "started: first",
+            "ignored: first: Failed to create a Robolectric sandbox: unsupported",
+            "finished: first",
+            "started: second[33]",
+            "finished: second[33]",
+            "started: second",
+            "ignored: second: Failed to create a Robolectric sandbox: unsupported",
+            "finished: second")
+        .inOrder();
   }
 
   @Test

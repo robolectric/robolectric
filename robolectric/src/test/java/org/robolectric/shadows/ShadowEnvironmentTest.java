@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
@@ -220,13 +219,6 @@ public class ShadowEnvironmentTest {
     //
     // assertThat(RuntimeEnvironment.getApplication().getExternalFilesDir(Environment.DIRECTORY_MOVIES)
     //         .getCanonicalPath()).contains("external_dir_1");
-  }
-
-  @Test
-  @Config(sdk = JELLY_BEAN_MR1)
-  public void getExternalStorageStateJB() {
-    ShadowEnvironment.setExternalStorageState("blah");
-    assertThat(ShadowEnvironment.getExternalStorageState()).isEqualTo("blah");
   }
 
   @Test
