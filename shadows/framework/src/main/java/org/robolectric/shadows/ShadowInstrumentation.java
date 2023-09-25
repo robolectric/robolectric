@@ -1194,7 +1194,8 @@ public class ShadowInstrumentation {
    * @param runnable a runnable to be executed
    */
   public static void runOnMainSyncNoIdle(Runnable runnable) {
-    if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST
+        && Looper.myLooper() != Looper.getMainLooper()) {
       checkNotNull(getInstrumentation()).runOnMainSync(runnable);
     } else {
       runnable.run();
