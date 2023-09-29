@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 import javax.annotation.Priority;
@@ -13,6 +14,7 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.internal.dependency.LocalDependencyResolver;
 import org.robolectric.internal.dependency.PropertiesDependencyResolver;
 import org.robolectric.res.Fs;
+import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -61,12 +63,16 @@ public class LegacyDependencyResolver implements DependencyResolver {
       Properties properties, DefinitelyNotAClassLoader classLoader) {
     String propPath = properties.getProperty("robolectric-deps.properties");
     if (propPath != null) {
-      return new PropertiesDependencyResolver(Paths.get(propPath));
+      Logger.debug(
+          "Using a PropertiesDependencyResolver, robolectric-deps.properties=%s", propPath);
+      Path path = Paths.get(propPath);
+      return new PropertiesDependencyResolver(path);
     }
 
     String dependencyDir = properties.getProperty("robolectric.dependency.dir");
     if (dependencyDir != null
         || Boolean.parseBoolean(properties.getProperty("robolectric.offline"))) {
+      Logger.debug("Using a LocalDependencyResolver, dependencyDir=%s", dependencyDir);
       return new LocalDependencyResolver(new File(dependencyDir == null ? "." : dependencyDir));
     }
 

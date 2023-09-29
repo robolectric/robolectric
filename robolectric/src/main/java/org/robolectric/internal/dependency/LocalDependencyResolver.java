@@ -3,6 +3,7 @@ package org.robolectric.internal.dependency;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.robolectric.util.Logger;
 
 public class LocalDependencyResolver implements DependencyResolver {
   private File offlineJarDir;
@@ -39,6 +40,17 @@ public class LocalDependencyResolver implements DependencyResolver {
    */
   private static File validateFile(File file) throws IllegalArgumentException {
     if (!file.isFile()) {
+      Logger.error("Unable to locate dependency: '%s'", file);
+      File parentFile = file.getParentFile();
+      if (!parentFile.isDirectory()) {
+        Logger.error("No such directory '%s'", parentFile);
+      } else {
+        Logger.error("Parent directory exists but is missing the dependency");
+        Logger.error("Contents of directory '%s':", parentFile);
+        for (File f : parentFile.listFiles()) {
+          Logger.error(f.getAbsolutePath());
+        }
+      }
       throw new IllegalArgumentException("Path is not a file: " + file);
     }
     if (!file.canRead()) {

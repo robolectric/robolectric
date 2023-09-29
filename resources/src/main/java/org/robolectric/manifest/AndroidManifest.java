@@ -21,6 +21,7 @@ import org.robolectric.pluginapi.UsesSdk;
 import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.ResourceTable;
+import org.robolectric.util.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -166,6 +167,8 @@ public class AndroidManifest implements UsesSdk {
       return;
     }
 
+    Logger.debug("Manifest file location: " + androidManifestFile);
+
     if (androidManifestFile != null && Files.exists(androidManifestFile)) {
       try {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -174,6 +177,8 @@ public class AndroidManifest implements UsesSdk {
         InputStream inputStream = Fs.getInputStream(androidManifestFile);
         Document manifestDocument = db.parse(inputStream);
         inputStream.close();
+
+        Logger.debug("Manifest doc location:\n%s", androidManifestFile.toString());
 
         if (!packageNameIsOverridden()) {
           packageName = getTagAttributeText(manifestDocument, "manifest", "package");
