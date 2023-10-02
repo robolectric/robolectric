@@ -41,7 +41,7 @@ apache-http-core = "4.0.1"
 apache-http-client = "4.0.3"
 
 # https://asm.ow2.io/versions.html
-asm = "9.5"
+asm = "9.6"
 
 # https://github.com/google/auto/releases
 auto-common = "1.2.2"
