@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
@@ -37,6 +38,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.android.controller.ServiceController;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowTelecomManager.CallRequestMode;
 import org.robolectric.shadows.testing.TestConnectionService;
@@ -229,6 +231,7 @@ public class ShadowTelecomManagerTest {
     extras.putString("TEST_EXTRA_KEY", "TEST_EXTRA_VALUE");
     telecomService.addNewIncomingCall(createHandle("id"), extras);
 
+    verify(connectionServiceListener).onCreate();
     ArgumentCaptor<ConnectionRequest> requestCaptor =
         ArgumentCaptor.forClass(ConnectionRequest.class);
     verify(connectionServiceListener)
@@ -240,6 +243,60 @@ public class ShadowTelecomManagerTest {
     assertThat(request.getExtras().getString("TEST_EXTRA_KEY")).isEqualTo("TEST_EXTRA_VALUE");
     assertThat(request.getAddress()).isEqualTo(address);
     assertThat(request.getVideoState()).isEqualTo(VideoProfile.STATE_BIDIRECTIONAL);
+  }
+
+  @Test
+  public void testAllowTwoNewIncomingCalls() {
+    shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
+
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Uri address1 = Uri.parse("tel:+1-201-555-0123");
+    Bundle call1 = new Bundle();
+    call1.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, address1);
+    telecomService.addNewIncomingCall(createHandle("id"), call1);
+
+    Uri address2 = Uri.parse("tel:+1-201-555-0124");
+    Bundle call2 = new Bundle();
+    call2.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, address2);
+    telecomService.addNewIncomingCall(createHandle("id"), call2);
+
+    verify(connectionServiceListener, times(1)).onCreate();
+    ArgumentCaptor<ConnectionRequest> requestCaptor =
+        ArgumentCaptor.forClass(ConnectionRequest.class);
+    verify(connectionServiceListener, times(2))
+        .onCreateIncomingConnection(eq(phoneAccount), requestCaptor.capture());
+    verifyNoMoreInteractions(connectionServiceListener);
+
+    List<ConnectionRequest> values = requestCaptor.getAllValues();
+    assertThat(values.size()).isEqualTo(2);
+    ConnectionRequest request1 = values.get(0);
+    ConnectionRequest request2 = values.get(1);
+    assertThat(request1.getAddress()).isEqualTo(address1);
+    assertThat(request2.getAddress()).isEqualTo(address2);
+  }
+
+  @Test
+  public void testAllowNewIncomingCallUsingCustomConnectionService() {
+    shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
+    TestConnectionService connectionService = ServiceController.of(
+        new TestConnectionService(), null).create().get();
+    shadowOf(telecomService).setConnectionService(connectionService);
+
+    PhoneAccountHandle phoneAccount = createHandle("id");
+    Uri address = Uri.parse("tel:+1-201-555-0123");
+    Bundle call = new Bundle();
+    call.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, address);
+    telecomService.addNewIncomingCall(createHandle("id"), call);
+
+    verify(connectionServiceListener).onCreate();
+    ArgumentCaptor<ConnectionRequest> requestCaptor =
+        ArgumentCaptor.forClass(ConnectionRequest.class);
+    verify(connectionServiceListener)
+        .onCreateIncomingConnection(eq(phoneAccount), requestCaptor.capture());
+    verifyNoMoreInteractions(connectionServiceListener);
+
+    ConnectionRequest request = requestCaptor.getValue();
+    assertThat(request.getAddress()).isEqualTo(address);
   }
 
   @Test
@@ -256,6 +313,7 @@ public class ShadowTelecomManagerTest {
     extras.putString("TEST_EXTRA_KEY", "TEST_EXTRA_VALUE");
     telecomService.addNewIncomingCall(createHandle("id"), extras);
 
+    verify(connectionServiceListener).onCreate();
     ArgumentCaptor<ConnectionRequest> requestCaptor =
         ArgumentCaptor.forClass(ConnectionRequest.class);
     verify(connectionServiceListener)
@@ -310,6 +368,7 @@ public class ShadowTelecomManagerTest {
     extras.putBundle(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, outgoingCallExtras);
     telecomService.placeCall(address, extras);
 
+    verify(connectionServiceListener).onCreate();
     ArgumentCaptor<ConnectionRequest> requestCaptor =
         ArgumentCaptor.forClass(ConnectionRequest.class);
     verify(connectionServiceListener)
@@ -339,6 +398,7 @@ public class ShadowTelecomManagerTest {
     extras.putBundle(TelecomManager.EXTRA_OUTGOING_CALL_EXTRAS, outgoingCallExtras);
     telecomService.placeCall(address, extras);
 
+    verify(connectionServiceListener).onCreate();
     ArgumentCaptor<ConnectionRequest> requestCaptor =
         ArgumentCaptor.forClass(ConnectionRequest.class);
     verify(connectionServiceListener)
