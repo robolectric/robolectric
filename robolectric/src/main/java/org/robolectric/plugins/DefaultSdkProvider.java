@@ -17,9 +17,6 @@ import org.robolectric.internal.dependency.DependencyResolver;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkProvider;
 import org.robolectric.util.Util;
-import org.robolectric.versioning.AndroidVersions.J;
-import org.robolectric.versioning.AndroidVersions.JMR1;
-import org.robolectric.versioning.AndroidVersions.JMR2;
 import org.robolectric.versioning.AndroidVersions.K;
 import org.robolectric.versioning.AndroidVersions.L;
 import org.robolectric.versioning.AndroidVersions.LMR1;
@@ -64,9 +61,6 @@ public class DefaultSdkProvider implements SdkProvider {
   }
 
   protected void populateSdks(TreeMap<Integer, Sdk> knownSdks) {
-    knownSdks.put(J.SDK_INT, new DefaultSdk(J.SDK_INT, "4.1.2_r1", "r1", "REL", 8));
-    knownSdks.put(JMR1.SDK_INT, new DefaultSdk(JMR1.SDK_INT, "4.2.2_r1.2", "r1", "REL", 8));
-    knownSdks.put(JMR2.SDK_INT, new DefaultSdk(JMR2.SDK_INT, "4.3_r2", "r1", "REL", 8));
     knownSdks.put(K.SDK_INT, new DefaultSdk(K.SDK_INT, "4.4_r1", "r2", "REL", 8));
     knownSdks.put(L.SDK_INT, new DefaultSdk(L.SDK_INT, "5.0.2_r3", "r0", "REL", 8));
     knownSdks.put(LMR1.SDK_INT, new DefaultSdk(LMR1.SDK_INT, "5.1.1_r9", "r2", "REL", 8));

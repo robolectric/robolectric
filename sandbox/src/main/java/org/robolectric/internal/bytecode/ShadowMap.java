@@ -14,6 +14,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.internal.ShadowProvider;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.shadow.api.ShadowPicker;
+import org.robolectric.util.Logger;
 
 /**
  * Maps from instrumented class to shadow class.
@@ -40,6 +41,7 @@ public class ShadowMap {
 
     // These are sorted in descending order (higher priority providers are first).
     for (ShadowProvider provider : sortedProviders) {
+      Logger.debug("Shadow provider: " + provider.getClass().getName());
       for (Map.Entry<String, String> entry : provider.getShadows()) {
         shadowMap.put(entry.getKey(), entry.getValue());
       }

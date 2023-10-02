@@ -5,7 +5,7 @@ android {
     namespace 'org.robolectric.integrationtests.agp.testsupport'
 
     defaultConfig {
-        minSdk 16
+        minSdk 19
         targetSdk 33
     }
 

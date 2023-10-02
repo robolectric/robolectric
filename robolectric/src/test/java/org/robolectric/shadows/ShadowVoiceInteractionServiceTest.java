@@ -34,7 +34,6 @@ public class ShadowVoiceInteractionServiceTest {
   public void setUp() {
     service = Robolectric.buildService(TestVoiceInteractionService.class).get();
     shadowService = shadowOf(service);
-    ShadowVoiceInteractionService.reset();
   }
 
   @Test
@@ -104,17 +103,5 @@ public class ShadowVoiceInteractionServiceTest {
             VoiceInteractionService.isActiveService(
                 ApplicationProvider.getApplicationContext(), new ComponentName("test", "test")))
         .isTrue();
-  }
-
-  @Test
-  public void resetter_resetsActiveServiceValue() {
-    ShadowVoiceInteractionService.setActiveService(new ComponentName("test", "test"));
-
-    ShadowVoiceInteractionService.reset();
-
-    assertThat(
-            VoiceInteractionService.isActiveService(
-                ApplicationProvider.getApplicationContext(), new ComponentName("test", "test")))
-        .isFalse();
   }
 }

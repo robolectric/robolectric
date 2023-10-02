@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -353,24 +352,6 @@ public class ShadowOpenGLMatrixTest {
 
     float[] output = new float[16];
     Matrix.multiplyMM(output, 0, matrix1, 0, matrix2, 0);
-    assertThat(output).usingExactEquality().containsAtLeast(expected);
-  }
-
-  @Test
-  @Config(minSdk = JELLY_BEAN, maxSdk = JELLY_BEAN)
-  public void testFrustumM() {
-    // this is actually a bug
-    // https://android.googlesource.com/platform/frameworks/base/+/0a088f5d4681fd2da6f610de157bf905df787bf7
-    // expected[8] should be 1.5
-    // see testFrustumJB_MR1 below
-    float[] expected = new float[]{
-            0.005f, 0, 0, 0,
-            0, 0.02f, 0, 0,
-            3f, 5, -1.020202f, -1,
-            0, 0, -2.020202f, 0,
-    };
-    float[] output = new float[16];
-    Matrix.frustumM(output, 0, 100, 500, 200, 300, 1, 100);
     assertThat(output).usingExactEquality().containsAtLeast(expected);
   }
 

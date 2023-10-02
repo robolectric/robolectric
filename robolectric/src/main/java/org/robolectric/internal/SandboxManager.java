@@ -12,6 +12,7 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.plugins.SdkCollection;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.inject.AutoFactory;
 
 /** Manager of sandboxes. */
@@ -37,12 +38,18 @@ public class SandboxManager {
     // We need to set the cache size of class loaders more than the number of supported APIs as
     // different tests may have different configurations.
     final int cacheSize = sdkCollection.getSupportedSdks().size() * CACHE_SIZE_FACTOR;
-    sandboxesByKey = new LinkedHashMap<SandboxKey, AndroidSandbox>() {
-      @Override
-      protected boolean removeEldestEntry(Map.Entry<SandboxKey, AndroidSandbox> eldest) {
-        return size() > cacheSize;
-      }
-    };
+    sandboxesByKey =
+        new LinkedHashMap<SandboxKey, AndroidSandbox>() {
+          @Override
+          protected boolean removeEldestEntry(Map.Entry<SandboxKey, AndroidSandbox> eldest) {
+            boolean toRemove = size() > cacheSize;
+            if (toRemove) {
+              PerfStatsCollector.getInstance().incrementCount("evictSandbox");
+              eldest.getValue().shutdown();
+            }
+            return toRemove;
+          }
+        };
   }
 
   public synchronized AndroidSandbox getAndroidSandbox(

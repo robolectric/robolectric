@@ -10,7 +10,7 @@ android {
     namespace 'org.robolectric.integration.axt'
 
     defaultConfig {
-        minSdk 16
+        minSdk 19
         targetSdk 33
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

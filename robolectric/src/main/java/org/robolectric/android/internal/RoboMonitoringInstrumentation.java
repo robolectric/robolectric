@@ -171,8 +171,10 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
 
     FutureTask<Void> wrappedRunnable = new FutureTask<>(runnable, null);
     new Handler(Looper.getMainLooper()).post(wrappedRunnable);
-    while (!wrappedRunnable.isDone()) {
-      ShadowLooper.runMainLooperToNextTask();
+    if (shadowOf(Looper.getMainLooper()).isPaused()) {
+      while (!wrappedRunnable.isDone()) {
+        ShadowLooper.runMainLooperToNextTask();
+      }
     }
 
     try {

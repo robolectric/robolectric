@@ -17,7 +17,7 @@ android {
     namespace 'org.robolectric.sparsearray'
 
     defaultConfig {
-        minSdk 16
+        minSdk 19
         targetSdk 33
     }
 

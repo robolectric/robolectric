@@ -7,21 +7,20 @@ import static android.os.Build.VERSION_CODES.Q;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.service.voice.VoiceInteractionService;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionService}. */
 @Implements(value = VoiceInteractionService.class, minSdk = LOLLIPOP)
 public class ShadowVoiceInteractionService extends ShadowService {
-
-  @Nullable private static ComponentName activeService = null;
 
   private final List<Bundle> hintBundles = Collections.synchronizedList(new ArrayList<>());
   private final List<Bundle> sessionBundles = Collections.synchronizedList(new ArrayList<>());
@@ -32,7 +31,10 @@ public class ShadowVoiceInteractionService extends ShadowService {
    * method.
    */
   public static void setActiveService(@Nullable ComponentName activeService) {
-    ShadowVoiceInteractionService.activeService = activeService;
+    Settings.Secure.putString(
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.Secure.VOICE_INTERACTION_SERVICE,
+        activeService == null ? "" : activeService.flattenToString());
   }
 
   @Implementation
@@ -67,11 +69,6 @@ public class ShadowVoiceInteractionService extends ShadowService {
     }
   }
 
-  @Implementation
-  protected static boolean isActiveService(Context context, ComponentName componentName) {
-    return componentName.equals(activeService);
-  }
-
   /**
    * Returns list of bundles provided with calls to {@link #setUiHints(Bundle bundle)} in invocation
    * order.
@@ -100,11 +97,5 @@ public class ShadowVoiceInteractionService extends ShadowService {
   @Nullable
   public Bundle getLastSessionBundle() {
     return Iterables.getLast(sessionBundles, null);
-  }
-
-  /** Resets this shadow instance. */
-  @Resetter
-  public static void reset() {
-    activeService = null;
   }
 }

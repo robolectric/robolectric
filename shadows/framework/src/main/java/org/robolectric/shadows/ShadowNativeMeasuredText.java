@@ -68,12 +68,25 @@ public class ShadowNativeMeasuredText {
       MeasuredTextBuilderNatives.nAddStyleRun(nativeBuilderPtr, paintPtr, start, end, isRtl);
     }
 
-    @Implementation(minSdk = TIRAMISU)
+    @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
     protected static void nAddStyleRun(
         /* Non Zero */ long nativeBuilderPtr,
         /* Non Zero */ long paintPtr,
         int lineBreakStyle,
         int lineBreakWordStyle,
+        int start,
+        int end,
+        boolean isRtl) {
+      MeasuredTextBuilderNatives.nAddStyleRun(nativeBuilderPtr, paintPtr, start, end, isRtl);
+    }
+
+    @Implementation(minSdk = V.SDK_INT)
+    protected static void nAddStyleRun(
+        /* Non Zero */ long nativeBuilderPtr,
+        /* Non Zero */ long paintPtr,
+        int lineBreakStyle,
+        int lineBreakWordStyle,
+        /* Ignored */ boolean hyphenation,
         int start,
         int end,
         boolean isRtl) {

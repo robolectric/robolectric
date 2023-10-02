@@ -93,7 +93,7 @@ public class RobolectricTest {
   }
 
   @Test
-  @Config(sdk = 16)
+  @Config(sdk = Config.NEWEST_SDK)
   public void setupActivity_returnsAVisibleActivity() throws Exception {
     LifeCycleActivity activity = Robolectric.setupActivity(LifeCycleActivity.class);
 
