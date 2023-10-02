@@ -11,6 +11,8 @@ public class TestConnectionService extends ConnectionService {
 
   /** Listens for calls to {@link TestConnectionService} methods. */
   public interface Listener {
+    default void onCreate() {}
+
     @Nullable
     default Connection onCreateIncomingConnection(
         PhoneAccountHandle connectionManagerPhoneAccount, ConnectionRequest request) {
@@ -34,6 +36,11 @@ public class TestConnectionService extends ConnectionService {
 
   public static void setListener(Listener listener) {
     TestConnectionService.listener = listener == null ? new Listener() {} : listener;
+  }
+
+  @Override
+  public void onCreate() {
+    listener.onCreate();
   }
 
   @Override
