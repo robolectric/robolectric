@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
-import static android.os.Build.VERSION_CODES.R;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -17,10 +16,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Tests for {@link ShadowVoiceInteractionSession}. */
 @RunWith(AndroidJUnit4.class)
-@Config(sdk = {Q, R, 34})
+@Config(minSdk = Q)
 public class ShadowVoiceInteractionSessionTest {
 
   private VoiceInteractionSession session;
@@ -49,7 +49,7 @@ public class ShadowVoiceInteractionSessionTest {
   }
 
   @Test
-  @Config(minSdk = 34)
+  @Config(minSdk = AndroidVersions.U.SDK_INT)
   public void isWindowShowing_afterShowSdk34_returnsTrue() {
     shadowSession.create();
 
