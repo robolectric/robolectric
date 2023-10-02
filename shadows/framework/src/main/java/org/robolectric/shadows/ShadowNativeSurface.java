@@ -51,7 +51,9 @@ public class ShadowNativeSurface {
   @Implementation
   protected static long nativeLockCanvas(long nativeObject, Canvas canvas, Rect dirty)
       throws OutOfResourcesException {
-    return SurfaceNatives.nativeLockCanvas(nativeObject, canvas, dirty);
+    // Do not call the nativeLockCanvas method. It is not implemented, and calling it can
+    // only result in a native crash (unlocking the canvas wipes out this Surface native object).
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   @Implementation
