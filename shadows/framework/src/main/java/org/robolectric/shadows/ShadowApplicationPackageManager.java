@@ -789,6 +789,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return queryIntentActivities(intent, flags);
   }
 
+  /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
+  @Implementation(minSdk = TIRAMISU)
+  protected List<ResolveInfo> queryIntentActivitiesAsUser(
+      /*Intent*/ Object intent, /*ResolveInfoFlags*/ Object flags, /*int*/ Object userId) {
+    return queryIntentActivities((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
+  }
+
   /** Returns true if intent has specified a specific component. */
   private static boolean isExplicitIntent(Intent intent) {
     return getComponentForIntent(intent) != null;

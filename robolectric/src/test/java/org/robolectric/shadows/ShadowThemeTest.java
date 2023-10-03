@@ -52,46 +52,59 @@ public class ShadowThemeTest {
   @Test
   public void
       whenExplicitlySetOnActivity_afterSetContentView_activityGetsThemeFromActivityInManifest() {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    activity.setTheme(R.style.Theme_Robolectric);
-    Button theButton = activity.findViewById(R.id.button);
-    ColorDrawable background = (ColorDrawable) theButton.getBackground();
-    assertThat(background.getColor()).isEqualTo(0xffff0000);
+    try (ActivityController<TestActivityWithAnotherTheme> activityController =
+        buildActivity(TestActivityWithAnotherTheme.class)) {
+      TestActivity activity = activityController.create().get();
+      activity.setTheme(R.style.Theme_Robolectric);
+      Button theButton = activity.findViewById(R.id.button);
+      ColorDrawable background = (ColorDrawable) theButton.getBackground();
+      assertThat(background.getColor()).isEqualTo(0xffff0000);
+    }
   }
 
   @Test
   public void whenExplicitlySetOnActivity_beforeSetContentView_activityUsesNewTheme() {
-    ActivityController<TestActivityWithAnotherTheme> activityController = buildActivity(TestActivityWithAnotherTheme.class);
-    TestActivity activity = activityController.get();
-    activity.setTheme(R.style.Theme_Robolectric);
-    activityController.create();
-    Button theButton = activity.findViewById(R.id.button);
-    ColorDrawable background = (ColorDrawable) theButton.getBackground();
-    assertThat(background.getColor()).isEqualTo(0xff00ff00);
+    try (ActivityController<TestActivityWithAnotherTheme> activityController =
+        buildActivity(TestActivityWithAnotherTheme.class)) {
+      TestActivity activity = activityController.get();
+      activity.setTheme(R.style.Theme_Robolectric);
+      activityController.create();
+      Button theButton = activity.findViewById(R.id.button);
+      ColorDrawable background = (ColorDrawable) theButton.getBackground();
+      assertThat(background.getColor()).isEqualTo(0xff00ff00);
+    }
   }
 
   @Test
   public void whenSetOnActivityInManifest_activityGetsThemeFromActivityInManifest() {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    Button theButton = activity.findViewById(R.id.button);
-    ColorDrawable background = (ColorDrawable) theButton.getBackground();
-    assertThat(background.getColor()).isEqualTo(0xffff0000);
+    try (ActivityController<TestActivityWithAnotherTheme> activityController =
+        buildActivity(TestActivityWithAnotherTheme.class)) {
+      TestActivity activity = activityController.create().get();
+      Button theButton = activity.findViewById(R.id.button);
+      ColorDrawable background = (ColorDrawable) theButton.getBackground();
+      assertThat(background.getColor()).isEqualTo(0xffff0000);
+    }
   }
 
   @Test
   public void whenNotSetOnActivityInManifest_activityGetsThemeFromApplicationInManifest() {
-    TestActivity activity = buildActivity(TestActivity.class).create().get();
-    Button theButton = activity.findViewById(R.id.button);
-    ColorDrawable background = (ColorDrawable) theButton.getBackground();
-    assertThat(background.getColor()).isEqualTo(0xff00ff00);
+    try (ActivityController<TestActivity> activityController = buildActivity(TestActivity.class)) {
+      TestActivity activity = activityController.create().get();
+      Button theButton = activity.findViewById(R.id.button);
+      ColorDrawable background = (ColorDrawable) theButton.getBackground();
+      assertThat(background.getColor()).isEqualTo(0xff00ff00);
+    }
   }
 
   @Test
   public void shouldResolveReferencesThatStartWithAQuestionMark() {
-    TestActivity activity = buildActivity(TestActivityWithAnotherTheme.class).create().get();
-    Button theButton = activity.findViewById(R.id.button);
-    assertThat(theButton.getMinWidth()).isEqualTo(8);
-    assertThat(theButton.getMinHeight()).isEqualTo(8);
+    try (ActivityController<TestActivityWithAnotherTheme> activityController =
+        buildActivity(TestActivityWithAnotherTheme.class)) {
+      TestActivity activity = activityController.create().get();
+      Button theButton = activity.findViewById(R.id.button);
+      assertThat(theButton.getMinWidth()).isEqualTo(8);
+      assertThat(theButton.getMinHeight()).isEqualTo(8);
+    }
   }
 
   @Test
@@ -276,9 +289,12 @@ public class ShadowThemeTest {
 
   @Test
   public void shouldApplyFromStyleAttribute() {
-    TestWithStyleAttrActivity activity = buildActivity(TestWithStyleAttrActivity.class).create().get();
-    View button = activity.findViewById(R.id.button);
-    assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+    try (ActivityController<TestWithStyleAttrActivity> activityController =
+        buildActivity(TestWithStyleAttrActivity.class)) {
+      TestWithStyleAttrActivity activity = activityController.create().get();
+      View button = activity.findViewById(R.id.button);
+      assertThat(button.getLayoutParams().width).isEqualTo(42); // comes via style attr
+    }
   }
 
   @Test
@@ -301,7 +317,7 @@ public class ShadowThemeTest {
 
   private static <T> void awaitFinalized(WeakReference<T> weakRef) {
     final CountDownLatch latch = new CountDownLatch(1);
-    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
     while (System.nanoTime() < deadline) {
       if (weakRef.get() == null) {
         return;
