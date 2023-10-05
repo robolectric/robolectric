@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
-import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -43,9 +42,7 @@ import org.robolectric.internal.bytecode.ClassHandler;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptor;
 import org.robolectric.internal.bytecode.Sandbox;
-import org.robolectric.internal.bytecode.SandboxClassLoader;
 import org.robolectric.internal.bytecode.ShadowMap;
-import org.robolectric.internal.bytecode.ShadowWrangler;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.SdkPicker;
@@ -277,11 +274,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
       System.err.println(
-          "Skip "
+          "Failure for "
               + method.getName()
-              + " because Robolectric doesn't support legacy resources mode after P");
-      throw new AssumptionViolatedException(
-          "Robolectric doesn't support legacy resources mode after P");
+              + ": Robolectric doesn't support legacy resources mode after P");
+      throw new AssertionError("Robolectric doesn't support legacy resources mode after P");
     }
     LooperMode.Mode looperMode =
         roboMethod.configuration == null

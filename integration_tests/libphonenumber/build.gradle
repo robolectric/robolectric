@@ -1,13 +1,37 @@
-import org.robolectric.gradle.RoboJavaModulePlugin
+import org.robolectric.gradle.AndroidProjectConfigPlugin
 
-apply plugin: RoboJavaModulePlugin
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+
+android {
+    compileSdk 33
+    namespace 'org.robolectric.integrationtests.libphonenumber'
+
+    defaultConfig {
+        minSdk 19
+        targetSdk 33
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+}
 
 dependencies {
-    api project(":robolectric")
-    api libs.junit4
-    compileOnly AndroidSdk.MAX_SDK.coordinates
+    testImplementation project(":robolectric")
+    testImplementation libs.junit4
 
-    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation libs.truth
     testImplementation libs.libphonenumber
 }
