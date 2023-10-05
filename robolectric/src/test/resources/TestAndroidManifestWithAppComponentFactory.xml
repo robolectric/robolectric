@@ -12,5 +12,13 @@
     </receiver>
     <receiver
       android:name=".CustomConstructorReceiverWrapper$CustomConstructorWithEmptyActionReceiver" />
+
+    <service
+      android:name=".CustomConstructorServices$CustomConstructorService" />
+    <service
+      android:name=".CustomConstructorServices$CustomConstructorIntentService" />
+    <service
+      android:name=".CustomConstructorServices$CustomConstructorJobService"
+      android:permission="android.permission.BIND_JOB_SERVICE"/>
   </application>
 </manifest>
