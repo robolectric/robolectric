@@ -1,15 +1,21 @@
 package org.robolectric;
 
+import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.annotation.IdRes;
+import android.annotation.RequiresApi;
 import android.app.Activity;
+import android.app.ActivityThread;
+import android.app.AppComponentFactory;
 import android.app.Fragment;
 import android.app.IntentService;
+import android.app.LoadedApk;
 import android.app.Service;
 import android.app.backup.BackupAgent;
 import android.content.ContentProvider;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Looper;
@@ -36,7 +42,7 @@ public class Robolectric {
   }
 
   public static <T extends Service> ServiceController<T> buildService(Class<T> serviceClass, Intent intent) {
-    return ServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
+    return ServiceController.of(instantiateService(serviceClass, intent), intent);
   }
 
   public static <T extends Service> T setupService(Class<T> serviceClass) {
@@ -48,7 +54,7 @@ public class Robolectric {
   }
 
   public static <T extends IntentService> IntentServiceController<T> buildIntentService(Class<T> serviceClass, Intent intent) {
-    return IntentServiceController.of(ReflectionHelpers.callConstructor(serviceClass), intent);
+    return IntentServiceController.of(instantiateService(serviceClass, intent), intent);
   }
 
   public static <T extends IntentService> T setupIntentService(Class<T> serviceClass) {
@@ -377,5 +383,44 @@ public class Robolectric {
    */
   public static void flushBackgroundThreadScheduler() {
     getBackgroundThreadScheduler().advanceToLastPostedRunnable();
+  }
+
+  @SuppressWarnings({"NewApi", "unchecked"})
+  private static <T extends Service> T instantiateService(Class<T> serviceClass, Intent intent) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
+      final LoadedApk loadedApk = getLoadedApk();
+      AppComponentFactory factory = getAppComponentFactory(loadedApk);
+      if (factory != null) {
+        try {
+          Service instance =
+              factory.instantiateService(
+                  loadedApk.getClassLoader(), serviceClass.getName(), intent);
+          if (instance != null && serviceClass.isAssignableFrom(instance.getClass())) {
+            return (T) instance;
+          }
+        } catch (ReflectiveOperationException e) {
+          Logger.debug("Failed to instantiate Service using AppComponentFactory", e);
+        }
+      }
+    }
+    return ReflectionHelpers.callConstructor(serviceClass);
+  }
+
+  @Nullable
+  @RequiresApi(api = P)
+  private static AppComponentFactory getAppComponentFactory(final LoadedApk loadedApk) {
+    if (RuntimeEnvironment.getApiLevel() < P) {
+      return null;
+    }
+    if (loadedApk == null || loadedApk.getApplicationInfo().appComponentFactory == null) {
+      return null;
+    }
+    return loadedApk.getAppFactory();
+  }
+
+  private static LoadedApk getLoadedApk() {
+    final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
+    return activityThread.getPackageInfo(
+        activityThread.getApplication().getApplicationInfo(), null, Context.CONTEXT_INCLUDE_CODE);
   }
 }
