@@ -62,7 +62,7 @@ public class Robolectric {
   }
 
   public static <T extends ContentProvider> ContentProviderController<T> buildContentProvider(Class<T> contentProviderClass) {
-    return ContentProviderController.of(ReflectionHelpers.callConstructor(contentProviderClass));
+    return ContentProviderController.of(instantiateContentProvider(contentProviderClass));
   }
 
   public static <T extends ContentProvider> T setupContentProvider(Class<T> contentProviderClass) {
@@ -404,6 +404,26 @@ public class Robolectric {
       }
     }
     return ReflectionHelpers.callConstructor(serviceClass);
+  }
+
+  @SuppressWarnings({"NewApi", "unchecked"})
+  private static <T extends ContentProvider> T instantiateContentProvider(Class<T> providerClass) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
+      final LoadedApk loadedApk = getLoadedApk();
+      AppComponentFactory factory = getAppComponentFactory(loadedApk);
+      if (factory != null) {
+        try {
+          ContentProvider instance =
+              factory.instantiateProvider(loadedApk.getClassLoader(), providerClass.getName());
+          if (instance != null && providerClass.isAssignableFrom(instance.getClass())) {
+            return (T) instance;
+          }
+        } catch (ReflectiveOperationException e) {
+          Logger.debug("Failed to instantiate ContentProvider using AppComponentFactory", e);
+        }
+      }
+    }
+    return ReflectionHelpers.callConstructor(providerClass);
   }
 
   @Nullable
