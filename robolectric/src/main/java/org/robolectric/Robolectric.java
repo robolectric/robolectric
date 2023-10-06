@@ -32,6 +32,7 @@ import org.robolectric.android.controller.FragmentController;
 import org.robolectric.android.controller.IntentServiceController;
 import org.robolectric.android.controller.ServiceController;
 import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.util.Logger;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 
@@ -116,7 +117,7 @@ public class Robolectric {
         Thread.currentThread() == Looper.getMainLooper().getThread(),
         "buildActivity must be called on main Looper thread");
     return ActivityController.of(
-        ReflectionHelpers.callConstructor(activityClass), intent, activityOptions);
+        instantiateActivity(activityClass, intent), intent, activityOptions);
   }
 
   /**
@@ -424,6 +425,27 @@ public class Robolectric {
       }
     }
     return ReflectionHelpers.callConstructor(providerClass);
+  }
+
+  @SuppressWarnings({"NewApi", "unchecked"})
+  private static <T extends Activity> T instantiateActivity(Class<T> activityClass, Intent intent) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
+      final LoadedApk loadedApk = getLoadedApk();
+      AppComponentFactory factory = getAppComponentFactory(loadedApk);
+      if (factory != null) {
+        try {
+          Activity instance =
+              factory.instantiateActivity(
+                  loadedApk.getClassLoader(), activityClass.getName(), intent);
+          if (instance != null && activityClass.isAssignableFrom(instance.getClass())) {
+            return (T) instance;
+          }
+        } catch (ReflectiveOperationException e) {
+          Logger.debug("Failed to instantiate Activity using AppComponentFactory", e);
+        }
+      }
+    }
+    return ReflectionHelpers.callConstructor(activityClass);
   }
 
   @Nullable

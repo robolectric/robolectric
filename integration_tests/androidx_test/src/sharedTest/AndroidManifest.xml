@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
-  <application>
+  <application
+      android:appComponentFactory="org.robolectric.integrationtests.axt.ActivityScenarioTest$CustomAppComponentFactory"
+      tools:replace="android:appComponentFactory">
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityTestRuleTest$TranscriptActivity"
         android:exported="true"/>
@@ -17,6 +20,9 @@
         android:exported="true"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity"
+        android:exported = "true"/>
+    <activity
+        android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$ActivityWithCustomConstructor"
         android:exported = "true"/>
     <activity-alias
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"

@@ -7,13 +7,17 @@
       android:minSdkVersion="19"
       android:targetSdkVersion="34"/>
 
-  <application>
+  <application
+        android:appComponentFactory="org.robolectric.integrationtests.axt.ActivityScenarioTest$CustomAppComponentFactory">
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$LifecycleOwnerActivity"
         android:exported="true"/>
     <activity
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity"
         android:exported = "true"/>
+    <activity
+        android:name="org.robolectric.integrationtests.axt.ActivityScenarioTest$ActivityWithCustomConstructor"
+        android:exported="true"/>
     <activity-alias
         android:name="org.robolectric.integrationtests.axt.ActivityScenarioTestAlias"
         android:targetActivity="org.robolectric.integrationtests.axt.ActivityScenarioTest$TranscriptActivity" />
