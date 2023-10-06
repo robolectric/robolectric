@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="org.robolectric.integrationtests.compattarget28">
-    <application />
+<manifest xmlns:tools="http://schemas.android.com/tools"
+    package="org.robolectric.integrationtests.compattarget28"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:appComponentFactory="org.robolectric.integrationtests.compattarget28.TestAppComponentFactory"
+        tools:targetApi="p" />
 </manifest>

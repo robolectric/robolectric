@@ -2,6 +2,7 @@ package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.ContentProvider;
 import android.content.ContentValues;
@@ -9,6 +10,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -16,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.CustomConstructorServices.CustomConstructorIntentService;
 import org.robolectric.CustomConstructorServices.CustomConstructorJobService;
 import org.robolectric.CustomConstructorServices.CustomConstructorService;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -70,6 +73,32 @@ public class CustomAppComponentFactoryTest {
     assertThat(provider.isCreated).isTrue();
   }
 
+  @Test
+  @SuppressWarnings("deprecation")
+  public void instantiateActivityWithCustomConstructor() {
+    CustomConstructorActivity activity = Robolectric.setupActivity(CustomConstructorActivity.class);
+    assertThat(activity.getIntValue()).isEqualTo(100);
+  }
+
+  @Test
+  public void instantiateActivityWithCustomConstructorAndIntent() {
+    Uri intentUri = Uri.parse("https://robolectric.org");
+    Intent intent = new Intent(Intent.ACTION_VIEW, intentUri);
+    try (ActivityController<CustomConstructorActivity> activity =
+        Robolectric.buildActivity(CustomConstructorActivity.class, intent)) {
+      assertThat(activity.get().getIntValue()).isEqualTo(100);
+      assertThat(activity.get().getIntent().getData()).isEqualTo(intentUri);
+      assertThat(activity.get().getIntent().getAction()).isEqualTo(Intent.ACTION_VIEW);
+    }
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  public void instantiatePrivateActivityClass() {
+    PrivateActivity activity = Robolectric.setupActivity(PrivateActivity.class);
+    assertThat(activity.isCreated).isTrue();
+  }
+
   private static class PrivateService extends Service {
     public boolean isCreated = false;
 
@@ -117,6 +146,16 @@ public class CustomAppComponentFactoryTest {
     @Override
     public int update(Uri uri, ContentValues contentValues, String s, String[] strings) {
       return 0;
+    }
+  }
+
+  private static class PrivateActivity extends Activity {
+    public boolean isCreated = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      isCreated = true;
     }
   }
 }

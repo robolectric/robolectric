@@ -18,6 +18,9 @@ import org.robolectric.Robolectric.buildActivity
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
+import org.robolectric.annotation.Config
+import org.robolectric.integrationtests.compattarget28.MainActivity
+import org.robolectric.integrationtests.compattarget28.MainActivity.CreationSource
 import org.robolectric.testapp.TestActivity
 
 @RunWith(RobolectricTestRunner::class)
@@ -78,5 +81,18 @@ class NormalCompatibilityTest {
       listener,
       Handler(Looper.getMainLooper())
     )
+  }
+
+  @Test
+  fun `MainActivity created correctly using AppComponentFactory`() {
+    val activity = Robolectric.setupActivity(MainActivity::class.java)
+    assertThat(activity.creationSource).isEqualTo(CreationSource.CUSTOM_CONSTRUCTOR)
+  }
+
+  @Test
+  @Config(minSdk = 19, maxSdk = 27)
+  fun `MainActivity created correctly using default constructor on api lower than 28`() {
+    val activity = Robolectric.setupActivity(MainActivity::class.java)
+    assertThat(activity.creationSource).isEqualTo(CreationSource.DEFAULT_CONSTRUCTOR)
   }
 }

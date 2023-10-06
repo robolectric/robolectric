@@ -23,5 +23,8 @@
     <provider
       android:name=".CustomConstructorContentProvider"
       android:authorities="org.robolectric.authority" />
+    <activity
+      android:name=".CustomConstructorContentProvider"
+      android:authorities="org.robolectric.authority" />
   </application>
 </manifest>
