@@ -3,6 +3,7 @@ package org.robolectric;
 import android.app.AppComponentFactory;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentProvider;
 import android.content.Intent;
 import org.robolectric.CustomConstructorReceiverWrapper.CustomConstructorWithEmptyActionReceiver;
 import org.robolectric.CustomConstructorReceiverWrapper.CustomConstructorWithOneActionReceiver;
@@ -37,5 +38,16 @@ public final class CustomAppComponentFactory extends AppComponentFactory {
       }
     }
     return super.instantiateService(cl, className, intent);
+  }
+
+  @Override
+  public ContentProvider instantiateProvider(ClassLoader cl, String className)
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    if (className != null) {
+      if (className.contains(CustomConstructorContentProvider.class.getName())) {
+        return new CustomConstructorContentProvider(100);
+      }
+    }
+    return super.instantiateProvider(cl, className);
   }
 }
