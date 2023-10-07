@@ -71,10 +71,10 @@ class PerfStatsCollectorTest {
     try {
       collector.measure<Any, RuntimeException>("event") {
         fakeClock.delay(5)
-        throw RuntimeException("fake")
+        throw IllegalThreadStateException("fake")
       }
       Assert.fail("should have thrown")
-    } catch (e: RuntimeException) {
+    } catch (e: IllegalThreadStateException) {
       assertThat(e.message).isEqualTo("fake")
     }
     val metrics = collector.metrics

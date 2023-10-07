@@ -9,7 +9,11 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 class NumberReturner {
-  fun returnNumber() = 0
+  fun returnNumber() = RETURN_NUMBER
+
+  companion object {
+    private const val RETURN_NUMBER = 0
+  }
 }
 
 @RunWith(RobolectricTestRunner::class)
