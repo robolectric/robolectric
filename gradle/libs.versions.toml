@@ -36,6 +36,9 @@ kotlinx-coroutines = '1.7.3'
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
 spotless-gradle = "6.22.0"
 
+# https://detekt.dev/changelog
+detekt-gradle = "1.23.1"
+
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
 apache-http-client = "4.0.3"
@@ -121,6 +124,7 @@ play-services-base-for-shadows = "8.4.0"
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 spotless-gradle = { module = "com.diffplug.spotless:spotless-plugin-gradle", version.ref = "spotless-gradle" }
+detekt-gradle = { module = "io.gitlab.arturbosch.detekt:detekt-gradle-plugin", version.ref = "detekt-gradle" }
 
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines"}

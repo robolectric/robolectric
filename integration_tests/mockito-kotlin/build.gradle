@@ -4,6 +4,7 @@ import org.robolectric.gradle.RoboJavaModulePlugin
 apply plugin: RoboJavaModulePlugin
 apply plugin: 'kotlin'
 apply plugin: "com.diffplug.spotless"
+apply plugin: "io.gitlab.arturbosch.detekt"
 
 spotless {
     kotlin {

@@ -384,11 +384,11 @@ class SchedulerTest {
     val runnablesThatWereRun: MutableList<Int> = ArrayList()
     scheduler.post {
       runnablesThatWereRun.add(1)
-      throw RuntimeException("foo")
+      throw IllegalThreadStateException("foo")
     }
     try {
       scheduler.unPause()
-    } catch (ignored: RuntimeException) {}
+    } catch (ignored: IllegalThreadStateException) {}
     scheduler.post { runnablesThatWereRun.add(2) }
     assertThat(runnablesThatWereRun).containsExactly(1, 2)
   }

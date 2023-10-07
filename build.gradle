@@ -16,6 +16,7 @@ buildscript {
         classpath libs.aggregate.javadocs.gradle
         classpath libs.kotlin.gradle
         classpath libs.spotless.gradle
+        classpath libs.detekt.gradle
     }
 }
 
