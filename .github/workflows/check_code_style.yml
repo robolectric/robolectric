@@ -1,4 +1,4 @@
-name: Check Code Formatting
+name: Check Code Style
 
 on:
   push:
@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 jobs:
-  check_code_formatting:
+  check_code_style:
     runs-on: ubuntu-22.04
 
     steps:
@@ -34,6 +34,7 @@ jobs:
           curl -L -o $HOME/google-java-format.jar https://github.com/google/google-java-format/releases/download/v1.15.0/google-java-format-1.15.0-all-deps.jar
           curl -L -o $HOME/google-java-format-diff.py https://raw.githubusercontent.com/google/google-java-format/v1.15.0/scripts/google-java-format-diff.py
           chmod +x $HOME/google-java-format-diff.py
+
       - name: Check Java formatting
         run: |
           base_branch="${{ github.event.pull_request.base.ref }}"
@@ -49,3 +50,7 @@ jobs:
       - name: Check Kotlin formatting
         run: |
           ./gradlew spotlessCheck
+
+      - name: Check Kotlin Code Style
+        run: |
+          ./gradlew detekt
