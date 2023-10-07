@@ -35,15 +35,15 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         this.frameworkSdkBuildVersion = frameworkSdkBuildVersion
     }
 
-    String getGroupId() {
+    static String getGroupId() {
         return "org.robolectric"
     }
 
-    String getArtifactId() {
+    static String getArtifactId() {
         return "android-all"
     }
 
-    String getPreinstrumentedArtifactId() {
+    static String getPreinstrumentedArtifactId() {
         return "android-all-instrumented"
     }
 
@@ -76,6 +76,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         return apiLevel - other.apiLevel
     }
 
+    @Override
     boolean equals(o) {
         if (this.is(o)) return true
         if (getClass() != o.class) return false
@@ -87,6 +88,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
         return true
     }
 
+    @Override
     int hashCode() {
         return apiLevel
     }
