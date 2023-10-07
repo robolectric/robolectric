@@ -1,5 +1,6 @@
 package org.robolectric.integrationtests.memoryleaks;
 
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -145,7 +146,7 @@ public abstract class BaseMemoryLeaksTest {
   }
 
   @Test
-  @Config(sdk = 29)
+  @Config(minSdk = N)
   public void themeObjectInNativeObjectRegistry() {
     final AtomicLong themeId = new AtomicLong(0);
     assertNotLeaking(
