@@ -13,6 +13,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -31,10 +32,12 @@ import android.app.timezonedetector.ITimeZoneDetectorService;
 import android.app.trust.ITrustManager;
 import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
+import android.app.wearable.IWearableSensingManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothManager;
 import android.companion.ICompanionDeviceManager;
+import android.companion.virtual.IVirtualDeviceManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
@@ -217,6 +220,10 @@ public class ShadowServiceManager {
       addBinderService(Context.LOCALE_SERVICE, ILocaleManager.class);
       addBinderService(Context.SAFETY_CENTER_SERVICE, ISafetyCenterManager.class);
       addBinderService(Context.STATUS_BAR_SERVICE, IStatusBar.class);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      addBinderService(Context.VIRTUAL_DEVICE_SERVICE, IVirtualDeviceManager.class);
+      addBinderService(Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
     }
   }
 
