@@ -1126,6 +1126,29 @@ public class ShadowUserManagerTest {
     assertThat(userManager.someUserHasAccount(SEED_ACCOUNT_NAME, SEED_ACCOUNT_TYPE)).isFalse();
   }
 
+  @Test
+  @Config(minSdk = S)
+  public void isUserForeground_defaultValue_returnsTrue() {
+    assertThat(userManager.isUserForeground()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void isUserForeground_overridden_returnsNewValue() {
+    shadowOf(userManager).setUserForeground(false);
+
+    assertThat(userManager.isUserForeground()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void isUserForeground_valueToggled_returnsLatestValue() {
+    shadowOf(userManager).setUserForeground(false);
+    shadowOf(userManager).setUserForeground(true);
+
+    assertThat(userManager.isUserForeground()).isTrue();
+  }
+
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.
   private static UserHandle newUserHandle(int uid) {
     Parcel userParcel = Parcel.obtain();

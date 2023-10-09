@@ -88,6 +88,7 @@ public class ShadowUserManager {
   private Boolean cloneProfile;
   private boolean userUnlocked = true;
   private boolean isSystemUser = true;
+  private volatile boolean isForegroundUser = true;
 
   /**
    * Holds whether or not a managed profile can be unlocked. If a profile is not in this map, it is
@@ -1258,5 +1259,15 @@ public class ShadowUserManager {
   /** Removes user account set via {@link #setSomeUserHasAccount(String, String)}. */
   public void removeSomeUserHasAccount(String accountName, String accountType) {
     userAccounts.remove(new Account(accountName, accountType));
+  }
+
+  /** Sets whether or not the current user is the foreground user. */
+  public void setUserForeground(boolean foreground) {
+    isForegroundUser = foreground;
+  }
+
+  @Implementation(minSdk = S)
+  protected boolean isUserForeground() {
+    return isForegroundUser;
   }
 }
