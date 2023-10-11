@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.app.PendingIntent;
@@ -9,6 +10,8 @@ import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.companion.virtual.VirtualDeviceParams;
 import android.companion.virtual.sensor.VirtualSensor;
+import android.companion.virtual.sensor.VirtualSensorCallback;
+import android.companion.virtual.sensor.VirtualSensorDirectChannelCallback;
 import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,8 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for VirtualDeviceManager. */
@@ -123,7 +128,7 @@ public class ShadowVirtualDeviceManager {
     @Implementation
     protected void close() {}
 
-    public VirtualDeviceParams getParams() {
+    VirtualDeviceParams getParams() {
       return params;
     }
 
@@ -164,9 +169,36 @@ public class ShadowVirtualDeviceManager {
       return pendingIntent;
     }
 
+    public VirtualSensorCallback getVirtualSensorCallback() {
+      return params.getVirtualSensorCallback() == null
+          ? null
+          : reflector(
+                  VirtualSensorCallbackDelegateReflector.class, params.getVirtualSensorCallback())
+              .getCallback();
+    }
+
+    public VirtualSensorDirectChannelCallback getVirtualSensorDirectChannelCallback() {
+      return params.getVirtualSensorCallback() == null
+          ? null
+          : reflector(
+                  VirtualSensorCallbackDelegateReflector.class, params.getVirtualSensorCallback())
+              .getDirectChannelCallback();
+    }
+
     @Resetter
     public static void reset() {
       nextDeviceId.set(1);
     }
+  }
+
+  @ForType(
+      className =
+          "android.companion.virtual.VirtualDeviceParams$Builder$VirtualSensorCallbackDelegate")
+  private interface VirtualSensorCallbackDelegateReflector {
+    @Accessor("mCallback")
+    VirtualSensorCallback getCallback();
+
+    @Accessor("mDirectChannelCallback")
+    VirtualSensorDirectChannelCallback getDirectChannelCallback();
   }
 }

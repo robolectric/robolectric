@@ -133,8 +133,7 @@ public class ShadowVirtualDeviceManagerTest {
                 .build());
 
     ShadowVirtualDevice shadowDevice = Shadow.extract(virtualDevice);
-    ShadowVirtualDeviceParams shadowParams = Shadow.extract(shadowDevice.getParams());
-    VirtualSensorCallback retrievedCallback = shadowParams.getVirtualSensorCallback();
+    VirtualSensorCallback retrievedCallback = shadowDevice.getVirtualSensorCallback();
 
     retrievedCallback.onConfigurationChanged(
         virtualDevice.getVirtualSensorList().get(0), true, Duration.ZERO, Duration.ZERO);
