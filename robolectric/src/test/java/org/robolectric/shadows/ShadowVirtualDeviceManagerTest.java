@@ -62,6 +62,18 @@ public class ShadowVirtualDeviceManagerTest {
   }
 
   @Test
+  public void testIsValidVirtualDeviceId() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+
+    assertThat(virtualDeviceManager.isValidVirtualDeviceId(virtualDevice.getDeviceId())).isTrue();
+
+    // Random virtual device id should be false
+    assertThat(virtualDeviceManager.isValidVirtualDeviceId(999)).isFalse();
+  }
+
+  @Test
   public void testGetDevicePolicy() {
     VirtualDevice virtualDevice =
         virtualDeviceManager.createVirtualDevice(
