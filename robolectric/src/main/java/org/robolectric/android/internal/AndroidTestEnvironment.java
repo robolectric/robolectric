@@ -7,6 +7,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
+import android.app.AppCompatCallbacks;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
@@ -367,6 +368,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
       if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);
+      }
+
+      // circument the 'No Compatibility callbacks set!' log. See #8509
+      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.R) {
+        AppCompatCallbacks.install(new long[0]);
       }
 
       PerfStatsCollector.getInstance()
