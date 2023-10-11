@@ -1,4 +1,3 @@
-@@ -0,0 1,85 @@
 #!/bin/bash
 #
 # This script signs already built AOSP Android jars, and installs them in your local
@@ -17,11 +16,6 @@ function usage() {
 
 if [[ $# -ne 3 ]]; then
     usage
-    exit 1
-fi
-
-read -p "Please set the GPG passphrase: " -s signingPassphrase
-if [[ -z "${signingPassphrase}" ]]; then
     exit 1
 fi
 
@@ -53,7 +47,7 @@ build_signed_packages() {
 
     echo "Robolectric: Signing files with gpg..."
     for ext in ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
-        ( cd ${JAR_DIR} && gpg -ab --passphrase ${signingPassphrase} android-all-${ROBOLECTRIC_VERSION}$ext )
+        ( cd ${JAR_DIR} && gpg -ab android-all-${ROBOLECTRIC_VERSION}$ext )
     done
 
     echo "Robolectric: Creating bundle for Sonatype upload..."
