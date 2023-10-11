@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
-import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.ReflectionHelpers.getField;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -57,7 +56,6 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowViewRootImpl.ViewRootImplReflector;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.TimeUtils;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -172,25 +170,16 @@ public class ShadowView {
   @Implementation(maxSdk = KITKAT)
   protected void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
     this.attributeSet = attributeSet;
-    invokeConstructor(
-        View.class,
-        realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, defStyle));
+    reflector(_View_.class, realView).__constructor__(context, attributeSet, defStyle);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH)
+  /* Note: maxSdk is R because capturing `attributeSet` is not needed any more after R. */
+  @Implementation(minSdk = KITKAT_WATCH, maxSdk = R)
   protected void __constructor__(
       Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
     this.attributeSet = attributeSet;
-    invokeConstructor(
-        View.class,
-        realView,
-        ClassParameter.from(Context.class, context),
-        ClassParameter.from(AttributeSet.class, attributeSet),
-        ClassParameter.from(int.class, defStyleAttr),
-        ClassParameter.from(int.class, defStyleRes));
+    reflector(_View_.class, realView)
+        .__constructor__(context, attributeSet, defStyleAttr, defStyleRes);
   }
 
   @Implementation
@@ -948,6 +937,13 @@ public class ShadowView {
 
     @Direct
     void setScrollY(int value);
+
+    @Direct
+    void __constructor__(Context context, AttributeSet attributeSet, int defStyle);
+
+    @Direct
+    void __constructor__(
+        Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes);
   }
 
   public void callOnAttachedToWindow() {
