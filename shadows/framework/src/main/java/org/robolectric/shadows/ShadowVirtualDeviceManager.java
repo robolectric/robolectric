@@ -87,6 +87,12 @@ public class ShadowVirtualDeviceManager {
         .orElse(VirtualDeviceParams.DEVICE_POLICY_DEFAULT);
   }
 
+  @Implementation
+  protected boolean isValidVirtualDeviceId(int deviceId) {
+    return mVirtualDevices.stream()
+        .anyMatch(virtualDevice -> virtualDevice.getDeviceId() == deviceId);
+  }
+
   /** Shadow for inner class VirtualDeviceManager.VirtualDevice. */
   @Implements(
       value = VirtualDeviceManager.VirtualDevice.class,
