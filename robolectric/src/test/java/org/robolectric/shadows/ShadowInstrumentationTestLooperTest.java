@@ -21,6 +21,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.shadow.api.Shadow;
 
 @LooperMode(Mode.INSTRUMENTATION_TEST)
 @RunWith(RobolectricTestRunner.class)
@@ -135,5 +136,41 @@ public class ShadowInstrumentationTestLooperTest {
     shadowLooper.idle();
 
     assertThat(didRun.get()).isTrue();
+  }
+
+  @Test
+  public void postSync_runsOnlyToTheRunnable() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.setPaused(true);
+    AtomicBoolean firstTaskRan = new AtomicBoolean();
+    AtomicBoolean secondTaskRan = new AtomicBoolean();
+    AtomicBoolean thirdTaskRan = new AtomicBoolean();
+
+    new Handler(Looper.getMainLooper()).post(() -> firstTaskRan.set(true));
+    shadowLooper.postSync(
+        () -> {
+          new Handler(Looper.getMainLooper()).post(() -> thirdTaskRan.set(true));
+          secondTaskRan.set(true);
+        });
+
+    assertThat(firstTaskRan.get()).isTrue();
+    assertThat(secondTaskRan.get()).isTrue();
+    assertThat(thirdTaskRan.get()).isFalse();
+  }
+
+  @Test
+  public void postSync_exceptionIsThrown() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              throw new RuntimeException();
+            });
+
+    assertThrows(RuntimeException.class, () -> shadowLooper.postSync(() -> {}));
+
+    // Restore main looper and main thread to avoid error at tear down
+    ShadowPausedLooper.resetLoopers();
   }
 }

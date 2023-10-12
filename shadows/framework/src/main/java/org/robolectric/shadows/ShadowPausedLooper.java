@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Instrumentation;
 import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -206,6 +207,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
   @Override
   public boolean postAtFrontOfQueue(Runnable runnable) {
     return new Handler(realLooper).postAtFrontOfQueue(runnable);
+  }
+
+  /**
+   * Posts the runnable to the looper and idles until the runnable has been run. Generally clients
+   * should prefer to use {@link Instrumentation#runOnMainSync(Runnable)}, which will reraise
+   * underlying runtime exceptions to the caller.
+   */
+  public void postSync(Runnable runnable) {
+    executeOnLooper(new PostAndIdleToRunnable(runnable));
   }
 
   // this API doesn't make sense in LooperMode.PAUSED, but just retain it for backwards
@@ -578,6 +588,33 @@ public final class ShadowPausedLooper extends ShadowLooper {
         msg.getTarget().dispatchMessage(msg);
         triggerIdleHandlersIfNeeded(msg);
       }
+    }
+  }
+
+  /**
+   * Control runnable that posts the provided runnable to the queue and then idles up to and
+   * including the posted runnable. Provides essentially similar functionality to {@link
+   * Instrumentation#runOnMainSync(Runnable)}.
+   */
+  private class PostAndIdleToRunnable extends ControlRunnable {
+    private final Runnable runnable;
+
+    PostAndIdleToRunnable(Runnable runnable) {
+      this.runnable = runnable;
+    }
+
+    @Override
+    public void doRun() {
+      new Handler(realLooper).post(runnable);
+      Message msg;
+      do {
+        msg = getNextExecutableMessage();
+        if (msg == null) {
+          throw new IllegalStateException("Runnable is not in the queue");
+        }
+        msg.getTarget().dispatchMessage(msg);
+        triggerIdleHandlersIfNeeded(msg);
+      } while (msg.getCallback() != runnable);
     }
   }
 
