@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,6 +11,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -80,7 +82,7 @@ public class ShadowInstrumentationTestLooperTest {
   }
 
   @Test
-  public void exceptionOnMainThreadPropagated() throws InterruptedException {
+  public void exceptionOnMainThreadPropagated() {
     ShadowLooper shadowMainLooper = shadowOf(Looper.getMainLooper());
     Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -91,7 +93,6 @@ public class ShadowInstrumentationTestLooperTest {
     assertThrows(RuntimeException.class, () -> shadowMainLooper.idle());
 
     // Restore main looper and main thread to avoid error at tear down
-    Looper.getMainLooper().getThread().join();
     ShadowPausedLooper.resetLoopers();
   }
 
@@ -107,5 +108,32 @@ public class ShadowInstrumentationTestLooperTest {
     ht.join();
 
     assertThrows(IllegalStateException.class, () -> handler.post(() -> {}));
+  }
+
+  @Test
+  public void mainThreadDies_resetRestartsLooper() {
+    ShadowLooper shadowLooper = shadowOf(Looper.getMainLooper());
+    Handler handler = new Handler(Looper.getMainLooper());
+    AtomicBoolean didRun = new AtomicBoolean();
+
+    handler.post(
+        () -> {
+          throw new RuntimeException();
+        });
+    RuntimeException exception = null;
+    try {
+      shadowLooper.idle();
+    } catch (RuntimeException e) {
+      exception = e;
+    }
+    Preconditions.checkNotNull(exception);
+    ShadowPausedLooper.resetLoopers();
+    handler.post(
+        () -> {
+          didRun.set(true);
+        });
+    shadowLooper.idle();
+
+    assertThat(didRun.get()).isTrue();
   }
 }

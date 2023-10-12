@@ -444,6 +444,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
+  boolean hasUncaughtException() {
+    synchronized (realQueue) {
+      return uncaughtException != null;
+    }
+  }
+
   void checkQueueState() {
     synchronized (realQueue) {
       if (uncaughtException != null) {
