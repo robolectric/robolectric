@@ -330,6 +330,27 @@ public class ShadowCameraTest {
     assertThat(shadowCamera.enableShutterSound(true)).isTrue();
   }
 
+  @Test
+  public void cameraParameters_areCached() {
+    assertThat(camera.getParameters()).isSameInstanceAs(Camera.open().getParameters());
+  }
+
+  @Test
+  public void setSupportedFocusModes_empty_clearsCurrentFocusMode() {
+    Camera.Parameters parameters = camera.getParameters();
+    assertThat(parameters.getFocusMode()).isNotNull();
+    Shadows.shadowOf(parameters).setSupportedFocusModes();
+    assertThat(parameters.getFocusMode()).isNull();
+  }
+
+  @Test
+  public void setSupportedFlashModes_empty_clearsCurrentFocusMode() {
+    Camera.Parameters parameters = camera.getParameters();
+    assertThat(parameters.getFlashMode()).isNotNull();
+    Shadows.shadowOf(parameters).setSupportedFlashModes();
+    assertThat(parameters.getFlashMode()).isNull();
+  }
+
   private void addBackCamera() {
     Camera.CameraInfo backCamera = new Camera.CameraInfo();
     backCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
