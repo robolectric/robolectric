@@ -418,18 +418,24 @@ public final class ShadowPausedLooper extends ShadowLooper {
       if (ignoreUncaughtExceptions) {
         // ignore
       } else {
-        shadowQueue.setUncaughtException(e);
-        // release any ControlRunnables currently in queue to prevent deadlocks
-        shadowQueue.drainQueue(
-            input -> {
-              if (input instanceof ControlRunnable) {
-                ((ControlRunnable) input).runLatch.countDown();
-                return true;
-              }
-              return false;
-            });
+        synchronized (realLooper.getQueue()) {
+          shadowQueue.setUncaughtException(e);
+          // release any ControlRunnables currently in queue to prevent deadlocks
+          shadowQueue.drainQueue(
+              input -> {
+                if (input instanceof ControlRunnable) {
+                  ((ControlRunnable) input).runLatch.countDown();
+                  return true;
+                }
+                return false;
+              });
+        }
       }
-      throw e;
+      if (e instanceof ControlException) {
+        ((ControlException) e).rethrowCause();
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -458,6 +464,28 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  /**
+   * An exception raised by a {@link ControlRunnable} if the runnable was interrupted with an
+   * exception. The looper must call {@link #rethrowCause()} after performing cleanup associated
+   * with handling the exception.
+   */
+  private static final class ControlException extends RuntimeException {
+    private final ControlRunnable controlRunnable;
+
+    ControlException(ControlRunnable controlRunnable, RuntimeException cause) {
+      super(cause);
+      this.controlRunnable = controlRunnable;
+    }
+
+    void rethrowCause() {
+      // Release the control runnable only once the looper has finished draining to avoid any
+      // races on the thread that posted the control runnable (otherwise the calling thread may
+      // have subsequent interactions with the looper that result in inconsistent state).
+      controlRunnable.runLatch.countDown();
+      throw (RuntimeException) getCause();
+    }
+  }
+
   /** A runnable that changes looper state, and that must be run from looper's thread */
   private abstract static class ControlRunnable implements Runnable {
 
@@ -466,15 +494,19 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void run() {
+      boolean controlExceptionThrown = false;
       try {
         doRun();
       } catch (RuntimeException e) {
         if (!ignoreUncaughtExceptions) {
           exception = e;
         }
-        throw e;
+        controlExceptionThrown = true;
+        throw new ControlException(this, e);
       } finally {
-        runLatch.countDown();
+        if (!controlExceptionThrown) {
+          runLatch.countDown();
+        }
       }
     }
 
@@ -529,7 +561,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
         // Need to trigger the unpause action in PausedLooperExecutor
         looperExecutor.execute(runnable);
       } else {
-        runnable.run();
+        try {
+          runnable.run();
+        } catch (ControlException e) {
+          e.rethrowCause();
+        }
       }
     } else {
       if (looperMode() == LooperMode.Mode.PAUSED && realLooper.equals(Looper.getMainLooper())) {
