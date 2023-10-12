@@ -2,12 +2,12 @@ name: Tests
 
 on:
   push:
-    branches: [ master, 'robolectric-*.x' ]
+    branches: [ master, 'robolectric-*.x', 'google' ]
     paths-ignore:
       - '**.md'
 
   pull_request:
-    branches: [ master, google ]
+    branches: [ master ]
     paths-ignore:
       - '**.md'
 
@@ -35,7 +35,7 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
     runs-on: ubuntu-22.04
