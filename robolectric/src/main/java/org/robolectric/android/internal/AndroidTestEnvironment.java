@@ -414,7 +414,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       RuntimeEnvironment.compileTimeSystemResourcesFile = compileSdk.getJarPath();
 
       Path packageFile = appManifest.getApkFile();
-      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
+      if (packageFile != null) {
+        parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
+      } else {
+        parsedPackage = new Package("org.robolectric.default");
+        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
+      }
     }
     if (parsedPackage != null
         && parsedPackage.applicationInfo != null

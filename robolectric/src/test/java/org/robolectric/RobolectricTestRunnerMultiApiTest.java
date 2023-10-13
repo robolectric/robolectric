@@ -67,7 +67,6 @@ public class RobolectricTestRunnerMultiApiTest {
     delegateSdkPicker = new DefaultSdkPicker(sdkCollection, null);
 
     priorResourcesMode = System.getProperty("robolectric.resourcesMode");
-    System.setProperty("robolectric.resourcesMode", "legacy");
 
     priorAlwaysInclude = System.getProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
     System.clearProperty("robolectric.alwaysIncludeVariantMarkersInTestName");
@@ -77,7 +76,6 @@ public class RobolectricTestRunnerMultiApiTest {
   public void tearDown() throws Exception {
     TestUtil.resetSystemProperty(
         "robolectric.alwaysIncludeVariantMarkersInTestName", priorAlwaysInclude);
-    TestUtil.resetSystemProperty("robolectric.resourcesMode", priorResourcesMode);
   }
 
   @Test
