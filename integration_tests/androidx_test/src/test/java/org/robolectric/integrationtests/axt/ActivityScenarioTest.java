@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Looper;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.R;
@@ -277,6 +278,17 @@ public class ActivityScenarioTest {
                   activity -> {
                     throw new IllegalStateException("test");
                   }));
+    }
+  }
+
+  @Test
+  public void onActivity_runsOnMainLooperThread() {
+    try (ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launch(TranscriptActivity.class)) {
+      activityScenario.onActivity(
+          activity -> {
+            assertThat(Looper.getMainLooper().getThread()).isEqualTo(Thread.currentThread());
+          });
     }
   }
 }

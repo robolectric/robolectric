@@ -13,7 +13,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.integration.axt.R;
 
 /** Simple tests to verify espresso APIs can be used on both Robolectric and device. */
@@ -222,5 +227,17 @@ public final class EspressoTest {
       onView(withId(R.id.button)).perform(click());
       activityScenario.onActivity(action -> assertThat(action.buttonClicked).isTrue());
     }
+  }
+
+  @Test
+  @LooperMode(Mode.INSTRUMENTATION_TEST) // only instrumentation test mode has the correct behavior
+  public void onView_mainThread() {
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                assertThrows(
+                    IllegalStateException.class,
+                    () -> onView(withId(R.id.edit_text)).perform(typeText("Some text."))));
+    Espresso.onIdle();
   }
 }
