@@ -3,8 +3,6 @@ name: Copybara tests
 on:
   pull_request:
     branches: [ google ]
-    paths-ignore:
-      - '**.md'
 
 permissions:
   contents: read
