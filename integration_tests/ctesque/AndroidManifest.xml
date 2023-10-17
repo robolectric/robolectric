@@ -6,7 +6,7 @@
     package="org.robolectric.integrationtests.ctesque">
   <uses-sdk
       android:minSdkVersion="19"
-      android:targetSdkVersion="27" />
+      android:targetSdkVersion="34" />
 
   <application />
 

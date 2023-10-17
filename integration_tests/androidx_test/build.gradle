@@ -6,12 +6,12 @@ apply plugin: AndroidProjectConfigPlugin
 apply plugin: GradleManagedDevicePlugin
 
 android {
-    compileSdk 33
+    compileSdk 34
     namespace 'org.robolectric.integration.axt'
 
     defaultConfig {
         minSdk 19
-        targetSdk 33
+        targetSdk 34
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         testInstrumentationRunnerArguments useTestStorageService: 'true'
@@ -25,6 +25,9 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+            all {
+                systemProperty 'robolectric.graphicsMode', 'NATIVE'
+            }
         }
     }
     sourceSets {

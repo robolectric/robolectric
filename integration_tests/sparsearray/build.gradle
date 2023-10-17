@@ -13,12 +13,12 @@ spotless {
 }
 
 android {
-    compileSdk 33
+    compileSdk 34
     namespace 'org.robolectric.sparsearray'
 
     defaultConfig {
         minSdk 19
-        targetSdk 33
+        targetSdk 34
     }
 
     compileOptions {

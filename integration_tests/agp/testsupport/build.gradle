@@ -1,12 +1,12 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdk 33
+    compileSdk 34
     namespace 'org.robolectric.integrationtests.agp.testsupport'
 
     defaultConfig {
         minSdk 19
-        targetSdk 33
+        targetSdk 34
     }
 
     compileOptions {
