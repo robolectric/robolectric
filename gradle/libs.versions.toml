@@ -65,7 +65,7 @@ truth = "1.1.5"
 # https://github.com/unicode-org/icu/releases
 icu4j = "73.2"
 
-jacoco = "0.8.10"
+jacoco = "0.8.11"
 
 # https://github.com/javaee/javax.annotation/tags
 javax-annotation-api = "1.3.2"
