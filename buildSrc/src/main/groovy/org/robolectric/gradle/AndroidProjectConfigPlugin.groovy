@@ -2,6 +2,7 @@ package org.robolectric.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
 
 public class AndroidProjectConfigPlugin implements Plugin<Project> {
     @Override
@@ -63,5 +64,11 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
                 }
             }
         }
+
+        // Only run tests in the debug variant. This is to avoid running tests twice when `./gradlew test` is run at the top-level.
+        project.tasks.withType(Test) {
+            onlyIf { variantName.toLowerCase().contains('debug') }
+        }
     }
 }
+

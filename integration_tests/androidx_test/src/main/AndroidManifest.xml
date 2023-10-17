@@ -2,14 +2,19 @@
 <!--
   Manifest for ATSL integration tests
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application>
         <activity android:name="org.robolectric.integrationtests.axt.EspressoActivity"
                   android:label="Activity Label"
-                  android:exported="true" />
+                  android:exported="true" >
+                           <intent-filter >
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+                  </activity>
         <activity android:name="org.robolectric.integrationtests.axt.EspressoScrollingActivity"
             android:exported="true" />
         <activity android:name="org.robolectric.integrationtests.axt.ActivityWithPlatformMenu"

@@ -3,12 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static org.robolectric.shadow.api.Shadow.newInstanceOf;
 
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.os.Build;
 import android.view.SurfaceHolder;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,15 +17,50 @@ import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @Implements(Camera.class)
 public class ShadowCamera {
+  // These are completely arbitrary and likely outdated default parameters that have been added long
+  // ago.
+  private static final ImmutableMap<String, String> DEFAULT_PARAMS =
+      ImmutableMap.<String, String>builder()
+          .put("picture-size", "1280x960")
+          .put("preview-size", "640x480")
+          .put("preview-fps-range", "10,30")
+          .put("preview-frame-rate", "30")
+          .put("preview-format", "yuv420sp")
+          .put("picture-format-values", "yuv420sp,jpeg")
+          .put("preview-format-values", "yuv420sp,jpeg")
+          .put("picture-size-values", "320x240,640x480,800x600")
+          .put("preview-size-values", "320x240,640x480")
+          .put("preview-fps-range-values", "(15000,15000),(10000,30000)")
+          .put("preview-frame-rate-values", "10,15,30")
+          .put("exposure-compensation", "0")
+          .put("exposure-compensation-step", "0.5")
+          .put("min-exposure-compensation", "-6")
+          .put("max-exposure-compensation", "6")
+          .put("focus-mode-values", Camera.Parameters.FOCUS_MODE_AUTO)
+          .put("focus-mode", Camera.Parameters.FOCUS_MODE_AUTO)
+          .put(
+              "flash-mode-values",
+              Camera.Parameters.FLASH_MODE_AUTO
+                  + ","
+                  + Camera.Parameters.FLASH_MODE_ON
+                  + ","
+                  + Camera.Parameters.FLASH_MODE_OFF)
+          .put("flash-mode", Camera.Parameters.FLASH_MODE_AUTO)
+          .put("max-num-focus-areas", "1")
+          .put("max-num-metering-areas", "1")
+          .build();
 
   private static int lastOpenedCameraId;
 
   private int id;
-  private boolean locked;
+  private boolean locked = true;
   private boolean previewing;
   private boolean released;
   private Camera.Parameters parameters;
@@ -34,27 +70,16 @@ public class ShadowCamera {
   private int displayOrientation;
   private Camera.AutoFocusCallback autoFocusCallback;
   private boolean autoFocusing;
-  private boolean shutterSoundEnabled;
+  private boolean shutterSoundEnabled = true;
 
-  private static Map<Integer, Camera.CameraInfo> cameras = new HashMap<>();
+  private static final Map<Integer, Camera.CameraInfo> cameras = new HashMap<>();
+  private static final Map<Integer, Camera.Parameters> cameraParameters = new HashMap<>();
 
   @RealObject private Camera realCamera;
 
   @Implementation
-  protected void __constructor__() {
-    locked = true;
-    previewing = false;
-    released = false;
-    shutterSoundEnabled = true;
-  }
-
-  @Implementation
   protected static Camera open() {
-    lastOpenedCameraId = 0;
-    Camera camera = newInstanceOf(Camera.class);
-    ShadowCamera shadowCamera = Shadow.extract(camera);
-    shadowCamera.id = 0;
-    return camera;
+    return open(0);
   }
 
   @Implementation
@@ -63,6 +88,11 @@ public class ShadowCamera {
     Camera camera = newInstanceOf(Camera.class);
     ShadowCamera shadowCamera = Shadow.extract(camera);
     shadowCamera.id = cameraId;
+    if (cameraParameters.containsKey(cameraId)) {
+      shadowCamera.parameters = cameraParameters.get(cameraId);
+    } else {
+      cameraParameters.put(cameraId, camera.getParameters());
+    }
     return camera;
   }
 
@@ -82,8 +112,12 @@ public class ShadowCamera {
 
   @Implementation
   protected Camera.Parameters getParameters() {
-    if (null == parameters) {
-      parameters = newInstanceOf(Camera.Parameters.class);
+    if (parameters == null) {
+      parameters =
+          ReflectionHelpers.callConstructor(
+              Camera.Parameters.class, ClassParameter.from(Camera.class, realCamera));
+      Joiner.MapJoiner mapJoiner = Joiner.on(";").withKeyValueSeparator("=");
+      parameters.unflatten(mapJoiner.join(DEFAULT_PARAMS));
     }
     return parameters;
   }
@@ -261,149 +295,36 @@ public class ShadowCamera {
     cameras.put(id, camInfo);
   }
 
+  @Resetter
   public static void clearCameraInfo() {
     cameras.clear();
+    cameraParameters.clear();
   }
 
   /** Shadows the Android {@code Camera.Parameters} class. */
   @Implements(Camera.Parameters.class)
   public static class ShadowParameters {
 
-    private int pictureWidth = 1280;
-    private int pictureHeight = 960;
-    private int previewWidth = 640;
-    private int previewHeight = 480;
-    private int previewFormat = ImageFormat.NV21;
-    private int previewFpsMin = 10;
-    private int previewFpsMax = 30;
-    private int previewFps = 30;
-    private int exposureCompensation = 0;
-    private String flashMode;
-    private String focusMode;
-    private List<String> supportedFlashModes = new ArrayList<>();
-    private List<String> supportedFocusModes = new ArrayList<>();
-    private int maxNumFocusAreas;
-    private List<Camera.Area> focusAreas = new ArrayList<>();
-    private int maxNumMeteringAreas;
-    private List<Camera.Area> meteringAreas = new ArrayList<>();
-    private final Map<String, String> paramsMap = new HashMap<>();
-    private static List<Camera.Size> supportedPreviewSizes;
+    @SuppressWarnings("nullness:initialization.field.uninitialized") // Managed by Robolectric
+    @RealObject
+    private Camera.Parameters realParameters;
 
-    /**
-     * Explicitly initialize custom preview sizes array, to switch from default values to
-     * individually added.
-     */
     public void initSupportedPreviewSizes() {
-      supportedPreviewSizes = new ArrayList<>();
-    }
-
-    /** Add custom preview sizes to supportedPreviewSizes. */
-    public void addSupportedPreviewSize(int width, int height) {
-      Camera.Size newSize = newInstanceOf(Camera.class).new Size(width, height);
-      supportedPreviewSizes.add(newSize);
-    }
-
-    @Implementation
-    protected Camera.Size getPictureSize() {
-      Camera.Size pictureSize = newInstanceOf(Camera.class).new Size(0, 0);
-      pictureSize.width = pictureWidth;
-      pictureSize.height = pictureHeight;
-      return pictureSize;
-    }
-
-    @Implementation
-    protected int getPreviewFormat() {
-      return previewFormat;
-    }
-
-    @Implementation
-    protected void getPreviewFpsRange(int[] range) {
-      range[0] = previewFpsMin;
-      range[1] = previewFpsMax;
-    }
-
-    @Implementation
-    protected int getPreviewFrameRate() {
-      return previewFps;
-    }
-
-    @Implementation
-    protected Camera.Size getPreviewSize() {
-      Camera.Size previewSize = newInstanceOf(Camera.class).new Size(0, 0);
-      previewSize.width = previewWidth;
-      previewSize.height = previewHeight;
-      return previewSize;
-    }
-
-    @Implementation
-    protected List<Camera.Size> getSupportedPictureSizes() {
-      List<Camera.Size> supportedSizes = new ArrayList<>();
-      addSize(supportedSizes, 320, 240);
-      addSize(supportedSizes, 640, 480);
-      addSize(supportedSizes, 800, 600);
-      return supportedSizes;
-    }
-
-    @Implementation
-    protected List<Integer> getSupportedPictureFormats() {
-      List<Integer> formats = new ArrayList<>();
-      formats.add(ImageFormat.NV21);
-      formats.add(ImageFormat.JPEG);
-      return formats;
-    }
-
-    @Implementation
-    protected List<Integer> getSupportedPreviewFormats() {
-      List<Integer> formats = new ArrayList<>();
-      formats.add(ImageFormat.NV21);
-      formats.add(ImageFormat.JPEG);
-      return formats;
-    }
-
-    @Implementation
-    protected List<int[]> getSupportedPreviewFpsRange() {
-      List<int[]> supportedRanges = new ArrayList<>();
-      addRange(supportedRanges, 15000, 15000);
-      addRange(supportedRanges, 10000, 30000);
-      return supportedRanges;
-    }
-
-    @Implementation
-    protected List<Integer> getSupportedPreviewFrameRates() {
-      List<Integer> supportedRates = new ArrayList<>();
-      supportedRates.add(10);
-      supportedRates.add(15);
-      supportedRates.add(30);
-      return supportedRates;
-    }
-
-    @Implementation
-    protected List<Camera.Size> getSupportedPreviewSizes() {
-      if (supportedPreviewSizes == null) {
-        initSupportedPreviewSizes();
-        addSupportedPreviewSize(320, 240);
-        addSupportedPreviewSize(640, 480);
-      }
-      return supportedPreviewSizes;
+      realParameters.remove("preview-size-values");
     }
 
     public void setSupportedFocusModes(String... focusModes) {
-      supportedFocusModes = Arrays.asList(focusModes);
+      realParameters.set("focus-mode-values", Joiner.on(",").join(focusModes));
+      if (focusModes.length == 0) {
+        realParameters.remove("focus-mode");
+      }
     }
 
-    @Implementation
-    protected List<String> getSupportedFocusModes() {
-      return supportedFocusModes;
-    }
-
-    @Implementation
-    protected String getFocusMode() {
-      return focusMode;
-    }
-
-    @Implementation
-    protected void setFocusMode(String focusMode) {
-      this.focusMode = focusMode;
+    public void setSupportedFlashModes(String... flashModes) {
+      realParameters.set("flash-mode-values", Joiner.on(",").join(flashModes));
+      if (flashModes.length == 0) {
+        realParameters.remove("flash-mode");
+      }
     }
 
     /**
@@ -411,22 +332,20 @@ public class ShadowCamera {
      * Camera.Parameters#getMaxNumFocusAreas}.
      */
     public void setMaxNumFocusAreas(int maxNumFocusAreas) {
-      this.maxNumFocusAreas = maxNumFocusAreas;
+      realParameters.set("max-num-focus-areas", maxNumFocusAreas);
     }
 
-    @Implementation
-    protected int getMaxNumFocusAreas() {
-      return maxNumFocusAreas;
-    }
-
-    @Implementation
-    protected void setFocusAreas(List<Camera.Area> focusAreas) {
-      this.focusAreas = focusAreas;
-    }
-
-    @Implementation
-    protected List<Camera.Area> getFocusAreas() {
-      return focusAreas;
+    public void addSupportedPreviewSize(int width, int height) {
+      List<String> sizesStrings = new ArrayList<>();
+      List<Camera.Size> sizes = realParameters.getSupportedPreviewSizes();
+      if (sizes == null) {
+        sizes = ImmutableList.of();
+      }
+      for (Camera.Size size : sizes) {
+        sizesStrings.add(size.width + "x" + size.height);
+      }
+      sizesStrings.add(width + "x" + height);
+      realParameters.set("preview-size-values", Joiner.on(",").join(sizesStrings));
     }
 
     /**
@@ -434,155 +353,27 @@ public class ShadowCamera {
      * Camera.Parameters#getMaxNumMeteringAreas}.
      */
     public void setMaxNumMeteringAreas(int maxNumMeteringAreas) {
-      this.maxNumMeteringAreas = maxNumMeteringAreas;
-    }
-
-    @Implementation
-    protected int getMaxNumMeteringAreas() {
-      return maxNumMeteringAreas;
-    }
-
-    @Implementation
-    protected void setMeteringAreas(List<Camera.Area> meteringAreas) {
-      this.meteringAreas = meteringAreas;
-    }
-
-    @Implementation
-    protected List<Camera.Area> getMeteringAreas() {
-      return meteringAreas;
-    }
-
-    @Implementation
-    protected void setPictureSize(int width, int height) {
-      pictureWidth = width;
-      pictureHeight = height;
-    }
-
-    @Implementation
-    protected void setPreviewFormat(int pixel_format) {
-      previewFormat = pixel_format;
-    }
-
-    @Implementation
-    protected void setPreviewFpsRange(int min, int max) {
-      previewFpsMin = min;
-      previewFpsMax = max;
-    }
-
-    @Implementation
-    protected void setPreviewFrameRate(int fps) {
-      previewFps = fps;
-    }
-
-    @Implementation
-    protected void setPreviewSize(int width, int height) {
-      previewWidth = width;
-      previewHeight = height;
-    }
-
-    @Implementation
-    protected void setRecordingHint(boolean recordingHint) {
-      // Do nothing - this prevents an NPE in the SDK code
-    }
-
-    @Implementation
-    protected void setRotation(int rotation) {
-      // Do nothing - this prevents an NPE in the SDK code
-    }
-
-    @Implementation
-    protected int getMinExposureCompensation() {
-      return -6;
-    }
-
-    @Implementation
-    protected int getMaxExposureCompensation() {
-      return 6;
-    }
-
-    @Implementation
-    protected float getExposureCompensationStep() {
-      return 0.5f;
-    }
-
-    @Implementation
-    protected int getExposureCompensation() {
-      return exposureCompensation;
-    }
-
-    @Implementation
-    protected void setExposureCompensation(int compensation) {
-      exposureCompensation = compensation;
-    }
-
-    public void setSupportedFlashModes(String... flashModes) {
-      supportedFlashModes = Arrays.asList(flashModes);
-    }
-
-    @Implementation
-    protected List<String> getSupportedFlashModes() {
-      return supportedFlashModes;
-    }
-
-    @Implementation
-    protected String getFlashMode() {
-      return flashMode;
-    }
-
-    @Implementation
-    protected void setFlashMode(String flashMode) {
-      this.flashMode = flashMode;
-    }
-
-    @Implementation
-    protected void set(String key, String value) {
-      paramsMap.put(key, value);
-    }
-
-    @Implementation
-    protected String get(String key) {
-      return paramsMap.get(key);
+      realParameters.set("max-num-metering-areas", maxNumMeteringAreas);
     }
 
     public int getPreviewWidth() {
-      return previewWidth;
+      return realParameters.getPreviewSize().width;
     }
 
     public int getPreviewHeight() {
-      return previewHeight;
+      return realParameters.getPreviewSize().height;
     }
 
     public int getPictureWidth() {
-      return pictureWidth;
+      return realParameters.getPictureSize().width;
     }
 
     public int getPictureHeight() {
-      return pictureHeight;
+      return realParameters.getPictureSize().height;
     }
 
-    private void addSize(List<Camera.Size> sizes, int width, int height) {
-      Camera.Size newSize = newInstanceOf(Camera.class).new Size(0, 0);
-      newSize.width = width;
-      newSize.height = height;
-      sizes.add(newSize);
-    }
-
-    private void addRange(List<int[]> ranges, int min, int max) {
-      int[] range = new int[2];
-      range[0] = min;
-      range[1] = max;
-      ranges.add(range);
-    }
-  }
-
-  @Implements(Camera.Size.class)
-  public static class ShadowSize {
-    @RealObject private Camera.Size realCameraSize;
-
-    @Implementation
-    protected void __constructor__(Camera camera, int width, int height) {
-      realCameraSize.width = width;
-      realCameraSize.height = height;
+    public int getRotation() {
+      return realParameters.getInt("rotation");
     }
   }
 }

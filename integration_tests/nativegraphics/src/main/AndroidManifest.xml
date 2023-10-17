@@ -4,6 +4,6 @@
     package="org.robolectric.integrationtests.nativegraphics">
   <uses-sdk
       android:minSdkVersion="26"
-      android:targetSdkVersion="31" />
+      android:targetSdkVersion="34" />
   <application />
 </manifest>

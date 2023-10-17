@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
-import org.junit.AssumptionViolatedException;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -202,7 +201,6 @@ public class RobolectricTestRunner extends SandboxTestRunner {
     boolean includeLegacy(AndroidManifest appManifest) {
       return appManifest.supportsLegacyResourcesMode()
           && (this == legacy
-              || (this == best && !appManifest.supportsBinaryResourcesMode())
               || this == both);
     }
 
@@ -277,11 +275,10 @@ public class RobolectricTestRunner extends SandboxTestRunner {
 
     if (resourcesMode == ResourcesMode.LEGACY && sdk.getApiLevel() > Build.VERSION_CODES.P) {
       System.err.println(
-          "Skip "
+          "Failure for "
               + method.getName()
               + " because Robolectric doesn't support legacy resources mode after P");
-      throw new AssumptionViolatedException(
-          "Robolectric doesn't support legacy resources mode after P");
+      throw new AssertionError("Robolectric doesn't support legacy resources mode after P");
     }
     LooperMode.Mode looperMode =
         roboMethod.configuration == null

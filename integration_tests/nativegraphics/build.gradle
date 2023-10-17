@@ -6,12 +6,12 @@ apply plugin: AndroidProjectConfigPlugin
 apply plugin: GradleManagedDevicePlugin
 
 android {
-    compileSdk 33
+    compileSdk 34
     namespace 'org.robolectric.integrationtests.nativegraphics'
 
     defaultConfig {
         minSdk 26
-        targetSdk 33
+        targetSdk 34
     }
 
     testOptions {

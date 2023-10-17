@@ -13,6 +13,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -31,10 +32,12 @@ import android.app.timezonedetector.ITimeZoneDetectorService;
 import android.app.trust.ITrustManager;
 import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
+import android.app.wearable.IWearableSensingManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothManager;
 import android.companion.ICompanionDeviceManager;
+import android.companion.virtual.IVirtualDeviceManager;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IRestrictionsManager;
@@ -90,6 +93,7 @@ import android.view.translation.ITranslationManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ISoundTriggerService;
+import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.statusbar.IStatusBar;
@@ -161,6 +165,8 @@ public class ShadowServiceManager {
       addBinderService(Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
       addBinderService(Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
       addBinderService(Context.MEDIA_SESSION_SERVICE, ISessionManager.class, true);
+      addBinderService(
+          Context.VOICE_INTERACTION_MANAGER_SERVICE, IVoiceInteractionManagerService.class, true);
     }
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(Context.FINGERPRINT_SERVICE, IFingerprintService.class);
@@ -217,6 +223,10 @@ public class ShadowServiceManager {
       addBinderService(Context.LOCALE_SERVICE, ILocaleManager.class);
       addBinderService(Context.SAFETY_CENTER_SERVICE, ISafetyCenterManager.class);
       addBinderService(Context.STATUS_BAR_SERVICE, IStatusBar.class);
+    }
+    if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      addBinderService(Context.VIRTUAL_DEVICE_SERVICE, IVirtualDeviceManager.class);
+      addBinderService(Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
     }
   }
 

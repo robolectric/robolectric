@@ -3,12 +3,13 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory.Options;
 import android.net.Uri;
 import android.provider.MediaStore;
-import androidx.annotation.Nullable;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
@@ -26,12 +27,14 @@ public class ShadowMediaStore {
 
   private static Bitmap stubBitmap = null;
   private static final List<CloudMediaChangedEvent> cloudMediaChangedEventList = new ArrayList<>();
+  private static final List<String> supportedCloudMediaProviderAuthorities = new ArrayList<>();
   @Nullable private static String currentCloudMediaProviderAuthority = null;
 
   @Resetter
   public static void reset() {
     stubBitmap = null;
     cloudMediaChangedEventList.clear();
+    supportedCloudMediaProviderAuthorities.clear();
     currentCloudMediaProviderAuthority = null;
   }
 
@@ -141,8 +144,27 @@ public class ShadowMediaStore {
   }
 
   @Implementation(minSdk = TIRAMISU)
+  protected static boolean isSupportedCloudMediaProviderAuthority(
+      @NonNull ContentResolver resolver, @NonNull String authority) {
+    return supportedCloudMediaProviderAuthorities.contains(authority);
+  }
+
+  /**
+   * Mutator method to add the input {@code authorities} to the list of supported cloud media
+   * provider authorities.
+   */
+  public static void addSupportedCloudMediaProviderAuthorities(@NonNull List<String> authorities) {
+    supportedCloudMediaProviderAuthorities.addAll(authorities);
+  }
+
+  /** Mutator method to clear the list of supported cloud media provider authorities. */
+  public static void clearSupportedCloudMediaProviderAuthorities() {
+    supportedCloudMediaProviderAuthorities.clear();
+  }
+
+  @Implementation(minSdk = TIRAMISU)
   protected static boolean isCurrentCloudMediaProviderAuthority(
-      ContentResolver resolver, String authority) {
+      @NonNull ContentResolver resolver, @NonNull String authority) {
     return currentCloudMediaProviderAuthority.equals(authority);
   }
 

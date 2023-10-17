@@ -34,6 +34,7 @@ import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.NearbyStreamingPolicy;
 import android.app.admin.DevicePolicyManager.PasswordComplexity;
 import android.app.admin.DevicePolicyManager.UserProvisioningState;
+import android.app.admin.DevicePolicyState;
 import android.app.admin.IDevicePolicyManager;
 import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
@@ -70,8 +71,9 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.versioning.AndroidVersions.U;
 
-@Implements(DevicePolicyManager.class)
+@Implements(value = DevicePolicyManager.class, looseSignatures = true)
 @SuppressLint("NewApi")
 public class ShadowDevicePolicyManager {
   /**
@@ -154,8 +156,10 @@ public class ShadowDevicePolicyManager {
   private final Map<Integer, Integer> userProvisioningStatesMap = new HashMap<>();
   @Nullable private PersistableBundle lastTransferOwnershipBundle;
 
+  private Object /* DevicePolicyState */ devicePolicyState;
   private @RealObject DevicePolicyManager realObject;
 
+  
   private static class PackageAndPermission {
 
     public PackageAndPermission(String packageName, String permission) {
@@ -1581,5 +1585,19 @@ public class ShadowDevicePolicyManager {
   @UserProvisioningState
   public int getUserProvisioningStateForUser(int userId) {
     return userProvisioningStatesMap.getOrDefault(userId, DevicePolicyManager.STATE_USER_UNMANAGED);
+  }
+
+  /** Return a stub value set by {@link #setDevicePolicyState(DevicePolicyState policyState)} */
+  @Implementation(minSdk = U.SDK_INT)
+  protected Object getDevicePolicyState() {
+    return devicePolicyState;
+  }
+
+  /**
+   * Set the {@link DevicePolicyState} which can be constructed from {@link
+   * DevicePolicyStateBuilder}
+   */
+  public void setDevicePolicyState(Object policyState) {
+    devicePolicyState = policyState;
   }
 }

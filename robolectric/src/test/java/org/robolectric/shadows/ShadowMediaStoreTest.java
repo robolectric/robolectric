@@ -5,9 +5,13 @@ import static android.provider.MediaStore.Images;
 import static android.provider.MediaStore.Video;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.ContentResolver;
 import android.provider.MediaStore;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -17,6 +21,8 @@ public class ShadowMediaStoreTest {
   private static final String AUTHORITY = "authority";
   private static final String INCORRECT_AUTHORITY = "incorrect_authority";
   private static final String CURRENT_MEDIA_COLLECTION_ID = "media_collection_id";
+  private final ContentResolver resolver =
+      ApplicationProvider.getApplicationContext().getContentResolver();
 
   @Test
   public void shouldInitializeFields() {
@@ -33,7 +39,7 @@ public class ShadowMediaStoreTest {
   @Test
   @Config(minSdk = TIRAMISU)
   public void notifyCloudMediaChangedEvent_storesCloudMediaChangedEvent() {
-    MediaStore.notifyCloudMediaChangedEvent(null, AUTHORITY, CURRENT_MEDIA_COLLECTION_ID);
+    MediaStore.notifyCloudMediaChangedEvent(resolver, AUTHORITY, CURRENT_MEDIA_COLLECTION_ID);
 
     ImmutableList<ShadowMediaStore.CloudMediaChangedEvent> cloudMediaChangedEventList =
         ShadowMediaStore.getCloudMediaChangedEvents();
@@ -46,7 +52,7 @@ public class ShadowMediaStoreTest {
   @Test
   @Config(minSdk = TIRAMISU)
   public void clearCloudMediaChangedEventList_clearsCloudMediaChangedEventList() {
-    MediaStore.notifyCloudMediaChangedEvent(null, AUTHORITY, CURRENT_MEDIA_COLLECTION_ID);
+    MediaStore.notifyCloudMediaChangedEvent(resolver, AUTHORITY, CURRENT_MEDIA_COLLECTION_ID);
     assertThat(ShadowMediaStore.getCloudMediaChangedEvents()).isNotEmpty();
 
     ShadowMediaStore.clearCloudMediaChangedEventList();
@@ -56,10 +62,31 @@ public class ShadowMediaStoreTest {
 
   @Test
   @Config(minSdk = TIRAMISU)
+  public void isSupportedCloudMediaProviderAuthority_withCorrectAuthority_returnsTrue() {
+    List<String> supportedAuthorityList = new ArrayList<>();
+    supportedAuthorityList.add(AUTHORITY);
+    ShadowMediaStore.addSupportedCloudMediaProviderAuthorities(supportedAuthorityList);
+
+    assertThat(MediaStore.isSupportedCloudMediaProviderAuthority(resolver, AUTHORITY)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void isSupportedCloudMediaProviderAuthority_withIncorrectAuthority_returnsFalse() {
+    List<String> supportedAuthorityList = new ArrayList<>();
+    supportedAuthorityList.add(AUTHORITY);
+    ShadowMediaStore.addSupportedCloudMediaProviderAuthorities(supportedAuthorityList);
+
+    assertThat(MediaStore.isSupportedCloudMediaProviderAuthority(resolver, INCORRECT_AUTHORITY))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
   public void isCurrentCloudMediaProviderAuthority_withCorrectAuthority_returnsTrue() {
     ShadowMediaStore.setCurrentCloudMediaProviderAuthority(AUTHORITY);
 
-    assertThat(MediaStore.isCurrentCloudMediaProviderAuthority(null, AUTHORITY)).isTrue();
+    assertThat(MediaStore.isCurrentCloudMediaProviderAuthority(resolver, AUTHORITY)).isTrue();
   }
 
   @Test
@@ -67,7 +94,7 @@ public class ShadowMediaStoreTest {
   public void isCurrentCloudMediaProviderAuthority_withIncorrectAuthority_returnsFalse() {
     ShadowMediaStore.setCurrentCloudMediaProviderAuthority(AUTHORITY);
 
-    assertThat(MediaStore.isCurrentCloudMediaProviderAuthority(null, INCORRECT_AUTHORITY))
+    assertThat(MediaStore.isCurrentCloudMediaProviderAuthority(resolver, INCORRECT_AUTHORITY))
         .isFalse();
   }
 }

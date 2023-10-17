@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraParametersTest {
@@ -23,7 +22,7 @@ public class ShadowCameraParametersTest {
 
   @Before
   public void setUp() throws Exception {
-    parameters = Shadow.newInstanceOf(Camera.Parameters.class);
+    parameters = Camera.open().getParameters();
   }
 
   @Test
@@ -113,8 +112,7 @@ public class ShadowCameraParametersTest {
   @Test
   public void testInitSupportedPreviewSizes() {
     Shadows.shadowOf(parameters).initSupportedPreviewSizes();
-    assertThat(parameters.getSupportedPreviewSizes()).isNotNull();
-    assertThat(parameters.getSupportedPreviewSizes()).isEmpty();
+    assertThat(parameters.getSupportedPreviewSizes()).isNull();
   }
 
   @Test
@@ -164,7 +162,7 @@ public class ShadowCameraParametersTest {
   @Test
   public void testGetSupportedFocusModesDefaultValue() {
     List<String> supportedFocusModes = parameters.getSupportedFocusModes();
-    assertThat(supportedFocusModes).isEmpty();
+    assertThat(supportedFocusModes).containsExactly("auto");
   }
 
   @Test
@@ -184,7 +182,7 @@ public class ShadowCameraParametersTest {
   @Test
   public void testGetSupportedFlashModesDefaultValue() {
     List<String> supportedFlashModes = parameters.getSupportedFlashModes();
-    assertThat(supportedFlashModes).isEmpty();
+    assertThat(supportedFlashModes).containsExactly("auto", "on", "off");
   }
 
   @Test
@@ -203,7 +201,7 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testGetMaxNumFocusAreasDefaultValue() {
-    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(0);
+    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(1);
   }
 
   @Test
@@ -226,7 +224,7 @@ public class ShadowCameraParametersTest {
 
   @Test
   public void testGetMaxNumMeteringAreasDefaultValue() {
-    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(0);
+    assertThat(parameters.getMaxNumFocusAreas()).isEqualTo(1);
   }
 
   @Test
@@ -257,5 +255,11 @@ public class ShadowCameraParametersTest {
     String value2 = "value2";
     parameters.set(key, value2);
     assertThat(parameters.get(key)).isEqualTo(value2);
+  }
+
+  @Test
+  public void testSetAndGetRotation() {
+    parameters.setRotation(90);
+    assertThat(Shadows.shadowOf(parameters).getRotation()).isEqualTo(90);
   }
 }

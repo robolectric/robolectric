@@ -1,5 +1,37 @@
 package org.robolectric.shadows;
 
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_1;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_10;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_11;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_12;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_13;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_14;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_15;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_16;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_17;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_18;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_19;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_2;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_20;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_21;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_22;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_23;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_24;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_25;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_26;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_27;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_28;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_29;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_3;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_30;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_31;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_32;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_4;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_5;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_6;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_7;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_8;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_9;
 import static android.telephony.BarringInfo.BARRING_SERVICE_TYPE_CS_FALLBACK;
 import static android.telephony.BarringInfo.BARRING_SERVICE_TYPE_CS_SERVICE;
 import static android.telephony.BarringInfo.BARRING_SERVICE_TYPE_CS_VOICE;
@@ -127,7 +159,41 @@ public class BarringInfoBuilder {
         && barringServiceType != BARRING_SERVICE_TYPE_MMTEL_VOICE
         && barringServiceType != BARRING_SERVICE_TYPE_MMTEL_VIDEO
         && barringServiceType != BARRING_SERVICE_TYPE_EMERGENCY
-        && barringServiceType != BARRING_SERVICE_TYPE_SMS) {
+        && barringServiceType != BARRING_SERVICE_TYPE_SMS
+        // OPERATOR_* values are not in the public SDK, but they are defined in the HAL and will be
+        // returned on real devices, so we still let them through.
+        && barringServiceType != SERVICE_TYPE_OPERATOR_1
+        && barringServiceType != SERVICE_TYPE_OPERATOR_2
+        && barringServiceType != SERVICE_TYPE_OPERATOR_3
+        && barringServiceType != SERVICE_TYPE_OPERATOR_4
+        && barringServiceType != SERVICE_TYPE_OPERATOR_5
+        && barringServiceType != SERVICE_TYPE_OPERATOR_6
+        && barringServiceType != SERVICE_TYPE_OPERATOR_7
+        && barringServiceType != SERVICE_TYPE_OPERATOR_8
+        && barringServiceType != SERVICE_TYPE_OPERATOR_9
+        && barringServiceType != SERVICE_TYPE_OPERATOR_10
+        && barringServiceType != SERVICE_TYPE_OPERATOR_11
+        && barringServiceType != SERVICE_TYPE_OPERATOR_12
+        && barringServiceType != SERVICE_TYPE_OPERATOR_13
+        && barringServiceType != SERVICE_TYPE_OPERATOR_14
+        && barringServiceType != SERVICE_TYPE_OPERATOR_15
+        && barringServiceType != SERVICE_TYPE_OPERATOR_16
+        && barringServiceType != SERVICE_TYPE_OPERATOR_17
+        && barringServiceType != SERVICE_TYPE_OPERATOR_18
+        && barringServiceType != SERVICE_TYPE_OPERATOR_19
+        && barringServiceType != SERVICE_TYPE_OPERATOR_20
+        && barringServiceType != SERVICE_TYPE_OPERATOR_21
+        && barringServiceType != SERVICE_TYPE_OPERATOR_22
+        && barringServiceType != SERVICE_TYPE_OPERATOR_23
+        && barringServiceType != SERVICE_TYPE_OPERATOR_24
+        && barringServiceType != SERVICE_TYPE_OPERATOR_25
+        && barringServiceType != SERVICE_TYPE_OPERATOR_26
+        && barringServiceType != SERVICE_TYPE_OPERATOR_27
+        && barringServiceType != SERVICE_TYPE_OPERATOR_28
+        && barringServiceType != SERVICE_TYPE_OPERATOR_29
+        && barringServiceType != SERVICE_TYPE_OPERATOR_30
+        && barringServiceType != SERVICE_TYPE_OPERATOR_31
+        && barringServiceType != SERVICE_TYPE_OPERATOR_32) {
       throw new IllegalArgumentException("Unknown barringServiceType: " + barringServiceType);
     }
   }

@@ -401,7 +401,7 @@ public class AndroidManifestTest {
   @Test
   public void shouldReadTaskAffinity() {
     AndroidManifest appManifest = newConfig("TestAndroidManifestForActivitiesWithTaskAffinity.xml");
-    assertThat(appManifest.getTargetSdkVersion()).isEqualTo(16);
+    assertThat(appManifest.getTargetSdkVersion()).isEqualTo(19);
 
     ActivityData activityData =
         appManifest.getActivityData("org.robolectric.shadows.TestTaskAffinityActivity");

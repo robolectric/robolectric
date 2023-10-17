@@ -5,6 +5,7 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.Instrumentation;
 import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -207,6 +209,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
     return new Handler(realLooper).postAtFrontOfQueue(runnable);
   }
 
+  /**
+   * Posts the runnable to the looper and idles until the runnable has been run. Generally clients
+   * should prefer to use {@link Instrumentation#runOnMainSync(Runnable)}, which will reraise
+   * underlying runtime exceptions to the caller.
+   */
+  public void postSync(Runnable runnable) {
+    executeOnLooper(new PostAndIdleToRunnable(runnable));
+  }
+
   // this API doesn't make sense in LooperMode.PAUSED, but just retain it for backwards
   // compatibility for now
   @Override
@@ -282,33 +293,59 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  private static final Object instrumentationTestMainThreadLock = new Object();
+
+  @SuppressWarnings("NonFinalStaticField") // State used in static method for main thread.
+  @GuardedBy("instrumentationTestMainThreadLock")
+  private static boolean instrumentationTestMainThreadShouldRestart = false;
+
   private static synchronized void createMainThreadAndLooperIfNotAlive() {
     Looper mainLooper = Looper.getMainLooper();
 
     switch (ConfigurationRegistry.get(LooperMode.Mode.class)) {
       case INSTRUMENTATION_TEST:
-        if (mainLooper == null || !mainLooper.getThread().isAlive()) {
+        if (mainLooper == null) {
           ConditionVariable mainThreadPrepared = new ConditionVariable();
           Thread mainThread =
               new Thread(String.format("SDK %d Main Thread", RuntimeEnvironment.getApiLevel())) {
                 @Override
                 public void run() {
-                  if (mainLooper == null) {
-                    Looper.prepareMainLooper();
-                  } else {
-                    ShadowPausedMessageQueue shadowQueue = Shadow.extract(mainLooper.getQueue());
-                    shadowQueue.reset();
-                    reflector(LooperReflector.class, mainLooper).setThread(Thread.currentThread());
-                    reflector(LooperReflector.class).getThreadLocal().set(mainLooper);
-                  }
+                  Looper.prepareMainLooper();
                   mainThreadPrepared.open();
-                  Looper.loop();
+                  while (true) {
+                    try {
+                      Looper.loop();
+                    } catch (Throwable e) {
+                      // The exception is handled inside of the loop shadow method, so ignore it.
+                    }
+                    // Wait to restart the looper until the looper is reset.
+                    synchronized (instrumentationTestMainThreadLock) {
+                      while (!instrumentationTestMainThreadShouldRestart) {
+                        try {
+                          instrumentationTestMainThreadLock.wait();
+                        } catch (InterruptedException ie) {
+                          // Shouldn't be interrupted, continue waiting for reset signal.
+                        }
+                      }
+                      instrumentationTestMainThreadShouldRestart = false;
+                    }
+                  }
                 }
               };
           mainThread.start();
           mainThreadPrepared.block();
           Thread.currentThread()
               .setName(String.format("SDK %d Test Thread", RuntimeEnvironment.getApiLevel()));
+        } else {
+          ShadowPausedMessageQueue shadowQueue = Shadow.extract(mainLooper.getQueue());
+          if (shadowQueue.hasUncaughtException()) {
+            shadowQueue.reset();
+            synchronized (instrumentationTestMainThreadLock) {
+              // If the looper died in a previous test it will be waiting to restart, notify it.
+              instrumentationTestMainThreadShouldRestart = true;
+              instrumentationTestMainThreadLock.notify();
+            }
+          }
         }
         break;
       case PAUSED:
@@ -418,18 +455,24 @@ public final class ShadowPausedLooper extends ShadowLooper {
       if (ignoreUncaughtExceptions) {
         // ignore
       } else {
-        shadowQueue.setUncaughtException(e);
-        // release any ControlRunnables currently in queue to prevent deadlocks
-        shadowQueue.drainQueue(
-            input -> {
-              if (input instanceof ControlRunnable) {
-                ((ControlRunnable) input).runLatch.countDown();
-                return true;
-              }
-              return false;
-            });
+        synchronized (realLooper.getQueue()) {
+          shadowQueue.setUncaughtException(e);
+          // release any ControlRunnables currently in queue to prevent deadlocks
+          shadowQueue.drainQueue(
+              input -> {
+                if (input instanceof ControlRunnable) {
+                  ((ControlRunnable) input).runLatch.countDown();
+                  return true;
+                }
+                return false;
+              });
+        }
       }
-      throw e;
+      if (e instanceof ControlException) {
+        ((ControlException) e).rethrowCause();
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -458,6 +501,28 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
+  /**
+   * An exception raised by a {@link ControlRunnable} if the runnable was interrupted with an
+   * exception. The looper must call {@link #rethrowCause()} after performing cleanup associated
+   * with handling the exception.
+   */
+  private static final class ControlException extends RuntimeException {
+    private final ControlRunnable controlRunnable;
+
+    ControlException(ControlRunnable controlRunnable, RuntimeException cause) {
+      super(cause);
+      this.controlRunnable = controlRunnable;
+    }
+
+    void rethrowCause() {
+      // Release the control runnable only once the looper has finished draining to avoid any
+      // races on the thread that posted the control runnable (otherwise the calling thread may
+      // have subsequent interactions with the looper that result in inconsistent state).
+      controlRunnable.runLatch.countDown();
+      throw (RuntimeException) getCause();
+    }
+  }
+
   /** A runnable that changes looper state, and that must be run from looper's thread */
   private abstract static class ControlRunnable implements Runnable {
 
@@ -466,15 +531,19 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void run() {
+      boolean controlExceptionThrown = false;
       try {
         doRun();
       } catch (RuntimeException e) {
         if (!ignoreUncaughtExceptions) {
           exception = e;
         }
-        throw e;
+        controlExceptionThrown = true;
+        throw new ControlException(this, e);
       } finally {
-        runLatch.countDown();
+        if (!controlExceptionThrown) {
+          runLatch.countDown();
+        }
       }
     }
 
@@ -496,15 +565,15 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
     @Override
     public void doRun() {
-        while (true) {
-          Message msg = getNextExecutableMessage();
-          if (msg == null) {
-            break;
-          }
-          msg.getTarget().dispatchMessage(msg);
-          shadowMsg(msg).recycleUnchecked();
-          triggerIdleHandlersIfNeeded(msg);
+      while (true) {
+        Message msg = getNextExecutableMessage();
+        if (msg == null) {
+          break;
         }
+        msg.getTarget().dispatchMessage(msg);
+        shadowMsg(msg).recycleUnchecked();
+        triggerIdleHandlersIfNeeded(msg);
+      }
     }
   }
 
@@ -513,12 +582,39 @@ public final class ShadowPausedLooper extends ShadowLooper {
     @Override
     public void doRun() {
 
-        Message msg = shadowQueue().getNextIgnoringWhen();
-        if (msg != null) {
-          SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
-          msg.getTarget().dispatchMessage(msg);
-          triggerIdleHandlersIfNeeded(msg);
+      Message msg = shadowQueue().getNextIgnoringWhen();
+      if (msg != null) {
+        SystemClock.setCurrentTimeMillis(shadowMsg(msg).getWhen());
+        msg.getTarget().dispatchMessage(msg);
+        triggerIdleHandlersIfNeeded(msg);
+      }
+    }
+  }
+
+  /**
+   * Control runnable that posts the provided runnable to the queue and then idles up to and
+   * including the posted runnable. Provides essentially similar functionality to {@link
+   * Instrumentation#runOnMainSync(Runnable)}.
+   */
+  private class PostAndIdleToRunnable extends ControlRunnable {
+    private final Runnable runnable;
+
+    PostAndIdleToRunnable(Runnable runnable) {
+      this.runnable = runnable;
+    }
+
+    @Override
+    public void doRun() {
+      new Handler(realLooper).post(runnable);
+      Message msg;
+      do {
+        msg = getNextExecutableMessage();
+        if (msg == null) {
+          throw new IllegalStateException("Runnable is not in the queue");
         }
+        msg.getTarget().dispatchMessage(msg);
+        triggerIdleHandlersIfNeeded(msg);
+      } while (msg.getCallback() != runnable);
     }
   }
 
@@ -529,7 +625,11 @@ public final class ShadowPausedLooper extends ShadowLooper {
         // Need to trigger the unpause action in PausedLooperExecutor
         looperExecutor.execute(runnable);
       } else {
-        runnable.run();
+        try {
+          runnable.run();
+        } catch (ControlException e) {
+          e.rethrowCause();
+        }
       }
     } else {
       if (looperMode() == LooperMode.Mode.PAUSED && realLooper.equals(Looper.getMainLooper())) {

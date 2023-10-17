@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.robolectric"
           name="ImplicitIntentTestApp">
-    <uses-sdk android:targetSdkVersion="16"/>
+    <uses-sdk android:targetSdkVersion="19"/>
 
     <application>
         <activity android:name="org.robolectric.shadows.TestActivity">

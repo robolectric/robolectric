@@ -2,12 +2,12 @@ name: Tests
 
 on:
   push:
-    branches: [ master, 'robolectric-*.x' ]
+    branches: [ master, 'robolectric-*.x', 'google' ]
     paths-ignore:
       - '**.md'
 
   pull_request:
-    branches: [ master, google ]
+    branches: [ master ]
     paths-ignore:
       - '**.md'
 
@@ -35,7 +35,7 @@ jobs:
       - name: Build
         run: |
           SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
-          ./gradlew clean assemble testClasses --parallel --stacktrace --no-watch-fs
+          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
 
   unit-tests:
     runs-on: ubuntu-22.04
@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-versions: [ '19,21,22', '23,24,25', '26,27,28', '29,30,31', '32,33' ]
+        api-versions: [ '19,21,34', '22,23,33', '24,25,32', '26,27,28', '29,30,31', ]
 
     steps:
       - uses: actions/checkout@v4

@@ -68,8 +68,6 @@ public class AndroidManifest implements UsesSdk {
   private final Map<String, String> applicationAttributes = new HashMap<>();
   private MetaData applicationMetaData;
 
-  private Boolean supportsBinaryResourcesMode;
-
   /**
    * Creates a Robolectric configuration using specified locations.
    *
@@ -854,9 +852,6 @@ public class AndroidManifest implements UsesSdk {
   /** @deprecated Do not use. */
   @Deprecated
   synchronized public boolean supportsBinaryResourcesMode() {
-    if (supportsBinaryResourcesMode == null) {
-      supportsBinaryResourcesMode = apkFile != null && Files.exists(apkFile);
-    }
-    return supportsBinaryResourcesMode;
+    return true;
   }
 }

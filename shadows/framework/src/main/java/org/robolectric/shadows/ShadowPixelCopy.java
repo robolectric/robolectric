@@ -12,17 +12,26 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.PixelCopy;
 import android.view.PixelCopy.OnPixelCopyFinishedListener;
+import android.view.PixelCopy.Result;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManagerGlobal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowWindowManagerGlobal.WindowManagerGlobalReflector;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /**
  * Shadow for PixelCopy that uses View.draw to create screenshots. The real PixelCopy performs a
@@ -113,6 +122,30 @@ public class ShadowPixelCopy {
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
+  @Implementation(minSdk = U.SDK_INT)
+  protected static void request(
+      PixelCopy.Request request, Executor callbackExecutor, Consumer<Result> listener) {
+    RequestReflector requestReflector = reflector(RequestReflector.class, request);
+    OnPixelCopyFinishedListener legacyListener =
+        new OnPixelCopyFinishedListener() {
+          @Override
+          public void onPixelCopyFinished(int copyResult) {
+            listener.accept(
+                reflector(ResultReflector.class)
+                    .newResult(copyResult, request.getDestinationBitmap()));
+          }
+        };
+    Rect adjustedSrcRect =
+        reflector(PixelCopyReflector.class)
+            .adjustSourceRectForInsets(requestReflector.getSourceInsets(), request.getSourceRect());
+    PixelCopy.request(
+        requestReflector.getSource(),
+        adjustedSrcRect,
+        request.getDestinationBitmap(),
+        legacyListener,
+        new Handler(Looper.getMainLooper()));
+  }
+
   private static View findViewForSurface(Surface source) {
     for (View windowView :
         reflector(WindowManagerGlobalReflector.class, WindowManagerGlobal.getInstance())
@@ -160,5 +193,57 @@ public class ShadowPixelCopy {
       throw new IllegalArgumentException("Bitmap is immutable");
     }
     return bitmap;
+  }
+
+  @Implements(value = PixelCopy.Request.Builder.class, minSdk = U.SDK_INT, isInAndroidSdk = false)
+  public static class ShadowPixelCopyRequestBuilder {
+
+    // TODO(brettchabot): remove once robolectric has proper support for initializing a Surface
+    // for now, this copies Android implementation and just omits the valid surface check
+    @Implementation
+    protected static PixelCopy.Request.Builder ofWindow(View source) {
+      if (source == null || !source.isAttachedToWindow()) {
+        throw new IllegalArgumentException("View must not be null & must be attached to window");
+      }
+      final Rect insets = new Rect();
+      Surface surface = null;
+      final ViewRootImpl root = source.getViewRootImpl();
+      if (root != null) {
+        surface = root.mSurface;
+        insets.set(root.mWindowAttributes.surfaceInsets);
+      }
+      PixelCopy.Request request = reflector(RequestReflector.class).newRequest(surface, insets);
+      return reflector(BuilderReflector.class).newBuilder(request);
+    }
+  }
+
+  @ForType(PixelCopy.class)
+  private interface PixelCopyReflector {
+    @Static
+    Rect adjustSourceRectForInsets(Rect insets, Rect srcRect);
+  }
+
+  @ForType(PixelCopy.Request.Builder.class)
+  private interface BuilderReflector {
+    @Constructor
+    PixelCopy.Request.Builder newBuilder(PixelCopy.Request request);
+  }
+
+  @ForType(PixelCopy.Request.class)
+  private interface RequestReflector {
+    @Constructor
+    PixelCopy.Request newRequest(Surface surface, Rect insets);
+
+    @Accessor("mSource")
+    Surface getSource();
+
+    @Accessor("mSourceInsets")
+    Rect getSourceInsets();
+  }
+
+  @ForType(PixelCopy.Result.class)
+  private interface ResultReflector {
+    @Constructor
+    PixelCopy.Result newResult(int copyResult, Bitmap bitmap);
   }
 }

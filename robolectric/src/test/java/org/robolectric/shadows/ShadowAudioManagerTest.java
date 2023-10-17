@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -28,6 +29,7 @@ import android.media.AudioRecordingConfiguration;
 import android.media.AudioSystem;
 import android.media.MediaRecorder.AudioSource;
 import android.media.audiopolicy.AudioPolicy;
+import android.view.KeyEvent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
@@ -1299,6 +1301,27 @@ public class ShadowAudioManagerTest {
         AudioManager.getDirectPlaybackSupport(audioFormat, audioAttributes);
 
     assertThat(playbackOffloadSupport).isEqualTo(AudioSystem.DIRECT_NOT_SUPPORTED);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void dispatchMediaKeyEvent_recordsEvent() {
+    KeyEvent keyEvent = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY);
+
+    audioManager.dispatchMediaKeyEvent(keyEvent);
+
+    assertThat(shadowOf(audioManager).getDispatchedMediaKeyEvents()).containsExactly(keyEvent);
+  }
+
+  @Test
+  @Config(minSdk = KITKAT)
+  public void clearDispatchedMediaKeyEvents_clearsDispatchedEvents() {
+    audioManager.dispatchMediaKeyEvent(
+        new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY));
+
+    shadowOf(audioManager).clearDispatchedMediaKeyEvents();
+
+    assertThat(shadowOf(audioManager).getDispatchedMediaKeyEvents()).isEmpty();
   }
 
   private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {

@@ -6,12 +6,12 @@ apply plugin: AndroidProjectConfigPlugin
 apply plugin: GradleManagedDevicePlugin
 
 android {
-    compileSdk 33
+    compileSdk 34
     namespace 'org.robolectric.integrationtests.ctesque'
 
     defaultConfig {
         minSdk 19
-        targetSdk 33
+        targetSdk 34
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 

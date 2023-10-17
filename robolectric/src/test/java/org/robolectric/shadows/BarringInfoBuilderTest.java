@@ -1,5 +1,7 @@
 package org.robolectric.shadows;
 
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_1;
+import static android.hardware.radio.network.BarringInfo.SERVICE_TYPE_OPERATOR_32;
 import static android.telephony.BarringInfo.BARRING_SERVICE_TYPE_CS_VOICE;
 import static android.telephony.BarringInfo.BarringServiceInfo.BARRING_TYPE_CONDITIONAL;
 import static android.telephony.BarringInfo.BarringServiceInfo.BARRING_TYPE_NONE;
@@ -82,6 +84,8 @@ public final class BarringInfoBuilderTest {
         BarringInfoBuilder.newBuilder()
             .setCellIdentity(cellIdentityLte)
             .addBarringServiceInfo(BARRING_SERVICE_TYPE_CS_VOICE, barringServiceInfo)
+            .addBarringServiceInfo(SERVICE_TYPE_OPERATOR_1, barringServiceInfo)
+            .addBarringServiceInfo(SERVICE_TYPE_OPERATOR_32, barringServiceInfo)
             .build();
 
     BarringServiceInfo outBarringServiceInfo =
@@ -91,5 +95,10 @@ public final class BarringInfoBuilderTest {
     assertThat(outBarringServiceInfo.getConditionalBarringFactor()).isEqualTo(20);
     assertThat(outBarringServiceInfo.getConditionalBarringTimeSeconds()).isEqualTo(30);
     assertThat(outBarringServiceInfo.isBarred()).isTrue();
+    // Repeated data, just different service types
+    assertThat(barringInfo.getBarringServiceInfo(SERVICE_TYPE_OPERATOR_1))
+        .isEqualTo(barringServiceInfo);
+    assertThat(barringInfo.getBarringServiceInfo(SERVICE_TYPE_OPERATOR_32))
+        .isEqualTo(barringServiceInfo);
   }
 }
