@@ -93,6 +93,7 @@ import android.view.translation.ITranslationManager;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ISoundTriggerService;
+import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.appwidget.IAppWidgetService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.statusbar.IStatusBar;
@@ -164,6 +165,8 @@ public class ShadowServiceManager {
       addBinderService(Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
       addBinderService(Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
       addBinderService(Context.MEDIA_SESSION_SERVICE, ISessionManager.class, true);
+      addBinderService(
+          Context.VOICE_INTERACTION_MANAGER_SERVICE, IVoiceInteractionManagerService.class, true);
     }
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(Context.FINGERPRINT_SERVICE, IFingerprintService.class);
