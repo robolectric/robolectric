@@ -4,6 +4,7 @@ import android.graphics.text.MeasuredText;
 import android.graphics.text.PositionedGlyphs;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.PositionedGlyphsNatives;
 import org.robolectric.shadows.ShadowNativePositionedGlyphs.Picker;
 import org.robolectric.versioning.AndroidVersions.S;
@@ -53,6 +54,7 @@ public class ShadowNativePositionedGlyphs {
 
   @Implementation
   protected static long nReleaseFunc() {
+    DefaultNativeRuntimeLoader.injectAndLoad();
     return PositionedGlyphsNatives.nReleaseFunc();
   }
 

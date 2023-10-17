@@ -40,6 +40,7 @@ import android.text.TextPaint;
 import androidx.test.core.app.ApplicationProvider;
 import java.io.IOException;
 import java.util.HashSet;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -49,6 +50,15 @@ import org.robolectric.versioning.AndroidVersions.S;
 @Config(minSdk = S.SDK_INT)
 @RunWith(RobolectricTestRunner.class)
 public class ShadowNativeTextRunShaperTest {
+
+  /**
+   * Perform static initialization on {@link PositionedGlyphs} to ensure that it can lazy-load RNG.
+   */
+  @Before
+  public void clinitPositionedGlyphs() throws Exception {
+    Class.forName("android.graphics.text.PositionedGlyphs");
+  }
+
   @Test
   public void shapeText() {
     // Setup
