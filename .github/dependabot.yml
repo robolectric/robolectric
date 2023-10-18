@@ -9,3 +9,8 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+       # don't auto update guava since it requires updating gradle
+       - dependency-name: "*guava*"
+       # don't auto update errorprone since it requires updating guava
+       - dependency-name: "*errorprone*"
