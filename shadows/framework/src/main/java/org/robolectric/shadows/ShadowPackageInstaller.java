@@ -2,16 +2,21 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
+import android.content.pm.PackageInstaller.PreapprovalDetails;
 import android.content.pm.PackageInstaller.SessionInfo;
 import android.graphics.Bitmap;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -128,6 +133,10 @@ public class ShadowPackageInstaller {
       throw new SecurityException("Invalid session Id: " + sessionId);
     }
 
+    if (sessions.containsKey(sessionId) && sessions.get(sessionId) != null) {
+      return sessions.get(sessionId);
+    }
+
     PackageInstaller.Session session = new PackageInstaller.Session(null);
     ShadowSession shadowSession = Shadow.extract(session);
     shadowSession.setShadowPackageInstaller(sessionId, this);
@@ -208,6 +217,44 @@ public class ShadowPackageInstaller {
     setSessionFinishes(sessionId, false);
   }
 
+  /** Approve the preapproval dialog. */
+  public void setPreapprovalDialogApproved(int sessionId) throws IntentSender.SendIntentException {
+    sendPreapprovalUpdate(sessionId, PackageInstaller.STATUS_SUCCESS);
+  }
+
+  /** Deny the preapproval dialog. */
+  public void setPreapprovalDialogDenied(int sessionId) throws IntentSender.SendIntentException {
+    sendPreapprovalUpdate(sessionId, PackageInstaller.STATUS_FAILURE);
+  }
+
+  /** Close the preapproval dialog. */
+  public void setPreapprovalDialogDismissed(int sessionId) throws IntentSender.SendIntentException {
+    sendPreapprovalUpdate(sessionId, PackageInstaller.STATUS_FAILURE_ABORTED);
+  }
+
+  /**
+   * Sends an update to the preapproval status receiver.
+   *
+   * @param status refers to the Session status. See
+   *     https://developer.android.com/reference/android/content/pm/PackageInstaller for possible
+   *     values.
+   */
+  private void sendPreapprovalUpdate(int sessionId, int status)
+      throws IntentSender.SendIntentException {
+    ShadowSession shadowSession = shadowOf(sessions.get(sessionId));
+    Intent fillIn = new Intent();
+    fillIn.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId);
+    fillIn.putExtra(PackageInstaller.EXTRA_STATUS, status);
+    fillIn.putExtra(PackageInstaller.EXTRA_PRE_APPROVAL, true);
+    shadowSession.preapprovalStatusReceiver.sendIntent(
+        RuntimeEnvironment.getApplication(),
+        0,
+        fillIn,
+        null /* onFinished */,
+        null /* handler */,
+        null /* requiredPermission */);
+  }
+
   private void setSessionFinishes(final int sessionId, final boolean success) {
     for (final CallbackInfo callbackInfo : new ArrayList<>(callbackInfos)) {
       callbackInfo.handler.post(() -> callbackInfo.callback.onFinished(sessionId, success));
@@ -225,17 +272,37 @@ public class ShadowPackageInstaller {
     }
   }
 
+  /** Shadow for PackageInstaller.Session. */
   @Implements(value = PackageInstaller.Session.class, minSdk = LOLLIPOP)
   public static class ShadowSession {
 
     private OutputStream outputStream;
     private boolean outputStreamOpen;
     private IntentSender statusReceiver;
+    private IntentSender preapprovalStatusReceiver;
     private int sessionId;
     private ShadowPackageInstaller shadowPackageInstaller;
+    private PersistableBundle appMetadata = new PersistableBundle();
 
     @Implementation(maxSdk = KITKAT_WATCH)
     protected void __constructor__() {}
+
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+    protected void requestUserPreapproval(
+        @NonNull PreapprovalDetails details, @NonNull IntentSender statusReceiver) {
+      preapprovalStatusReceiver = statusReceiver;
+    }
+
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+    protected void setAppMetadata(@Nullable PersistableBundle data) throws IOException {
+      appMetadata = data;
+    }
+
+    @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+    @NonNull
+    protected PersistableBundle getAppMetadata() {
+      return appMetadata;
+    }
 
     @Implementation
     @NonNull
