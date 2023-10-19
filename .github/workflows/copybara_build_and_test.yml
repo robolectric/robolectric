@@ -1,0 +1,40 @@
+name: Copybara tests
+
+on:
+  pull_request:
+    branches: [ google ]
+
+permissions:
+  contents: read
+
+jobs:
+  copybara-tests:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: 17
+
+      - uses: gradle/gradle-build-action@v2
+
+      - name: Build
+        run: |
+          SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
+          ./gradlew assemble testClasses --parallel --stacktrace --no-watch-fs
+
+      - name: Integration tests
+        run: |
+          # Only run integration tests on Copybara PRs
+          (cd integration_tests && \
+            SKIP_ERRORPRONE=true SKIP_JAVADOC=true \
+            ../gradlew test --info --stacktrace --continue --parallel --no-watch-fs \
+            -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
+            -Drobolectric.enabledSdks=34 \
+            -Dorg.gradle.workers.max=2 \
+            -x :integration_tests:nativegraphics:test \
+          )

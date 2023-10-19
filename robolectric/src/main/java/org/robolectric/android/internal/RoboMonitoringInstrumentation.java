@@ -41,9 +41,11 @@ import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowPausedLooper;
 
 /**
  * A Robolectric instrumentation that acts like a slimmed down {@link
@@ -163,32 +165,27 @@ public class RoboMonitoringInstrumentation extends Instrumentation {
    */
   @Override
   public void runOnMainSync(Runnable runnable) {
-    if (ShadowLooper.looperMode() != LooperMode.Mode.INSTRUMENTATION_TEST) {
+    if (ShadowLooper.looperMode() == LooperMode.Mode.INSTRUMENTATION_TEST) {
+      FutureTask<Void> wrapped = new FutureTask<>(runnable, null);
+      Shadow.<ShadowPausedLooper>extract(Looper.getMainLooper()).postSync(wrapped);
+      try {
+        wrapped.get();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      } catch (ExecutionException e) {
+        Throwable cause = e.getCause();
+        if (cause instanceof RuntimeException) {
+          throw (RuntimeException) cause;
+        } else if (cause instanceof Error) {
+          throw (Error) cause;
+        }
+        throw new RuntimeException(cause);
+      }
+    } else {
+      // TODO: Use ShadowPausedLooper#postSync for PAUSED looper mode which provides more realistic
+      //  behavior (i.e. it only runs to the runnable, it doesn't completely idle).
       waitForIdleSync();
       runnable.run();
-      return;
-    }
-
-    FutureTask<Void> wrappedRunnable = new FutureTask<>(runnable, null);
-    new Handler(Looper.getMainLooper()).post(wrappedRunnable);
-    if (shadowOf(Looper.getMainLooper()).isPaused()) {
-      while (!wrappedRunnable.isDone()) {
-        ShadowLooper.runMainLooperToNextTask();
-      }
-    }
-
-    try {
-      wrappedRunnable.get();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    } catch (ExecutionException e) {
-      Throwable cause = e.getCause();
-      if (cause instanceof RuntimeException) {
-        throw (RuntimeException) cause;
-      } else if (cause instanceof Error) {
-        throw (Error) cause;
-      }
-      throw new RuntimeException(cause);
     }
   }
 

@@ -18,6 +18,7 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -46,7 +47,8 @@ public class AndroidInterceptors {
                 new FileDescriptorInterceptor(),
                 new NoOpInterceptor(),
                 new SocketInterceptor(),
-                new ReferenceRefersToInterceptor()));
+                new ReferenceRefersToInterceptor(),
+                new NioUtilsFreeDirectBufferInterceptor()));
 
     if (Util.getJavaVersion() >= 9) {
       interceptors.add(new CleanerInterceptor());
@@ -490,6 +492,42 @@ public class AndroidInterceptors {
         throws NoSuchMethodException, IllegalAccessException {
       return lookup.findStatic(
           getClass(), METHOD, methodType(boolean.class, Reference.class, Object.class));
+    }
+  }
+
+  /**
+   * AndroidInterceptor for NioUtils.freeDirectBuffer.
+   *
+   * <p>This method is invoked by ImageReader.java. The class is not part of the JDK.
+   */
+  public static class NioUtilsFreeDirectBufferInterceptor extends Interceptor {
+    private static final String METHOD = "freeDirectBuffer";
+
+    public NioUtilsFreeDirectBufferInterceptor() {
+      super(new MethodRef("java.nio.NioUtils", METHOD));
+    }
+
+    static void freeDirectBuffer(ByteBuffer buffer) {
+      // Following the layoutlib/java/NioUtils_Delegate.java implementation, this is a no-op: "it
+      // does not seem we have to do anything in here as we are only referencing the existing native
+      // buffer and do not perform any allocation on creation."
+      //
+      // Note: for the interceptor to work, this method _must_ be present even though it doesn't
+      // do anything. Otherwise the bytecode can't reference it at runtime.
+    }
+
+    @Override
+    public Function<Object, Object> handle(MethodSignature methodSignature) {
+      return (theClass, value, params) -> {
+        freeDirectBuffer((ByteBuffer) value);
+        return null;
+      };
+    }
+
+    @Override
+    public MethodHandle getMethodHandle(String methodName, MethodType type)
+        throws NoSuchMethodException, IllegalAccessException {
+      return lookup.findStatic(getClass(), METHOD, methodType(void.class, ByteBuffer.class));
     }
   }
 }

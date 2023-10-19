@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static java.util.stream.Collectors.toList;
 
 import android.app.admin.DevicePolicyManager;
@@ -21,7 +22,9 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.AddNetworkResult;
+import android.net.wifi.WifiManager.LocalOnlyConnectionFailureListener;
 import android.net.wifi.WifiManager.MulticastLock;
+import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Binder;
@@ -42,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
@@ -88,6 +92,44 @@ public class ShadowWifiManager {
   private SoftApConfiguration softApConfig;
   private final Object pnoRequestLock = new Object();
   private PnoScanRequest outstandingPnoScanRequest = null;
+
+  private final ConcurrentMap<LocalOnlyConnectionFailureListener, Executor>
+      localOnlyConnectionFailureListenerExecutorMap = new ConcurrentHashMap<>();
+
+  /**
+   * Simulates a connection failure for a specified local network connection.
+   *
+   * @param specifier the {@link WifiNetworkSpecifier} describing the local network connection
+   *     attempt
+   * @param failureReason the reason for the network connection failure. This should be one of the
+   *     values specified in {@code WifiManager#STATUS_LOCAL_ONLY_CONNECTION_FAILURE_*}
+   */
+  public void triggerLocalConnectionFailure(WifiNetworkSpecifier specifier, int failureReason) {
+    localOnlyConnectionFailureListenerExecutorMap.forEach(
+        (failureListener, executor) ->
+            executor.execute(() -> failureListener.onConnectionFailed(specifier, failureReason)));
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void addLocalOnlyConnectionFailureListener(
+      Executor executor, LocalOnlyConnectionFailureListener listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Listener cannot be null");
+    }
+    if (executor == null) {
+      throw new IllegalArgumentException("Executor cannot be null");
+    }
+    localOnlyConnectionFailureListenerExecutorMap.putIfAbsent(listener, executor);
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void removeLocalOnlyConnectionFailureListener(
+      LocalOnlyConnectionFailureListener listener) {
+    if (listener == null) {
+      throw new IllegalArgumentException("Listener cannot be null");
+    }
+    localOnlyConnectionFailureListenerExecutorMap.remove(listener);
+  }
 
   @Implementation
   protected boolean setWifiEnabled(boolean wifiEnabled) {

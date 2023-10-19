@@ -4,8 +4,8 @@
     package="org.robolectric.integrationtests.axt">
 
   <uses-sdk
-      android:minSdkVersion="14"
-      android:targetSdkVersion="27"/>
+      android:minSdkVersion="19"
+      android:targetSdkVersion="34"/>
 
   <application>
     <activity android:name=".EspressoActivity" android:exported="true"/>

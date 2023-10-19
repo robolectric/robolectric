@@ -270,6 +270,11 @@ public class ShadowParcelFileDescriptor {
     }
   }
 
+  @Implementation
+  protected ParcelFileDescriptor dup() throws IOException {
+    return new ParcelFileDescriptor(realParcelFd);
+  }
+
   static class FileDescriptorFromParcelUnavailableException extends RuntimeException {
     FileDescriptorFromParcelUnavailableException() {
       super(

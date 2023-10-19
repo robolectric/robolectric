@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,6 +18,9 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionService}. */
 @Implements(value = VoiceInteractionService.class, minSdk = LOLLIPOP)
@@ -24,11 +28,11 @@ public class ShadowVoiceInteractionService extends ShadowService {
 
   private final List<Bundle> hintBundles = Collections.synchronizedList(new ArrayList<>());
   private final List<Bundle> sessionBundles = Collections.synchronizedList(new ArrayList<>());
-  private boolean isReady = false;
+  @RealObject private VoiceInteractionService realVic;
 
   /**
-   * Sets return value for {@link #isActiveService(Context context, ComponentName componentName)}
-   * method.
+   * Sets return value for {@link VoiceInteractionService#isActiveService(Context context,
+   * ComponentName componentName)} method.
    */
   public static void setActiveService(@Nullable ComponentName activeService) {
     Settings.Secure.putString(
@@ -37,36 +41,16 @@ public class ShadowVoiceInteractionService extends ShadowService {
         activeService == null ? "" : activeService.flattenToString());
   }
 
-  @Implementation
-  protected void onReady() {
-    isReady = true;
-  }
-
   @Implementation(minSdk = Q)
   protected void setUiHints(Bundle hints) {
-    // The actual implementation of this code on Android will also throw the exception if the
-    // service isn't ready.
-    // Throwing here will hopefully make sure these issues are caught before production.
-    if (!isReady) {
-      throw new NullPointerException(
-          "setUiHints() called before onReady() callback for VoiceInteractionService!");
-    }
-
-    if (hints != null) {
-      hintBundles.add(hints);
-    }
+    reflector(VoiceInteractionServiceReflector.class, realVic).setUiHints(hints);
+    hintBundles.add(hints);
   }
 
   @Implementation(minSdk = M)
   protected void showSession(Bundle args, int flags) {
-    if (!isReady) {
-      throw new NullPointerException(
-          "showSession() called before onReady() callback for VoiceInteractionService!");
-    }
-
-    if (args != null) {
-      sessionBundles.add(args);
-    }
+    reflector(VoiceInteractionServiceReflector.class, realVic).showSession(args, flags);
+    sessionBundles.add(args);
   }
 
   /**
@@ -97,5 +81,16 @@ public class ShadowVoiceInteractionService extends ShadowService {
   @Nullable
   public Bundle getLastSessionBundle() {
     return Iterables.getLast(sessionBundles, null);
+  }
+
+  /** Accessor interface for VoiceInteractionService's internals. */
+  @ForType(VoiceInteractionService.class)
+  interface VoiceInteractionServiceReflector {
+
+    @Direct
+    void showSession(Bundle args, int flags);
+
+    @Direct
+    void setUiHints(Bundle hints);
   }
 }

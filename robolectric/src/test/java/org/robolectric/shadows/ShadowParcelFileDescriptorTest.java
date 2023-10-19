@@ -417,6 +417,17 @@ public class ShadowParcelFileDescriptorTest {
         FileDescriptorFromParcelUnavailableException.class, () -> pfd2.getFileDescriptor());
   }
 
+  @Test
+  public void testDup_retainsFd() throws Exception {
+    ParcelFileDescriptor fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
+    ParcelFileDescriptor dupFd = fd.dup();
+    FileDescriptor file = fd.getFileDescriptor();
+    FileDescriptor dupFile = dupFd.getFileDescriptor();
+    assertThat(file).isEqualTo(dupFile);
+    assertThat(file.valid()).isTrue();
+    assertThat(dupFile.valid()).isTrue();
+  }
+
   private static String readLine(FileDescriptor fd) throws IOException {
     try (BufferedReader reader =
         new BufferedReader(new InputStreamReader(new FileInputStream(fd), defaultCharset()))) {

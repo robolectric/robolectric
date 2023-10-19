@@ -429,7 +429,13 @@ public class ShadowNativePaint {
     PaintNatives.nSetFontFeatureSettings(paintPtr, settings);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = V.SDK_INT)
+  protected static float nGetFontMetrics(
+      long paintPtr, FontMetrics metrics, /* Ignored */ boolean useLocale) {
+    return PaintNatives.nGetFontMetrics(paintPtr, metrics);
+  }
+
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetFontMetrics(long paintPtr, FontMetrics metrics) {
     return PaintNatives.nGetFontMetrics(paintPtr, metrics);
   }
@@ -439,7 +445,13 @@ public class ShadowNativePaint {
     return PaintNatives.nGetFontMetrics(paintPtr, typefacePtr, metrics);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = V.SDK_INT)
+  protected static int nGetFontMetricsInt(
+      long paintPtr, FontMetricsInt fmi, /* Ignored */ boolean useLocale) {
+    return PaintNatives.nGetFontMetricsInt(paintPtr, fmi);
+  }
+
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
     return PaintNatives.nGetFontMetricsInt(paintPtr, fmi);
   }

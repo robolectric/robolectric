@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.robolectric">
 
-  <uses-sdk android:targetSdkVersion="18"/>
+  <uses-sdk android:targetSdkVersion="19"/>
   <application android:name="org.robolectric.shadows.testing.TestApplication"
                android:label="App Label">
     <meta-data android:name="org.robolectric.metaName1" android:value="metaValue1" />

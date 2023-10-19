@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,6 +11,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,6 +21,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
+import org.robolectric.shadow.api.Shadow;
 
 @LooperMode(Mode.INSTRUMENTATION_TEST)
 @RunWith(RobolectricTestRunner.class)
@@ -80,7 +83,7 @@ public class ShadowInstrumentationTestLooperTest {
   }
 
   @Test
-  public void exceptionOnMainThreadPropagated() throws InterruptedException {
+  public void exceptionOnMainThreadPropagated() {
     ShadowLooper shadowMainLooper = shadowOf(Looper.getMainLooper());
     Handler mainHandler = new Handler(Looper.getMainLooper());
 
@@ -91,7 +94,6 @@ public class ShadowInstrumentationTestLooperTest {
     assertThrows(RuntimeException.class, () -> shadowMainLooper.idle());
 
     // Restore main looper and main thread to avoid error at tear down
-    Looper.getMainLooper().getThread().join();
     ShadowPausedLooper.resetLoopers();
   }
 
@@ -107,5 +109,68 @@ public class ShadowInstrumentationTestLooperTest {
     ht.join();
 
     assertThrows(IllegalStateException.class, () -> handler.post(() -> {}));
+  }
+
+  @Test
+  public void mainThreadDies_resetRestartsLooper() {
+    ShadowLooper shadowLooper = shadowOf(Looper.getMainLooper());
+    Handler handler = new Handler(Looper.getMainLooper());
+    AtomicBoolean didRun = new AtomicBoolean();
+
+    handler.post(
+        () -> {
+          throw new RuntimeException();
+        });
+    RuntimeException exception = null;
+    try {
+      shadowLooper.idle();
+    } catch (RuntimeException e) {
+      exception = e;
+    }
+    Preconditions.checkNotNull(exception);
+    ShadowPausedLooper.resetLoopers();
+    handler.post(
+        () -> {
+          didRun.set(true);
+        });
+    shadowLooper.idle();
+
+    assertThat(didRun.get()).isTrue();
+  }
+
+  @Test
+  public void postSync_runsOnlyToTheRunnable() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+    shadowLooper.setPaused(true);
+    AtomicBoolean firstTaskRan = new AtomicBoolean();
+    AtomicBoolean secondTaskRan = new AtomicBoolean();
+    AtomicBoolean thirdTaskRan = new AtomicBoolean();
+
+    new Handler(Looper.getMainLooper()).post(() -> firstTaskRan.set(true));
+    shadowLooper.postSync(
+        () -> {
+          new Handler(Looper.getMainLooper()).post(() -> thirdTaskRan.set(true));
+          secondTaskRan.set(true);
+        });
+
+    assertThat(firstTaskRan.get()).isTrue();
+    assertThat(secondTaskRan.get()).isTrue();
+    assertThat(thirdTaskRan.get()).isFalse();
+  }
+
+  @Test
+  public void postSync_exceptionIsThrown() {
+    ShadowPausedLooper shadowLooper = Shadow.extract(Looper.getMainLooper());
+
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> {
+              throw new RuntimeException();
+            });
+
+    assertThrows(RuntimeException.class, () -> shadowLooper.postSync(() -> {}));
+
+    // Restore main looper and main thread to avoid error at tear down
+    ShadowPausedLooper.resetLoopers();
   }
 }

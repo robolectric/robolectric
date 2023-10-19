@@ -1,17 +1,21 @@
 package org.robolectric.integrationtests.memoryleaks;
 
+import static android.os.Build.VERSION_CODES.N;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.os.Looper;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentContainerView;
+import com.google.common.testing.GcFinalization;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -19,6 +23,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.android.Registries;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -138,6 +143,24 @@ public abstract class BaseMemoryLeaksTest {
           TypedArray typedArray = context.obtainStyledAttributes(new int[] {});
           return ReflectionHelpers.getField(typedArray, "mData");
         });
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void themeObjectInNativeObjectRegistry() {
+    final AtomicLong themeId = new AtomicLong(0);
+    assertNotLeaking(
+        () -> {
+          Theme theme = RuntimeEnvironment.getApplication().getResources().newTheme();
+          long nativeId =
+              ReflectionHelpers.getField(ReflectionHelpers.getField(theme, "mThemeImpl"), "mTheme");
+          themeId.set(nativeId);
+          return theme;
+        });
+
+    // Also wait for the theme to be cleared from the registry.
+    GcFinalization.awaitDone(
+        () -> Registries.NATIVE_THEME9_REGISTRY.peekNativeObject(themeId.get()) == null);
   }
 
   public abstract <T> void assertNotLeaking(Callable<T> potentiallyLeakingCallable);

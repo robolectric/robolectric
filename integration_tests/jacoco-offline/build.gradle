@@ -32,7 +32,7 @@ def javaDirPath = "${buildDir.path}/classes/java/main"
 
 def kotlinDirPath = "${buildDir.path}/classes/kotlin/main"
 
-def jacocoInstrumentedClassesOutputDirPath = "${buildDir.path}/classes/java/classes-instrumented"
+def jacocoInstrumentedClassesOutputDirPath = "${buildDir.path}/$jacocoVersion/classes/java/classes-instrumented"
 
 // make sure it's evaluated after the AGP evaluation.
 afterEvaluate {

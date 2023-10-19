@@ -15,12 +15,12 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final S = new AndroidSdk(31, "12", "7732740");
     static final S_V2 = new AndroidSdk(32, "12.1", "8229987");
     static final TIRAMISU = new AndroidSdk(33, "13", "9030017");
-
+    static final U = new AndroidSdk(34, "14", "10818077");
 
     static final List<AndroidSdk> ALL_SDKS = [
             KITKAT,
             LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2,
-            TIRAMISU
+            TIRAMISU, U
     ]
 
     static final MAX_SDK = Collections.max(ALL_SDKS)

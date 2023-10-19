@@ -712,11 +712,12 @@ public class ResTable {
 //      reinterpret_cast<const uint8_t*>(bestType) + bestOffset);
     final ResTable_entry entry = new ResTable_entry(bestType.myBuf(),
         bestType.myOffset() + bestOffset);
-    if (dtohs(entry.size) < ResTable_entry.SIZEOF) {
+    int entrySize = entry.isCompact() ? ResTable_entry.SIZEOF : dtohs(entry.size);
+    if (entrySize < ResTable_entry.SIZEOF) {
       ALOGW("ResTable_entry size 0x%x is too small", dtohs(entry.size));
       return BAD_TYPE;
     }
-    
+
     if (outEntry != null) {
       outEntry.entry = entry;
       outEntry.config = bestConfig;
@@ -724,7 +725,7 @@ public class ResTable {
       outEntry.specFlags = specFlags;
       outEntry._package_ = bestPackage;
       outEntry.typeStr = new StringPoolRef(bestPackage.typeStrings, actualTypeIndex - bestPackage.typeIdOffset);
-      outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, dtohl(entry.key.index));
+      outEntry.keyStr = new StringPoolRef(bestPackage.keyStrings, dtohl(entry.getKeyIndex()));
     }
     return NO_ERROR;
   }
@@ -960,10 +961,12 @@ public class ResTable {
             dtohs(type.header.headerSize),
             typeSize));
       }
-      if (dtohs(type.header.headerSize)+(4/*sizeof(int)*/*newEntryCount) > typeSize) {
-        ALOGW("ResTable_type entry index to %s extends beyond chunk end 0x%x.",
-            (dtohs(type.header.headerSize) + (4/*sizeof(int)*/*newEntryCount)),
-            typeSize);
+        // Check if the table uses compact encoding.
+        int bytesPerEntry = isTruthy(type.flags & ResTable_type.FLAG_OFFSET16) ? 2 : 4;
+        if (dtohs(type.header.headerSize) + (bytesPerEntry * newEntryCount) > typeSize) {
+          ALOGW(
+              "ResTable_type entry index to %s extends beyond chunk end 0x%x.",
+              (dtohs(type.header.headerSize) + (bytesPerEntry * newEntryCount)), typeSize);
         return (mError=BAD_TYPE);
       }
 

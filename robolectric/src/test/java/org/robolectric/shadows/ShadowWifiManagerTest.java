@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.DhcpInfo;
+import android.net.MacAddress;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
 import android.net.wifi.SoftApConfiguration;
@@ -34,8 +35,10 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.AddNetworkResult;
+import android.net.wifi.WifiManager.LocalOnlyConnectionFailureListener;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.net.wifi.WifiManager.PnoScanResultsCallback;
+import android.net.wifi.WifiNetworkSpecifier;
 import android.net.wifi.WifiSsid;
 import android.net.wifi.WifiUsabilityStatsEntry;
 import android.os.Build;
@@ -43,6 +46,7 @@ import android.util.Pair;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -52,7 +56,9 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiManagerTest {
@@ -1181,6 +1187,165 @@ public class ShadowWifiManagerTest {
 
     assertThat(executor.awaitTermination(5, MINUTES)).isTrue();
     assertThat(callback.incomingScanResults).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void addLocalOnlyConnectionFailureListener_nullExecutor_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            wifiManager.addLocalOnlyConnectionFailureListener(
+                /* executor= */ null, /* listener= */ (unused1, unused2) -> {}));
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void addLocalOnlyConnectionFailureListener_nullListener_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            wifiManager.addLocalOnlyConnectionFailureListener(
+                Executors.newSingleThreadExecutor(), /* listener= */ null));
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void
+      removeLocalOnlyConnectionFailureListener_nullListener_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> wifiManager.removeLocalOnlyConnectionFailureListener(/* listener= */ null));
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void triggerLocalConnectionFailure_callbackTriggered() throws Exception {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    TestFailureListener listener = new TestFailureListener();
+    WifiNetworkSpecifier wifiNetworkSpecifier =
+        new WifiNetworkSpecifier.Builder()
+            .setSsid("icanhazinternet")
+            .setBssid(MacAddress.fromString("01:92:83:74:65:AB"))
+            .setWpa3Passphrase("r3@l gud pa$$w0rd")
+            .build();
+
+    wifiManager.addLocalOnlyConnectionFailureListener(executor, listener);
+    ((ShadowWifiManager) Shadow.extract(wifiManager))
+        .triggerLocalConnectionFailure(
+            wifiNetworkSpecifier, WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+    executor.shutdown();
+
+    IncomingFailure incomingFailure = listener.incomingFailures.take();
+    assertThat(incomingFailure.wifiNetworkSpecifier).isEqualTo(wifiNetworkSpecifier);
+    assertThat(incomingFailure.failureReason)
+        .isEqualTo(WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void triggerLocalConnectionFailure_multipleCallbacksRegistered_allCallbacksTriggered()
+      throws Exception {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    TestFailureListener listener1 = new TestFailureListener();
+    TestFailureListener listener2 = new TestFailureListener();
+    WifiNetworkSpecifier wifiNetworkSpecifier =
+        new WifiNetworkSpecifier.Builder()
+            .setSsid("icanhazinternet")
+            .setBssid(MacAddress.fromString("01:92:83:74:65:AB"))
+            .setWpa3Passphrase("r3@l gud pa$$w0rd")
+            .build();
+
+    wifiManager.addLocalOnlyConnectionFailureListener(executor, listener1);
+    wifiManager.addLocalOnlyConnectionFailureListener(executor, listener2);
+    ((ShadowWifiManager) Shadow.extract(wifiManager))
+        .triggerLocalConnectionFailure(
+            wifiNetworkSpecifier, WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+    executor.shutdown();
+
+    IncomingFailure incomingFailure = listener1.incomingFailures.take();
+    assertThat(incomingFailure.wifiNetworkSpecifier).isEqualTo(wifiNetworkSpecifier);
+    assertThat(incomingFailure.failureReason)
+        .isEqualTo(WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+    incomingFailure = listener2.incomingFailures.take();
+    assertThat(incomingFailure.wifiNetworkSpecifier).isEqualTo(wifiNetworkSpecifier);
+    assertThat(incomingFailure.failureReason)
+        .isEqualTo(WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void
+      triggerLocalConnectionFailure_multipleCallbacksRegisteredOnDifferentExecutors_allCallbacksTriggered()
+          throws Exception {
+    ExecutorService executor1 = Executors.newSingleThreadExecutor();
+    ExecutorService executor2 = Executors.newSingleThreadExecutor();
+    TestFailureListener listener1 = new TestFailureListener();
+    TestFailureListener listener2 = new TestFailureListener();
+    WifiNetworkSpecifier wifiNetworkSpecifier =
+        new WifiNetworkSpecifier.Builder()
+            .setSsid("icanhazinternet")
+            .setBssid(MacAddress.fromString("01:92:83:74:65:AB"))
+            .setWpa3Passphrase("r3@l gud pa$$w0rd")
+            .build();
+
+    wifiManager.addLocalOnlyConnectionFailureListener(executor1, listener1);
+    wifiManager.addLocalOnlyConnectionFailureListener(executor2, listener2);
+    ((ShadowWifiManager) Shadow.extract(wifiManager))
+        .triggerLocalConnectionFailure(
+            wifiNetworkSpecifier, WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+    executor1.shutdown();
+    executor2.shutdown();
+
+    IncomingFailure incomingFailure = listener1.incomingFailures.take();
+    assertThat(incomingFailure.wifiNetworkSpecifier).isEqualTo(wifiNetworkSpecifier);
+    assertThat(incomingFailure.failureReason)
+        .isEqualTo(WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+    incomingFailure = listener2.incomingFailures.take();
+    assertThat(incomingFailure.wifiNetworkSpecifier).isEqualTo(wifiNetworkSpecifier);
+    assertThat(incomingFailure.failureReason)
+        .isEqualTo(WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+  }
+
+  @Test
+  @Config(minSdk = U.SDK_INT)
+  public void triggerLocalConnectionFailure_listenerRemovedBeforeTrigger_callbackNotInvoked() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    TestFailureListener listener = new TestFailureListener();
+    WifiNetworkSpecifier wifiNetworkSpecifier =
+        new WifiNetworkSpecifier.Builder()
+            .setSsid("icanhazinternet")
+            .setBssid(MacAddress.fromString("01:92:83:74:65:AB"))
+            .setWpa3Passphrase("r3@l gud pa$$w0rd")
+            .build();
+
+    wifiManager.addLocalOnlyConnectionFailureListener(executor, listener);
+    wifiManager.removeLocalOnlyConnectionFailureListener(listener);
+    ((ShadowWifiManager) Shadow.extract(wifiManager))
+        .triggerLocalConnectionFailure(
+            wifiNetworkSpecifier, WifiManager.STATUS_LOCAL_ONLY_CONNECTION_FAILURE_AUTHENTICATION);
+    executor.shutdown();
+
+    assertThat(listener.incomingFailures).isEmpty();
+  }
+
+  private static final class IncomingFailure {
+    private final WifiNetworkSpecifier wifiNetworkSpecifier;
+    private final int failureReason;
+
+    IncomingFailure(WifiNetworkSpecifier wifiNetworkSpecifier, int failureReason) {
+      this.wifiNetworkSpecifier = wifiNetworkSpecifier;
+      this.failureReason = failureReason;
+    }
+  }
+
+  private static final class TestFailureListener implements LocalOnlyConnectionFailureListener {
+    private final BlockingQueue<IncomingFailure> incomingFailures = new LinkedBlockingQueue<>();
+
+    @Override
+    public void onConnectionFailed(WifiNetworkSpecifier wifiNetworkSpecifier, int i) {
+      incomingFailures.add(new IncomingFailure(wifiNetworkSpecifier, i));
+    }
   }
 
   private class TestPnoScanResultsCallback implements PnoScanResultsCallback {

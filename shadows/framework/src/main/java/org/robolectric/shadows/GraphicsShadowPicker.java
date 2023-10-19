@@ -22,11 +22,15 @@ public class GraphicsShadowPicker<T> implements ShadowPicker<T> {
 
   @Override
   public Class<? extends T> pickShadowClass() {
-    if (RuntimeEnvironment.getApiLevel() >= O
+    if (RuntimeEnvironment.getApiLevel() >= getMinApiLevel()
         && ConfigurationRegistry.get(GraphicsMode.Mode.class) == Mode.NATIVE) {
       return nativeShadowClass;
     } else {
       return legacyShadowClass;
     }
+  }
+
+  protected int getMinApiLevel() {
+    return O;
   }
 }
