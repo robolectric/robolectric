@@ -220,6 +220,30 @@ public class ShadowAlwaysOnHotwordDetector {
   @ForType(AlwaysOnHotwordDetector.class)
   interface AlwaysOnHotwordDetectorReflector {
 
+    // new constructor after U
+    @Constructor
+    AlwaysOnHotwordDetector newInstance(
+        String text,
+        Locale locale,
+        Executor executor,
+        AlwaysOnHotwordDetector.Callback callback,
+        KeyphraseEnrollmentInfo keyphraseEnrollmentInfo,
+        IVoiceInteractionManagerService modelManagementService,
+        int targetSdkVersion,
+        boolean supportSandboxedDetectionService,
+        String attributionTag);
+
+    @Constructor
+    AlwaysOnHotwordDetector newInstance(
+        String text,
+        Locale locale,
+        Executor executor,
+        AlwaysOnHotwordDetector.Callback callback,
+        KeyphraseEnrollmentInfo keyphraseEnrollmentInfo,
+        IVoiceInteractionManagerService modelManagementService,
+        int targetSdkVersion,
+        boolean supportSandboxedDetectionService);
+
     @Accessor("mAvailability")
     void setAvailability(int availability);
 
