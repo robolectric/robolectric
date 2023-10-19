@@ -88,7 +88,7 @@ mockito = "4.11.0"
 mockk = "1.13.7"
 
 # https://square.github.io/okhttp/changelogs/changelog/
-okhttp = "4.11.0"
+okhttp = "4.12.0"
 
 # https://github.com/powermock/powermock/releases
 powermock = "2.0.9"
