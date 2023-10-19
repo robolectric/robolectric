@@ -5,6 +5,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.app.PendingIntent;
+import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
 import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
@@ -27,6 +28,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
 
@@ -64,13 +66,29 @@ public class ShadowVirtualDeviceManager {
   }
 
   @Implementation
+  @SuppressWarnings("ReturnValueIgnored")
   protected List<android.companion.virtual.VirtualDevice> getVirtualDevices() {
     return mVirtualDevices.stream()
         .map(
-            virtualDevice ->
-                new VirtualDevice(
+            virtualDevice -> {
+              VirtualDeviceReflector accessor = reflector(VirtualDeviceReflector.class);
+              String deviceName =
+                  ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getParams().getName();
+              try {
+                // check if VirtualDevice has the U and before constructor
+                VirtualDevice.class.getDeclaredConstructor(int.class, String.class);
+                return accessor.newInstance(virtualDevice.getDeviceId(), deviceName);
+              } catch (NoSuchMethodException e) {
+                // Use the new constructor when the old constructor does not exist
+                DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
+                    reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
+                return accessor.newInstance(
+                    virtualDeviceReflector.getVirtualDevice(),
                     virtualDevice.getDeviceId(),
-                    ((ShadowVirtualDevice) Shadow.extract(virtualDevice)).getParams().getName()))
+                    virtualDeviceReflector.getPersistentDeviceId(),
+                    deviceName);
+              }
+            })
         .collect(Collectors.toList());
   }
 
@@ -206,5 +224,26 @@ public class ShadowVirtualDeviceManager {
 
     @Accessor("mDirectChannelCallback")
     VirtualSensorDirectChannelCallback getDirectChannelCallback();
+  }
+
+  @ForType(VirtualDevice.class)
+  private interface VirtualDeviceReflector {
+
+    // new constructor after U
+    @Constructor
+    VirtualDevice newInstance(
+        IVirtualDevice virtualDevice, int id, String persistentId, String name);
+
+    @Constructor
+    VirtualDevice newInstance(int id, String name);
+  }
+
+  @ForType(VirtualDeviceManager.VirtualDevice.class)
+  private interface DeviceManagerVirtualDeviceReflector {
+    // U and before var and method
+    @Accessor("mVirtualDevice")
+    IVirtualDevice getVirtualDevice();
+
+    String getPersistentDeviceId();
   }
 }
