@@ -167,4 +167,16 @@ public class ShadowTypefaceTest {
         new Typeface.CustomFallbackBuilder(family).setStyle(font.getStyle()).build();
     assertThat(typeface).isNotNull();
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void createTypeface_withCustomFallbackBuilder() throws IOException {
+    Font font = new Font.Builder(fontFile).build();
+    FontFamily family = new FontFamily.Builder(font).build();
+    Typeface typeface =
+        new Typeface.CustomFallbackBuilder(family).setStyle(font.getStyle()).build();
+    Typeface typeface2 = Typeface.create(typeface, Typeface.BOLD);
+    assertThat(typeface2).isNotNull();
+    assertThat(typeface2.toString()).isNotEmpty();
+  }
 }

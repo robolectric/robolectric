@@ -37,6 +37,8 @@ import org.robolectric.res.Fs;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.T;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Typeface}. */
 @Implements(value = Typeface.class, looseSignatures = true, isInAndroidSdk = false)
@@ -46,15 +48,19 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   private static final AtomicLong nextFontId = new AtomicLong(1);
   private FontDesc description;
 
-  @HiddenApi
   @Implementation(maxSdk = KITKAT)
   protected void __constructor__(int fontId) {
-    description = findById((long) fontId);
+    description = findById(fontId);
   }
 
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  /** Starting in U, this constructor calls {@link #__constructor__(long, String )} below. */
+  @Implementation(minSdk = LOLLIPOP, maxSdk = T.SDK_INT)
   protected void __constructor__(long fontId) {
+    description = findById(fontId);
+  }
+
+  @Implementation(minSdk = U.SDK_INT)
+  protected void __constructor__(long fontId, String familyName) {
     description = findById(fontId);
   }
 
