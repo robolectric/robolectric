@@ -20,6 +20,7 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Paint.FontMetricsInt;
 import android.graphics.PathEffect;
+import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 import org.robolectric.annotation.Implementation;
@@ -557,6 +558,47 @@ public class ShadowPaint {
       return end - start;
     }
     return 0f;
+  }
+
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static float nGetRunCharacterAdvance(
+      long paintPtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset,
+      float[] advances,
+      int advancesIndex) {
+    return nGetRunAdvance(paintPtr, text, start, end, contextStart, contextEnd, isRtl, offset);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected static float nGetRunCharacterAdvance(
+      long paintPtr,
+      char[] text,
+      int start,
+      int end,
+      int contextStart,
+      int contextEnd,
+      boolean isRtl,
+      int offset,
+      float[] advances,
+      int advancesIndex,
+      RectF drawingBounds) {
+    return nGetRunCharacterAdvance(
+        paintPtr,
+        text,
+        start,
+        end,
+        contextStart,
+        contextEnd,
+        isRtl,
+        offset,
+        advances,
+        advancesIndex);
   }
 
   @Implementation(minSdk = N, maxSdk = O_MR1)

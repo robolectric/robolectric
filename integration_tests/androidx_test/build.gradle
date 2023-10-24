@@ -25,9 +25,6 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
-            all {
-                systemProperty 'robolectric.graphicsMode', 'NATIVE'
-            }
         }
     }
     sourceSets {
