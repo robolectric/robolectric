@@ -21,6 +21,7 @@ import androidx.annotation.VisibleForTesting;
 import com.google.common.base.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -51,6 +52,32 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   private boolean isPolling = false;
   private ShadowPausedSystemClock.Listener clockListener;
   private Exception uncaughtException = null;
+  private final CopyOnWriteArraySet<IdlingMonitor> idlingMonitors = new CopyOnWriteArraySet<>();
+
+  /**
+   * Monitors polling of {@link ShadowPausedMessageQueue}.
+   *
+   * <p>Implementations should not interact with looper as {@link IdlingMonitor} runs in context of
+   * internal looper machinery. It is only intended to allow observing looper state.
+   */
+  public interface IdlingMonitor {
+    /** Wake up of poll was requested. */
+    default void onTransitionToNotIdle() {}
+
+    /** Looper is about to block its thread waiting for messages. */
+    default void onTransitionToIdle() {}
+  }
+
+  /**
+   * Adds {@link IdlingMonitor}.
+   *
+   * <p>Newly added monitor won't be informed about current state of looper. Caller needs to handle
+   * starting for any point (blocked/not) or use some other synchronization mechanism to ensure
+   * known starting point.
+   */
+  public void addIdlingMonitor(IdlingMonitor idlingMonitor) {
+    idlingMonitors.add(idlingMonitor);
+  }
 
   // shadow constructor instead of nativeInit because nativeInit signature has changed across SDK
   // versions
@@ -112,6 +139,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       while (isIdle() && !isQuitting()) {
         isPolling = true;
         try {
+          idlingMonitors.forEach(IdlingMonitor::onTransitionToIdle);
           realQueue.wait();
         } catch (InterruptedException e) {
           // ignore
@@ -145,6 +173,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       if (isIdle()) {
         ReflectionHelpers.setField(realQueue, "mBlocked", true);
         try {
+          idlingMonitors.forEach(IdlingMonitor::onTransitionToIdle);
           realQueue.wait(timeout);
         } catch (InterruptedException ignored) {
           // Fall through and unblock with no messages.
@@ -158,6 +187,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @Implementation(maxSdk = JELLY_BEAN_MR1)
   protected void nativeWake(int ptr) {
     synchronized (realQueue) {
+      idlingMonitors.forEach(IdlingMonitor::onTransitionToNotIdle);
       realQueue.notifyAll();
     }
   }
@@ -392,6 +422,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
       msgQueue.setNextBarrierToken(0);
     }
     setUncaughtException(null);
+    idlingMonitors.clear();
   }
 
   private static ShadowPausedMessage shadowOfMsg(Message head) {
