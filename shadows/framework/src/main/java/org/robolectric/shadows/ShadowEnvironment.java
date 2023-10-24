@@ -144,6 +144,18 @@ public class ShadowEnvironment {
     return buildExternalStorageAppCacheDirs(packageName)[0];
   }
 
+  /**
+   * Sets the return value of {@link #getExternalStoragePublicDirectory}. Note that the default
+   * value provides a directory that is usable in the test environment. If the test app uses this
+   * method to override that default directory, please clean up any files written to that directory,
+   * as the Robolectric environment will not purge that directory when the test ends.
+   *
+   * @param directory Path to return from {@link #getExternalStoragePublicDirectory}.
+   */
+  public static void setExternalStoragePublicDirectory(Path directory) {
+    EXTERNAL_FILES_DIR = directory;
+  }
+
   @Implementation
   protected static File getExternalStoragePublicDirectory(String type) {
     if (externalStorageState.equals(Environment.MEDIA_UNKNOWN)) {

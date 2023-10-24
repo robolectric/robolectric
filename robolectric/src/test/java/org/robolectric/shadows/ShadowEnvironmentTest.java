@@ -91,6 +91,45 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
+  public void setExternalStoragePublicDirectory_shouldReturnDirectory() {
+    // state prior to override
+    File defaultDir = Environment.getExternalStoragePublicDirectory(/* type= */ null);
+    // override
+    Path overrideRootPath = FileSystems.getDefault().getPath("/tmp", "foo");
+    ShadowEnvironment.setExternalStoragePublicDirectory(overrideRootPath);
+    File overridePathResult = Environment.getExternalStoragePublicDirectory(/* type= */ null);
+    assertThat(overridePathResult.getAbsolutePath())
+        .isEqualTo(overrideRootPath.toAbsolutePath().toString());
+
+    // restore default value by supplying {@code null}
+    ShadowEnvironment.setExternalStoragePublicDirectory(null);
+
+    // verify default
+    assertThat(defaultDir)
+        .isEqualTo(Environment.getExternalStoragePublicDirectory(/* type= */ null));
+  }
+
+  @Test
+  public void setExternalStoragePublicDirectory_withType_shouldReturnDirectory() {
+    // state prior to override
+    File defaultDir = Environment.getExternalStoragePublicDirectory(/* type= */ "something");
+    // override
+    Path overrideRootPath = FileSystems.getDefault().getPath("/tmp", "foo");
+    ShadowEnvironment.setExternalStoragePublicDirectory(overrideRootPath);
+    File overridePathResult =
+        Environment.getExternalStoragePublicDirectory(/* type= */ "something");
+    assertThat(overridePathResult.getAbsolutePath())
+        .isEqualTo(overrideRootPath.resolve("something").toAbsolutePath().toString());
+
+    // restore default value by supplying {@code null}
+    ShadowEnvironment.setExternalStoragePublicDirectory(null);
+
+    // verify default
+    assertThat(defaultDir)
+        .isEqualTo(Environment.getExternalStoragePublicDirectory(/* type= */ "something"));
+  }
+
+  @Test
   public void getExternalStoragePublicDirectory_shouldReturnSameDirectory() {
     File path1 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
     File path2 = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);

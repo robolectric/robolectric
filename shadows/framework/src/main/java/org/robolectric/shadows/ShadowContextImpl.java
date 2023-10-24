@@ -64,7 +64,7 @@ public class ShadowContextImpl {
 
   @RealObject private Context realContextImpl;
 
-  private Map<String, Object> systemServices = new HashMap<String, Object>();
+  private final Map<String, Object> systemServices = new HashMap<>();
   private final Set<String> removedSystemServices = new HashSet<>();
   private final Object contentResolverLock = new Object();
 
@@ -391,7 +391,7 @@ public class ShadowContextImpl {
     reflector(_ContextImpl_.class, realContextImpl).startActivity(intent, options);
   }
 
-  /* Set the user id returned by {@link #getUserId()}. */
+  /** Set the user id returned by {@link #getUserId()}. */
   public void setUserId(int userId) {
     this.userId = userId;
   }
@@ -407,12 +407,23 @@ public class ShadowContextImpl {
 
   @Implementation(maxSdk = JELLY_BEAN_MR2)
   protected File getExternalFilesDir(String type) {
-    return Environment.getExternalStoragePublicDirectory(type);
+    File externalDir = Environment.getExternalStoragePublicDirectory(/* type= */ null);
+    if (externalDir == null) {
+      return null;
+    }
+
+    File externalFilesDir =
+        new File(externalDir, "Android/data/" + realContextImpl.getPackageName());
+    if (type != null) {
+      externalFilesDir = new File(externalFilesDir, type);
+    }
+    externalFilesDir.mkdirs();
+    return externalFilesDir;
   }
 
   @Implementation(minSdk = KITKAT)
   protected File[] getExternalFilesDirs(String type) {
-    return new File[] {Environment.getExternalStoragePublicDirectory(type)};
+    return new File[] {getExternalFilesDir(type)};
   }
 
   @Resetter
