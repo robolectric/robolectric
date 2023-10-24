@@ -107,6 +107,47 @@ public class ShadowPausedMessageQueueTest {
     assertThat(shadowQueue.getNextIgnoringWhen().what).isEqualTo(2);
   }
 
+  @Test
+  public void addPollMonitor_observesPollStartAndEnd() throws Exception {
+    CountingIdlingMonitor monitor = new CountingIdlingMonitor();
+    shadowQueue.addIdlingMonitor(monitor);
+
+    assertThat(monitor.notIdleCallCount).isEqualTo(0);
+    assertThat(monitor.idleCallCount).isEqualTo(0);
+
+    NextThread t = NextThread.startSync(shadowQueue);
+
+    monitor.idleLatch.await();
+
+    assertThat(monitor.notIdleCallCount).isEqualTo(0);
+    assertThat(monitor.idleCallCount).isEqualTo(1);
+
+    Message msg = Message.obtain();
+    msg.setTarget(new Handler());
+    shadowQueue.doEnqueueMessage(msg, 0);
+    assertThat(monitor.notIdleCallCount).isEqualTo(1);
+    assertThat(monitor.idleCallCount).isEqualTo(1);
+
+    t.join();
+  }
+
+  @Test
+  public void onReset_removesPollMonitor() throws Exception {
+    CountingIdlingMonitor monitor = new CountingIdlingMonitor();
+    shadowQueue.addIdlingMonitor(monitor);
+    shadowQueue.reset();
+
+    assertThat(monitor.idleCallCount).isEqualTo(0);
+
+    NextThread t = NextThread.startSync(shadowQueue);
+    Message msg = Message.obtain();
+    msg.setTarget(new Handler());
+    shadowQueue.doEnqueueMessage(msg, 0);
+    t.join();
+
+    assertThat(monitor.idleCallCount).isEqualTo(0);
+  }
+
   private void assertMainQueueEmptyAndAdd() {
     MessageQueue mainQueue = Looper.getMainLooper().getQueue();
     ShadowPausedMessageQueue shadowPausedMessageQueue = Shadow.extract(mainQueue);
@@ -141,6 +182,23 @@ public class ShadowPausedMessageQueueTest {
       }
       assertThat(t.isAlive()).isTrue();
       return t;
+    }
+  }
+
+  private static class CountingIdlingMonitor implements ShadowPausedMessageQueue.IdlingMonitor {
+    int notIdleCallCount = 0;
+    int idleCallCount = 0;
+    final CountDownLatch idleLatch = new CountDownLatch(1);
+
+    @Override
+    public void onTransitionToNotIdle() {
+      notIdleCallCount++;
+    }
+
+    @Override
+    public void onTransitionToIdle() {
+      idleCallCount++;
+      idleLatch.countDown();
     }
   }
 }
