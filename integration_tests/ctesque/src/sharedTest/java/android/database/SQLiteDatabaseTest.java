@@ -1,6 +1,7 @@
 package android.database;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
@@ -167,7 +168,8 @@ public class SQLiteDatabaseTest {
       super(name);
     }
 
-    /** Make the finalize method public */
+    /** Make the finalize method public for testing purposes. */
+    @SuppressWarnings("Finalize")
     @Override
     public void finalize() throws Throwable {
       super.finalize();
@@ -238,5 +240,47 @@ public class SQLiteDatabaseTest {
       "test",
     };
     assertThat(database.delete("table_name", select, selectArgs)).isEqualTo(1);
+  }
+
+  @Test
+  @SdkSuppress(minSdkVersion = M) // This test fails on emulators for SDKs 21 and 22
+  public void fts4() {
+    database.execSQL(
+        "CREATE VIRTUAL TABLE documents USING fts4 ("
+            + "id INTEGER PRIMARY KEY, "
+            + "title TEXT, "
+            + "content TEXT"
+            + ")");
+    ContentValues values = new ContentValues();
+    values.put("title", "Title1");
+    values.put("content", "Hello World");
+    database.insert("documents", null, values);
+
+    String[] columns = {"id"};
+    Cursor results =
+        database.query(
+            "documents",
+            columns,
+            "documents MATCH 'content:*Wor* OR title:*Wor*'",
+            null,
+            null,
+            null,
+            null);
+    assertThat(results.getCount()).isEqualTo(1);
+    results.close();
+
+    // Android does not support parenthesis in MATCH clauses
+    // See https://github.com/robolectric/robolectric/issues/8495
+    results =
+        database.query(
+            "documents",
+            columns,
+            "documents MATCH '(content:*Wor* OR title:*Wor*)'",
+            null,
+            null,
+            null,
+            null);
+    assertThat(results.getCount()).isEqualTo(0);
+    results.close();
   }
 }
