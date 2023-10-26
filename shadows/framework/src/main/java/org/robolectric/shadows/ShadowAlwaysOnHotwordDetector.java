@@ -145,6 +145,13 @@ public class ShadowAlwaysOnHotwordDetector {
         .onDetected(eventPayload);
   }
 
+  /** Invokes Callback#onAvailabilityChanged. */
+  public void triggerOnAvailabilityChangedCallback(int status) {
+    reflector(AlwaysOnHotwordDetectorReflector.class, realObject)
+        .getCallback()
+        .onAvailabilityChanged(status);
+  }
+
   private void setEnrollmentFields(
       String text, Locale locale, KeyphraseEnrollmentInfo keyphraseEnrollmentInfo) {
     reflector(AlwaysOnHotwordDetectorReflector.class, realObject)
