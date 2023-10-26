@@ -60,6 +60,17 @@ public class ShadowAlwaysOnHotwordDetectorTest {
   }
 
   @Test
+  public void testCallback_onAvailabilityChanged() {
+    AlwaysOnHotwordDetector detector = (AlwaysOnHotwordDetector) createDetector();
+    ShadowAlwaysOnHotwordDetector shadowDetector = Shadow.extract(detector);
+
+    shadowDetector.triggerOnAvailabilityChangedCallback(
+        AlwaysOnHotwordDetector.STATE_KEYPHRASE_ENROLLED);
+    verify((AlwaysOnHotwordDetector.Callback) mockCallback)
+        .onAvailabilityChanged(AlwaysOnHotwordDetector.STATE_KEYPHRASE_ENROLLED);
+  }
+
+  @Test
   public void testCallback_onDetected() {
     AlwaysOnHotwordDetector detector = (AlwaysOnHotwordDetector) createDetector();
     ShadowAlwaysOnHotwordDetector shadowDetector = Shadow.extract(detector);
