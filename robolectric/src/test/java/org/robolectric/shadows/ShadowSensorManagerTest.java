@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
-import static android.hardware.Sensor.TYPE_ALL;
 import static android.hardware.Sensor.TYPE_GYROSCOPE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
@@ -229,19 +228,6 @@ public class ShadowSensorManagerTest {
   @Test
   public void shouldReturnASensorList() {
     assertThat(sensorManager.getSensorList(0)).isNotNull();
-  }
-
-  @Test
-  public void shouldReturnAllSensorsInAList() {
-    List<Sensor> multipleShadowSensors = new ArrayList<>();
-    multipleShadowSensors.add(ShadowSensor.newInstance(TYPE_ACCELEROMETER));
-    multipleShadowSensors.add(ShadowSensor.newInstance(TYPE_GYROSCOPE));
-    shadow.addSensor(multipleShadowSensors.get(0));
-    shadow.addSensor(multipleShadowSensors.get(1));
-
-    List<Sensor> allRetrievedSensors = sensorManager.getSensorList(TYPE_ALL);
-
-    assertThat(allRetrievedSensors).containsExactlyElementsIn(multipleShadowSensors);
   }
 
   @Test
