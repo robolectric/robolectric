@@ -69,7 +69,11 @@ public class ShadowSensorManager {
   }
 
   @Implementation
-  public List<Sensor> getSensorList(int type) {
+  protected List<Sensor> getSensorList(int type) {
+    if (type == Sensor.TYPE_ALL) {
+      return ImmutableList.copyOf(sensorMap.values());
+    }
+
     List<Sensor> sensorList = new ArrayList<>();
     Sensor sensor = sensorMap.get(type);
     if (sensor != null) {
