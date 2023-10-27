@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -241,6 +242,26 @@ public class ShadowBluetoothGatt {
   protected boolean setCharacteristicNotification(
       BluetoothGattCharacteristic characteristic, boolean enable) {
     return characteristicNotificationEnableSet.contains(characteristic) == enable;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean writeDescriptor(BluetoothGattDescriptor descriptor) {
+    if (this.getGattCallback() == null) {
+      throw new IllegalStateException(NULL_CALLBACK_MSG);
+    }
+    if (descriptor.getCharacteristic() == null
+        || descriptor.getCharacteristic().getService() == null) {
+      return false;
+    }
+    writtenBytes = descriptor.getValue();
+    bluetoothGattCallback.onDescriptorWrite(
+        realBluetoothGatt, descriptor, BluetoothGatt.GATT_SUCCESS);
+    return true;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean writeCharacteristic(BluetoothGattCharacteristic characteristic) {
+    return writeIncomingCharacteristic(characteristic);
   }
 
   /**
