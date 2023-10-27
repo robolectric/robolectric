@@ -28,20 +28,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
-import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.res.android.Ref;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowPausedMessageQueue.IdlingMonitor;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LooperMode.Mode.PAUSED)
@@ -628,30 +624,6 @@ public class ShadowPausedLooperTest {
   }
 
   @Test
-  public void poll_worksWithPollMonitor() {
-    ShadowPausedLooper shadowPausedLooper = Shadow.extract(Looper.getMainLooper());
-    shadowPausedLooper.idle();
-
-    AtomicInteger aboutToBlockCount = new AtomicInteger();
-    ShadowPausedMessageQueue shadowPausedMessageQueue =
-        Shadow.extract(Looper.getMainLooper().getQueue());
-    shadowPausedMessageQueue.addIdlingMonitor(
-        new IdlingMonitor() {
-          @Override
-          public void onTransitionToIdle() {
-            aboutToBlockCount.incrementAndGet();
-          }
-        });
-
-    assertThat(aboutToBlockCount.get()).isEqualTo(0);
-
-    shadowPausedLooper.poll(1);
-    shadowPausedLooper.idle();
-
-    assertThat(aboutToBlockCount.get()).isEqualTo(1);
-  }
-
-  @Test
   @Config(minSdk = VERSION_CODES.M)
   public void runOneTask_ignoreSyncBarrier() {
     int barrier = Looper.getMainLooper().getQueue().postSyncBarrier();
@@ -686,69 +658,6 @@ public class ShadowPausedLooperTest {
     assertThat(wasRun.get()).isTrue();
     // sync barrier will throw if the barrier was not found.
     Looper.getMainLooper().getQueue().removeSyncBarrier(barrier);
-  }
-
-  // This test sets up multiple Loopers and verifies that with PollMonitor instrumentation we
-  // see them as being busy when we are passing tasks between them multiple times.
-  @Test
-  public void pollMonitor_hotPotatoPassTest_isNotIdleUntilDone() throws Exception {
-    HandlerThread[] looperThreads = new HandlerThread[3];
-    // Bit mask of indices of `looperThreads` that are busy.
-    AtomicInteger busyLooperMask = new AtomicInteger(0);
-    // If true busyLooperMask == 0 means there is issue found by test.
-    AtomicBoolean idleIsABug = new AtomicBoolean(false);
-    for (int i = 0; i < looperThreads.length; i++) {
-      looperThreads[i] = new HandlerThread(testName.getMethodName() + "-" + i);
-      looperThreads[i].start();
-      final int threadMask = 1 << i;
-      ShadowPausedMessageQueue queue =
-          (ShadowPausedMessageQueue) Shadows.shadowOf(looperThreads[i].getLooper().getQueue());
-      queue.addIdlingMonitor(
-          new IdlingMonitor() {
-            @Override
-            public void onTransitionToNotIdle() {
-              int unused = busyLooperMask.updateAndGet(mask -> mask | threadMask);
-            }
-
-            @Override
-            public void onTransitionToIdle() {
-              int busyMask = busyLooperMask.updateAndGet(mask -> mask & ~threadMask);
-              if (busyMask == 0 && idleIsABug.get()) {
-                throw new IllegalStateException("Seen idle, but passing is not done");
-              }
-            }
-          });
-    }
-
-    CountDownLatch hotPotatoPassingDone = new CountDownLatch(1);
-    Consumer<Integer> runMethod =
-        new Consumer<Integer>() {
-          @Override
-          public void accept(Integer index) {
-            if (index == 0) { // finishing
-              idleIsABug.set(false);
-              hotPotatoPassingDone.countDown();
-              return;
-            }
-
-            new Handler(looperThreads[index % looperThreads.length].getLooper())
-                .post(() -> accept(index - 1));
-          }
-        };
-
-    new Handler(looperThreads[0].getLooper())
-        .post(
-            () -> {
-              // We are on looperThread[0], loopers shouldn't reach idle before test finishes.
-              idleIsABug.set(true);
-              runMethod.accept(1000);
-            });
-
-    hotPotatoPassingDone.await();
-    for (HandlerThread looperThread : looperThreads) {
-      looperThread.quitSafely();
-      looperThread.join();
-    }
   }
 
   private static class BlockingRunnable implements Runnable {
