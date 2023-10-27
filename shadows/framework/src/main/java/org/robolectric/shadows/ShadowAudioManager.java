@@ -19,6 +19,7 @@ import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioManager.OnModeChangedListener;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
 import android.media.IPlayer;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -98,6 +100,7 @@ public class ShadowAudioManager {
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
   private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
+  private final Map<OnModeChangedListener, Executor> modeChangedListeners = new HashMap<>();
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -205,12 +208,28 @@ public class ShadowAudioManager {
 
   @Implementation
   protected void setMode(int mode) {
+    int previousMode = this.mode;
     this.mode = mode;
+    if (mode != previousMode) {
+      for (Map.Entry<OnModeChangedListener, Executor> entry : modeChangedListeners.entrySet()) {
+        entry.getValue().execute(() -> entry.getKey().onModeChanged(mode));
+      }
+    }
   }
 
   @Implementation
   protected int getMode() {
     return this.mode;
+  }
+
+  @Implementation(minSdk = S)
+  protected void addOnModeChangedListener(Executor executor, OnModeChangedListener listener) {
+    modeChangedListeners.put(listener, executor);
+  }
+
+  @Implementation(minSdk = S)
+  protected void removeOnModeChangedListener(OnModeChangedListener listener) {
+    modeChangedListeners.remove(listener);
   }
 
   public void setStreamMaxVolume(int streamMaxVolume) {

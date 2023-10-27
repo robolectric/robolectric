@@ -12,6 +12,7 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,6 +25,7 @@ import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioManager.OnModeChangedListener;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
 import android.media.AudioSystem;
@@ -48,6 +50,7 @@ import org.robolectric.shadow.api.Shadow;
 public class ShadowAudioManagerTest {
   private static final float FAULT_TOLERANCE = 0.00001f;
   private final AudioManager.OnAudioFocusChangeListener listener = focusChange -> {};
+  private final LocalOnModeChangedListener modeChangedListener = new LocalOnModeChangedListener();
 
   private Context appContext;
   private AudioManager audioManager;
@@ -316,6 +319,50 @@ public class ShadowAudioManagerTest {
     assertThat(audioManager.getRingerMode()).isEqualTo(AudioManager.RINGER_MODE_VIBRATE);
     audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL + 1);
     assertThat(audioManager.getRingerMode()).isEqualTo(AudioManager.RINGER_MODE_VIBRATE);
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void setModeNormal_listenerAdded_noNotification() {
+    audioManager.addOnModeChangedListener(directExecutor(), modeChangedListener);
+
+    audioManager.setMode(AudioManager.MODE_NORMAL);
+
+    assertThat(modeChangedListener.modes).isEmpty();
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void setModeInCallAndBackNormal_listenerAdded_notification() {
+    audioManager.addOnModeChangedListener(directExecutor(), modeChangedListener);
+
+    audioManager.setMode(AudioManager.MODE_IN_CALL);
+    audioManager.setMode(AudioManager.MODE_NORMAL);
+
+    assertThat(modeChangedListener.modes)
+        .containsExactly(AudioManager.MODE_IN_CALL, AudioManager.MODE_NORMAL)
+        .inOrder();
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void addOnModeChangedListener_alreadyInCall_noInitialNotification() {
+    audioManager.setMode(AudioManager.MODE_IN_CALL);
+
+    audioManager.addOnModeChangedListener(directExecutor(), modeChangedListener);
+
+    assertThat(modeChangedListener.modes).isEmpty();
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void removeOnModeChangedListenerAndSetModeInCall_listenerAdded_noNotification() {
+    audioManager.addOnModeChangedListener(directExecutor(), modeChangedListener);
+
+    audioManager.removeOnModeChangedListener(modeChangedListener);
+    audioManager.setMode(AudioManager.MODE_IN_CALL);
+
+    assertThat(modeChangedListener.modes).isEmpty();
   }
 
   @Test
@@ -1336,5 +1383,14 @@ public class ShadowAudioManagerTest {
     typeField.set(port, type);
 
     return info;
+  }
+
+  private static class LocalOnModeChangedListener implements OnModeChangedListener {
+    private List<Integer> modes = new ArrayList<>();
+
+    @Override
+    public void onModeChanged(int mode) {
+      modes.add(mode);
+    }
   }
 }
