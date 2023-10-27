@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
 import android.os.BugreportManager;
 import android.os.BugreportManager.BugreportCallback;
@@ -70,6 +71,23 @@ public class ShadowBugreportManager {
     this.shareDescription = shareDescription;
   }
 
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void retrieveBugreport(
+      String bugreportFile,
+      ParcelFileDescriptor bugreportFd,
+      Executor executor,
+      BugreportCallback callback) {
+    enforcePermission("retrieveBugreport");
+    if (isBugreportInProgress()) {
+      executor.execute(
+          () -> callback.onError(BugreportCallback.BUGREPORT_ERROR_ANOTHER_REPORT_IN_PROGRESS));
+    } else {
+      this.bugreportFd = bugreportFd;
+      this.executor = executor;
+      this.callback = callback;
+    }
+  }
+
   /** Cancels bugreport in progress and executes {@link BugreportCallback#onError}. */
   @Implementation
   protected void cancelBugreport() {
@@ -99,6 +117,15 @@ public class ShadowBugreportManager {
     if (isBugreportInProgress()) {
       BugreportCallback callback = this.callback;
       executor.execute(callback::onFinished);
+    }
+    resetParams();
+  }
+
+  /** Executes {@link BugreportCallback#onFinished(String)} on the provided Executor. */
+  public void executeOnFinished(String bugreportFile) {
+    if (isBugreportInProgress()) {
+      BugreportCallback callback = this.callback;
+      executor.execute(() -> callback.onFinished(bugreportFile));
     }
     resetParams();
   }
@@ -140,6 +167,15 @@ public class ShadowBugreportManager {
     return shareDescription;
   }
 
+  /**
+   * Returns the bug report file descriptor if set with {@code startBugreport} or {@code
+   * retrieveBugreport}, else null.
+   */
+  @Nullable
+  public ParcelFileDescriptor getBugreportFd() {
+    return bugreportFd;
+  }
+
   /** Returns the screenshot file descriptor if set with {@code startBugreport}, else null. */
   @Nullable
   public ParcelFileDescriptor getScreenshotFd() {
@@ -148,7 +184,9 @@ public class ShadowBugreportManager {
 
   private void resetParams() {
     try {
-      bugreportFd.close();
+      if (bugreportFd != null) {
+        bugreportFd.close();
+      }
       if (screenshotFd != null) {
         screenshotFd.close();
       }
