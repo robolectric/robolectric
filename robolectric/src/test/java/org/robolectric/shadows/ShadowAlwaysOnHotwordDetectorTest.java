@@ -6,14 +6,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.hardware.soundtrigger.KeyphraseEnrollmentInfo;
 import android.hardware.soundtrigger.KeyphraseMetadata;
 import android.media.AudioFormat;
 import android.service.voice.AlwaysOnHotwordDetector;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.android.internal.app.IVoiceInteractionManagerService;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,6 +60,17 @@ public class ShadowAlwaysOnHotwordDetectorTest {
   }
 
   @Test
+  public void testCallback_onAvailabilityChanged() {
+    AlwaysOnHotwordDetector detector = (AlwaysOnHotwordDetector) createDetector();
+    ShadowAlwaysOnHotwordDetector shadowDetector = Shadow.extract(detector);
+
+    shadowDetector.triggerOnAvailabilityChangedCallback(
+        AlwaysOnHotwordDetector.STATE_KEYPHRASE_ENROLLED);
+    verify((AlwaysOnHotwordDetector.Callback) mockCallback)
+        .onAvailabilityChanged(AlwaysOnHotwordDetector.STATE_KEYPHRASE_ENROLLED);
+  }
+
+  @Test
   public void testCallback_onDetected() {
     AlwaysOnHotwordDetector detector = (AlwaysOnHotwordDetector) createDetector();
     ShadowAlwaysOnHotwordDetector shadowDetector = Shadow.extract(detector);
@@ -74,6 +88,7 @@ public class ShadowAlwaysOnHotwordDetectorTest {
     assertThat(payloadCaptor.getValue().getData()).isEqualTo(data);
   }
 
+  @SuppressWarnings("ReturnValueIgnored")
   private Object createDetector() {
     KeyphraseMetadata keyphraseMetadata =
         new KeyphraseMetadata(
@@ -83,14 +98,40 @@ public class ShadowAlwaysOnHotwordDetectorTest {
             AlwaysOnHotwordDetector.RECOGNITION_MODE_VOICE_TRIGGER);
     KeyphraseEnrollmentInfo keyphraseEnrollmentInfo = mock(KeyphraseEnrollmentInfo.class);
     when(keyphraseEnrollmentInfo.getKeyphraseMetadata(any(), any())).thenReturn(keyphraseMetadata);
-    return new AlwaysOnHotwordDetector(
-        "keyphrase",
-        Locale.US,
-        Executors.newSingleThreadExecutor(),
-        (AlwaysOnHotwordDetector.Callback) mockCallback,
-        keyphraseEnrollmentInfo,
-        null,
-        0,
-        false);
+    ShadowAlwaysOnHotwordDetector.AlwaysOnHotwordDetectorReflector accessor =
+        reflector(ShadowAlwaysOnHotwordDetector.AlwaysOnHotwordDetectorReflector.class);
+    try {
+      // check if AlwaysOnHotwordDetector has the U and before constructor
+      AlwaysOnHotwordDetector.class.getDeclaredConstructor(
+          String.class,
+          Locale.class,
+          Executor.class,
+          AlwaysOnHotwordDetector.Callback.class,
+          KeyphraseEnrollmentInfo.class,
+          IVoiceInteractionManagerService.class,
+          int.class,
+          boolean.class);
+      return accessor.newInstance(
+          "keyphrase",
+          Locale.US,
+          Executors.newSingleThreadExecutor(),
+          (AlwaysOnHotwordDetector.Callback) mockCallback,
+          keyphraseEnrollmentInfo,
+          null,
+          0,
+          false);
+    } catch (NoSuchMethodException e) {
+      // Use the new constructor when the old constructor does not exist
+      return accessor.newInstance(
+          "keyphrase",
+          Locale.US,
+          Executors.newSingleThreadExecutor(),
+          (AlwaysOnHotwordDetector.Callback) mockCallback,
+          keyphraseEnrollmentInfo,
+          null,
+          0,
+          false,
+          "");
+    }
   }
 }

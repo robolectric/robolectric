@@ -93,6 +93,7 @@ public class ShadowNetworkCapabilitiesTest {
     assertThat(checkedNetworkSpecifier).isEqualTo(testNetworkSpecifier);
   }
 
+  @Test
   @Config(minSdk = S)
   public void setTransportInfo_shouldSetTransportInfo() {
     NetworkCapabilities networkCapabilities = ShadowNetworkCapabilities.newInstance();

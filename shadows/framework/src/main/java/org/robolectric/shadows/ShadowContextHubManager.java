@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
@@ -138,6 +139,11 @@ public class ShadowContextHubManager {
   @Nullable
   public List<ContextHubClient> getContextHubClientWithPendingIntentList() {
     return ImmutableList.copyOf(contextHubClientWithPendingIntentList);
+  }
+
+  @Resetter
+  public static void clearContextHubClientWithPendingIntentList() {
+    contextHubClientWithPendingIntentList.clear();
   }
 
   @Implementation(minSdk = VERSION_CODES.P)

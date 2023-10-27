@@ -87,14 +87,44 @@ public class ShadowContextImplTest {
         .isFalse();
   }
 
+  @Config(maxSdk = JELLY_BEAN_MR2)
+  @Test
+  public void getExternalFilesDir_withType_returnFolderWithGivenTypeName() {
+    File file = context.getExternalFilesDir("something");
+    assertThat(file.isDirectory()).isTrue();
+    assertThat(file.canWrite()).isTrue();
+    assertThat(file.getName()).isEqualTo("something");
+    assertThat(file.getParentFile().getName()).isEqualTo(context.getPackageName());
+  }
+
+  @Config(maxSdk = JELLY_BEAN_MR2)
+  @Test
+  public void getExternalFilesDir_withNullType_returnFolderWithPackageName() {
+    File file = context.getExternalFilesDir(null);
+    assertThat(file.isDirectory()).isTrue();
+    assertThat(file.canWrite()).isTrue();
+    assertThat(file.getName()).isEqualTo(context.getPackageName());
+  }
+
   @Config(minSdk = KITKAT)
   @Test
-  public void getExternalFilesDirs() {
+  public void getExternalFilesDirs_withType_returnFolderWithGivenTypeName() {
     File[] dirs = context.getExternalFilesDirs("something");
     assertThat(dirs).asList().hasSize(1);
     assertThat(dirs[0].isDirectory()).isTrue();
     assertThat(dirs[0].canWrite()).isTrue();
     assertThat(dirs[0].getName()).isEqualTo("something");
+    assertThat(dirs[0].getParentFile().getName()).isEqualTo(context.getPackageName());
+  }
+
+  @Config(minSdk = KITKAT)
+  @Test
+  public void getExternalFilesDirs_withNullType_returnFolderWithPackageName() {
+    File[] dirs = context.getExternalFilesDirs(null);
+    assertThat(dirs).asList().hasSize(1);
+    assertThat(dirs[0].isDirectory()).isTrue();
+    assertThat(dirs[0].canWrite()).isTrue();
+    assertThat(dirs[0].getName()).isEqualTo(context.getPackageName());
   }
 
   @Test

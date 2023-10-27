@@ -449,6 +449,7 @@ public class ShadowWallpaperManagerTest {
     assertThat(manager.getWallpaperInfo()).isNull();
   }
 
+  @Test
   @Config(minSdk = N)
   public void
       getWallpaperInfo_staticWallpaperWasDefault_liveWallpaperSet_shouldRemoveCachedStaticWallpaper()

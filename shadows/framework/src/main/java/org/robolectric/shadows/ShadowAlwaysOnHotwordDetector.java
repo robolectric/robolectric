@@ -145,6 +145,13 @@ public class ShadowAlwaysOnHotwordDetector {
         .onDetected(eventPayload);
   }
 
+  /** Invokes Callback#onAvailabilityChanged. */
+  public void triggerOnAvailabilityChangedCallback(int status) {
+    reflector(AlwaysOnHotwordDetectorReflector.class, realObject)
+        .getCallback()
+        .onAvailabilityChanged(status);
+  }
+
   private void setEnrollmentFields(
       String text, Locale locale, KeyphraseEnrollmentInfo keyphraseEnrollmentInfo) {
     reflector(AlwaysOnHotwordDetectorReflector.class, realObject)
@@ -219,6 +226,30 @@ public class ShadowAlwaysOnHotwordDetector {
   /** Accessor interface for AlwaysOnHotwordDetector's internals. */
   @ForType(AlwaysOnHotwordDetector.class)
   interface AlwaysOnHotwordDetectorReflector {
+
+    // new constructor after U
+    @Constructor
+    AlwaysOnHotwordDetector newInstance(
+        String text,
+        Locale locale,
+        Executor executor,
+        AlwaysOnHotwordDetector.Callback callback,
+        KeyphraseEnrollmentInfo keyphraseEnrollmentInfo,
+        IVoiceInteractionManagerService modelManagementService,
+        int targetSdkVersion,
+        boolean supportSandboxedDetectionService,
+        String attributionTag);
+
+    @Constructor
+    AlwaysOnHotwordDetector newInstance(
+        String text,
+        Locale locale,
+        Executor executor,
+        AlwaysOnHotwordDetector.Callback callback,
+        KeyphraseEnrollmentInfo keyphraseEnrollmentInfo,
+        IVoiceInteractionManagerService modelManagementService,
+        int targetSdkVersion,
+        boolean supportSandboxedDetectionService);
 
     @Accessor("mAvailability")
     void setAvailability(int availability);

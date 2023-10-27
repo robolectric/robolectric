@@ -336,4 +336,83 @@ public class ShadowCameraManagerTest {
 
     verify(mockCallback, never()).onCameraUnavailable(CAMERA_ID_0);
   }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void registerTorchCallbackEnabled() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    boolean torchEnabled = true;
+    cameraManager.setTorchMode(CAMERA_ID_0, torchEnabled);
+
+    verify(mockCallback).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void unregisterTorchCallbackEnabled() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+    shadowOf(cameraManager).removeCamera(CAMERA_ID_0);
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    cameraManager.unregisterTorchCallback(mockCallback);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    boolean torchEnabled = true;
+    cameraManager.setTorchMode(CAMERA_ID_0, torchEnabled);
+
+    verify(mockCallback, never()).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void registerTorchCallbackDisabled() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    boolean torchEnabled = false;
+    cameraManager.setTorchMode(CAMERA_ID_0, torchEnabled);
+
+    verify(mockCallback).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void unregisterTorchCallbackDisabled() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+    cameraManager.unregisterTorchCallback(mockCallback);
+
+    shadowOf(cameraManager).addCamera(CAMERA_ID_0, characteristics);
+
+    boolean torchEnabled = false;
+    cameraManager.setTorchMode(CAMERA_ID_0, torchEnabled);
+
+    verify(mockCallback, never()).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
+
+  @Test
+  @Config(minSdk = VERSION_CODES.M)
+  public void registerTorchCallbackInvalidCameraId() throws CameraAccessException {
+    CameraManager.TorchCallback mockCallback = mock(CameraManager.TorchCallback.class);
+
+    cameraManager.registerTorchCallback(mockCallback, /* handler= */ null);
+
+    boolean torchEnabled = true;
+    try {
+      cameraManager.setTorchMode(CAMERA_ID_0, torchEnabled);
+    } catch (IllegalArgumentException e) {
+      // Expected path for a bad cameraId
+    }
+
+    verify(mockCallback, never()).onTorchModeChanged(CAMERA_ID_0, torchEnabled);
+  }
 }
