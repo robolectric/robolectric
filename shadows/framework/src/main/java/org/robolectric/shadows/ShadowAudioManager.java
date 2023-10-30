@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
@@ -19,7 +20,6 @@ import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioManager.OnModeChangedListener;
 import android.media.AudioPlaybackConfiguration;
 import android.media.AudioRecordingConfiguration;
 import android.media.IPlayer;
@@ -37,16 +37,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = AudioManager.class, looseSignatures = true)
 public class ShadowAudioManager {
+  @RealObject AudioManager realAudioManager;
 
   public static final int MAX_VOLUME_MUSIC_DTMF = 15;
   public static final int DEFAULT_MAX_VOLUME = 7;
@@ -100,7 +103,6 @@ public class ShadowAudioManager {
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
   private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
-  private final Map<OnModeChangedListener, Executor> modeChangedListeners = new HashMap<>();
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -210,11 +212,16 @@ public class ShadowAudioManager {
   protected void setMode(int mode) {
     int previousMode = this.mode;
     this.mode = mode;
-    if (mode != previousMode) {
-      for (Map.Entry<OnModeChangedListener, Executor> entry : modeChangedListeners.entrySet()) {
-        entry.getValue().execute(() -> entry.getKey().onModeChanged(mode));
-      }
+    if (RuntimeEnvironment.getApiLevel() >= S && mode != previousMode) {
+      dispatchModeChangedListeners(mode);
     }
+  }
+
+  private void dispatchModeChangedListeners(int newMode) {
+    Object modeDispatcherStub =
+        reflector(ModeDispatcherStubReflector.class).newModeDispatcherStub(realAudioManager);
+    reflector(ModeDispatcherStubReflector.class, modeDispatcherStub)
+        .dispatchAudioModeChanged(newMode);
   }
 
   @Implementation
@@ -222,16 +229,13 @@ public class ShadowAudioManager {
     return this.mode;
   }
 
-  @Implementation(minSdk = S)
-  protected void addOnModeChangedListener(Executor executor, OnModeChangedListener listener) {
-    modeChangedListeners.put(listener, executor);
-  }
+  @ForType(className = "android.media.AudioManager$ModeDispatcherStub")
+  interface ModeDispatcherStubReflector {
+    @Constructor
+    Object newModeDispatcherStub(AudioManager audioManager);
 
-  @Implementation(minSdk = S)
-  protected void removeOnModeChangedListener(OnModeChangedListener listener) {
-    modeChangedListeners.remove(listener);
+    void dispatchAudioModeChanged(int newMode);
   }
-
   public void setStreamMaxVolume(int streamMaxVolume) {
     streamStatus.forEach((key, value) -> value.setMaxVolume(streamMaxVolume));
   }
