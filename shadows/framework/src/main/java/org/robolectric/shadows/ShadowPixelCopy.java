@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.PixelCopy;
 import android.view.PixelCopy.OnPixelCopyFinishedListener;
-import android.view.PixelCopy.Result;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.View;
@@ -21,7 +20,6 @@ import android.view.Window;
 import android.view.WindowManagerGlobal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -40,7 +38,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * <p>If listenerThread is backed by a paused looper, make sure to call ShadowLooper.idle() to
  * ensure the screenshot finishes.
  */
-@Implements(value = PixelCopy.class, minSdk = O)
+@Implements(value = PixelCopy.class, minSdk = O, looseSignatures = true)
 public class ShadowPixelCopy {
 
   @Implementation
@@ -124,15 +122,19 @@ public class ShadowPixelCopy {
 
   @Implementation(minSdk = U.SDK_INT)
   protected static void request(
-      PixelCopy.Request request, Executor callbackExecutor, Consumer<Result> listener) {
+      /* PixelCopy.Request */ Object requestObject, /* Executor */
+      Object callbackExecutor, /* Consumer<Result> */
+      Object listener) {
+    PixelCopy.Request request = (PixelCopy.Request) requestObject;
     RequestReflector requestReflector = reflector(RequestReflector.class, request);
     OnPixelCopyFinishedListener legacyListener =
         new OnPixelCopyFinishedListener() {
           @Override
           public void onPixelCopyFinished(int copyResult) {
-            listener.accept(
-                reflector(ResultReflector.class)
-                    .newResult(copyResult, request.getDestinationBitmap()));
+            ((Consumer<PixelCopy.Result>) listener)
+                .accept(
+                    reflector(ResultReflector.class)
+                        .newResult(copyResult, request.getDestinationBitmap()));
           }
         };
     Rect adjustedSrcRect =
