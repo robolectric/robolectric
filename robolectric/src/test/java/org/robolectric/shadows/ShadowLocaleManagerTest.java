@@ -46,6 +46,18 @@ public final class ShadowLocaleManagerTest {
   }
 
   @Test
+  public void setApplicationLocales_defaultPackage_updatesMap() {
+    // empty map before set is called.
+    assertThat(localeManager.getApplicationLocales(DEFAULT_PACKAGE_NAME))
+        .isEqualTo(LocaleList.getEmptyLocaleList());
+
+    localeManager.setApplicationLocales(DEFAULT_LOCALES);
+
+    shadowLocaleManager.enforceInstallerCheck(false);
+    assertThat(localeManager.getApplicationLocales()).isEqualTo(DEFAULT_LOCALES);
+  }
+
+  @Test
   public void getApplicationLocales_fetchAsInstaller_returnsLocales() {
     localeManager.setApplicationLocales(DEFAULT_PACKAGE_NAME, DEFAULT_LOCALES);
     shadowLocaleManager.setCallerAsInstallerForPackage(DEFAULT_PACKAGE_NAME);
