@@ -1205,7 +1205,12 @@ public static class ResTable_ref
     public int findEntryByResName(int stringId) {
       for (int i = 0; i < entryCount; i++) {
         if (entryNameIndex(i) == stringId) {
-          return i;
+          if (isTruthy(flags & ResTable_type.FLAG_SPARSE)) {
+            ResTable_sparseTypeEntry sparseEntry = getSparseEntry(i);
+            return sparseEntry.idx;
+          } else {
+            return i;
+          }
         }
       }
       return -1;
@@ -1219,18 +1224,22 @@ public static class ResTable_ref
         // Check for no entry (0xffff short)
         return dtohs(off16) == -1 ? ResTable_type.NO_ENTRY : dtohs(off16) * 4;
       } else if (isTruthy(flags & ResTable_type.FLAG_SPARSE)) {
-        ResTable_sparseTypeEntry sparse_entry =
-            new ResTable_sparseTypeEntry(
-                myBuf(), myOffset() + entryIndex * ResTable_sparseTypeEntry.SIZEOF);
+        ResTable_sparseTypeEntry sparseEntry = getSparseEntry(entryIndex);
         // if (!sparse_entry) {
         //   return base::unexpected(IOError::PAGES_MISSING);
         // }
         // TODO: implement above
         // offset = dtohs(sparse_entry->offset) * 4u;
-        return dtohs(sparse_entry.offset) * 4;
+        return dtohs(sparseEntry.offset) * 4;
       } else {
         return byteBuffer.getInt(offset + header.headerSize + entryIndex * 4);
       }
+    }
+
+    // Gets the sparse entry index item at position 'entryIndex'
+    private ResTable_sparseTypeEntry getSparseEntry(int entryIndex) {
+      return new ResTable_sparseTypeEntry(
+          myBuf(), myOffset() + header.headerSize + entryIndex * ResTable_sparseTypeEntry.SIZEOF);
     }
 
     private int entryNameIndex(int entryIndex) {
