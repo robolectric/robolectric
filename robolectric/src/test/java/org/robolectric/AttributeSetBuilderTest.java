@@ -8,11 +8,11 @@ import static org.robolectric.res.AttributeResource.ANDROID_NS;
 import static org.robolectric.res.AttributeResource.ANDROID_RES_NS_PREFIX;
 import static org.robolectric.res.AttributeResource.RES_AUTO_NS_URI;
 
+import android.app.Activity;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.AttributeResource;
@@ -22,9 +22,6 @@ import org.robolectric.res.AttributeResource;
 public class AttributeSetBuilderTest {
 
   private static final String APP_NS = RES_AUTO_NS_URI;
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
@@ -421,5 +418,24 @@ public class AttributeSetBuilderTest {
             .build();
 
     assertThat(roboAttributeSet.getAttributeNameResource(0)).isEqualTo(R.attr.loaderIcon);
+  }
+
+  @Test
+  @Config(sdk = NEWEST_SDK)
+  public void should_set_correct_drawable_for_image() {
+    Activity activity = Robolectric.setupActivity(Activity.class);
+    AttributeSet attrSet =
+        Robolectric.buildAttributeSet()
+            .addAttribute(android.R.attr.src, "@android:drawable/btn_star")
+            .build();
+
+    // when
+    ImageView imageView = new ImageView(activity, attrSet);
+
+    // then
+    int resId = Shadows.shadowOf(imageView.getDrawable()).getCreatedFromResId();
+    String resName = RuntimeEnvironment.getApplication().getResources().getResourceName(resId);
+    assertThat(resName).isEqualTo("android:drawable/btn_star");
+    assertThat(resId).isEqualTo(android.R.drawable.btn_star);
   }
 }
