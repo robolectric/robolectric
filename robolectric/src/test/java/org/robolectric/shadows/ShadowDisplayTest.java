@@ -5,8 +5,11 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import android.graphics.Insets;
@@ -206,6 +209,64 @@ public class ShadowDisplayTest {
         /* maxAverageLuminance= */ 100f,
         /* minLuminance= */ 100f,
         hdrCapabilities);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setHdrSdrRatio_greaterThanOne_getHdrSdrRatioShouldReturnExpectedRatio() {
+    shadow.setHdrSdrRatio(4.0f);
+
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(display.getHdrSdrRatio()).isEqualTo(4.0f);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setHdrSdrRatio_one_getHdrSdrRatioShouldReturnExpectedRatio() {
+    shadow.setHdrSdrRatio(1.0f);
+
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(display.getHdrSdrRatio()).isEqualTo(1.0f);
+  }
+
+  @Test
+  @Config(maxSdk = TIRAMISU)
+  public void setHdrSdrRatio_onAndroid_throwsUnsupportedOperationException() {
+    assertThrows(UnsupportedOperationException.class, () -> shadow.setHdrSdrRatio(1.0f));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getHdrSdrRatio_hdrSdrRatioNotSet_shouldReturnOne() {
+    Display display = ShadowDisplay.getDefaultDisplay();
+
+    assertThat(display.getHdrSdrRatio()).isEqualTo(1.0f);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isHdrSdrRatioAvailable_hasHdrSdrRatioGreaterThanOne_shouldReturnTrue() {
+    shadow.setHdrSdrRatio(4.0f);
+
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(display.isHdrSdrRatioAvailable()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isHdrSdrRatioAvailable_hasHdrSdrRatioOfOne_shouldReturnTrue() {
+    shadow.setHdrSdrRatio(1.0f);
+
+    Display display = ShadowDisplay.getDefaultDisplay();
+    assertThat(display.isHdrSdrRatioAvailable()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void isHdrSdrRatioAvailable_hdrSdrRatioNotSet_shouldReturnFalse() {
+    Display display = ShadowDisplay.getDefaultDisplay();
+
+    assertThat(display.isHdrSdrRatioAvailable()).isFalse();
   }
 
   @Test
