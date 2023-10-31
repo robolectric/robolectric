@@ -173,6 +173,10 @@ public class ShadowSensorManager {
     return listeners.containsKey(listener);
   }
 
+  /**
+   * @deprecated Use {@code {@link SensorEventBuilder#newBuilder()}} instead.
+   */
+  @Deprecated
   public SensorEvent createSensorEvent() {
     return ReflectionHelpers.callConstructor(SensorEvent.class);
   }
@@ -189,7 +193,10 @@ public class ShadowSensorManager {
    * }</pre>
    *
    * <p>See {@link SensorEvent#values} for more information about values.
+   *
+   * @deprecated Use {@code {@link SensorEventBuilder#newBuilder()}} instead.
    */
+  @Deprecated
   public static SensorEvent createSensorEvent(int valueArraySize) {
     return createSensorEvent(valueArraySize, Sensor.TYPE_GRAVITY);
   }
@@ -206,7 +213,10 @@ public class ShadowSensorManager {
    * }</pre>
    *
    * <p>See {@link SensorEvent#values} for more information about values.
+   *
+   * @deprecated Use {@code {@link SensorEventBuilder#newBuilder()}} instead.
    */
+  @Deprecated
   public static SensorEvent createSensorEvent(int valueArraySize, int sensorType) {
     checkArgument(valueArraySize > 0);
     ClassParameter<Integer> valueArraySizeParam = new ClassParameter<>(int.class, valueArraySize);

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow of {@link LocaleManager} */
 @Implements(value = LocaleManager.class, minSdk = VERSION_CODES.TIRAMISU, isInAndroidSdk = false)
@@ -48,11 +49,24 @@ public class ShadowLocaleManager {
   /**
    * Stores the passed locales for the given package in-memory.
    *
+   * <p>Starting in Android U, this method just invokes the 3-arg version (below).
+   *
    * <p>Use this method in tests to substitute call for {@link LocaleManager#setApplicationLocales}.
    */
-  @Implementation
+  @Implementation(maxSdk = VERSION_CODES.TIRAMISU)
   protected void setApplicationLocales(String packageName, LocaleList locales) {
     appLocales.put(packageName, locales);
+  }
+
+  /**
+   * Stores the passed locales for the given package in-memory.
+   *
+   * <p>Use this method in tests to substitute call for {@link LocaleManager#setApplicationLocales}.
+   */
+  @Implementation(minSdk = U.SDK_INT)
+  protected void setApplicationLocales(
+      String packageName, LocaleList locales, boolean fromDelegate) {
+    setApplicationLocales(packageName, locales);
   }
 
   @RequiresApi(api = VERSION_CODES.N)
