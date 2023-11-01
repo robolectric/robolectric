@@ -253,4 +253,67 @@ public class ShadowVibratorTest {
     assertThat(actualAudioAttriubes.getAllFlags()).isEqualTo(audioAttributes.getAllFlags());
     assertThat(actualAudioAttriubes.getUsage()).isEqualTo(audioAttributes.getUsage());
   }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_returnsDefaultValue() {
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK)).asList().containsExactly(0);
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_multipleIds_returnsDefaultValues() {
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK, EFFECT_TICK))
+        .asList()
+        .containsExactly(0, 0);
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_nonDefaultSupplied_returnsNonDefaultValue() {
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_CLICK, 10);
+
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK)).asList().containsExactly(10);
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_mulitpleNonDefaultsSupplied_returnsNonDefaultValues() {
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_CLICK, 10);
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_TICK, 20);
+
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK, EFFECT_TICK))
+        .asList()
+        .containsExactly(10, 20)
+        .inOrder();
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_mulitpleNonDefaultsSupplied_returnsOnlyRequestedValues() {
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_CLICK, 10);
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_TICK, 20);
+
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK)).asList().containsExactly(10).inOrder();
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_nonDefaultSuppliedTwice_returnsLatestNonDefaultValue() {
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_CLICK, 10);
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_CLICK, 20);
+
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK)).asList().containsExactly(20);
+  }
+
+  @Config(minSdk = S)
+  @Test
+  public void getPrimitiveDurations_nonDefaultSuppliedForSome_returnsNonDefaultValueForOverrides() {
+    shadowOf(vibrator).setPrimitiveDurations(EFFECT_CLICK, 10);
+
+    assertThat(vibrator.getPrimitiveDurations(EFFECT_CLICK, EFFECT_TICK))
+        .asList()
+        .containsExactly(10, 0)
+        .inOrder();
+  }
 }

@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 
 import android.media.AudioAttributes;
-import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.vibrator.PrimitiveSegment;
+import android.util.SparseArray;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +27,8 @@ public class ShadowVibrator {
   protected static final List<Object> vibrationEffectSegments = new ArrayList<>();
   protected static final List<PrimitiveEffect> primitiveEffects = new ArrayList<>();
   protected static final List<Integer> supportedPrimitives = new ArrayList<>();
+  protected static final SparseArray<Integer> primitiveidsToDurationMillis = new SparseArray<>();
+
   @Nullable protected static Object vibrationAttributesFromLastVibration;
   @Nullable protected static AudioAttributes audioAttributesFromLastVibration;
   static int repeat;
@@ -118,6 +121,20 @@ public class ShadowVibrator {
     supportedPrimitives.addAll(primitives);
   }
 
+  @Implementation(minSdk = S)
+  protected int[] getPrimitiveDurations(int... primitiveIds) {
+    int[] durations = new int[primitiveIds.length];
+    for (int i = 0; i < primitiveIds.length; i++) {
+      durations[i] = primitiveidsToDurationMillis.get(primitiveIds[i], /* valueIfKeyNotFound= */ 0);
+    }
+    return durations;
+  }
+
+  /** Set a custom duration in milliseconds for the given vibration primitive. */
+  public void setPrimitiveDurations(int primitiveId, int durationMillis) {
+    ShadowVibrator.primitiveidsToDurationMillis.put(primitiveId, durationMillis);
+  }
+
   /** Returns the {@link android.os.VibrationAttributes} from the last vibration. */
   @Nullable
   public Object getVibrationAttributesFromLastVibration() {
@@ -145,6 +162,7 @@ public class ShadowVibrator {
     hasVibrator = true;
     hasAmplitudeControl = false;
     effectId = 0;
+    primitiveidsToDurationMillis.clear();
   }
 
   /**
