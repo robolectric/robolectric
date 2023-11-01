@@ -1085,7 +1085,7 @@ public class ShadowView {
   }
 
   /**
-   * Currently the default View scrolling implementation is broken and low-fidelty. For instance,
+   * Currently the default View scrolling implementation is broken and low-fidelity. For instance,
    * even if a View has no children, Robolectric will still happily set the scroll position of a
    * View. Long-term we want to eliminate this broken behavior, but in the mean time the real
    * scrolling behavior is enabled when native graphics are enabled, or when a system property is
