@@ -109,6 +109,42 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
+  public void connect_addsDeviceToConnectedListAndReturnsTrue() {
+    boolean result = bluetoothHeadset.connect(device1);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).containsExactly(device1);
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  public void connect_alreadyConnectedDevice_returnsFalse() {
+    bluetoothHeadset.connect(device1);
+    boolean result = bluetoothHeadset.connect(device1);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).containsExactly(device1);
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void disconnect_removesDeviceFromConnectedListAndReturnsTrue() {
+    bluetoothHeadset.connect(device1);
+    boolean result = bluetoothHeadset.disconnect(device1);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).isEmpty();
+    assertThat(result).isTrue();
+  }
+
+  @Test
+  public void disconnect_alreadyDisconnectedDevice_returnsFalse() {
+    bluetoothHeadset.connect(device1);
+    bluetoothHeadset.disconnect(device1);
+    boolean result = bluetoothHeadset.disconnect(device1);
+
+    assertThat(bluetoothHeadset.getConnectedDevices()).isEmpty();
+    assertThat(result).isFalse();
+  }
+
+  @Test
   public void isAudioConnected_defaultsToFalse() {
     assertThat(bluetoothHeadset.isAudioConnected(device1)).isFalse();
   }
