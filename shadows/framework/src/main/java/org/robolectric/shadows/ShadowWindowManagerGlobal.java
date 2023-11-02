@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.P;
-import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -128,9 +127,6 @@ public class ShadowWindowManagerGlobal {
     if (service == null) {
       service = IWindowManager.Stub.asInterface(ServiceManager.getService(Context.WINDOW_SERVICE));
       reflector(WindowManagerGlobalReflector.class).setWindowManagerService(service);
-      if (RuntimeEnvironment.getApiLevel() >= R) {
-        reflector(WindowManagerGlobalReflector.class).setUseBlastAdapter(service.useBLAST());
-      }
     }
     return service;
   }
@@ -148,10 +144,6 @@ public class ShadowWindowManagerGlobal {
     @Static
     @Accessor("sWindowManagerService")
     void setWindowManagerService(IWindowManager service);
-
-    @Static
-    @Accessor("sUseBLASTAdapter")
-    void setUseBlastAdapter(boolean useBlastAdapter);
 
     @Accessor("mViews")
     List<View> getWindowViews();
