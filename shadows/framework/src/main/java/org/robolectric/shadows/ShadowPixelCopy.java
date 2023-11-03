@@ -286,34 +286,44 @@ public class ShadowPixelCopy {
     int width = view.getWidth();
     int height = view.getHeight();
 
-    ImageReader imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1);
-    HardwareRenderer renderer = new HardwareRenderer();
-    renderer.setSurface(imageReader.getSurface());
-    Image nativeImage = imageReader.acquireNextImage();
+    try (ImageReader imageReader =
+        ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
+      HardwareRenderer renderer = new HardwareRenderer();
+      Surface surface = imageReader.getSurface();
+      renderer.setSurface(surface);
+      Image nativeImage = imageReader.acquireNextImage();
 
-    setupRendererShadowProperties(renderer, view);
+      setupRendererShadowProperties(renderer, view);
 
-    RenderNode node = getRenderNode(view);
-    renderer.setContentRoot(node);
+      RenderNode node = getRenderNode(view);
+      renderer.setContentRoot(node);
 
-    renderer.createRenderRequest().syncAndDraw();
+      renderer.createRenderRequest().syncAndDraw();
 
-    int[] renderPixels = new int[width * height];
+      int[] renderPixels = new int[width * height];
 
-    Plane[] planes = nativeImage.getPlanes();
-    IntBuffer srcBuff = planes[0].getBuffer().order(ByteOrder.BIG_ENDIAN).asIntBuffer();
-    IntBuffer dstBuff = IntBuffer.wrap(renderPixels);
-    int len = srcBuff.remaining();
-    // Read source RGBA and write dest as ARGB.
-    for (int j = 0; j < len; j++) {
-      int s = srcBuff.get();
-      int a = s << 24;
-      int rgb = s >>> 8;
-      dstBuff.put(a + rgb);
+      Plane[] planes = nativeImage.getPlanes();
+      IntBuffer srcBuff = planes[0].getBuffer().order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+      IntBuffer dstBuff = IntBuffer.wrap(renderPixels);
+      int len = srcBuff.remaining();
+      // Read source RGBA and write dest as ARGB.
+      for (int j = 0; j < len; j++) {
+        int s = srcBuff.get();
+        int a = s << 24;
+        int rgb = s >>> 8;
+        dstBuff.put(a + rgb);
+      }
+
+      destBitmap.setPixels(
+          renderPixels,
+          /* offset= */ 0,
+          /* stride= */ width,
+          /* x= */ 0,
+          /* y= */ 0,
+          width,
+          height);
+      surface.release();
     }
-
-    destBitmap.setPixels(
-        renderPixels, /* offset= */ 0, /* stride= */ width, /* x= */ 0, /* y= */ 0, width, height);
   }
 
   private static RenderNode getRenderNode(View view) {
