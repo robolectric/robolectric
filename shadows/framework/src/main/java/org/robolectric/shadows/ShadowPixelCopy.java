@@ -33,7 +33,6 @@ import android.view.WindowManagerGlobal;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.android.internal.R;
-import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
@@ -288,6 +287,12 @@ public class ShadowPixelCopy {
 
     try (ImageReader imageReader =
         ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 1)) {
+      // Note on pixel format:
+      // - Android Bitmap requires ARGB_8888.
+      // - ImageReader is configured as RGBA_8888.
+      // - However the native libs/hwui/pipeline/skia/SkiaHostPipeline.cpp always treats
+      //   the buffer as BGRA_8888, thus matching what the Android Bitmap object requires.
+
       HardwareRenderer renderer = new HardwareRenderer();
       Surface surface = imageReader.getSurface();
       renderer.setSurface(surface);
@@ -303,16 +308,8 @@ public class ShadowPixelCopy {
       int[] renderPixels = new int[width * height];
 
       Plane[] planes = nativeImage.getPlanes();
-      IntBuffer srcBuff = planes[0].getBuffer().order(ByteOrder.BIG_ENDIAN).asIntBuffer();
-      IntBuffer dstBuff = IntBuffer.wrap(renderPixels);
-      int len = srcBuff.remaining();
-      // Read source RGBA and write dest as ARGB.
-      for (int j = 0; j < len; j++) {
-        int s = srcBuff.get();
-        int a = s << 24;
-        int rgb = s >>> 8;
-        dstBuff.put(a + rgb);
-      }
+      IntBuffer srcBuff = planes[0].getBuffer().asIntBuffer();
+      srcBuff.get(renderPixels);
 
       destBitmap.setPixels(
           renderPixels,
