@@ -37,7 +37,7 @@ kotlinx-coroutines = '1.7.3'
 spotless-gradle = "6.22.0"
 
 # https://detekt.dev/changelog
-detekt-gradle = "1.23.1"
+detekt-gradle = "1.23.3"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
