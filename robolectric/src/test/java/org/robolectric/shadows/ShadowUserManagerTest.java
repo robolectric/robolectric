@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -32,8 +33,10 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.UserManager.EnforcingUser;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
@@ -1147,6 +1150,28 @@ public class ShadowUserManagerTest {
     shadowOf(userManager).setUserForeground(true);
 
     assertThat(userManager.isUserForeground()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void getEnforcingUsers() {
+    UserHandle userHandle = Process.myUserHandle();
+
+    assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isFalse();
+    assertThat(userManager.getUserRestrictionSources(UserManager.ENSURE_VERIFY_APPS, userHandle))
+        .isEmpty();
+
+    shadowOf(userManager).setUserRestriction(userHandle, UserManager.ENSURE_VERIFY_APPS, true);
+    assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isTrue();
+
+    List<EnforcingUser> sources =
+        userManager.getUserRestrictionSources(UserManager.ENSURE_VERIFY_APPS, userHandle);
+    assertThat(sources.get(0).getUserRestrictionSource())
+        .isEqualTo(UserManager.RESTRICTION_SOURCE_SYSTEM);
+
+    shadowOf(userManager).setUserRestriction(userHandle, UserManager.ENSURE_VERIFY_APPS, false);
+    assertThat(userManager.getUserRestrictionSources(UserManager.ENSURE_VERIFY_APPS, userHandle))
+        .isEmpty();
   }
 
   // Create user handle from parcel since UserHandle.of() was only added in later APIs.

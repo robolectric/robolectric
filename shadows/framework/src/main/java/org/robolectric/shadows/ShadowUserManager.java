@@ -6,11 +6,13 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.UserManager.RESTRICTION_SOURCE_SYSTEM;
 import static android.os.UserManager.USER_TYPE_FULL_GUEST;
 import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SECONDARY;
@@ -34,6 +36,7 @@ import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.os.UserManager.EnforcingUser;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -1269,5 +1272,15 @@ public class ShadowUserManager {
   @Implementation(minSdk = S)
   protected boolean isUserForeground() {
     return isForegroundUser;
+  }
+
+  @Implementation(minSdk = O)
+  protected List<EnforcingUser> getUserRestrictionSources(
+      String restriction, UserHandle userHandle) {
+    List<EnforcingUser> sources = new ArrayList<>();
+    if (hasUserRestriction(restriction, userHandle)) {
+      sources.add(new EnforcingUser(userHandle.getIdentifier(), RESTRICTION_SOURCE_SYSTEM));
+    }
+    return sources;
   }
 }
