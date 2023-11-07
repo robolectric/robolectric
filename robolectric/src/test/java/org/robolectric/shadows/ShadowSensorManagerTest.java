@@ -227,8 +227,23 @@ public class ShadowSensorManagerTest {
   }
 
   @Test
-  public void shouldReturnASensorList() {
-    assertThat(sensorManager.getSensorList(0)).isNotNull();
+  public void shouldReturnEmptySensorListIfNoneCreated() {
+    assertThat(sensorManager.getSensorList(0)).isEmpty();
+  }
+
+  @Test
+  public void shouldReturnAllRelevantSensorsForGivenType() {
+    ShadowSensorManager shadowSensorManager = shadowOf(sensorManager);
+    Sensor gyroscopeSensor1 = ShadowSensor.newInstance(TYPE_GYROSCOPE);
+    Sensor gyroscopeSensor2 = ShadowSensor.newInstance(TYPE_GYROSCOPE);
+    Sensor irrelevantAccelSensor1 = ShadowSensor.newInstance(TYPE_ACCELEROMETER);
+
+    shadowSensorManager.addSensor(gyroscopeSensor1);
+    shadowSensorManager.addSensor(gyroscopeSensor2);
+    shadowSensorManager.addSensor(irrelevantAccelSensor1);
+    List<Sensor> allGyroSensors = sensorManager.getSensorList(TYPE_GYROSCOPE);
+
+    assertThat(allGyroSensors).containsExactly(gyroscopeSensor1, gyroscopeSensor2);
   }
 
   @Test
