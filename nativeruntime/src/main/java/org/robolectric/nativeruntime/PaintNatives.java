@@ -376,7 +376,9 @@ public final class PaintNatives {
 
   public static native boolean nIsElegantTextHeight(long paintPtr);
 
-  public static native void nSetElegantTextHeight(long paintPtr, boolean elegant);
+  public static native int nGetElegantTextHeight(long paintPtr);
+
+  public static native void nSetElegantTextHeight(long paintPtr, int value);
 
   public static native float nGetTextSize(long paintPtr);
 
