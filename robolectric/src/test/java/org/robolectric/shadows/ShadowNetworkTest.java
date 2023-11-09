@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.net.Network;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -25,6 +27,12 @@ public class ShadowNetworkTest {
     Network network = ShadowNetwork.newInstance(netId);
     ShadowNetwork shadowNetwork = Shadows.shadowOf(network);
     assertThat(shadowNetwork.getNetId()).isEqualTo(netId);
+  }
+
+  @Test
+  @Config(sdk = KITKAT)
+  public void shadowNetwork_newInstance_fails_preL() {
+    assertThrows(IllegalStateException.class, () -> ShadowNetwork.newInstance(111));
   }
 
   @Test
