@@ -2,6 +2,9 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -14,7 +17,10 @@ import android.content.IntentSender.SendIntentException;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageInstaller.PreapprovalDetails;
 import android.content.pm.PackageInstaller.SessionInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.VersionedPackage;
 import android.graphics.Bitmap;
+import android.os.Build.VERSION;
 import android.os.Handler;
 import android.os.PersistableBundle;
 import com.google.common.collect.ImmutableList;
@@ -56,6 +62,7 @@ public class ShadowPackageInstaller {
   private Map<Integer, PackageInstaller.SessionInfo> sessionInfos = new HashMap<>();
   private Map<Integer, PackageInstaller.Session> sessions = new HashMap<>();
   private Set<CallbackInfo> callbackInfos = Collections.synchronizedSet(new HashSet<>());
+  private final Map<String, UninstalledPackage> uninstalledPackages = new HashMap<>();
 
   private static class CallbackInfo {
     PackageInstaller.SessionCallback callback;
@@ -180,6 +187,55 @@ public class ShadowPackageInstaller {
             }
           });
     }
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void uninstall(
+      VersionedPackage versionedPackage, int flags, IntentSender statusReceiver) {
+    uninstalledPackages.put(
+        versionedPackage.getPackageName(),
+        new UninstalledPackage(versionedPackage.getLongVersionCode(), statusReceiver));
+  }
+
+  @Implementation(minSdk = O)
+  protected void uninstall(VersionedPackage versionedPackage, IntentSender statusReceiver) {
+    if (VERSION.SDK_INT < P) {
+      uninstalledPackages.put(
+          versionedPackage.getPackageName(),
+          new UninstalledPackage((long) versionedPackage.getVersionCode(), statusReceiver));
+    } else {
+      uninstalledPackages.put(
+          versionedPackage.getPackageName(),
+          new UninstalledPackage(versionedPackage.getLongVersionCode(), statusReceiver));
+    }
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected void uninstall(String packageName, IntentSender statusReceiver) {
+    uninstalledPackages.put(
+        packageName,
+        new UninstalledPackage((long) PackageManager.VERSION_CODE_HIGHEST, statusReceiver));
+  }
+
+  @Implementation(minSdk = S)
+  protected void uninstallExistingPackage(String packageName, IntentSender statusReceiver) {
+    uninstalledPackages.put(
+        packageName,
+        new UninstalledPackage((long) PackageManager.VERSION_CODE_HIGHEST, statusReceiver));
+  }
+
+  public Long getLastUninstalledVersion(String packageName) {
+    if (uninstalledPackages.get(packageName) == null) {
+      return null;
+    }
+    return uninstalledPackages.get(packageName).version;
+  }
+
+  public IntentSender getLastUninstalledStatusReceiver(String packageName) {
+    if (uninstalledPackages.get(packageName) == null) {
+      return null;
+    }
+    return uninstalledPackages.get(packageName).intentSender;
   }
 
   public List<PackageInstaller.SessionCallback> getAllSessionCallbacks() {
@@ -347,6 +403,16 @@ public class ShadowPackageInstaller {
         int sessionId, ShadowPackageInstaller shadowPackageInstaller) {
       this.sessionId = sessionId;
       this.shadowPackageInstaller = shadowPackageInstaller;
+    }
+  }
+
+  private static class UninstalledPackage {
+    Long version;
+    IntentSender intentSender;
+
+    public UninstalledPackage(Long version, IntentSender intentSender) {
+      this.version = version;
+      this.intentSender = intentSender;
     }
   }
 }
