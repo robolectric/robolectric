@@ -15,6 +15,7 @@ import static android.content.pm.PackageManager.GET_RECEIVERS;
 import static android.content.pm.PackageManager.GET_RESOLVED_FILTER;
 import static android.content.pm.PackageManager.GET_SERVICES;
 import static android.content.pm.PackageManager.GET_SIGNATURES;
+import static android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES;
 import static android.content.pm.PackageManager.MATCH_ALL;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
@@ -80,6 +81,7 @@ import android.content.pm.PermissionInfo;
 import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.content.pm.Signature;
 import android.content.pm.VerifierDeviceIdentity;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -101,6 +103,7 @@ import android.util.Pair;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.io.File;
 import java.util.ArrayList;
@@ -703,7 +706,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return (flags & MATCH_DEFAULT_ONLY) == 0 || resolveInfo.isDefault;
   }
 
-  private <I extends ComponentInfo> List<ResolveInfo> queryComponentsInManifest(
+  private <I extends ComponentInfo> ImmutableList<ResolveInfo> queryComponentsInManifest(
       Intent intent,
       Function<PackageInfo, I[]> componentsInPackage,
       SortedMap<ComponentName, List<IntentFilter>> filters,
@@ -713,7 +716,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ComponentName component = getComponentForIntent(intent);
         PackageInfo appPackage = packageInfos.get(component.getPackageName());
         if (appPackage == null) {
-          return Collections.emptyList();
+          return ImmutableList.of();
         }
         I componentInfo = findMatchingComponent(component, componentsInPackage.apply(appPackage));
         if (componentInfo != null) {
@@ -741,15 +744,15 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
                       + componentInfo
                       + " doesn't have required intent filters for "
                       + intent);
-              return Collections.emptyList();
+              return ImmutableList.of();
             }
           }
           ResolveInfo resolveInfo = buildResolveInfo(componentInfo);
           componentSetter.accept(resolveInfo, componentInfo);
-          return new ArrayList<>(Collections.singletonList(resolveInfo));
+          return ImmutableList.copyOf(new ArrayList<>(Collections.singletonList(resolveInfo)));
         }
 
-        return Collections.emptyList();
+        return ImmutableList.of();
       } else {
         List<ResolveInfo> resolveInfoList = new ArrayList<>();
         Map<ComponentName, List<IntentFilter>> filtersForPackage =
@@ -778,7 +781,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             }
           }
         }
-        return resolveInfoList;
+        return ImmutableList.copyOf(resolveInfoList);
       }
     }
   }
@@ -1269,9 +1272,28 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation
   protected int checkSignatures(String pkg1, String pkg2) {
     try {
-      PackageInfo packageInfo1 = getPackageInfo(pkg1, GET_SIGNATURES);
-      PackageInfo packageInfo2 = getPackageInfo(pkg2, GET_SIGNATURES);
-      return compareSignature(packageInfo1.signatures, packageInfo2.signatures);
+      PackageInfo packageInfo1 = getPackageInfo(pkg1, GET_SIGNING_CERTIFICATES | GET_SIGNATURES);
+      PackageInfo packageInfo2 = getPackageInfo(pkg2, GET_SIGNING_CERTIFICATES | GET_SIGNATURES);
+      int signaturesResult = compareSignature(packageInfo1.signatures, packageInfo2.signatures);
+      // Use signatures field for older SDKs
+      if (VERSION.SDK_INT < P) {
+        return signaturesResult;
+      } else {
+        // Prefer signingInfo where populated, but fall back to signatures for compatibility
+        Signature[] firstSignatures =
+            packageInfo1.signingInfo == null
+                    || packageInfo1.signingInfo.getApkContentsSigners() == null
+                    || packageInfo1.signingInfo.getApkContentsSigners().length == 0
+                ? packageInfo1.signatures
+                : packageInfo1.signingInfo.getApkContentsSigners();
+        Signature[] secondSignatures =
+            packageInfo2.signingInfo == null
+                    || packageInfo2.signingInfo.getApkContentsSigners() == null
+                    || packageInfo2.signingInfo.getApkContentsSigners().length == 0
+                ? packageInfo2.signatures
+                : packageInfo2.signingInfo.getApkContentsSigners();
+        return compareSignature(firstSignatures, secondSignatures);
+      }
     } catch (NameNotFoundException e) {
       return SIGNATURE_UNKNOWN_PACKAGE;
     }
