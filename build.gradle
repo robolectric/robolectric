@@ -32,6 +32,21 @@ allprojects {
 }
 
 apply plugin: 'idea'
+apply plugin: "com.diffplug.spotless"
+
+// Apply Spotless for buildSrc and build scripts
+spotless {
+    java {
+        target("buildSrc/**/*.java")
+        googleJavaFormat("1.17.0")
+    }
+    groovy {
+        target("buildSrc/**/*.groovy")
+    }
+    groovyGradle {
+        target('*.gradle', "**/*.gradle")
+    }
+}
 
 project.ext.configAnnotationProcessing = []
 project.afterEvaluate {
