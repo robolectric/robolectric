@@ -1,5 +1,5 @@
 [versions]
-robolectric-compat = "4.10.2"
+robolectric-compat = "4.11.1"
 robolectric-nativeruntime-dist-compat = "1.0.2"
 
 # https://developer.android.com/studio/releases
