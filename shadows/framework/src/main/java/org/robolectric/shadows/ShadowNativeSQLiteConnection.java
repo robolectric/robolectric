@@ -23,19 +23,11 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
   @Implementation(maxSdk = O)
   protected static Number nativeOpen(
       String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
-    DefaultNativeRuntimeLoader.injectAndLoad();
-    return PerfStatsCollector.getInstance()
-        .measure(
-            "androidsqlite",
-            () -> {
-              long result =
-                  SQLiteConnectionNatives.nativeOpen(
-                      path, openFlags, label, enableTrace, enableProfile, 0, 0);
-              if (RuntimeEnvironment.getApiLevel() < LOLLIPOP) {
-                return PreLPointers.register(result);
-              }
-              return result;
-            });
+    long result = nativeOpen(path, openFlags, label, enableTrace, enableProfile, 0, 0);
+    if (RuntimeEnvironment.getApiLevel() < LOLLIPOP) {
+      return PreLPointers.register(result);
+    }
+    return result;
   }
 
   @Implementation(minSdk = O_MR1)
@@ -47,7 +39,19 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
       boolean enableProfile,
       int lookasideSlotSize,
       int lookasideSlotCount) {
-    return nativeOpen(path, openFlags, label, enableTrace, enableProfile).longValue();
+    DefaultNativeRuntimeLoader.injectAndLoad();
+    return PerfStatsCollector.getInstance()
+        .measure(
+            "androidsqlite",
+            () ->
+                SQLiteConnectionNatives.nativeOpen(
+                    path,
+                    openFlags,
+                    label,
+                    enableTrace,
+                    enableProfile,
+                    lookasideSlotSize,
+                    lookasideSlotCount));
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
