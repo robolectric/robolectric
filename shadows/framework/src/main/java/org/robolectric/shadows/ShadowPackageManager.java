@@ -1633,9 +1633,6 @@ public class ShadowPackageManager {
     if (packageName == null) {
       return input;
     }
-    if (packageName == null) {
-      return input;
-    }
     return input.subMap(
         new ComponentName(packageName, ""), new ComponentName(packageName + " ", ""));
   }
