@@ -283,4 +283,26 @@ public class SQLiteDatabaseTest {
     assertThat(results.getCount()).isEqualTo(0);
     results.close();
   }
+
+  @Config(minSdk = LOLLIPOP) // The SQLite error messages were updated significantly in Lollipop.
+  @SdkSuppress(minSdkVersion = LOLLIPOP)
+  @Test
+  public void uniqueConstraintViolation_errorMessage() {
+    database.execSQL(
+        "CREATE TABLE my_table(\n"
+            + "  _id INTEGER PRIMARY KEY AUTOINCREMENT, \n"
+            + "  unique_column TEXT UNIQUE\n"
+            + ");\n");
+    ContentValues values = new ContentValues();
+    values.put("unique_column", "test");
+    database.insertOrThrow("my_table", null, values);
+    SQLiteConstraintException exception =
+        assertThrows(
+            SQLiteConstraintException.class,
+            () -> database.insertOrThrow("my_table", null, values));
+    assertThat(exception)
+        .hasMessageThat()
+        .startsWith("UNIQUE constraint failed: my_table.unique_column");
+    assertThat(exception).hasMessageThat().contains("code 2067");
+  }
 }

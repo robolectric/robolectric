@@ -4,12 +4,14 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static com.google.common.truth.TruthJUnit.assume;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.robolectric.annotation.SQLiteMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLegacySQLiteConnection.convertSQLWithLocalizedUnicodeCollator;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteStatement;
@@ -186,6 +188,23 @@ public class ShadowSQLiteConnectionTest {
       Thread.interrupted();
     }
     ShadowLegacySQLiteConnection.reset();
+  }
+
+  @Test
+  public void uniqueConstraintViolation_errorMessage() {
+    database.execSQL(
+        "CREATE TABLE my_table(\n"
+            + "  _id INTEGER PRIMARY KEY AUTOINCREMENT, \n"
+            + "  unique_column TEXT UNIQUE\n"
+            + ");\n");
+    ContentValues values = new ContentValues();
+    values.put("unique_column", "test");
+    database.insertOrThrow("my_table", null, values);
+    SQLiteConstraintException exception =
+        assertThrows(
+            SQLiteConstraintException.class,
+            () -> database.insertOrThrow("my_table", null, values));
+    assertThat(exception).hasMessageThat().endsWith("(code 2067 SQLITE_CONSTRAINT_UNIQUE)");
   }
 
   @Test
