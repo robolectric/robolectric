@@ -50,6 +50,8 @@ public class ShadowDisplayManager {
 
   private Context context;
 
+  private static final String DEFAULT_DISPLAY_NAME = "Built-in screen";
+
   private static final HashMap<Integer, Boolean> displayIsNaturallyPortrait = new HashMap<>();
 
   @Resetter
@@ -74,7 +76,22 @@ public class ShadowDisplayManager {
    * @return the new display's ID
    */
   public static int addDisplay(String qualifiersStr) {
-    int id = getShadowDisplayManagerGlobal().addDisplay(createDisplayInfo(qualifiersStr, null));
+    return addDisplay(qualifiersStr, DEFAULT_DISPLAY_NAME);
+  }
+
+  /**
+   * Adds a simulated display and drain the main looper queue to ensure all the callbacks are
+   * processed.
+   *
+   * @param qualifiersStr the {@link Qualifiers} string representing characteristics of the new
+   *     display.
+   * @param displayName the display name to use while creating the display
+   * @return the new display's ID
+   */
+  public static int addDisplay(String qualifiersStr, String displayName) {
+    int id =
+        getShadowDisplayManagerGlobal()
+            .addDisplay(createDisplayInfo(qualifiersStr, null, displayName));
     shadowMainLooper().idle();
     return id;
   }
@@ -88,16 +105,20 @@ public class ShadowDisplayManager {
     }
 
     shadowDisplayManagerGlobal.addDisplay(
-        createDisplayInfo(configuration, displayMetrics, /* isNaturallyPortrait= */ true));
+        createDisplayInfo(
+            configuration, displayMetrics, /* isNaturallyPortrait= */ true, DEFAULT_DISPLAY_NAME));
   }
 
   private static DisplayInfo createDisplayInfo(
-      Configuration configuration, DisplayMetrics displayMetrics, boolean isNaturallyPortrait) {
+      Configuration configuration,
+      DisplayMetrics displayMetrics,
+      boolean isNaturallyPortrait,
+      String name) {
     int widthPx = (int) (configuration.screenWidthDp * displayMetrics.density);
     int heightPx = (int) (configuration.screenHeightDp * displayMetrics.density);
 
     DisplayInfo displayInfo = new DisplayInfo();
-    displayInfo.name = "Built-in screen";
+    displayInfo.name = name;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       displayInfo.uniqueId = "screen0";
     }
@@ -130,6 +151,11 @@ public class ShadowDisplayManager {
   }
 
   private static DisplayInfo createDisplayInfo(String qualifiersStr, @Nullable Integer displayId) {
+    return createDisplayInfo(qualifiersStr, displayId, DEFAULT_DISPLAY_NAME);
+  }
+
+  private static DisplayInfo createDisplayInfo(
+      String qualifiersStr, @Nullable Integer displayId, String name) {
     DisplayInfo baseDisplayInfo =
         displayId != null ? DisplayManagerGlobal.getInstance().getDisplayInfo(displayId) : null;
     Configuration configuration = new Configuration();
@@ -159,7 +185,7 @@ public class ShadowDisplayManager {
     Bootstrap.applyQualifiers(
         qualifiersStr, RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);
 
-    return createDisplayInfo(configuration, displayMetrics, isNaturallyPortrait);
+    return createDisplayInfo(configuration, displayMetrics, isNaturallyPortrait, name);
   }
 
   private static boolean isRotated(int rotation) {

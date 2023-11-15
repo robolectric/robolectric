@@ -1,0 +1,38 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+
+android {
+    compileSdk 34
+    namespace 'org.robolectric.integrationtests.room'
+
+    defaultConfig {
+        minSdk 19
+        targetSdk 34
+    }
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
+}
+
+dependencies {
+    // Testing dependencies
+    testImplementation project(path: ':testapp')
+    testImplementation project(":robolectric")
+    testImplementation libs.junit4
+    testImplementation libs.guava.testlib
+    testImplementation libs.guava.testlib
+    testImplementation libs.truth
+    implementation 'androidx.room:room-runtime:2.6.0'
+    annotationProcessor 'androidx.room:room-compiler:2.6.0'
+}

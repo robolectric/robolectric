@@ -28,6 +28,7 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Display;
 import android.view.InputEvent;
 import android.view.KeyEvent;
@@ -142,8 +143,13 @@ public class ShadowUiAutomation {
                 Bitmap window =
                     Bitmap.createBitmap(
                         rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-                Canvas windowCanvas = new Canvas(window);
-                rootView.draw(windowCanvas);
+                if (HardwareRenderingScreenshot.canTakeScreenshot()) {
+                  Log.d("@@", "@@ USE NEW takeScreenshot"); // RM DEBUG
+                  HardwareRenderingScreenshot.takeScreenshot(rootView, window);
+                } else {
+                  Canvas windowCanvas = new Canvas(window);
+                  rootView.draw(windowCanvas);
+                }
                 screenshotCanvas.drawBitmap(window, root.params.x, root.params.y, paint);
               }
               return screenshot;

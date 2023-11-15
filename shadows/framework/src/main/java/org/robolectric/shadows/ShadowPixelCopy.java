@@ -164,9 +164,15 @@ public class ShadowPixelCopy {
 
   private static void takeScreenshot(View view, Bitmap screenshot, @Nullable Rect srcRect) {
     validateBitmap(screenshot);
+
     Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
-    Canvas screenshotCanvas = new Canvas(bitmap);
-    view.draw(screenshotCanvas);
+
+    if (HardwareRenderingScreenshot.canTakeScreenshot()) {
+      HardwareRenderingScreenshot.takeScreenshot(view, bitmap);
+    } else {
+      Canvas screenshotCanvas = new Canvas(bitmap);
+      view.draw(screenshotCanvas);
+    }
 
     Rect dst = new Rect(0, 0, screenshot.getWidth(), screenshot.getHeight());
 
@@ -248,4 +254,5 @@ public class ShadowPixelCopy {
     @Constructor
     PixelCopy.Result newResult(int copyResult, Bitmap bitmap);
   }
+
 }

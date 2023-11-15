@@ -10,6 +10,7 @@ android {
     namespace 'org.robolectric.integration.axt'
 
     defaultConfig {
+        testApplicationId 'org.robolectric.integrationtests.axt'
         minSdk 19
         targetSdk 34
         multiDexEnabled true

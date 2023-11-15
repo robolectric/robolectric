@@ -40,6 +40,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -97,12 +98,14 @@ import android.content.pm.ProviderInfo;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
+import android.content.pm.SigningInfo;
 import android.content.pm.SuspendDialogInfo;
 import android.content.res.XmlResourceParser;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -2119,6 +2122,36 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(maxSdk = O)
+  public void getPackageInfo_shouldPopulateSignatures() throws Exception {
+    Signature testSignature = new Signature("00000000");
+    PackageInfo testPackageInfo = newPackageInfo("first.package", testSignature);
+    assertThat(testPackageInfo.signatures).isNotNull();
+    assertThat(testPackageInfo.signatures.length).isEqualTo(1);
+    shadowOf(packageManager).installPackage(testPackageInfo);
+    PackageInfo packageInfo =
+        packageManager.getPackageInfo("first.package", PackageManager.GET_SIGNATURES);
+    assertThat(packageInfo.signatures).isNotNull();
+    assertThat(packageInfo.signatures.length).isEqualTo(1);
+    assertThat(packageInfo.signatures[0]).isEqualTo(testSignature);
+  }
+
+  @Test
+  @Config(minSdk = P)
+  public void getPackageInfo_shouldPopulateSigningInfo() throws Exception {
+    Signature testSignature = new Signature("00000000");
+    PackageInfo testPackageInfo = newPackageInfo("first.package", testSignature);
+    shadowOf(packageManager).installPackage(testPackageInfo);
+    PackageInfo packageInfo =
+        packageManager.getPackageInfo("first.package", PackageManager.GET_SIGNING_CERTIFICATES);
+    assertThat(packageInfo.signingInfo).isNotNull();
+    assertThat(packageInfo.signingInfo.getApkContentsSigners()).isNotNull();
+    assertThat(packageInfo.signingInfo.getApkContentsSigners().length).isEqualTo(1);
+    assertThat(packageInfo.signingInfo.getApkContentsSigners()[0]).isEqualTo(testSignature);
+    assertThat(packageInfo.signingInfo.getSigningCertificateHistory()).isNotNull();
+  }
+
+  @Test
   public void getPackageInfo_shouldReturnRequestedPermissions() throws Exception {
     PackageInfo packageInfo =
         packageManager.getPackageInfo(context.getPackageName(), PackageManager.GET_PERMISSIONS);
@@ -3052,7 +3085,12 @@ public class ShadowPackageManagerTest {
   private static PackageInfo newPackageInfo(String packageName, Signature... signatures) {
     PackageInfo firstPackageInfo = new PackageInfo();
     firstPackageInfo.packageName = packageName;
-    firstPackageInfo.signatures = signatures;
+    if (VERSION.SDK_INT < P) {
+      firstPackageInfo.signatures = signatures;
+    } else {
+      firstPackageInfo.signingInfo = new SigningInfo();
+      shadowOf(firstPackageInfo.signingInfo).setSignatures(signatures);
+    }
     return firstPackageInfo;
   }
 

@@ -291,4 +291,27 @@ public class ActivityScenarioTest {
           });
     }
   }
+
+  @Test
+  public void getCallingActivity_empty() {
+    try (ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launch(TranscriptActivity.class)) {
+      activityScenario.onActivity(
+          activity -> {
+            assertThat(activity.getCallingActivity()).isNull();
+          });
+    }
+  }
+
+  @Test
+  public void getCallingActivity_isSet() {
+    try (ActivityScenario<TranscriptActivity> activityScenario =
+        ActivityScenario.launchActivityForResult(TranscriptActivity.class)) {
+      activityScenario.onActivity(
+          activity -> {
+            assertThat(activity.getCallingActivity().getPackageName())
+                .isEqualTo("org.robolectric.integrationtests.axt");
+          });
+    }
+  }
 }

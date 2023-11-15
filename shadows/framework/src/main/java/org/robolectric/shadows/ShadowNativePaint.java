@@ -715,14 +715,29 @@ public class ShadowNativePaint {
     PaintNatives.nSetStrikeThruText(paintPtr, strikeThruText);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nIsElegantTextHeight(long paintPtr) {
     return PaintNatives.nIsElegantTextHeight(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = V.SDK_INT)
+  protected static int nGetElegantTextHeight(long paintPtr) {
+    return PaintNatives.nGetElegantTextHeight(paintPtr);
+  }
+
+  // Note: the following three values must be equal to the ones in the JNI file: Paint.cpp
+  private static final int ELEGANT_TEXT_HEIGHT_ENABLED = 0;
+  private static final int ELEGANT_TEXT_HEIGHT_DISABLED = 1;
+
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetElegantTextHeight(long paintPtr, boolean elegant) {
-    PaintNatives.nSetElegantTextHeight(paintPtr, elegant);
+    nSetElegantTextHeight(
+        paintPtr, elegant ? ELEGANT_TEXT_HEIGHT_ENABLED : ELEGANT_TEXT_HEIGHT_DISABLED);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected static void nSetElegantTextHeight(long paintPtr, int value) {
+    PaintNatives.nSetElegantTextHeight(paintPtr, value);
   }
 
   @Implementation(minSdk = O)

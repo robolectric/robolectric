@@ -420,6 +420,23 @@ public class ShadowDisplay {
   }
 
   /**
+   * Sets current hdr/sdr ratio expressed as the ratio of targetHdrPeakBrightnessInNits /
+   * targetSdrWhitePointInNits. This will have the intended side effect of making {@link
+   * Display#isHdrSdrRatioAvailable()} equal to true if set to any value other than {@link
+   * Float#NaN}.
+   *
+   * @throws UnsupportedOperationException if the method is called below Android version U.
+   */
+  public void setHdrSdrRatio(float hdrSdrRatio) {
+    if (Build.VERSION.SDK_INT < VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      throw new UnsupportedOperationException("setHdrSdrRatio is not supported below Android U");
+    }
+
+    ShadowDisplayManager.changeDisplay(
+        realObject.getDisplayId(), displayConfig -> displayConfig.hdrSdrRatio = hdrSdrRatio);
+  }
+
+  /**
    * Changes the display cutout for this display.
    *
    * @throws UnsupportedOperationException if the method is called below Android version Q.

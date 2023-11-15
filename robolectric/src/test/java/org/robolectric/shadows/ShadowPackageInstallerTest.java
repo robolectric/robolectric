@@ -1,6 +1,8 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.truth.Truth.assertThat;
@@ -17,6 +19,8 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageInstaller;
 import android.content.pm.PackageInstaller.PreapprovalDetails;
+import android.content.pm.PackageManager;
+import android.content.pm.VersionedPackage;
 import android.graphics.Bitmap;
 import android.icu.util.ULocale;
 import android.os.Handler;
@@ -304,6 +308,61 @@ public class ShadowPackageInstallerTest {
     assertThat(session.getAppMetadata()).isEqualTo(bundle);
   }
 
+  @Test
+  public void uninstallMaxVersion() throws Exception {
+    packageInstaller.uninstall("packageName", /* statusReceiver */ null);
+
+    assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName"))
+        .isEqualTo(PackageManager.VERSION_CODE_HIGHEST);
+    assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
+  }
+
+  @Test
+  public void uninstallMaxVersionWithStatusReceiver() throws Exception {
+    IntentSender intentSender = createStatusReceiver();
+    packageInstaller.uninstall("packageName", intentSender);
+
+    assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName"))
+        .isEqualTo(PackageManager.VERSION_CODE_HIGHEST);
+    assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName"))
+        .isEqualTo(intentSender);
+  }
+
+  @Config(sdk = O)
+  @Test
+  public void uninstallVersion() throws Exception {
+    packageInstaller.uninstall(new VersionedPackage("packageName", 1), /* statusReceiver */ null);
+
+    assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName")).isEqualTo(1);
+    assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
+  }
+
+  @Config(sdk = UPSIDE_DOWN_CAKE)
+  @Test
+  public void uninstallVersionWithFlags() throws Exception {
+    packageInstaller.uninstall(
+        new VersionedPackage("packageName", 1), /* flags= */ 0, /* statusReceiver= */ null);
+
+    assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName")).isEqualTo(1);
+    assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
+  }
+
+  @Config(sdk = S)
+  @Test
+  public void uninstallExtistingPackage() throws Exception {
+    packageInstaller.uninstallExistingPackage("packageName", /* IntentSender */ null);
+
+    assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName"))
+        .isEqualTo(PackageManager.VERSION_CODE_HIGHEST);
+    assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
+  }
+
+  @Test
+  public void nothingUninstalled() throws Exception {
+    assertThat(shadowOf(packageInstaller).getLastUninstalledVersion("packageName")).isNull();
+    assertThat(shadowOf(packageInstaller).getLastUninstalledStatusReceiver("packageName")).isNull();
+  }
+
   private static Intent getOnlyBroadcastIntent() {
     return getOnlyElement(
         shadowOf((Application) ApplicationProvider.getApplicationContext()).getBroadcastIntents());
@@ -327,7 +386,8 @@ public class ShadowPackageInstallerTest {
   }
 
   private static PackageInstaller.SessionParams createSessionParams(String appPackageName) {
-    PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+    PackageInstaller.SessionParams params =
+        new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
     params.setAppPackageName(appPackageName);
     return params;
   }

@@ -102,6 +102,22 @@ public class ShadowDisplayManagerTest {
 
     Display display = instance.getDisplay(displayId);
     assertThat(display.getDisplayId()).isEqualTo(displayId);
+    assertThat(display.getName()).isEqualTo("Built-in screen");
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void addDisplay_withName_shouldReflectInAddedDisplay() {
+    int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp", "VirtualDevice_1");
+    assertThat(displayId).isGreaterThan(0);
+
+    DisplayInfo di = getGlobal().getDisplayInfo(displayId);
+    assertThat(di.appWidth).isEqualTo(100);
+    assertThat(di.appHeight).isEqualTo(200);
+
+    Display display = instance.getDisplay(displayId);
+    assertThat(display.getDisplayId()).isEqualTo(displayId);
+    assertThat(display.getName()).isEqualTo("VirtualDevice_1");
   }
 
   @Test
