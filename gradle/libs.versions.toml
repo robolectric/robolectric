@@ -73,7 +73,7 @@ javax-annotation-jsr250-api = "1.0"
 javax-inject = "1"
 
 # https://github.com/JetBrains/java-annotations/releases
-jetbrains-annotations = "24.0.1"
+jetbrains-annotations = "24.1.0"
 
 # https://junit.org/junit4/
 junit4 = "4.13.2"
