@@ -9,7 +9,7 @@ android-gradle = "8.1.4"
 conscrypt = "2.5.2"
 
 # https://github.com/bcgit/bc-java/tags
-bouncycastle = "1.76"
+bouncycastle = "1.77"
 
 # https://github.com/findbugsproject/findbugs/tags
 findbugs-jsr305 = "3.0.2"
