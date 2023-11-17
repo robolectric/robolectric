@@ -112,7 +112,7 @@ public class CustomConfigurerTest {
     HierarchicalConfigurationStrategy configurationStrategy =
         new HierarchicalConfigurationStrategy(
             new ConfigConfigurer(new PackagePropertiesLoader()),
-            new LooperModeConfigurer(new Properties()),
+            new LooperModeConfigurer(new Properties(), new PackagePropertiesLoader()),
             new SomeConfigConfigurer());
 
     SingleSdkRobolectricTestRunner testRunner = new SingleSdkRobolectricTestRunner(

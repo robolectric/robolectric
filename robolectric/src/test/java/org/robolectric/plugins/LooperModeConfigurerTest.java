@@ -17,7 +17,8 @@ public class LooperModeConfigurerTest {
   @Test
   public void defaultConfig() {
     Properties systemProperties = new Properties();
-    LooperModeConfigurer configurer = new LooperModeConfigurer(systemProperties);
+    LooperModeConfigurer configurer =
+        new LooperModeConfigurer(systemProperties, new PackagePropertiesLoader());
     assertThat(configurer.defaultConfig()).isSameInstanceAs(LooperMode.Mode.PAUSED);
 
     systemProperties.setProperty("robolectric.looperMode", "LEGACY");

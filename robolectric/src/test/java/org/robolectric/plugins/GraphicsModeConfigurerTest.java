@@ -15,7 +15,8 @@ public class GraphicsModeConfigurerTest {
   @Test
   public void defaultConfig() {
     Properties systemProperties = new Properties();
-    GraphicsModeConfigurer configurer = new GraphicsModeConfigurer(systemProperties);
+    GraphicsModeConfigurer configurer =
+        new GraphicsModeConfigurer(systemProperties, new PackagePropertiesLoader());
     assertThat(configurer.defaultConfig()).isSameInstanceAs(Mode.LEGACY);
   }
 }
