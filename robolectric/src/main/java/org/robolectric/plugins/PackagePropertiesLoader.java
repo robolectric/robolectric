@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.annotation.Nonnull;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.pluginapi.config.Configurer;
 
 /**
@@ -30,6 +29,30 @@ public class PackagePropertiesLoader {
     }
   };
 
+  private Properties getConfig(@Nonnull String packageName, String propFileName) {
+    StringBuilder buf = new StringBuilder();
+    if (!packageName.isEmpty()) {
+      buf.append(packageName.replace('.', '/'));
+      buf.append('/');
+    }
+    String propsFile = buf.toString() + propFileName + ".properties";
+    return cache.computeIfAbsent(
+        propsFile,
+        s -> {
+          final String resourceName = propsFile;
+          try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
+            if (resourceAsStream == null) {
+              return null;
+            }
+            Properties properties = new Properties();
+            properties.load(resourceAsStream);
+            return properties;
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
+  }
+
   /**
    * Return a {@link Properties} file for the given package name, or {@code null} if none is
    * available.
@@ -37,26 +60,7 @@ public class PackagePropertiesLoader {
    * @since 3.2
    */
   public Properties getConfigProperties(@Nonnull String packageName) {
-    return cache.computeIfAbsent(packageName, s -> {
-      StringBuilder buf = new StringBuilder();
-      if (!packageName.isEmpty()) {
-        buf.append(packageName.replace('.', '/'));
-        buf.append('/');
-      }
-      buf.append(RobolectricTestRunner.CONFIG_PROPERTIES);
-      final String resourceName = buf.toString();
-
-      try (InputStream resourceAsStream = getResourceAsStream(resourceName)) {
-        if (resourceAsStream == null) {
-          return null;
-        }
-        Properties properties = new Properties();
-        properties.load(resourceAsStream);
-        return properties;
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    });
+    return getConfig(packageName, "robolectric");
   }
 
   // visible for testing
