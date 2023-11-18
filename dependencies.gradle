@@ -1,6 +1,4 @@
 ext {
-    apiCompatVersion = libs.versions.robolectric.compat.get()
-
     // https://github.com/gradle/gradle/issues/21267
     axtCoreVersion = libs.versions.androidx.test.core.get()
     axtJunitVersion = libs.versions.androidx.test.ext.junit.get()

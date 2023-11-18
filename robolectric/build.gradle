@@ -47,39 +47,3 @@ dependencies {
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }
-
-project.apply plugin: CheckApiChangesPlugin
-
-checkApiChanges {
-    from = [
-            "org.robolectric:robolectric:${apiCompatVersion}@jar",
-            "org.robolectric:annotations:${apiCompatVersion}@jar",
-            "org.robolectric:junit:${apiCompatVersion}@jar",
-            "org.robolectric:resources:${apiCompatVersion}@jar",
-            "org.robolectric:sandbox:${apiCompatVersion}@jar",
-            "org.robolectric:utils:${apiCompatVersion}@jar",
-            "org.robolectric:shadowapi:${apiCompatVersion}@jar",
-            "org.robolectric:shadows-framework:${apiCompatVersion}@jar",
-    ]
-
-    to = [
-            project(":robolectric"),
-            project(":annotations"),
-            project(":junit"),
-            project(":resources"),
-            project(":sandbox"),
-            project(":shadows:framework"),
-            project(":utils"),
-            project(":shadowapi"),
-    ]
-
-    entryPoints += "org.robolectric.RobolectricTestRunner"
-    expectedChanges = [
-            "^org.robolectric.util.ActivityController#",
-            "^org.robolectric.util.ComponentController#",
-            "^org.robolectric.util.ContentProviderController#",
-            "^org.robolectric.util.FragmentController#",
-            "^org.robolectric.util.IntentServiceController#",
-            "^org.robolectric.util.ServiceController#",
-    ]
-}
