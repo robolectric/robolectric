@@ -20,7 +20,7 @@ class GradleManagedDevicePlugin implements Plugin<Project> {
                 nexusOneApi34(ManagedVirtualDevice) {
                     device = "Nexus One"
                     apiLevel = 34
-                    systemImageSource = "aosp"
+                    systemImageSource = "aosp-atd"
                 }
             }
         }
