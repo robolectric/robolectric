@@ -85,7 +85,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29 ]
+        api-level: [ 29, 34 ]
 
     steps:
       - uses: actions/checkout@v4
@@ -108,6 +108,9 @@ jobs:
         id: determine-target
         run: |
           TARGET="google_apis"
+          if [[ ${{ matrix.api-level }} -ge 34 ]]; then
+            TARGET="aosp_atd"
+          fi
           echo "TARGET=$TARGET" >> $GITHUB_OUTPUT
 
       - name: AVD cache
