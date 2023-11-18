@@ -79,6 +79,7 @@ public class AarDepsPlugin implements Plugin<Project> {
     return bad;
   }
 
+  /** Extracts classes.jar from an AAR */
   public abstract static class ClassesJarExtractor extends ExtractAarTransform {
     @Inject
     public ClassesJarExtractor() {}
