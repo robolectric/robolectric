@@ -46,6 +46,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -176,6 +178,41 @@ public class ShadowNativeBitmapTest {
 
     assertThrows(
         RuntimeException.class, () -> bitmap.copyPixelsToBuffer(ByteBuffer.allocate(tooSmall)));
+  }
+
+  @Test
+  public void testCopyPixelsToBuffer() {
+    final int pixSize = bitmap.getRowBytes() * bitmap.getHeight();
+
+    ByteBuffer byteBuf = ByteBuffer.allocate(pixSize);
+    assertEquals(0, byteBuf.position());
+    bitmap.copyPixelsToBuffer(byteBuf);
+    assertEquals(pixSize, byteBuf.position());
+
+    ShortBuffer shortBuf = ShortBuffer.allocate(pixSize);
+    assertEquals(0, shortBuf.position());
+    bitmap.copyPixelsToBuffer(shortBuf);
+    assertEquals(pixSize >> 1, shortBuf.position());
+
+    IntBuffer intBuf1 = IntBuffer.allocate(pixSize);
+    assertEquals(0, intBuf1.position());
+    bitmap.copyPixelsToBuffer(intBuf1);
+    assertEquals(pixSize >> 2, intBuf1.position());
+
+    bitmap = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
+    intBuf1.position(0); // copyPixelsToBuffer adjusted the position, so rewind to start
+    bitmap.copyPixelsFromBuffer(intBuf1);
+    IntBuffer intBuf2 = IntBuffer.allocate(pixSize);
+    bitmap.copyPixelsToBuffer(intBuf2);
+
+    assertEquals(pixSize >> 2, intBuf2.position());
+    assertEquals(intBuf1.position(), intBuf2.position());
+    int size = intBuf1.position();
+    intBuf1.position(0);
+    intBuf2.position(0);
+    for (int i = 0; i < size; i++) {
+      assertEquals("mismatching pixels at position " + i, intBuf1.get(), intBuf2.get());
+    }
   }
 
   @Test
