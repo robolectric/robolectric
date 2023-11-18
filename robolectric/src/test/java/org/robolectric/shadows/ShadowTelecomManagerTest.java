@@ -278,8 +278,8 @@ public class ShadowTelecomManagerTest {
   @Test
   public void testAllowNewIncomingCallUsingCustomConnectionService() {
     shadowOf(telecomService).setCallRequestMode(CallRequestMode.ALLOW_ALL);
-    TestConnectionService connectionService = ServiceController.of(
-        new TestConnectionService(), null).create().get();
+    TestConnectionService connectionService =
+        ServiceController.of(new TestConnectionService(), null).create().get();
     shadowOf(telecomService).setConnectionService(connectionService);
 
     PhoneAccountHandle phoneAccount = createHandle("id");

@@ -596,9 +596,9 @@ public class ShadowTelecomManager {
 
   /**
    * Set connection service.
-   * <p>
-   * This method can be used in case, when you already created connection service
-   * and would like to use it in telecom manager instead of creating new one.
+   *
+   * <p>This method can be used in case, when you already created connection service and would like
+   * to use it in telecom manager instead of creating new one.
    *
    * @param service existing connection service
    */
