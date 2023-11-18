@@ -15,23 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  run_checkForApiChanges:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: 17
-
-      - uses: gradle/gradle-build-action@v2.10.0
-
-      - name: Run checkForApiChanges
-        run: ./gradlew checkForApiChanges
-
   run_aggregateDocs:
     runs-on: ubuntu-22.04
 
