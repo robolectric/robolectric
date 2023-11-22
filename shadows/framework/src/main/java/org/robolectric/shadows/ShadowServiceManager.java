@@ -95,6 +95,7 @@ import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ISoundTriggerService;
 import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.internal.appwidget.IAppWidgetService;
+import com.android.internal.compat.IPlatformCompat;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.statusbar.IStatusBar;
 import com.android.internal.telephony.ITelephony;
@@ -205,6 +206,7 @@ public class ShadowServiceManager {
       addBinderService(Context.AUTH_SERVICE, IAuthService.class);
       addBinderService(Context.TETHERING_SERVICE, ITetheringConnector.class);
       addBinderService("telephony.registry", ITelephonyRegistry.class);
+      addBinderService(Context.PLATFORM_COMPAT_SERVICE, IPlatformCompat.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= S) {
       addBinderService("permissionmgr", IPermissionManager.class);
