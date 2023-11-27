@@ -28,7 +28,7 @@ error-prone-javac = "9+181-r4173-1"
 error-prone-gradle = "3.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "1.9.20"
+kotlin = "1.9.21"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.7.3'
