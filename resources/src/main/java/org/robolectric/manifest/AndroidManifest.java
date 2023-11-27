@@ -621,7 +621,7 @@ public class AndroidManifest implements UsesSdk {
   @Override
   public int getMinSdkVersion() {
     parseAndroidManifest();
-    return minSdkVersion == null ? 16 : minSdkVersion;
+    return minSdkVersion == null ? 19 : minSdkVersion;
   }
 
   /**
