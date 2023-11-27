@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -563,6 +564,26 @@ public class ShadowSettings {
         RuntimeEnvironment.getApplication().getContentResolver(),
         Settings.Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS,
         lockScreenAllowPrivateNotifications ? 1 : 0);
+  }
+
+  /**
+   * Shadow for {@link Settings.Config}.
+   *
+   * <p>This shadow is primarily to support {@link android.provider.DeviceConfig}, which queries
+   * {@link Settings.Config}. {@link android.provider.DeviceConfig} is pure Java code so it's not
+   * necessary to shadow that directly.
+   *
+   * <p>The underlying implementation calls into a system content provider. Starting in Android U,
+   * the internal logic of Activity is querying DeviceConfig, so to avoid crashes we need to make
+   * DeviceConfig a no-op.
+   */
+  @Implements(value = Settings.Config.class, isInAndroidSdk = false)
+  public static class ShadowConfig {
+    @Implementation(minSdk = R)
+    protected static Map<String, String> getStrings(
+        ContentResolver resolver, String namespace, List<String> names) {
+      return ImmutableMap.of();
+    }
   }
 
   @Resetter
