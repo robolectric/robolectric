@@ -62,6 +62,20 @@ public class ShadowVirtualDeviceManagerTest {
   }
 
   @Test
+  public void testIsClosed() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+    ShadowVirtualDevice shadowDevice = Shadow.extract(virtualDevice);
+
+    assertThat(shadowDevice.isClosed()).isFalse();
+
+    virtualDevice.close();
+
+    assertThat(shadowDevice.isClosed()).isTrue();
+  }
+
+  @Test
   public void testIsValidVirtualDeviceId() {
     VirtualDevice virtualDevice =
         virtualDeviceManager.createVirtualDevice(

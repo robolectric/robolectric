@@ -17,6 +17,7 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
@@ -125,6 +126,7 @@ public class ShadowVirtualDeviceManager {
     private int deviceId;
     private PendingIntent pendingIntent;
     private Integer pendingIntentResultCode = LAUNCH_SUCCESS;
+    private final AtomicBoolean isClosed = new AtomicBoolean(false);
 
     @Implementation
     protected void __constructor__(
@@ -150,7 +152,13 @@ public class ShadowVirtualDeviceManager {
 
     /** Prevents a NPE when calling .close() on a VirtualDevice in unit tests. */
     @Implementation
-    protected void close() {}
+    protected void close() {
+      isClosed.set(true);
+    }
+
+    public boolean isClosed() {
+      return isClosed.get();
+    }
 
     VirtualDeviceParams getParams() {
       return params;
