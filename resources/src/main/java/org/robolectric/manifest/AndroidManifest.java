@@ -217,8 +217,7 @@ public class AndroidManifest implements UsesSdk {
         String targetSdkText =
             getTagAttributeText(manifestDocument, "uses-sdk", "android:targetSdkVersion");
         if (targetSdkText != null) {
-          // Support Android O Preview. This can be removed once Android O is officially launched.
-          targetSdkVersion = targetSdkText.equals("O") ? 26 : Integer.parseInt(targetSdkText);
+          targetSdkVersion = Integer.parseInt(targetSdkText);
         }
 
         maxSdkVersion =
