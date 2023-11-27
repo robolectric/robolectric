@@ -79,7 +79,7 @@ jetbrains-annotations = "24.1.0"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.25"
+libphonenumber = "8.13.26"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
