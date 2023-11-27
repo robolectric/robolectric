@@ -239,6 +239,9 @@ public class AndroidManifest implements UsesSdk {
         System.out.println("Falling back to the Android OS resources only.");
         System.out.println(
             "To remove this warning, annotate your test class with @Config(manifest=Config.NONE).");
+        System.out.println(
+            "If you're using Android Gradle Plugin, add "
+                + "testOptions.unitTests.includeAndroidResources = true to your build.gradle");
       }
 
       if (packageName == null || packageName.equals("")) {
@@ -246,10 +249,6 @@ public class AndroidManifest implements UsesSdk {
       }
 
       rClassName = packageName + ".R";
-
-      if (androidManifestFile != null) {
-        System.err.println("No such manifest file: " + androidManifestFile);
-      }
     }
 
     manifestIsParsed = true;
