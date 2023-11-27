@@ -20,7 +20,7 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.10.0
 
       - name: Build
         run: |

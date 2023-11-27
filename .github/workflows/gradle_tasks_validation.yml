@@ -27,7 +27,7 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.10.0
 
       - name: Run checkForApiChanges
         run: ./gradlew checkForApiChanges
@@ -44,7 +44,7 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.10.0
 
       - name: Run aggregateDocs
         run: ./gradlew clean aggregateDocs
@@ -61,7 +61,7 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.10.0
 
       - name: Run javadocJar
         run: ./gradlew clean javadocJar
@@ -81,7 +81,7 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.10.0
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
