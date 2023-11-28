@@ -6,7 +6,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Verify.verifyNotNull;
 
 import android.annotation.SystemApi;
@@ -653,7 +652,10 @@ public class ShadowTelecomManager {
   @Implementation(minSdk = M)
   @HiddenApi
   public void enablePhoneAccount(PhoneAccountHandle handle, boolean isEnabled) {
-    checkNotNull(getPhoneAccount(handle)).setIsEnabled(isEnabled);
+    if (getPhoneAccount(handle) == null) {
+      return;
+    }
+    getPhoneAccount(handle).setIsEnabled(isEnabled);
   }
 
   /**

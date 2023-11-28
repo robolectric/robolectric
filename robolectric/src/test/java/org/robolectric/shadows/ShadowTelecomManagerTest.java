@@ -130,6 +130,21 @@ public class ShadowTelecomManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void enableNonRegisteredAccountDoesNothing() {
+    PhoneAccountHandle accountHandle1 = createHandle("a.package", "OtherConnectionService", "id1");
+    telecomService.registerPhoneAccount(
+        PhoneAccount.builder(accountHandle1, "another_package").build());
+
+    // Attempt to enable phone account that hasn't been registered should do nothing.
+    PhoneAccountHandle accountHandle2 =
+        createHandle("some.other.package", "OtherConnectionService", "id2");
+    telecomService.enablePhoneAccount(accountHandle2, /* isEnabled= */ true);
+
+    assertThat(telecomService.getPhoneAccount(accountHandle1).isEnabled()).isFalse();
+  }
+
+  @Test
   public void getPhoneAccountsSupportingScheme() {
     PhoneAccountHandle handleMatchingScheme = createHandle("id1");
     telecomService.registerPhoneAccount(
