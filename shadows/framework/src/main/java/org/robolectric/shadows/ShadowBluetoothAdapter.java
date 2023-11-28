@@ -90,6 +90,7 @@ public class ShadowBluetoothAdapter {
 
   private static final Map<String, BluetoothDevice> deviceCache = new HashMap<>();
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
+  private List<BluetoothDevice> mostRecentlyConnectedDevices = new ArrayList<>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
   private boolean isDiscovering;
   private String address;
@@ -164,6 +165,15 @@ public class ShadowBluetoothAdapter {
           reflector(BluetoothAdapterReflector.class, realAdapter).getRemoteDevice(address));
     }
     return deviceCache.get(address);
+  }
+
+  public void setMostRecentlyConnectedDevices(List<BluetoothDevice> devices) {
+    mostRecentlyConnectedDevices = devices;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected List<BluetoothDevice> getMostRecentlyConnectedDevices() {
+    return mostRecentlyConnectedDevices;
   }
 
   @Implementation
