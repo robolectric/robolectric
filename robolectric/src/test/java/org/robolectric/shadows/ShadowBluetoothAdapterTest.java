@@ -891,4 +891,17 @@ public class ShadowBluetoothAdapterTest {
       public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {}
     };
   }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void canGetAndSetLeAudioSupport() {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+    // By default LE feature is not supported
+    assertThat(adapter.isLeAudioSupported()).isEqualTo(BluetoothStatusCodes.FEATURE_NOT_SUPPORTED);
+
+    // set Le audio feature to supported.
+    shadowOf(adapter).setLeAudioSupported(BluetoothStatusCodes.FEATURE_SUPPORTED);
+    assertThat(adapter.isLeAudioSupported()).isEqualTo(BluetoothStatusCodes.FEATURE_SUPPORTED);
+  }
 }
