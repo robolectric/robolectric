@@ -129,6 +129,7 @@ public class ShadowDownloadManagerTest {
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)).isAtLeast(0);
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)).isAtLeast(0);
     assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)).isAtLeast(0);
+    assertThat(cursor.getColumnIndex(DownloadManager.COLUMN_ID)).isAtLeast(0);
   }
 
   @Test
@@ -189,6 +190,23 @@ public class ShadowDownloadManagerTest {
     assertThat(
             cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)))
         .isEqualTo(currentBytes);
+  }
+
+  @Test
+  public void query_shouldGetColumnId() {
+    ShadowDownloadManager manager = new ShadowDownloadManager();
+    long firstId = manager.enqueue(request);
+    Request secondRequest = new Request(Uri.parse("http://example.com/foo2.mp4"));
+    long secondId = manager.enqueue(secondRequest);
+
+    try (Cursor cursor = manager.query(new DownloadManager.Query())) {
+      cursor.moveToFirst();
+      assertThat(cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID)))
+          .isEqualTo(firstId);
+      cursor.moveToNext();
+      assertThat(cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID)))
+          .isEqualTo(secondId);
+    }
   }
 
   @Test
