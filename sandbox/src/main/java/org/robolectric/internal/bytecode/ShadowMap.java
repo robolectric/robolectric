@@ -69,7 +69,7 @@ public class ShadowMap {
   }
 
   public boolean hasShadowPicker(MutableClass mutableClass) {
-    return shadowPickers.containsKey(mutableClass.getName().replace('$', '.'));
+    return shadowPickers.containsKey(mutableClass.getName());
   }
 
   public ShadowInfo getShadowInfo(Class<?> clazz, ShadowMatcher shadowMatcher) {
