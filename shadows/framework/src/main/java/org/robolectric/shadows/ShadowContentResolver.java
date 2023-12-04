@@ -84,7 +84,6 @@ public class ShadowContentResolver {
   private static final Map<Uri, Supplier<OutputStream>> outputStreamMap = new HashMap<>();
   private static final Map<String, List<ContentProviderOperation>> contentProviderOperations =
       new HashMap<>();
-  private static ContentProviderResult[] contentProviderResults;
   private static final List<UriPermission> uriPermissions = new ArrayList<>();
 
   private static final CopyOnWriteArrayList<ContentObserverEntry> contentObservers =
@@ -108,7 +107,6 @@ public class ShadowContentResolver {
     inputStreamMap.clear();
     outputStreamMap.clear();
     contentProviderOperations.clear();
-    contentProviderResults = null;
     uriPermissions.clear();
     contentObservers.clear();
     syncableAccounts.clear();
@@ -514,7 +512,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected ContentProviderResult[] applyBatch(
+  protected @NonNull ContentProviderResult[] applyBatch(
       String authority, ArrayList<ContentProviderOperation> operations)
       throws OperationApplicationException {
     ContentProvider provider = getProvider(authority, getContext());
@@ -522,7 +520,7 @@ public class ShadowContentResolver {
       return provider.applyBatch(operations);
     } else {
       contentProviderOperations.put(authority, operations);
-      return contentProviderResults;
+      return new ContentProviderResult[0];
     }
   }
 
@@ -917,11 +915,6 @@ public class ShadowContentResolver {
       return new ArrayList<>();
     }
     return operations;
-  }
-
-  @Deprecated
-  public void setContentProviderResult(ContentProviderResult[] contentProviderResults) {
-    ShadowContentResolver.contentProviderResults = contentProviderResults;
   }
 
   private final Map<Uri, RuntimeException> registerContentProviderExceptions = new HashMap<>();
