@@ -103,6 +103,7 @@ androidx-core = "1.12.0"
 androidx-fragment = "1.6.2"
 androidx-multidex = "2.0.1"
 androidx-window = "1.2.0"
+androidx-room = "2.6.1"
 
 # https://github.com/android/android-test/tags
 androidx-test-annotation = "1.0.1"
@@ -210,6 +211,8 @@ androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "andr
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
 androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "androidx-multidex" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 
 androidx-test-annotation = { module = "androidx.test:annotation", version.ref = "androidx-test-annotation" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
