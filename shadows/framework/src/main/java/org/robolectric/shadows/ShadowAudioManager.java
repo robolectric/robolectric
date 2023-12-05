@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -103,6 +104,8 @@ public class ShadowAudioManager {
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
   private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
+  private boolean isHotwordStreamSupportedForLookbackAudio = false;
+  private boolean isHotwordStreamSupportedWithoutLookbackAudio = false;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -644,6 +647,22 @@ public class ShadowAudioManager {
   @Implementation(minSdk = S)
   protected List<AudioDeviceInfo> getAvailableCommunicationDevices() {
     return availableCommunicationDevices;
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isHotwordStreamSupported(boolean lookbackAudio) {
+    if (lookbackAudio) {
+      return isHotwordStreamSupportedForLookbackAudio;
+    }
+    return isHotwordStreamSupportedWithoutLookbackAudio;
+  }
+
+  public void setHotwordStreamSupported(boolean lookbackAudio, boolean isSupported) {
+    if (lookbackAudio) {
+      isHotwordStreamSupportedForLookbackAudio = isSupported;
+    } else {
+      isHotwordStreamSupportedWithoutLookbackAudio = isSupported;
+    }
   }
 
   @Implementation(minSdk = M)
