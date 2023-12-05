@@ -3,7 +3,7 @@ robolectric-compat = "4.11.1"
 robolectric-nativeruntime-dist-compat = "1.0.4"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.1.4"
+android-gradle = "8.2.0"
 
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
