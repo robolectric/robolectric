@@ -83,6 +83,18 @@ public abstract class ShadowSystemClock {
     SystemClock.setCurrentTimeMillis(SystemClock.uptimeMillis() + duration.toMillis());
   }
 
+  /**
+   * In a deep sleep scenario, {@param elapsedRealtime} is advanced for this duration when in deep
+   * sleep whilst {@param uptime} maintains its original value.
+   *
+   * <p>May only be used for {@link LooperMode.Mode#PAUSED}. For {@link LooperMode.Mode#LEGACY},
+   * {@param elapsedRealtime} is equal to {@param uptime}.
+   */
+  public static void simulateDeepSleep(Duration duration) {
+    assertLooperMode(Mode.PAUSED);
+    ShadowPausedSystemClock.deepSleep(duration.toMillis());
+  }
+
   @Implementation(minSdk = Q)
   protected static Object currentGnssTimeClock() {
     if (gnssTimeAvailable) {

@@ -12,6 +12,7 @@ import static org.robolectric.annotation.LooperMode.Mode.PAUSED;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,6 +33,7 @@ public class ShadowPausedSystemClockTest {
     assertTrue(SystemClock.setCurrentTimeMillis(1000));
     SystemClock.sleep(34);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
   }
 
   @Test
@@ -69,11 +71,58 @@ public class ShadowPausedSystemClockTest {
   }
 
   @Test
+  public void deepSleep_advancesOnlyRealtime() {
+    assertTrue(SystemClock.setCurrentTimeMillis(1000));
+
+    ShadowPausedSystemClock.deepSleep(34);
+
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
+  }
+
+  @Test
+  public void deepSleep_notifiesListener() {
+    AtomicBoolean listenerCalled = new AtomicBoolean();
+    ShadowPausedSystemClock.addListener(() -> listenerCalled.set(true));
+
+    ShadowPausedSystemClock.deepSleep(100);
+
+    assertThat(listenerCalled.get()).isTrue();
+  }
+
+  @SuppressWarnings("FutureReturnValueIgnored")
+  @Test
+  public void deepSleep_concurrentAccess_doesNotCorruptData() throws Exception {
+    SystemClock.setCurrentTimeMillis(100);
+    ExecutorService executor = Executors.newFixedThreadPool(2);
+    try {
+      int numToExecute = 10000;
+      CountDownLatch latch = new CountDownLatch(numToExecute);
+
+      for (int i = 0; i < numToExecute; i++) {
+        executor.submit(
+            () -> {
+              ShadowPausedSystemClock.deepSleep(100);
+              latch.countDown();
+            });
+      }
+      latch.await();
+
+      assertThat(SystemClock.uptimeMillis()).isEqualTo(100);
+      assertThat(SystemClock.elapsedRealtime()).isEqualTo(100 + numToExecute * 100);
+    } finally {
+      executor.shutdown();
+    }
+  }
+
+  @Test
   public void testSetCurrentTime() {
     assertTrue(SystemClock.setCurrentTimeMillis(1034));
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
     assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(1034);
     assertFalse(SystemClock.setCurrentTimeMillis(1000));
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1034);
     assertThat(SystemClock.uptimeMillis()).isEqualTo(1034);
   }
 
@@ -104,11 +153,33 @@ public class ShadowPausedSystemClockTest {
             latch.countDown();
           });
       latch.await();
-
+      assertThat(SystemClock.elapsedRealtime()).isEqualTo(300);
       assertThat(SystemClock.uptimeMillis()).isEqualTo(300);
     } finally {
       executor.shutdown();
     }
+  }
+
+  @Test
+  public void advanceTimeBy_shouldAdvanceBothElapsedRealtimeAndUptimeMillis() {
+    SystemClock.setCurrentTimeMillis(1000);
+
+    ShadowPausedSystemClock.advanceBy(Duration.ofMillis(100));
+
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(1100);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1100);
+    assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(1100);
+  }
+
+  @Test
+  public void simulateDeepSleep_shouldOnlyAdvanceElapsedRealtime() {
+    SystemClock.setCurrentTimeMillis(1000);
+
+    ShadowPausedSystemClock.simulateDeepSleep(Duration.ofMillis(100));
+
+    assertThat(SystemClock.uptimeMillis()).isEqualTo(1000);
+    assertThat(SystemClock.currentThreadTimeMillis()).isEqualTo(1000);
+    assertThat(SystemClock.elapsedRealtime()).isEqualTo(1100);
   }
 
   @Test
