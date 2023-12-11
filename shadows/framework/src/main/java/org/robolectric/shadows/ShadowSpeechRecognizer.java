@@ -28,6 +28,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Robolectric shadow for SpeechRecognizer. */
 @Implements(value = SpeechRecognizer.class, looseSignatures = true)
@@ -112,7 +113,7 @@ public class ShadowSpeechRecognizer {
    * Handles changing the listener and allows access to the internal listener to trigger events and
    * sets the latest SpeechRecognizer.
    */
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT) // TODO(hoisie): Update this to support Android V
   protected void handleChangeListener(RecognitionListener listener) {
     recognitionListener = listener;
   }
