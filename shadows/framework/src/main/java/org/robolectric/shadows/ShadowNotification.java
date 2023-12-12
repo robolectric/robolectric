@@ -14,8 +14,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import com.google.common.collect.ImmutableList;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -74,6 +76,15 @@ public class ShadowNotification {
     } else {
       return findText(applyBigContentView(),  "text");
     }
+  }
+
+  public List<CharSequence> getTextLines() {
+    CharSequence[] linesArray =
+        realNotification.extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+    if (linesArray == null) {
+      return ImmutableList.of();
+    }
+    return ImmutableList.copyOf(linesArray);
   }
 
   public Bitmap getBigPicture() {
