@@ -66,7 +66,8 @@ public class ShadowAudioManager {
           AudioManager.STREAM_RING,
           AudioManager.STREAM_SYSTEM,
           AudioManager.STREAM_VOICE_CALL,
-          AudioManager.STREAM_DTMF);
+          AudioManager.STREAM_DTMF,
+          AudioManager.STREAM_ACCESSIBILITY);
 
   private static final int INVALID_PATCH_HANDLE = -1;
   private static final float MAX_VOLUME_DB = 0;

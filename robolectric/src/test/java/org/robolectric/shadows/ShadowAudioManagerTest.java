@@ -174,6 +174,7 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
+        case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(audioManager.getStreamMaxVolume(stream))
               .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
@@ -251,6 +252,7 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
+        case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(audioManager.getStreamVolume(stream))
               .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
