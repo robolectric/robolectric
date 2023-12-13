@@ -44,7 +44,21 @@ public class ShadowInputManager {
   /** Used in {@link InputDevice#getDeviceIds()} */
   @Implementation
   protected int[] getInputDeviceIds() {
-    return new int[0];
+    if (!ReflectionHelpers.hasField(InputManager.class, "mInputDevices")) {
+      return new int[0];
+    }
+
+    SparseArray<InputDevice> inputDevices = getInputDevices();
+    if (inputDevices == null) {
+      return new int[0];
+    }
+
+    int[] ids = new int[inputDevices.size()];
+    for (int i = 0; i < inputDevices.size(); i++) {
+      ids[i] = inputDevices.get(i).getId();
+    }
+
+    return ids;
   }
 
   @Implementation(maxSdk = TIRAMISU)
