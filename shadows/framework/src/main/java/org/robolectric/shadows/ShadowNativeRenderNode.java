@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.graphics.RenderNode;
 import android.graphics.RenderNode.PositionUpdateListener;
@@ -55,6 +56,11 @@ public class ShadowNativeRenderNode {
   @Implementation
   protected static void nEndAllAnimators(long renderNode) {
     RenderNodeNatives.nEndAllAnimators(renderNode);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected static void nForceEndAnimators(long renderNode) {
+    RenderNodeNatives.nForceEndAnimators(renderNode);
   }
 
   @Implementation(minSdk = S)

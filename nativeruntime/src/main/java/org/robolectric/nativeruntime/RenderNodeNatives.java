@@ -43,6 +43,8 @@ public final class RenderNodeNatives {
 
   public static native void nEndAllAnimators(long renderNode);
 
+  public static native void nForceEndAnimators(long renderNode);
+
   public static native void nDiscardDisplayList(long renderNode);
 
   public static native boolean nIsValid(long renderNode);
