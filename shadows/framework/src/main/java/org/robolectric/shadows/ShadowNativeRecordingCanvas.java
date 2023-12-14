@@ -1,11 +1,16 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
 import android.graphics.RecordingCanvas;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.RecordingCanvasNatives;
 import org.robolectric.shadows.ShadowNativeRecordingCanvas.Picker;
@@ -14,15 +19,22 @@ import org.robolectric.shadows.ShadowNativeRecordingCanvas.Picker;
 @Implements(value = RecordingCanvas.class, minSdk = Q, shadowPicker = Picker.class)
 public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas {
 
+  // Used for'nFinishRecording' for Android Q and R.
+  private static final Map<Long, Long> recordingCanvasToRenderNode =
+      Collections.synchronizedMap(new HashMap<>());
+
   @Implementation
   protected static long nCreateDisplayListCanvas(long node, int width, int height) {
     DefaultNativeRuntimeLoader.injectAndLoad();
-    return RecordingCanvasNatives.nCreateDisplayListCanvas(node, width, height);
+    long result = RecordingCanvasNatives.nCreateDisplayListCanvas(node, width, height);
+    recordingCanvasToRenderNode.put(result, node);
+    return result;
   }
 
   @Implementation
   protected static void nResetDisplayListCanvas(long canvas, long node, int width, int height) {
     RecordingCanvasNatives.nResetDisplayListCanvas(canvas, node, width, height);
+    recordingCanvasToRenderNode.put(canvas, node);
   }
 
   @Implementation
@@ -43,6 +55,15 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
   @Implementation(minSdk = S)
   protected static void nFinishRecording(long renderer, long renderNode) {
     RecordingCanvasNatives.nFinishRecording(renderer, renderNode);
+  }
+
+  @Implementation(minSdk = Q, maxSdk = R)
+  protected static long nFinishRecording(long renderer) {
+    Long renderNode = recordingCanvasToRenderNode.get(renderer);
+    if (renderNode != null && renderNode != 0) {
+      RecordingCanvasNatives.nFinishRecording(renderer, renderNode);
+    }
+    return 0;
   }
 
   @Implementation
@@ -101,6 +122,11 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
   @Implementation
   protected static void nDrawWebViewFunctor(long canvas, int functor) {
     RecordingCanvasNatives.nDrawWebViewFunctor(canvas, functor);
+  }
+
+  @Resetter
+  public static void reset() {
+    recordingCanvasToRenderNode.clear();
   }
 
   /** Shadow picker for {@link RecordingCanvas}. */

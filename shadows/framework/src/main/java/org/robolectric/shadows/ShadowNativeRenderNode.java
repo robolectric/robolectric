@@ -459,6 +459,14 @@ public class ShadowNativeRenderNode {
     return RenderNodeNatives.nGetUniqueId(renderNode);
   }
 
+  @Implementation(minSdk = Q, maxSdk = R)
+  protected static void nSetDisplayList(long renderNode, long newData) {
+    // No-op in Q and R
+    // In S and above, the functionality of nSetDisplayList is a part of
+    // RecordingCanvas.finishRecording (which gets called just prior to this). So this method is a
+    // no-op.
+  }
+
   /** Shadow picker for {@link RenderNode}. */
   public static final class Picker extends GraphicsShadowPicker<Object> {
     public Picker() {
