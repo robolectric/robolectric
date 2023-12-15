@@ -46,6 +46,12 @@ public class ShadowNativeBitmapFactory {
     return bitmap;
   }
 
+  /**
+   * The real implementation of {@link BitmapFactory#decodeStream(InputStream, Rect, Options)}
+   * checks if the stream is an {@link android.content.res.AssetManager.AssetInputStream} object and
+   * has special case logic for it. This logic extracts native asset ids and passes those into
+   * native code. Until native resources are implemented, this has to be shadowed.
+   */
   @Implementation
   protected static Bitmap decodeStream(InputStream is, Rect outPadding, Options opts) {
     reflector(BitmapFactoryOptionsReflector.class).validate(opts);
