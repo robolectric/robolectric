@@ -3,7 +3,7 @@ package org.robolectric.internal.bytecode;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,6 +17,7 @@ import org.junit.runners.JUnit4;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.robolectric.shadow.api.Shadow;
 
 /** Test for {@link ClassInstrumentor}. */
 @RunWith(JUnit4.class)
@@ -40,28 +41,17 @@ public class ClassInstrumentorTest {
 
   @Test
   public void instrumentNativeMethod_legacy() {
-    ClassNode classNode = new ClassNode();
-    classNode.name = "org/example/MyClass";
-
-    MethodNode methodNode = new MethodNode();
-    methodNode.access = Opcodes.ACC_PUBLIC + Opcodes.ACC_NATIVE;
-    methodNode.name = "someFunction";
-    methodNode.desc = "()I";
-    methodNode.signature = "()";
-    methodNode.exceptions = ImmutableList.of();
-    methodNode.visibleAnnotations = ImmutableList.of();
-
-    classNode.methods.add(methodNode);
-
+    ClassNode classNode = createClassWithNativeMethod();
     MutableClass clazz =
         new MutableClass(
             classNode, InstrumentationConfiguration.newBuilder().build(), classNodeProvider);
     instrumentor.instrument(clazz);
 
+    String someFunctionName = Shadow.directMethodName("org.example.MyClass", "someFunction");
+    MethodNode methodNode = findMethodNode(classNode, someFunctionName);
+
     // Side effect: original method has been made private.
     assertThat(methodNode.access & Opcodes.ACC_PRIVATE).isNotEqualTo(0);
-    // Side effect: original method has been renamed to a robolectric delegate
-    assertThat(methodNode.name).isEqualTo("$$robo$$org_example_MyClass$someFunction");
     // Side effect: instructions have been rewritten to return 0.
     assertThat(methodNode.instructions.size()).isEqualTo(2);
     assertThat(methodNode.instructions.get(0).getOpcode()).isEqualTo(Opcodes.ICONST_0);
@@ -81,28 +71,16 @@ public class ClassInstrumentorTest {
             exemptionsFile, /* writeExemptions= */ false, /* throwOnNatives= */ true);
     instrumentor.setNativeCallHandler(nativeCallHandler);
 
-    ClassNode classNode = new ClassNode();
-    classNode.name = "org/example/MyClass";
-
-    MethodNode methodNode = new MethodNode();
-    methodNode.access = Opcodes.ACC_PUBLIC + Opcodes.ACC_NATIVE;
-    methodNode.name = "someFunction";
-    methodNode.desc = "()I";
-    methodNode.signature = "()";
-    methodNode.exceptions = ImmutableList.of();
-    methodNode.visibleAnnotations = ImmutableList.of();
-
-    classNode.methods.add(methodNode);
-
+    ClassNode classNode = createClassWithNativeMethod();
     MutableClass clazz =
         new MutableClass(
             classNode, InstrumentationConfiguration.newBuilder().build(), classNodeProvider);
     instrumentor.instrument(clazz);
 
+    String someFunctionName = Shadow.directMethodName("org.example.MyClass", "someFunction");
+    MethodNode methodNode = findMethodNode(classNode, someFunctionName);
     // Side effect: original method has been made private.
     assertThat(methodNode.access & Opcodes.ACC_PRIVATE).isNotEqualTo(0);
-    // Side effect: original method has been renamed to a robolectric delegate
-    assertThat(methodNode.name).isEqualTo("$$robo$$org_example_MyClass$someFunction");
     // Side effect: instructions have been rewritten to throw and return.
     assertThat(methodNode.instructions.size()).isEqualTo(7);
     assertThat(methodNode.instructions.get(0).getOpcode()).isEqualTo(Opcodes.NEW);
@@ -128,31 +106,33 @@ public class ClassInstrumentorTest {
             exemptionsFile, /* writeExemptions= */ false, /* throwOnNatives= */ true);
     instrumentor.setNativeCallHandler(nativeCallHandler);
 
-    ClassNode classNode = new ClassNode();
-    classNode.name = "org/example/MyClass";
-
-    MethodNode methodNode = new MethodNode();
-    methodNode.access = Opcodes.ACC_PUBLIC + Opcodes.ACC_NATIVE;
-    methodNode.name = "someFunction";
-    methodNode.desc = "()I";
-    methodNode.signature = "()";
-    methodNode.exceptions = ImmutableList.of();
-    methodNode.visibleAnnotations = ImmutableList.of();
-
-    classNode.methods.add(methodNode);
+    ClassNode classNode = createClassWithNativeMethod();
 
     MutableClass clazz =
         new MutableClass(
             classNode, InstrumentationConfiguration.newBuilder().build(), classNodeProvider);
     instrumentor.instrument(clazz);
 
+    String someFunctionName = Shadow.directMethodName("org.example.MyClass", "someFunction");
+    MethodNode methodNode = findMethodNode(classNode, someFunctionName);
+
     // Side effect: original method has been made private.
     assertThat(methodNode.access & Opcodes.ACC_PRIVATE).isNotEqualTo(0);
-    // Side effect: original method has been renamed to a robolectric delegate
-    assertThat(methodNode.name).isEqualTo("$$robo$$org_example_MyClass$someFunction");
     // Side effect: instructions have been rewritten to return 0.
     assertThat(methodNode.instructions.size()).isEqualTo(2);
     assertThat(methodNode.instructions.get(0).getOpcode()).isEqualTo(Opcodes.ICONST_0);
     assertThat(methodNode.instructions.get(1).getOpcode()).isEqualTo(Opcodes.IRETURN);
+  }
+
+  private static ClassNode createClassWithNativeMethod() {
+    ClassNode classNode = new ClassNode();
+    classNode.name = "org/example/MyClass";
+    classNode.methods.add(
+        new MethodNode(Opcodes.ACC_PUBLIC + Opcodes.ACC_NATIVE, "someFunction", "()I", null, null));
+    return classNode;
+  }
+
+  private static MethodNode findMethodNode(ClassNode classNode, String name) {
+    return Iterables.find(classNode.methods, input -> input.name.equals(name));
   }
 }
