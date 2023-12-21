@@ -68,7 +68,7 @@ jobs:
           -x :integration_tests:nativegraphics:test
 
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test_results_${{ matrix.api-versions }}
@@ -141,7 +141,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.api-level }}-${{ steps.determine-target.outputs.TARGET }}-${{ matrix.shard }}
           path: |
