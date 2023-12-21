@@ -465,6 +465,49 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  @Config(minSdk = TIRAMISU)
+  public void getAudioDevicesForAttributes_returnsEmptyListByDefault() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+
+    assertThat(audioManager.getAudioDevicesForAttributes(movieAttribute)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setAudioDevicesForAttributes_updatesAudioDevicesForAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    ImmutableList<AudioDeviceInfo> newDevices =
+        ImmutableList.of(
+            AudioDeviceInfoBuilder.newBuilder()
+                .setType(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+                .build());
+
+    shadowOf(audioManager).setAudioDevicesForAttributes(movieAttribute, newDevices);
+
+    assertThat(audioManager.getAudioDevicesForAttributes(movieAttribute)).isEqualTo(newDevices);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setAudioDevicesForAttributes_returnsEmptyListForOtherAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    AudioAttributes otherAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
+    ImmutableList<AudioDeviceInfo> newDevices =
+        ImmutableList.of(
+            AudioDeviceInfoBuilder.newBuilder()
+                .setType(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+                .build());
+
+    shadowOf(audioManager).setAudioDevicesForAttributes(movieAttribute, newDevices);
+
+    assertThat(audioManager.getAudioDevicesForAttributes(otherAttribute)).isEmpty();
+  }
+
+  @Test
   @Config(minSdk = M)
   public void registerAudioDeviceCallback_availableDevices_onAudioDevicesAddedCallback()
       throws Exception {

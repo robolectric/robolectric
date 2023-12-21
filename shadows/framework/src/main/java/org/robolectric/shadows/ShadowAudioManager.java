@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -100,6 +101,8 @@ public class ShadowAudioManager {
   private int audioSessionIdCounter = 1;
   private final Map<AudioAttributes, ImmutableList<Object>> devicesForAttributes = new HashMap<>();
   private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
+  private final Map<AudioAttributes, ImmutableList<AudioDeviceInfo>> audioDevicesForAttributes =
+      new HashMap<>();
   private List<AudioDeviceInfo> inputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
@@ -449,6 +452,27 @@ public class ShadowAudioManager {
   /** Sets the devices to use as default for all audio streams. */
   public void setDefaultDevicesForAttributes(@NonNull ImmutableList<Object> devices) {
     defaultDevicesForAttributes = devices;
+  }
+
+  /**
+   * Returns the audio devices that would be used for the routing of the given audio attributes.
+   *
+   * <p>Devices can be added with {@link #setAudioDevicesForAttributes}. Note that {@link
+   * #setDevicesForAttributes} and {@link #setDefaultDevicesForAttributes} have no effect on the
+   * return value of this method.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  @NonNull
+  protected List<AudioDeviceInfo> getAudioDevicesForAttributes(
+      @NonNull AudioAttributes attributes) {
+    ImmutableList<AudioDeviceInfo> devices = audioDevicesForAttributes.get(attributes);
+    return devices == null ? ImmutableList.of() : devices;
+  }
+
+  /** Sets the audio devices returned from {@link #getAudioDevicesForAttributes}. */
+  public void setAudioDevicesForAttributes(
+      @NonNull AudioAttributes attributes, @NonNull ImmutableList<AudioDeviceInfo> devices) {
+    audioDevicesForAttributes.put(attributes, devices);
   }
 
   /**
