@@ -94,6 +94,11 @@ public class ShadowImpl implements IShadow {
   }
 
   @Override
+  public String directNativeMethodName(String className, String methodName) {
+    return ShadowConstants.ROBO_PREFIX + methodName + "$nativeBinding";
+  }
+
+  @Override
   public void directInitialize(Class<?> clazz) {
     try {
       RobolectricInternals.performStaticInitialization(clazz);

@@ -61,8 +61,17 @@ public class ClassInstrumentor {
 
     MethodType bootstrap =
         methodType(CallSite.class, MethodHandles.Lookup.class, String.class, MethodType.class);
+
+    /*
+     * There is an additional int.class argument to the invokedynamic bootstrap method. This conveys
+     * whether or not the method invocation represents a native method. A one means the original
+     * method was a native method, and a zero means it was not. It should be boolean.class, but
+     * that is nt possible due to https://bugs.java.com/bugdatabase/view_bug?bug_id=JDK-8322510.
+     */
     String bootstrapMethod =
-        bootstrap.appendParameterTypes(MethodHandle.class).toMethodDescriptorString();
+        bootstrap
+            .appendParameterTypes(MethodHandle.class, /* isNative */ int.class)
+            .toMethodDescriptorString();
     String bootstrapIntrinsic =
         bootstrap.appendParameterTypes(String.class).toMethodDescriptorString();
 
@@ -397,7 +406,7 @@ public class ClassInstrumentor {
     generator.loadThis();
     generator.invokeVirtual(mutableClass.classType, new Method(ROBO_INIT_METHOD_NAME, "()V"));
     generateClassHandlerCall(
-        mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator);
+        mutableClass, method, ShadowConstants.CONSTRUCTOR_METHOD_NAME, generator, false);
 
     generator.endMethod();
 
@@ -526,7 +535,7 @@ public class ClassInstrumentor {
     makeMethodPrivate(method);
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(delegatorMethodNode);
-    generateClassHandlerCall(mutableClass, method, originalName, generator);
+    generateClassHandlerCall(mutableClass, method, originalName, generator, isNativeMethod);
     generator.endMethod();
     mutableClass.addMethod(delegatorMethodNode);
   }
@@ -537,6 +546,22 @@ public class ClassInstrumentor {
    * @param method Method to be instrumented, must be native
    */
   protected void instrumentNativeMethod(MutableClass mutableClass, MethodNode method) {
+
+    String nativeBindingMethodName =
+        SHADOW_IMPL.directNativeMethodName(mutableClass.getName(), method.name);
+
+    // Generate native binding method
+    MethodNode nativeBindingMethod =
+        new MethodNode(
+            Opcodes.ASM4,
+            nativeBindingMethodName,
+            method.desc,
+            method.signature,
+            exceptionArray(method));
+    nativeBindingMethod.access = method.access | Opcodes.ACC_SYNTHETIC;
+    makeMethodPrivate(nativeBindingMethod);
+    mutableClass.addMethod(nativeBindingMethod);
+
     method.access = method.access & ~Opcodes.ACC_NATIVE;
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
@@ -719,7 +744,8 @@ public class ClassInstrumentor {
       MutableClass mutableClass,
       MethodNode originalMethod,
       String originalMethodName,
-      RobolectricGeneratorAdapter generator) {
+      RobolectricGeneratorAdapter generator,
+      boolean isNativeMethod) {
     Handle original =
         new Handle(
             getTag(originalMethod),
@@ -730,12 +756,13 @@ public class ClassInstrumentor {
 
     if (generator.isStatic()) {
       generator.loadArgs();
-      generator.invokeDynamic(originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original);
+      generator.invokeDynamic(
+          originalMethodName, originalMethod.desc, BOOTSTRAP_STATIC, original, isNativeMethod);
     } else {
       String desc = "(" + mutableClass.classType.getDescriptor() + originalMethod.desc.substring(1);
       generator.loadThis();
       generator.loadArgs();
-      generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original);
+      generator.invokeDynamic(originalMethodName, desc, BOOTSTRAP, original, isNativeMethod);
     }
 
     generator.returnValue();

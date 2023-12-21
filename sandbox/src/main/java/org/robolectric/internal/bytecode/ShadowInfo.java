@@ -11,6 +11,8 @@ public class ShadowInfo {
   public final String shadowedClassName;
   public final String shadowClassName;
   public final boolean callThroughByDefault;
+  public final boolean callNativeMethodsByDefault;
+
   public final boolean looseSignatures;
   private final int minSdk;
   private final int maxSdk;
@@ -20,6 +22,7 @@ public class ShadowInfo {
       String shadowedClassName,
       String shadowClassName,
       boolean callThroughByDefault,
+      boolean callNativeMethodsByDefault,
       boolean looseSignatures,
       int minSdk,
       int maxSdk,
@@ -27,6 +30,7 @@ public class ShadowInfo {
     this.shadowedClassName = shadowedClassName;
     this.shadowClassName = shadowClassName;
     this.callThroughByDefault = callThroughByDefault;
+    this.callNativeMethodsByDefault = callNativeMethodsByDefault;
     this.looseSignatures = looseSignatures;
     this.minSdk = minSdk;
     this.maxSdk = maxSdk;
@@ -37,9 +41,11 @@ public class ShadowInfo {
   }
 
   ShadowInfo(String shadowedClassName, String shadowClassName, Implements annotation) {
-    this(shadowedClassName,
+    this(
+        shadowedClassName,
         shadowClassName,
         annotation.callThroughByDefault(),
+        annotation.callNativeMethodsByDefault(),
         annotation.looseSignatures(),
         annotation.minSdk(),
         annotation.maxSdk(),

@@ -124,6 +124,22 @@ public class ClassInstrumentorTest {
     assertThat(methodNode.instructions.get(1).getOpcode()).isEqualTo(Opcodes.IRETURN);
   }
 
+  @Test
+  public void instrumentNativeMethod_generatesNativeBindingMethod() {
+    ClassNode classNode = createClassWithNativeMethod();
+    MutableClass clazz =
+        new MutableClass(
+            classNode, InstrumentationConfiguration.newBuilder().build(), classNodeProvider);
+    instrumentor.instrument(clazz);
+
+    String nativeMethodName = Shadow.directNativeMethodName("org.example.MyClass", "someFunction");
+    MethodNode methodNode = findMethodNode(classNode, nativeMethodName);
+
+    assertThat(methodNode.access & Opcodes.ACC_NATIVE).isNotEqualTo(0);
+    assertThat(methodNode.access & Opcodes.ACC_PRIVATE).isNotEqualTo(0);
+    assertThat(methodNode.access & Opcodes.ACC_SYNTHETIC).isNotEqualTo(0);
+  }
+
   private static ClassNode createClassWithNativeMethod() {
     ClassNode classNode = new ClassNode();
     classNode.name = "org/example/MyClass";

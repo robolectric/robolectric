@@ -41,5 +41,7 @@ public interface IShadow {
 
   String directMethodName(String className, String methodName);
 
+  String directNativeMethodName(String className, String methodName);
+
   void directInitialize(Class<?> clazz);
 }

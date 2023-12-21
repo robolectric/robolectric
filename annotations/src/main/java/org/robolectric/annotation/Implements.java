@@ -68,6 +68,17 @@ public @interface Implements {
   Class<? extends ShadowPicker<?>> shadowPicker() default DefaultShadowPicker.class;
 
   /**
+   * If set to true, Robolectric will invoke the native method variant instead of the no-op variant.
+   * This requires the native method to be bound, or an {@link UnsatisfiedLinkError} will occur.
+   *
+   * <p>{@link Implements#callNativeMethodsByDefault()} has precedence over {@link *
+   * Implements#callThroughByDefault()} For instance, if both {@link
+   * Implements#callNativeMethodsByDefault()} and {@link Implements#callThroughByDefault()} are
+   * true, the native method variant will be preferred over the no-op native variant.
+   */
+  boolean callNativeMethodsByDefault() default false;
+
+  /**
    * An interface used as the default for the {@code picker} param. Indicates that no custom {@link
    * ShadowPicker} is being used.
    */
