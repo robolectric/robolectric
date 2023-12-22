@@ -86,6 +86,9 @@ mockito = "4.11.0"
 # https://github.com/mockk/mockk/releases
 mockk = "1.13.7"
 
+# https://github.com/takahirom/roborazzi/releases
+roborazzi = "1.9.0-alpha-3"
+
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.12.0"
 
@@ -201,6 +204,10 @@ truth-java8-extension = { module = "com.google.truth.extensions:truth-java8-exte
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
+roborazzi-gradle = { module = "io.github.takahirom.roborazzi:roborazzi-gradle-plugin", version.ref = "roborazzi" }
 
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }

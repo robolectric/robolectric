@@ -65,7 +65,8 @@ jobs:
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
           -Dorg.gradle.workers.max=2 \
-          -x :integration_tests:nativegraphics:test
+          -x :integration_tests:nativegraphics:test \
+          -x :integration_tests:roborazzi:test
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v3

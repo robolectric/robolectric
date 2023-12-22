@@ -34,7 +34,9 @@ jobs:
 
       - name: Run unit tests
         run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew :integration_tests:nativegraphics:testDebugUnitTest \
+          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew \
+          :integration_tests:nativegraphics:testDebugUnitTest \
+          :integration_tests:roborazzi:verifyRoborazziDebug \
           --info --stacktrace --continue \
           --parallel \
           --no-watch-fs \
@@ -46,5 +48,8 @@ jobs:
         if: always()
         with:
           name: test_results
-          path: '**/build/test-results/**/TEST-*.xml'
-
+          path: |
+            '**/build/test-results/**/TEST-*.xml'
+            '**/roborazzi/build/reports/*'
+            '**/roborazzi/src/screenshots/*'
+            '**/roborazzi/build/outputs/roborazzi/*'
