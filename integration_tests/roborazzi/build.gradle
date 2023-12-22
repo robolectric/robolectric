@@ -1,0 +1,60 @@
+import org.robolectric.gradle.AndroidProjectConfigPlugin
+
+apply plugin: 'com.android.library'
+apply plugin: AndroidProjectConfigPlugin
+apply plugin: 'kotlin-android'
+apply plugin: "com.diffplug.spotless"
+apply plugin: "io.github.takahirom.roborazzi"
+
+spotless {
+    kotlin {
+        target '**/*.kt'
+        ktfmt('0.42').googleStyle()
+    }
+}
+
+android {
+    compileSdk 34
+    namespace 'org.robolectric.integration.roborazzi'
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 34
+    }
+
+
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            all {
+                // For Roborazzi users, please use Roborazzi plugin and gradle.properties instead of this.
+                // https://takahirom.github.io/roborazzi/how-to-use.html#roborazzi-gradle-properties-options
+
+                // Change naming strategy of screenshots.
+                // org.robolectric.....RoborazziCaptureTest.checkDialogRendering.png -> RoborazziCaptureTest.checkDialogRendering.png
+                systemProperty 'roborazzi.record.namingStrategy', 'testClassAndMethod'
+
+                // Use RoborazziRule's base path when you use captureRoboImage(path).
+                systemProperty 'roborazzi.record.filePathStrategy', 'relativePathFromRoborazziContextOutputDirectory'
+            }
+        }
+    }
+}
+
+dependencies {
+    api project(":robolectric")
+    testImplementation libs.androidx.test.core
+    testImplementation libs.junit4
+    testImplementation libs.truth
+    testImplementation libs.roborazzi
+    testImplementation libs.roborazzi.rule
+}
