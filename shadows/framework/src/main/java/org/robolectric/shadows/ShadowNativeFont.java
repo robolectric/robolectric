@@ -223,6 +223,12 @@ public class ShadowNativeFont {
       return assetToBuffer(am, path, isAsset, cookie);
     }
 
+    /** RNG does not support native assets */
+    @Implementation(minSdk = Q, maxSdk = Q)
+    protected static long nGetReleaseNativeAssetFunc() {
+      return 0;
+    }
+
     @ForType(Font.Builder.class)
     interface FontBuilderReflector {
       @Accessor("mBuffer")
