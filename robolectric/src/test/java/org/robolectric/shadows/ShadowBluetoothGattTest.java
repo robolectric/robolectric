@@ -532,6 +532,98 @@ public class ShadowBluetoothGattTest {
   }
 
   @Test
+  @Config
+  public void writeIncomingCharacteristic_updated_withoutCallback() {
+    service1.addCharacteristic(characteristicWithWriteProperties);
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            shadowOf(bluetoothGatt).writeIncomingCharacteristic(characteristicWithWriteProperties));
+  }
+
+  @Test
+  @Config
+  public void writeIncomingCharacteristic_updated_withCallbackOnly() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    assertThat(
+            shadowOf(bluetoothGatt).writeIncomingCharacteristic(characteristicWithWriteProperties))
+        .isFalse();
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultCharacteristic).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isNull();
+  }
+
+  @Test
+  @Config
+  public void writeIncomingCharacteristic_updated_correctlySetup() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    characteristicWithWriteProperties.setValue(CHARACTERISTIC_VALUE);
+    service2.addCharacteristic(characteristicWithWriteProperties);
+    assertThat(characteristicWithWriteProperties.getService()).isNotNull();
+    assertThat(
+            shadowOf(bluetoothGatt).writeIncomingCharacteristic(characteristicWithWriteProperties))
+        .isTrue();
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_WRITE);
+    assertThat(resultCharacteristic).isEqualTo(characteristicWithWriteProperties);
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isEqualTo(CHARACTERISTIC_VALUE);
+  }
+
+  @Test
+  @Config
+  public void writeIncomingCharacteristic_updated_withCallbackAndServiceSet_wrongProperty() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristicWithReadProperty);
+    assertThat(characteristicWithReadProperty.getService()).isNotNull();
+
+    assertThat(shadowOf(bluetoothGatt).writeIncomingCharacteristic(characteristicWithReadProperty))
+        .isFalse();
+    assertThat(resultStatus).isEqualTo(INITIAL_VALUE);
+    assertThat(resultAction).isNull();
+    assertThat(resultCharacteristic).isNull();
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isNull();
+  }
+
+  @Test
+  @Config
+  public void writeIncomingCharacteristic_updated_onlyWriteProperty() {
+    BluetoothGattCharacteristic characteristic =
+        new BluetoothGattCharacteristic(
+            UUID.fromString("00000000-0000-0000-0000-0000000000A6"),
+            BluetoothGattCharacteristic.PROPERTY_WRITE,
+            BluetoothGattCharacteristic.PERMISSION_WRITE);
+
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristic);
+    characteristic.setValue(CHARACTERISTIC_VALUE);
+    assertThat(shadowOf(bluetoothGatt).writeIncomingCharacteristic(characteristic)).isTrue();
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_WRITE);
+    assertThat(resultCharacteristic).isEqualTo(characteristic);
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isEqualTo(CHARACTERISTIC_VALUE);
+  }
+
+  @Test
+  @Config
+  public void writeIncomingCharacteristic_updated_onlyWriteNoResponseProperty() {
+    BluetoothGattCharacteristic characteristic =
+        new BluetoothGattCharacteristic(
+            UUID.fromString("00000000-0000-0000-0000-0000000000A7"),
+            BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
+            BluetoothGattCharacteristic.PERMISSION_WRITE);
+
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+    service1.addCharacteristic(characteristic);
+    characteristic.setValue(CHARACTERISTIC_VALUE);
+    assertThat(shadowOf(bluetoothGatt).writeIncomingCharacteristic(characteristic)).isTrue();
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultAction).isEqualTo(ACTION_WRITE);
+    assertThat(resultCharacteristic).isEqualTo(characteristic);
+    assertThat(shadowOf(bluetoothGatt).getLatestWrittenBytes()).isEqualTo(CHARACTERISTIC_VALUE);
+  }
+
+  @Test
   public void test_getBluetoothConnectionManager() {
     assertThat(shadowOf(bluetoothGatt).getBluetoothConnectionManager()).isNotNull();
   }
