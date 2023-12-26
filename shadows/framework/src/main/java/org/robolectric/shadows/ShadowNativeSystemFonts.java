@@ -53,7 +53,8 @@ public class ShadowNativeSystemFonts {
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
     Preconditions.checkNotNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
-    Preconditions.checkState(fontDir.endsWith("/"), "Fonts directory must end with a slash");
+    Preconditions.checkState(
+        fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
     return reflector(SystemFontsReflector.class)
         .getSystemFontConfigInternal(
             fontDir + "fonts.xml",
@@ -78,7 +79,8 @@ public class ShadowNativeSystemFonts {
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
     Preconditions.checkNotNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
-    Preconditions.checkState(fontDir.endsWith("/"), "Fonts directory must end with a slash");
+    Preconditions.checkState(
+        fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
     return reflector(SystemFontsReflector.class)
         .buildSystemFallback(
             fontDir + "fonts.xml", fontDir, oemCustomization, fallbackMap, availableFonts);
