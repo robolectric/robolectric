@@ -2,9 +2,11 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothCodecConfig;
+import android.bluetooth.BluetoothCodecStatus;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
@@ -22,6 +24,9 @@ import org.robolectric.annotation.Implements;
 @Implements(BluetoothA2dp.class)
 public class ShadowBluetoothA2dp {
   private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();
+  private final Map<BluetoothDevice, BluetoothCodecStatus> codecStatusMap = new HashMap<>();
+  private final Map<BluetoothDevice, BluetoothCodecConfig> codecConfigPreferenceMap =
+      new HashMap<>();
   private int dynamicBufferSupportType = BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_NONE;
   private final int[] bufferLengthMillisArray = new int[6];
   private BluetoothDevice activeBluetoothDevice;
@@ -128,5 +133,26 @@ public class ShadowBluetoothA2dp {
     intent.putExtra(BluetoothDevice.EXTRA_DEVICE, activeBluetoothDevice);
     RuntimeEnvironment.getApplication().sendBroadcast(intent);
     return true;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  @Nullable
+  protected BluetoothCodecStatus getCodecStatus(BluetoothDevice device) {
+    return codecStatusMap.get(device);
+  }
+
+  public void setCodecStatus(BluetoothDevice device, BluetoothCodecStatus codecStatus) {
+    codecStatusMap.put(device, codecStatus);
+  }
+
+  @Nullable
+  public BluetoothCodecConfig getCodecConfigPreference(BluetoothDevice device) {
+    return codecConfigPreferenceMap.get(device);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void setCodecConfigPreference(
+      BluetoothDevice device, BluetoothCodecConfig codecConfig) {
+    codecConfigPreferenceMap.put(device, codecConfig);
   }
 }
