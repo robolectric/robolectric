@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
@@ -8,7 +9,9 @@ import static org.robolectric.Shadows.shadowOf;
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.os.Build;
+import androidx.test.core.content.pm.PackageInfoBuilder;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,25 +28,25 @@ public final class ShadowRoleManagerTest {
     roleManager = (RoleManager) getApplication().getSystemService(Context.ROLE_SERVICE);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void isRoleHeld_shouldThrowWithNullArgument() {
-    shadowOf(roleManager).isRoleHeld(null);
+    assertThrows(IllegalArgumentException.class, () -> shadowOf(roleManager).isRoleHeld(null));
   }
 
-  @Test()
+  @Test
   public void addHeldRole_isPresentInIsRoleHeld() {
     shadowOf(roleManager).addHeldRole(RoleManager.ROLE_SMS);
     assertThat(roleManager.isRoleHeld(RoleManager.ROLE_SMS)).isTrue();
   }
 
-  @Test()
+  @Test
   public void removeHeldRole_notPresentInIsRoleHeld() {
     shadowOf(roleManager).addHeldRole(RoleManager.ROLE_SMS);
     shadowOf(roleManager).removeHeldRole(RoleManager.ROLE_SMS);
     assertThat(roleManager.isRoleHeld(RoleManager.ROLE_SMS)).isFalse();
   }
 
-  @Test()
+  @Test
   public void isRoleHeld_noValueByDefault() {
     assertThat(roleManager.isRoleHeld(RoleManager.ROLE_SMS)).isFalse();
   }
@@ -53,26 +56,75 @@ public final class ShadowRoleManagerTest {
     assertThrows(IllegalArgumentException.class, () -> shadowOf(roleManager).isRoleAvailable(null));
   }
 
-  @Test()
+  @Test
   public void addAvailableRole_isPresentInIsRoleAvailable() {
-    shadowOf(roleManager).addAvailableRole(RoleManager.ROLE_SMS);
-    assertThat(roleManager.isRoleAvailable(RoleManager.ROLE_SMS)).isTrue();
+    shadowOf(roleManager).addAvailableRole("some.weird.role");
+    assertThat(roleManager.isRoleAvailable("some.weird.role")).isTrue();
   }
 
-  @Test()
+  @Test
   public void addAvailableRole_shouldThrowWithEmptyArgument() {
     assertThrows(IllegalArgumentException.class, () -> shadowOf(roleManager).addAvailableRole(""));
   }
 
-  @Test()
+  @Test
   public void removeAvailableRole_notPresentInIsRoleAvailable() {
     shadowOf(roleManager).addAvailableRole(RoleManager.ROLE_SMS);
     shadowOf(roleManager).removeAvailableRole(RoleManager.ROLE_SMS);
     assertThat(roleManager.isRoleAvailable(RoleManager.ROLE_SMS)).isFalse();
   }
 
-  @Test()
-  public void isRoleAvailable_noValueByDefault() {
-    assertThat(roleManager.isRoleAvailable(RoleManager.ROLE_SMS)).isFalse();
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getDefaultApplication_shouldReturnRoleOwner() {
+    shadowOf(roleManager).addHeldRole(RoleManager.ROLE_SMS);
+    assertThat(roleManager.getDefaultApplication(RoleManager.ROLE_SMS))
+        .isEqualTo(getApplication().getPackageName());
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void getDefaultApplication_shouldReturnPackageSet() {
+    shadowOf(roleManager).addAvailableRole(RoleManager.ROLE_SMS);
+    shadowOf(getApplication().getPackageManager())
+        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("test.app").build());
+    AtomicBoolean resultHolder = new AtomicBoolean(false);
+    shadowOf(roleManager)
+        .setDefaultApplication(
+            RoleManager.ROLE_SMS,
+            "test.app",
+            0,
+            directExecutor(),
+            result -> resultHolder.set(result));
+    assertThat(roleManager.getDefaultApplication(RoleManager.ROLE_SMS)).isEqualTo("test.app");
+    assertThat(resultHolder.get()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void setDefaultApplication_checksAppInstalled() {
+    AtomicBoolean resultHolder = new AtomicBoolean(true);
+    shadowOf(roleManager)
+        .setDefaultApplication(
+            RoleManager.ROLE_SMS,
+            "test.app",
+            0,
+            directExecutor(),
+            result -> resultHolder.set(result));
+    assertThat(resultHolder.get()).isFalse();
+    assertThat(roleManager.getDefaultApplication(RoleManager.ROLE_SMS)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public void setDefaultApplication_checksRoleAllowed() {
+    shadowOf(getApplication().getPackageManager())
+        .installPackage(PackageInfoBuilder.newBuilder().setPackageName("test.app").build());
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            shadowOf(roleManager)
+                .setDefaultApplication(
+                    "bogus.role", "test.app", 0, directExecutor(), result -> {}));
   }
 }
