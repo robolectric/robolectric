@@ -14,8 +14,10 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
+import org.robolectric.Robolectric.buildActivity
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows
 import org.robolectric.testapp.TestActivity
 
 @RunWith(RobolectricTestRunner::class)
@@ -40,8 +42,11 @@ class NormalCompatibilityTest {
   }
 
   @Test
-  fun `Initialize Activity succeed`() {
-    Robolectric.setupActivity(TestActivity::class.java)
+  fun `Initialize Activity and its shadow succeed`() {
+    buildActivity(TestActivity::class.java).use { controller ->
+      val activity = controller.setup().get()
+      Shadows.shadowOf(activity)
+    }
   }
 
   @Test
