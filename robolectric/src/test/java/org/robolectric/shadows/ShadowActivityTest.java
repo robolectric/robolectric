@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Looper.getMainLooper;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -50,6 +51,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build.VERSION_CODES;
@@ -1015,6 +1017,110 @@ public class ShadowActivityTest {
     Activity activity = Robolectric.setupActivity(Activity.class);
     activity.overridePendingTransition(15, 2);
     assertThat(shadowOf(activity).getPendingTransitionExitAnimationResourceId()).isEqualTo(2);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getOverriddenActivityTransitionOpen_withoutBackgroundColor() {
+    try (ActivityController<Activity> controller = buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 15, 2);
+      ShadowActivity.OverriddenActivityTransition overriddenActivityTransition =
+          shadowOf(activity).getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN);
+
+      assertThat(overriddenActivityTransition).isNotNull();
+      assertThat(overriddenActivityTransition.enterAnim).isEqualTo(15);
+      assertThat(overriddenActivityTransition.exitAnim).isEqualTo(2);
+      assertThat(overriddenActivityTransition.backgroundColor).isEqualTo(Color.TRANSPARENT);
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getOverriddenActivityTransitionClose_withoutBackgroundColor() {
+    try (ActivityController<Activity> controller = buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 15, 2);
+      ShadowActivity.OverriddenActivityTransition overriddenActivityTransition =
+          shadowActivity.getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE);
+
+      assertThat(overriddenActivityTransition).isNotNull();
+      assertThat(overriddenActivityTransition.enterAnim).isEqualTo(15);
+      assertThat(overriddenActivityTransition.exitAnim).isEqualTo(2);
+      assertThat(overriddenActivityTransition.backgroundColor).isEqualTo(Color.TRANSPARENT);
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getOverriddenActivityTransitionOpen_withBackgroundColor() {
+    try (ActivityController<Activity> controller = buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 33, 12, Color.RED);
+      ShadowActivity.OverriddenActivityTransition overriddenActivityTransition =
+          shadowOf(activity).getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN);
+
+      assertThat(overriddenActivityTransition).isNotNull();
+      assertThat(overriddenActivityTransition.enterAnim).isEqualTo(33);
+      assertThat(overriddenActivityTransition.exitAnim).isEqualTo(12);
+      assertThat(overriddenActivityTransition.backgroundColor).isEqualTo(Color.RED);
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getOverriddenActivityTransitionClose_withBackgroundColor() {
+    try (ActivityController<Activity> controller = buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 33, 12, Color.RED);
+      ShadowActivity.OverriddenActivityTransition overriddenActivityTransition =
+          shadowActivity.getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE);
+
+      assertThat(overriddenActivityTransition).isNotNull();
+      assertThat(overriddenActivityTransition.enterAnim).isEqualTo(33);
+      assertThat(overriddenActivityTransition.exitAnim).isEqualTo(12);
+      assertThat(overriddenActivityTransition.backgroundColor).isEqualTo(Color.RED);
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getOverriddenActivityTransition_invalidType() {
+    try (ActivityController<Activity> controller = buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 33, 12, Color.RED);
+      ShadowActivity.OverriddenActivityTransition overriddenActivityTransition =
+          shadowOf(activity).getOverriddenActivityTransition(-1);
+      assertThat(overriddenActivityTransition).isNull();
+    }
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void getOverriddenActivityTransition_beforeOverridingOrAfterClearing() {
+    try (ActivityController<Activity> controller = buildActivity(Activity.class).setup()) {
+      Activity activity = controller.get();
+      ShadowActivity shadowActivity = shadowOf(activity);
+
+      assertThat(shadowActivity.getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN))
+          .isNull();
+
+      assertThat(shadowActivity.getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE))
+          .isNull();
+
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 12, 33);
+      activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 33, 12);
+      activity.clearOverrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN);
+      activity.clearOverrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE);
+
+      assertThat(shadowActivity.getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN))
+          .isNull();
+
+      assertThat(shadowActivity.getOverriddenActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE))
+          .isNull();
+    }
   }
 
   @Test

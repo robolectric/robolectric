@@ -9,8 +9,11 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.AnimRes;
+import android.annotation.ColorInt;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -32,6 +35,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -42,6 +46,7 @@ import android.os.Looper;
 import android.os.Parcel;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
+import android.util.SparseArray;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -89,6 +94,8 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   private Integer lastShownDialogId = null;
   private int pendingTransitionEnterAnimResId = -1;
   private int pendingTransitionExitAnimResId = -1;
+  private SparseArray<OverriddenActivityTransition> overriddenActivityTransitions =
+      new SparseArray<>();
   private Object lastNonConfigurationInstance;
   private Map<Integer, Dialog> dialogForId = new HashMap<>();
   private ArrayList<Cursor> managedCursors = new ArrayList<>();
@@ -571,6 +578,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return pendingTransitionExitAnimResId;
   }
 
+  @Nullable
+  @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+  public OverriddenActivityTransition getOverriddenActivityTransition(int overrideType) {
+    return overriddenActivityTransitions.get(overrideType, null);
+  }
+
   @Implementation
   protected boolean onCreateOptionsMenu(Menu menu) {
     optionsMenu = menu;
@@ -737,6 +750,27 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   protected void overridePendingTransition(int enterAnim, int exitAnim) {
     pendingTransitionEnterAnimResId = enterAnim;
     pendingTransitionExitAnimResId = exitAnim;
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void overrideActivityTransition(
+      int overrideType,
+      @AnimRes int enterAnim,
+      @AnimRes int exitAnim,
+      @ColorInt int backgroundColor) {
+    overriddenActivityTransitions.put(
+        overrideType, new OverriddenActivityTransition(enterAnim, exitAnim, backgroundColor));
+
+    reflector(DirectActivityReflector.class, realActivity)
+        .overrideActivityTransition(overrideType, enterAnim, exitAnim, backgroundColor);
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected void clearOverrideActivityTransition(int overrideType) {
+    overriddenActivityTransitions.remove(overrideType);
+
+    reflector(DirectActivityReflector.class, realActivity)
+        .clearOverrideActivityTransition(overrideType);
   }
 
   public Dialog getDialogById(int dialogId) {
@@ -916,6 +950,18 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         });
   }
 
+  public static class OverriddenActivityTransition {
+    @AnimRes public final int enterAnim;
+    @AnimRes public final int exitAnim;
+    @ColorInt public final int backgroundColor;
+
+    public OverriddenActivityTransition(int enterAnim, int exitAnim, int backgroundColor) {
+      this.enterAnim = enterAnim;
+      this.exitAnim = exitAnim;
+      this.backgroundColor = backgroundColor;
+    }
+  }
+
   /** Class to hold a permissions request, including its request code. */
   public static class PermissionsRequest {
     public final int requestCode;
@@ -986,6 +1032,11 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     void onDestroy();
 
     boolean isFinishing();
+
+    void overrideActivityTransition(
+        int overrideType, int enterAnim, int exitAnim, int backgroundColor);
+
+    void clearOverrideActivityTransition(int overrideType);
 
     Window getWindow();
 
