@@ -1,9 +1,11 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Application;
@@ -202,5 +204,59 @@ public class ShadowBluetoothA2dpTest {
 
     assertThat(shadowBluetoothA2dp.getCodecConfigPreference(connectedBluetoothDevice))
         .isEqualTo(codecConfig);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isOptionalCodecsEnabled_deviceIsNull_throwException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> bluetoothA2dp.isOptionalCodecsEnabled(/* device= */ null));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isOptionalCodecsEnabled_defaultUnknown() {
+    assertThat(bluetoothA2dp.isOptionalCodecsEnabled(connectedBluetoothDevice))
+        .isEqualTo(BluetoothA2dp.OPTIONAL_CODECS_PREF_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isOptionalCodecsEnabled_returnValueFromSetOptionalCodecsEnabled() {
+    bluetoothA2dp.setOptionalCodecsEnabled(
+        connectedBluetoothDevice, BluetoothA2dp.OPTIONAL_CODECS_PREF_ENABLED);
+
+    assertThat(shadowBluetoothA2dp.isOptionalCodecsEnabled(connectedBluetoothDevice))
+        .isEqualTo(BluetoothA2dp.OPTIONAL_CODECS_PREF_ENABLED);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void isOptionalCodecsEnabled_returnValueFromSetOptionalCodecsDisabled() {
+    bluetoothA2dp.setOptionalCodecsEnabled(
+        connectedBluetoothDevice, BluetoothA2dp.OPTIONAL_CODECS_PREF_DISABLED);
+
+    assertThat(shadowBluetoothA2dp.isOptionalCodecsEnabled(connectedBluetoothDevice))
+        .isEqualTo(BluetoothA2dp.OPTIONAL_CODECS_PREF_DISABLED);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setOptionalCodecsEnabled_invalidValue_ignore() {
+    bluetoothA2dp.setOptionalCodecsEnabled(connectedBluetoothDevice, 100);
+
+    assertThat(shadowBluetoothA2dp.isOptionalCodecsEnabled(connectedBluetoothDevice))
+        .isEqualTo(BluetoothA2dp.OPTIONAL_CODECS_PREF_UNKNOWN);
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setOptionalCodecsEnabled_deviceIsNull_throwException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothA2dp.setOptionalCodecsEnabled(
+                /* device= */ null, BluetoothA2dp.OPTIONAL_CODECS_PREF_DISABLED));
   }
 }
