@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import android.os.Build.VERSION_CODES;
 import android.safetycenter.SafetyCenterManager;
@@ -10,6 +11,7 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
@@ -384,5 +386,108 @@ public final class ShadowSafetyCenterManagerTest {
         .isSameInstanceAs(errorDetails1);
     assertThat(shadowSafetyCenterManager.getLastSafetySourceError("id2"))
         .isSameInstanceAs(errorDetails2);
+  }
+
+  @Test
+  public void throwOnSafetySourceId_safetyCenterDisabled_doesntThrowForAllIds() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+
+    shadowSafetyCenterManager.throwOnSafetySourceId("id");
+
+    shadowSafetyCenterManager.setSafetyCenterEnabled(false);
+    safetyCenterManager.setSafetySourceData(
+        "id",
+        new SafetySourceData.Builder().build(),
+        new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+            .setRefreshBroadcastId("id")
+            .build());
+    SafetySourceData unused = safetyCenterManager.getSafetySourceData("id");
+    safetyCenterManager.reportSafetySourceError(
+        "id",
+        new SafetySourceErrorDetails(
+            new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+                .setRefreshBroadcastId("id")
+                .build()));
+  }
+
+  @Test
+  public void throwOnSafetySourceId_safetyCenterEnabled_doesntThrowForOtherIds() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+
+    shadowSafetyCenterManager.throwOnSafetySourceId("unrelated_id");
+
+    shadowSafetyCenterManager.setSafetyCenterEnabled(true);
+    safetyCenterManager.setSafetySourceData(
+        "id",
+        new SafetySourceData.Builder().build(),
+        new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+            .setRefreshBroadcastId("id")
+            .build());
+    SafetySourceData unused = safetyCenterManager.getSafetySourceData("id");
+    safetyCenterManager.reportSafetySourceError(
+        "id",
+        new SafetySourceErrorDetails(
+            new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+                .setRefreshBroadcastId("id")
+                .build()));
+  }
+
+  @Test
+  public void throwOnSafetySourceId_safetyCenterEnabled_throwsForGivenIds() {
+    SafetyCenterManager safetyCenterManager =
+        getApplicationContext().getSystemService(SafetyCenterManager.class);
+    ShadowSafetyCenterManager shadowSafetyCenterManager =
+        Shadow.extract(getApplicationContext().getSystemService(SafetyCenterManager.class));
+
+    shadowSafetyCenterManager.throwOnSafetySourceId("id1");
+    shadowSafetyCenterManager.throwOnSafetySourceId("id2");
+
+    shadowSafetyCenterManager.setSafetyCenterEnabled(true);
+    assertThrowsIllegalArgumentExceptionForSource(
+        "id1",
+        new ThrowingRunnable() {
+          @Override
+          public void run() {
+            safetyCenterManager.setSafetySourceData(
+                "id1",
+                new SafetySourceData.Builder().build(),
+                new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+                    .setRefreshBroadcastId("id")
+                    .build());
+          }
+        });
+    assertThrowsIllegalArgumentExceptionForSource(
+        "id2",
+        new ThrowingRunnable() {
+          @Override
+          public void run() {
+            SafetySourceData unused = safetyCenterManager.getSafetySourceData("id2");
+          }
+        });
+    assertThrowsIllegalArgumentExceptionForSource(
+        "id1",
+        new ThrowingRunnable() {
+          @Override
+          public void run() {
+            safetyCenterManager.reportSafetySourceError(
+                "id1",
+                new SafetySourceErrorDetails(
+                    new SafetyEvent.Builder(SafetyEvent.SAFETY_EVENT_TYPE_REFRESH_REQUESTED)
+                        .setRefreshBroadcastId("id")
+                        .build()));
+          }
+        });
+  }
+
+  private static void assertThrowsIllegalArgumentExceptionForSource(
+      String safetySourceId, ThrowingRunnable runnable) {
+    IllegalArgumentException e = assertThrows(IllegalArgumentException.class, runnable);
+    assertThat(e).hasMessageThat().contains(safetySourceId);
   }
 }
