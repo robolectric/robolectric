@@ -106,6 +106,10 @@ public class AndroidConfigurer {
     // Instrumenting these classes causes a weird failure.
     builder.doNotInstrumentClass("android.R").doNotInstrumentClass("android.R$styleable");
 
+    // Instrumenting this Exceptions causes "java.lang.NegativeArraySizeException: -2" and
+    // leads to java.lang.NoClassDefFoundError.
+    builder.doNotInstrumentClass("android.app.RecoverableSecurityException");
+
     builder
         .addInstrumentedPackage("dalvik.")
         .addInstrumentedPackage("libcore.")

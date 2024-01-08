@@ -43,9 +43,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -486,6 +488,78 @@ public class ShadowNativeBitmapFactoryTest {
     assertEquals(START_WIDTH, b.getWidth());
     // Test if no bitmap
     assertNull(BitmapFactory.decodeFileDescriptor(input, r, opt2));
+  }
+
+  @Test
+  public void testDecodeFileDescriptor2() throws IOException {
+    ParcelFileDescriptor pfd = obtainParcelDescriptor(obtainPath());
+    FileDescriptor input = pfd.getFileDescriptor();
+    Bitmap b = BitmapFactory.decodeFileDescriptor(input);
+
+    assertNotNull(b);
+    // Test the bitmap size
+    assertEquals(START_HEIGHT, b.getHeight());
+    assertEquals(START_WIDTH, b.getWidth());
+  }
+
+  @Test
+  public void testDecodeFileDescriptor3() throws IOException {
+    for (TestImage testImage : testImages()) {
+      // Arbitrary offsets to use. If the offset of the FD matches the offset of the image,
+      // decoding should succeed, but if they do not match, decoding should fail.
+      final long[] actualOffsets = new long[] {0, 17};
+      for (int j = 0; j < actualOffsets.length; ++j) {
+        long actualOffset = actualOffsets[j];
+        String path = obtainPath(testImage.id, actualOffset);
+        RandomAccessFile file = new RandomAccessFile(path, "r");
+        FileDescriptor fd = file.getFD();
+        assertTrue(fd.valid());
+
+        // Set the offset to ACTUAL_OFFSET
+        file.seek(actualOffset);
+        assertEquals(file.getFilePointer(), actualOffset);
+
+        // Now decode. This should be successful and leave the offset
+        // unchanged.
+        Bitmap b = BitmapFactory.decodeFileDescriptor(fd);
+        assertNotNull(b);
+        assertEquals(file.getFilePointer(), actualOffset);
+
+        // Now use the other offset. It should fail to decode, and
+        // the offset should remain unchanged.
+        long otherOffset = actualOffsets[(j + 1) % actualOffsets.length];
+        assertFalse(otherOffset == actualOffset);
+        file.seek(otherOffset);
+        assertEquals(file.getFilePointer(), otherOffset);
+
+        b = BitmapFactory.decodeFileDescriptor(fd);
+        assertNull(b);
+        assertEquals(file.getFilePointer(), otherOffset);
+      }
+    }
+  }
+
+  @Test
+  public void testDecodeFileDescriptor_seekPositionUnchanged() throws IOException {
+    int numEmptyBytes = 25;
+    // Create a file that contains 25 empty bytes as well as the image contents of R.drawable.start
+    File imageFile = obtainFile(R.drawable.start, numEmptyBytes);
+    FileInputStream fis = new FileInputStream(imageFile.getAbsoluteFile());
+
+    // Set the seek position to the start of the image data
+    assertThat(fis.skip(numEmptyBytes)).isEqualTo(numEmptyBytes);
+    Rect r = new Rect(1, 1, 1, 1);
+    int bytesAvailable = fis.available();
+    Bitmap b = BitmapFactory.decodeFileDescriptor(fis.getFD(), r, opt1);
+    assertThat(b).isNotNull();
+
+    // Check that the seek position hasn't changed
+    assertThat(fis.available()).isEqualTo(bytesAvailable);
+
+    // Test the bitmap size
+    assertEquals(START_HEIGHT, b.getHeight());
+    assertEquals(START_WIDTH, b.getWidth());
+    fis.close();
   }
 
   private byte[] obtainArray() {

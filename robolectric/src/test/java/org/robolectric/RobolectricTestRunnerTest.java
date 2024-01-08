@@ -43,7 +43,6 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
 import org.junit.runners.model.FrameworkMethod;
-import org.robolectric.RobolectricTestRunner.ResModeStrategy;
 import org.robolectric.RobolectricTestRunner.RobolectricFrameworkMethod;
 import org.robolectric.android.internal.AndroidTestEnvironment;
 import org.robolectric.annotation.Config;
@@ -217,8 +216,7 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.LEGACY,
-            ResModeStrategy.legacy,
+            ResourcesMode.BINARY,
             false);
     RobolectricFrameworkMethod rfm17 =
         new RobolectricFrameworkMethod(
@@ -226,8 +224,7 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(17),
             mock(Configuration.class),
-            ResourcesMode.LEGACY,
-            ResModeStrategy.legacy,
+            ResourcesMode.BINARY,
             false);
     RobolectricFrameworkMethod rfm16b =
         new RobolectricFrameworkMethod(
@@ -235,22 +232,11 @@ public class RobolectricTestRunnerTest {
             mock(AndroidManifest.class),
             sdkCollection.getSdk(16),
             mock(Configuration.class),
-            ResourcesMode.LEGACY,
-            ResModeStrategy.legacy,
-            false);
-    RobolectricFrameworkMethod rfm16c =
-        new RobolectricFrameworkMethod(
-            method,
-            mock(AndroidManifest.class),
-            sdkCollection.getSdk(16),
-            mock(Configuration.class),
             ResourcesMode.BINARY,
-            ResModeStrategy.legacy,
             false);
 
     assertThat(rfm16).isNotEqualTo(rfm17);
     assertThat(rfm16).isEqualTo(rfm16b);
-    assertThat(rfm16).isNotEqualTo(rfm16c);
 
     assertThat(rfm16.hashCode()).isEqualTo(rfm16b.hashCode());
   }

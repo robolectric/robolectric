@@ -53,7 +53,6 @@ public class RuntimeEnvironment {
   private static Path androidFrameworkJar;
   public static Path compileTimeSystemResourcesFile;
 
-  private static boolean useLegacyResources;
   private static Supplier<Application> applicationSupplier;
   private static final Object supplierLock = new Object();
 
@@ -341,16 +340,6 @@ public class RuntimeEnvironment {
    */
   @Deprecated
   public static boolean useLegacyResources() {
-    return useLegacyResources;
-  }
-
-  /**
-   * Internal only.
-   *
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  public static void setUseLegacyResources(boolean useLegacyResources) {
-    RuntimeEnvironment.useLegacyResources = useLegacyResources;
+    return false;
   }
 }

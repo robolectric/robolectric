@@ -344,10 +344,12 @@ public class ShadowNativeHardwareRenderer {
     HardwareRendererNatives.nAllocateBuffers(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetForceDark(long nativeProxy, boolean enabled) {
     HardwareRendererNatives.nSetForceDark(nativeProxy, enabled);
   }
+
+  // TODO(brettchabot): add support for V nSetForceDark(long, int)
 
   @Implementation(minSdk = S)
   protected static void nSetDisplayDensityDpi(int densityDpi) {

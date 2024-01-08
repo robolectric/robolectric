@@ -99,7 +99,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
     Path icuPath = tempDirectory.create("icu");
     Path icuDatPath = tempDirectory.getBasePath().resolve("icu/icudt68l.dat");
     Resources.asByteSource(icuDatUrl).copyTo(Files.asByteSink(icuDatPath.toFile()));
-    System.setProperty("icu.dir", icuPath.toAbsolutePath().toString());
+    System.setProperty("icu.data.path", icuPath.toAbsolutePath().toString());
   }
 
   /**

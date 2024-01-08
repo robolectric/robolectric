@@ -37,6 +37,8 @@ public class ShadowDownloadManager {
   protected long enqueue(DownloadManager.Request request) {
     queueCounter++;
     requestMap.put(queueCounter, request);
+    ShadowRequest shadowRequest = Shadow.extract(request);
+    shadowRequest.setId(queueCounter);
     return queueCounter;
   }
 
@@ -141,6 +143,7 @@ public class ShadowDownloadManager {
     private int status;
     private long totalSize;
     private long bytesSoFar;
+    private long id;
 
     public int getStatus() {
       return this.status;
@@ -164,6 +167,14 @@ public class ShadowDownloadManager {
 
     public void setBytesSoFar(long bytesSoFar) {
       this.bytesSoFar = bytesSoFar;
+    }
+
+    public long getId() {
+      return this.id;
+    }
+
+    public void setId(long id) {
+      this.id = id;
     }
 
     public Uri getUri() {
@@ -264,6 +275,7 @@ public class ShadowDownloadManager {
     private static final int COLUMN_INDEX_TITLE = 6;
     private static final int COLUMN_INDEX_TOTAL_SIZE = 7;
     private static final int COLUMN_INDEX_BYTES_SO_FAR = 8;
+    private static final int COLUMN_INDEX_ID = 9;
 
     public List<DownloadManager.Request> requests = new ArrayList<>();
     private int positionIndex = -1;
@@ -322,6 +334,8 @@ public class ShadowDownloadManager {
         return COLUMN_INDEX_TOTAL_SIZE;
       } else if (DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR.equals(columnName)) {
         return COLUMN_INDEX_BYTES_SO_FAR;
+      } else if (DownloadManager.COLUMN_ID.equals(columnName)) {
+        return COLUMN_INDEX_ID;
       }
 
       return -1;
@@ -393,6 +407,8 @@ public class ShadowDownloadManager {
         return request.getTotalSize();
       } else if (columnIndex == COLUMN_INDEX_BYTES_SO_FAR) {
         return request.getBytesSoFar();
+      } else if (columnIndex == COLUMN_INDEX_ID) {
+        return request.getId();
       }
       return 0;
     }

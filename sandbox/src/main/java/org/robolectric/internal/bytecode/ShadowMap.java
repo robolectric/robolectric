@@ -69,7 +69,7 @@ public class ShadowMap {
   }
 
   public boolean hasShadowPicker(MutableClass mutableClass) {
-    return shadowPickers.containsKey(mutableClass.getName().replace('$', '.'));
+    return shadowPickers.containsKey(mutableClass.getName());
   }
 
   public ShadowInfo getShadowInfo(Class<?> clazz, ShadowMatcher shadowMatcher) {
@@ -264,10 +264,18 @@ public class ShadowMap {
         String realClassName,
         String shadowClassName,
         boolean callThroughByDefault,
+        boolean callNativeMethodsByDefault,
         boolean looseSignatures) {
       addShadowInfo(
           new ShadowInfo(
-              realClassName, shadowClassName, callThroughByDefault, looseSignatures, -1, -1, null));
+              realClassName,
+              shadowClassName,
+              callThroughByDefault,
+              callNativeMethodsByDefault,
+              looseSignatures,
+              -1,
+              -1,
+              null));
       return this;
     }
 

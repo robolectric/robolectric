@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.graphics.RenderNode;
 import android.graphics.RenderNode.PositionUpdateListener;
@@ -55,6 +56,11 @@ public class ShadowNativeRenderNode {
   @Implementation
   protected static void nEndAllAnimators(long renderNode) {
     RenderNodeNatives.nEndAllAnimators(renderNode);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected static void nForceEndAnimators(long renderNode) {
+    RenderNodeNatives.nForceEndAnimators(renderNode);
   }
 
   @Implementation(minSdk = S)
@@ -457,6 +463,14 @@ public class ShadowNativeRenderNode {
   @Implementation
   protected static long nGetUniqueId(long renderNode) {
     return RenderNodeNatives.nGetUniqueId(renderNode);
+  }
+
+  @Implementation(minSdk = Q, maxSdk = R)
+  protected static void nSetDisplayList(long renderNode, long newData) {
+    // No-op in Q and R
+    // In S and above, the functionality of nSetDisplayList is a part of
+    // RecordingCanvas.finishRecording (which gets called just prior to this). So this method is a
+    // no-op.
   }
 
   /** Shadow picker for {@link RenderNode}. */

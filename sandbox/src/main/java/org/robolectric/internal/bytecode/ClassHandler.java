@@ -69,7 +69,7 @@ public interface ClassHandler {
    * @see ShadowInvalidator for invalidating the returned {@link MethodHandle}
    */
   MethodHandle findShadowMethodHandle(
-      Class<?> theClass, String name, MethodType methodType, boolean isStatic)
+      Class<?> theClass, String name, MethodType methodType, boolean isStatic, boolean isNative)
       throws IllegalAccessException;
 
   /**

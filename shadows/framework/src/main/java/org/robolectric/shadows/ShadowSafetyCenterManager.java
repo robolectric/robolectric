@@ -7,8 +7,11 @@ import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
@@ -19,15 +22,28 @@ import org.robolectric.annotation.Implements;
     isInAndroidSdk = false)
 public class ShadowSafetyCenterManager {
 
+  private final Object lock = new Object();
+
+  @GuardedBy("lock")
   private final Map<String, SafetySourceData> dataById = new HashMap<>();
+
+  @GuardedBy("lock")
   private final Map<String, SafetyEvent> eventsById = new HashMap<>();
+
+  @GuardedBy("lock")
   private final Map<String, SafetySourceErrorDetails> errorsById = new HashMap<>();
 
+  @GuardedBy("lock")
+  private final Set<String> throwForId = new HashSet<>();
+
+  @GuardedBy("lock")
   private boolean enabled = false;
 
   @Implementation
   protected boolean isSafetyCenterEnabled() {
-    return enabled;
+    synchronized (lock) {
+      return enabled;
+    }
   }
 
   @Implementation
@@ -35,7 +51,11 @@ public class ShadowSafetyCenterManager {
       @NonNull String safetySourceId,
       @Nullable SafetySourceData safetySourceData,
       @NonNull SafetyEvent safetyEvent) {
-    if (isSafetyCenterEnabled()) {
+    synchronized (lock) {
+      if (!isSafetyCenterEnabled()) {
+        return;
+      }
+      maybeThrowForId(safetySourceId);
       dataById.put(safetySourceId, safetySourceData);
       eventsById.put(safetySourceId, safetyEvent);
     }
@@ -43,18 +63,31 @@ public class ShadowSafetyCenterManager {
 
   @Implementation
   protected SafetySourceData getSafetySourceData(@NonNull String safetySourceId) {
-    if (isSafetyCenterEnabled()) {
+    synchronized (lock) {
+      if (!isSafetyCenterEnabled()) {
+        return null;
+      }
+      maybeThrowForId(safetySourceId);
       return dataById.get(safetySourceId);
-    } else {
-      return null;
     }
   }
 
   @Implementation
   protected void reportSafetySourceError(
       @NonNull String safetySourceId, @NonNull SafetySourceErrorDetails safetySourceErrorDetails) {
-    if (isSafetyCenterEnabled()) {
+    synchronized (lock) {
+      if (!isSafetyCenterEnabled()) {
+        return;
+      }
+      maybeThrowForId(safetySourceId);
       errorsById.put(safetySourceId, safetySourceErrorDetails);
+    }
+  }
+
+  @GuardedBy("lock")
+  private void maybeThrowForId(String safetySourceId) {
+    if (throwForId.contains(safetySourceId)) {
+      throw new IllegalArgumentException(String.format("%s is invalid", safetySourceId));
     }
   }
 
@@ -63,7 +96,18 @@ public class ShadowSafetyCenterManager {
    * #setSafetySourceData} and {@link #getSafetySourceData} methods.
    */
   public void setSafetyCenterEnabled(boolean enabled) {
-    this.enabled = enabled;
+    synchronized (lock) {
+      this.enabled = enabled;
+    }
+  }
+
+  /**
+   * Makes the APIs throw an {@link IllegalArgumentException} for the given {@code safetySourceId}.
+   */
+  public void throwOnSafetySourceId(@NonNull String safetySourceId) {
+    synchronized (lock) {
+      throwForId.add(safetySourceId);
+    }
   }
 
   /**
@@ -71,7 +115,9 @@ public class ShadowSafetyCenterManager {
    * {@link #setSafetySourceData} was called with this {@code safetySourceId}.
    */
   public SafetyEvent getLastSafetyEvent(@NonNull String safetySourceId) {
-    return eventsById.get(safetySourceId);
+    synchronized (lock) {
+      return eventsById.get(safetySourceId);
+    }
   }
 
   /**
@@ -79,6 +125,8 @@ public class ShadowSafetyCenterManager {
    * last time {@link #reportSafetySourceError} was called with this {@code safetySourceId}.
    */
   public SafetySourceErrorDetails getLastSafetySourceError(@NonNull String safetySourceId) {
-    return errorsById.get(safetySourceId);
+    synchronized (lock) {
+      return errorsById.get(safetySourceId);
+    }
   }
 }

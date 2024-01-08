@@ -62,7 +62,8 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
     Preconditions.checkNotNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
-    Preconditions.checkState(fontDir.endsWith("/"), "Fonts directory must end with a slash");
+    Preconditions.checkState(
+        fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
     reflector(TypefaceReflector.class)
         .buildSystemFallback(fontDir + "fonts.xml", fontDir, fontMap, fallbackMap);
   }
@@ -75,7 +76,8 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
     Preconditions.checkNotNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
-    Preconditions.checkState(fontDir.endsWith("/"), "Fonts directory must end with a slash");
+    Preconditions.checkState(
+        fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
     return new File(fontDir);
   }
 

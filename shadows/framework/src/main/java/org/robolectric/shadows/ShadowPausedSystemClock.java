@@ -11,15 +11,15 @@ import javax.annotation.concurrent.GuardedBy;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;
 
 /**
  * A shadow SystemClock used when {@link LooperMode.Mode#PAUSED} is active.
  *
- * <p>In this variant, there is just one global system time controlled by this class. The current
- * time is fixed in place, and manually advanced by calling {@link
- * SystemClock#setCurrentTimeMillis(long)}
+ * <p>In this variant, System times (both elapsed realtime and uptime) are controlled by this class.
+ * The current times are fixed in place. You can manually advance both by calling {@link
+ * SystemClock#setCurrentTimeMillis(long)} or just advance elapsed realtime only by calling {@link
+ * deepSleep(long)}.
  *
  * <p>{@link SystemClock#uptimeMillis()} and {@link SystemClock#currentThreadTimeMillis()} are
  * identical.
@@ -34,8 +34,13 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   private static final long INITIAL_TIME = 100;
   private static final int MILLIS_PER_NANO = 1000000;
 
+  @SuppressWarnings("NonFinalStaticField")
   @GuardedBy("ShadowPausedSystemClock.class")
-  private static long currentTimeMillis = INITIAL_TIME;
+  private static long currentUptimeMillis = INITIAL_TIME;
+
+  @SuppressWarnings("NonFinalStaticField")
+  @GuardedBy("ShadowPausedSystemClock.class")
+  private static long currentRealtimeMillis = INITIAL_TIME;
 
   private static final List<Listener> listeners = new CopyOnWriteArrayList<>();
   // hopefully temporary list of clock listeners that are NOT cleared between tests
@@ -62,11 +67,29 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
     staticListeners.add(listener);
   }
 
-  /** Advances the current time by given millis, without sleeping the current thread/ */
+  /**
+   * Advances the current time (both elapsed realtime and uptime) by given millis, without sleeping
+   * the current thread.
+   */
   @Implementation
   protected static void sleep(long millis) {
     synchronized (ShadowPausedSystemClock.class) {
-      currentTimeMillis += millis;
+      currentUptimeMillis += millis;
+      currentRealtimeMillis += millis;
+    }
+    informListeners();
+  }
+
+  /**
+   * Advances the current time (elapsed realtime only) by given millis, without sleeping the current
+   * thread.
+   *
+   * <p>This is to simulate scenarios like suspend-to-RAM, where only elapsed realtime is
+   * incremented when the device is in deep sleep.
+   */
+  protected static void deepSleep(long millis) {
+    synchronized (ShadowPausedSystemClock.class) {
+      currentRealtimeMillis += millis;
     }
     informListeners();
   }
@@ -81,21 +104,24 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   }
 
   /**
-   * Sets the current wall time.
+   * Sets the current wall time (both elapsed realtime and uptime).
+   *
+   * <p>This API sets both of the elapsed realtime and uptime to the specified value.
    *
    * <p>Currently does not perform any permission checks.
    *
-   * @return false if specified time is less than current time.
+   * @return false if specified time is less than current uptime.
    */
   @Implementation
   protected static boolean setCurrentTimeMillis(long millis) {
     synchronized (ShadowPausedSystemClock.class) {
-      if (currentTimeMillis > millis) {
+      if (currentUptimeMillis > millis) {
         return false;
-      } else if (currentTimeMillis == millis) {
+      } else if (currentUptimeMillis == millis) {
         return true;
       } else {
-        currentTimeMillis = millis;
+        currentUptimeMillis = millis;
+        currentRealtimeMillis = millis;
       }
     }
     informListeners();
@@ -104,12 +130,12 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
 
   @Implementation
   protected static synchronized long uptimeMillis() {
-    return currentTimeMillis;
+    return currentUptimeMillis;
   }
 
   @Implementation
-  protected static long elapsedRealtime() {
-    return uptimeMillis();
+  protected static synchronized long elapsedRealtime() {
+    return currentRealtimeMillis;
   }
 
   @Implementation(minSdk = JELLY_BEAN_MR1)
@@ -138,7 +164,7 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
   @HiddenApi
   protected static synchronized long currentNetworkTimeMillis() {
     if (networkTimeAvailable) {
-      return currentTimeMillis;
+      return currentUptimeMillis;
     } else {
       throw new DateTimeException("Network time not available");
     }
@@ -146,7 +172,8 @@ public class ShadowPausedSystemClock extends ShadowSystemClock {
 
   @Resetter
   public static synchronized void reset() {
-    currentTimeMillis = INITIAL_TIME;
+    currentUptimeMillis = INITIAL_TIME;
+    currentRealtimeMillis = INITIAL_TIME;
     ShadowSystemClock.reset();
     listeners.clear();
   }

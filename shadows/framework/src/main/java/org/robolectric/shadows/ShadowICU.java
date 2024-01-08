@@ -37,6 +37,12 @@ public class ShadowICU {
     switch (skeleton) {
       case "jmm":
         return getjmmPattern(locale);
+      case "yMMMd": // This is from {@code DatePickerDefaults.YearAbbrMonthDaySkeleton}
+        return "MMM d, y";
+      case "yMMMMEEEEd": // This is from {@code DatePickerDefaults.YearMonthWeekdayDaySkeleton}
+        return "EEEE, MMMM d, y";
+      case "yMMMM": // This is from {@code DatePickerDefaults.YearMonthSkeleton}
+        return "MMMM y";
       default:
         return skeleton;
     }

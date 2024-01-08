@@ -210,7 +210,11 @@ public class ShadowWrangler implements ClassHandler {
   @SuppressWarnings({"ReferenceEquality"})
   @Override
   public MethodHandle findShadowMethodHandle(
-      Class<?> definingClass, String name, MethodType methodType, boolean isStatic)
+      Class<?> definingClass,
+      String name,
+      MethodType methodType,
+      boolean isStatic,
+      boolean isNative)
       throws IllegalAccessException {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -222,6 +226,18 @@ public class ShadowWrangler implements ClassHandler {
               Method shadowMethod = pickShadowMethod(definingClass, name, paramTypes);
 
               if (shadowMethod == CALL_REAL_CODE) {
+                ShadowInfo shadowInfo = getExactShadowInfo(definingClass);
+                if (isNative && shadowInfo != null && shadowInfo.callNativeMethodsByDefault) {
+                  try {
+                    Method method =
+                        definingClass.getDeclaredMethod(
+                            ShadowConstants.ROBO_PREFIX + name + "$nativeBinding", paramTypes);
+                    method.setAccessible(true);
+                    return LOOKUP.unreflect(method);
+                  } catch (NoSuchMethodException e) {
+                    throw new LinkageError("Missing native binding method", e);
+                  }
+                }
                 return null;
               } else if (shadowMethod == DO_NOTHING_METHOD) {
                 return DO_NOTHING;

@@ -36,6 +36,8 @@ import android.content.Intent;
 import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -108,6 +110,27 @@ public class ShadowBluetoothAdapterTest {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     shadowOf(adapter).setAddress("expected");
     assertThat(adapter.getAddress()).isEqualTo("expected");
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void canGetAndSetMostRecentlyConnectedDevices() {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+    // By default return empty list for most recently connected devices
+    assertThat(adapter.getMostRecentlyConnectedDevices()).isEmpty();
+
+    // set most recently connected devices
+    BluetoothDevice remoteDevice1 = bluetoothAdapter.getRemoteDevice(MOCK_MAC_ADDRESS);
+    BluetoothDevice remoteDevice2 = bluetoothAdapter.getRemoteDevice(MOCK_MAC_ADDRESS);
+    List<BluetoothDevice> result = new ArrayList<>();
+    result.add(remoteDevice1);
+    result.add(remoteDevice2);
+    shadowOf(adapter).setMostRecentlyConnectedDevices(result);
+
+    assertThat(adapter.getMostRecentlyConnectedDevices()).hasSize(2);
+    assertThat(adapter.getMostRecentlyConnectedDevices())
+        .containsExactly(remoteDevice1, remoteDevice2);
   }
 
   @Test
@@ -867,5 +890,18 @@ public class ShadowBluetoothAdapterTest {
       @Override
       public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {}
     };
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void canGetAndSetLeAudioSupport() {
+    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+    // By default LE feature is not supported
+    assertThat(adapter.isLeAudioSupported()).isEqualTo(BluetoothStatusCodes.FEATURE_NOT_SUPPORTED);
+
+    // set Le audio feature to supported.
+    shadowOf(adapter).setLeAudioSupported(BluetoothStatusCodes.FEATURE_SUPPORTED);
+    assertThat(adapter.isLeAudioSupported()).isEqualTo(BluetoothStatusCodes.FEATURE_SUPPORTED);
   }
 }

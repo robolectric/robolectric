@@ -45,11 +45,6 @@ public class SingleSdkRobolectricTestRunner extends RobolectricTestRunner {
     return latestSandbox;
   }
 
-  @Override
-  ResModeStrategy getResModeStrategy() {
-    return ResModeStrategy.binary;
-  }
-
   public static class SingleSdkPicker implements SdkPicker {
 
     private final Sdk sdk;

@@ -79,6 +79,10 @@ public class Shadow {
     return SHADOW_IMPL.directMethodName(className, methodName);
   }
 
+  public static String directNativeMethodName(String className, String methodName) {
+    return SHADOW_IMPL.directNativeMethodName(className, methodName);
+  }
+
   public static void directInitialize(Class<?> clazz) {
     SHADOW_IMPL.directInitialize(clazz);
   }

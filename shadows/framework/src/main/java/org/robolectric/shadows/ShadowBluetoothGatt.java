@@ -15,6 +15,7 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.os.Build;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -262,6 +263,17 @@ public class ShadowBluetoothGatt {
   @Implementation(minSdk = O)
   protected boolean writeCharacteristic(BluetoothGattCharacteristic characteristic) {
     return writeIncomingCharacteristic(characteristic);
+  }
+
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected int writeCharacteristic(
+      BluetoothGattCharacteristic characteristic, byte[] value, int writeType) {
+    characteristic.setValue(value);
+    boolean writeSuccessCode = writeIncomingCharacteristic(characteristic);
+    if (writeSuccessCode) {
+      return BluetoothGatt.GATT_SUCCESS;
+    }
+    return BluetoothGatt.GATT_FAILURE;
   }
 
   /**

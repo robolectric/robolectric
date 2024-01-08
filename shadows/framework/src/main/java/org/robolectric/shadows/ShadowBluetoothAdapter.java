@@ -90,6 +90,7 @@ public class ShadowBluetoothAdapter {
 
   private static final Map<String, BluetoothDevice> deviceCache = new HashMap<>();
   private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
+  private List<BluetoothDevice> mostRecentlyConnectedDevices = new ArrayList<>();
   private Set<LeScanCallback> leScanCallbacks = new HashSet<LeScanCallback>();
   private boolean isDiscovering;
   private String address;
@@ -99,6 +100,7 @@ public class ShadowBluetoothAdapter {
   private Duration discoverableTimeout;
   private boolean isBleScanAlwaysAvailable = true;
   private boolean isMultipleAdvertisementSupported = true;
+  private int isLeAudioSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
   private boolean isLeExtendedAdvertisingSupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
@@ -141,12 +143,24 @@ public class ShadowBluetoothAdapter {
         ClassParameter.from(AttributionSource.class, attributionSource));
   }
 
+  /** Sets whether the Le Audio is supported or not. Minimum sdk version required is TIRAMISU. */
+  public void setLeAudioSupported(int supported) {
+    isLeAudioSupported = supported;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
+  protected int isLeAudioSupported() {
+    return isLeAudioSupported;
+  }
+
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
   public static void setIsBluetoothSupported(boolean supported) {
     isBluetoothSupported = supported;
   }
 
-  /** @deprecated use real BluetoothLeAdvertiser instead */
+  /**
+   * @deprecated use real BluetoothLeAdvertiser instead
+   */
   @Deprecated
   public void setBluetoothLeAdvertiser(BluetoothLeAdvertiser advertiser) {
     if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.LOLLIPOP_MR1) {
@@ -166,6 +180,15 @@ public class ShadowBluetoothAdapter {
     return deviceCache.get(address);
   }
 
+  public void setMostRecentlyConnectedDevices(List<BluetoothDevice> devices) {
+    mostRecentlyConnectedDevices = devices;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected List<BluetoothDevice> getMostRecentlyConnectedDevices() {
+    return mostRecentlyConnectedDevices;
+  }
+
   @Implementation
   protected Set<BluetoothDevice> getBondedDevices() {
     return Collections.unmodifiableSet(bondedDevices);
@@ -179,26 +202,26 @@ public class ShadowBluetoothAdapter {
   protected BluetoothServerSocket listenUsingInsecureRfcommWithServiceRecord(
       String serviceName, UUID uuid) {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ false, new ParcelUuid(uuid));
+        BluetoothSocket.TYPE_RFCOMM, /* auth= */ false, /* encrypt= */ false, new ParcelUuid(uuid));
   }
 
   @Implementation
   protected BluetoothServerSocket listenUsingRfcommWithServiceRecord(String serviceName, UUID uuid)
       throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_RFCOMM, /*auth=*/ false, /*encrypt=*/ true, new ParcelUuid(uuid));
+        BluetoothSocket.TYPE_RFCOMM, /* auth= */ false, /* encrypt= */ true, new ParcelUuid(uuid));
   }
 
   @Implementation(minSdk = Q)
   protected BluetoothServerSocket listenUsingInsecureL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_L2CAP, /*auth=*/ false, /*encrypt=*/ true, /*uuid=*/ null);
+        BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
   }
 
   @Implementation(minSdk = Q)
   protected BluetoothServerSocket listenUsingL2capChannel() throws IOException {
     return ShadowBluetoothServerSocket.newInstance(
-        BluetoothSocket.TYPE_L2CAP, /*auth=*/ false, /*encrypt=*/ true, /*uuid=*/ null);
+        BluetoothSocket.TYPE_L2CAP, /* auth= */ false, /* encrypt= */ true, /* uuid= */ null);
   }
 
   @Implementation
@@ -464,7 +487,9 @@ public class ShadowBluetoothAdapter {
     this.state = state;
   }
 
-  /** @deprecated Use {@link BluetoothAdapter#enable()} or {@link BluetoothAdapter#disable()}. */
+  /**
+   * @deprecated Use {@link BluetoothAdapter#enable()} or {@link BluetoothAdapter#disable()}.
+   */
   @Deprecated
   public void setEnabled(boolean enabled) {
     if (enabled) {
@@ -558,7 +583,7 @@ public class ShadowBluetoothAdapter {
    * Overrides behavior of {@link closeProfileProxy} if {@link
    * ShadowBluetoothAdapter#setProfileProxy} has been previously called.
    *
-   * If the given non-null BluetoothProfile {@code proxy} was previously set for the given {@code
+   * <p>If the given non-null BluetoothProfile {@code proxy} was previously set for the given {@code
    * profile} by {@link ShadowBluetoothAdapter#setProfileProxy}, this proxy will be "deactivated".
    */
   @Implementation

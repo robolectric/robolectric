@@ -7,11 +7,13 @@ import static org.robolectric.Shadows.shadowOf;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
+import java.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,10 +27,31 @@ import org.robolectric.annotation.Config;
 public class ShadowBluetoothGattServerTest {
 
   private static final int INITIAL_VALUE = -99;
+  private static final int REQUEST_ID = 1;
+  private static final int OFFSET = 0;
   private static final String ACTION_CONNECTION = "CONNECT/DISCONNECT";
+  private static final String ACTION_CHARACTERISTIC_WRITE = "WRITE";
+  private static final String ACTION_CHARACTERISTIC_WRITE_NO_RESPONSE = "WRITE_NO_RESPONSE";
   private static final String MOCK_MAC_ADDRESS = "00:11:22:33:AA:BB";
+  private static final byte[] PAYLOAD = new byte[] {'m', 'm', 'e'};
+  private static final byte[] PAYLOAD2 = new byte[] {'c', 'd', 'i'};
   private static final byte[] RESPONSE_VALUE1 = new byte[] {'a', 'b', 'c'};
   private static final byte[] RESPONSE_VALUE2 = new byte[] {'1', '2', '3'};
+  private static final BluetoothGattCharacteristic characteristicWithWriteProperty =
+      new BluetoothGattCharacteristic(
+          UUID.fromString("00000000-0000-0000-0000-0000000000A1"),
+          BluetoothGattCharacteristic.PROPERTY_WRITE,
+          BluetoothGattCharacteristic.PERMISSION_WRITE);
+  private static final BluetoothGattCharacteristic characteristicWithWriteNoResponseProperty =
+      new BluetoothGattCharacteristic(
+          UUID.fromString("00000000-0000-0000-0000-0000000000A2"),
+          BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE,
+          BluetoothGattCharacteristic.PERMISSION_WRITE);
+  private static final BluetoothGattCharacteristic characteristicWithReadProperty =
+      new BluetoothGattCharacteristic(
+          UUID.fromString("00000000-0000-0000-0000-0000000000A3"),
+          BluetoothGattCharacteristic.PROPERTY_READ,
+          BluetoothGattCharacteristic.PERMISSION_READ);
 
   private BluetoothManager manager;
   private Context context;
@@ -46,6 +69,23 @@ public class ShadowBluetoothGattServerTest {
           resultStatus = status;
           resultState = newState;
           resultAction = ACTION_CONNECTION;
+        }
+
+        @Override
+        public void onCharacteristicWriteRequest(
+            BluetoothDevice device,
+            int requestId,
+            BluetoothGattCharacteristic characteristic,
+            boolean isWrite,
+            boolean isRead,
+            int offset,
+            byte[] payload) {
+          if (characteristic.getWriteType() == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
+            resultAction = ACTION_CHARACTERISTIC_WRITE;
+          } else if (characteristic.getWriteType()
+              == BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE) {
+            resultAction = ACTION_CHARACTERISTIC_WRITE_NO_RESPONSE;
+          }
         }
       };
 
@@ -119,6 +159,89 @@ public class ShadowBluetoothGattServerTest {
   }
 
   @Test
+  public void test_getWrittenBytes_initially() {
+    assertThat(shadowOf(server).getWrittenBytes()).isEmpty();
+  }
+
+  @Test
+  public void test_getWrittenBytes_afterCharacteristicWriteRequest() {
+    shadowOf(server).setGattServerCallback(callback);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isTrue();
+    assertThat(shadowOf(server).getWrittenBytes()).hasSize(1);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD2))
+        .isTrue();
+    assertThat(shadowOf(server).getWrittenBytes()).hasSize(2);
+    assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(PAYLOAD);
+    assertThat(shadowOf(server).getWrittenBytes().get(1)).isEqualTo(PAYLOAD2);
+  }
+
+  @Test
+  public void test_getWrittenBytes_afterClearWrittenBytes() {
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isTrue();
+    shadowOf(server).clearWrittenBytes();
+    assertThat(shadowOf(server).getWrittenBytes()).isEmpty();
+  }
+
+  @Test
+  public void test_getWrittenBytes_acceptsNull() {
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isTrue();
+    assertThat(shadowOf(server).getWrittenBytes()).hasSize(1);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    null))
+        .isTrue();
+    assertThat(shadowOf(server).getWrittenBytes()).hasSize(2);
+    assertThat(shadowOf(server).getWrittenBytes().get(0)).isEqualTo(PAYLOAD);
+    assertThat(shadowOf(server).getWrittenBytes().get(1)).isEqualTo(null);
+  }
+
+  @Test
   public void test_isConnectedToDevice_initially() {
     assertThat(shadowOf(server).isConnectedToDevice(device)).isFalse();
   }
@@ -176,6 +299,73 @@ public class ShadowBluetoothGattServerTest {
     assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
     assertThat(resultState).isEqualTo(BluetoothAdapter.STATE_DISCONNECTED);
     assertThat(resultAction).isEqualTo(ACTION_CONNECTION);
+  }
+
+  @Test
+  public void test_notifyOnCharacteristicWriteRequest_withoutCallback() {
+    shadowOf(server).setGattServerCallback(null);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isFalse();
+  }
+
+  @Test
+  public void test_notifyOnCharacteristicWriteRequest_withCallback_wrongProperty() {
+    shadowOf(server).setGattServerCallback(callback);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithReadProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isFalse();
+    assertThat(resultAction).isNull();
+  }
+
+  @Test
+  public void test_notifyOnCharacteristicWriteRequest_correctSetup_writeProperty() {
+    shadowOf(server).setGattServerCallback(callback);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isTrue();
+    assertThat(resultAction).isEqualTo(ACTION_CHARACTERISTIC_WRITE);
+  }
+
+  @Test
+  public void test_notifyOnCharacteristicWriteRequest_correctSetup_writeNoResponseProperty() {
+    shadowOf(server).setGattServerCallback(callback);
+    assertThat(
+            shadowOf(server)
+                .notifyOnCharacteristicWriteRequest(
+                    device,
+                    REQUEST_ID,
+                    characteristicWithWriteNoResponseProperty,
+                    false,
+                    false,
+                    OFFSET,
+                    PAYLOAD))
+        .isTrue();
+    assertThat(resultAction).isEqualTo(ACTION_CHARACTERISTIC_WRITE_NO_RESPONSE);
   }
 
   @Test

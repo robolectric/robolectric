@@ -9,6 +9,8 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -65,7 +67,8 @@ public class ShadowAudioManager {
           AudioManager.STREAM_RING,
           AudioManager.STREAM_SYSTEM,
           AudioManager.STREAM_VOICE_CALL,
-          AudioManager.STREAM_DTMF);
+          AudioManager.STREAM_DTMF,
+          AudioManager.STREAM_ACCESSIBILITY);
 
   private static final int INVALID_PATCH_HANDLE = -1;
   private static final float MAX_VOLUME_DB = 0;
@@ -98,11 +101,15 @@ public class ShadowAudioManager {
   private int audioSessionIdCounter = 1;
   private final Map<AudioAttributes, ImmutableList<Object>> devicesForAttributes = new HashMap<>();
   private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
+  private final Map<AudioAttributes, ImmutableList<AudioDeviceInfo>> audioDevicesForAttributes =
+      new HashMap<>();
   private List<AudioDeviceInfo> inputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
   private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
+  private boolean isHotwordStreamSupportedForLookbackAudio = false;
+  private boolean isHotwordStreamSupportedWithoutLookbackAudio = false;
 
   public ShadowAudioManager() {
     for (int stream : ALL_STREAMS) {
@@ -448,6 +455,27 @@ public class ShadowAudioManager {
   }
 
   /**
+   * Returns the audio devices that would be used for the routing of the given audio attributes.
+   *
+   * <p>Devices can be added with {@link #setAudioDevicesForAttributes}. Note that {@link
+   * #setDevicesForAttributes} and {@link #setDefaultDevicesForAttributes} have no effect on the
+   * return value of this method.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  @NonNull
+  protected List<AudioDeviceInfo> getAudioDevicesForAttributes(
+      @NonNull AudioAttributes attributes) {
+    ImmutableList<AudioDeviceInfo> devices = audioDevicesForAttributes.get(attributes);
+    return devices == null ? ImmutableList.of() : devices;
+  }
+
+  /** Sets the audio devices returned from {@link #getAudioDevicesForAttributes}. */
+  public void setAudioDevicesForAttributes(
+      @NonNull AudioAttributes attributes, @NonNull ImmutableList<AudioDeviceInfo> devices) {
+    audioDevicesForAttributes.put(attributes, devices);
+  }
+
+  /**
    * Sets the list of connected input devices represented by {@link AudioDeviceInfo}.
    *
    * <p>The previous list of input devices is replaced and no notifications of the list of {@link
@@ -644,6 +672,22 @@ public class ShadowAudioManager {
   @Implementation(minSdk = S)
   protected List<AudioDeviceInfo> getAvailableCommunicationDevices() {
     return availableCommunicationDevices;
+  }
+
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isHotwordStreamSupported(boolean lookbackAudio) {
+    if (lookbackAudio) {
+      return isHotwordStreamSupportedForLookbackAudio;
+    }
+    return isHotwordStreamSupportedWithoutLookbackAudio;
+  }
+
+  public void setHotwordStreamSupported(boolean lookbackAudio, boolean isSupported) {
+    if (lookbackAudio) {
+      isHotwordStreamSupportedForLookbackAudio = isSupported;
+    } else {
+      isHotwordStreamSupportedWithoutLookbackAudio = isSupported;
+    }
   }
 
   @Implementation(minSdk = M)

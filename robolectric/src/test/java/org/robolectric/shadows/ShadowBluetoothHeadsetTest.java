@@ -109,6 +109,28 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
+  public void getDevicesMatchingConnectionStates_returnsMatchingDevices() {
+    shadowOf(bluetoothHeadset).addDevice(device1, BluetoothProfile.STATE_CONNECTING);
+    shadowOf(bluetoothHeadset).addDevice(device2, BluetoothProfile.STATE_DISCONNECTED);
+
+    assertThat(
+            bluetoothHeadset.getDevicesMatchingConnectionStates(
+                new int[] {BluetoothProfile.STATE_CONNECTING, BluetoothProfile.STATE_DISCONNECTED}))
+        .containsExactly(device1, device2);
+  }
+
+  @Test
+  public void getDevicesMatchingConnectionStates_subsetOfAvailableStates_returnsMatchingDevices() {
+    shadowOf(bluetoothHeadset).addDevice(device1, BluetoothProfile.STATE_CONNECTING);
+    shadowOf(bluetoothHeadset).addDevice(device2, BluetoothProfile.STATE_DISCONNECTED);
+
+    assertThat(
+            bluetoothHeadset.getDevicesMatchingConnectionStates(
+                new int[] {BluetoothProfile.STATE_CONNECTING}))
+        .containsExactly(device1);
+  }
+
+  @Test
   public void connect_addsDeviceToConnectedListAndReturnsTrue() {
     boolean result = bluetoothHeadset.connect(device1);
 

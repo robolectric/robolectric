@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -18,7 +19,6 @@ import android.telecom.InCallService;
 import android.telecom.ParcelableCall;
 import android.telecom.Phone;
 import com.android.internal.os.SomeArgs;
-import com.android.internal.telecom.IInCallAdapter;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -26,6 +26,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -37,14 +38,23 @@ public class ShadowInCallService extends ShadowService {
   private static final int MSG_SET_POST_DIAL_WAIT = 4;
   private static final int MSG_ON_CONNECTION_EVENT = 9;
 
-  private ShadowPhone shadowPhone;
   private boolean canAddCall;
   private boolean muted;
   private int audioRoute = CallAudioState.ROUTE_EARPIECE;
   private BluetoothDevice bluetoothDevice;
   private int supportedRouteMask;
 
-  @Implementation
+  /* Starting in Android V, the InCallService does not allow setting an InCallAdapter if Phone
+   * was already set. This is how the InCallService should be instantiated in tests:
+   * ```
+   * InCallServiceController serviceController =
+   *   Robolectric.buildService(InCallServiceImpl.class, intent).create();
+   * IInCallService.Stub inCallServiceBinder =
+   *   (IInCallService.Stub) serviceController.get().onBind(intent);
+   * inCallServiceBinder.setInCallAdapter(new InCallAdapterImpl());
+   * ```
+   * Do not rely on reflection for this and use the public APIs instead. */
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   protected void __constructor__() {
     InCallAdapter adapter = Shadow.newInstanceOf(InCallAdapter.class);
     Phone phone;
@@ -60,13 +70,17 @@ public class ShadowInCallService extends ShadowService {
           ReflectionHelpers.callConstructor(
               Phone.class, ClassParameter.from(InCallAdapter.class, adapter));
     }
-    shadowPhone = Shadow.extract(phone);
     ReflectionHelpers.setField(inCallService, "mPhone", phone);
     invokeConstructor(InCallService.class, inCallService);
   }
 
+  /**
+   * @deprecated Please add calls by adding a Call using {@link
+   *     android.telecom.InCallService.InCallServiceBinder}.
+   */
+  @Deprecated
   public void addCall(Call call) {
-    shadowPhone.addCall(call);
+    getShadowPhone().addCall(call);
   }
 
   public void addCall(ParcelableCall parcelableCall) {
@@ -96,8 +110,12 @@ public class ShadowInCallService extends ShadowService {
     getHandler().obtainMessage(MSG_ON_CONNECTION_EVENT, args).sendToTarget();
   }
 
+  /**
+   * @deprecated Please remove calls by invoking {@link Call#disconnect()}.
+   */
+  @Deprecated
   public void removeCall(Call call) {
-    shadowPhone.removeCall(call);
+    getShadowPhone().removeCall(call);
   }
 
   @Implementation
@@ -168,10 +186,32 @@ public class ShadowInCallService extends ShadowService {
    */
   private boolean isInCallAdapterSet() {
     Phone phone = reflector(ReflectorInCallService.class, inCallService).getPhone();
+    if (phone == null) {
+      return false;
+    }
     InCallAdapter inCallAdapter = reflector(ReflectorPhone.class, phone).getInCallAdapter();
     Object internalAdapter =
         reflector(ReflectorInCallAdapter.class, inCallAdapter).getInternalInCallAdapter();
     return internalAdapter != null;
+  }
+
+  private ShadowPhone getShadowPhone() {
+    if (reflector(ReflectorInCallService.class, inCallService).getPhone() == null) {
+      setPhone();
+    }
+    Phone phone = reflector(ReflectorInCallService.class, inCallService).getPhone();
+    return Shadow.extract(phone);
+  }
+
+  private void setPhone() {
+    InCallAdapter adapter = Shadow.newInstanceOf(InCallAdapter.class);
+    Phone phone;
+    if (VERSION.SDK_INT > N_MR1) {
+      phone = reflector(ReflectorPhone.class, inCallService).newInstance(adapter, "", 0);
+    } else {
+      phone = reflector(ReflectorPhone.class, inCallService).newInstance(adapter);
+    }
+    ReflectionHelpers.setField(inCallService, "mPhone", phone);
   }
 
   @ForType(InCallService.class)
@@ -199,6 +239,12 @@ public class ShadowInCallService extends ShadowService {
   interface ReflectorPhone {
     @Accessor("mInCallAdapter")
     InCallAdapter getInCallAdapter();
+
+    @Constructor
+    Phone newInstance(InCallAdapter inCallAdapter, String name, int type);
+
+    @Constructor
+    Phone newInstance(InCallAdapter inCallAdapter);
   }
 
   @ForType(InCallAdapter.class)

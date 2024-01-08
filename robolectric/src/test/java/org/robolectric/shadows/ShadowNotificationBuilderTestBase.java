@@ -247,4 +247,22 @@ public abstract class ShadowNotificationBuilderTestBase {
 
     assertThat(shadowOf(notification).getBigPicture().sameAs(bigPicture)).isTrue();
   }
+
+  @Test
+  public void withInboxStyle() {
+    Notification notification =
+        builder
+            .setStyle(
+                new Notification.InboxStyle(builder)
+                    .addLine("Line1")
+                    .addLine("Line2")
+                    .setBigContentTitle("Title")
+                    .setSummaryText("Summary"))
+            .build();
+
+    assertThat(shadowOf(notification).getBigContentTitle().toString()).isEqualTo("Title");
+    assertThat(shadowOf(notification).getBigContentText().toString()).isEqualTo("Summary");
+    assertThat(shadowOf(notification).getBigPicture()).isNull();
+    assertThat(shadowOf(notification).getTextLines()).containsExactly("Line1", "Line2");
+  }
 }

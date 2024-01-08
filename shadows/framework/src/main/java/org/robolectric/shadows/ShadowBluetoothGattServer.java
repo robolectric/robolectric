@@ -5,8 +5,11 @@ import static android.os.Build.VERSION_CODES.O;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
+import android.bluetooth.BluetoothGattService;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -22,8 +25,10 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowBluetoothGattServer {
   private BluetoothGattServerCallback callback;
   private final List<byte[]> responses = new ArrayList<>();
+  private final List<byte[]> writtenBytes = new ArrayList<>();
   private final Set<BluetoothDevice> cancelledDevices = new HashSet<>();
   private boolean isClosed;
+  private final Set<BluetoothGattService> services = new HashSet<>();
 
   @ReflectorObject protected BluetoothGattServerReflector bluetoothGattServerReflector;
 
@@ -62,6 +67,18 @@ public class ShadowBluetoothGattServer {
   }
 
   /**
+   * Add a service to the GATT server.
+   *
+   * @param service service to be added to GattServer
+   */
+  @Implementation
+  protected boolean addService(BluetoothGattService service) {
+    bluetoothGattServerReflector.addService(service);
+    this.services.add(service);
+    return true;
+  }
+
+  /**
    * Simulate a successful Gatt Server Connection with {@link BluetoothConnectionManager}. Performs
    * a {@link BluetoothGattCallback#onConnectionStateChange} if available.
    *
@@ -92,6 +109,39 @@ public class ShadowBluetoothGattServer {
       this.callback.onConnectionStateChange(
           device, BluetoothGatt.GATT_SUCCESS, BluetoothAdapter.STATE_DISCONNECTED);
     }
+  }
+
+  /**
+   * Simulate a Gatt characteristic write request to the Gatt Server by triggering the server
+   * callback.
+   *
+   * @param device remote device
+   * @param requestId id of the request
+   * @param characteristic characteristic to be written to
+   * @param preparedWrite true, if this write operation should be queued for later execution
+   * @param responseNeeded true, if the remote device requires a response
+   * @param offset the offset given for the value
+   * @param value the value the client wants to assign to the characteristic
+   */
+  public boolean notifyOnCharacteristicWriteRequest(
+      BluetoothDevice device,
+      int requestId,
+      BluetoothGattCharacteristic characteristic,
+      Boolean preparedWrite,
+      Boolean responseNeeded,
+      int offset,
+      byte[] value) {
+    if (this.callback == null) {
+      return false;
+    } else if ((characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE) == 0
+        && (characteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE)
+            == 0) {
+      return false;
+    }
+    writtenBytes.add(value);
+    this.callback.onCharacteristicWriteRequest(
+        device, requestId, characteristic, preparedWrite, responseNeeded, offset, value);
+    return true;
   }
 
   /**
@@ -130,6 +180,16 @@ public class ShadowBluetoothGattServer {
     this.responses.clear();
   }
 
+  /** Get a copy of the list of bytes that have been received. */
+  public List<byte[]> getWrittenBytes() {
+    return Lists.transform(this.writtenBytes, bytes -> bytes != null ? bytes.clone() : null);
+  }
+
+  /** Clear the list of written bytes. */
+  public void clearWrittenBytes() {
+    this.writtenBytes.clear();
+  }
+
   /** Get whether server has been closed. */
   public boolean isClosed() {
     return this.isClosed;
@@ -159,5 +219,8 @@ public class ShadowBluetoothGattServer {
     @Direct
     boolean sendResponse(
         BluetoothDevice device, int requestId, int status, int offset, byte[] value);
+
+    @Direct
+    boolean addService(BluetoothGattService service);
   }
 }

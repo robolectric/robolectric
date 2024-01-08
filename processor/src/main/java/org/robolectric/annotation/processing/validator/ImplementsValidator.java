@@ -173,19 +173,23 @@ public class ImplementsValidator extends Validator {
       AnnotationValue classNameAttr,
       TypeElement shadowPickerTypeElement) {
 
-    String sdkClassName;
+    String sdkClassNameFq;
     if (valueAttr == null) {
-      sdkClassName = Helpers.getAnnotationStringValue(classNameAttr).replace('$', '.');
+      sdkClassNameFq = Helpers.getAnnotationStringValue(classNameAttr);
     } else {
-      sdkClassName = Helpers.getAnnotationTypeMirrorValue(valueAttr).toString();
+      TypeMirror typeMirror = Helpers.getAnnotationTypeMirrorValue(valueAttr);
+      TypeElement typeElement = MoreElements.asType(types.asElement(typeMirror));
+      sdkClassNameFq = elements.getBinaryName(typeElement).toString();
     }
 
     // there's no such type at the current SDK level, so just use strings...
     // getQualifiedName() uses Outer.Inner and we want Outer$Inner, so:
     String name = getClassFQName(shadowType);
-    modelBuilder.addExtraShadow(sdkClassName, name);
+    // SHADOW_MAP currently uses class dot syntax for keys, but SHADOW_PICKER_MAP uses
+    // FQ syntax for keys.
+    modelBuilder.addExtraShadow(sdkClassNameFq.replace('$', '.'), name);
     if (shadowPickerTypeElement != null) {
-      modelBuilder.addExtraShadowPicker(sdkClassName, shadowPickerTypeElement);
+      modelBuilder.addExtraShadowPicker(sdkClassNameFq, shadowPickerTypeElement);
     }
   }
 

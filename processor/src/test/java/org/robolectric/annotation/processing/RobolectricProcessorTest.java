@@ -235,4 +235,22 @@ public class RobolectricProcessorTest {
         .and()
         .generatesSources(forResource("org/robolectric/Robolectric_MinimalPackages.java"));
   }
+
+  @Test
+  public void shouldEmitShadowPickerMapForShadowedInnerClasses() {
+    Map<String, String> options = new HashMap<>(DEFAULT_OPTS);
+    options.put(SHOULD_INSTRUMENT_PKG_OPT, "true");
+
+    assertAbout(javaSources())
+        .that(
+            ImmutableList.of(
+                SHADOW_PROVIDER_SOURCE,
+                SHADOW_EXTRACTOR_SOURCE,
+                forResource(
+                    "org/robolectric/annotation/processing/shadows/ShadowInnerDummyWithPicker.java")))
+        .processedWith(new RobolectricProcessor(options))
+        .compilesWithoutError()
+        .and()
+        .generatesSources(forResource("org/robolectric/Robolectric_ShadowPickers.java"));
+  }
 }

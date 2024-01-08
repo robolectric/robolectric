@@ -38,10 +38,18 @@ import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.Locale;
 import javax.annotation.Nonnull;
 import javax.inject.Named;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.conscrypt.OkHostnameVerifier;
 import org.conscrypt.OpenSSLProvider;
 import org.robolectric.ApkLoader;
 import org.robolectric.RuntimeEnvironment;
@@ -127,7 +135,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
     this.shadowProviders = shadowProviders;
     this.testEnvironmentLifecyclePlugins = lifecyclePlugins;
 
-    RuntimeEnvironment.setUseLegacyResources(resourcesMode == ResourcesMode.LEGACY);
     ReflectionHelpers.setStaticField(RuntimeEnvironment.class, "apiLevel", apiLevel);
   }
 
@@ -163,6 +170,23 @@ public class AndroidTestEnvironment implements TestEnvironment {
       if (Security.getProvider(CONSCRYPT_PROVIDER) == null) {
         Security.insertProviderAt(new OpenSSLProvider(), 1);
       }
+
+      HttpsURLConnection.setDefaultHostnameVerifier(
+          new HostnameVerifier() {
+            private final OkHostnameVerifier conscryptVerifier = OkHostnameVerifier.INSTANCE;
+
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+              try {
+                Certificate[] certificates = session.getPeerCertificates();
+                X509Certificate[] x509Certificates =
+                    Arrays.copyOf(certificates, certificates.length, X509Certificate[].class);
+                return conscryptVerifier.verify(x509Certificates, hostname, session);
+              } catch (SSLException e) {
+                return false;
+              }
+            }
+          });
     }
 
     if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {

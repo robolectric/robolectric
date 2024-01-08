@@ -69,8 +69,10 @@ public class ShadowMapTest {
   }
 
   @Test public void getInvalidatedClasses_disjoin() {
-    ShadowMap current = baseShadowMap.newBuilder().addShadowClass(A1, A2, true, false).build();
-    ShadowMap previous = baseShadowMap.newBuilder().addShadowClass(B1, B2, true, false).build();
+    ShadowMap current =
+        baseShadowMap.newBuilder().addShadowClass(A1, A2, true, false, false).build();
+    ShadowMap previous =
+        baseShadowMap.newBuilder().addShadowClass(B1, B2, true, false, false).build();
 
     assertThat(current.getInvalidatedClasses(previous)).containsExactly(A1, B1);
   }
@@ -79,22 +81,22 @@ public class ShadowMapTest {
     ShadowMap current =
         baseShadowMap
             .newBuilder()
-            .addShadowClass(A1, A2, true, false)
-            .addShadowClass(C1, C2, true, false)
+            .addShadowClass(A1, A2, true, false, false)
+            .addShadowClass(C1, C2, true, false, false)
             .build();
     ShadowMap previous =
         baseShadowMap
             .newBuilder()
-            .addShadowClass(A1, A2, true, false)
-            .addShadowClass(C1, C3, true, false)
+            .addShadowClass(A1, A2, true, false, false)
+            .addShadowClass(C1, C3, true, false, false)
             .build();
 
     assertThat(current.getInvalidatedClasses(previous)).containsExactly(C1);
   }
 
   @Test public void equalsHashCode() throws Exception {
-    ShadowMap a = baseShadowMap.newBuilder().addShadowClass(A, B, true, false).build();
-    ShadowMap b = baseShadowMap.newBuilder().addShadowClass(A, B, true, false).build();
+    ShadowMap a = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
+    ShadowMap b = baseShadowMap.newBuilder().addShadowClass(A, B, true, false, false).build();
     assertThat(a).isEqualTo(b);
     assertThat(a.hashCode()).isEqualTo(b.hashCode());
 
@@ -102,7 +104,7 @@ public class ShadowMapTest {
     assertThat(c).isEqualTo(b);
     assertThat(c.hashCode()).isEqualTo(b.hashCode());
 
-    ShadowMap d = baseShadowMap.newBuilder().addShadowClass(A, X, true, false).build();
+    ShadowMap d = baseShadowMap.newBuilder().addShadowClass(A, X, true, false, false).build();
     assertThat(d).isNotEqualTo(a);
     assertThat(d.hashCode()).isNotEqualTo(b.hashCode());
   }

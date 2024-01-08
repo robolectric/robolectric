@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth8.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
@@ -173,6 +174,7 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
+        case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(audioManager.getStreamMaxVolume(stream))
               .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
@@ -250,6 +252,7 @@ public class ShadowAudioManagerTest {
         case AudioManager.STREAM_RING:
         case AudioManager.STREAM_SYSTEM:
         case AudioManager.STREAM_VOICE_CALL:
+        case AudioManager.STREAM_ACCESSIBILITY:
           assertThat(audioManager.getStreamVolume(stream))
               .isEqualTo(ShadowAudioManager.DEFAULT_MAX_VOLUME);
           break;
@@ -459,6 +462,49 @@ public class ShadowAudioManagerTest {
 
     assertThat(shadowOf(audioManager).getDevicesForAttributes(movieAttribute))
         .isEqualTo(newDevices);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getAudioDevicesForAttributes_returnsEmptyListByDefault() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+
+    assertThat(audioManager.getAudioDevicesForAttributes(movieAttribute)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setAudioDevicesForAttributes_updatesAudioDevicesForAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    ImmutableList<AudioDeviceInfo> newDevices =
+        ImmutableList.of(
+            AudioDeviceInfoBuilder.newBuilder()
+                .setType(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+                .build());
+
+    shadowOf(audioManager).setAudioDevicesForAttributes(movieAttribute, newDevices);
+
+    assertThat(audioManager.getAudioDevicesForAttributes(movieAttribute)).isEqualTo(newDevices);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void setAudioDevicesForAttributes_returnsEmptyListForOtherAttributes() {
+    AudioAttributes movieAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MOVIE).build();
+    AudioAttributes otherAttribute =
+        new AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).build();
+    ImmutableList<AudioDeviceInfo> newDevices =
+        ImmutableList.of(
+            AudioDeviceInfoBuilder.newBuilder()
+                .setType(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+                .build());
+
+    shadowOf(audioManager).setAudioDevicesForAttributes(movieAttribute, newDevices);
+
+    assertThat(audioManager.getAudioDevicesForAttributes(otherAttribute)).isEmpty();
   }
 
   @Test
@@ -1369,6 +1415,43 @@ public class ShadowAudioManagerTest {
     shadowOf(audioManager).clearDispatchedMediaKeyEvents();
 
     assertThat(shadowOf(audioManager).getDispatchedMediaKeyEvents()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setHotwordStreamSupportedWithLookbackAudio_updatesIsHotwordStreamSupported() {
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ true))
+        .isFalse();
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ false))
+        .isFalse();
+
+    shadowOf(audioManager)
+        .setHotwordStreamSupported(/* lookbackAudio= */ true, /* isSupported= */ true);
+
+    // isHotwordStreamSupported with lookbackAudio=true is set.
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ true)).isTrue();
+    // isHotwordStreamSupported with lookbackAudio=false is not set.
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ false))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void setHotwordStreamSupportedWithoutLookbackAudio_updatesIsHotwordStreamSupported() {
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ false))
+        .isFalse();
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ true))
+        .isFalse();
+
+    shadowOf(audioManager)
+        .setHotwordStreamSupported(/* lookbackAudio= */ false, /* isSupported= */ true);
+
+    // isHotwordStreamSupported with lookbackAudio=false is set.
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ false))
+        .isTrue();
+    // isHotwordStreamSupported with lookbackAudio=true is not set.
+    assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ true))
+        .isFalse();
   }
 
   private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {

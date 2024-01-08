@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeSystemFonts.Picker;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -52,7 +53,8 @@ public class ShadowNativeSystemFonts {
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
     Preconditions.checkNotNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
-    Preconditions.checkState(fontDir.endsWith("/"), "Fonts directory must end with a slash");
+    Preconditions.checkState(
+        fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
     return reflector(SystemFontsReflector.class)
         .getSystemFontConfigInternal(
             fontDir + "fonts.xml",
@@ -71,10 +73,14 @@ public class ShadowNativeSystemFonts {
       FontCustomizationParser.Result oemCustomization,
       ArrayMap<String, FontFamily[]> fallbackMap,
       ArrayList<Font> availableFonts) {
+    // In Q and R, calling SystemFonts.getAvailableFonts does not automatically result in RNG being
+    // loaded, so we must ensure it is loaded for `robolectric.nativeruntime.fontdir` to be defined.
+    DefaultNativeRuntimeLoader.injectAndLoad();
     String fontDir = System.getProperty("robolectric.nativeruntime.fontdir");
     Preconditions.checkNotNull(fontDir);
     Preconditions.checkState(new File(fontDir).isDirectory(), "Missing fonts directory");
-    Preconditions.checkState(fontDir.endsWith("/"), "Fonts directory must end with a slash");
+    Preconditions.checkState(
+        fontDir.endsWith(File.separator), "Fonts directory must end with a slash");
     return reflector(SystemFontsReflector.class)
         .buildSystemFallback(
             fontDir + "fonts.xml", fontDir, oemCustomization, fallbackMap, availableFonts);

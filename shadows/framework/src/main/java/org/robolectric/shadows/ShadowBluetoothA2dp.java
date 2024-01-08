@@ -1,13 +1,19 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothA2dp;
+import android.bluetooth.BluetoothA2dp.OptionalCodecsPreferenceStatus;
 import android.bluetooth.BluetoothCodecConfig;
+import android.bluetooth.BluetoothCodecStatus;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
+import android.util.Log;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,11 +23,22 @@ import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow of {@link BluetoothA2dp}. */
 @Implements(BluetoothA2dp.class)
 public class ShadowBluetoothA2dp {
+  private static final String TAG = "BluetoothA2dp";
+
+  @RealObject protected BluetoothA2dp realObject;
+
   private final Map<BluetoothDevice, Integer> bluetoothDevices = new HashMap<>();
+  private final Map<BluetoothDevice, BluetoothCodecStatus> codecStatusMap = new HashMap<>();
+  private final Map<BluetoothDevice, BluetoothCodecConfig> codecConfigPreferenceMap =
+      new HashMap<>();
+  private final Map<BluetoothDevice, Integer> optionalCodecPreferenceStatusMap = new HashMap<>();
   private int dynamicBufferSupportType = BluetoothA2dp.DYNAMIC_BUFFER_SUPPORT_NONE;
   private final int[] bufferLengthMillisArray = new int[6];
   private BluetoothDevice activeBluetoothDevice;
@@ -128,5 +145,61 @@ public class ShadowBluetoothA2dp {
     intent.putExtra(BluetoothDevice.EXTRA_DEVICE, activeBluetoothDevice);
     RuntimeEnvironment.getApplication().sendBroadcast(intent);
     return true;
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  @Nullable
+  protected BluetoothCodecStatus getCodecStatus(BluetoothDevice device) {
+    return codecStatusMap.get(device);
+  }
+
+  public void setCodecStatus(BluetoothDevice device, BluetoothCodecStatus codecStatus) {
+    codecStatusMap.put(device, codecStatus);
+  }
+
+  @Nullable
+  public BluetoothCodecConfig getCodecConfigPreference(BluetoothDevice device) {
+    return codecConfigPreferenceMap.get(device);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void setCodecConfigPreference(
+      BluetoothDevice device, BluetoothCodecConfig codecConfig) {
+    codecConfigPreferenceMap.put(device, codecConfig);
+  }
+
+  @Implementation(minSdk = R)
+  @OptionalCodecsPreferenceStatus
+  protected int isOptionalCodecsEnabled(BluetoothDevice device) {
+    verifyDeviceNotNull(device, "isOptionalCodecsEnabled");
+    if (optionalCodecPreferenceStatusMap.containsKey(device)) {
+      return optionalCodecPreferenceStatusMap.get(device);
+    } else {
+      return BluetoothA2dp.OPTIONAL_CODECS_PREF_UNKNOWN;
+    }
+  }
+
+  @Implementation(minSdk = R)
+  protected void setOptionalCodecsEnabled(
+      BluetoothDevice device, @OptionalCodecsPreferenceStatus int value) {
+    verifyDeviceNotNull(device, "setOptionalCodecsEnabled");
+    if (value != BluetoothA2dp.OPTIONAL_CODECS_PREF_UNKNOWN
+        && value != BluetoothA2dp.OPTIONAL_CODECS_PREF_DISABLED
+        && value != BluetoothA2dp.OPTIONAL_CODECS_PREF_ENABLED) {
+      Log.e(TAG, "Invalid value passed to setOptionalCodecsEnabled: " + value);
+      return;
+    }
+    optionalCodecPreferenceStatusMap.put(device, value);
+  }
+
+  @ForType(BluetoothA2dp.class)
+  private interface BluetoothA2dpReflector {
+    @Direct
+    void verifyDeviceNotNull(BluetoothDevice device, String methodName);
+  }
+
+  @Implementation(minSdk = R)
+  protected void verifyDeviceNotNull(BluetoothDevice device, String methodName) {
+    reflector(BluetoothA2dpReflector.class, realObject).verifyDeviceNotNull(device, methodName);
   }
 }

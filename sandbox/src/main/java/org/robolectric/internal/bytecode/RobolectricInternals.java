@@ -31,9 +31,9 @@ public class RobolectricInternals {
   }
 
   public static MethodHandle findShadowMethodHandle(
-      Class<?> theClass, String name, MethodType methodType, boolean isStatic)
+      Class<?> theClass, String name, MethodType methodType, boolean isStatic, boolean isNative)
       throws IllegalAccessException {
-    return classHandler.findShadowMethodHandle(theClass, name, methodType, isStatic);
+    return classHandler.findShadowMethodHandle(theClass, name, methodType, isStatic, isNative);
   }
 
   @SuppressWarnings("UnusedDeclaration")

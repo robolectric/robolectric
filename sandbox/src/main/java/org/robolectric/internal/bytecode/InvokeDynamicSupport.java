@@ -31,6 +31,15 @@ public class InvokeDynamicSupport {
   private static final MethodHandle EXCEPTION_HANDLER;
   private static final MethodHandle GET_SHADOW;
 
+  /**
+   * Represents the boolean 'true' as an integer. Due to a JVM bug, invokedynamic bootstrap methods
+   * currently do not support extra primitive boolean parameters. Integers are required to convey
+   * booleans.
+   *
+   * <p>See https://bugs.java.com/bugdatabase/view_bug?bug_id=JDK-8322510
+   */
+  private static final int BOOLEAN_TRUE = 1;
+
   static {
     try {
       MethodHandles.Lookup lookup = MethodHandles.lookup();
@@ -75,14 +84,24 @@ public class InvokeDynamicSupport {
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrap(
-      MethodHandles.Lookup caller, String name, MethodType type, MethodHandle original)
+      MethodHandles.Lookup caller,
+      String name,
+      MethodType type,
+      MethodHandle original,
+      int isNative /* 1 == originally native, 0 == not originally native */)
       throws IllegalAccessException {
     return PerfStatsCollector.getInstance()
         .measure(
             "invokedynamic bootstrap",
             () -> {
               MethodCallSite site =
-                  new MethodCallSite(caller.lookupClass(), type, name, original, REGULAR);
+                  new MethodCallSite(
+                      caller.lookupClass(),
+                      type,
+                      name,
+                      original,
+                      REGULAR,
+                      isNative == BOOLEAN_TRUE);
 
               bindCallSite(site);
 
@@ -92,14 +111,19 @@ public class InvokeDynamicSupport {
 
   @SuppressWarnings("UnusedDeclaration")
   public static CallSite bootstrapStatic(
-      MethodHandles.Lookup caller, String name, MethodType type, MethodHandle original)
+      MethodHandles.Lookup caller,
+      String name,
+      MethodType type,
+      MethodHandle original,
+      int isNative /* 1 == originally native, 0 == not originally native */)
       throws IllegalAccessException {
     return PerfStatsCollector.getInstance()
         .measure(
             "invokedynamic bootstrap static",
             () -> {
               MethodCallSite site =
-                  new MethodCallSite(caller.lookupClass(), type, name, original, STATIC);
+                  new MethodCallSite(
+                      caller.lookupClass(), type, name, original, STATIC, isNative == BOOLEAN_TRUE);
 
               bindCallSite(site);
 
@@ -159,7 +183,7 @@ public class InvokeDynamicSupport {
   private static MethodHandle bindCallSite(MethodCallSite site) throws IllegalAccessException {
     MethodHandle mh =
         RobolectricInternals.findShadowMethodHandle(
-            site.getTheClass(), site.getName(), site.type(), site.isStatic());
+            site.getTheClass(), site.getName(), site.type(), site.isStatic(), site.isNative());
 
     if (mh == null) {
       // call original code
@@ -169,8 +193,13 @@ public class InvokeDynamicSupport {
       mh = dropArguments(mh, 0, site.type().parameterList());
     } else if (!site.isStatic()) {
       // drop arg 0 (this) for static methods
-      Class<?> shadowType = mh.type().parameterType(0);
-      mh = filterArguments(mh, 0, GET_SHADOW.asType(methodType(shadowType, site.thisType())));
+      Class<?> mhType = mh.type().parameterType(0);
+      // At this point, thisType is either a shadow type, or in the case of native method
+      // invocations, it can be equivalent to the original type.
+      if (!mhType.equals(site.getTheClass())) {
+        // Only invoke getShadow if the method is on class that is decoupled from the original.
+        mh = filterArguments(mh, 0, GET_SHADOW.asType(methodType(mhType, site.thisType())));
+      }
     }
 
     try {
