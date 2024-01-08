@@ -47,9 +47,9 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: test_results
+          name: test_results_${{ matrix.device }}
           path: |
-            '**/build/test-results/**/TEST-*.xml'
-            '**/roborazzi/build/reports/*'
-            '**/roborazzi/src/screenshots/*'
-            '**/roborazzi/build/outputs/roborazzi/*'
+            **/build/test-results/**/TEST-*.xml
+            **/roborazzi/build/reports/*
+            **/roborazzi/src/screenshots/*
+            **/roborazzi/build/outputs/roborazzi/*
