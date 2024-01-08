@@ -48,6 +48,12 @@ android {
             }
         }
     }
+    androidComponents {
+        beforeVariants(selector().all()) { variantBuilder ->
+            // Roborazzi does not support AndroidTest.
+            variantBuilder.enableAndroidTest = false
+        }
+    }
 }
 
 dependencies {
