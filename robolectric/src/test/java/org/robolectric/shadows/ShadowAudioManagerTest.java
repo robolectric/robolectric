@@ -28,6 +28,7 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioManager.OnModeChangedListener;
 import android.media.AudioPlaybackConfiguration;
+import android.media.AudioProfile;
 import android.media.AudioRecordingConfiguration;
 import android.media.AudioSystem;
 import android.media.MediaRecorder.AudioSource;
@@ -1452,6 +1453,56 @@ public class ShadowAudioManagerTest {
     // isHotwordStreamSupported with lookbackAudio=true is not set.
     assertThat(shadowOf(audioManager).isHotwordStreamSupported(/* lookbackAudio= */ true))
         .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getDirectProfilesForAttributes_returnsEmptyListByDefault() {
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+            .build();
+
+    assertThat(shadowOf(audioManager).getDirectProfilesForAttributes(audioAttributes)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void
+      addAndRemoveOutputDeviceWithDirectProfiles_updatesDirectProfilesForAttributes_notifiesCallback() {
+    AudioDeviceCallback callback = mock(AudioDeviceCallback.class);
+    audioManager.registerAudioDeviceCallback(callback, /* handler= */ null);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {}); // initial registration
+    ImmutableList<AudioProfile> expectedProfiles =
+        ImmutableList.of(
+            AudioProfileBuilder.newBuilder()
+                .setFormat(AudioFormat.ENCODING_AC3)
+                .setSamplingRates(new int[] {48_000})
+                .setChannelMasks(new int[] {AudioFormat.CHANNEL_OUT_5POINT1})
+                .setEncapsulationType(AudioProfile.AUDIO_ENCAPSULATION_TYPE_NONE)
+                .build());
+    AudioDeviceInfo outputDevice =
+        AudioDeviceInfoBuilder.newBuilder()
+            .setType(AudioDeviceInfo.TYPE_HDMI)
+            .setProfiles(expectedProfiles)
+            .build();
+    AudioAttributes audioAttributes =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+            .build();
+
+    shadowOf(audioManager).addOutputDeviceWithDirectProfiles(outputDevice);
+
+    assertThat(shadowOf(audioManager).getDirectProfilesForAttributes(audioAttributes))
+        .isEqualTo(expectedProfiles);
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {outputDevice});
+
+    shadowOf(audioManager).removeOutputDeviceWithDirectProfiles(outputDevice);
+
+    assertThat(shadowOf(audioManager).getDirectProfilesForAttributes(audioAttributes)).isEmpty();
+    verify(callback).onAudioDevicesAdded(new AudioDeviceInfo[] {outputDevice});
   }
 
   private static AudioDeviceInfo createAudioDevice(int type) throws ReflectiveOperationException {

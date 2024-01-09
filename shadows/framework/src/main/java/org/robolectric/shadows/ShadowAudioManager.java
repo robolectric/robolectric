@@ -23,6 +23,7 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioPlaybackConfiguration;
+import android.media.AudioProfile;
 import android.media.AudioRecordingConfiguration;
 import android.media.IPlayer;
 import android.media.PlayerBase;
@@ -33,6 +34,7 @@ import android.os.Parcel;
 import android.view.KeyEvent;
 import com.android.internal.util.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,6 +102,7 @@ public class ShadowAudioManager {
   private final Map<String, AudioPolicy> registeredAudioPolicies = new HashMap<>();
   private int audioSessionIdCounter = 1;
   private final Map<AudioAttributes, ImmutableList<Object>> devicesForAttributes = new HashMap<>();
+  private final List<AudioDeviceInfo> outputDevicesWithDirectProfiles = new ArrayList<>();
   private ImmutableList<Object> defaultDevicesForAttributes = ImmutableList.of();
   private final Map<AudioAttributes, ImmutableList<AudioDeviceInfo>> audioDevicesForAttributes =
       new HashMap<>();
@@ -610,6 +613,8 @@ public class ShadowAudioManager {
    * @see #removeInputDevice(AudioDeviceInfo, boolean)
    * @see #removeOutputDevice(AudioDeviceInfo, boolean)
    * @see #removeAvailableCommunicationDevice(AudioDeviceInfo, boolean)
+   * @see #addOutputDeviceWithDirectProfiles(AudioDeviceInfo)
+   * @see #removeOutputDeviceWithDirectProfiles(AudioDeviceInfo)
    */
   @Implementation(minSdk = M)
   protected void registerAudioDeviceCallback(AudioDeviceCallback callback, Handler handler) {
@@ -628,6 +633,8 @@ public class ShadowAudioManager {
    * @see #removeInputDevice(AudioDeviceInfo, boolean)
    * @see #removeOutputDevice(AudioDeviceInfo, boolean)
    * @see #removeAvailableCommunicationDevice(AudioDeviceInfo, boolean)
+   * @see #addOutputDeviceWithDirectProfiles(AudioDeviceInfo)
+   * @see #removeOutputDeviceWithDirectProfiles(AudioDeviceInfo)
    */
   @Implementation(minSdk = M)
   protected void unregisterAudioDeviceCallback(AudioDeviceCallback callback) {
@@ -903,6 +910,47 @@ public class ShadowAudioManager {
    */
   public boolean isAnyAudioPolicyRegistered() {
     return !registeredAudioPolicies.isEmpty();
+  }
+
+  /**
+   * Returns the list of profiles supported for direct playback.
+   *
+   * <p>In this shadow-implementation the list returned are profiles set through {@link
+   * #addOutputDeviceWithDirectProfiles(AudioDeviceInfo)}, {@link
+   * #removeOutputDeviceWithDirectProfiles(AudioDeviceInfo)}.
+   */
+  @Implementation(minSdk = TIRAMISU)
+  @NonNull
+  protected List<AudioProfile> getDirectProfilesForAttributes(@NonNull AudioAttributes attributes) {
+    ImmutableSet.Builder<AudioProfile> audioProfiles = new ImmutableSet.Builder<>();
+    for (int i = 0; i < outputDevicesWithDirectProfiles.size(); i++) {
+      audioProfiles.addAll(outputDevicesWithDirectProfiles.get(i).getAudioProfiles());
+    }
+    return new ArrayList<>(audioProfiles.build());
+  }
+
+  /**
+   * Adds an output {@link AudioDeviceInfo device} with direct profiles and notifies the list of
+   * {@link AudioDeviceCallback} if the device was not present before.
+   */
+  public void addOutputDeviceWithDirectProfiles(AudioDeviceInfo outputDevice) {
+    boolean changed =
+        !this.outputDevicesWithDirectProfiles.contains(outputDevice)
+            && this.outputDevicesWithDirectProfiles.add(outputDevice);
+    if (changed) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(outputDevice), /* added= */ true);
+    }
+  }
+
+  /**
+   * Removes an output {@link AudioDeviceInfo device} with direct profiles and notifies the list of
+   * {@link AudioDeviceCallback} if the device was present before.
+   */
+  public void removeOutputDeviceWithDirectProfiles(AudioDeviceInfo outputDevice) {
+    boolean changed = this.outputDevicesWithDirectProfiles.remove(outputDevice);
+    if (changed) {
+      notifyAudioDeviceCallbacks(ImmutableList.of(outputDevice), /* added= */ false);
+    }
   }
 
   /**

@@ -3,9 +3,14 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.AudioDeviceInfo;
+import android.media.AudioProfile;
+import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.SparseIntArray;
 import androidx.annotation.RequiresApi;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
@@ -19,6 +24,7 @@ import org.robolectric.util.reflector.Static;
 public class AudioDeviceInfoBuilder {
 
   private int type;
+  private List<AudioProfile> profiles = new ArrayList<>();
 
   private AudioDeviceInfoBuilder() {}
 
@@ -32,15 +38,30 @@ public class AudioDeviceInfoBuilder {
    * @param type The device type. The possible values are the constants defined as <a
    *     href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/media/java/android/media/AudioDeviceInfo.java?q=AudioDeviceType">AudioDeviceInfo.AudioDeviceType</a>
    */
+  @CanIgnoreReturnValue
   public AudioDeviceInfoBuilder setType(int type) {
     this.type = type;
+    return this;
+  }
+
+  /**
+   * Sets the {@link AudioProfile profiles}.
+   *
+   * @param profiles The list of {@link AudioProfile profiles}.
+   */
+  @RequiresApi(VERSION_CODES.S)
+  @CanIgnoreReturnValue
+  public AudioDeviceInfoBuilder setProfiles(List<AudioProfile> profiles) {
+    this.profiles = new ArrayList<>(profiles);
     return this;
   }
 
   public AudioDeviceInfo build() {
     Object port = Shadow.newInstanceOf("android.media.AudioDevicePort");
     ReflectionHelpers.setField(port, "mType", externalToInternalType(type));
-
+    if (VERSION.SDK_INT >= 31) {
+      ReflectionHelpers.setField(port, "mProfiles", profiles);
+    }
     return ReflectionHelpers.callConstructor(
         AudioDeviceInfo.class, ClassParameter.from(port.getClass(), port));
   }
