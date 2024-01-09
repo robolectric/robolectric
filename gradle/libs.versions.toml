@@ -1,9 +1,8 @@
 [versions]
-robolectric-compat = "4.11.1"
 robolectric-nativeruntime-dist-compat = "1.0.6"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.1.4"
+android-gradle = "8.2.1"
 
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
@@ -28,16 +27,16 @@ error-prone-javac = "9+181-r4173-1"
 error-prone-gradle = "3.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "1.9.20"
+kotlin = "1.9.22"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
 kotlinx-coroutines = '1.7.3'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
-spotless-gradle = "6.22.0"
+spotless-gradle = "6.23.3"
 
 # https://detekt.dev/changelog
-detekt-gradle = "1.23.3"
+detekt-gradle = "1.23.4"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
@@ -63,7 +62,7 @@ gson = "2.10.1"
 truth = "1.1.5"
 
 # https://github.com/unicode-org/icu/releases
-icu4j = "74.1"
+icu4j = "74.2"
 
 jacoco = "0.8.11"
 
@@ -79,13 +78,16 @@ jetbrains-annotations = "24.1.0"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.25"
+libphonenumber = "8.13.27"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
 
 # https://github.com/mockk/mockk/releases
 mockk = "1.13.7"
+
+# https://github.com/takahirom/roborazzi/releases
+roborazzi = "1.9.0-alpha-4"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.12.0"
@@ -104,6 +106,7 @@ androidx-core = "1.12.0"
 androidx-fragment = "1.6.2"
 androidx-multidex = "2.0.1"
 androidx-window = "1.2.0"
+androidx-room = "2.6.1"
 
 # https://github.com/android/android-test/tags
 androidx-test-annotation = "1.0.1"
@@ -202,6 +205,10 @@ mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 
+roborazzi = { module = "io.github.takahirom.roborazzi:roborazzi", version.ref = "roborazzi" }
+roborazzi-rule = { module = "io.github.takahirom.roborazzi:roborazzi-junit-rule", version.ref = "roborazzi" }
+roborazzi-gradle = { module = "io.github.takahirom.roborazzi:roborazzi-gradle-plugin", version.ref = "roborazzi" }
+
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidx-annotation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidx-biometric" }
@@ -211,6 +218,8 @@ androidx-fragment = { module = "androidx.fragment:fragment", version.ref = "andr
 androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "androidx-fragment" }
 androidx-multidex = { module = "androidx.multidex:multidex", version.ref = "androidx-multidex" }
 androidx-window = { module = "androidx.window:window", version.ref = "androidx-window" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
 
 androidx-test-annotation = { module = "androidx.test:annotation", version.ref = "androidx-test-annotation" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }

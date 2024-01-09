@@ -17,6 +17,7 @@ buildscript {
         classpath libs.kotlin.gradle
         classpath libs.spotless.gradle
         classpath libs.detekt.gradle
+        classpath libs.roborazzi.gradle
     }
 }
 

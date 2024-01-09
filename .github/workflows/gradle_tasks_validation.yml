@@ -15,23 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  run_checkForApiChanges:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'zulu'
-          java-version: 17
-
-      - uses: gradle/gradle-build-action@v2.9.0
-
-      - name: Run checkForApiChanges
-        run: ./gradlew checkForApiChanges
-
   run_aggregateDocs:
     runs-on: ubuntu-22.04
 
@@ -39,12 +22,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Run aggregateDocs
         run: ./gradlew clean aggregateDocs
@@ -56,12 +39,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Run javadocJar
         run: ./gradlew clean javadocJar
@@ -76,12 +59,12 @@ jobs:
           submodules: recursive
 
       - name: Set up JDK
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll

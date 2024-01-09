@@ -25,12 +25,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Build
         run: |
@@ -49,12 +49,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Run unit tests
         run: |
@@ -66,7 +66,8 @@ jobs:
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
           -Drobolectric.usePreinstrumentedJars=false \
           -Dorg.gradle.workers.max=2 \
-          -x :integration_tests:nativegraphics:test
+          -x :integration_tests:nativegraphics:test \
+          -x :integration_tests:roborazzi:test
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v3
@@ -90,12 +91,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Determine emulator target
         id: determine-target
@@ -160,12 +161,12 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Publish
         run: |

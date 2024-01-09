@@ -25,16 +25,18 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.9.0
+      - uses: gradle/gradle-build-action@v2.11.1
 
       - name: Run unit tests
         run: |
-          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew :integration_tests:nativegraphics:testDebugUnitTest \
+          SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew \
+          :integration_tests:nativegraphics:testDebugUnitTest \
+          :integration_tests:roborazzi:verifyRoborazziDebug \
           --info --stacktrace --continue \
           --parallel \
           --no-watch-fs \
@@ -46,6 +48,9 @@ jobs:
         uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: test_results
-          path: '**/build/test-results/**/TEST-*.xml'
-
+          name: test_results_${{ matrix.device }}
+          path: |
+            **/build/test-results/**/TEST-*.xml
+            **/roborazzi/build/reports/*
+            **/roborazzi/src/screenshots/*
+            **/roborazzi/build/outputs/roborazzi/*

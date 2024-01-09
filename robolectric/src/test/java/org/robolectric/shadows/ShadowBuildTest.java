@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
@@ -130,6 +131,30 @@ public class ShadowBuildTest {
     assertThat(Build.getSerial()).isEqualTo("unknown");
     ShadowBuild.setSerial("robo_serial");
     assertThat(Build.getSerial()).isEqualTo("robo_serial");
+  }
+
+  @Test
+  @Config(minSdk = L)
+  public void supported32BitAbis() {
+    assertThat(Build.SUPPORTED_32_BIT_ABIS).isEqualTo(new String[] {"armeabi-v7a", "armeabi"});
+    ShadowBuild.setSupported32BitAbis(new String[] {"x86"});
+    assertThat(Build.SUPPORTED_32_BIT_ABIS).isEqualTo(new String[] {"x86"});
+  }
+
+  @Test
+  @Config(minSdk = L)
+  public void supported64BitAbis() {
+    assertThat(Build.SUPPORTED_64_BIT_ABIS).isEqualTo(new String[] {"armeabi-v7a", "armeabi"});
+    ShadowBuild.setSupported64BitAbis(new String[] {"x86_64"});
+    assertThat(Build.SUPPORTED_64_BIT_ABIS).isEqualTo(new String[] {"x86_64"});
+  }
+
+  @Test
+  @Config(minSdk = L)
+  public void supportedAbis() {
+    assertThat(Build.SUPPORTED_ABIS).isEqualTo(new String[] {"armeabi-v7a"});
+    ShadowBuild.setSupportedAbis(new String[] {"x86"});
+    assertThat(Build.SUPPORTED_ABIS).isEqualTo(new String[] {"x86"});
   }
 
   /** Verifies that each test gets a fresh set of Build values. */
