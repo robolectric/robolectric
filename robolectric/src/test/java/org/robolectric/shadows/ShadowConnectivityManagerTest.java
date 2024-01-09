@@ -430,15 +430,19 @@ public class ShadowConnectivityManagerTest {
     assertThat(shadowOf(connectivityManager).getNetworkCallbackPendingIntents()).isEmpty();
   }
 
-  @Test(expected = IllegalArgumentException.class)
   @Config(minSdk = LOLLIPOP)
+  @Test
   public void unregisterCallback_shouldNotAllowNullCallback() {
     // Verify that exception is thrown.
-    connectivityManager.unregisterNetworkCallback((ConnectivityManager.NetworkCallback) null);
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            connectivityManager.unregisterNetworkCallback(
+                (ConnectivityManager.NetworkCallback) null));
   }
 
-  @Test
   @Config(minSdk = M)
+  @Test
   public void unregisterCallback_withPendingIntent_shouldNotAllowNullCallback() {
     // Verify that exception is thrown.
     assertThrows(
@@ -552,11 +556,13 @@ public class ShadowConnectivityManagerTest {
     verify(listener2).onNetworkActive();
   }
 
-  @Test(expected = IllegalArgumentException.class)
   @Config(minSdk = LOLLIPOP)
+  @Test
   public void removeDefaultNetworkActiveListener_shouldNotAllowNullListener() {
     // Verify that exception is thrown.
-    connectivityManager.removeDefaultNetworkActiveListener(null);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> connectivityManager.removeDefaultNetworkActiveListener(null));
   }
 
   @Test
@@ -661,16 +667,20 @@ public class ShadowConnectivityManagerTest {
         .isEqualTo(RESTRICT_BACKGROUND_STATUS_DISABLED);
   }
 
-  @Test(expected = IllegalArgumentException.class)
   @Config(minSdk = N)
+  @Test
   public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus0() {
-    shadowOf(connectivityManager).setRestrictBackgroundStatus(0);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> shadowOf(connectivityManager).setRestrictBackgroundStatus(0));
   }
 
-  @Test(expected = IllegalArgumentException.class)
   @Config(minSdk = N)
+  @Test
   public void setRestrictBackgroundStatus_throwsExceptionOnIncorrectStatus4() {
-    shadowOf(connectivityManager).setRestrictBackgroundStatus(4);
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> shadowOf(connectivityManager).setRestrictBackgroundStatus(4));
   }
 
   @Test
