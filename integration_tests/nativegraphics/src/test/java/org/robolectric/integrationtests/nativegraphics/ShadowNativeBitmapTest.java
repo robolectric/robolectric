@@ -1588,7 +1588,13 @@ public class ShadowNativeBitmapTest {
     Bitmap bitmap4 = BitmapFactory.decodeResource(res, R.drawable.start, HARDWARE_OPTIONS);
     assertTrue(bitmap1.sameAs(bitmap2));
     assertTrue(bitmap2.sameAs(bitmap1));
-    assertFalse(bitmap1.sameAs(bitmap3));
+
+    // Note: on an emulator or real device, the HARDWARE bitmap1 and the Software bitmap3 differ
+    // because the pixels cannot be read from the underlying hardware buffer. However, after the fix
+    // from r.android.com/2887086, Robolectric does actually properly fill the buffer content of a
+    // HARDWARE bitmap, which means it now is the same as its non-hardware counterpart.
+    assertTrue(bitmap1.sameAs(bitmap3));
+
     assertFalse(bitmap1.sameAs(bitmap4));
   }
 
