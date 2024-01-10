@@ -764,10 +764,6 @@ public class ShadowContentResolverTest {
     assertThat(resultOperations).isNotNull();
     assertThat(resultOperations.size()).isEqualTo(0);
 
-    ContentProviderResult[] contentProviderResults =
-        new ContentProviderResult[] {
-          new ContentProviderResult(1), new ContentProviderResult(1),
-        };
     Uri uri = Uri.parse("content://org.robolectric");
     ArrayList<ContentProviderOperation> operations = new ArrayList<>();
     operations.add(
