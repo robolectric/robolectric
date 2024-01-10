@@ -522,23 +522,4 @@ public class ReflectionHelpers {
       return values;
     }
   }
-
-  /**
-   * String parameter used with reflective method calls.
-   *
-   * @param <V> The value of the method parameter.
-   */
-  public static class StringParameter<V> {
-    public final String className;
-    public final V value;
-
-    public StringParameter(String className, V value) {
-      this.className = className;
-      this.value = value;
-    }
-
-    public static <V> StringParameter<V> from(String className, V value) {
-      return new StringParameter<>(className, value);
-    }
-  }
 }
