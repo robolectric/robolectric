@@ -46,11 +46,11 @@ tasks.register('instrumentAll') {
     }
 }
 
-tasks.register('sourcesJar', Jar) {
+tasks.register('emptySourcesJar', Jar) {
     archiveClassifier = "sources"
 }
 
-tasks.register('javadocJar', Jar) {
+tasks.register('emptyJavadocJar', Jar) {
     archiveClassifier = "javadoc"
 }
 
@@ -68,8 +68,8 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
                 "sdk${androidSdk.apiLevel}"(MavenPublication) {
                     artifact "${buildDir}/${androidSdk.preinstrumentedJarFileName}"
                     artifactId 'android-all-instrumented'
-                    artifact sourcesJar
-                    artifact javadocJar
+                    artifact emptySourcesJar
+                    artifact emptyJavadocJar
                     version androidSdk.preinstrumentedVersion
 
                     pom {
@@ -118,6 +118,20 @@ if (System.getenv('PUBLISH_PREINSTRUMENTED_JARS') == "true") {
             sign publishing.publications."sdk${androidSdk.apiLevel}"
         }
     }
+
+
+  // Workaround for https://github.com/gradle/gradle/issues/26132
+  // For some reason, Gradle has inferred that all publishing tasks depend on all signing tasks,
+  // so we must explicitly declare this here.
+  afterEvaluate {
+    tasks.all {
+      if (name.startsWith("publishSdk")) {
+        sdksToInstrument().each { androidSdk ->
+          dependsOn(tasks.named("signSdk${androidSdk.apiLevel}Publication"))
+        }
+      }
+    }
+  }
 }
 
 static def sdksToInstrument() {

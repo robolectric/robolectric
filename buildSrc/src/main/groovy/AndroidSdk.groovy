@@ -1,5 +1,5 @@
 class AndroidSdk implements Comparable<AndroidSdk> {
-    static final PREINSTRUMENTED_VERSION = 4
+    static final PREINSTRUMENTED_VERSION = 5
 
     static final KITKAT = new AndroidSdk(19, "4.4_r1", "r2")
     static final LOLLIPOP = new AndroidSdk(21, "5.0.2_r3", "r0")

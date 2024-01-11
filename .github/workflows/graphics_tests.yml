@@ -41,7 +41,6 @@ jobs:
           --parallel \
           --no-watch-fs \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-          -Drobolectric.usePreinstrumentedJars=false \
           -Dorg.gradle.workers.max=2
 
       - name: Upload Test Results
