@@ -42,4 +42,36 @@ public class AudioProfileBuilderTest {
     assertThat(audioProfile.getEncapsulationType())
         .isEqualTo(AudioProfile.AUDIO_ENCAPSULATION_TYPE_NONE);
   }
+
+  @Test
+  public void buildAudioProfile_withDefaultValues_buildsExpectedObject() {
+    AudioProfile audioProfile = AudioProfileBuilder.newBuilder().build();
+
+    assertThat(audioProfile.getFormat()).isEqualTo(AudioFormat.ENCODING_PCM_16BIT);
+    assertThat(audioProfile.getSampleRates()).isEqualTo(new int[] {48000});
+    assertThat(audioProfile.getChannelMasks())
+        .isEqualTo(new int[] {AudioFormat.CHANNEL_OUT_STEREO});
+    assertThat(audioProfile.getChannelIndexMasks()).isEqualTo(new int[0]);
+    assertThat(audioProfile.getEncapsulationType())
+        .isEqualTo(AudioProfile.AUDIO_ENCAPSULATION_TYPE_NONE);
+  }
+
+  @Test
+  public void buildAudioProfile_withSetValues_buildsExpectedObject() {
+    AudioProfile audioProfile =
+        AudioProfileBuilder.newBuilder()
+            .setFormat(AudioFormat.ENCODING_PCM_32BIT)
+            .setSamplingRates(new int[] {96000})
+            .setChannelMasks(new int[] {AudioFormat.CHANNEL_OUT_QUAD})
+            .setChannelIndexMasks(new int[] {0x5})
+            .setEncapsulationType(AudioProfile.AUDIO_ENCAPSULATION_TYPE_IEC61937)
+            .build();
+
+    assertThat(audioProfile.getFormat()).isEqualTo(AudioFormat.ENCODING_PCM_32BIT);
+    assertThat(audioProfile.getSampleRates()).isEqualTo(new int[] {96000});
+    assertThat(audioProfile.getChannelMasks()).isEqualTo(new int[] {AudioFormat.CHANNEL_OUT_QUAD});
+    assertThat(audioProfile.getChannelIndexMasks()).isEqualTo(new int[] {0x5});
+    assertThat(audioProfile.getEncapsulationType())
+        .isEqualTo(AudioProfile.AUDIO_ENCAPSULATION_TYPE_IEC61937);
+  }
 }

@@ -8,8 +8,8 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.SparseIntArray;
 import androidx.annotation.RequiresApi;
+import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.robolectric.shadow.api.Shadow;
@@ -23,8 +23,8 @@ import org.robolectric.util.reflector.Static;
 @RequiresApi(VERSION_CODES.M)
 public class AudioDeviceInfoBuilder {
 
-  private int type;
-  private List<AudioProfile> profiles = new ArrayList<>();
+  private int type = AudioDeviceInfo.TYPE_BUILTIN_SPEAKER;
+  private ImmutableList<AudioProfile> profiles = ImmutableList.of();
 
   private AudioDeviceInfoBuilder() {}
 
@@ -34,6 +34,8 @@ public class AudioDeviceInfoBuilder {
 
   /**
    * Sets the device type.
+   *
+   * <p>The default is {@link AudioDeviceInfo#TYPE_BUILTIN_SPEAKER}.
    *
    * @param type The device type. The possible values are the constants defined as <a
    *     href="https://cs.android.com/android/platform/superproject/+/master:frameworks/base/media/java/android/media/AudioDeviceInfo.java?q=AudioDeviceType">AudioDeviceInfo.AudioDeviceType</a>
@@ -52,7 +54,7 @@ public class AudioDeviceInfoBuilder {
   @RequiresApi(VERSION_CODES.S)
   @CanIgnoreReturnValue
   public AudioDeviceInfoBuilder setProfiles(List<AudioProfile> profiles) {
-    this.profiles = new ArrayList<>(profiles);
+    this.profiles = ImmutableList.copyOf(profiles);
     return this;
   }
 
