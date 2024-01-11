@@ -38,4 +38,5 @@ dependencies {
     testImplementation libs.truth
     testImplementation libs.junit4
     testImplementation libs.mockito
+    testImplementation libs.guava.testlib
 }

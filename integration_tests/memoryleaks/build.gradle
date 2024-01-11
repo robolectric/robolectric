@@ -31,6 +31,5 @@ dependencies {
     testImplementation project(":robolectric")
     testImplementation libs.junit4
     testImplementation libs.guava.testlib
-    testImplementation libs.guava.testlib
     testImplementation libs.androidx.fragment
 }

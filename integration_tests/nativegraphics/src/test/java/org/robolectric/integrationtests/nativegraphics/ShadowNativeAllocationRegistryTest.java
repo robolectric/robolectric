@@ -8,7 +8,8 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Matrix;
-import libcore.util.NativeAllocationRegistry;
+import com.google.common.testing.GcFinalization;
+import java.lang.ref.WeakReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -21,14 +22,21 @@ import org.robolectric.util.reflector.Static;
 @Config(minSdk = O)
 public final class ShadowNativeAllocationRegistryTest {
   @Test
-  public void applyFreeFunction_matrix() {
+  public void applyFreeFunction_matrix() throws Exception {
+    WeakReference<Matrix> weakMatrix = new WeakReference<>(newMatrix());
+    // Invokes 'applyFreeFunction' when the matrix is GC'd.
+    GcFinalization.awaitClear(weakMatrix);
+  }
+
+  // Creates a new Matrix as a local variable, which is eligible for GC when it goes out
+  // of scope.
+  private Matrix newMatrix() {
     Matrix matrix = new Matrix();
     long pointer = reflector(MatrixReflector.class, matrix).getNativeInstance();
     long freeFunction = reflector(MatrixReflector.class).nGetNativeFinalizer();
     assertThat(pointer).isNotEqualTo(0);
     assertThat(freeFunction).isNotEqualTo(0);
-    NativeAllocationRegistry.applyFreeFunction(freeFunction, pointer);
-    reflector(MatrixReflector.class, matrix).setNativeInstance(0); // Zero the pointer
+    return matrix;
   }
 
   @Config(sdk = S) // No need to re-run on multiple SDK levels
@@ -47,9 +55,6 @@ public final class ShadowNativeAllocationRegistryTest {
   interface MatrixReflector {
     @Accessor("native_instance")
     long getNativeInstance();
-
-    @Accessor("native_instance")
-    void setNativeInstance(long value);
 
     @Static
     long nGetNativeFinalizer();
