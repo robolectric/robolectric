@@ -91,7 +91,7 @@
     <activity android:name=".android.controller.ActivityControllerTest$ConfigAwareActivity"
               android:configChanges="fontScale|smallestScreenSize" />
 
-    <activity android:name="org.robolectric.shadows.TestActivity">
+    <activity android:name="org.robolectric.shadows.TestActivity" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.DEFAULT"/>
@@ -198,32 +198,32 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name="org.robolectric.fakes.ConfigTestReceiver">
+    <receiver android:name="org.robolectric.fakes.ConfigTestReceiver" android:exported="true">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_SUPERSET_PACKAGE"/>
       </intent-filter>
     </receiver>
 
-    <receiver android:name="org.robolectric.ConfigTestReceiver">
+    <receiver android:name="org.robolectric.ConfigTestReceiver" android:exported="true">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_SUBSET_PACKAGE"/>
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".DotConfigTestReceiver">
+    <receiver android:name=".DotConfigTestReceiver" android:exported="true">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_PACKAGE"/>
       </intent-filter>
     </receiver>
 
-    <receiver android:name=".test.ConfigTestReceiver">
+    <receiver android:name=".test.ConfigTestReceiver" android:exported="true">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DOT_SUBPACKAGE"/>
       </intent-filter>
       <meta-data android:name="numberOfSheep" android:value="42" />
     </receiver>
 
-    <receiver android:name="com.foo.Receiver">
+    <receiver android:name="com.foo.Receiver" android:exported="true">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_DIFFERENT_PACKAGE"/>
       </intent-filter>
