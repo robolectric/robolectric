@@ -101,6 +101,7 @@ public class ShadowBluetoothAdapter {
   private boolean isBleScanAlwaysAvailable = true;
   private boolean isMultipleAdvertisementSupported = true;
   private int isLeAudioSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
+  private int isDistanceMeasurementSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
   private boolean isLeExtendedAdvertisingSupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
@@ -156,6 +157,19 @@ public class ShadowBluetoothAdapter {
   /** Determines if getDefaultAdapter() returns the default local adapter (true) or null (false). */
   public static void setIsBluetoothSupported(boolean supported) {
     isBluetoothSupported = supported;
+  }
+
+  /**
+   * Sets whether the distance measurement is supported or not. Minimum sdk version required is
+   * UPSIDE_DOWN_CAKE.
+   */
+  public void setDistanceMeasurementSupported(int supported) {
+    isDistanceMeasurementSupported = supported;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected int isDistanceMeasurementSupported() {
+    return isDistanceMeasurementSupported;
   }
 
   /**
@@ -630,7 +644,7 @@ public class ShadowBluetoothAdapter {
     // PendingIntent#isImmutable throws an NPE if the component does not exist, so verify directly
     // against the flags for now.
     if ((shadowOf(pendingIntent).getFlags() & PendingIntent.FLAG_IMMUTABLE) == 0) {
-      throw new IllegalArgumentException("RFCOMM server PendingIntent must be marked immutable");
+      throw new IllegalArgumentException("RFCOMM servers PendingIntent must be marked immutable");
     }
 
     boolean[] isNewServerSocket = {false};

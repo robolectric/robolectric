@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -430,9 +431,8 @@ public class ShadowBluetoothAdapterTest {
   @Test
   public void secureRfcomm_notNull() throws Exception {
     assertThat(
-            bluetoothAdapter.listenUsingRfcommWithServiceRecord(
-                    "serviceName", UUID.randomUUID()))
-            .isNotNull();
+            bluetoothAdapter.listenUsingRfcommWithServiceRecord("serviceName", UUID.randomUUID()))
+        .isNotNull();
   }
 
   @Test
@@ -903,5 +903,20 @@ public class ShadowBluetoothAdapterTest {
     // set Le audio feature to supported.
     shadowOf(adapter).setLeAudioSupported(BluetoothStatusCodes.FEATURE_SUPPORTED);
     assertThat(adapter.isLeAudioSupported()).isEqualTo(BluetoothStatusCodes.FEATURE_SUPPORTED);
+  }
+
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  @Test
+  public void canGetAndSetDistanceMeasurementSupport() {
+    // By default distance measurement is not supported
+    assertThat(bluetoothAdapter.isDistanceMeasurementSupported())
+        .isEqualTo(BluetoothStatusCodes.FEATURE_NOT_SUPPORTED);
+
+    // set distance measurement feature to supported.
+    shadowOf(bluetoothAdapter)
+        .setDistanceMeasurementSupported(BluetoothStatusCodes.FEATURE_SUPPORTED);
+
+    assertThat(bluetoothAdapter.isDistanceMeasurementSupported())
+        .isEqualTo(BluetoothStatusCodes.FEATURE_SUPPORTED);
   }
 }
