@@ -21,7 +21,7 @@
       </intent-filter>
     </receiver>
 
-    <receiver android:name="org.robolectric.ConfigTestReceiver">
+    <receiver android:name="org.robolectric.ConfigTestReceiver" android:exported="true">
       <intent-filter>
         <action android:name="org.robolectric.ACTION_SUBSET_PACKAGE"/>
       </intent-filter>
