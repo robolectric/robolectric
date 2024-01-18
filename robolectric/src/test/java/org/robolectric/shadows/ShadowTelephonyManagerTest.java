@@ -53,6 +53,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
@@ -103,6 +104,7 @@ public class ShadowTelephonyManagerTest {
 
   private TelephonyManager telephonyManager;
   private ShadowTelephonyManager shadowTelephonyManager;
+  private TelephonyManager tmForSub5;
 
   @Before
   public void setUp() throws Exception {
@@ -110,6 +112,25 @@ public class ShadowTelephonyManagerTest {
     shadowTelephonyManager = Shadow.extract(telephonyManager);
     shadowOf((Application) ApplicationProvider.getApplicationContext())
         .grantPermissions(permission.READ_PRIVILEGED_PHONE_STATE);
+    tmForSub5 = newTelephonyManager(5);
+  }
+
+  private TelephonyManager newTelephonyManager(Integer subId) {
+    Class<?>[] parameters;
+    Object[] arguments;
+    if (subId == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+      parameters = new Class<?>[] {Context.class};
+      arguments = new Object[] {ApplicationProvider.getApplicationContext()};
+    } else {
+      parameters = new Class<?>[] {Context.class, int.class};
+      arguments = new Object[] {ApplicationProvider.getApplicationContext(), subId};
+    }
+    TelephonyManager newInstance =
+        Shadow.newInstance(TelephonyManager.class, parameters, arguments);
+    if (subId != null) {
+      shadowTelephonyManager.setTelephonyManagerForSubscriptionId(subId, newInstance);
+    }
+    return newInstance;
   }
 
   @Test
@@ -164,6 +185,15 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = M)
+  public void setDeviceId_withSlot_doesNotAffectCallingInstance() {
+    String testId = "TESTING123";
+    shadowOf(telephonyManager).setDeviceId(123, testId);
+    assertThat(telephonyManager.getDeviceId()).isNull();
+    assertThat(telephonyManager.getDeviceId(123)).isEqualTo(testId);
+  }
+
+  @Test
+  @Config(minSdk = M)
   public void shouldGiveDeviceIdForSlot() {
     shadowOf(telephonyManager).setDeviceId(1, "device in slot 1");
     shadowOf(telephonyManager).setDeviceId(2, "device in slot 2");
@@ -199,6 +229,14 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = O)
+  public void setImei_withSlotId_acceptsNull() {
+    shadowOf(telephonyManager).setImei(0, "imei0");
+    shadowOf(telephonyManager).setImei(0, null);
+    assertEquals(null, telephonyManager.getImei(0));
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void getMeid() {
     String testMeid = "4test meid";
     shadowOf(telephonyManager).setMeid(testMeid);
@@ -213,6 +251,7 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setMeid(1, "meid1");
     assertEquals("meid0", telephonyManager.getMeid(0));
     assertEquals("meid1", telephonyManager.getMeid(1));
+    assertEquals("defaultMeid", telephonyManager.getMeid());
   }
 
   @Test
@@ -386,6 +425,14 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = M)
+  public void setCurrentPhoneType_fromPhoneId_canBeReadFromAnyInstance() {
+    shadowOf(telephonyManager).setCurrentPhoneType(123, TelephonyManager.PHONE_TYPE_CDMA);
+
+    assertEquals(TelephonyManager.PHONE_TYPE_CDMA, tmForSub5.getCurrentPhoneType(123));
+  }
+
+  @Test
   public void shouldGiveCellLocation() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
     telephonyManager.listen(listener, LISTEN_CELL_LOCATION);
@@ -459,6 +506,14 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.isSmsCapable()).isTrue();
     shadowOf(telephonyManager).setIsSmsCapable(false);
     assertThat(telephonyManager.isSmsCapable()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void setSmsCapable_modifiesAllInstances() {
+    shadowOf(telephonyManager).setIsSmsCapable(false);
+    newTelephonyManager(123);
+    assertThat(telephonyManager.createForSubscriptionId(123).isSmsCapable()).isFalse();
   }
 
   @Test
@@ -543,6 +598,18 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = N)
+  public void setVoicemailVibrationEnabled_accessibleFromAllTelephonyManagers() {
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+
+    shadowOf(telephonyManager).setVoicemailVibrationEnabled(phoneAccountHandle, true);
+
+    assertTrue(telephonyManager.isVoicemailVibrationEnabled(phoneAccountHandle));
+  }
+
+  @Test
+  @Config(minSdk = N)
   public void shouldGiveVoicemailRingtoneUri() {
     PhoneAccountHandle phoneAccountHandle =
         new PhoneAccountHandle(
@@ -569,6 +636,19 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = N)
+  public void setVoicemailRingtoneUri_accessibleFromAllTelephonyManagers() {
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+    Uri ringtoneUri = Uri.fromParts("file", "ringtone.mp3", /* fragment= */ null);
+
+    shadowOf(telephonyManager).setVoicemailRingtoneUri(phoneAccountHandle, ringtoneUri);
+
+    assertEquals(ringtoneUri, telephonyManager.getVoicemailRingtoneUri(phoneAccountHandle));
+  }
+
+  @Test
   @Config(minSdk = O)
   public void shouldCreateForPhoneAccountHandle() {
     PhoneAccountHandle phoneAccountHandle =
@@ -584,6 +664,20 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void shouldCreateForPhoneAccountHandle_fromAllInstances() {
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+    TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
+
+    shadowOf(telephonyManager)
+        .setTelephonyManagerForHandle(phoneAccountHandle, mockTelephonyManager);
+
+    assertEquals(mockTelephonyManager, tmForSub5.createForPhoneAccountHandle(phoneAccountHandle));
+  }
+
+  @Test
   @Config(minSdk = N)
   public void shouldCreateForSubscriptionId() {
     int subscriptionId = 42;
@@ -593,6 +687,18 @@ public class ShadowTelephonyManagerTest {
         .setTelephonyManagerForSubscriptionId(subscriptionId, mockTelephonyManager);
 
     assertEquals(mockTelephonyManager, telephonyManager.createForSubscriptionId(subscriptionId));
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void shouldCreateForSubscriptionId_fromAllInstances() {
+    int subscriptionId = 42;
+    TelephonyManager mockTelephonyManager = mock(TelephonyManager.class);
+
+    shadowOf(telephonyManager)
+        .setTelephonyManagerForSubscriptionId(subscriptionId, mockTelephonyManager);
+
+    assertEquals(mockTelephonyManager, tmForSub5.createForSubscriptionId(subscriptionId));
   }
 
   @Test
@@ -686,6 +792,13 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = O)
+  public void getSimState_defaultForZeroSpecial() {
+    assertThat(telephonyManager.getSimState(1)).isEqualTo(TelephonyManager.SIM_STATE_UNKNOWN);
+    assertThat(telephonyManager.getSimState(0)).isEqualTo(TelephonyManager.SIM_STATE_READY);
+  }
+
+  @Test
+  @Config(minSdk = O)
   public void shouldGetSimStateUsingSlotNumber() {
     int expectedSimState = TelephonyManager.SIM_STATE_ABSENT;
     int slotNumber = 3;
@@ -695,8 +808,31 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void setSimState_withSlotParameter_doesNotAffectCaller() {
+    int expectedSimState = TelephonyManager.SIM_STATE_ABSENT;
+    int slotNumber = 3;
+    shadowOf(telephonyManager).setSimState(slotNumber, expectedSimState);
+
+    assertThat(telephonyManager.getSimState()).isEqualTo(TelephonyManager.SIM_STATE_READY);
+  }
+
+  @Test
   public void shouldGetSimIso() {
     assertThat(telephonyManager.getSimCountryIso()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N, maxSdk = Q)
+  public void shouldGetSimIso_resetsZeroSpecial() {
+    assertThat(callGetSimCountryIso(telephonyManager, 1)).isNull();
+    assertThat(callGetSimCountryIso(telephonyManager, 0)).isEmpty();
+  }
+
+  private String callGetSimCountryIso(TelephonyManager telephonyManager, int subId) {
+    return (String)
+        ReflectionHelpers.callInstanceMethod(
+            telephonyManager, "getSimCountryIso", ClassParameter.from(int.class, subId));
   }
 
   @Test
@@ -706,11 +842,28 @@ public class ShadowTelephonyManagerTest {
     int subId = 2;
     shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
 
-    assertThat(
-            (String)
-                ReflectionHelpers.callInstanceMethod(
-                    telephonyManager, "getSimCountryIso", ClassParameter.from(int.class, subId)))
-        .isEqualTo(expectedSimIso);
+    assertThat(callGetSimCountryIso(telephonyManager, subId)).isEqualTo(expectedSimIso);
+  }
+
+  @Test
+  @Config(minSdk = N, maxSdk = Q)
+  public void setSimIso_withSlotParameter_doesNotAffectCaller() {
+    String expectedSimIso = "usa";
+    int subId = 2;
+    shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
+
+    assertThat(telephonyManager.getSimCountryIso()).isEqualTo("");
+  }
+
+  @Test
+  @Config(minSdk = N, maxSdk = Q)
+  public void setSimIso_withSlotParameter_acceptsNull() {
+    String expectedSimIso = "usa";
+    int subId = 2;
+    shadowOf(telephonyManager).setSimCountryIso(subId, expectedSimIso);
+    shadowOf(telephonyManager).setSimCountryIso(subId, null);
+
+    assertThat(callGetSimCountryIso(telephonyManager, subId)).isEqualTo(null);
   }
 
   @Test
@@ -743,6 +896,24 @@ public class ShadowTelephonyManagerTest {
 
   @Test
   @Config(minSdk = M)
+  public void shouldGetCurrentPhoneTypeGivenSubId_fromAllInstances() {
+    int subId = 1;
+    int expectedPhoneType = TelephonyManager.PHONE_TYPE_GSM;
+    shadowOf(telephonyManager).setCurrentPhoneType(subId, expectedPhoneType);
+
+    assertThat(tmForSub5.getCurrentPhoneType(subId)).isEqualTo(expectedPhoneType);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void clearPhoneTypes_setsStartingState() {
+    ShadowTelephonyManager.clearPhoneTypes();
+    assertEquals(TelephonyManager.PHONE_TYPE_NONE, telephonyManager.getCurrentPhoneType(0));
+    assertEquals(TelephonyManager.PHONE_TYPE_NONE, telephonyManager.getCurrentPhoneType(1));
+  }
+
+  @Test
+  @Config(minSdk = M)
   public void shouldGetCarrierPackageNamesForIntentAndPhone() {
     List<String> packages = Collections.singletonList("package1");
     int phoneId = 123;
@@ -750,6 +921,39 @@ public class ShadowTelephonyManagerTest {
 
     assertThat(telephonyManager.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
         .isEqualTo(packages);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void setCarrierPackageNamesForPhone_acceptsNull() {
+    List<String> packages = Collections.singletonList("package1");
+    int phoneId = 123;
+    shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, packages);
+    shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, null);
+
+    assertThat(telephonyManager.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
+        .isEqualTo(null);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldGetCarrierPackageNamesForIntentAndPhone_fromAllInstances() {
+    List<String> packages = Collections.singletonList("package1");
+    int phoneId = 123;
+    shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, packages);
+
+    assertThat(tmForSub5.getCarrierPackageNamesForIntentAndPhone(new Intent(), phoneId))
+        .isEqualTo(packages);
+  }
+
+  @Test
+  @Config(minSdk = M)
+  public void shouldGetCarrierPackageNamesForIntentAndPhone_doesNotAffectCaller() {
+    List<String> packages = Collections.singletonList("package1");
+    int phoneId = 123;
+    shadowOf(telephonyManager).setCarrierPackageNamesForPhone(phoneId, packages);
+
+    assertThat(telephonyManager.getCarrierPackageNamesForIntent(new Intent())).isNull();
   }
 
   @Test
@@ -763,10 +967,13 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
   public void resetSimStates_shouldRetainDefaultState() {
     shadowOf(telephonyManager).resetSimStates();
 
     assertThat(telephonyManager.getSimState()).isEqualTo(TelephonyManager.SIM_STATE_READY);
+    assertThat(telephonyManager.getSimState(1)).isEqualTo(TelephonyManager.SIM_STATE_UNKNOWN);
+    assertThat(telephonyManager.getSimState(0)).isEqualTo(TelephonyManager.SIM_STATE_READY);
   }
 
   @Test
@@ -775,6 +982,14 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).resetSimCountryIsos();
 
     assertThat(telephonyManager.getSimCountryIso()).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = N, maxSdk = Q)
+  public void resetSimCountryIsos_resetZeroSpecial() {
+    shadowOf(telephonyManager).resetSimCountryIsos();
+    assertThat(callGetSimCountryIso(telephonyManager, 1)).isNull();
+    assertThat(callGetSimCountryIso(telephonyManager, 0)).isEmpty();
   }
 
   @Test
@@ -800,6 +1015,23 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager).setUiccSlotsInfo(slotInfos);
 
     assertThat(shadowOf(telephonyManager).getUiccSlotsInfo()).isEqualTo(slotInfos);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUiccCardsInfo() {
+    Object /*UiccCardInfo*/ cardsInfo1 = "new UiccCardInfo(true, true, null, 0, 0, true)";
+    Object /*UiccCardInfo*/ cardsInfo2 = "new UiccCardInfo(true, true, null, 0, 1, true)";
+    List<Object /*UiccCardInfo*/> cardInfos = ImmutableList.of(cardsInfo1, cardsInfo2);
+    shadowOf(telephonyManager).setUiccCardsInfo(cardInfos);
+
+    assertThat(telephonyManager.getUiccCardsInfo()).isEqualTo(cardInfos);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void getUiccCardsInfo_returnsListAfterReset() {
+    assertThat(telephonyManager.getUiccCardsInfo()).isEmpty();
   }
 
   @Test
@@ -1226,5 +1458,40 @@ public class ShadowTelephonyManagerTest {
     shadowOf(telephonyManager)
         .setPhoneAccountHandleSubscriptionId(phoneAccountHandle, subscriptionId);
     assertEquals(subscriptionId, telephonyManager.getSubscriptionId(phoneAccountHandle));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSubscriptionIdForPhoneAccountHandle_affectsAllInstances() {
+    int subscriptionId = 123;
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+    shadowOf(telephonyManager)
+        .setPhoneAccountHandleSubscriptionId(phoneAccountHandle, subscriptionId);
+    assertEquals(subscriptionId, tmForSub5.getSubscriptionId(phoneAccountHandle));
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void getSubscriptionIdForPhoneAccountHandle_doesNotModifyCaller() {
+    int subscriptionId = 123;
+    PhoneAccountHandle phoneAccountHandle =
+        new PhoneAccountHandle(
+            new ComponentName(ApplicationProvider.getApplicationContext(), Object.class), "handle");
+    shadowOf(telephonyManager)
+        .setPhoneAccountHandleSubscriptionId(phoneAccountHandle, subscriptionId);
+    assertEquals(5, tmForSub5.getSubscriptionId());
+  }
+
+  @Test
+  @Config(minSdk = R)
+  public void newInstance_alreadyKnowsSubId() {
+    Context context = ApplicationProvider.getApplicationContext();
+    Class<?>[] parameters = new Class<?>[] {Context.class, int.class};
+    Object[] arguments = new Object[] {context, 123};
+    TelephonyManager tm = Shadow.newInstance(TelephonyManager.class, parameters, arguments);
+
+    assertThat(tm.getSubscriptionId()).isEqualTo(123);
   }
 }
