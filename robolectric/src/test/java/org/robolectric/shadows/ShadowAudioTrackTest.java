@@ -5,6 +5,7 @@ import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -13,13 +14,20 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRouting;
+import android.media.AudioRouting.OnRoutingChangedListener;
 import android.media.AudioSystem;
 import android.media.AudioTrack;
 import android.media.PlaybackParams;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -531,6 +539,117 @@ public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWritten
         .isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
     assertThat(audioTrack.write(ByteBuffer.allocateDirect(128), 128, AudioTrack.WRITE_BLOCKING, 0L))
         .isEqualTo(AudioTrack.ERROR_DEAD_OBJECT);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getRoutedDevice_withoutSetRoutedDevice_returnsNull() {
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+
+    assertThat(audioTrack.getRoutedDevice()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void getRoutedDevice_afterSetRoutedDevice_returnsRoutedDevice() {
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    AudioDeviceInfo audioDeviceInfo =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_HDMI).build();
+
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo);
+
+    assertThat(audioTrack.getRoutedDevice()).isEqualTo(audioDeviceInfo);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void addOnRoutingChangedListener_beforeSetRoutedDevice_listenerCalledOnceDeviceSet() {
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    AudioDeviceInfo audioDeviceInfo =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_HDMI).build();
+    AtomicReference<AudioRouting> listenerRouting = new AtomicReference<>();
+
+    audioTrack.addOnRoutingChangedListener(
+        (OnRoutingChangedListener) listenerRouting::set, new Handler(Looper.getMainLooper()));
+    ShadowLooper.idleMainLooper();
+
+    assertThat(listenerRouting.get()).isNull();
+
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(listenerRouting.get()).isEqualTo(audioTrack);
+    assertThat(listenerRouting.get().getRoutedDevice()).isEqualTo(audioDeviceInfo);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void
+      addOnRoutingChangedListener_afterSetRoutedDevice_listenerCalledImmediatelyAndWhenNewDeviceSet() {
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    AudioDeviceInfo audioDeviceInfo1 =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_HDMI).build();
+    AudioDeviceInfo audioDeviceInfo2 =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_BLUETOOTH_A2DP).build();
+    AtomicReference<AudioRouting> listenerRouting = new AtomicReference<>();
+
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo1);
+    audioTrack.addOnRoutingChangedListener(
+        (OnRoutingChangedListener) listenerRouting::set, new Handler(Looper.getMainLooper()));
+    ShadowLooper.idleMainLooper();
+
+    assertThat(listenerRouting.get()).isEqualTo(audioTrack);
+    assertThat(listenerRouting.get().getRoutedDevice()).isEqualTo(audioDeviceInfo1);
+
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo2);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(listenerRouting.get()).isEqualTo(audioTrack);
+    assertThat(listenerRouting.get().getRoutedDevice()).isEqualTo(audioDeviceInfo2);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void setRoutedDevice_toNull_listenerCalled() {
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    AudioDeviceInfo audioDeviceInfo =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_HDMI).build();
+    AtomicReference<AudioRouting> listenerRouting = new AtomicReference<>();
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo);
+    audioTrack.addOnRoutingChangedListener(
+        (OnRoutingChangedListener) listenerRouting::set, new Handler(Looper.getMainLooper()));
+    ShadowLooper.idleMainLooper();
+
+    ShadowAudioTrack.setRoutedDevice(null);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(listenerRouting.get()).isEqualTo(audioTrack);
+    assertThat(listenerRouting.get().getRoutedDevice()).isEqualTo(null);
+  }
+
+  @Test
+  @Config(minSdk = N)
+  public void removeOnRoutingChangedListener_noFurtherUpdatesSent() {
+    AudioTrack audioTrack = new AudioTrack.Builder().build();
+    AudioDeviceInfo audioDeviceInfo1 =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_HDMI).build();
+    AudioDeviceInfo audioDeviceInfo2 =
+        AudioDeviceInfoBuilder.newBuilder().setType(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER).build();
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo1);
+    AtomicInteger listenerCounter1 = new AtomicInteger();
+    AtomicInteger listenerCounter2 = new AtomicInteger();
+    OnRoutingChangedListener listener1 = routing -> listenerCounter1.incrementAndGet();
+    OnRoutingChangedListener listener2 = routing -> listenerCounter2.incrementAndGet();
+    audioTrack.addOnRoutingChangedListener(listener1, new Handler(Looper.getMainLooper()));
+    audioTrack.addOnRoutingChangedListener(listener2, new Handler(Looper.getMainLooper()));
+    ShadowLooper.idleMainLooper();
+
+    audioTrack.removeOnRoutingChangedListener(listener1);
+    ShadowAudioTrack.setRoutedDevice(audioDeviceInfo2);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(listenerCounter1.get()).isEqualTo(1);
+    assertThat(listenerCounter2.get()).isEqualTo(2);
   }
 
   @Override

@@ -61,6 +61,10 @@ public class AudioDeviceInfoBuilder {
   public AudioDeviceInfo build() {
     Object port = Shadow.newInstanceOf("android.media.AudioDevicePort");
     ReflectionHelpers.setField(port, "mType", externalToInternalType(type));
+    ReflectionHelpers.setField(port, "mAddress", "");
+    Object handle = Shadow.newInstanceOf("android.media.AudioHandle");
+    ReflectionHelpers.setField(handle, "mId", 0);
+    ReflectionHelpers.setField(port, "mHandle", handle);
     if (VERSION.SDK_INT >= 31) {
       ReflectionHelpers.setField(port, "mProfiles", profiles);
     }
