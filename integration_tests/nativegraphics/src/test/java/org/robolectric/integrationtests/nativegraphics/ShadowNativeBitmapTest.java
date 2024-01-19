@@ -60,6 +60,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowNativeBitmap;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @org.robolectric.annotation.Config(minSdk = O)
 @RunWith(RobolectricTestRunner.class)
@@ -1736,6 +1737,13 @@ public class ShadowNativeBitmapTest {
             100, 100, Bitmap.Config.ARGB_8888, true, ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
 
     assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
+  }
+
+  @org.robolectric.annotation.Config(minSdk = U.SDK_INT)
+  @Test
+  public void noGainmap_returnsNull() {
+    Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+    assertThat(bitmap.getGainmap()).isNull();
   }
 
   @Test

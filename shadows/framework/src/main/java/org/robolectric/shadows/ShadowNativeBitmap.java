@@ -345,6 +345,16 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeIsBackedByAshmem(nativePtr);
   }
 
+  /**
+   * This is called by {@link Bitmap#getGainmap} to check if a Gainmap exists for the Bitmap. This
+   * method must be present in Android U and below to avoid an UnsatisfiedLinkError.
+   */
+  @Implementation(minSdk = U.SDK_INT)
+  protected static Object nativeExtractGainmap(Object nativePtr) {
+    // No-op implementation
+    return null;
+  }
+
   @ForType(ColorSpace.class)
   interface ColorSpaceReflector {
     @Accessor("ILLUMINANT_D50_XYZ")
