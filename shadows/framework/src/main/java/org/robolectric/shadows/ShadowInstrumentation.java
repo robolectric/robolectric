@@ -75,7 +75,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.WithType;
 
-@Implements(value = Instrumentation.class, looseSignatures = true)
+@Implements(value = Instrumentation.class)
 public class ShadowInstrumentation {
 
   @RealObject private Instrumentation realObject;
