@@ -65,6 +65,7 @@ jobs:
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
           -Dorg.gradle.workers.max=2 \
+          -Dorg.gradle.jvmargs=-Xmx12288M \
           -x :integration_tests:nativegraphics:test \
           -x :integration_tests:roborazzi:test
 
@@ -143,7 +144,7 @@ jobs:
 
           profile: Nexus One
           script: |
-            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --info --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
+            SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --info --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx12288M
 
       - name: Upload test results
         if: always()
