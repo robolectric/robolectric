@@ -76,7 +76,7 @@ jobs:
           path: '**/build/test-results/**/TEST-*.xml'
 
   instrumentation-tests:
-    runs-on: macos-12
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     needs: build
 
@@ -97,6 +97,12 @@ jobs:
 
       - uses: gradle/gradle-build-action@v2.11.1
 
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       - name: Determine emulator target
         id: determine-target
         run: |
@@ -110,7 +116,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ env.cache-version }}
+          key: avd-ubuntu-${{ matrix.api-level }}-${{ env.cache-version }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
