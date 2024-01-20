@@ -13,7 +13,6 @@ import org.robolectric.annotation.Implements;
 @Implements(
     value = AppIntegrityManager.class,
     minSdk = R,
-    looseSignatures = true,
     isInAndroidSdk = false)
 public class ShadowAppIntegrityManager {
 
