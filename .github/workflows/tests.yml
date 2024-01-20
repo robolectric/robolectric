@@ -27,7 +27,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'adopt'
           java-version: 17
 
       - uses: gradle/gradle-build-action@v2.11.1
@@ -51,7 +51,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'adopt'
           java-version: 17
 
       - uses: gradle/gradle-build-action@v2.11.1
@@ -92,7 +92,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'adopt'
           java-version: 17
 
       - uses: gradle/gradle-build-action@v2.11.1
@@ -162,7 +162,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'adopt'
           java-version: 17
 
       - uses: gradle/gradle-build-action@v2.11.1
