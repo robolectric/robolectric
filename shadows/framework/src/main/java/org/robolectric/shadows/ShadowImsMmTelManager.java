@@ -41,7 +41,6 @@ import org.robolectric.util.reflector.Static;
 @Implements(
     value = ImsMmTelManager.class,
     minSdk = VERSION_CODES.Q,
-    looseSignatures = true,
     isInAndroidSdk = false)
 @SystemApi
 public class ShadowImsMmTelManager {
