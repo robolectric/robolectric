@@ -1,16 +1,29 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattServer;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
 import android.bluetooth.le.AdvertiseSettings;
+import android.bluetooth.le.AdvertisingSet;
+import android.bluetooth.le.AdvertisingSetCallback;
+import android.bluetooth.le.AdvertisingSetParameters;
 import android.bluetooth.le.BluetoothLeAdvertiser;
+import android.bluetooth.le.PeriodicAdvertisingParameters;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelUuid;
+import androidx.test.core.app.ApplicationProvider;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +44,14 @@ public class ShadowBluetoothLeAdvertiserTest {
   private static final String CALLBACK2_SUCCESS_RESULT = "c2s";
   private static final String CALLBACK2_FAILURE_RESULT = "c2f";
 
+  private final Context context = ApplicationProvider.getApplicationContext();
+  private final BluetoothManager bluetoothManager =
+      context.getSystemService(BluetoothManager.class);
+  private final BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
+  private final ShadowBluetoothAdapter shadowBluetoothAdapter = shadowOf(bluetoothAdapter);
+  private final BluetoothGattServer gattServer = bluetoothManager.openGattServer(context, null);
+  private final Handler mainLooperHandler = new Handler(Looper.getMainLooper());
+
   private BluetoothLeAdvertiser bluetoothLeAdvertiser;
   private BluetoothLeAdvertiser bluetoothLeAdvertiserNameSet;
   private AdvertiseSettings advertiseSettings1;
@@ -41,6 +62,32 @@ public class ShadowBluetoothLeAdvertiserTest {
   private AdvertiseData scanResponse2;
   private AdvertiseCallback advertiseCallback1;
   private AdvertiseCallback advertiseCallback2;
+
+  private Optional<Integer> advertisingSetStartStatusOptional;
+  private boolean advertisingSetStopped;
+  private AdvertisingSetCallback advertisingSetCallback =
+      new AdvertisingSetCallback() {
+        @Override
+        public void onAdvertisingSetStarted(
+            AdvertisingSet advertisingSet, int txPower, int status) {
+          advertisingSetStartStatusOptional = Optional.of(status);
+          /* switch (status) {
+          case AdvertisingSetCallback.ADVERTISE_SUCCESS:
+            advertisingSetStartStatusOptional.
+            break;
+          case AdvertisingSetCallback.ADVERTISE_FAILED_DATA_TOO_LARGE:
+            break;
+          case AdvertisingSetCallback.ADVERTISE_FAILED_ALREADY_STARTED:
+            break;
+          default:
+            break; */
+        }
+
+        @Override
+        public void onAdvertisingSetStopped(AdvertisingSet advertisingSet) {
+          advertisingSetStopped = true;
+        }
+      };
 
   private String result;
   private int error;
@@ -123,6 +170,9 @@ public class ShadowBluetoothLeAdvertiserTest {
             .setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_LOW)
             .setConnectable(false)
             .build();
+
+    advertisingSetStartStatusOptional = Optional.empty();
+    advertisingSetStopped = false;
   }
 
   @Test
@@ -449,5 +499,347 @@ public class ShadowBluetoothLeAdvertiserTest {
         advertiseSettings1, advertiseData1, scanResponse1, advertiseCallback1);
     bluetoothLeAdvertiser.stopAdvertising(advertiseCallback2);
     assertThat(shadowOf(bluetoothLeAdvertiser).getAdvertisementRequestCount()).isEqualTo(1);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void startAdvertisingSet() {
+    bluetoothLeAdvertiser.startAdvertisingSet(
+        buildAdvertisingSetParams(
+            true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+        advertiseData1,
+        null,
+        null,
+        null,
+        0,
+        0,
+        gattServer,
+        advertisingSetCallback,
+        mainLooperHandler);
+
+    assertThat(advertisingSetStartStatusOptional.get())
+        .isEqualTo(AdvertisingSetCallback.ADVERTISE_SUCCESS);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_advertisingAlreadyStarted_invokeOnAdvertisingSetStartedWithAlreadyStartedStatusCode() {
+    bluetoothLeAdvertiser.startAdvertisingSet(
+        buildAdvertisingSetParams(
+            true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+        advertiseData1,
+        null,
+        null,
+        null,
+        0,
+        0,
+        gattServer,
+        advertisingSetCallback,
+        mainLooperHandler);
+
+    bluetoothLeAdvertiser.startAdvertisingSet(
+        buildAdvertisingSetParams(
+            true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+        advertiseData1,
+        null,
+        null,
+        null,
+        0,
+        0,
+        gattServer,
+        advertisingSetCallback,
+        mainLooperHandler);
+
+    assertThat(advertisingSetStartStatusOptional.get())
+        .isEqualTo(AdvertisingSetCallback.ADVERTISE_FAILED_ALREADY_STARTED);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void startAdvertisingSet_nullCallback_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                null,
+                null,
+                null,
+                0,
+                0,
+                gattServer,
+                null,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_legacyModeWithTooBigAdvertiseData_throwsIllegalArgumentException() {
+    AdvertiseData oversizedData =
+        new AdvertiseData.Builder()
+            .addServiceUuid(ParcelUuid.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .addServiceUuid(ParcelUuid.fromString("EEEEEEEE-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .build();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                oversizedData,
+                /* scanResponse= */ null,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_legacyModeWithTooBigScanResponse_throwsIllegalArgumentException() {
+    AdvertiseData oversizedData =
+        new AdvertiseData.Builder()
+            .addServiceUuid(ParcelUuid.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .addServiceUuid(ParcelUuid.fromString("EEEEEEEE-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .build();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                oversizedData,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_nonLegacyModePrimaryPhySetButNotSupported_throwsIllegalArgumentException() {
+    shadowBluetoothAdapter.setIsLeCodedPhySupported(false);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_1M),
+                advertiseData1,
+                /* scanResponse= */ null,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_nonLegacyModeSecondaryPhySetButNotSupported_throwsIllegalArgumentException() {
+    shadowBluetoothAdapter.setIsLeCodedPhySupported(false);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_1M, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                /* scanResponse= */ null,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_nonLegacyModeWithTooBigAdvertiseData_throwsIllegalArgumentException() {
+    shadowBluetoothAdapter.setIsLeExtendedAdvertisingSupported(false);
+    AdvertiseData oversizedData =
+        new AdvertiseData.Builder()
+            .addServiceUuid(ParcelUuid.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .addServiceUuid(ParcelUuid.fromString("EEEEEEEE-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .build();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                oversizedData,
+                /* scanResponse= */ null,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_nonLegacyModeWithTooBigScanResponse_throwsIllegalArgumentException() {
+    shadowBluetoothAdapter.setIsLeExtendedAdvertisingSupported(false);
+    AdvertiseData oversizedData =
+        new AdvertiseData.Builder()
+            .addServiceUuid(ParcelUuid.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .addServiceUuid(ParcelUuid.fromString("EEEEEEEE-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .build();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                oversizedData,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_nonLegacyModeWithTooBigPeriodicData_throwsIllegalArgumentException() {
+    shadowBluetoothAdapter.setIsLeExtendedAdvertisingSupported(false);
+    AdvertiseData oversizedData =
+        new AdvertiseData.Builder()
+            .addServiceUuid(ParcelUuid.fromString("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .addServiceUuid(ParcelUuid.fromString("EEEEEEEE-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))
+            .build();
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                /* scanResponse= */ null,
+                new PeriodicAdvertisingParameters.Builder().setInterval(1).build(),
+                oversizedData,
+                /* duration= */ 0,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void
+      startAdvertisingSet_maxExtendedAdvertisingEventsOutOfRange_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                /* scanResponse= */ null,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                /* duration= */ 0,
+                -1,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void startAdvertisingSet_durationOutOfRange_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            bluetoothLeAdvertiser.startAdvertisingSet(
+                buildAdvertisingSetParams(
+                    false, true, false, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+                advertiseData1,
+                /* scanResponse= */ null,
+                /* periodicParameters= */ null,
+                /* periodicData= */ null,
+                -1,
+                /* maxExtendedAdvertisingEvents= */ 0,
+                gattServer,
+                advertisingSetCallback,
+                mainLooperHandler));
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void stopAdvertisingSet() {
+    bluetoothLeAdvertiser.startAdvertisingSet(
+        buildAdvertisingSetParams(
+            true, true, true, BluetoothDevice.PHY_LE_CODED, BluetoothDevice.PHY_LE_CODED),
+        advertiseData1,
+        null,
+        null,
+        null,
+        0,
+        0,
+        gattServer,
+        advertisingSetCallback,
+        mainLooperHandler);
+
+    bluetoothLeAdvertiser.stopAdvertisingSet(advertisingSetCallback);
+
+    assertThat(advertisingSetStopped).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void stopAdvertisingSet_nullCallback_throwsIllegalArgumentException() {
+    assertThrows(
+        IllegalArgumentException.class, () -> bluetoothLeAdvertiser.stopAdvertisingSet(null));
+  }
+
+  private AdvertisingSetParameters buildAdvertisingSetParams(
+      boolean isLegacy,
+      boolean isConnectable,
+      boolean isScannable,
+      int primaryPhy,
+      int secondaryPhy) {
+    return new AdvertisingSetParameters.Builder()
+        .setLegacyMode(isLegacy)
+        .setConnectable(isConnectable)
+        .setScannable(isScannable)
+        .setPrimaryPhy(primaryPhy)
+        .setSecondaryPhy(secondaryPhy)
+        .build();
   }
 }

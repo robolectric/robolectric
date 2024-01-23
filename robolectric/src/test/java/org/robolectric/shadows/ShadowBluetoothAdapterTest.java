@@ -96,6 +96,26 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void canSetAndGetIsLeCodedPhySupported() {
+    assertThat(bluetoothAdapter.isLeCodedPhySupported()).isTrue();
+
+    shadowOf(bluetoothAdapter).setIsLeCodedPhySupported(false);
+
+    assertThat(bluetoothAdapter.isLeCodedPhySupported()).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void canSetAndGetIsLe2MPhySupported() {
+    assertThat(bluetoothAdapter.isLe2MPhySupported()).isTrue();
+
+    shadowOf(bluetoothAdapter).setIsLe2MPhySupported(false);
+
+    assertThat(bluetoothAdapter.isLe2MPhySupported()).isFalse();
+  }
+
+  @Test
   public void testAdapterDefaultsDisabled() {
     assertThat(bluetoothAdapter.isEnabled()).isFalse();
   }

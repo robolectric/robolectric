@@ -10,6 +10,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -103,6 +104,8 @@ public class ShadowBluetoothAdapter {
   private int isLeAudioSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
   private int isDistanceMeasurementSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
   private boolean isLeExtendedAdvertisingSupported = true;
+  private boolean isLeCodedPhySupported = true;
+  private boolean isLe2MPhySupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
@@ -630,6 +633,28 @@ public class ShadowBluetoothAdapter {
    */
   public void setIsLeExtendedAdvertisingSupported(boolean supported) {
     isLeExtendedAdvertisingSupported = supported;
+  }
+
+  /** Returns the last value of {@link #setIsLeCodedPhySupported}, defaulting to true. */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isLeCodedPhySupported() {
+    return isLeCodedPhySupported;
+  }
+
+  /** Sets the {@link #isLeCodedPhySupported} to enable/disable LE coded phy supported featured. */
+  public void setIsLeCodedPhySupported(boolean supported) {
+    isLeCodedPhySupported = supported;
+  }
+
+  /** Returns the last value of {@link #setIsLe2MPhySupported}, defaulting to true. */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isLe2MPhySupported() {
+    return isLe2MPhySupported;
+  }
+
+  /** Sets the {@link #isLe2MPhySupported} to enable/disable LE 2M phy supported featured. */
+  public void setIsLe2MPhySupported(boolean supported) {
+    isLe2MPhySupported = supported;
   }
 
   @Implementation(minSdk = O)
