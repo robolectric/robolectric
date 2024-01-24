@@ -8,12 +8,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.PathDashPathEffectNatives;
 import org.robolectric.shadows.ShadowNativePathDashPathEffect.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link PathDashPathEffect} that is backed by native code */
-@Implements(value = PathDashPathEffect.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = PathDashPathEffect.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativePathDashPathEffect {
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeCreate(long nativePath, float advance, float phase, int nativeStyle) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return PathDashPathEffectNatives.nativeCreate(nativePath, advance, phase, nativeStyle);

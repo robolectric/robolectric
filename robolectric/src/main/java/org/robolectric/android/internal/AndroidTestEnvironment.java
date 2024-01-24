@@ -65,6 +65,7 @@ import org.robolectric.internal.TestEnvironment;
 import org.robolectric.manifest.AndroidManifest;
 import org.robolectric.manifest.BroadcastReceiverData;
 import org.robolectric.manifest.RoboNotFoundException;
+import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.pluginapi.Sdk;
 import org.robolectric.pluginapi.TestEnvironmentLifecyclePlugin;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
@@ -99,6 +100,7 @@ import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressLint("NewApi")
 public class AndroidTestEnvironment implements TestEnvironment {
@@ -150,6 +152,11 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
 
     clearEnvironment();
+
+    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+      DefaultNativeRuntimeLoader.injectAndLoad();
+    }
+
     RuntimeEnvironment.setTempDirectory(new TempDirectory(createTestDataDirRootPath(method)));
     if (ShadowLooper.looperMode() == LooperMode.Mode.LEGACY) {
       RuntimeEnvironment.setMasterScheduler(new Scheduler());
@@ -238,6 +245,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       // force eager load of the application
       RuntimeEnvironment.getApplication();
     }
+
   }
 
   // If certain Android classes are required to be loaded in a particular order, do so here.

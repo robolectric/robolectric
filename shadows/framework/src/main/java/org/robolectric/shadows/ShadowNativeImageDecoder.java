@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetManager.AssetInputStream;
 import android.graphics.Bitmap;
@@ -18,14 +19,22 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.ImageDecoderNatives;
 import org.robolectric.shadows.ShadowNativeImageDecoder.Picker;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link android.graphics.ImageDecoder} that is backed by native code */
-@Implements(value = ImageDecoder.class, minSdk = P, shadowPicker = Picker.class)
+@Implements(
+    value = ImageDecoder.class,
+    minSdk = P,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeImageDecoder {
 
   static {
@@ -52,7 +61,12 @@ public class ShadowNativeImageDecoder {
     if (ais.read() != -1) {
       throw new IOException("Unable to access full contents of asset");
     }
-    return nCreate(buffer, 0, bytesRead, preferAnimation, source);
+    if (RuntimeEnvironment.getApiLevel() > U.SDK_INT) {
+      return reflector(ImageDecoderReflector.class)
+          .nCreate(buffer, 0, bytesRead, preferAnimation, source);
+    } else {
+      return nCreate(buffer, 0, bytesRead, preferAnimation, source);
+    }
   }
 
   @Implementation(minSdk = P, maxSdk = Q)
@@ -72,7 +86,7 @@ public class ShadowNativeImageDecoder {
     return nCreate(buffer, position, limit, false, src);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static ImageDecoder nCreate(
       ByteBuffer buffer, int position, int limit, boolean preferAnimation, Source src)
       throws IOException {
@@ -85,7 +99,7 @@ public class ShadowNativeImageDecoder {
     return nCreate(data, offset, length, false, src);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static ImageDecoder nCreate(
       byte[] data, int offset, int length, boolean preferAnimation, Source src) throws IOException {
     return ImageDecoderNatives.nCreate(data, offset, length, preferAnimation, src);
@@ -97,7 +111,7 @@ public class ShadowNativeImageDecoder {
     return nCreate(is, storage, false, src);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static ImageDecoder nCreate(
       InputStream is, byte[] storage, boolean preferAnimation, Source src) throws IOException {
     return ImageDecoderNatives.nCreate(is, storage, preferAnimation, src);
@@ -108,7 +122,7 @@ public class ShadowNativeImageDecoder {
     throw new UnsupportedEncodingException();
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static ImageDecoder nCreate(
       FileDescriptor fd, long length, boolean preferAnimation, Source src) throws IOException {
     return ImageDecoderNatives.nCreate(fd, length, preferAnimation, src);
@@ -145,7 +159,7 @@ public class ShadowNativeImageDecoder {
         /* extended = */ false);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nDecodeBitmap(
       long nativePtr,
       ImageDecoder decoder,
@@ -177,29 +191,36 @@ public class ShadowNativeImageDecoder {
         extended);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static Size nGetSampledSize(long nativePtr, int sampleSize) {
     return ImageDecoderNatives.nGetSampledSize(nativePtr, sampleSize);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nGetPadding(long nativePtr, Rect outRect) {
     ImageDecoderNatives.nGetPadding(nativePtr, outRect);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nClose(long nativePtr) {
     ImageDecoderNatives.nClose(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static String nGetMimeType(long nativePtr) {
     return ImageDecoderNatives.nGetMimeType(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static ColorSpace nGetColorSpace(long nativePtr) {
     return ImageDecoderNatives.nGetColorSpace(nativePtr);
+  }
+
+  @ForType(ImageDecoder.class)
+  interface ImageDecoderReflector {
+    @Static
+    ImageDecoder nCreate(
+        ByteBuffer buffer, int position, int limit, boolean preferAnimation, Source src);
   }
 
   /** Shadow picker for {@link ImageDecoder}. */

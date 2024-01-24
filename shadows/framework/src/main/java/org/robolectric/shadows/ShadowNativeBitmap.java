@@ -40,7 +40,12 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Bitmap} that is backed by native code */
-@Implements(value = Bitmap.class, looseSignatures = true, minSdk = O, isInAndroidSdk = false)
+@Implements(
+    value = Bitmap.class,
+    looseSignatures = true,
+    minSdk = O,
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeBitmap extends ShadowBitmap {
 
   @RealObject Bitmap realBitmap;
@@ -55,7 +60,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     this.createdFromResId = createdFromResId;
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nativeCreate(
       int[] colors,
       int offset,
@@ -100,75 +105,75 @@ public class ShadowNativeBitmap extends ShadowBitmap {
         colors, offset, stride, width, height, nativeConfig, mutable, colorSpacePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static Bitmap nativeCopy(long nativeSrcBitmap, int nativeConfig, boolean isMutable) {
     return BitmapNatives.nativeCopy(nativeSrcBitmap, nativeConfig, isMutable);
   }
 
-  @Implementation(minSdk = M)
+  @Implementation(minSdk = M, maxSdk = U.SDK_INT)
   protected static Bitmap nativeCopyAshmem(long nativeSrcBitmap) {
     return BitmapNatives.nativeCopyAshmem(nativeSrcBitmap);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static Bitmap nativeCopyAshmemConfig(long nativeSrcBitmap, int nativeConfig) {
     return BitmapNatives.nativeCopyAshmemConfig(nativeSrcBitmap, nativeConfig);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nativeGetNativeFinalizer() {
     return BitmapNatives.nativeGetNativeFinalizer();
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static Object nativeRecycle(Object nativeBitmap) {
     BitmapNatives.nativeRecycle((long) nativeBitmap);
     return true;
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nativeReconfigure(
       long nativeBitmap, int width, int height, int config, boolean isPremultiplied) {
     BitmapNatives.nativeReconfigure(nativeBitmap, width, height, config, isPremultiplied);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativeCompress(
       long nativeBitmap, int format, int quality, OutputStream stream, byte[] tempStorage) {
     return BitmapNatives.nativeCompress(nativeBitmap, format, quality, stream, tempStorage);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeErase(long nativeBitmap, int color) {
     BitmapNatives.nativeErase(nativeBitmap, color);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nativeErase(long nativeBitmap, long colorSpacePtr, long color) {
     BitmapNatives.nativeErase(nativeBitmap, colorSpacePtr, color);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeRowBytes(long nativeBitmap) {
     return BitmapNatives.nativeRowBytes(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeConfig(long nativeBitmap) {
     return BitmapNatives.nativeConfig(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetPixel(long nativeBitmap, int x, int y) {
     return BitmapNatives.nativeGetPixel(nativeBitmap, x, y);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static long nativeGetColor(long nativeBitmap, int x, int y) {
     return BitmapNatives.nativeGetColor(nativeBitmap, x, y);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeGetPixels(
       long nativeBitmap,
       int[] pixels,
@@ -181,12 +186,12 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     BitmapNatives.nativeGetPixels(nativeBitmap, pixels, offset, stride, x, y, width, height);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeSetPixel(long nativeBitmap, int x, int y, int color) {
     BitmapNatives.nativeSetPixel(nativeBitmap, x, y, color);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeSetPixels(
       long nativeBitmap,
       int[] colors,
@@ -199,85 +204,85 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     BitmapNatives.nativeSetPixels(nativeBitmap, colors, offset, stride, x, y, width, height);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeCopyPixelsToBuffer(long nativeBitmap, Buffer dst) {
     BitmapNatives.nativeCopyPixelsToBuffer(nativeBitmap, dst);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeCopyPixelsFromBuffer(long nativeBitmap, Buffer src) {
     BitmapNatives.nativeCopyPixelsFromBuffer(nativeBitmap, src);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeGenerationId(long nativeBitmap) {
     return BitmapNatives.nativeGenerationId(nativeBitmap);
   }
 
   // returns a new bitmap built from the native bitmap's alpha, and the paint
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static Bitmap nativeExtractAlpha(long nativeBitmap, long nativePaint, int[] offsetXY) {
     return BitmapNatives.nativeExtractAlpha(nativeBitmap, nativePaint, offsetXY);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nativeHasAlpha(long nativeBitmap) {
     return BitmapNatives.nativeHasAlpha(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativeIsPremultiplied(long nativeBitmap) {
     return BitmapNatives.nativeIsPremultiplied(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeSetPremultiplied(long nativeBitmap, boolean isPremul) {
     BitmapNatives.nativeSetPremultiplied(nativeBitmap, isPremul);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeSetHasAlpha(
       long nativeBitmap, boolean hasAlpha, boolean requestPremul) {
     BitmapNatives.nativeSetHasAlpha(nativeBitmap, hasAlpha, requestPremul);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = U.SDK_INT)
   protected static boolean nativeHasMipMap(long nativeBitmap) {
     return BitmapNatives.nativeHasMipMap(nativeBitmap);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = U.SDK_INT)
   protected static void nativeSetHasMipMap(long nativeBitmap, boolean hasMipMap) {
     BitmapNatives.nativeSetHasMipMap(nativeBitmap, hasMipMap);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nativeSameAs(long nativeBitmap0, long nativeBitmap1) {
     return BitmapNatives.nativeSameAs(nativeBitmap0, nativeBitmap1);
   }
 
-  @Implementation(minSdk = N_MR1)
+  @Implementation(minSdk = N_MR1, maxSdk = U.SDK_INT)
   protected static void nativePrepareToDraw(long nativeBitmap) {
     BitmapNatives.nativePrepareToDraw(nativeBitmap);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nativeGetAllocationByteCount(long nativeBitmap) {
     return BitmapNatives.nativeGetAllocationByteCount(nativeBitmap);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static Bitmap nativeCopyPreserveInternalConfig(long nativeBitmap) {
     return BitmapNatives.nativeCopyPreserveInternalConfig(nativeBitmap);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nativeWrapHardwareBufferBitmap(
       HardwareBuffer buffer, long nativeColorSpace) {
     return BitmapNatives.nativeWrapHardwareBufferBitmap(buffer, nativeColorSpace);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static HardwareBuffer nativeGetHardwareBuffer(long nativeBitmap) {
     return BitmapNatives.nativeGetHardwareBuffer(nativeBitmap);
   }
@@ -310,37 +315,37 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return true;
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static ColorSpace nativeComputeColorSpace(long nativePtr) {
     return BitmapNatives.nativeComputeColorSpace(nativePtr);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nativeSetColorSpace(long nativePtr, long nativeColorSpace) {
     BitmapNatives.nativeSetColorSpace(nativePtr, nativeColorSpace);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeIsSRGB(long nativePtr) {
     return BitmapNatives.nativeIsSRGB(nativePtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static boolean nativeIsSRGBLinear(long nativePtr) {
     return BitmapNatives.nativeIsSRGBLinear(nativePtr);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nativeSetImmutable(long nativePtr) {
     BitmapNatives.nativeSetImmutable(nativePtr);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static boolean nativeIsImmutable(long nativePtr) {
     return BitmapNatives.nativeIsImmutable(nativePtr);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static boolean nativeIsBackedByAshmem(long nativePtr) {
     return BitmapNatives.nativeIsBackedByAshmem(nativePtr);
   }
@@ -434,6 +439,11 @@ public class ShadowNativeBitmap extends ShadowBitmap {
       bitmap = bitmap.copy(parceledConfig, false);
     }
     return bitmap;
+  }
+
+  @Implementation(minSdk = O, maxSdk = P)
+  protected static void nativeCopyColorSpace(long srcBitmap, long dstBitmap) {
+    // TODO(hoisie): This probably needs an implementation
   }
 
   @Override

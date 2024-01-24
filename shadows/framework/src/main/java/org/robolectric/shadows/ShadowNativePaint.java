@@ -18,7 +18,6 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.PaintNatives;
 import org.robolectric.shadows.ShadowNativePaint.Picker;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link Paint} that is backed by native code */
 @Implements(
@@ -26,18 +25,19 @@ import org.robolectric.versioning.AndroidVersions.V;
     value = Paint.class,
     looseSignatures = true,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false)
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativePaint {
 
   // nGetTextRunCursor methods are non-static
   private PaintNatives paintNatives = new PaintNatives();
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nGetNativeFinalizer() {
     return PaintNatives.nGetNativeFinalizer();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nInit() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     // This native code calls Typeface::resolveDefault, which requires Typeface clinit to have run.
@@ -56,13 +56,13 @@ public class ShadowNativePaint {
     PaintNatives.nSetEndHyphenEdit(paintPtr, hyphen);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nInitWithPaint(long paint) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return PaintNatives.nInitWithPaint(paint);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static int nBreakText(
       long nObject,
       char[] text,
@@ -74,7 +74,7 @@ public class ShadowNativePaint {
     return PaintNatives.nBreakText(nObject, text, index, count, maxWidth, bidiFlags, measuredWidth);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static int nBreakText(
       long nObject,
       String text,
@@ -113,7 +113,7 @@ public class ShadowNativePaint {
         nObject, typefacePtr, text, measureForwards, maxWidth, bidiFlags, measuredWidth);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetTextAdvances(
       long paintPtr,
       char[] text,
@@ -136,7 +136,7 @@ public class ShadowNativePaint {
         advancesIndex);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetTextAdvances(
       long paintPtr,
       String text,
@@ -201,7 +201,7 @@ public class ShadowNativePaint {
         advancesIndex);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected int nGetTextRunCursor(
       long paintPtr,
       char[] text,
@@ -214,7 +214,7 @@ public class ShadowNativePaint {
         paintPtr, text, contextStart, contextLength, dir, offset, cursorOpt);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected int nGetTextRunCursor(
       long paintPtr,
       String text,
@@ -255,7 +255,7 @@ public class ShadowNativePaint {
         paintPtr, typefacePtr, text, contextStart, contextEnd, dir, offset, cursorOpt);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nGetTextPath(
       long paintPtr,
       int bidiFlags,
@@ -268,7 +268,7 @@ public class ShadowNativePaint {
     PaintNatives.nGetTextPath(paintPtr, bidiFlags, text, index, count, x, y, path);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nGetTextPath(
       long paintPtr, int bidiFlags, String text, int start, int end, float x, float y, long path) {
     PaintNatives.nGetTextPath(paintPtr, bidiFlags, text, start, end, x, y, path);
@@ -302,7 +302,7 @@ public class ShadowNativePaint {
     PaintNatives.nGetTextPath(paintPtr, typefacePtr, bidiFlags, text, start, end, x, y, path);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nGetStringBounds(
       long nativePaint, String text, int start, int end, int bidiFlags, Rect bounds) {
     PaintNatives.nGetStringBounds(nativePaint, text, start, end, bidiFlags, bounds);
@@ -330,7 +330,7 @@ public class ShadowNativePaint {
     return PaintNatives.nGetAlpha(paintPtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nGetCharArrayBounds(
       long nativePaint, char[] text, int index, int count, int bidiFlags, Rect bounds) {
     PaintNatives.nGetCharArrayBounds(nativePaint, text, index, count, bidiFlags, bounds);
@@ -349,7 +349,7 @@ public class ShadowNativePaint {
         nativePaint, typefacePtr, text, index, count, bidiFlags, bounds);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static boolean nHasGlyph(long paintPtr, int bidiFlags, String string) {
     return PaintNatives.nHasGlyph(paintPtr, bidiFlags, string);
   }
@@ -360,7 +360,7 @@ public class ShadowNativePaint {
     return PaintNatives.nHasGlyph(paintPtr, typefacePtr, bidiFlags, string);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetRunAdvance(
       long paintPtr,
       char[] text,
@@ -404,7 +404,7 @@ public class ShadowNativePaint {
         paintPtr, typefacePtr, text, start, end, contextStart, contextEnd, isRtl, advance);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static int nGetOffsetForAdvance(
       long paintPtr,
       char[] text,
@@ -418,20 +418,14 @@ public class ShadowNativePaint {
         paintPtr, text, start, end, contextStart, contextEnd, isRtl, advance);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nSetTextLocales(long paintPtr, String locales) {
     return PaintNatives.nSetTextLocales(paintPtr, locales);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetFontFeatureSettings(long paintPtr, String settings) {
     PaintNatives.nSetFontFeatureSettings(paintPtr, settings);
-  }
-
-  @Implementation(minSdk = V.SDK_INT)
-  protected static float nGetFontMetrics(
-      long paintPtr, FontMetrics metrics, /* Ignored */ boolean useLocale) {
-    return PaintNatives.nGetFontMetrics(paintPtr, metrics);
   }
 
   @Implementation(minSdk = P, maxSdk = U.SDK_INT)
@@ -444,12 +438,6 @@ public class ShadowNativePaint {
     return PaintNatives.nGetFontMetrics(paintPtr, typefacePtr, metrics);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
-  protected static int nGetFontMetricsInt(
-      long paintPtr, FontMetricsInt fmi, /* Ignored */ boolean useLocale) {
-    return PaintNatives.nGetFontMetricsInt(paintPtr, fmi);
-  }
-
   @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static int nGetFontMetricsInt(long paintPtr, FontMetricsInt fmi) {
     return PaintNatives.nGetFontMetricsInt(paintPtr, fmi);
@@ -460,77 +448,77 @@ public class ShadowNativePaint {
     return PaintNatives.nGetFontMetricsInt(paintPtr, typefacePtr, fmi);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nReset(long paintPtr) {
     PaintNatives.nReset(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSet(long paintPtrDest, long paintPtrSrc) {
     PaintNatives.nSet(paintPtrDest, paintPtrSrc);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nGetStyle(long paintPtr) {
     return PaintNatives.nGetStyle(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetStyle(long paintPtr, int style) {
     PaintNatives.nSetStyle(paintPtr, style);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nGetStrokeCap(long paintPtr) {
     return PaintNatives.nGetStrokeCap(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetStrokeCap(long paintPtr, int cap) {
     PaintNatives.nSetStrokeCap(paintPtr, cap);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nGetStrokeJoin(long paintPtr) {
     return PaintNatives.nGetStrokeJoin(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetStrokeJoin(long paintPtr, int join) {
     PaintNatives.nSetStrokeJoin(paintPtr, join);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nGetFillPath(long paintPtr, long src, long dst) {
     return PaintNatives.nGetFillPath(paintPtr, src, dst);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nSetShader(long paintPtr, long shader) {
     return PaintNatives.nSetShader(paintPtr, shader);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nSetColorFilter(long paintPtr, long filter) {
     return PaintNatives.nSetColorFilter(paintPtr, filter);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetXfermode(long paintPtr, int xfermode) {
     PaintNatives.nSetXfermode(paintPtr, xfermode);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nSetPathEffect(long paintPtr, long effect) {
     return PaintNatives.nSetPathEffect(paintPtr, effect);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nSetMaskFilter(long paintPtr, long maskfilter) {
     return PaintNatives.nSetMaskFilter(paintPtr, maskfilter);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nSetTypeface(long paintPtr, long typeface) {
     PaintNatives.nSetTypeface(paintPtr, typeface);
   }
@@ -541,23 +529,23 @@ public class ShadowNativePaint {
     return paintPtr;
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nGetTextAlign(long paintPtr) {
     return PaintNatives.nGetTextAlign(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetTextAlign(long paintPtr, int align) {
     PaintNatives.nSetTextAlign(paintPtr, align);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nSetTextLocalesByMinikinLocaleListId(
       long paintPtr, int mMinikinLocaleListId) {
     PaintNatives.nSetTextLocalesByMinikinLocaleListId(paintPtr, mMinikinLocaleListId);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nSetShadowLayer(
       long paintPtr,
       float radius,
@@ -574,142 +562,142 @@ public class ShadowNativePaint {
     PaintNatives.nSetShadowLayer(paintPtr, radius, dx, dy, color);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nHasShadowLayer(long paintPtr) {
     return PaintNatives.nHasShadowLayer(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetLetterSpacing(long paintPtr) {
     return PaintNatives.nGetLetterSpacing(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetLetterSpacing(long paintPtr, float letterSpacing) {
     PaintNatives.nSetLetterSpacing(paintPtr, letterSpacing);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetWordSpacing(long paintPtr) {
     return PaintNatives.nGetWordSpacing(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetWordSpacing(long paintPtr, float wordSpacing) {
     PaintNatives.nSetWordSpacing(paintPtr, wordSpacing);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static int nGetStartHyphenEdit(long paintPtr) {
     return PaintNatives.nGetStartHyphenEdit(paintPtr);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static int nGetEndHyphenEdit(long paintPtr) {
     return PaintNatives.nGetEndHyphenEdit(paintPtr);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nSetStartHyphenEdit(long paintPtr, int hyphen) {
     PaintNatives.nSetStartHyphenEdit(paintPtr, hyphen);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nSetEndHyphenEdit(long paintPtr, int hyphen) {
     PaintNatives.nSetEndHyphenEdit(paintPtr, hyphen);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetStrokeMiter(long paintPtr, float miter) {
     PaintNatives.nSetStrokeMiter(paintPtr, miter);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetStrokeMiter(long paintPtr) {
     return PaintNatives.nGetStrokeMiter(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetStrokeWidth(long paintPtr, float width) {
     PaintNatives.nSetStrokeWidth(paintPtr, width);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetStrokeWidth(long paintPtr) {
     return PaintNatives.nGetStrokeWidth(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetAlpha(long paintPtr, int a) {
     PaintNatives.nSetAlpha(paintPtr, a);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetDither(long paintPtr, boolean dither) {
     PaintNatives.nSetDither(paintPtr, dither);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nGetFlags(long paintPtr) {
     return PaintNatives.nGetFlags(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetFlags(long paintPtr, int flags) {
     PaintNatives.nSetFlags(paintPtr, flags);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nGetHinting(long paintPtr) {
     return PaintNatives.nGetHinting(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetHinting(long paintPtr, int mode) {
     PaintNatives.nSetHinting(paintPtr, mode);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetAntiAlias(long paintPtr, boolean aa) {
     PaintNatives.nSetAntiAlias(paintPtr, aa);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetLinearText(long paintPtr, boolean linearText) {
     PaintNatives.nSetLinearText(paintPtr, linearText);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetSubpixelText(long paintPtr, boolean subpixelText) {
     PaintNatives.nSetSubpixelText(paintPtr, subpixelText);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetUnderlineText(long paintPtr, boolean underlineText) {
     PaintNatives.nSetUnderlineText(paintPtr, underlineText);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetFakeBoldText(long paintPtr, boolean fakeBoldText) {
     PaintNatives.nSetFakeBoldText(paintPtr, fakeBoldText);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetFilterBitmap(long paintPtr, boolean filter) {
     PaintNatives.nSetFilterBitmap(paintPtr, filter);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nSetColor(long paintPtr, long colorSpaceHandle, @ColorLong long color) {
     PaintNatives.nSetColor(paintPtr, colorSpaceHandle, color);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetColor(long paintPtr, @ColorInt int color) {
     PaintNatives.nSetColor(paintPtr, color);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetStrikeThruText(long paintPtr, boolean strikeThruText) {
     PaintNatives.nSetStrikeThruText(paintPtr, strikeThruText);
   }
@@ -719,52 +707,42 @@ public class ShadowNativePaint {
     return PaintNatives.nIsElegantTextHeight(paintPtr);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
-  protected static int nGetElegantTextHeight(long paintPtr) {
-    return PaintNatives.nGetElegantTextHeight(paintPtr);
-  }
-
   // Note: the following three values must be equal to the ones in the JNI file: Paint.cpp
   private static final int ELEGANT_TEXT_HEIGHT_ENABLED = 0;
   private static final int ELEGANT_TEXT_HEIGHT_DISABLED = 1;
 
   @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetElegantTextHeight(long paintPtr, boolean elegant) {
-    nSetElegantTextHeight(
+    PaintNatives.nSetElegantTextHeight(
         paintPtr, elegant ? ELEGANT_TEXT_HEIGHT_ENABLED : ELEGANT_TEXT_HEIGHT_DISABLED);
   }
 
-  @Implementation(minSdk = V.SDK_INT)
-  protected static void nSetElegantTextHeight(long paintPtr, int value) {
-    PaintNatives.nSetElegantTextHeight(paintPtr, value);
-  }
-
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetTextSize(long paintPtr) {
     return PaintNatives.nGetTextSize(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetTextScaleX(long paintPtr) {
     return PaintNatives.nGetTextScaleX(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetTextScaleX(long paintPtr, float scaleX) {
     PaintNatives.nSetTextScaleX(paintPtr, scaleX);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static float nGetTextSkewX(long paintPtr) {
     return PaintNatives.nGetTextSkewX(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetTextSkewX(long paintPtr, float skewX) {
     PaintNatives.nSetTextSkewX(paintPtr, skewX);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nAscent(long paintPtr) {
     return PaintNatives.nAscent(paintPtr);
   }
@@ -774,7 +752,7 @@ public class ShadowNativePaint {
     return PaintNatives.nAscent(paintPtr, typefacePtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nDescent(long paintPtr) {
     return PaintNatives.nDescent(paintPtr);
   }
@@ -784,37 +762,57 @@ public class ShadowNativePaint {
     return PaintNatives.nDescent(paintPtr, typefacePtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetUnderlinePosition(long paintPtr) {
     return PaintNatives.nGetUnderlinePosition(paintPtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = O_MR1, maxSdk = O_MR1)
+  protected static float nGetUnderlinePosition(long paintPtr, long typefacePtr) {
+    return nGetUnderlinePosition(paintPtr);
+  }
+
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetUnderlineThickness(long paintPtr) {
     return PaintNatives.nGetUnderlineThickness(paintPtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = O_MR1, maxSdk = O_MR1)
+  protected static float nGetUnderlineThickness(long paintPtr, long typefacePtr) {
+    return nGetUnderlineThickness(paintPtr);
+  }
+
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetStrikeThruPosition(long paintPtr) {
     return PaintNatives.nGetStrikeThruPosition(paintPtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = O_MR1, maxSdk = O_MR1)
+  protected static float nGetStrikeThruPosition(long paintPtr, long typefacePtr) {
+    return nGetStrikeThruPosition(paintPtr);
+  }
+
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static float nGetStrikeThruThickness(long paintPtr) {
     return PaintNatives.nGetStrikeThruThickness(paintPtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O_MR1, maxSdk = O_MR1)
+  protected static float nGetStrikeThruThickness(long paintPtr, long typefacePtr) {
+    return nGetStrikeThruThickness(paintPtr);
+  }
+
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nSetTextSize(long paintPtr, float textSize) {
     PaintNatives.nSetTextSize(paintPtr, textSize);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static boolean nEqualsForTextMeasurement(long leftPaintPtr, long rightPaintPtr) {
     return PaintNatives.nEqualsForTextMeasurement(leftPaintPtr, rightPaintPtr);
   }
 
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   protected static void nGetFontMetricsIntForText(
       long paintPtr,
       char[] text,
@@ -828,7 +826,7 @@ public class ShadowNativePaint {
         paintPtr, text, start, count, ctxStart, ctxCount, isRtl, outMetrics);
   }
 
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   protected static void nGetFontMetricsIntForText(
       long paintPtr,
       String text,
@@ -867,32 +865,9 @@ public class ShadowNativePaint {
         advancesIndex);
   }
 
-  /** Requires loose signatures because of RunInfo parameter */
-  @Implementation(minSdk = V.SDK_INT)
-  protected static float nGetRunCharacterAdvance(
-      Object /* long */ paintPtr,
-      Object /* char[] */ text,
-      Object /* int */ start,
-      Object /* int */ end,
-      Object /* int */ contextStart,
-      Object /* int */ contextEnd,
-      Object /* boolean */ isRtl,
-      Object /* int */ offset,
-      Object /* float[] */ advances,
-      Object /* int */ advancesIndex,
-      Object /* RectF */ drawingBounds,
-      Object /* RunInfo */ runInfo) {
-    return nGetRunCharacterAdvance(
-        (long) paintPtr,
-        (char[]) text,
-        (int) start,
-        (int) end,
-        (int) contextStart,
-        (int) contextEnd,
-        (boolean) isRtl,
-        (int) offset,
-        (float[]) advances,
-        (int) advancesIndex);
+  @Implementation(minSdk = O, maxSdk = O_MR1)
+  protected static void nSetTextLocalesByMinikinLangListId(long paintPtr, int mMinikinLangListId) {
+    // no-op
   }
 
   /** Shadow picker for {@link Paint}. */

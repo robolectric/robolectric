@@ -8,12 +8,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.ComposeShaderNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeComposeShader.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link ComposeShader} that is backed by native code */
-@Implements(value = ComposeShader.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = ComposeShader.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeComposeShader {
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeCreate(
       long nativeMatrix, long nativeShaderA, long nativeShaderB, int porterDuffMode) {
     DefaultNativeRuntimeLoader.injectAndLoad();

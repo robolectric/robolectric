@@ -8,40 +8,45 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.InterpolatorNatives;
 import org.robolectric.shadows.ShadowNativeInterpolator.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Interpolator} that is backed by native code */
-@Implements(value = Interpolator.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = Interpolator.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeInterpolator {
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeConstructor(int valueCount, int frameCount) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return InterpolatorNatives.nativeConstructor(valueCount, frameCount);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeDestructor(long nativeInstance) {
     InterpolatorNatives.nativeDestructor(nativeInstance);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeReset(long nativeInstance, int valueCount, int frameCount) {
     InterpolatorNatives.nativeReset(nativeInstance, valueCount, frameCount);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetKeyFrame(
       long nativeInstance, int index, int msec, float[] values, float[] blend) {
     InterpolatorNatives.nativeSetKeyFrame(nativeInstance, index, msec, values, blend);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetRepeatMirror(
       long nativeInstance, float repeatCount, boolean mirror) {
     InterpolatorNatives.nativeSetRepeatMirror(nativeInstance, repeatCount, mirror);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeTimeToValues(long nativeInstance, int msec, float[] values) {
     return InterpolatorNatives.nativeTimeToValues(nativeInstance, msec, values);
   }

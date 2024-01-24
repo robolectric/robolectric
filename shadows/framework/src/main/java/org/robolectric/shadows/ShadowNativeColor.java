@@ -8,18 +8,24 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.ColorNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeColor.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Color} that is backed by native code */
-@Implements(value = Color.class, minSdk = O, shadowPicker = Picker.class, isInAndroidSdk = false)
+@Implements(
+    value = Color.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeColor {
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nativeRGBToHSV(int red, int greed, int blue, float[] hsv) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     ColorNatives.nativeRGBToHSV(red, greed, blue, hsv);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nativeHSVToColor(int alpha, float[] hsv) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return ColorNatives.nativeHSVToColor(alpha, hsv);

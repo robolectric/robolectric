@@ -15,9 +15,14 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeAnimatedVectorDrawable.Picker;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link AnimatedVectorDrawable} that is backed by native code */
-@Implements(value = AnimatedVectorDrawable.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = AnimatedVectorDrawable.class,
+    minSdk = O,
+    callNativeMethodsByDefault = true,
+    shadowPicker = Picker.class)
 public class ShadowNativeAnimatedVectorDrawable extends ShadowDrawable {
 
   @RealObject protected AnimatedVectorDrawable realAnimatedVectorDrawable;
@@ -44,18 +49,18 @@ public class ShadowNativeAnimatedVectorDrawable extends ShadowDrawable {
     return startInitiated;
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nCreateAnimatorSet() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return AnimatedVectorDrawableNatives.nCreateAnimatorSet();
   }
 
-  @Implementation(minSdk = N_MR1)
+  @Implementation(minSdk = N_MR1, maxSdk = U.SDK_INT)
   protected static void nSetVectorDrawableTarget(long animatorPtr, long vectorDrawablePtr) {
     AnimatedVectorDrawableNatives.nSetVectorDrawableTarget(animatorPtr, vectorDrawablePtr);
   }
 
-  @Implementation(minSdk = N_MR1)
+  @Implementation(minSdk = N_MR1, maxSdk = U.SDK_INT)
   protected static void nAddAnimator(
       long setPtr,
       long propertyValuesHolder,
@@ -74,67 +79,67 @@ public class ShadowNativeAnimatedVectorDrawable extends ShadowDrawable {
         repeatMode);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static void nSetPropertyHolderData(long nativePtr, float[] data, int length) {
     AnimatedVectorDrawableNatives.nSetPropertyHolderData(nativePtr, data, length);
   }
 
-  @Implementation(minSdk = N_MR1)
+  @Implementation(minSdk = N_MR1, maxSdk = U.SDK_INT)
   protected static void nSetPropertyHolderData(long nativePtr, int[] data, int length) {
     AnimatedVectorDrawableNatives.nSetPropertyHolderData(nativePtr, data, length);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static void nStart(long animatorSetPtr, VectorDrawableAnimatorRT set, int id) {
     AnimatedVectorDrawableNatives.nStart(animatorSetPtr, set, id);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static void nReverse(long animatorSetPtr, VectorDrawableAnimatorRT set, int id) {
     AnimatedVectorDrawableNatives.nReverse(animatorSetPtr, set, id);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nCreateGroupPropertyHolder(
       long nativePtr, int propertyId, float startValue, float endValue) {
     return AnimatedVectorDrawableNatives.nCreateGroupPropertyHolder(
         nativePtr, propertyId, startValue, endValue);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nCreatePathDataPropertyHolder(
       long nativePtr, long startValuePtr, long endValuePtr) {
     return AnimatedVectorDrawableNatives.nCreatePathDataPropertyHolder(
         nativePtr, startValuePtr, endValuePtr);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nCreatePathColorPropertyHolder(
       long nativePtr, int propertyId, int startValue, int endValue) {
     return AnimatedVectorDrawableNatives.nCreatePathColorPropertyHolder(
         nativePtr, propertyId, startValue, endValue);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nCreatePathPropertyHolder(
       long nativePtr, int propertyId, float startValue, float endValue) {
     return AnimatedVectorDrawableNatives.nCreatePathPropertyHolder(
         nativePtr, propertyId, startValue, endValue);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static long nCreateRootAlphaPropertyHolder(
       long nativePtr, float startValue, float endValue) {
     return AnimatedVectorDrawableNatives.nCreateRootAlphaPropertyHolder(
         nativePtr, startValue, endValue);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static void nEnd(long animatorSetPtr) {
     AnimatedVectorDrawableNatives.nEnd(animatorSetPtr);
   }
 
-  @Implementation(minSdk = N)
+  @Implementation(minSdk = N, maxSdk = U.SDK_INT)
   protected static void nReset(long animatorSetPtr) {
     AnimatedVectorDrawableNatives.nReset(animatorSetPtr);
   }

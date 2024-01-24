@@ -16,9 +16,14 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.SQLiteConnectionNatives;
 import org.robolectric.util.PerfStatsCollector;
+import org.robolectric.versioning.AndroidVersions.T;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link SQLiteConnection} that is backed by native code */
-@Implements(className = "android.database.sqlite.SQLiteConnection", isInAndroidSdk = false)
+@Implements(
+    className = "android.database.sqlite.SQLiteConnection",
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
   @Implementation(maxSdk = O)
   protected static Number nativeOpen(
@@ -30,7 +35,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return result;
   }
 
-  @Implementation(minSdk = O_MR1)
+  @Implementation(minSdk = O_MR1, maxSdk = U.SDK_INT)
   protected static long nativeOpen(
       String path,
       int openFlags,
@@ -59,7 +64,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeClose(PreLPointers.get(connectionPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeClose(long connectionPtr) {
     PerfStatsCollector.getInstance()
         .measure("androidsqlite", () -> SQLiteConnectionNatives.nativeClose(connectionPtr));
@@ -71,7 +76,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return PreLPointers.register(statementPtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativePrepareStatement(long connectionPtr, String sql) {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -84,7 +89,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeFinalizeStatement(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeFinalizeStatement(long connectionPtr, long statementPtr) {
     PerfStatsCollector.getInstance()
         .measure(
@@ -97,7 +102,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return nativeGetParameterCount(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetParameterCount(final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -110,7 +115,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return nativeIsReadOnly(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativeIsReadOnly(final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -123,7 +128,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return nativeExecuteForString(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static String nativeExecuteForString(
       final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
@@ -137,7 +142,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeRegisterLocalizedCollators(PreLPointers.get(connectionPtr), locale);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeRegisterLocalizedCollators(long connectionPtr, String locale) {
     PerfStatsCollector.getInstance()
         .measure(
@@ -150,7 +155,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return nativeExecuteForLong(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativeExecuteForLong(final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -171,7 +176,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
             () -> SQLiteConnectionNatives.nativeExecute(connectionPtr, statementPtr, false));
   }
 
-  @Implementation(minSdk = 33)
+  @Implementation(minSdk = T.SDK_INT, maxSdk = U.SDK_INT)
   protected static void nativeExecute(
       final long connectionPtr, final long statementPtr, boolean isPragmaStmt) {
     PerfStatsCollector.getInstance()
@@ -186,7 +191,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
         PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeExecuteForChangedRowCount(
       final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
@@ -202,7 +207,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return nativeGetColumnCount(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetColumnCount(final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
         .measure(
@@ -216,7 +221,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
         PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr), index);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static String nativeGetColumnName(
       final long connectionPtr, final long statementPtr, final int index) {
     return PerfStatsCollector.getInstance()
@@ -230,7 +235,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeBindNull(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr), index);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeBindNull(
       final long connectionPtr, final long statementPtr, final int index) {
     PerfStatsCollector.getInstance()
@@ -244,7 +249,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeBindLong(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr), index, value);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeBindLong(
       final long connectionPtr, final long statementPtr, final int index, final long value) {
     PerfStatsCollector.getInstance()
@@ -260,7 +265,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeBindDouble(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr), index, value);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeBindDouble(
       final long connectionPtr, final long statementPtr, final int index, final double value) {
     PerfStatsCollector.getInstance()
@@ -277,7 +282,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeBindString(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr), index, value);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeBindString(
       final long connectionPtr, final long statementPtr, final int index, final String value) {
     PerfStatsCollector.getInstance()
@@ -294,7 +299,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeBindBlob(PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr), index, value);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeBindBlob(
       final long connectionPtr, final long statementPtr, final int index, final byte[] value) {
     PerfStatsCollector.getInstance()
@@ -310,7 +315,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
         PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeResetStatementAndClearBindings(
       final long connectionPtr, final long statementPtr) {
     PerfStatsCollector.getInstance()
@@ -327,7 +332,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
         PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativeExecuteForLastInsertedRowId(
       final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
@@ -355,7 +360,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
         countAllRows);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativeExecuteForCursorWindow(
       final long connectionPtr,
       final long statementPtr,
@@ -377,7 +382,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
         PreLPointers.get(connectionPtr), PreLPointers.get(statementPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeExecuteForBlobFileDescriptor(
       final long connectionPtr, final long statementPtr) {
     return PerfStatsCollector.getInstance()
@@ -393,7 +398,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeCancel(PreLPointers.get(connectionPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeCancel(long connectionPtr) {
     PerfStatsCollector.getInstance()
         .measure("androidsqlite", () -> SQLiteConnectionNatives.nativeCancel(connectionPtr));
@@ -404,7 +409,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     nativeResetCancel(PreLPointers.get(connectionPtr), cancelable);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeResetCancel(long connectionPtr, boolean cancelable) {
     PerfStatsCollector.getInstance()
         .measure(
@@ -412,7 +417,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
             () -> SQLiteConnectionNatives.nativeResetCancel(connectionPtr, cancelable));
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   @SuppressWarnings("AndroidJdkLibsChecker")
   protected static void nativeRegisterCustomScalarFunction(
       long connectionPtr, String name, UnaryOperator<String> function) {
@@ -424,7 +429,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
                     connectionPtr, name, function));
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   @SuppressWarnings("AndroidJdkLibsChecker")
   protected static void nativeRegisterCustomAggregateFunction(
       long connectionPtr, String name, BinaryOperator<String> function) {
@@ -441,7 +446,7 @@ public class ShadowNativeSQLiteConnection extends ShadowSQLiteConnection {
     return nativeGetDbLookaside(PreLPointers.get(connectionPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetDbLookaside(long connectionPtr) {
     return PerfStatsCollector.getInstance()
         .measure(

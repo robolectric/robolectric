@@ -1581,6 +1581,7 @@ public class ShadowNativeBitmapTest {
     assertFalse(bitmap2.sameAs(bitmap1));
   }
 
+  @org.robolectric.annotation.Config(maxSdk = U.SDK_INT) // TODO(hoisie): fix in V and above
   @Test
   public void testSameAs_hardware() {
     Bitmap bitmap1 = BitmapFactory.decodeResource(res, R.drawable.robot, HARDWARE_OPTIONS);

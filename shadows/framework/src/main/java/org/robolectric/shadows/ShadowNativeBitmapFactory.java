@@ -21,13 +21,15 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeBitmapFactory.Picker;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link BitmapFactory} that is backed by native code */
 @Implements(
     value = BitmapFactory.class,
     minSdk = O,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false)
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeBitmapFactory {
 
   static {
@@ -49,8 +51,8 @@ public class ShadowNativeBitmapFactory {
   /**
    * The real implementation of {@link BitmapFactory#decodeStream(InputStream, Rect, Options)}
    * checks if the stream is an {@link android.content.res.AssetManager.AssetInputStream} object and
-   * has special case logic for it. This logic extracts native asset ids and passes those into
-   * native code. Until native resources are implemented, this has to be shadowed.
+   * subsequently passes in native asset ids into native code. Until native resources are
+   * implemented, this has to be shadowed.
    */
   @Implementation
   protected static Bitmap decodeStream(InputStream is, Rect outPadding, Options opts) {
@@ -61,7 +63,7 @@ public class ShadowNativeBitmapFactory {
     return bitmap;
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nativeDecodeStream(
       InputStream is,
       byte[] storage,
@@ -79,7 +81,7 @@ public class ShadowNativeBitmapFactory {
     return nativeDecodeStream(is, storage, padding, opts, nativeInBitmap(opts), 0);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nativeDecodeFileDescriptor(
       FileDescriptor fd, Rect padding, Options opts, long inBitmapHandle, long colorSpaceHandle) {
     return BitmapFactoryNatives.nativeDecodeFileDescriptor(
@@ -92,7 +94,7 @@ public class ShadowNativeBitmapFactory {
     return nativeDecodeFileDescriptor(fd, padding, opts, nativeInBitmap(opts), 0);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nativeDecodeAsset(
       long nativeAsset, Rect padding, Options opts, long inBitmapHandle, long colorSpaceHandle) {
     return BitmapFactoryNatives.nativeDecodeAsset(
@@ -104,7 +106,7 @@ public class ShadowNativeBitmapFactory {
     return nativeDecodeAsset(nativeAsset, padding, opts, nativeInBitmap(opts), 0);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static Bitmap nativeDecodeByteArray(
       byte[] data,
       int offset,
@@ -121,7 +123,7 @@ public class ShadowNativeBitmapFactory {
     return nativeDecodeByteArray(data, offset, length, opts, nativeInBitmap(opts), 0);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nativeIsSeekable(FileDescriptor fd) {
     return BitmapFactoryNatives.nativeIsSeekable(fd);
   }

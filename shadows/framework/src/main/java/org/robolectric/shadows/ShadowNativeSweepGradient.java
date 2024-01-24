@@ -10,12 +10,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.SweepGradientNatives;
 import org.robolectric.shadows.ShadowNativeSweepGradient.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link SweepGradient} that is backed by native code */
-@Implements(value = SweepGradient.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = SweepGradient.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeSweepGradient {
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static long nativeCreate(
       long matrix, float x, float y, long[] colors, float[] positions, long colorSpaceHandle) {
     DefaultNativeRuntimeLoader.injectAndLoad();

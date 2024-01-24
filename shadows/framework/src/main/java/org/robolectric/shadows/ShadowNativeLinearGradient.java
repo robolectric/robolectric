@@ -7,14 +7,23 @@ import static android.os.Build.VERSION_CODES.Q;
 import android.graphics.LinearGradient;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.LinearGradientNatives;
 import org.robolectric.shadows.ShadowNativeLinearGradient.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link LinearGradient} that is backed by native code */
-@Implements(value = LinearGradient.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = LinearGradient.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeLinearGradient {
-  @Implementation(minSdk = Q)
+
+  @RealObject LinearGradient realLinearGradient;
+
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected long nativeCreate(
       long matrix,
       float x0,

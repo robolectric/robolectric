@@ -12,13 +12,15 @@ import org.robolectric.shadows.ShadowNativeAllocationRegistry.Picker;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link NativeAllocationRegistry} that is backed by native code */
 @Implements(
     value = NativeAllocationRegistry.class,
     minSdk = O,
     isInAndroidSdk = false,
-    shadowPicker = Picker.class)
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeAllocationRegistry {
 
   @RealObject protected NativeAllocationRegistry realNativeAllocationRegistry;
@@ -42,7 +44,7 @@ public class ShadowNativeAllocationRegistry {
         != 0;
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void applyFreeFunction(long freeFunction, long nativePtr) {
     NativeAllocationRegistryNatives.applyFreeFunction(freeFunction, nativePtr);
   }

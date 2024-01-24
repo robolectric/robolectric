@@ -10,55 +10,61 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.PictureNatives;
 import org.robolectric.shadows.ShadowNativePicture.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Picture} that is backed by native code */
-@Implements(value = Picture.class, minSdk = O, shadowPicker = Picker.class, isInAndroidSdk = false)
+@Implements(
+    value = Picture.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativePicture {
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeConstructor(long nativeSrcOr0) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return PictureNatives.nativeConstructor(nativeSrcOr0);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeCreateFromStream(InputStream stream, byte[] storage) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return PictureNatives.nativeCreateFromStream(stream, storage);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeGetWidth(long nativePicture) {
     return PictureNatives.nativeGetWidth(nativePicture);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeGetHeight(long nativePicture) {
     return PictureNatives.nativeGetHeight(nativePicture);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeBeginRecording(long nativeCanvas, int w, int h) {
     return PictureNatives.nativeBeginRecording(nativeCanvas, w, h);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeEndRecording(long nativeCanvas) {
     PictureNatives.nativeEndRecording(nativeCanvas);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeDraw(long nativeCanvas, long nativePicture) {
     PictureNatives.nativeDraw(nativeCanvas, nativePicture);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nativeWriteToStream(
       long nativePicture, OutputStream stream, byte[] storage) {
     return PictureNatives.nativeWriteToStream(nativePicture, stream, storage);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeDestructor(long nativePicture) {
     PictureNatives.nativeDestructor(nativePicture);
   }
