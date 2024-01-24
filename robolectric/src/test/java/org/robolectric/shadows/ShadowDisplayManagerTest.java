@@ -23,6 +23,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -518,6 +519,21 @@ public class ShadowDisplayManagerTest {
     ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
 
     assertThat(ShadowDisplay.getDefaultDisplay().getRotation()).isEqualTo(Surface.ROTATION_0);
+  }
+
+  @Test
+  @Config(minSdk = JELLY_BEAN_MR1)
+  public void configureDefaultDisplay_calledTwice_showsReasonableException() {
+    IllegalStateException e =
+        Assert.assertThrows(
+            IllegalStateException.class,
+            () -> ShadowDisplayManager.configureDefaultDisplay(null, null));
+
+    assertThat(e).hasMessageThat().contains("configureDefaultDisplay should only be called once");
+    assertThat(e)
+        .hasCauseThat()
+        .hasMessageThat()
+        .contains("configureDefaultDisplay was called a second time");
   }
 
   // because DisplayManagerGlobal don't exist in Jelly Bean,

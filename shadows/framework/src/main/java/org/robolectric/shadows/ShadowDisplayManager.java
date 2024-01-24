@@ -96,12 +96,21 @@ public class ShadowDisplayManager {
     return id;
   }
 
+  static IllegalStateException configureDefaultDisplayCallstack;
+
   /** internal only */
   public static void configureDefaultDisplay(
       Configuration configuration, DisplayMetrics displayMetrics) {
     ShadowDisplayManagerGlobal shadowDisplayManagerGlobal = getShadowDisplayManagerGlobal();
-    if (DisplayManagerGlobal.getInstance().getDisplayIds().length != 0) {
-      throw new IllegalStateException("this method should only be called by Robolectric");
+    if (DisplayManagerGlobal.getInstance().getDisplayIds().length == 0) {
+      configureDefaultDisplayCallstack =
+          new IllegalStateException("configureDefaultDisplay should only be called once");
+    } else {
+      configureDefaultDisplayCallstack.initCause(
+          new IllegalStateException(
+              "configureDefaultDisplay was called a second time",
+              configureDefaultDisplayCallstack));
+      throw configureDefaultDisplayCallstack;
     }
 
     shadowDisplayManagerGlobal.addDisplay(
