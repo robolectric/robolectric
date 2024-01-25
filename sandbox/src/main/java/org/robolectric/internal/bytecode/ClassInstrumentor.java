@@ -38,7 +38,6 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
-import org.robolectric.sandbox.NativeMethodNotFoundException;
 import org.robolectric.util.PerfStatsCollector;
 
 /**
@@ -54,7 +53,6 @@ public class ClassInstrumentor {
   protected static final Type OBJECT_TYPE = Type.getType(Object.class);
   private static final ShadowImpl SHADOW_IMPL = new ShadowImpl();
   final Decorator decorator;
-  private NativeCallHandler nativeCallHandler;
 
   static {
     String className = Type.getInternalName(InvokeDynamicSupport.class);
@@ -566,17 +564,6 @@ public class ClassInstrumentor {
 
     RobolectricGeneratorAdapter generator = new RobolectricGeneratorAdapter(method);
 
-    if (nativeCallHandler != null) {
-      String descriptor =
-          String.format("%s#%s%s", mutableClass.getName(), method.name, method.desc);
-      nativeCallHandler.logNativeCall(descriptor);
-      if (nativeCallHandler.shouldThrow(descriptor)) {
-        String message =
-            nativeCallHandler.getExceptionMessage(descriptor, mutableClass.getName(), method.name);
-        generator.throwException(Type.getType(NativeMethodNotFoundException.class), message);
-      }
-    }
-
     Type returnType = generator.getReturnType();
     generator.pushDefaultReturnValueToStack(returnType);
     generator.returnValue();
@@ -778,10 +765,6 @@ public class ClassInstrumentor {
   // implemented in DirectClassInstrumentor
   protected int getAndroidJarSDKVersion() {
     return -1;
-  }
-
-  public void setNativeCallHandler(NativeCallHandler nativeCallHandler) {
-    this.nativeCallHandler = nativeCallHandler;
   }
 
   public interface Decorator {
