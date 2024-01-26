@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
 import android.util.Log;
+import android.util.Log.TerribleFailure;
+import android.util.Log.TerribleFailureHandler;
 import com.google.common.base.Ascii;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -13,9 +17,16 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.util.Util;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.L;
 
 /** Controls the behavior of {@link android.util.Log} and provides access to log messages. */
 @Implements(Log.class)
@@ -103,8 +114,18 @@ public class ShadowLog {
   @Implementation
   protected static int wtf(String tag, String msg, Throwable throwable) {
     addLog(Log.ASSERT, tag, msg, throwable);
+    // invoking the wtfHandler
+    TerribleFailure terribleFailure =
+        reflector(TerribleFailureReflector.class).newTerribleFailure(msg, throwable);
     if (wtfIsFatal) {
-      throw new TerribleFailure(msg, throwable);
+      Util.sneakyThrow(terribleFailure);
+    }
+    TerribleFailureHandler terribleFailureHandler = reflector(LogReflector.class).getWtfHandler();
+    if (RuntimeEnvironment.getApiLevel() >= L.SDK_INT) {
+      terribleFailureHandler.onTerribleFailure(tag, terribleFailure, false);
+    } else {
+      reflector(TerribleFailureHandlerReflector.class, terribleFailureHandler)
+          .onTerribleFailure(tag, terribleFailure);
     }
     return 0;
   }
@@ -339,14 +360,21 @@ public class ShadowLog {
     }
   }
 
-  /**
-   * Failure thrown when wtf_is_fatal is true and Log.wtf is called. This is a parallel
-   * implementation of framework's hidden API {@link android.util.Log#TerribleFailure}, to allow
-   * tests to catch / expect these exceptions.
-   */
-  public static final class TerribleFailure extends RuntimeException {
-    TerribleFailure(String msg, Throwable cause) {
-      super(msg, cause);
-    }
+  @ForType(Log.class)
+  interface LogReflector {
+    @Static
+    @Accessor("sWtfHandler")
+    TerribleFailureHandler getWtfHandler();
+  }
+
+  @ForType(TerribleFailureHandler.class)
+  interface TerribleFailureHandlerReflector {
+    void onTerribleFailure(String tag, TerribleFailure what);
+  }
+
+  @ForType(TerribleFailure.class)
+  interface TerribleFailureReflector {
+    @Constructor
+    TerribleFailure newTerribleFailure(String msg, Throwable cause);
   }
 }
