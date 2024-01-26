@@ -61,7 +61,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
 
             minHeapSize = "1024m"
-            maxHeapSize = "8192m"
+            maxHeapSize = "12288m"
 
             if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
                 maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
