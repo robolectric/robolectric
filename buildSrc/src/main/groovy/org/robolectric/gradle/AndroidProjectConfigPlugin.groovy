@@ -19,7 +19,7 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
             }
 
             minHeapSize = "2048m"
-            maxHeapSize = "8192m"
+            maxHeapSize = "12288m"
 
             if (System.env['GRADLE_MAX_PARALLEL_FORKS'] != null) {
                 maxParallelForks = Integer.parseInt(System.env['GRADLE_MAX_PARALLEL_FORKS'])
