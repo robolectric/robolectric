@@ -30,7 +30,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.11.1
+      - uses: gradle/gradle-build-action@v2.12.0
 
       - name: Run unit tests
         run: |
