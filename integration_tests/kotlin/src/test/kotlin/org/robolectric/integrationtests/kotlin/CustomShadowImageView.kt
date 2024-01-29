@@ -1,21 +1,21 @@
 package org.robolectric.integrationtests.kotlin
 
 import android.widget.ImageView
-import androidx.annotation.DrawableRes
 import org.robolectric.annotation.Implementation
 import org.robolectric.annotation.Implements
 import org.robolectric.annotation.RealObject
+import org.robolectric.shadows.ShadowView
 
 @Implements(ImageView::class)
-open class CustomShadowImageView {
+open class CustomShadowImageView : ShadowView() {
   @RealObject lateinit var realImageView: ImageView
 
-  @DrawableRes
-  var setImageResource: Int = 0
+  var longClickPerformed: Boolean = false
     private set
 
   @Implementation
-  protected fun setImageResource(resId: Int) {
-    setImageResource = resId
+  protected override fun performLongClick(): Boolean {
+    longClickPerformed = true
+    return super.performLongClick()
   }
 }
