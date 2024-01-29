@@ -52,7 +52,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.11.1
+      - uses: gradle/gradle-build-action@v2.12.0
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
