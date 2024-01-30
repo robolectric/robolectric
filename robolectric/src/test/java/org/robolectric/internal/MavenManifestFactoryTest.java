@@ -1,8 +1,6 @@
 package org.robolectric.internal;
 
-import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
-
+import com.google.common.truth.Truth8;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Before;
@@ -23,30 +21,34 @@ public class MavenManifestFactoryTest {
     myMavenManifestFactory = new MyMavenManifestFactory();
   }
 
-  @Test public void identify() throws Exception {
+  @Test
+  public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile())
+    Truth8.assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("_fakefs_path").resolve("to").resolve("DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/res"));
+    Truth8.assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
-  @Test public void withDotSlashManifest_identify() throws Exception {
+  @Test
+  public void withDotSlashManifest_identify() throws Exception {
     configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile().normalize())
+    Truth8.assertThat(manifestIdentifier.getManifestFile().normalize())
         .isEqualTo(Paths.get("_fakefs_path/to/DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir().normalize())
+    Truth8.assertThat(manifestIdentifier.getResDir().normalize())
         .isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
-  @Test public void withDotDotSlashManifest_identify() throws Exception {
+  @Test
+  public void withDotDotSlashManifest_identify() throws Exception {
     configBuilder.setManifest("../DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    assertThat(manifestIdentifier.getManifestFile())
+    Truth8.assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("_fakefs_path/to/../DifferentManifest.xml"));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/../res"));
+    Truth8.assertThat(manifestIdentifier.getResDir())
+        .isEqualTo(Paths.get("_fakefs_path/to/../res"));
   }
 
   private static class MyMavenManifestFactory extends MavenManifestFactory {

@@ -1,8 +1,8 @@
 package org.robolectric.internal;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 
+import com.google.common.truth.Truth8;
 import java.nio.file.Paths;
 import java.util.Properties;
 import org.junit.Test;
@@ -25,11 +25,11 @@ public class DefaultManifestFactoryTest {
     ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
-    assertThat(manifest.getAndroidManifestFile())
+    Truth8.assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getApkFile()).isNull();
+    Truth8.assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    Truth8.assertThat(manifest.getApkFile()).isNull();
   }
 
   @Test
@@ -43,11 +43,11 @@ public class DefaultManifestFactoryTest {
     ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
-    assertThat(manifest.getAndroidManifestFile())
+    Truth8.assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getApkFile()).isEqualTo(Paths.get("gradle/resources.ap_"));
+    Truth8.assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    Truth8.assertThat(manifest.getApkFile()).isEqualTo(Paths.get("gradle/resources.ap_"));
   }
 
   @Test
@@ -60,10 +60,10 @@ public class DefaultManifestFactoryTest {
     ManifestIdentifier identifier = factory.identify(Config.Builder.defaults().build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
-    assertThat(manifest.getAndroidManifestFile()).isNull();
-    assertThat(manifest.getResDirectory()).isNull();
-    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getApkFile()).isEqualTo(Paths.get("gradle/resources.ap_"));
+    Truth8.assertThat(manifest.getAndroidManifestFile()).isNull();
+    Truth8.assertThat(manifest.getResDirectory()).isNull();
+    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    Truth8.assertThat(manifest.getApkFile()).isEqualTo(Paths.get("gradle/resources.ap_"));
   }
 
   @Test
@@ -78,10 +78,10 @@ public class DefaultManifestFactoryTest {
         factory.identify(Config.Builder.defaults().setManifest(Config.NONE).build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
-    assertThat(manifest.getAndroidManifestFile())
+    Truth8.assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    Truth8.assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
     assertThat(manifest.getRClassName()).isEqualTo("com.example.app.R");
   }
 
@@ -96,11 +96,10 @@ public class DefaultManifestFactoryTest {
         factory.identify(Config.Builder.defaults().setPackageName("overridden.package").build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(identifier);
 
-    assertThat(manifest.getAndroidManifestFile())
+    Truth8.assertThat(manifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
-    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
-    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getRClassName())
-        .isEqualTo("overridden.package.R");
+    Truth8.assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
+    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
+    assertThat(manifest.getRClassName()).isEqualTo("overridden.package.R");
   }
 }

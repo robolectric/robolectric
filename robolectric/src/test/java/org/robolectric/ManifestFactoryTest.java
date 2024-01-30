@@ -1,8 +1,8 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 
+import com.google.common.truth.Truth8;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -20,7 +20,8 @@ import org.robolectric.res.Fs;
 public class ManifestFactoryTest {
 
   @Test
-  public void whenBuildSystemApiPropertiesFileIsPresent_shouldUseDefaultManifestFactory() throws Exception {
+  public void whenBuildSystemApiPropertiesFileIsPresent_shouldUseDefaultManifestFactory()
+      throws Exception {
     final Properties properties = new Properties();
     properties.setProperty("android_sdk_home", "");
     properties.setProperty("android_merged_manifest", "/path/to/MergedManifest.xml");
@@ -39,19 +40,23 @@ public class ManifestFactoryTest {
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
-    assertThat(manifestIdentifier.getManifestFile())
+    Truth8.assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
-    assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
+    Truth8.assertThat(manifestIdentifier.getResDir())
+        .isEqualTo(Paths.get("/path/to/merged-resources"));
+    Truth8.assertThat(manifestIdentifier.getAssetDir())
+        .isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
-    AndroidManifest androidManifest = RobolectricTestRunner
-        .createAndroidManifest(manifestIdentifier);
-    assertThat(androidManifest.getAndroidManifestFile())
+    AndroidManifest androidManifest =
+        RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
+    Truth8.assertThat(androidManifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
-    assertThat(androidManifest.getResDirectory()).isEqualTo(Paths.get("/path/to/merged-resources"));
-    assertThat(androidManifest.getAssetsDirectory()).isEqualTo(Paths.get("/path/to/merged-assets"));
+    Truth8.assertThat(androidManifest.getResDirectory())
+        .isEqualTo(Paths.get("/path/to/merged-resources"));
+    Truth8.assertThat(androidManifest.getAssetsDirectory())
+        .isEqualTo(Paths.get("/path/to/merged-assets"));
   }
 
   @Test
@@ -70,17 +75,20 @@ public class ManifestFactoryTest {
           }
         };
 
-    Config.Implementation config = Config.Builder.defaults()
-        .setManifest("TestAndroidManifest.xml")
-        .setPackageName("another.package")
-        .build();
+    Config.Implementation config =
+        Config.Builder.defaults()
+            .setManifest("TestAndroidManifest.xml")
+            .setPackageName("another.package")
+            .build();
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);
     URL expectedUrl = getClass().getClassLoader().getResource("TestAndroidManifest.xml");
-    assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fromUrl(expectedUrl));
-    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("/path/to/merged-resources"));
-    assertThat(manifestIdentifier.getAssetDir()).isEqualTo(Paths.get("/path/to/merged-assets"));
+    Truth8.assertThat(manifestIdentifier.getManifestFile()).isEqualTo(Fs.fromUrl(expectedUrl));
+    Truth8.assertThat(manifestIdentifier.getResDir())
+        .isEqualTo(Paths.get("/path/to/merged-resources"));
+    Truth8.assertThat(manifestIdentifier.getAssetDir())
+        .isEqualTo(Paths.get("/path/to/merged-assets"));
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isEqualTo("another.package");
   }
