@@ -14,6 +14,7 @@ import android.os.Message;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import android.util.Log;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -359,7 +360,8 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
-  private synchronized void resetLooperToInitialState() {
+  @VisibleForTesting
+  synchronized void resetLooperToInitialState() {
     // Do not use looperMode() here, because its cached value might already have been reset
     LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
 
@@ -367,12 +369,14 @@ public final class ShadowPausedLooper extends ShadowLooper {
     shadowQueue.reset();
 
     boolean canBeUnpaused =
-        !(realLooper == Looper.getMainLooper()
-            && looperMode != LooperMode.Mode.INSTRUMENTATION_TEST);
-    if (canBeUnpaused && realLooper.getThread().isAlive()) {
-      if (isPaused()) {
-        unPause();
-      }
+        isPaused()
+            && !(realLooper == Looper.getMainLooper()
+                && looperMode != LooperMode.Mode.INSTRUMENTATION_TEST)
+            && realLooper.getThread().isAlive()
+            && !shadowQueue
+                .isQuitting(); // Trying to unpause a quitted background Looper may deadlock.
+    if (canBeUnpaused) {
+      unPause();
     }
   }
 

@@ -21,6 +21,7 @@ import android.os.Looper;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import com.google.common.util.concurrent.SettableFuture;
 import java.time.Duration;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -641,6 +642,42 @@ public class ShadowPausedLooperTest {
 
     shadowPausedLooper.runOneTask();
     assertThat(wasRun.get()).isTrue();
+  }
+
+  /**
+   * Tests a race condition that could occur if a paused background Looper was quit but the thread
+   * was still alive. The resetter would attempt to unpause it, but the message would never run
+   * because the looper was quit. This caused a deadlock.
+   */
+  @Test
+  public void looper_customThread_unPauseAfterQuit() throws Exception {
+    for (int i = 0; i < 100; i++) {
+      final SettableFuture<Looper> future = SettableFuture.create();
+      final CountDownLatch countDownLatch = new CountDownLatch(1);
+
+      Thread t =
+          new Thread(
+              () -> {
+                try {
+                  Looper.prepare();
+                } finally {
+                  future.set(Looper.myLooper());
+                }
+                Looper.loop();
+                try {
+                  countDownLatch.await();
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                }
+              });
+      t.start();
+      Looper looper = future.get();
+      shadowOf(looper).pause();
+      new Handler(looper).post(() -> looper.quitSafely());
+      shadowOf(looper).idle();
+      ((ShadowPausedLooper) shadowOf(looper)).resetLooperToInitialState();
+      countDownLatch.countDown();
+    }
   }
 
   @Test

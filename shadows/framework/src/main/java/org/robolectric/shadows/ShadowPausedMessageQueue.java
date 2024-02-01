@@ -273,7 +273,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.removeListener(clockListener);
   }
 
-  private boolean isQuitting() {
+  boolean isQuitting() {
     if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
       return reflector(MessageQueueReflector.class, realQueue).getQuitting();
     } else {
