@@ -130,5 +130,7 @@ public final class BitmapNatives {
 
   public static native boolean nativeIsBackedByAshmem(long nativePtr);
 
+  public static native void nativeCopyColorSpaceP(long srcBitmap, long dstBitmap);
+
   private BitmapNatives() {}
 }

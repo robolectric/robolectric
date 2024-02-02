@@ -443,7 +443,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
 
   @Implementation(minSdk = O, maxSdk = P)
   protected static void nativeCopyColorSpace(long srcBitmap, long dstBitmap) {
-    // TODO(hoisie): This probably needs an implementation
+    BitmapNatives.nativeCopyColorSpaceP(srcBitmap, dstBitmap);
   }
 
   @Override
