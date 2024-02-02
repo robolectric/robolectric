@@ -18,7 +18,7 @@ jobs:
   graphics_tests:
     strategy:
       matrix:
-        device: [ macos-13, ubuntu-22.04, self-hosted ]
+        device: [ macos-13, ubuntu-22.04, macos-14 ]
     runs-on: ${{ matrix.device }}
 
     steps:
@@ -31,6 +31,10 @@ jobs:
           java-version: 17
 
       - uses: gradle/gradle-build-action@v2.12.0
+
+      - name: Show runner info
+        run: |
+          uname -a
 
       - name: Run unit tests
         run: |
