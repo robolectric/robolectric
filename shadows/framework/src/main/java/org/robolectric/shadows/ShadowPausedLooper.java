@@ -624,6 +624,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   /** Executes the given runnable on the loopers thread, and waits for it to complete. */
   private void executeOnLooper(ControlRunnable runnable) {
+    checkState(!shadowQueue().isQuitting(), "Looper is quitting");
     if (Thread.currentThread() == realLooper.getThread()) {
       if (runnable instanceof UnPauseRunnable) {
         // Need to trigger the unpause action in PausedLooperExecutor
