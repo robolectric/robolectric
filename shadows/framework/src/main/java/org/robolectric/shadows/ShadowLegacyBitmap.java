@@ -39,7 +39,6 @@ import java.util.Arrays;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.versioning.AndroidVersions.U;
@@ -55,7 +54,6 @@ public class ShadowLegacyBitmap extends ShadowBitmap {
   InputStream createdFromStream;
   FileDescriptor createdFromFileDescriptor;
   byte[] createdFromBytes;
-  @RealObject private Bitmap realBitmap;
   private Bitmap createdFromBitmap;
   private Bitmap scaledFromBitmap;
   private int createdFromX = -1;

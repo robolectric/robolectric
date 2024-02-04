@@ -28,7 +28,6 @@ import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.nativeruntime.BitmapNatives;
 import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
@@ -47,9 +46,6 @@ import org.robolectric.versioning.AndroidVersions.U;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeBitmap extends ShadowBitmap {
-
-  @RealObject Bitmap realBitmap;
-
   private int createdFromResId;
 
   private static final List<Long> colorSpaceAllocationsP =

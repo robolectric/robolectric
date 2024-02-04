@@ -20,7 +20,7 @@ import org.robolectric.versioning.AndroidVersions.U;
 @Implements(value = Bitmap.class, shadowPicker = Picker.class, looseSignatures = true)
 public abstract class ShadowBitmap {
 
-  @RealObject Bitmap realBitmap;
+  @RealObject protected Bitmap realBitmap;
 
   /**
    * Returns a textual representation of the appearance of the object.
