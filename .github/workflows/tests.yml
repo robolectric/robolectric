@@ -30,7 +30,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Build
         run: |
@@ -54,7 +54,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Run unit tests
         run: |
@@ -95,7 +95,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Enable KVM group perms
         run: |
@@ -173,7 +173,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Publish
         run: |
