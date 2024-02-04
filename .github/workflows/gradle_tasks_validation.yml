@@ -27,7 +27,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Run aggregateDocs
         run: ./gradlew clean aggregateDocs
@@ -44,7 +44,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Run javadocJar
         run: ./gradlew clean javadocJar
@@ -64,7 +64,7 @@ jobs:
           distribution: 'adopt'
           java-version: 17
 
-      - uses: gradle/gradle-build-action@v2.12.0
+      - uses: gradle/actions/setup-gradle@v3
 
       - name: Run :preinstrumented:instrumentAll
         run: ./gradlew :preinstrumented:instrumentAll
