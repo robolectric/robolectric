@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
+import android.hardware.HardwareBuffer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -51,6 +52,11 @@ public class ShadowNativeImageReaderSurfaceImage {
   protected synchronized int nativeGetFormat(int readerFormat) {
     return ImageReaderSurfaceImageNatives.nativeSurfaceImageGetFormat(
         realSurfaceImage, readerFormat);
+  }
+
+  @Implementation
+  protected synchronized HardwareBuffer nativeGetHardwareBuffer() {
+    return null; // TODO(hoisie): add an implementation
   }
 
   /** Shadow picker for {@code ImageReader.SurfaceImage}. */
