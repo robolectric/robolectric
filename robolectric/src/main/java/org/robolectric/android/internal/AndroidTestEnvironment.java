@@ -56,7 +56,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.ConscryptMode;
+import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.annotation.LooperMode;
+import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
 import org.robolectric.config.ConfigurationRegistry;
 import org.robolectric.internal.ResourcesMode;
@@ -153,7 +155,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     clearEnvironment();
 
-    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+    // Starting in Android V and above, the native runtime does not support begin lazy-loaded, it
+    // must be loaded upfront.
+    if (shouldLoadNativeRuntime() && RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
       DefaultNativeRuntimeLoader.injectAndLoad();
     }
 
@@ -755,6 +759,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
     }
     return null;
+  }
+
+  private static boolean shouldLoadNativeRuntime() {
+    GraphicsMode.Mode graphicsMode = ConfigurationRegistry.get(GraphicsMode.Mode.class);
+    SQLiteMode.Mode sqliteMode = ConfigurationRegistry.get(SQLiteMode.Mode.class);
+    return graphicsMode == GraphicsMode.Mode.NATIVE || sqliteMode == SQLiteMode.Mode.NATIVE;
   }
 
   // TODO move/replace this with packageManager
