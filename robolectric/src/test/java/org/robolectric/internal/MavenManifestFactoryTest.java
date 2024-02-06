@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
-import com.google.common.truth.Truth8;
+import static com.google.common.truth.Truth.assertThat;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.Before;
@@ -24,9 +25,9 @@ public class MavenManifestFactoryTest {
   @Test
   public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    Truth8.assertThat(manifestIdentifier.getManifestFile())
+    assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("_fakefs_path").resolve("to").resolve("DifferentManifest.xml"));
-    Truth8.assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/res"));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
   @Test
@@ -34,9 +35,9 @@ public class MavenManifestFactoryTest {
     configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    Truth8.assertThat(manifestIdentifier.getManifestFile().normalize())
+    assertThat(manifestIdentifier.getManifestFile().normalize())
         .isEqualTo(Paths.get("_fakefs_path/to/DifferentManifest.xml"));
-    Truth8.assertThat(manifestIdentifier.getResDir().normalize())
+    assertThat(manifestIdentifier.getResDir().normalize())
         .isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
@@ -45,10 +46,9 @@ public class MavenManifestFactoryTest {
     configBuilder.setManifest("../DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
-    Truth8.assertThat(manifestIdentifier.getManifestFile())
+    assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("_fakefs_path/to/../DifferentManifest.xml"));
-    Truth8.assertThat(manifestIdentifier.getResDir())
-        .isEqualTo(Paths.get("_fakefs_path/to/../res"));
+    assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/../res"));
   }
 
   private static class MyMavenManifestFactory extends MavenManifestFactory {

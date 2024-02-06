@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.common.io.Files;
-import com.google.common.truth.Truth8;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
@@ -45,7 +44,7 @@ public class BuckManifestFactoryTest {
   @Test
   public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
-    Truth8.assertThat(manifestIdentifier.getManifestFile())
+    assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("buck/AndroidManifest.xml"));
     assertThat(manifestIdentifier.getPackageName()).isEqualTo("com.robolectric.buck");
   }
@@ -60,8 +59,8 @@ public class BuckManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
-    Truth8.assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
-    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
     assertThat(resourcePathList.size()).isEqualTo(3);
@@ -89,8 +88,8 @@ public class BuckManifestFactoryTest {
 
     ManifestIdentifier manifestIdentifier = buckManifestFactory.identify(configBuilder.build());
     AndroidManifest manifest = RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
-    Truth8.assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
-    Truth8.assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
+    assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("buck/res2"));
+    assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("buck/assets2"));
 
     List<ResourcePath> resourcePathList = manifest.getIncludedResourcePaths();
     assertThat(resourcePathList.size()).isEqualTo(3);

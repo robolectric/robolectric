@@ -4,7 +4,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.common.truth.Truth8;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -56,7 +55,7 @@ public class LegacyDependencyResolverTest {
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
-    Truth8.assertThat(Fs.fromUrl(jarUrl)).isEqualTo(jarPath);
+    assertThat(Fs.fromUrl(jarUrl)).isEqualTo(jarPath);
   }
 
   @Test
@@ -72,7 +71,7 @@ public class LegacyDependencyResolverTest {
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
-    Truth8.assertThat(Fs.fromUrl(jarUrl)).isEqualTo(jarPath);
+    assertThat(Fs.fromUrl(jarUrl)).isEqualTo(jarPath);
   }
 
   @Test
@@ -98,7 +97,7 @@ public class LegacyDependencyResolverTest {
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
-    Truth8.assertThat(Fs.fromUrl(jarUrl)).isEqualTo(sdkJarPath);
+    assertThat(Fs.fromUrl(jarUrl)).isEqualTo(sdkJarPath);
   }
 
   @Test
@@ -110,8 +109,7 @@ public class LegacyDependencyResolverTest {
     DependencyResolver resolver = new LegacyDependencyResolver(properties, mockClassLoader);
 
     URL jarUrl = resolver.getLocalArtifactUrl(DEPENDENCY_COORDS);
-    Truth8.assertThat(Fs.fromUrl(jarUrl))
-        .isEqualTo(Paths.get("/some/fake/file.jar").toAbsolutePath());
+    assertThat(Fs.fromUrl(jarUrl)).isEqualTo(Paths.get("/some/fake/file.jar").toAbsolutePath());
   }
 
   public static class FakeMavenDependencyResolver implements DependencyResolver {

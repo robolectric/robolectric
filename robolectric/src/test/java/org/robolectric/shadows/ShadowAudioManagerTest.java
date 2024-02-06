@@ -36,7 +36,6 @@ import android.view.KeyEvent;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableList;
-import com.google.common.truth.Truth8;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -863,8 +862,7 @@ public class ShadowAudioManagerTest {
     shadowOf(audioManager).setInputDevices(ImmutableList.of(scoDevice));
     shadowOf(audioManager).setOutputDevices(ImmutableList.of(a2dpDevice));
 
-    Truth8.assertThat(
-            Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_INPUTS)))
+    assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_INPUTS)))
         .containsExactly(scoDevice);
   }
 
@@ -876,8 +874,7 @@ public class ShadowAudioManagerTest {
     shadowOf(audioManager).setInputDevices(ImmutableList.of(scoDevice));
     shadowOf(audioManager).setOutputDevices(ImmutableList.of(a2dpDevice));
 
-    Truth8.assertThat(
-            Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_OUTPUTS)))
+    assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_OUTPUTS)))
         .containsExactly(a2dpDevice);
   }
 
@@ -889,8 +886,7 @@ public class ShadowAudioManagerTest {
     shadowOf(audioManager).setInputDevices(ImmutableList.of(scoDevice));
     shadowOf(audioManager).setOutputDevices(ImmutableList.of(a2dpDevice));
 
-    Truth8.assertThat(
-            Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_ALL)))
+    assertThat(Arrays.stream(shadowOf(audioManager).getDevices(AudioManager.GET_DEVICES_ALL)))
         .containsExactly(scoDevice, a2dpDevice);
   }
 
