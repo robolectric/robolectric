@@ -67,4 +67,22 @@ public class CookieManagerTest {
     String cookie = cookieManager.getCookie(httpsUrl);
     assertThat(cookie).isEqualTo("ID=test-id");
   }
+
+  @Test
+  public void shouldSetAndGetCookieWithWhitespacesInUrlParameters() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String url = "http://www.google.com/?q=This is a test query";
+    String value = "my cookie";
+    cookieManager.setCookie(url, value);
+    assertThat(cookieManager.getCookie(url)).isEqualTo(value);
+  }
+
+  @Test
+  public void shouldSetAndGetCookieWithEncodedWhitespacesInUrlParameters() {
+    CookieManager cookieManager = CookieManager.getInstance();
+    String url = "http://www.google.com/?q=This%20is%20a%20test%20query";
+    String value = "my cookie";
+    cookieManager.setCookie(url, value);
+    assertThat(cookieManager.getCookie(url)).isEqualTo(value);
+  }
 }
