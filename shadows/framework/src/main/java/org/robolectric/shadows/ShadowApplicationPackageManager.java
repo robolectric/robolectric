@@ -71,6 +71,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageItemInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.ComponentEnabledSetting;
+import android.content.pm.PackageManager.ComponentInfoFlags;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.PackageManager.OnPermissionsChangedListener;
 import android.content.pm.PackageManager.PackageInfoFlags;
@@ -909,6 +910,14 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ActivityInfo::new);
   }
 
+  @Implementation(minSdk = TIRAMISU)
+  protected ActivityInfo getReceiverInfo(
+      /*ComponentName*/ Object component, /*ComponentInfoFlags*/ Object flags)
+      throws NameNotFoundException {
+    return getReceiverInfo(
+        (ComponentName) component, (int) ((ComponentInfoFlags) flags).getValue());
+  }
+
   @Implementation
   protected List<ResolveInfo> queryBroadcastReceivers(Intent intent, int flags) {
     return this.queryIntentComponents(
@@ -922,7 +931,8 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   @Implementation(minSdk = TIRAMISU)
-  protected List<ResolveInfo> queryBroadcastReceivers(Object intent, @NonNull Object flags) {
+  protected List<ResolveInfo> queryBroadcastReceivers(
+      /*Intent*/ Object intent, /*ResolveInfoFlags*/ Object flags) {
     return queryBroadcastReceivers((Intent) intent, (int) ((ResolveInfoFlags) flags).getValue());
   }
 
@@ -951,6 +961,13 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         packageInfo -> packageInfo.services,
         resolveInfo -> resolveInfo.serviceInfo,
         ServiceInfo::new);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected ServiceInfo getServiceInfo(
+      /*ComponentName*/ Object component, /*ComponentInfoFlags*/ Object flags)
+      throws NameNotFoundException {
+    return getServiceInfo((ComponentName) component, (int) ((ComponentInfoFlags) flags).getValue());
   }
 
   /**
