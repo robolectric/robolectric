@@ -30,7 +30,7 @@ public class ShadowCardEmulation {
 
   @RealObject CardEmulation cardEmulation;
 
-  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  @Implementation
   public boolean isDefaultServiceForCategory(ComponentName service, String category) {
     return service.equals(defaultServiceForCategoryMap.get(category));
   }
@@ -79,14 +79,12 @@ public class ShadowCardEmulation {
   public static void reset() {
     defaultServiceForCategoryMap = new HashMap<>();
     preferredService = null;
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
-      CardEmulationReflector reflector = reflector(CardEmulationReflector.class);
-      reflector.setIsInitialized(false);
-      reflector.setService(null);
-      Map<Context, CardEmulation> cardEmus = reflector.getCardEmus();
-      if (cardEmus != null) {
-        cardEmus.clear();
-      }
+    CardEmulationReflector reflector = reflector(CardEmulationReflector.class);
+    reflector.setIsInitialized(false);
+    reflector.setService(null);
+    Map<Context, CardEmulation> cardEmus = reflector.getCardEmus();
+    if (cardEmus != null) {
+      cardEmus.clear();
     }
   }
 

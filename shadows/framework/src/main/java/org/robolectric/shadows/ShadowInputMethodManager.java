@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -13,7 +12,6 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.ResultReceiver;
 import android.util.SparseArray;
 import android.view.View;
@@ -28,8 +26,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -239,12 +235,7 @@ public class ShadowInputMethodManager {
     // Android has a bug pre M where peekInstance was dereferenced without a null check:-
     // https://github.com/aosp-mirror/platform_frameworks_base/commit/a046faaf38ad818e6b5e981a39fd7394cf7cee03
     // So for earlier versions, just call through directly to getInstance()
-    if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN_MR1) {
-      return ReflectionHelpers.callStaticMethod(
-          InputMethodManager.class,
-          "getInstance",
-          ClassParameter.from(Looper.class, Looper.getMainLooper()));
-    } else if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP_MR1) {
+    if (RuntimeEnvironment.getApiLevel() <= LOLLIPOP_MR1) {
       return InputMethodManager.getInstance();
     }
     return reflector(_InputMethodManager_.class).peekInstance();
@@ -275,11 +266,7 @@ public class ShadowInputMethodManager {
   public static void reset() {
     int apiLevel = RuntimeEnvironment.getApiLevel();
     _InputMethodManager_ _reflector = reflector(_InputMethodManager_.class);
-    if (apiLevel <= JELLY_BEAN_MR1) {
-      _reflector.setMInstance(null);
-    } else {
-      _reflector.setInstance(null);
-    }
+    _reflector.setInstance(null);
     if (apiLevel > P) {
       _reflector.getInstanceMap().clear();
     }

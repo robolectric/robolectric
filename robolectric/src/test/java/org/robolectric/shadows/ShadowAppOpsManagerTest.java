@@ -15,7 +15,6 @@ import static android.app.AppOpsManager.OP_FINE_LOCATION;
 import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_SEND_SMS;
 import static android.app.AppOpsManager.OP_VIBRATE;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.truth.Truth.assertThat;
@@ -53,7 +52,6 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Unit tests for {@link ShadowAppOpsManager}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = KITKAT)
 public class ShadowAppOpsManagerTest {
 
   private static final String PACKAGE_NAME1 = "com.company1.pkg1";
@@ -94,14 +92,12 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.KITKAT)
-  public void checkOpNoThrow_noModeSet_atLeastKitKat_shouldReturnModeAllowed() {
+  public void checkOpNoThrow_noModeSet_shouldReturnModeAllowed() {
     assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_ALLOWED);
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.KITKAT)
-  public void setMode_withModeDefault_atLeastKitKat_checkOpNoThrow_shouldReturnModeDefault() {
+  public void setMode_withModeDefault_checkOpNoThrow_shouldReturnModeDefault() {
     appOps.setMode(/* op= */ 2, UID_1, PACKAGE_NAME1, MODE_DEFAULT);
     assertThat(appOps.checkOpNoThrow(/* op= */ 2, UID_1, PACKAGE_NAME1)).isEqualTo(MODE_DEFAULT);
   }
@@ -217,7 +213,6 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.KITKAT)
   public void startStopWatchingMode() {
     OnOpChangedListener callback = mock(OnOpChangedListener.class);
     appOps.startWatchingMode(OPSTR_FINE_LOCATION, PACKAGE_NAME1, callback);
@@ -429,7 +424,7 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.KITKAT, maxSdk = VERSION_CODES.Q)
+  @Config(maxSdk = VERSION_CODES.Q)
   public void startOpNoThrow_setModeAllowed() {
     appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ALLOWED);
 
@@ -438,7 +433,7 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.KITKAT, maxSdk = VERSION_CODES.Q)
+  @Config(maxSdk = VERSION_CODES.Q)
   public void startOpNoThrow_setModeErrored() {
     appOps.setMode(OP_FINE_LOCATION, UID_1, PACKAGE_NAME1, MODE_ERRORED);
 
@@ -513,7 +508,6 @@ public class ShadowAppOpsManagerTest {
     // check passes without exception
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void getPackageForOps_setNone_getNull() {
     int[] intNull = null;
@@ -521,7 +515,6 @@ public class ShadowAppOpsManagerTest {
     assertThat(packageOps).isNull();
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void getPackageForOps_setOne_getOne() {
     String packageName = "com.android.package";
@@ -533,7 +526,6 @@ public class ShadowAppOpsManagerTest {
     assertThat(containsPackageOpPair(packageOps, packageName, 0, MODE_ALLOWED)).isTrue();
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void getPackageForOps_setMultiple_getMultiple() {
     String packageName1 = "com.android.package";
@@ -557,7 +549,6 @@ public class ShadowAppOpsManagerTest {
     assertThat(containsPackageOpPair(packageOps, packageName2, 0, MODE_ALLOWED)).isTrue();
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void getPackageForOps_setMultiple_onlyGetThoseAskedFor() {
     String packageName1 = "com.android.package";

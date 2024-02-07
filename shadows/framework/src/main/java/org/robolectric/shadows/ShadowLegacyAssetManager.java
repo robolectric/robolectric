@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -621,7 +620,8 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 1;
   }
 
-  @HiddenApi @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
+  @HiddenApi
+  @Implementation(maxSdk = M)
   final protected int addAssetPathNative(String path) {
     return addAssetPathNative(path, false);
   }

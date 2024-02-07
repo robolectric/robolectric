@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -48,7 +47,7 @@ public class ShadowClipboardManager {
       if (clip != null) {
         clip.prepareToLeaveProcess(true);
       }
-    } else if (getApiLevel() >= JELLY_BEAN_MR2) {
+    } else {
       if (clip != null) {
         ReflectionHelpers.callInstanceMethod(ClipData.class, clip, "prepareToLeaveProcess");
       }

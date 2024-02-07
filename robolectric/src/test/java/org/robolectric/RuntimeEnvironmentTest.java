@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -19,7 +17,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.util.Scheduler;
@@ -133,7 +130,6 @@ public class RuntimeEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGetRotation() {
     RuntimeEnvironment.setQualifiers("+land");
     int screenRotation = ShadowDisplay.getDefaultDisplay().getRotation();
@@ -141,7 +137,6 @@ public class RuntimeEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void setQualifiers_resetsDateUtilsFormatCache() {
     RuntimeEnvironment.setQualifiers("ar-rXB");
     // Populate the DateUtils static format cache.

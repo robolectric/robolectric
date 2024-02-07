@@ -1,13 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.opengl.Matrix;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowOpenGLMatrixTest {
@@ -356,8 +354,7 @@ public class ShadowOpenGLMatrixTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void testFrustumJB_MR1() {
+  public void testFrustum() {
     float[] expected = new float[]{
             0.005f, 0, 0, 0,
             0, 0.02f, 0, 0,

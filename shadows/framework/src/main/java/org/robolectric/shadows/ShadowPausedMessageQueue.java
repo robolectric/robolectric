@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
@@ -21,7 +20,6 @@ import androidx.annotation.VisibleForTesting;
 import com.google.common.base.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -77,7 +75,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     nativeDestroy(reflector(MessageQueueReflector.class, realQueue).getPtr());
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
+  @Implementation(maxSdk = KITKAT)
   protected static void nativeDestroy(int ptr) {
     nativeDestroy((long) ptr);
   }
@@ -95,7 +93,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   // use the generic Object parameter types here, to avoid conflicts with the non-static
   // nativePollOnce
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected static void nativePollOnce(Object ptr, Object timeoutMillis) {
     long ptrLong = getLong(ptr);
     nativeQueueRegistry.getNativeObject(ptrLong).nativePollOnce(ptrLong, (int) timeoutMillis);
@@ -164,7 +162,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   // use the generic Object parameter types here, to avoid conflicts with the non-static
   // nativeWake
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT)
+  @Implementation(maxSdk = KITKAT)
   protected static void nativeWake(Object ptr) {
     // JELLY_BEAN_MR2 has a bug where nativeWake can get called when pointer has already been
     // destroyed. See here where nativeWake is called outside the synchronized block
@@ -260,25 +258,17 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
 
   @Implementation(maxSdk = JELLY_BEAN_MR1)
   protected void quit() {
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
-      reflector(MessageQueueReflector.class, realQueue).quit(false);
-    } else {
-      reflector(MessageQueueReflector.class, realQueue).quit();
-    }
+    reflector(MessageQueueReflector.class, realQueue).quit(false);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void quit(boolean allowed) {
     reflector(MessageQueueReflector.class, realQueue).quit(allowed);
     ShadowPausedSystemClock.removeListener(clockListener);
   }
 
   private boolean isQuitting() {
-    if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-      return reflector(MessageQueueReflector.class, realQueue).getQuitting();
-    } else {
-      return reflector(MessageQueueReflector.class, realQueue).getQuiting();
-    }
+    return reflector(MessageQueueReflector.class, realQueue).getQuitting();
   }
 
   private static long getLong(Object intOrLongObj) {
@@ -509,16 +499,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     @Accessor("mPtr")
     int getPtr();
 
-    // for APIs < JELLYBEAN_MR2
-    @Direct
-    void quit();
-
     @Direct
     void quit(boolean b);
-
-    // for APIs < KITKAT
-    @Accessor("mQuiting")
-    boolean getQuiting();
 
     @Accessor("mQuitting")
     boolean getQuitting();

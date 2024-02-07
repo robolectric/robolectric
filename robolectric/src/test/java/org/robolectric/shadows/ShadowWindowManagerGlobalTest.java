@@ -29,7 +29,6 @@ public class ShadowWindowManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void getWindowSession_shouldReturnSession() {
     assertThat(ShadowWindowManagerGlobal.getWindowSession()).isNotNull();
   }
@@ -54,7 +53,6 @@ public class ShadowWindowManagerGlobalTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void windowIsVisible() {
     View decorView =
         Robolectric.buildActivity(DragActivity.class).setup().get().getWindow().getDecorView();

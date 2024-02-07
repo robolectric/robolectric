@@ -1,6 +1,5 @@
 package org.robolectric.android.internal;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -238,10 +237,8 @@ public final class DisplayConfig {
       presentationDeadlineNanos = other.presentationDeadlineNanos;
       state = other.state;
     }
-    if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-      ownerUid = other.ownerUid;
-      ownerPackageName = other.ownerPackageName;
-    }
+    ownerUid = other.ownerUid;
+    ownerPackageName = other.ownerPackageName;
     if (RuntimeEnvironment.getApiLevel() >= O) {
       removeMode = other.removeMode;
     }
@@ -372,10 +369,8 @@ public final class DisplayConfig {
       other.presentationDeadlineNanos = presentationDeadlineNanos;
       other.state = state;
     }
-    if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-      other.ownerUid = ownerUid;
-      other.ownerPackageName = ownerPackageName;
-    }
+    other.ownerUid = ownerUid;
+    other.ownerPackageName = ownerPackageName;
     if (RuntimeEnvironment.getApiLevel() >= O) {
       other.removeMode = removeMode;
     }

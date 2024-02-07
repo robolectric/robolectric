@@ -10,7 +10,6 @@ import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.util.Locale;
 import org.robolectric.res.Qualifiers;
-import org.robolectric.res.android.ConfigDescription;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -165,7 +164,7 @@ public class DeviceConfig {
           .build();
     }
     if (locale != null) {
-      setLocale(apiLevel, configuration, locale);
+      configuration.setLocale(locale);
     }
 
     if (resTab.smallestScreenWidthDp != 0) {
@@ -236,9 +235,7 @@ public class DeviceConfig {
 
   private static void setDensity(int densityDpi, int apiLevel, Configuration configuration,
       DisplayMetrics displayMetrics) {
-    if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
-      configuration.densityDpi = densityDpi;
-    }
+    configuration.densityDpi = densityDpi;
     displayMetrics.densityDpi = densityDpi;
     displayMetrics.density = displayMetrics.densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
 
@@ -278,12 +275,7 @@ public class DeviceConfig {
       }
 
       locale = new Locale(language, country);
-      setLocale(apiLevel, configuration, locale);
-    }
-
-    if (apiLevel <= ConfigDescription.SDK_JELLY_BEAN &&
-        getScreenLayoutLayoutDir(configuration) == Configuration.SCREENLAYOUT_LAYOUTDIR_UNDEFINED) {
-      setScreenLayoutLayoutDir(configuration, Configuration.SCREENLAYOUT_LAYOUTDIR_LTR);
+      configuration.setLocale(locale);
     }
 
     ScreenSize requestedScreenSize = getScreenSize(configuration);
@@ -407,14 +399,6 @@ public class DeviceConfig {
     configuration.screenWidthDp = configuration.screenHeightDp;
     //noinspection SuspiciousNameCombination
     configuration.screenHeightDp = oldWidth;
-  }
-
-  private static void setLocale(int apiLevel, Configuration configuration, Locale locale) {
-    if (apiLevel >= VERSION_CODES.JELLY_BEAN_MR1) {
-      configuration.setLocale(locale);
-    } else {
-      configuration.locale = locale;
-    }
   }
 
   private static Locale getLocale(Configuration configuration, int apiLevel) {

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-
 import android.content.Context;
 import android.webkit.WebSettings;
 import org.robolectric.annotation.Implementation;
@@ -23,7 +21,7 @@ public class ShadowWebSettings {
    *
    * @param context a Context object used to access application assets
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static String getDefaultUserAgent(Context context) {
     return defaultUserAgent;
   }

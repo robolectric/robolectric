@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -19,7 +18,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
 /** Test for {@link ShadowUiAutomation}. */
-@Config(minSdk = JELLY_BEAN_MR2)
 @RunWith(AndroidJUnit4.class)
 public class ShadowUiAutomationTest {
   @Config(sdk = KITKAT)

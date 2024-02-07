@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -8,7 +7,6 @@ import android.net.wifi.SupplicantState;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiSsid;
 import java.net.InetAddress;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -37,13 +35,8 @@ public class ShadowWifiInfo {
     reflector(WifiInfoReflector.class, realObject).setMacAddress(newMacAddress);
   }
 
-  @Implementation(maxSdk = JELLY_BEAN)
   public void setSSID(String ssid) {
-    if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN) {
-      reflector(WifiInfoReflector.class, realObject).setSSID(ssid);
-    } else {
-      reflector(WifiInfoReflector.class, realObject).setSSID(getWifiSsid(ssid));
-    }
+    reflector(WifiInfoReflector.class, realObject).setSSID(getWifiSsid(ssid));
   }
 
   private static Object getWifiSsid(String ssid) {

@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -62,19 +59,17 @@ public class ShadowLocaleData {
         };
 
     _LocaleData_ localDataReflector = reflector(_LocaleData_.class, localeData);
-    if (getApiLevel() >= JELLY_BEAN_MR1) {
-      localeData.tinyMonthNames =
-          new String[] {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
-      localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
-      localeData.tinyWeekdayNames = new String[] {"", "S", "M", "T", "W", "T", "F", "S"};
-      localeData.tinyStandAloneWeekdayNames = localeData.tinyWeekdayNames;
+    localeData.tinyMonthNames =
+        new String[] {"J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"};
+    localeData.tinyStandAloneMonthNames = localeData.tinyMonthNames;
+    localeData.tinyWeekdayNames = new String[] {"", "S", "M", "T", "W", "T", "F", "S"};
+    localeData.tinyStandAloneWeekdayNames = localeData.tinyWeekdayNames;
 
-      if (getApiLevel() <= R) {
-        localDataReflector.setYesterday("Yesterday");
-      }
-      localeData.today = "Today";
-      localeData.tomorrow = "Tomorrow";
+    if (getApiLevel() <= R) {
+      localDataReflector.setYesterday("Yesterday");
     }
+    localeData.today = "Today";
+    localeData.tomorrow = "Tomorrow";
 
     localeData.longStandAloneMonthNames = localeData.longMonthNames;
     localeData.shortStandAloneMonthNames = localeData.shortMonthNames;
@@ -97,7 +92,7 @@ public class ShadowLocaleData {
     if (getApiLevel() >= M) {
       localeData.timeFormat_hm = "h:mm a";
       localeData.timeFormat_Hm = "HH:mm";
-    } else if (getApiLevel() >= JELLY_BEAN_MR2) {
+    } else {
       localDataReflector.setTimeFormat12("h:mm a");
       localDataReflector.setTimeFormat24("HH:mm");
     }
@@ -106,7 +101,7 @@ public class ShadowLocaleData {
     localDataReflector.setLongDateFormat("MMMM d, y");
     localDataReflector.setMediumDateFormat("MMM d, y");
     localDataReflector.setShortDateFormat("M/d/yy");
-    if (getApiLevel() >= KITKAT && getApiLevel() < M) {
+    if (getApiLevel() < M) {
       localDataReflector.setShortDateFormat4("M/d/yyyy");
     }
 

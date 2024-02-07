@@ -14,7 +14,6 @@ import org.robolectric.annotation.Config;
 
 /** Test for {@link CellInfoLteBuilder} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class CellInfoLteBuilderTest {
 
   private static final boolean REGISTERED = false;
@@ -37,7 +36,7 @@ public class CellInfoLteBuilderTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1, maxSdk = Build.VERSION_CODES.N_MR1)
+  @Config(maxSdk = Build.VERSION_CODES.N_MR1)
   public void build_sdkJtoN() {
     CellInfoLte cellInfo = getCellInfoLte();
 

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.shadow.api.Shadow.extract;
 import static org.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
@@ -174,7 +172,7 @@ public class ShadowLegacyPath extends ShadowPath {
     mPath.append(shadowSrc.mPath, false /*connect*/);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected boolean op(Path path1, Path path2, Path.Op op) {
     Log.w(TAG, "android.graphics.Path#op() not supported yet.");
     return false;
@@ -406,12 +404,12 @@ public class ShadowLegacyPath extends ShadowPath {
         false);
   }
 
-  @Implementation(minSdk = JELLY_BEAN)
+  @Implementation
   protected void addRoundRect(RectF rect, float rx, float ry, Direction dir) {
     addRoundRect(rect.left, rect.top, rect.right, rect.bottom, rx, ry, dir);
   }
 
-  @Implementation(minSdk = JELLY_BEAN)
+  @Implementation
   protected void addRoundRect(RectF rect, float[] radii, Direction dir) {
     if (rect == null) {
       throw new NullPointerException("need rect parameter");

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -606,7 +605,7 @@ public class ShadowMediaPlayer extends ShadowPlayerBase {
     setDataSource(context, uri, null, null);
   }
 
-  @Implementation(minSdk = ICE_CREAM_SANDWICH, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected void setDataSource(Context context, Uri uri, Map<String, String> headers)
       throws IOException {
     setDataSource(context, uri, headers, null);

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static java.util.stream.Collectors.toCollection;
@@ -171,7 +170,7 @@ public class ShadowBluetoothHeadset {
    *     'false' argument.
    * @throws IllegalArgumentException if 'command' argument is null, per Android API
    */
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected boolean sendVendorSpecificResultCode(
       BluetoothDevice device, String command, String arg) {
     if (command == null) {

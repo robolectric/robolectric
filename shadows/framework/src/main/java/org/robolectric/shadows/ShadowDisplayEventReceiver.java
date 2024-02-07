@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
@@ -133,7 +131,7 @@ public class ShadowDisplayEventReceiver {
     nativeObjRegistry.getNativeObject(receiverPtr).scheduleVsync();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = R)
+  @Implementation(maxSdk = R)
   protected void dispose(boolean finalized) {
     CloseGuard closeGuard = displayEventReceiverReflector.getCloseGuard();
     // Suppresses noisy CloseGuard warning
@@ -144,9 +142,7 @@ public class ShadowDisplayEventReceiver {
   }
 
   protected void onVsync() {
-    if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN) {
-      displayEventReceiverReflector.onVsync(ShadowSystem.nanoTime(), 1);
-    } else if (RuntimeEnvironment.getApiLevel() < Q) {
+    if (RuntimeEnvironment.getApiLevel() < Q) {
       displayEventReceiverReflector.onVsync(
           ShadowSystem.nanoTime(), 0, /* SurfaceControl.BUILT_IN_DISPLAY_ID_MAIN */ 1);
     } else if (RuntimeEnvironment.getApiLevel() < S) {

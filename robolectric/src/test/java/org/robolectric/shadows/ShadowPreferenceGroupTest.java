@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 import static org.robolectric.Shadows.shadowOf;
@@ -16,10 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowPreferenceGroupTest {
@@ -37,25 +32,13 @@ public class ShadowPreferenceGroupTest {
 
     group = new TestPreferenceGroup(activity, attrs);
     shadow = shadowOf(group);
-    shadow.callOnAttachedToHierarchy(newPreferenceManager(activity, 0));
+    shadow.callOnAttachedToHierarchy(new PreferenceManager(activity, 0));
 
     pref1 = new Preference(activity);
     pref1.setKey("pref1");
 
     pref2 = new Preference(activity);
     pref2.setKey("pref2");
-  }
-
-  private static PreferenceManager newPreferenceManager(Activity activity, int firstRequestCode) {
-    if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-      return new PreferenceManager(activity, 0);
-    } else {
-      // Constructor was not public before KITKAT.
-      return ReflectionHelpers.callConstructor(
-          PreferenceManager.class,
-          ClassParameter.from(Activity.class, activity),
-          ClassParameter.from(int.class, 0));
-    }
   }
 
   @Test
@@ -153,7 +136,6 @@ public class ShadowPreferenceGroupTest {
     assertThat(group.findPreference(pref2.getKey())).isSameInstanceAs(pref2);
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void shouldFindPreferenceRecursively() {
     TestPreferenceGroup group2 = new TestPreferenceGroup(activity, attrs);
@@ -166,7 +148,6 @@ public class ShadowPreferenceGroupTest {
     assertThat(group.findPreference(pref2.getKey())).isSameInstanceAs(pref2);
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void shouldSetEnabledRecursively() {
     boolean[] values = {false, true};

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.Charset.defaultCharset;
@@ -28,7 +27,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowParcelFileDescriptor.FileDescriptorFromParcelUnavailableException;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -88,7 +86,6 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void testOpenWithOnCloseListener_nullHandler() throws Exception {
     final AtomicBoolean onCloseCalled = new AtomicBoolean(false);
     ParcelFileDescriptor.OnCloseListener onCloseListener =
@@ -106,7 +103,6 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void testOpenWithOnCloseListener_nullOnCloseListener() throws Exception {
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();
@@ -118,7 +114,6 @@ public class ShadowParcelFileDescriptorTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void testOpenWithOnCloseListener_callsListenerOnClose() throws Exception {
     HandlerThread handlerThread = new HandlerThread("test");
     handlerThread.start();

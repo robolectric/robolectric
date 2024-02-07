@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 
 import android.os.SystemClock;
@@ -59,7 +58,7 @@ public class ShadowLegacySystemClock extends ShadowSystemClock {
     return uptimeMillis();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected static long elapsedRealtimeNanos() {
     return elapsedRealtime() * MILLIS_PER_NANO;
   }

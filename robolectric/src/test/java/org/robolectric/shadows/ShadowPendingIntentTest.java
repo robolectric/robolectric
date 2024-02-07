@@ -894,7 +894,6 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorPackage_nothingSet() {
     PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, new Intent("activity"), 0);
     assertThat(pendingIntent.getCreatorPackage()).isEqualTo(context.getPackageName());
@@ -902,7 +901,6 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorPackage_explicitlySetPackage() {
     String fakePackage = "some.fake.package";
     PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, new Intent("activity"), 0);
@@ -912,7 +910,6 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testGetCreatorUid() {
     int fakeUid = 123;
     PendingIntent pendingIntent = PendingIntent.getActivity(context, 99, new Intent("activity"), 0);
@@ -972,7 +969,6 @@ public class ShadowPendingIntentTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN)
   public void toString_doesNotNPE() {
     assertThat(
             PendingIntent.getBroadcast(

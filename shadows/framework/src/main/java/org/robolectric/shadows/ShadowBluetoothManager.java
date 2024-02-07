@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -28,7 +27,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow of {@link BluetoothManager} that makes the testing possible. */
-@Implements(value = BluetoothManager.class, minSdk = JELLY_BEAN_MR2)
+@Implements(value = BluetoothManager.class)
 public class ShadowBluetoothManager {
   private static final ImmutableIntArray VALID_STATES =
       ImmutableIntArray.of(

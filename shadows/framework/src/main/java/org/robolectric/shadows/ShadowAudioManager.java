@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -989,7 +988,7 @@ public class ShadowAudioManager {
    * routed to a media app, this shadow method only records the events to be verified through {@link
    * #getDispatchedMediaKeyEvents()}.
    */
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void dispatchMediaKeyEvent(KeyEvent keyEvent) {
     if (keyEvent == null) {
       throw new NullPointerException("keyEvent is null");

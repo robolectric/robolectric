@@ -542,7 +542,7 @@ public class ShadowWebView extends ShadowViewGroup {
     currentFavicon = favicon;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  @Implementation
   protected void evaluateJavascript(String script, ValueCallback<String> callback) {
     this.lastEvaluatedJavascript = script;
     this.lastEvaluatedJavascriptCallback = callback;
@@ -645,7 +645,7 @@ public class ShadowWebView extends ShadowViewGroup {
     packageInfo = null;
   }
 
-  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  @Implementation
   public static void setWebContentsDebuggingEnabled(boolean enabled) {}
 
   /**

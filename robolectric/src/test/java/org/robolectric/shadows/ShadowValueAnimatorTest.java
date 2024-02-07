@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
@@ -13,10 +12,8 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = JELLY_BEAN)
 public class ShadowValueAnimatorTest {
 
   @Test

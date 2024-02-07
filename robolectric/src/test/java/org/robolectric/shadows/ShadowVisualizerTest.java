@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.GINGERBREAD;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.robolectric.Shadows.shadowOf;
@@ -16,12 +14,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowVisualizer.VisualizerSource;
 
 /** Tests for {@link ShadowVisualizer}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = GINGERBREAD)
 public class ShadowVisualizerTest {
 
   private Visualizer visualizer;
@@ -98,7 +94,6 @@ public class ShadowVisualizerTest {
     assertThat(visualizer.getCaptureSize()).isEqualTo(2000);
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void getMeasurementPeakRms_returnsRmsFromSource() {
     int peak = -500;

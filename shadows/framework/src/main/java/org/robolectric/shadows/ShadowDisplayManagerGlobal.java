@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -38,7 +37,6 @@ import org.robolectric.util.reflector.ForType;
 @Implements(
     value = DisplayManagerGlobal.class,
     isInAndroidSdk = false,
-    minSdk = JELLY_BEAN_MR1,
     looseSignatures = true)
 public class ShadowDisplayManagerGlobal {
   private static DisplayManagerGlobal instance;

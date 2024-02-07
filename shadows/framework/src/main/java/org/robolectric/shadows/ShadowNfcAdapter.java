@@ -86,7 +86,7 @@ public class ShadowNfcAdapter {
     disabledActivity = activity;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  @Implementation
   protected void enableReaderMode(
       Activity activity, NfcAdapter.ReaderCallback callback, int flags, Bundle extras) {
     if (!RuntimeEnvironment.getApplication()
@@ -100,7 +100,7 @@ public class ShadowNfcAdapter {
     readerCallback = callback;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.KITKAT)
+  @Implementation
   protected void disableReaderMode(Activity activity) {
     if (!RuntimeEnvironment.getApplication()
         .getPackageManager()

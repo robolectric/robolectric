@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -402,7 +400,7 @@ public class ShadowWifiManager {
     return dhcpInfo;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected boolean isScanAlwaysAvailable() {
     return Settings.Global.getInt(
             getContext().getContentResolver(), Settings.Global.WIFI_SCAN_ALWAYS_AVAILABLE, 1)
@@ -410,7 +408,7 @@ public class ShadowWifiManager {
   }
 
   @HiddenApi
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void connect(WifiConfiguration wifiConfiguration, WifiManager.ActionListener listener) {
     WifiInfo wifiInfo = getConnectionInfo();
 
@@ -450,7 +448,7 @@ public class ShadowWifiManager {
   }
 
   @HiddenApi
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void connect(int networkId, WifiManager.ActionListener listener) {
     WifiConfiguration wifiConfiguration = new WifiConfiguration();
     wifiConfiguration.networkId = networkId;

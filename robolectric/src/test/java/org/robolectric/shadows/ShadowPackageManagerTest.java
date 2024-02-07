@@ -32,8 +32,6 @@ import static android.content.pm.PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.content.pm.PackageManager.VERIFICATION_ALLOW;
 import static android.content.pm.PackageManager.VERIFICATION_REJECT;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -1179,7 +1177,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void queryIntentActivitiesAsUser_EmptyResult() {
     Intent i = new Intent(Intent.ACTION_APP_ERROR, null);
     i.addCategory(Intent.CATEGORY_APP_BROWSER);
@@ -1209,7 +1206,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void queryIntentActivitiesAsUser_Match() {
     Intent i = new Intent(Intent.ACTION_MAIN, null);
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -1509,7 +1505,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void resolveActivityAsUser_Match() {
     Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
     ResolveInfo info = new ResolveInfo();
@@ -1533,7 +1528,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void resolveActivityAsUser_NoMatch() {
     Intent i = new Intent();
     i.setComponent(new ComponentName("foo.bar", "No Activity"));
@@ -1706,7 +1700,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void queryIntentServicesAsUser() {
     Intent i = new Intent("org.robolectric.ACTION_DIFFERENT_PACKAGE");
     i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -2770,7 +2763,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void
       extendPendingInstallTimeout_verificationRejectAtTimeout_extendsPendingInstallTimeoutAndsetsCodeAtTimeoutToReject() {
     packageManager.extendVerificationTimeout(
@@ -2786,7 +2778,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void
       extendPendingInstallTimeout_verificationAllowAtTimeout_extendsPendingInstallTimeoutAndsetsCodeAtTimeoutToAllow() {
     packageManager.extendVerificationTimeout(
@@ -2802,7 +2793,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void whenVerificationTimeOutNotExtended_verificationCodeAtTimeoutIsAllow() {
     assertThat(shadowOf(packageManager).getVerificationExtendedTimeout(INSTALL_VERIFICATION_ID))
         .isEqualTo(0);
@@ -2813,7 +2803,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void triggerInstallVerificationTimeout_broadcastsPackageVerifiedIntent() {
     ShadowPackageManager shadowPackageManagerMock =
         mock(ShadowPackageManager.class, Mockito.CALLS_REAL_METHODS);
@@ -4392,7 +4381,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getPackagesHoldingPermissions_returnPackages() {
     String permissionA = "com.android.providers.permission.test.a";
     String permissionB = "com.android.providers.permission.test.b";
@@ -4419,7 +4407,6 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getPackagesHoldingPermissions_returnsEmpty() {
     String permissionA = "com.android.providers.permission.test.a";
 

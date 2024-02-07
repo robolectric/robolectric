@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
@@ -26,7 +25,6 @@ import org.robolectric.shadows.ShadowSmsManager.TextSmsParams;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowSmsManagerTest {
   private SmsManager smsManager = SmsManager.getDefault();
   private final String scAddress = "serviceCenterAddress";

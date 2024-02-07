@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static org.robolectric.RuntimeEnvironment.isMainThread;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -142,7 +141,7 @@ public class ShadowLegacyLooper extends ShadowLooper {
     quitUnchecked();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void quitSafely() {
     quit();
   }

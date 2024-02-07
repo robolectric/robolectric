@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-
 import android.view.InputEventReceiver;
 import dalvik.system.CloseGuard;
 import org.robolectric.annotation.Implementation;
@@ -24,7 +22,7 @@ public class ShadowInputEventReceiver {
     // ends up being rather spammy in test logs, so we no-op it.
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected void dispose(boolean finalized) {
     CloseGuard closeGuard = inputEventReceiverReflector.getCloseGuard();
     // Suppresses noisy CloseGuard warning

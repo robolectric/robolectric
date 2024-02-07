@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -81,7 +80,7 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT, maxSdk = VERSION_CODES.R)
+  @Config(maxSdk = VERSION_CODES.R)
   public void getSystemFlag_shouldReturnFlagsSetViaAddPrivateFlags() throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();
     Window window = activity.getWindow();
@@ -93,7 +92,7 @@ public class ShadowWindowTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT, maxSdk = VERSION_CODES.R)
+  @Config(maxSdk = VERSION_CODES.R)
   public void getSystemFlag_callingAddPrivateFlagsShouldNotOverrideExistingFlags()
       throws Exception {
     Activity activity = Robolectric.buildActivity(Activity.class).create().get();

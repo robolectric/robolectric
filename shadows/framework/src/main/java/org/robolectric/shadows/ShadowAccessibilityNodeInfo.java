@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
@@ -279,7 +276,7 @@ public class ShadowAccessibilityNodeInfo {
     return obtain(parent);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected boolean refresh() {
       return refreshReturnValue;
   }
@@ -316,7 +313,7 @@ public class ShadowAccessibilityNodeInfo {
     return text;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected AccessibilityNodeInfo getLabelFor() {
     if (labelFor == null) {
       return null;
@@ -333,7 +330,7 @@ public class ShadowAccessibilityNodeInfo {
     labelFor = obtain(info);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected AccessibilityNodeInfo getLabeledBy() {
     if (labeledBy == null) {
       return null;
@@ -593,20 +590,16 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.refreshReturnValue = refreshReturnValue;
     newInfo.setMovementGranularities(realAccessibilityNodeInfo.getMovementGranularities());
     newInfo.setPackageName(realAccessibilityNodeInfo.getPackageName());
-    if (getApiLevel() >= JELLY_BEAN_MR2) {
-      newInfo.setViewIdResourceName(realAccessibilityNodeInfo.getViewIdResourceName());
-      newInfo.setTextSelection(
-          realAccessibilityNodeInfo.getTextSelectionStart(),
-          realAccessibilityNodeInfo.getTextSelectionEnd());
-    }
-    if (getApiLevel() >= KITKAT) {
-      newInfo.setCollectionInfo(realAccessibilityNodeInfo.getCollectionInfo());
-      newInfo.setCollectionItemInfo(realAccessibilityNodeInfo.getCollectionItemInfo());
-      newInfo.setInputType(realAccessibilityNodeInfo.getInputType());
-      newInfo.setLiveRegion(realAccessibilityNodeInfo.getLiveRegion());
-      newInfo.setRangeInfo(realAccessibilityNodeInfo.getRangeInfo());
-      newShadow.realAccessibilityNodeInfo.getExtras().putAll(realAccessibilityNodeInfo.getExtras());
-    }
+    newInfo.setViewIdResourceName(realAccessibilityNodeInfo.getViewIdResourceName());
+    newInfo.setTextSelection(
+        realAccessibilityNodeInfo.getTextSelectionStart(),
+        realAccessibilityNodeInfo.getTextSelectionEnd());
+    newInfo.setCollectionInfo(realAccessibilityNodeInfo.getCollectionInfo());
+    newInfo.setCollectionItemInfo(realAccessibilityNodeInfo.getCollectionItemInfo());
+    newInfo.setInputType(realAccessibilityNodeInfo.getInputType());
+    newInfo.setLiveRegion(realAccessibilityNodeInfo.getLiveRegion());
+    newInfo.setRangeInfo(realAccessibilityNodeInfo.getRangeInfo());
+    newShadow.realAccessibilityNodeInfo.getExtras().putAll(realAccessibilityNodeInfo.getExtras());
     if (getApiLevel() >= LOLLIPOP) {
       newInfo.setMaxTextLength(realAccessibilityNodeInfo.getMaxTextLength());
       newInfo.setError(realAccessibilityNodeInfo.getError());

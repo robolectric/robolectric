@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.GINGERBREAD;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.audiofx.Visualizer;
@@ -15,7 +13,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for the {@link Visualizer} class. */
-@Implements(value = Visualizer.class, minSdk = GINGERBREAD)
+@Implements(value = Visualizer.class)
 public class ShadowVisualizer {
 
   @RealObject private Visualizer realObject;
@@ -34,7 +32,7 @@ public class ShadowVisualizer {
     this.source.set(source);
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int setDataCaptureListener(
       OnDataCaptureListener listener, int rate, boolean waveform, boolean fft) {
     if (errorCode != Visualizer.SUCCESS) {
@@ -46,27 +44,27 @@ public class ShadowVisualizer {
     return Visualizer.SUCCESS;
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int native_getSamplingRate() {
     return source.get().getSamplingRate();
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int native_getWaveForm(byte[] waveform) {
     return source.get().getWaveForm(waveform);
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int native_getFft(byte[] fft) {
     return source.get().getFft(fft);
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected boolean native_getEnabled() {
     return enabled;
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int native_setCaptureSize(int size) {
     if (errorCode != Visualizer.SUCCESS) {
       return errorCode;
@@ -75,12 +73,12 @@ public class ShadowVisualizer {
     return Visualizer.SUCCESS;
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int native_getCaptureSize() {
     return captureSize;
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected int native_setEnabled(boolean enabled) {
     if (errorCode != Visualizer.SUCCESS) {
       return errorCode;
@@ -89,12 +87,12 @@ public class ShadowVisualizer {
     return Visualizer.SUCCESS;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected int native_getPeakRms(MeasurementPeakRms measurement) {
     return source.get().getPeakRms(measurement);
   }
 
-  @Implementation(minSdk = GINGERBREAD)
+  @Implementation
   protected void native_release() {
     source.get().release();
   }

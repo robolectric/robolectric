@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -34,7 +32,6 @@ public class ShadowContextTest {
   private final Context context = ApplicationProvider.getApplicationContext();
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void createConfigurationContext() {
     Configuration configuration = new Configuration(context.getResources().getConfiguration());
     configuration.mcc = 234;
@@ -121,13 +118,11 @@ public class ShadowContextTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getExternalCacheDirs_nonEmpty() {
     assertThat(context.getExternalCacheDirs()).isNotEmpty();
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getExternalCacheDirs_createsDirectories() {
     File[] externalCacheDirs = context.getExternalCacheDirs();
     for (File d : externalCacheDirs) {

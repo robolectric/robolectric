@@ -4,13 +4,11 @@ import static android.content.res.Configuration.SCREENLAYOUT_UNDEFINED;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.res.Configuration;
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowConfigurationTest {
@@ -30,7 +28,6 @@ public class ShadowConfigurationTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
   public void testSetLocale() {
     configuration.setLocale( Locale.US );
     assertThat(configuration.locale).isEqualTo(Locale.US);

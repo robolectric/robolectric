@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Looper.getMainLooper;
@@ -278,7 +277,6 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void sendVendorSpecificResultCode_defaultsToTrueForConnectedDevice() {
     shadowOf(bluetoothHeadset).addConnectedDevice(device1);
 
@@ -286,13 +284,11 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void sendVendorSpecificResultCode_alwaysFalseForDisconnectedDevice() {
     assertThat(bluetoothHeadset.sendVendorSpecificResultCode(device1, "command", "arg")).isFalse();
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void sendVendorSpecificResultCode_canBeForcedToFalseForConnectedDevice() {
     shadowOf(bluetoothHeadset).addConnectedDevice(device1);
     shadowOf(bluetoothHeadset).setAllowsSendVendorSpecificResultCode(false);
@@ -301,7 +297,6 @@ public class ShadowBluetoothHeadsetTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void sendVendorSpecificResultCode_throwsOnNullCommand() {
     try {
       bluetoothHeadset.sendVendorSpecificResultCode(device1, null, "arg");

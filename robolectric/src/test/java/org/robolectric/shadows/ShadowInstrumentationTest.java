@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static com.google.common.truth.Truth.assertThat;
@@ -36,7 +34,7 @@ import org.robolectric.annotation.Config;
 public class ShadowInstrumentationTest {
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1, maxSdk = N_MR1)
+  @Config(maxSdk = N_MR1)
   public void testExecStartActivity_handledProperlyForSDK17to25() throws Exception {
     Instrumentation instrumentation =
         ((ActivityThread) RuntimeEnvironment.getActivityThread()).getInstrumentation();
@@ -145,7 +143,6 @@ public class ShadowInstrumentationTest {
     assertThat(decorView.isInTouchMode()).isTrue();
   }
 
-  @Config(minSdk = JELLY_BEAN_MR2)
   @Test
   public void getUiAutomation() {
     assertThat(InstrumentationRegistry.getInstrumentation().getUiAutomation()).isNotNull();

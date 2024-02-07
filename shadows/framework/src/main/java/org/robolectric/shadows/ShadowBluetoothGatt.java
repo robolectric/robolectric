@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -33,7 +32,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link BluetoothGatt}. */
-@Implements(value = BluetoothGatt.class, minSdk = JELLY_BEAN_MR2)
+@Implements(value = BluetoothGatt.class)
 public class ShadowBluetoothGatt {
 
   private static final String NULL_CALLBACK_MSG = "BluetoothGattCallback can not be null.";
@@ -127,7 +126,7 @@ public class ShadowBluetoothGatt {
    * @return true, if a {@link BluetoothGattCallback} has been set by {@link
    *     ShadowBluetoothGatt#setGattCallback}
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected boolean connect() {
     if (this.getGattCallback() != null) {
       this.isConnected = true;
@@ -142,7 +141,7 @@ public class ShadowBluetoothGatt {
   /**
    * Disconnects an established connection, or cancels a connection attempt currently in progress.
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void disconnect() {
     bluetoothGattReflector.disconnect();
     if (this.isCallbackAppropriate()) {
@@ -156,7 +155,7 @@ public class ShadowBluetoothGatt {
   }
 
   /** Close this Bluetooth GATT client. */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void close() {
     bluetoothGattReflector.close();
     this.isClosed = true;

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -180,7 +179,7 @@ public class ShadowBluetoothDevice {
    * @return Value set by calling {@link ShadowBluetoothDevice#setType}. If setType has not
    *     previously been called, will return BluetoothDevice.DEVICE_TYPE_UNKNOWN.
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected int getType() {
     checkForBluetoothConnectPermission();
     return type;
@@ -319,7 +318,7 @@ public class ShadowBluetoothDevice {
     return fetchUuidsWithSdpCount;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected BluetoothGatt connectGatt(
       Context context, boolean autoConnect, BluetoothGattCallback callback) {
     checkForBluetoothConnectPermission();

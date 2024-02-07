@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
@@ -87,26 +85,6 @@ public class ShadowContextImplTest {
         .isFalse();
   }
 
-  @Config(maxSdk = JELLY_BEAN_MR2)
-  @Test
-  public void getExternalFilesDir_withType_returnFolderWithGivenTypeName() {
-    File file = context.getExternalFilesDir("something");
-    assertThat(file.isDirectory()).isTrue();
-    assertThat(file.canWrite()).isTrue();
-    assertThat(file.getName()).isEqualTo("something");
-    assertThat(file.getParentFile().getName()).isEqualTo(context.getPackageName());
-  }
-
-  @Config(maxSdk = JELLY_BEAN_MR2)
-  @Test
-  public void getExternalFilesDir_withNullType_returnFolderWithPackageName() {
-    File file = context.getExternalFilesDir(null);
-    assertThat(file.isDirectory()).isTrue();
-    assertThat(file.canWrite()).isTrue();
-    assertThat(file.getName()).isEqualTo(context.getPackageName());
-  }
-
-  @Config(minSdk = KITKAT)
   @Test
   public void getExternalFilesDirs_withType_returnFolderWithGivenTypeName() {
     File[] dirs = context.getExternalFilesDirs("something");
@@ -117,7 +95,6 @@ public class ShadowContextImplTest {
     assertThat(dirs[0].getParentFile().getName()).isEqualTo(context.getPackageName());
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void getExternalFilesDirs_withNullType_returnFolderWithPackageName() {
     File[] dirs = context.getExternalFilesDirs(null);
@@ -128,7 +105,6 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getSystemService_shouldReturnBluetoothAdapter() {
     assertThat(context.getSystemService(Context.BLUETOOTH_SERVICE))
         .isInstanceOf(BluetoothManager.class);
@@ -352,7 +328,6 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void sendBroadcastAsUser_sendBroadcast() {
     UserHandle userHandle = Process.myUserHandle();
     String action = "foo-action";
@@ -365,7 +340,6 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void sendOrderedBroadcastAsUser_sendsBroadcast() {
     UserHandle userHandle = Process.myUserHandle();
     String action = "foo-action";
@@ -409,13 +383,11 @@ public class ShadowContextImplTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getUserId_returns0() {
     assertThat(context.getUserId()).isEqualTo(0);
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getUserId_userIdHasBeenSet_returnsCorrectUserId() {
     int userId = 10;
     shadowContext.setUserId(userId);

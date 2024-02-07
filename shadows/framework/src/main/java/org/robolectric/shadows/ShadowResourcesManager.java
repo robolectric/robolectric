@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.ResourcesManager;
@@ -13,7 +12,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(value = ResourcesManager.class, isInAndroidSdk = false, minSdk = KITKAT)
+@Implements(value = ResourcesManager.class, isInAndroidSdk = false)
 public class ShadowResourcesManager {
   @RealObject ResourcesManager realResourcesManager;
 

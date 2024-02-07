@@ -22,9 +22,6 @@ import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -588,7 +585,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
 
     return resolveInfo.activityInfo != null
         || resolveInfo.serviceInfo != null
-        || (VERSION.SDK_INT >= VERSION_CODES.KITKAT && resolveInfo.providerInfo != null);
+        || resolveInfo.providerInfo != null;
   }
 
   private static boolean isFlagSet(long flags, long matchFlag) {
@@ -603,7 +600,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   /** Behaves as {@link #queryIntentServices(Intent, int)} and currently ignores userId. */
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected List<ResolveInfo> queryIntentServicesAsUser(Intent intent, int flags, int userId) {
     return queryIntentServices(intent, flags);
   }
@@ -787,7 +784,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   /** Behaves as {@link #queryIntentActivities(Intent, int)} and currently ignores userId. */
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, int flags, int userId) {
     return queryIntentActivities(intent, flags);
   }
@@ -1133,7 +1130,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     verificationResults.put(id, verificationCode);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected void extendVerificationTimeout(
       int id, int verificationCodeAtTimeout, long millisecondsToDelay) {
     synchronized (lock) {
@@ -1157,7 +1154,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected List<ResolveInfo> queryIntentContentProviders(Intent intent, int flags) {
     return this.queryIntentComponents(
         intent,
@@ -1169,7 +1166,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
         ProviderInfo::new);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected List<ResolveInfo> queryIntentContentProvidersAsUser(
       Intent intent, int flags, int userId) {
     return Collections.emptyList();
@@ -1195,7 +1192,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
             });
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected void getPackageSizeInfo(Object pkgName, Object uid, final Object observer) {
     final PackageStats packageStats = packageStatsMap.get((String) pkgName);
     new Handler(Looper.getMainLooper())
@@ -1396,7 +1393,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected int getPackageUid(String packageName, int flags) throws NameNotFoundException {
     Integer uid = uidForPackage.get(packageName);
     if (uid == null) {
@@ -1673,7 +1670,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected List<PackageInfo> getPackagesHoldingPermissions(String[] permissions, int flags) {
     synchronized (lock) {
       List<PackageInfo> packageInfosWithPermissions = new ArrayList<>();
@@ -1706,7 +1703,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   }
 
   /** Behaves as {@link #resolveActivity(Intent, int)} and currently ignores userId. */
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected ResolveInfo resolveActivityAsUser(Intent intent, int flags, int userId) {
     return resolveActivity(intent, flags);
   }
@@ -1817,7 +1814,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected Resources getResourcesForApplicationAsUser(String appPackageName, int userId)
       throws NameNotFoundException {
     return null;
@@ -1837,7 +1834,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   protected void installPackage(
       Object packageURI, Object observer, Object flags, Object installerPackageName) {}
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected int installExistingPackage(String packageName) throws NameNotFoundException {
     return 0;
   }
@@ -1989,7 +1986,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     clearPackagePreferredActivitiesInternal(packageName, preferredActivities);
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected ComponentName getHomeActivities(List<ResolveInfo> outActivities) {
     return null;
   }

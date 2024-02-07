@@ -26,7 +26,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build.VERSION_CODES;
 import android.os.PowerManager;
 import android.os.PowerManager.LowPowerStandbyPortDescription;
 import android.os.PowerManager.LowPowerStandbyPortsLock;
@@ -559,11 +558,7 @@ public class ShadowPowerManager {
   }
 
   private Context getContext() {
-    if (RuntimeEnvironment.getApiLevel() < VERSION_CODES.JELLY_BEAN_MR1) {
-      return RuntimeEnvironment.getApplication();
-    } else {
-      return reflector(ReflectorPowerManager.class, realPowerManager).getContext();
-    }
+    return reflector(ReflectorPowerManager.class, realPowerManager).getContext();
   }
 
   @Implementation(minSdk = TIRAMISU)

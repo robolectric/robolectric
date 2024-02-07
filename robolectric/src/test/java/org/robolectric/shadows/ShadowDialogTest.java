@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowDialogTest {
@@ -186,7 +184,6 @@ public class ShadowDialogTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void show_shouldWorkWithAPI19() {
     Dialog dialog = new Dialog(context);
     dialog.show();

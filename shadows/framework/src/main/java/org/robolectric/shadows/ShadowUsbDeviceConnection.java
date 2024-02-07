@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 
@@ -64,13 +62,13 @@ public class ShadowUsbDeviceConnection {
     return true;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected int controlTransfer(
       int requestType, int request, int value, int index, byte[] buffer, int length, int timeout) {
     return length;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected int controlTransfer(
       int requestType,
       int request,
@@ -97,7 +95,7 @@ public class ShadowUsbDeviceConnection {
     return requestWait();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected int bulkTransfer(
       UsbEndpoint endpoint, byte[] buffer, int offset, int length, int timeout) {
     try {

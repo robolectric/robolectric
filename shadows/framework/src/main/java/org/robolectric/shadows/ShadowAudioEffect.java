@@ -38,7 +38,7 @@ public class ShadowAudioEffect {
   private boolean isEnabled = false;
   private int errorCode = SUCCESS;
 
-  @Implementation(minSdk = VERSION_CODES.JELLY_BEAN, maxSdk = VERSION_CODES.LOLLIPOP_MR1)
+  @Implementation(maxSdk = VERSION_CODES.LOLLIPOP_MR1)
   protected int native_setup(
       Object audioEffectThis,
       String type,

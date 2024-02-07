@@ -1,6 +1,5 @@
 package android.text.format;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,7 +9,6 @@ import static org.junit.Assert.assertTrue;
 
 import android.util.TimeFormatException;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SdkSuppress;
 import java.util.Arrays;
 import java.util.TimeZone;
 import org.junit.After;
@@ -240,7 +238,6 @@ public class TimeTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = JELLY_BEAN_MR1)
   public void shouldFormat() {
     Time t = new Time(Time.TIMEZONE_UTC);
     t.set(3600000L);
@@ -250,7 +247,6 @@ public class TimeTest {
   }
 
   @Test
-  @SdkSuppress(minSdkVersion = JELLY_BEAN_MR1)
   public void shouldFormatAndroidStrings() {
     Time t = new Time("UTC");
     // NOTE: month is zero-based.

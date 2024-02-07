@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -147,17 +144,11 @@ public class ShadowServiceManager {
     addBinderService(Context.BLUETOOTH_SERVICE, IBluetooth.class);
     addBinderService(Context.WINDOW_SERVICE, IWindowManager.class);
     addBinderService(Context.NFC_SERVICE, INfcAdapter.class, true);
+    addBinderService(Context.USER_SERVICE, IUserManager.class);
+    addBinderService(BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE, IBluetoothManager.class);
+    addBinderService(Context.APP_OPS_SERVICE, IAppOpsService.class);
+    addBinderService("batteryproperties", IBatteryPropertiesRegistrar.class);
 
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
-      addBinderService(Context.USER_SERVICE, IUserManager.class);
-      addBinderService(BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE, IBluetoothManager.class);
-    }
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
-      addBinderService(Context.APP_OPS_SERVICE, IAppOpsService.class);
-    }
-    if (RuntimeEnvironment.getApiLevel() >= KITKAT) {
-      addBinderService("batteryproperties", IBatteryPropertiesRegistrar.class);
-    }
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       addBinderService(Context.RESTRICTIONS_SERVICE, IRestrictionsManager.class);
       addBinderService(Context.TRUST_SERVICE, ITrustManager.class);

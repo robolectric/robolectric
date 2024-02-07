@@ -221,12 +221,7 @@ public class ConfigurationV25 {
         break;
     }
 
-    int densityDpi;
-    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.JELLY_BEAN) {
-      densityDpi = config.densityDpi;
-    } else {
-      densityDpi = displayMetrics.densityDpi;
-    }
+    int densityDpi = config.densityDpi;
 
     switch (densityDpi) {
       case DENSITY_DPI_UNDEFINED:

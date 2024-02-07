@@ -185,7 +185,6 @@ public class ActivityControllerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.JELLY_BEAN_MR1)
   public void destroy_cleansUpWindowManagerState() {
     WindowManager windowManager = controller.get().getWindowManager();
     ShadowWindowManagerImpl shadowWindowManager =

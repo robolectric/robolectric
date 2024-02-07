@@ -1,9 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -53,7 +50,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build.VERSION;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.CellInfo;
@@ -98,7 +94,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = JELLY_BEAN)
 public class ShadowTelephonyManagerTest {
 
   private TelephonyManager telephonyManager;
@@ -119,9 +114,7 @@ public class ShadowTelephonyManagerTest {
 
     verify(listener).onCallStateChanged(CALL_STATE_IDLE, null);
     verify(listener).onCellLocationChanged(null);
-    if (VERSION.SDK_INT >= JELLY_BEAN_MR1) {
-      verify(listener).onCellInfoChanged(Collections.emptyList());
-    }
+    verify(listener).onCellInfoChanged(Collections.emptyList());
   }
 
   @Test
@@ -263,7 +256,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldGiveAllCellInfo() {
     PhoneStateListener listener = mock(PhoneStateListener.class);
     telephonyManager.listen(listener, LISTEN_CELL_INFO);
@@ -347,7 +339,6 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void shouldGiveGroupIdLevel1() {
     shadowOf(telephonyManager).setGroupIdLevel1("SomeGroupId");
     assertEquals("SomeGroupId", telephonyManager.getGroupIdLevel1());

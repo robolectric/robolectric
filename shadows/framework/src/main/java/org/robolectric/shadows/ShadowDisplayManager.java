@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static java.util.Objects.requireNonNull;
 import static org.robolectric.shadow.api.Shadow.extract;
@@ -43,7 +42,7 @@ import org.robolectric.util.reflector.ForType;
  * For tests, display properties may be changed and devices may be added or removed
  * programmatically.
  */
-@Implements(value = DisplayManager.class, minSdk = JELLY_BEAN_MR1, looseSignatures = true)
+@Implements(value = DisplayManager.class, looseSignatures = true)
 public class ShadowDisplayManager {
 
   @RealObject private DisplayManager realDisplayManager;
@@ -143,7 +142,7 @@ public class ShadowDisplayManager {
       displayInfo.state = Display.STATE_ON;
     }
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
       displayInfo.getAppMetrics(displayMetrics);
     }
 
@@ -338,10 +337,6 @@ public class ShadowDisplayManager {
   }
 
   private static ShadowDisplayManagerGlobal getShadowDisplayManagerGlobal() {
-    if (Build.VERSION.SDK_INT < JELLY_BEAN_MR1) {
-      throw new UnsupportedOperationException("multiple displays not supported in Jelly Bean");
-    }
-
     return extract(DisplayManagerGlobal.getInstance());
   }
 

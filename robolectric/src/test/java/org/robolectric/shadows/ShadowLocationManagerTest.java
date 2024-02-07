@@ -116,7 +116,6 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.KITKAT)
   public void testGetProvider() {
     LocationProvider p;
 

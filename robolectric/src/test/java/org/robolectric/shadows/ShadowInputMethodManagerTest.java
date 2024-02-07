@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -22,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowInputMethodManagerTest {
@@ -125,8 +123,6 @@ public class ShadowInputMethodManagerTest {
     assertThat(shadow.getCurrentInputMethodSubtype()).isNull();
   }
 
-  /** The builder is only available for 19+. */
-  @Config(minSdk = KITKAT)
   @Test
   public void setCurrentInputMethodSubtype_isReturned() {
     InputMethodSubtype inputMethodSubtype = new InputMethodSubtypeBuilder().build();

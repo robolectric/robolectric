@@ -13,7 +13,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,7 +21,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowNfcAdapterTest {
@@ -151,7 +149,6 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void isInReaderMode_beforeEnableReaderMode_shouldReturnFalse() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
 
@@ -160,7 +157,6 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void isInReaderMode_afterEnableReaderMode_shouldReturnTrue() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
     NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
@@ -175,7 +171,6 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void isInReaderMode_afterDisableReaderMode_shouldReturnFalse() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
     NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);
@@ -191,7 +186,6 @@ public class ShadowNfcAdapterTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void dispatchTagDiscovered_shouldDispatchTagToCallback() {
     final Activity activity = Robolectric.setupActivity(Activity.class);
     NfcAdapter adapter = NfcAdapter.getDefaultAdapter(activity);

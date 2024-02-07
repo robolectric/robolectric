@@ -260,7 +260,6 @@ public class ShadowSensorManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void flush_shouldCallOnFlushCompleted() {
     Sensor accelSensor = ShadowSensor.newInstance(TYPE_ACCELEROMETER);
     Sensor gyroSensor = ShadowSensor.newInstance(TYPE_GYROSCOPE);

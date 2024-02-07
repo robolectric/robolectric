@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_HOME;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_NOTIFICATIONS;
 import static android.app.admin.DevicePolicyManager.LOCK_TASK_FEATURE_OVERVIEW;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -215,7 +213,7 @@ public class ShadowDevicePolicyManager {
     storageEncryptionStatus = DevicePolicyManager.ENCRYPTION_STATUS_UNSUPPORTED;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected boolean isDeviceOwnerApp(String packageName) {
     return deviceOwner != null && deviceOwner.getPackageName().equals(packageName);
   }
@@ -351,7 +349,7 @@ public class ShadowDevicePolicyManager {
   /**
    * @see #setDeviceOwner(ComponentName)
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected String getDeviceOwner() {
     return deviceOwner != null ? deviceOwner.getPackageName() : null;
   }
@@ -1274,13 +1272,13 @@ public class ShadowDevicePolicyManager {
         .clearPackagePersistentPreferredActivities(packageName);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected void setKeyguardDisabledFeatures(ComponentName admin, int which) {
     enforceActiveAdmin(admin);
     keyguardDisabledFeatures = which;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected int getKeyguardDisabledFeatures(ComponentName admin) {
     return keyguardDisabledFeatures;
   }

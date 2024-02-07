@@ -5,13 +5,11 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 import android.os.Build;
 import android.telephony.CellInfo;
 import android.telephony.CellSignalStrengthLte;
-import androidx.annotation.RequiresApi;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 /** Builder for {@link android.telephony.CellSignalStrengthLte} */
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class CellSignalStrengthLteBuilder {
 
   private int rssi = CellInfo.UNAVAILABLE;

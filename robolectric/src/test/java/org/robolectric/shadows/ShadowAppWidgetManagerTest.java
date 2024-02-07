@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Looper.getMainLooper;
@@ -168,7 +167,6 @@ public class ShadowAppWidgetManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void bindAppWidgetIdIfAllowed_shouldSetOptionsBundle() {
     ComponentName provider = new ComponentName("A", "B");
     Bundle options = new Bundle();

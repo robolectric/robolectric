@@ -5,7 +5,6 @@ import static android.app.PendingIntent.FLAG_IMMUTABLE;
 import static android.app.PendingIntent.FLAG_NO_CREATE;
 import static android.app.PendingIntent.FLAG_ONE_SHOT;
 import static android.app.PendingIntent.FLAG_UPDATE_CURRENT;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -477,7 +476,7 @@ public class ShadowPendingIntent {
     return getCreatorPackage();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected String getCreatorPackage() {
     return (creatorPackage == null)
         ? RuntimeEnvironment.getApplication().getPackageName()
@@ -488,7 +487,7 @@ public class ShadowPendingIntent {
     this.creatorPackage = creatorPackage;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected int getCreatorUid() {
     return creatorUid;
   }

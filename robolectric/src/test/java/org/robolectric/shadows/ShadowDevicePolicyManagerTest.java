@@ -18,7 +18,6 @@ import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_COMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_FINALIZED;
 import static android.app.admin.DevicePolicyManager.STATE_USER_SETUP_INCOMPLETE;
 import static android.app.admin.DevicePolicyManager.STATE_USER_UNMANAGED;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -98,7 +97,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void isDeviceOwnerAppShouldReturnFalseForNonDeviceOwnerApp() {
     // GIVEN an test package which is not the device owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -121,7 +119,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void isDeviceOwnerShouldReturnTrueForDeviceOwner() {
     // GIVEN an test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -133,7 +130,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getDeviceOwnerShouldReturnDeviceOwnerPackageName() {
     // GIVEN an test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -145,7 +141,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getDeviceOwnerShouldReturnNullWhenThereIsNoDeviceOwner() {
     // WHEN DevicePolicyManager#getProfileOwner is called without a device owner
     // THEN the method should return null
@@ -291,7 +286,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getActiveAdminsShouldReturnDeviceOwner() {
     // GIVEN an test package which is the device owner app of the device
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);

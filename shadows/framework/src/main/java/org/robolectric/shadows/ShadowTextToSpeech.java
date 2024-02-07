@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -129,31 +128,29 @@ public class ShadowTextToSpeech {
     spokenTextList.add(text.toString());
     this.queueMode = queueMode;
 
-    if (RuntimeEnvironment.getApiLevel() >= ICE_CREAM_SANDWICH_MR1) {
-      if (utteranceId != null) {
-        // The onStart and onDone callbacks are normally delivered asynchronously. Since in
-        // Robolectric we don't need the wait for TTS package, the asynchronous callbacks are
-        // simulated by posting it on a handler. The behavior of the callback can be changed for
-        // each individual test by changing the idling mode of the foreground scheduler.
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(
-            () -> {
-              UtteranceProgressListener utteranceProgressListener = getUtteranceProgressListener();
-              if (utteranceProgressListener != null) {
-                utteranceProgressListener.onStart(utteranceId);
-              }
-              // The onDone callback is posted in a separate run-loop from onStart, so that tests
-              // can pause the scheduler and test the behavior between these two callbacks.
-              handler.post(
-                  () -> {
-                    UtteranceProgressListener utteranceProgressListener2 =
-                        getUtteranceProgressListener();
-                    if (utteranceProgressListener2 != null) {
-                      utteranceProgressListener2.onDone(utteranceId);
-                    }
-                  });
-            });
-      }
+    if (utteranceId != null) {
+      // The onStart and onDone callbacks are normally delivered asynchronously. Since in
+      // Robolectric we don't need the wait for TTS package, the asynchronous callbacks are
+      // simulated by posting it on a handler. The behavior of the callback can be changed for
+      // each individual test by changing the idling mode of the foreground scheduler.
+      Handler handler = new Handler(Looper.getMainLooper());
+      handler.post(
+          () -> {
+            UtteranceProgressListener utteranceProgressListener = getUtteranceProgressListener();
+            if (utteranceProgressListener != null) {
+              utteranceProgressListener.onStart(utteranceId);
+            }
+            // The onDone callback is posted in a separate run-loop from onStart, so that tests
+            // can pause the scheduler and test the behavior between these two callbacks.
+            handler.post(
+                () -> {
+                  UtteranceProgressListener utteranceProgressListener2 =
+                      getUtteranceProgressListener();
+                  if (utteranceProgressListener2 != null) {
+                    utteranceProgressListener2.onDone(utteranceId);
+                  }
+                });
+          });
     }
     return TextToSpeech.SUCCESS;
   }

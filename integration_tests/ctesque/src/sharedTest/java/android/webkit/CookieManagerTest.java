@@ -2,12 +2,8 @@ package android.webkit;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
-import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
@@ -16,14 +12,6 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 @DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class CookieManagerTest {
-
-  @Before
-  public void setUp() {
-    // Required to initialize native CookieManager for emulators with SDK < 19.
-    if (VERSION.SDK_INT < VERSION_CODES.KITKAT) {
-      CookieSyncManager.createInstance(ApplicationProvider.getApplicationContext());
-    }
-  }
 
   @After
   public void tearDown() {

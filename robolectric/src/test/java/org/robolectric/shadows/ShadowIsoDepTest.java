@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -12,11 +11,9 @@ import java.util.concurrent.Callable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowIsoDep}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = KITKAT)
 public final class ShadowIsoDepTest {
 
   private IsoDep isoDep;

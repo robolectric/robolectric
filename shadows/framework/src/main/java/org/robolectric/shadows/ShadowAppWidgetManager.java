@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.L;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
@@ -219,7 +218,7 @@ public class ShadowAppWidgetManager {
   }
 
   @HiddenApi
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected void bindAppWidgetId(int appWidgetId, ComponentName provider, Bundle options) {
     WidgetInfo widgetInfo = new WidgetInfo(provider);
     widgetInfos.put(appWidgetId, widgetInfo);
@@ -246,7 +245,7 @@ public class ShadowAppWidgetManager {
    * Create an internal presentation of the widget locally and store the options {@link Bundle} with
    * it. This implementation doesn't trigger {@code AppWidgetProvider.onUpdate}
    */
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected boolean bindAppWidgetIdIfAllowed(
       int appWidgetId, ComponentName provider, Bundle options) {
     if (validWidgetProviderComponentName) {
