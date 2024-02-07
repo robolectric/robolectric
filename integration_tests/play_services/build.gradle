@@ -11,5 +11,5 @@ dependencies {
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation libs.junit4
     testImplementation libs.truth
-    testImplementation "com.google.android.gms:play-services-basement:18.0.1"
+    testImplementation libs.play.services.basement
 }

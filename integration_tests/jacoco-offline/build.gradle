@@ -14,7 +14,6 @@ configurations {
     jacocoRuntime
 }
 
-
 dependencies {
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
