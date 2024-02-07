@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
@@ -15,7 +13,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
-import android.os.Build;
 import android.provider.Settings;
 import android.provider.Settings.Secure;
 import android.provider.Settings.SettingNotFoundException;
@@ -74,7 +71,7 @@ public class ShadowSettings {
       return get(String.class, name).orElse(null);
     }
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
+    @Implementation
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
       return get(String.class, name).orElse(null);
     }
@@ -161,7 +158,7 @@ public class ShadowSettings {
     private static final Map<String, Optional<Object>> dataMap =
         new ConcurrentHashMap<>(SECURE_DEFAULTS);
 
-    @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = P)
+    @Implementation(maxSdk = P)
     @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
     protected static boolean setLocationProviderEnabledForUser(
         ContentResolver cr, String provider, boolean enabled, int uid) {
@@ -250,13 +247,13 @@ public class ShadowSettings {
       return true;
     }
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
+    @Implementation
     protected static int getIntForUser(ContentResolver cr, String name, int def, int userHandle) {
       // ignore userhandle
       return getInt(cr, name, def);
     }
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
+    @Implementation
     protected static int getIntForUser(ContentResolver cr, String name, int userHandle)
         throws SettingNotFoundException {
       // ignore userhandle
@@ -266,7 +263,6 @@ public class ShadowSettings {
     @Implementation
     protected static int getInt(ContentResolver cr, String name) throws SettingNotFoundException {
       if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
@@ -278,7 +274,6 @@ public class ShadowSettings {
     @Implementation
     protected static int getInt(ContentResolver cr, String name, int def) {
       if (Settings.Secure.LOCATION_MODE.equals(name)
-          && RuntimeEnvironment.getApiLevel() >= KITKAT
           && RuntimeEnvironment.getApiLevel() < P) {
         // Map from to underlying location provider storage API to location mode
         return reflector(SettingsSecureReflector.class).getLocationModeForUser(cr, 0);
@@ -297,7 +292,7 @@ public class ShadowSettings {
       return get(String.class, name).orElse(null);
     }
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
+    @Implementation
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
       return getString(cr, name);
     }
@@ -354,7 +349,7 @@ public class ShadowSettings {
     }
   }
 
-  @Implements(value = Settings.Global.class, minSdk = JELLY_BEAN_MR1)
+  @Implements(value = Settings.Global.class)
   public static class ShadowGlobal {
     private static final ImmutableMap<String, Optional<Object>> DEFAULTS =
         ImmutableMap.<String, Optional<Object>>builder()
@@ -387,7 +382,7 @@ public class ShadowSettings {
       return get(String.class, name).orElse(null);
     }
 
-    @Implementation(minSdk = JELLY_BEAN_MR1)
+    @Implementation
     protected static String getStringForUser(ContentResolver cr, String name, int userHandle) {
       return getString(cr, name);
     }
@@ -514,13 +509,10 @@ public class ShadowSettings {
    * @param adbEnabled new value for whether adb is enabled
    */
   public static void setAdbEnabled(boolean adbEnabled) {
-    // This setting moved from Secure to Global in JELLY_BEAN_MR1
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      Settings.Global.putInt(
-          RuntimeEnvironment.getApplication().getContentResolver(),
-          Settings.Global.ADB_ENABLED,
-          adbEnabled ? 1 : 0);
-    }
+    Settings.Global.putInt(
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.Global.ADB_ENABLED,
+        adbEnabled ? 1 : 0);
     // Support all clients by always setting the Secure version of the setting
     Settings.Secure.putInt(
         RuntimeEnvironment.getApplication().getContentResolver(),
@@ -538,12 +530,10 @@ public class ShadowSettings {
     // This setting moved from Secure to Global in JELLY_BEAN_MR1 and then moved it back to Global
     // in LOLLIPOP. Support all clients by always setting this field on all versions >=
     // JELLY_BEAN_MR1.
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      Settings.Global.putInt(
-          RuntimeEnvironment.getApplication().getContentResolver(),
-          Settings.Global.INSTALL_NON_MARKET_APPS,
-          installNonMarketApps ? 1 : 0);
-    }
+    Settings.Global.putInt(
+        RuntimeEnvironment.getApplication().getContentResolver(),
+        Settings.Global.INSTALL_NON_MARKET_APPS,
+        installNonMarketApps ? 1 : 0);
     // Always set the Secure version of the setting
     Settings.Secure.putInt(
         RuntimeEnvironment.getApplication().getContentResolver(),

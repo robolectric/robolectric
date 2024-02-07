@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-
 import android.os.StatFs;
 import java.io.File;
 import java.util.Map;
@@ -43,22 +41,22 @@ public class ShadowStatFs {
     return stat.freeBlocks;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getFreeBlocksLong() {
     return stat.freeBlocks;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getFreeBytes() {
     return getBlockSizeLong() * getFreeBlocksLong();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getAvailableBytes() {
     return getBlockSizeLong() * getAvailableBlocksLong();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getTotalBytes() {
     return getBlockSizeLong() * getBlockCountLong();
   }
@@ -88,17 +86,17 @@ public class ShadowStatFs {
   }
 
   /** Robolectric always uses a block size of 4096. */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getBlockSizeLong() {
     return BLOCK_SIZE;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getBlockCountLong() {
     return stat.blockCount;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected long getAvailableBlocksLong() {
     return stat.availableBlocks;
   }

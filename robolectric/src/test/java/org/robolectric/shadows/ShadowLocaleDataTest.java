@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -127,9 +126,7 @@ public class ShadowLocaleDataTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void shouldSupportLocaleEn_US_since_jelly_bean_mr1()
-      throws NoSuchFieldException, IllegalAccessException {
+  public void shouldSupportLocaleEn_US_since() throws NoSuchFieldException, IllegalAccessException {
     LocaleData localeData = LocaleData.get(Locale.US);
     LocaleDataReflector localeDataReflector = reflector(LocaleDataReflector.class, localeData);
 

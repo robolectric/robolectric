@@ -28,7 +28,7 @@ public interface _Activity_ {
   @Accessor("mToken")
   IBinder getToken();
 
-  // <= KITKAT:
+  // == KITKAT:
   void attach(
       Context context,
       ActivityThread activityThread,
@@ -181,7 +181,7 @@ public interface _Activity_ {
       @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel <= Build.VERSION_CODES.KITKAT) {
+    if (apiLevel == Build.VERSION_CODES.KITKAT) {
       attach(
           baseContext,
           activityThread,

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -59,7 +57,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric implementation of {@link android.os.UserManager}. */
-@Implements(value = UserManager.class, minSdk = JELLY_BEAN_MR1)
+@Implements(value = UserManager.class)
 public class ShadowUserManager {
 
   /**
@@ -172,7 +170,7 @@ public class ShadowUserManager {
    *
    * @see #setApplicationRestrictions(String, Bundle)
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected Bundle getApplicationRestrictions(String packageName) {
     Bundle bundle = userManagerState.applicationRestrictions.get(packageName);
     return bundle != null ? bundle : new Bundle();
@@ -501,7 +499,7 @@ public class ShadowUserManager {
    * return meaningful results in test environment; thus, allowing test to verify the invoking of
    * UserManager.setUserRestriction().
    */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void setUserRestriction(String key, boolean value, UserHandle userHandle) {
     Bundle bundle = getUserRestrictionsForUser(userHandle);
     synchronized (lock) {
@@ -509,7 +507,7 @@ public class ShadowUserManager {
     }
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void setUserRestriction(String key, boolean value) {
     setUserRestriction(key, value, Process.myUserHandle());
   }
@@ -528,7 +526,7 @@ public class ShadowUserManager {
     userManagerState.userRestrictions.remove(userHandle.getIdentifier());
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected Bundle getUserRestrictions(UserHandle userHandle) {
     return new Bundle(getUserRestrictionsForUser(userHandle));
   }
@@ -643,9 +641,11 @@ public class ShadowUserManager {
     userManagerState.userIcon.put(userId, icon);
   }
 
-  /** @return user id for given user serial number. */
+  /**
+   * @return user id for given user serial number.
+   */
   @HiddenApi
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   @UserIdInt
   protected int getUserHandle(int serialNumber) {
     Integer userHandle = userManagerState.userSerialNumbers.inverse().get((long) serialNumber);
@@ -663,7 +663,7 @@ public class ShadowUserManager {
   }
 
   @HiddenApi
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected static int getMaxSupportedUsers() {
     return maxSupportedUsers;
   }
@@ -769,8 +769,10 @@ public class ShadowUserManager {
     }
   }
 
-  /** @return 'false' by default, or the value specified via {@link #setIsLinkedUser(boolean)} */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  /**
+   * @return 'false' by default, or the value specified via {@link #setIsLinkedUser(boolean)}
+   */
+  @Implementation
   protected boolean isLinkedUser() {
     return isRestrictedProfile();
   }
@@ -1059,7 +1061,7 @@ public class ShadowUserManager {
     seedAccountOptions = null;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected boolean removeUser(int userHandle) {
     if (!userManagerState.userInfoMap.containsKey(userHandle)) {
       return false;

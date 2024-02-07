@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -100,7 +99,6 @@ public class ShadowBinderTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testSetCallingUserHandle() {
     UserHandle newUser = shadowOf(userManager).addUser(10, "secondary_user", 0);
     ShadowBinder.setCallingUserHandle(newUser);
@@ -136,7 +134,6 @@ public class ShadowBinderTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGetCallingUserHandleShouldUseThatOfProcessByDefault() {
     assertThat(Binder.getCallingUserHandle()).isEqualTo(android.os.Process.myUserHandle());
   }
@@ -160,7 +157,6 @@ public class ShadowBinderTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testResetUpdatesCallingUserHandle() {
     UserHandle newUser = shadowOf(userManager).addUser(10, "secondary_user", 0);
     ShadowBinder.setCallingUserHandle(newUser);

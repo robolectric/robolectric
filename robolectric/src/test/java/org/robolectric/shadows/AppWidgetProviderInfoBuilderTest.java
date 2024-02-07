@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.L;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -21,7 +20,6 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link AppWidgetProviderInfoBuilder} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = JELLY_BEAN)
 public class AppWidgetProviderInfoBuilderTest {
   private Context context;
   private PackageManager packageManager;

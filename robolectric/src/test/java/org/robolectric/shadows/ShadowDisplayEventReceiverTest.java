@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Looper;
@@ -10,7 +9,6 @@ import dalvik.system.CloseGuard;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowDisplayEventReceiver}. */
 @RunWith(AndroidJUnit4.class)
@@ -29,7 +27,6 @@ public class ShadowDisplayEventReceiverTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN)
   public void closeGuard_autoCloses() throws Throwable {
     final AtomicBoolean closeGuardWarned = new AtomicBoolean(false);
     CloseGuard.Reporter originalReporter = CloseGuard.getReporter();

@@ -4,8 +4,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREG
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -161,7 +159,6 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void setIsLowRamDevice() {
     shadowActivityManager.setIsLowRamDevice(true);
     assertThat(activityManager.isLowRamDevice()).isTrue();
@@ -198,7 +195,6 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void switchUser() {
     shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
@@ -215,13 +211,11 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void getCurrentUser_default_returnZero() {
     assertThat(ActivityManager.getCurrentUser()).isEqualTo(0);
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void getCurrentUser_nonDefault_returnValueSet() {
     shadowOf(application).setSystemService(Context.USER_SERVICE, userManager);
     shadowOf(userManager).addUser(10, "secondary_user", 0);
@@ -424,13 +418,11 @@ public class ShadowActivityManagerTest {
     assertThat(activityManager.getDeviceConfigurationInfo()).isEqualTo(configurationInfo);
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void isApplicationUserDataCleared_returnsDefaultFalse() {
     assertThat(shadowActivityManager.isApplicationUserDataCleared()).isFalse();
   }
 
-  @Config(minSdk = KITKAT)
   @Test
   public void isApplicationUserDataCleared_returnsTrue() {
     activityManager.clearApplicationUserData();

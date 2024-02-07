@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -189,7 +188,6 @@ public class ShadowPausedSystemClockTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testElapsedRealtimeNanos() {
     SystemClock.setCurrentTimeMillis(1000);
     assertThat(SystemClock.elapsedRealtimeNanos()).isEqualTo(1000000000);

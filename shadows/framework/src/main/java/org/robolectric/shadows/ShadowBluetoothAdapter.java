@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothAdapter.STATE_ON;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -277,12 +275,12 @@ public class ShadowBluetoothAdapter {
         != 0;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected boolean startLeScan(LeScanCallback callback) {
     return startLeScan(null, callback);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected boolean startLeScan(UUID[] serviceUuids, LeScanCallback callback) {
     if (Build.VERSION.SDK_INT >= M && !realAdapter.isLeEnabled()) {
       return false;
@@ -293,7 +291,7 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected void stopLeScan(LeScanCallback callback) {
     leScanCallbacks.remove(callback);
   }
@@ -331,7 +329,7 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected boolean disable(boolean persist) {
     return disable();
   }

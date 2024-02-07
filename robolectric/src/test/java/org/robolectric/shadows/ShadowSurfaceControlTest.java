@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -18,7 +17,6 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Tests for {@link org.robolectric.shadows.ShadowSurfaceControl} */
-@Config(minSdk = JELLY_BEAN_MR2)
 @RunWith(AndroidJUnit4.class)
 public class ShadowSurfaceControlTest {
   // The spurious CloseGuard warnings happens in Q, where the CloseGuard is always opened.

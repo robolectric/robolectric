@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
@@ -241,7 +240,6 @@ public class ShadowEnvironmentTest {
   // TODO: failing test
   @Ignore
   @Test
-  @Config(minSdk = KITKAT)
   public void getExternalFilesDirs() throws Exception {
     ShadowEnvironment.addExternalDir("external_dir_1");
     ShadowEnvironment.addExternalDir("external_dir_2");
@@ -261,7 +259,7 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT, maxSdk = LOLLIPOP)
+  @Config(maxSdk = LOLLIPOP)
   public void getExternalStorageStatePreLollipopMR1() {
     File storageDir1 = ShadowEnvironment.addExternalDir("dir1");
     File storageDir2 = ShadowEnvironment.addExternalDir("dir2");

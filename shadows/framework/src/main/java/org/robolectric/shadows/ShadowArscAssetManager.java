@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -265,21 +264,23 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   //////////// native method implementations
 
-//  public native final String[] list(String path)
-//      throws IOException;
+  //  public native final String[] list(String path)
+  //      throws IOException;
 
-//  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
-//  public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
-//    throw new UnsupportedOperationException("implement me");
-//  }
-//
+  //  @HiddenApi @Implementation(minSdk = VERSION_CODES.P)
+  //  public void setApkAssets(Object apkAssetsObjects, Object invalidateCaches) {
+  //    throw new UnsupportedOperationException("implement me");
+  //  }
+  //
 
-  @HiddenApi @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN_MR1)
+  @HiddenApi
+  @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN_MR1)
   public int addAssetPath(String path) {
     return addAssetPathNative(path);
   }
 
-  @HiddenApi @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
+  @HiddenApi
+  @Implementation(maxSdk = M)
   final protected int addAssetPathNative(String path) {
     return addAssetPathNative(path, false);
   }

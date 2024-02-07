@@ -12,7 +12,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Build;
 import android.util.TypedValue;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -268,10 +267,8 @@ public class ShadowBitmapFactory {
       p.y = p.y == 0 ? 1 : p.y;
     }
 
-    // Prior to KitKat the density scale will be applied by finishDecode below.
     float scale =
-        RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT
-                && options != null
+        options != null
                 && options.inScaled
                 && options.inDensity != 0
                 && options.inTargetDensity != 0
@@ -301,21 +298,11 @@ public class ShadowBitmapFactory {
       shadowBitmap.setMutable(options.inMutable);
     }
 
-    if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.KITKAT) {
-      ReflectionHelpers.callStaticMethod(
-          BitmapFactory.class,
-          "setDensityFromOptions",
-          ClassParameter.from(Bitmap.class, bitmap),
-          ClassParameter.from(BitmapFactory.Options.class, options));
-    } else {
-      bitmap =
-          ReflectionHelpers.callStaticMethod(
-              BitmapFactory.class,
-              "finishDecode",
-              ClassParameter.from(Bitmap.class, bitmap),
-              ClassParameter.from(Rect.class, outPadding),
-              ClassParameter.from(BitmapFactory.Options.class, options));
-    }
+    ReflectionHelpers.callStaticMethod(
+        BitmapFactory.class,
+        "setDensityFromOptions",
+        ClassParameter.from(Bitmap.class, bitmap),
+        ClassParameter.from(BitmapFactory.Options.class, options));
     return bitmap;
   }
 

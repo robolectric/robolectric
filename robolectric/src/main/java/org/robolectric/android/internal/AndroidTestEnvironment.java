@@ -592,25 +592,14 @@ public class AndroidTestEnvironment implements TestEnvironment {
           Application dummyInitialApplication = new Application();
           final ComponentName dummyInitialComponent =
               new ComponentName("", androidInstrumentation.getClass().getSimpleName());
-          // TODO Move the API check into a helper method inside ShadowInstrumentation
-          if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN_MR1) {
-            reflector(_Instrumentation_.class, androidInstrumentation)
-                .init(
-                    activityThread,
-                    dummyInitialApplication,
-                    dummyInitialApplication,
-                    dummyInitialComponent,
-                    null);
-          } else {
-            reflector(_Instrumentation_.class, androidInstrumentation)
-                .init(
-                    activityThread,
-                    dummyInitialApplication,
-                    dummyInitialApplication,
-                    dummyInitialComponent,
-                    null,
-                    null);
-          }
+          reflector(_Instrumentation_.class, androidInstrumentation)
+              .init(
+                  activityThread,
+                  dummyInitialApplication,
+                  dummyInitialApplication,
+                  dummyInitialComponent,
+                  null,
+                  null);
         });
 
     androidInstrumentation.onCreate(new Bundle());
@@ -704,7 +693,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       applicationInfo.publicSourceDir =
           createTempDir(applicationInfo.packageName + "-publicSourceDir");
     } else {
-      if (apiLevel <= VERSION_CODES.KITKAT) {
+      if (apiLevel == VERSION_CODES.KITKAT) {
         String sourcePath = reflector(_Package_.class, parsedPackage).getPath();
         if (sourcePath == null) {
           sourcePath = createTempDir("sourceDir");

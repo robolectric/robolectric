@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Parcelable.PARCELABLE_WRITE_RETURN_VALUE;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
@@ -30,7 +28,6 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -111,14 +108,7 @@ public class ShadowParcelFileDescriptor {
   }
 
   private static ParcelFileDescriptor newParcelFileDescriptor() {
-    if (RuntimeEnvironment.getApiLevel() > JELLY_BEAN) {
-      return new ParcelFileDescriptor(new FileDescriptor());
-    } else {
-      // In Jelly Bean, the ParcelFileDescriptor(FileDescriptor) constructor was non-public.
-      return ReflectionHelpers.callConstructor(
-          ParcelFileDescriptor.class,
-          ClassParameter.from(FileDescriptor.class, new FileDescriptor()));
-    }
+    return new ParcelFileDescriptor(new FileDescriptor());
   }
 
   @Implementation
@@ -147,7 +137,7 @@ public class ShadowParcelFileDescriptor {
     return pfd;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected static ParcelFileDescriptor open(
       File file, int mode, Handler handler, ParcelFileDescriptor.OnCloseListener listener)
       throws IOException {
@@ -193,7 +183,7 @@ public class ShadowParcelFileDescriptor {
     return new ParcelFileDescriptor[] {readSide, writeSide};
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected static ParcelFileDescriptor[] createReliablePipe() throws IOException {
     return createPipe();
   }

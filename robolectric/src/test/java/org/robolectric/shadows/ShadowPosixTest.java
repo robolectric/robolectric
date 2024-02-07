@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -52,7 +51,6 @@ public final class ShadowPosixTest {
   }
 
   @Test
-  @Config(maxSdk = KITKAT)
   public void getStatBelowLollipop_returnCorrectMode() throws Exception {
     Object stat = ShadowPosix.stat(path);
     int mode = ReflectionHelpers.getField(stat, "st_mode");
@@ -60,7 +58,6 @@ public final class ShadowPosixTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getStatBelowLollipop_returnCorrectSize() throws Exception {
     Object stat = ShadowPosix.stat(path);
     long size = ReflectionHelpers.getField(stat, "st_size");
@@ -68,7 +65,6 @@ public final class ShadowPosixTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getStatBelowtLollipop_returnCorrectModifiedTime() throws Exception {
     Object stat = ShadowPosix.stat(path);
     long modifiedTime = ReflectionHelpers.getField(stat, "st_mtime");

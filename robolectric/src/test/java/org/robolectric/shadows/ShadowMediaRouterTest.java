@@ -2,8 +2,6 @@ package org.robolectric.shadows;
 
 import static android.media.MediaRouter.ROUTE_TYPE_LIVE_AUDIO;
 import static android.media.MediaRouter.ROUTE_TYPE_LIVE_VIDEO;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
@@ -16,7 +14,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaRouter}. */
@@ -54,7 +51,6 @@ public final class ShadowMediaRouterTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void testAddBluetoothRoute_checkBluetoothRouteProperties_apiJbMr2() {
     shadowOf(mediaRouter).addBluetoothRoute();
     RouteInfo bluetoothRoute = mediaRouter.getRouteAt(1);
@@ -88,7 +84,8 @@ public final class ShadowMediaRouterTest {
     shadowOf(mediaRouter).removeBluetoothRoute();
 
     assertThat(mediaRouter.getRouteCount()).isEqualTo(1);
-    assertThat(mediaRouter.getSelectedRoute(ROUTE_TYPE_LIVE_AUDIO)).isEqualTo(getDefaultRoute());
+    assertThat(mediaRouter.getSelectedRoute(ROUTE_TYPE_LIVE_AUDIO))
+        .isEqualTo(mediaRouter.getDefaultRoute());
   }
 
   @Test
@@ -100,7 +97,8 @@ public final class ShadowMediaRouterTest {
     shadowOf(mediaRouter).removeBluetoothRoute();
 
     assertThat(mediaRouter.getRouteCount()).isEqualTo(1);
-    assertThat(mediaRouter.getSelectedRoute(ROUTE_TYPE_LIVE_AUDIO)).isEqualTo(getDefaultRoute());
+    assertThat(mediaRouter.getSelectedRoute(ROUTE_TYPE_LIVE_AUDIO))
+        .isEqualTo(mediaRouter.getDefaultRoute());
   }
 
   @Test
@@ -108,24 +106,21 @@ public final class ShadowMediaRouterTest {
     assertThat(shadowOf(mediaRouter).isBluetoothRouteSelected(ROUTE_TYPE_LIVE_AUDIO)).isFalse();
   }
 
-  // Pre-API 18, non-user routes weren't able to be selected.
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void testIsBluetoothRouteSelected_bluetoothRouteAddedButNotSelected_returnsFalse() {
     shadowOf(mediaRouter).addBluetoothRoute();
-    mediaRouter.selectRoute(ROUTE_TYPE_LIVE_AUDIO, getDefaultRoute());
+    mediaRouter.selectRoute(ROUTE_TYPE_LIVE_AUDIO, mediaRouter.getDefaultRoute());
     assertThat(shadowOf(mediaRouter).isBluetoothRouteSelected(ROUTE_TYPE_LIVE_AUDIO)).isFalse();
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testIsBluetoothRouteSelected_bluetoothRouteSelectedForDifferentType_returnsFalse() {
     shadowOf(mediaRouter).addBluetoothRoute();
     RouteInfo bluetoothRoute = mediaRouter.getRouteAt(1);
 
     // Select the Bluetooth route for AUDIO and the default route for AUDIO.
     mediaRouter.selectRoute(ROUTE_TYPE_LIVE_AUDIO, bluetoothRoute);
-    mediaRouter.selectRoute(ROUTE_TYPE_LIVE_VIDEO, getDefaultRoute());
+    mediaRouter.selectRoute(ROUTE_TYPE_LIVE_VIDEO, mediaRouter.getDefaultRoute());
 
     assertThat(shadowOf(mediaRouter).isBluetoothRouteSelected(ROUTE_TYPE_LIVE_VIDEO)).isFalse();
   }
@@ -136,12 +131,5 @@ public final class ShadowMediaRouterTest {
     RouteInfo bluetoothRoute = mediaRouter.getRouteAt(1);
     mediaRouter.selectRoute(ROUTE_TYPE_LIVE_AUDIO, bluetoothRoute);
     assertThat(shadowOf(mediaRouter).isBluetoothRouteSelected(ROUTE_TYPE_LIVE_AUDIO)).isTrue();
-  }
-
-  private RouteInfo getDefaultRoute() {
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR2) {
-      return mediaRouter.getDefaultRoute();
-    }
-    return mediaRouter.getRouteAt(0);
   }
 }

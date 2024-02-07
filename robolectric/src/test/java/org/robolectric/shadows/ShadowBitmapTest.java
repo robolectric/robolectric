@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
@@ -113,7 +111,6 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void hasMipmap() {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.hasMipMap()).isFalse();
@@ -122,7 +119,6 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void getAllocationByteCount() {
     Bitmap bitmap = Bitmap.createBitmap(100, 200, Bitmap.Config.ARGB_8888);
     assertThat(bitmap.getAllocationByteCount()).isGreaterThan(0);
@@ -178,7 +174,6 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldCreateMutableBitmapWithDisplayMetrics() {
     final DisplayMetrics metrics = new DisplayMetrics();
     metrics.densityDpi = 1000;
@@ -263,7 +258,6 @@ public class ShadowBitmapTest {
   }
 
   @Test(expected = NullPointerException.class)
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void byteCountIsAccurate() {
     Bitmap b1 = Bitmap.createBitmap(10, 10, Bitmap.Config.ARGB_8888);
     assertThat(b1.getByteCount()).isEqualTo(400);
@@ -276,7 +270,6 @@ public class ShadowBitmapTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void shouldSetDensity() {
     final Bitmap bitmap = Bitmap.createBitmap(new DisplayMetrics(), 100, 100, Bitmap.Config.ARGB_8888);
     bitmap.setDensity(1000);
@@ -646,7 +639,6 @@ public class ShadowBitmapTest {
     original.reconfigure(100, 100, Bitmap.Config.ARGB_8888);
   }
 
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   @Test
   public void isPremultiplied_argb888_defaultsTrue() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
@@ -654,7 +646,6 @@ public class ShadowBitmapTest {
     assertThat(original.isPremultiplied()).isTrue();
   }
 
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   @Test
   public void isPremultiplied_argb888_noAlpha_defaultsFalse() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
@@ -663,7 +654,6 @@ public class ShadowBitmapTest {
     assertThat(original.isPremultiplied()).isFalse();
   }
 
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   @Test
   public void isPremultiplied_rgb565_defaultsFalse() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.RGB_565);
@@ -671,7 +661,6 @@ public class ShadowBitmapTest {
     assertThat(original.isPremultiplied()).isFalse();
   }
 
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   @Test
   public void setPremultiplied_argb888_isFalse() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);

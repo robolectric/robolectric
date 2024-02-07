@@ -13,7 +13,6 @@ import org.robolectric.annotation.Config;
 
 /** Test for {@link CellIdentityLteBuilder} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class CellIdentityLteBuilderTest {
 
   private static final String MCC = "310";
@@ -38,7 +37,7 @@ public class CellIdentityLteBuilderTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1, maxSdk = Build.VERSION_CODES.M)
+  @Config(maxSdk = Build.VERSION_CODES.M)
   public void build_sdkJtoM() {
     CellIdentityLte cellIdentity = getCellIdentityLte();
 

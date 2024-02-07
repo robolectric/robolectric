@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.StatFs;
@@ -8,7 +7,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.File;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowStatFsTest {
@@ -77,7 +75,6 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldRegisterStats() {
     ShadowStatFs.registerStats("/tmp", 100, 20, 10);
     StatFs statsFs = new StatFs("/tmp");
@@ -91,7 +88,6 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldRegisterStatsWithFile() {
     ShadowStatFs.registerStats(new File("/tmp"), 100, 20, 10);
     StatFs statsFs = new StatFs(new File("/tmp").getAbsolutePath());
@@ -105,7 +101,6 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldResetStateBetweenTests() {
     StatFs statsFs = new StatFs("/tmp");
     assertThat(statsFs.getBlockCountLong()).isEqualTo(0L);
@@ -134,7 +129,6 @@ public class ShadowStatFsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void withApi18_shouldRestat() {
     ShadowStatFs.registerStats("/tmp", 100, 20, 10);
     StatFs statsFs = new StatFs("/tmp");

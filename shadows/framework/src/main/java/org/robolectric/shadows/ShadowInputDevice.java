@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-
 import android.view.InputDevice;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -25,12 +23,12 @@ public class ShadowInputDevice {
     return deviceName;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected int getProductId() {
     return productId;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected int getVendorId() {
     return vendorId;
   }

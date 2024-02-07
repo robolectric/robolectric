@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.AsyncTaskLoader;
@@ -12,12 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.android.util.concurrent.PausedExecutorService;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 /** Tests for {@link ShadowPausedAsyncTaskLoader}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = KITKAT)
 public class ShadowPausedAsyncTaskLoaderTest {
   private final List<String> taskRecord = new ArrayList<>();
   private TestLoader testLoader;

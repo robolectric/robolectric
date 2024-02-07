@@ -1,7 +1,6 @@
 package android.app
 
 import android.content.res.Configuration
-import android.os.Build.VERSION_CODES.JELLY_BEAN_MR2
 import android.view.Surface
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -9,13 +8,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.annotation.Config
 import org.robolectric.annotation.internal.DoNotInstrument
 import org.robolectric.testapp.TestActivity
 
 @Suppress("DEPRECATION")
 @DoNotInstrument
-@Config(minSdk = JELLY_BEAN_MR2)
 @RunWith(AndroidJUnit4::class)
 class UiAutomationTest {
   @Test

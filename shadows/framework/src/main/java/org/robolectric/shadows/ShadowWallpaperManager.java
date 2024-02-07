@@ -18,7 +18,6 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
@@ -88,7 +87,7 @@ public class ShadowWallpaperManager {
    * Returns whether the current wallpaper has been set through {@link #setResource(int)} or {@link
    * #setResource(int, int)} with the same resource id.
    */
-  @Implementation(minSdk = VERSION_CODES.JELLY_BEAN_MR1)
+  @Implementation
   protected boolean hasResourceWallpaper(int resid) {
     return resid == this.lockScreenId || resid == this.homeScreenId;
   }

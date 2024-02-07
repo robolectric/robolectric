@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.content.ContentResolver;
@@ -198,7 +197,8 @@ public class ShadowCursorWrapper implements Cursor {
     wrappedCursor.setNotificationUri(contentResolver, uri);
   }
 
-  @Override @Implementation(minSdk = KITKAT)
+  @Override
+  @Implementation
   public Uri getNotificationUri() {
     return wrappedCursor.getNotificationUri();
   }

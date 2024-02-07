@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -25,7 +24,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothManagerTest {
   private static final String DEVICE_ADDRESS_1 = "00:11:22:AA:BB:CC";
   private static final String DEVICE_ADDRESS_2 = "11:22:33:BB:CC:DD";

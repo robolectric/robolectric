@@ -117,7 +117,7 @@ public class ShadowAlarmManager {
     setImpl(type, triggerAtMs, WINDOW_HEURISTIC, intervalMs, operation, null, null, false);
   }
 
-  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  @Implementation
   protected void setWindow(
       int type, long windowStartMs, long windowLengthMs, PendingIntent operation) {
     setImpl(type, windowStartMs, windowLengthMs, 0L, operation, null, null, false);
@@ -179,7 +179,7 @@ public class ShadowAlarmManager {
     setImpl(type, windowStartMs, windowLengthMs, 0L, tag, listener, executor, null, true);
   }
 
-  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  @Implementation
   protected void setExact(int type, long triggerAtMs, PendingIntent operation) {
     setImpl(type, triggerAtMs, WINDOW_EXACT, 0L, operation, null, null, false);
   }
@@ -209,7 +209,7 @@ public class ShadowAlarmManager {
     setImpl(RTC_WAKEUP, info.getTriggerTime(), WINDOW_EXACT, 0L, operation, null, info, true);
   }
 
-  @Implementation(minSdk = VERSION_CODES.KITKAT)
+  @Implementation
   protected void set(
       int type,
       long triggerAtMs,

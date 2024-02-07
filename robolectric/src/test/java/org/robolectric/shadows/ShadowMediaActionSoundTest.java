@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.media.MediaActionSound;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
@@ -12,7 +11,6 @@ import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link org.robolectric.shadows.ShadowMediaActionSound}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.JELLY_BEAN)
 public final class ShadowMediaActionSoundTest {
   @Test
   public void getPlayCount_noShutterClickPlayed_zero() {

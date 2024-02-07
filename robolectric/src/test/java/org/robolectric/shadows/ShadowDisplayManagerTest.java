@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -42,18 +40,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(maxSdk = JELLY_BEAN)
-  public void notSupportedInJellyBean() {
-    try {
-      ShadowDisplayManager.removeDisplay(0);
-      fail("Expected Exception thrown");
-    } catch (UnsupportedOperationException e) {
-      assertThat(e).hasMessageThat().contains("displays not supported in Jelly Bean");
-    }
-  }
-
-  @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void getDisplayInfo_shouldReturnCopy() {
     DisplayInfo displayInfo = getGlobal().getDisplayInfo(Display.DEFAULT_DISPLAY);
     int origAppWidth = displayInfo.appWidth;
@@ -63,13 +49,11 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_getDisplayInfo_shouldReturnNull() {
     assertThat(getGlobal().getDisplayInfo(3)).isEqualTo(null);
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_changeDisplay_shouldThrow() {
     try {
       ShadowDisplayManager.changeDisplay(3, "");
@@ -80,7 +64,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void forNonexistentDisplay_removeDisplay_shouldThrow() {
     try {
       ShadowDisplayManager.removeDisplay(3);
@@ -91,7 +74,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay() {
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp");
     assertThat(displayId).isGreaterThan(0);
@@ -106,7 +88,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay_withName_shouldReflectInAddedDisplay() {
     int displayId = ShadowDisplayManager.addDisplay("w100dp-h200dp", "VirtualDevice_1");
     assertThat(displayId).isGreaterThan(0);
@@ -121,7 +102,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void addDisplay_shouldNotifyListeners() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
@@ -130,7 +110,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() {
     Point smallest = new Point();
     Point largest = new Point();
@@ -150,7 +129,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void withQualifiers_changeDisplay_shouldUpdateSmallestAndLargestNominalWidthAndHeight() {
     Point smallest = new Point();
     Point largest = new Point();
@@ -168,7 +146,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void changeAndRemoveDisplay_shouldNotifyListeners() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
@@ -188,7 +165,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void changeDisplay_shouldAllowPartialChanges() {
     List<String> events = new ArrayList<>();
     instance.registerDisplayListener(new MyDisplayListener(events), null);
@@ -471,7 +447,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void setNaturallyPortrait_setPortrait_isRotatedWhenLandscape() {
     ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, true);
 
@@ -481,7 +456,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void setNaturallyPortrait_setPortraitWhenLandscape_isRotated() {
     ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "land");
 
@@ -491,7 +465,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void setNaturallyPortrait_setLandscape_isNotRotatedWhenLandscape() {
     ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
 
@@ -501,7 +474,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void setNaturallyPortrait_setLandscape_isRotatedWhenPortrait() {
     ShadowDisplayManager.setNaturallyPortrait(Display.DEFAULT_DISPLAY, false);
 
@@ -511,7 +483,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void setNaturallyPortrait_setLandscapeWhenLandscape_isNotRotated() {
     ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, "land");
 

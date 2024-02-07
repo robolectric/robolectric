@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
@@ -62,7 +61,6 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGlobalGetInt() {
     assertThat(Settings.Global.getInt(contentResolver, "property", 0)).isEqualTo(0);
     assertThat(Settings.Global.getInt(contentResolver, "property", 2)).isEqualTo(2);
@@ -135,15 +133,13 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void testSetAdbEnabled_sinceJBMR1_settingsGlobal_true() {
+  public void testSetAdbEnabled_settingsGlobal_true() {
     ShadowSettings.setAdbEnabled(true);
     assertThat(Global.getInt(context.getContentResolver(), Global.ADB_ENABLED, 0)).isEqualTo(1);
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void testSetAdbEnabled_sinceJBMR1_settingsGlobal_false() {
+  public void testSetAdbEnabled_settingsGlobal_false() {
     ShadowSettings.setAdbEnabled(false);
     assertThat(Global.getInt(context.getContentResolver(), Global.ADB_ENABLED, 1)).isEqualTo(0);
   }
@@ -163,16 +159,14 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void testSetInstallNonMarketApps_sinceJBMR1_settingsGlobal_true() {
+  public void testSetInstallNonMarketApps_settingsGlobal_true() {
     ShadowSettings.setInstallNonMarketApps(true);
     assertThat(Global.getInt(context.getContentResolver(), Global.INSTALL_NON_MARKET_APPS, 0))
         .isEqualTo(1);
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void testSetInstallNonMarketApps_sinceJBMR1_settingsGlobal_false() {
+  public void testSetInstallNonMarketApps_settingsGlobal_false() {
     ShadowSettings.setInstallNonMarketApps(false);
     assertThat(Global.getInt(context.getContentResolver(), Global.INSTALL_NON_MARKET_APPS, 1))
         .isEqualTo(0);
@@ -266,7 +260,6 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testGlobalGetFloat() {
     float durationScale =
         Global.getFloat(
@@ -281,7 +274,6 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void differentContentResolver() {
     Context context = ApplicationProvider.getApplicationContext();
     ContentResolver contentResolver1 =
@@ -300,7 +292,6 @@ public class ShadowSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void global_animatorDurationScale() {
     long startTime = SystemClock.uptimeMillis();
     ValueAnimator valueAnimator = ValueAnimator.ofFloat(0, 1);

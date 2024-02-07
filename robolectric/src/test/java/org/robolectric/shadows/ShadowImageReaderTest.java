@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -16,11 +15,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowImageReader}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = KITKAT)
 public class ShadowImageReaderTest {
   private static final int WIDTH = 640;
   private static final int HEIGHT = 480;

@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS;
 import static android.content.ContentResolver.QUERY_ARG_SQL_SORT_ORDER;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.O;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.google.common.truth.Truth.assertThat;
@@ -1162,7 +1161,6 @@ public class ShadowContentResolverTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void takeAndReleasePersistableUriPermissions() {
     List<UriPermission> permissions = contentResolver.getPersistedUriPermissions();
     assertThat(permissions).isEmpty();

@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.net.wifi.WifiManager.SCAN_RESULTS_AVAILABLE_ACTION;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -156,7 +155,6 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getIsScanAlwaysAvailable() {
     shadowOf(wifiManager).setIsScanAlwaysAvailable(true);
     assertThat(wifiManager.isScanAlwaysAvailable()).isEqualTo(true);
@@ -607,7 +605,6 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void connect_setsNetworkId_shouldHasNetworkId() {
     // WHEN
     wifiManager.connect(123, null);
@@ -617,7 +614,6 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.KITKAT)
   public void connect_setsConnectionInfo() {
     // GIVEN
     WifiConfiguration wifiConfiguration = new WifiConfiguration();

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 
 import android.os.Binder;
@@ -80,7 +79,7 @@ public class ShadowBinder {
     throw new IllegalStateException("Thread is not in a binder transcation");
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected static final UserHandle getCallingUserHandle() {
     if (callingUserHandle != null) {
       return callingUserHandle;

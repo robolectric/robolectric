@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -866,7 +865,7 @@ public class ShadowViewTest {
     assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
   }
 
-  @Test @Config(minSdk = JELLY_BEAN_MR2)
+  @Test
   public void getWindowId_shouldReturnValidObjectWhenAttached() throws Exception {
     MyView parent = new MyView("parent", transcript);
     MyView child = new MyView("child", transcript);

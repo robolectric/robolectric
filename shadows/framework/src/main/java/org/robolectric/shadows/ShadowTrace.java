@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.base.Verify.verifyNotNull;
 
@@ -51,7 +50,7 @@ public class ShadowTrace {
   private static long tags = TRACE_TAG_APP;
 
   /** Starts a new trace section with given name. */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static void beginSection(String sectionName) {
     if (tags == 0) {
       return;
@@ -63,7 +62,7 @@ public class ShadowTrace {
   }
 
   /** Ends the most recent active trace section. */
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static void endSection() {
     if (tags == 0) {
       return;
@@ -112,12 +111,12 @@ public class ShadowTrace {
     previousAsyncSections.add(section);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static long nativeGetEnabledTags() {
     return tags;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static void setAppTracingAllowed(boolean appTracingAllowed) {
     tags = appTracingAllowed ? TRACE_TAG_APP : 0;
   }

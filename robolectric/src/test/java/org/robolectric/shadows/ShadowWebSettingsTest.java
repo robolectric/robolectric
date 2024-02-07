@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
@@ -10,7 +9,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowWebSettings} */
 @RunWith(AndroidJUnit4.class)
@@ -24,7 +22,6 @@ public final class ShadowWebSettingsTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void setDefaultUserAgent() {
     ShadowWebSettings.setDefaultUserAgent("Chrome/71.0.143.1");
 

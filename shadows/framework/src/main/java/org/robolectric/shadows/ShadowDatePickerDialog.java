@@ -7,7 +7,6 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.annotation.TargetApi;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
@@ -64,7 +63,7 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
   }
 
   public DatePickerDialog.OnDateSetListener getOnDateSetListenerCallback() {
-    if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
+    if (RuntimeEnvironment.getApiLevel() == KITKAT) {
       return reflector(DatePickerDialogReflector.class, realDatePickerDialog).getCallback();
     } else {
       return reflector(DatePickerDialogReflector.class, realDatePickerDialog).getDateSetListener();
@@ -80,7 +79,6 @@ public class ShadowDatePickerDialog extends ShadowAlertDialog {
     OnDateSetListener getDateSetListener();
 
     /** For sdk version is equals to {@link KITKAT} */
-    @TargetApi(KITKAT)
     @Accessor("mCallBack")
     OnDateSetListener getCallback();
   }

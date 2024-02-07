@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -47,7 +46,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     recordVibratePattern(pattern, repeat);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
+  @Implementation(maxSdk = KITKAT_WATCH)
   protected void vibrate(int owningUid, String owningPackage, long[] pattern, int repeat) {
     recordVibratePattern(pattern, repeat);
   }
@@ -63,7 +62,7 @@ public class ShadowSystemVibrator extends ShadowVibrator {
     recordVibrate(milliseconds);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = KITKAT_WATCH)
+  @Implementation(maxSdk = KITKAT_WATCH)
   public void vibrate(int owningUid, String owningPackage, long milliseconds) {
     recordVibrate(milliseconds);
   }

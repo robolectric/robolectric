@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.N;
@@ -793,7 +792,7 @@ public class ShadowView {
     }
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected boolean isAttachedToWindow() {
     return getAttachInfo() != null;
   }
@@ -954,7 +953,7 @@ public class ShadowView {
     reflector(_View_.class, realView).onDetachedFromWindow();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected WindowId getWindowId() {
     return WindowIdHelper.getWindowId(this);
   }

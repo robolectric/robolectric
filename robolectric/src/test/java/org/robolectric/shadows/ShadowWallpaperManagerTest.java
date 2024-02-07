@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -96,14 +95,12 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void hasResourceWallpaper_wallpaperResourceNotSet_returnsFalse() {
     assertThat(manager.hasResourceWallpaper(1)).isFalse();
     assertThat(manager.hasResourceWallpaper(5)).isFalse();
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void hasResourceWallpaper_wallpaperResourceSet_returnsTrue() throws IOException {
     int resid = 5;
     manager.setResource(resid);
@@ -113,7 +110,6 @@ public class ShadowWallpaperManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void setResource_multipleTimes_hasResourceWallpaperReturnsTrueForLastValue()
       throws IOException {
     manager.setResource(1);

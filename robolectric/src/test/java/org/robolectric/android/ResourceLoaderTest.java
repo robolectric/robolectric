@@ -8,7 +8,6 @@ import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Build;
-import android.os.Build.VERSION_CODES;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
@@ -84,11 +83,7 @@ public class ResourceLoaderTest {
     assertThat(textView.getText().toString()).isEqualTo("default");
     RuntimeEnvironment.setQualifiers("fr-land"); // testing if this pollutes the other test
     Configuration configuration = Resources.getSystem().getConfiguration();
-    if (RuntimeEnvironment.getApiLevel() <= VERSION_CODES.JELLY_BEAN) {
-      configuration.locale = new Locale("fr", "FR");
-    } else {
-      configuration.setLocale(new Locale("fr", "FR"));
-    }
+    configuration.setLocale(new Locale("fr", "FR"));
     configuration.orientation = Configuration.ORIENTATION_LANDSCAPE;
     Resources.getSystem().updateConfiguration(configuration, null);
   }

@@ -2,8 +2,6 @@ package org.robolectric.shadows;
 
 import static android.app.UiAutomation.ROTATION_FREEZE_0;
 import static android.app.UiAutomation.ROTATION_FREEZE_180;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
@@ -25,7 +23,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.view.Display;
@@ -36,7 +33,6 @@ import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
-import android.view.WindowManagerImpl;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitor;
 import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
 import androidx.test.runner.lifecycle.Stage;
@@ -54,7 +50,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link UiAutomation}. */
-@Implements(value = UiAutomation.class, minSdk = JELLY_BEAN_MR2)
+@Implements(value = UiAutomation.class)
 public class ShadowUiAutomation {
 
   private static final Predicate<Root> IS_FOCUSABLE = hasLayoutFlag(FLAG_NOT_FOCUSABLE).negate();
@@ -68,18 +64,11 @@ public class ShadowUiAutomation {
    * Sets the animation scale, see {@link UiAutomation#setAnimationScale(float)}. Provides backwards
    * compatible access to SDKs < T.
    */
-  @SuppressWarnings("deprecation")
   public static void setAnimationScaleCompat(float scale) {
     ContentResolver cr = RuntimeEnvironment.getApplication().getContentResolver();
-    if (RuntimeEnvironment.getApiLevel() >= JELLY_BEAN_MR1) {
-      Settings.Global.putFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE, scale);
-      Settings.Global.putFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE, scale);
-      Settings.Global.putFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE, scale);
-    } else {
-      Settings.System.putFloat(cr, Settings.System.ANIMATOR_DURATION_SCALE, scale);
-      Settings.System.putFloat(cr, Settings.System.TRANSITION_ANIMATION_SCALE, scale);
-      Settings.System.putFloat(cr, Settings.System.WINDOW_ANIMATION_SCALE, scale);
-    }
+    Settings.Global.putFloat(cr, Settings.Global.ANIMATOR_DURATION_SCALE, scale);
+    Settings.Global.putFloat(cr, Settings.Global.TRANSITION_ANIMATION_SCALE, scale);
+    Settings.Global.putFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE, scale);
   }
 
   @Implementation(minSdk = TIRAMISU)
@@ -269,11 +258,7 @@ public class ShadowUiAutomation {
   }
 
   private static Object getViewRootsContainer() {
-    if (RuntimeEnvironment.getApiLevel() <= Build.VERSION_CODES.JELLY_BEAN) {
-      return ReflectionHelpers.callStaticMethod(WindowManagerImpl.class, "getDefault");
-    } else {
-      return WindowManagerGlobal.getInstance();
-    }
+    return WindowManagerGlobal.getInstance();
   }
 
   private static Set<IBinder> getStartedActivityTokens() {

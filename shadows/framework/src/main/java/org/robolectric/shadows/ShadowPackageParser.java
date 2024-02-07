@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -100,16 +99,6 @@ public class ShadowPackageParser {
   @ForType(PackageParser.class)
   interface _PackageParser_ {
 
-    // <= JELLY_BEAN
-    @Static
-    PackageInfo generatePackageInfo(
-        PackageParser.Package p,
-        int[] gids,
-        int flags,
-        long firstInstallTime,
-        long lastUpdateTime,
-        HashSet<String> grantedPermissions);
-
     // <= LOLLIPOP
     @Static
     PackageInfo generatePackageInfo(
@@ -152,10 +141,7 @@ public class ShadowPackageParser {
         long lastUpdateTime) {
       int apiLevel = RuntimeEnvironment.getApiLevel();
 
-      if (apiLevel <= JELLY_BEAN) {
-        return generatePackageInfo(p, gids, flags, firstInstallTime, lastUpdateTime,
-            new HashSet<>());
-      } else if (apiLevel <= LOLLIPOP) {
+      if (apiLevel <= LOLLIPOP) {
         return generatePackageInfo(
             p,
             gids,

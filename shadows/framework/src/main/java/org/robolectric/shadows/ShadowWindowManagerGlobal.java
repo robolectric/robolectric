@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -35,7 +34,6 @@ import org.robolectric.util.reflector.Static;
 @Implements(
     value = WindowManagerGlobal.class,
     isInAndroidSdk = false,
-    minSdk = JELLY_BEAN_MR1,
     looseSignatures = true)
 public class ShadowWindowManagerGlobal {
   private static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
@@ -74,7 +72,7 @@ public class ShadowWindowManagerGlobal {
     windowSessionDelegate.lastDragClipData = null;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static synchronized IWindowSession getWindowSession() {
     if (windowSession == null) {
       // Use Proxy.newProxyInstance instead of ReflectionHelpers.createDelegatingProxy as there are

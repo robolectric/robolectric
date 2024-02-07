@@ -24,7 +24,7 @@ public class ShadowPorterDuffColorFilter {
   protected void __constructor__(int color, PorterDuff.Mode mode) {
     // We need these copies because before Lollipop, PorterDuffColorFilter had no fields, it would
     // just delegate to a native instance. If we remove them, the shadow cannot access the fields
-    // on KitKat and earlier.
+    // on KitKat
     this.color = color;
     this.mode = mode;
   }
@@ -34,7 +34,7 @@ public class ShadowPorterDuffColorFilter {
    */
   @Implementation(minSdk = LOLLIPOP)
   public int getColor() {
-    if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
+    if (RuntimeEnvironment.getApiLevel() == KITKAT) {
       return color;
     } else {
       return reflector(PorterDuffColorFilterReflector.class, realPorterDuffColorFilter).getColor();
@@ -47,7 +47,7 @@ public class ShadowPorterDuffColorFilter {
    */
   @Implementation(minSdk = LOLLIPOP)
   public PorterDuff.Mode getMode() {
-    if (RuntimeEnvironment.getApiLevel() <= KITKAT) {
+    if (RuntimeEnvironment.getApiLevel() == KITKAT) {
       return mode;
     } else {
       return reflector(PorterDuffColorFilterReflector.class, realPorterDuffColorFilter).getMode();

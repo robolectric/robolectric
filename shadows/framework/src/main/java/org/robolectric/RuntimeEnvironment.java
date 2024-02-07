@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
@@ -12,7 +10,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import com.google.common.base.Supplier;
@@ -197,9 +194,7 @@ public class RuntimeEnvironment {
    * @param newQualifiers the qualifiers to apply
    */
   public static void setQualifiers(String newQualifiers) {
-    if (getApiLevel() >= JELLY_BEAN_MR1) {
-      ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, newQualifiers);
-    }
+    ShadowDisplayManager.changeDisplay(Display.DEFAULT_DISPLAY, newQualifiers);
 
     Configuration configuration;
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -238,8 +233,7 @@ public class RuntimeEnvironment {
       Configuration configuration, DisplayMetrics displayMetrics) {
     // Update the resources last so that listeners will have a consistent environment.
     // TODO(paulsowden): Can we call ResourcesManager.getInstance().applyConfigurationToResources()?
-    if (Build.VERSION.SDK_INT >= KITKAT
-        && ResourcesManager.getInstance().getConfiguration() != null) {
+    if (ResourcesManager.getInstance().getConfiguration() != null) {
       ResourcesManager.getInstance().getConfiguration().updateFrom(configuration);
     }
     Resources.getSystem().updateConfiguration(configuration, displayMetrics);

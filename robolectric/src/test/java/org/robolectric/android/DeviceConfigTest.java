@@ -36,7 +36,6 @@ public class DeviceConfigTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.JELLY_BEAN_MR1)
   public void applyToConfiguration() {
     applyQualifiers("en-rUS-w400dp-h800dp-notround");
     assertThat(asQualifierString())
@@ -95,7 +94,7 @@ public class DeviceConfigTest {
                 + "port-notnight-mdpi-finger-keyssoft-nokeys-navhidden-nonav");
   }
 
-  // todo: this fails on JELLY_BEAN and LOLLIPOP through M... why?
+  // todo: this fails on LOLLIPOP through M... why?
   @Test
   @Config(minSdk = VERSION_CODES.N)
   public void applyRules_rtlScript() {

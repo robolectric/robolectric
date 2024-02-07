@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
@@ -21,18 +20,7 @@ public final class ShadowBroadcastPendingResult {
 
   static BroadcastReceiver.PendingResult create(int resultCode, String resultData, Bundle resultExtras, boolean ordered) {
     try {
-      if (getApiLevel() <= JELLY_BEAN) {
-        return BroadcastReceiver.PendingResult.class
-            .getConstructor(int.class, String.class, Bundle.class, int.class, boolean.class, boolean.class, IBinder.class)
-            .newInstance(
-                resultCode,
-                resultData,
-                resultExtras,
-                0 /* type */,
-                ordered,
-                false /*sticky*/,
-                null /* ibinder token */);
-      } else if (getApiLevel() <= LOLLIPOP_MR1) {
+      if (getApiLevel() <= LOLLIPOP_MR1) {
         return BroadcastReceiver.PendingResult.class
             .getConstructor(int.class, String.class, Bundle.class, int.class, boolean.class, boolean.class, IBinder.class, int.class)
             .newInstance(
@@ -64,25 +52,7 @@ public final class ShadowBroadcastPendingResult {
 
   static BroadcastReceiver.PendingResult createSticky(Intent intent) {
     try {
-      if (getApiLevel() <= JELLY_BEAN) {
-        return BroadcastReceiver.PendingResult.class
-            .getConstructor(
-                int.class,
-                String.class,
-                Bundle.class,
-                int.class,
-                boolean.class,
-                boolean.class,
-                IBinder.class)
-            .newInstance(
-                0 /*resultCode*/,
-                intent.getDataString(),
-                intent.getExtras(),
-                0 /* type */,
-                false /*ordered*/,
-                true /*sticky*/,
-                null /* ibinder token */);
-      } else if (getApiLevel() <= LOLLIPOP_MR1) {
+      if (getApiLevel() <= LOLLIPOP_MR1) {
         return BroadcastReceiver.PendingResult.class
             .getConstructor(
                 int.class,

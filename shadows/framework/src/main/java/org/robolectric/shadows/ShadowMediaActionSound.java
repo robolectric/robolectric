@@ -4,7 +4,6 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.media.MediaActionSound;
-import android.os.Build;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +15,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** A shadow implementation of {@link android.media.MediaActionSound}. */
-@Implements(value = MediaActionSound.class, minSdk = Build.VERSION_CODES.JELLY_BEAN)
+@Implements(value = MediaActionSound.class)
 public class ShadowMediaActionSound {
   @RealObject MediaActionSound realObject;
 

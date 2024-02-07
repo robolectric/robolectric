@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -428,7 +427,7 @@ public class ShadowConnectivityManager {
    *
    * @param enable new status for airplane mode
    */
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected void setAirplaneMode(boolean enable) {
     ShadowSettings.setAirplaneMode(enable);
   }

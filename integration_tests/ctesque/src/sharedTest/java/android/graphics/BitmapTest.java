@@ -1,8 +1,5 @@
 package android.graphics;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -159,7 +156,6 @@ public class BitmapTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN)
   public void checkBitmapNotRecycled() throws IOException {
     InputStream inputStream = resources.getAssets().open("robolectric.png");
     BitmapFactory.Options options = new BitmapFactory.Options();
@@ -301,8 +297,6 @@ public class BitmapTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
-  @SdkSuppress(minSdkVersion = KITKAT)
   public void reconfigure_drawPixel() {
     Bitmap bitmap = Bitmap.createBitmap(100, 50, Bitmap.Config.ARGB_8888);
     bitmap.reconfigure(50, 100, Bitmap.Config.ARGB_8888);
@@ -374,16 +368,11 @@ public class BitmapTest {
             Bitmap.createBitmap(/* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
                 .isMutable())
         .isTrue();
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      assertThat(
-              Bitmap.createBitmap(
-                      (DisplayMetrics) null,
-                      /* width= */ 1,
-                      /* height= */ 1,
-                      Bitmap.Config.ARGB_8888)
-                  .isMutable())
-          .isTrue();
-    }
+    assertThat(
+            Bitmap.createBitmap(
+                    (DisplayMetrics) null, /* width= */ 1, /* height= */ 1, Bitmap.Config.ARGB_8888)
+                .isMutable())
+        .isTrue();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       assertThat(
               Bitmap.createBitmap(
@@ -423,28 +412,26 @@ public class BitmapTest {
                     Bitmap.Config.ARGB_8888)
                 .isMutable())
         .isFalse();
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-      assertThat(
-              Bitmap.createBitmap(
-                      /* display= */ null,
-                      /* colors= */ new int[] {0},
-                      /* width= */ 1,
-                      /* height= */ 1,
-                      Bitmap.Config.ARGB_8888)
-                  .isMutable())
-          .isFalse();
-      assertThat(
-              Bitmap.createBitmap(
-                      /* display= */ null,
-                      /* colors= */ new int[] {0},
-                      /* offset= */ 0,
-                      /* stride= */ 1,
-                      /* width= */ 1,
-                      /* height= */ 1,
-                      Bitmap.Config.ARGB_8888)
-                  .isMutable())
-          .isFalse();
-    }
+    assertThat(
+            Bitmap.createBitmap(
+                    /* display= */ null,
+                    /* colors= */ new int[] {0},
+                    /* width= */ 1,
+                    /* height= */ 1,
+                    Bitmap.Config.ARGB_8888)
+                .isMutable())
+        .isFalse();
+    assertThat(
+            Bitmap.createBitmap(
+                    /* display= */ null,
+                    /* colors= */ new int[] {0},
+                    /* offset= */ 0,
+                    /* stride= */ 1,
+                    /* width= */ 1,
+                    /* height= */ 1,
+                    Bitmap.Config.ARGB_8888)
+                .isMutable())
+        .isFalse();
   }
 
   @Test
@@ -507,8 +494,6 @@ public class BitmapTest {
     }
   }
 
-  @Config(minSdk = JELLY_BEAN_MR1)
-  @SdkSuppress(minSdkVersion = JELLY_BEAN_MR1)
   @Test
   public void createBitmap_premultiplied() {
     // ARGB_8888 has alpha by default, is premultiplied.

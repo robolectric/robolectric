@@ -9,7 +9,6 @@ import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
 import static org.robolectric.util.ReflectionHelpers.setField;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -74,7 +73,7 @@ public class ShadowLegacyMessageQueueTest {
     scheduler = shadowQueue.getScheduler();
     scheduler.pause();
     testMessage = handler.obtainMessage();
-    quitField = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ? "mQuitting" : "mQuiting";
+    quitField = "mQuitting";
   }
 
   @Test

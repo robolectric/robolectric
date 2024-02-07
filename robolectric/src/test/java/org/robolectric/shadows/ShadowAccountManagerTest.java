@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -1051,7 +1050,6 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void getAccountsByTypeForPackage() {
     Account[] accountsByTypeForPackage = am.getAccountsByTypeForPackage(null, "org.somepackage");
 

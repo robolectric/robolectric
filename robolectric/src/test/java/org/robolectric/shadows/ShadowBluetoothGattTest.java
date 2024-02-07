@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -23,7 +22,6 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowBluetoothGatt}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = JELLY_BEAN_MR2)
 public class ShadowBluetoothGattTest {
 
   private static final byte[] CHARACTERISTIC_VALUE = new byte[] {'a', 'b', 'c'};

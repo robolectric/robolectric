@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
@@ -65,7 +64,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link AppOpsManager}. */
-@Implements(value = AppOpsManager.class, minSdk = KITKAT, looseSignatures = true)
+@Implements(value = AppOpsManager.class, looseSignatures = true)
 public class ShadowAppOpsManager {
 
   // OpEntry fields that the shadow doesn't currently allow the test to configure.
@@ -277,7 +276,7 @@ public class ShadowAppOpsManager {
   }
 
   /** Stores a fake long-running operation. It does not throw if a wrong uid is passed. */
-  @Implementation(minSdk = KITKAT, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   protected int startOpNoThrow(int op, int uid, String packageName) {
     int mode = unsafeCheckOpRawNoThrow(op, uid, packageName);
     if (mode == AppOpsManager.MODE_ALLOWED) {

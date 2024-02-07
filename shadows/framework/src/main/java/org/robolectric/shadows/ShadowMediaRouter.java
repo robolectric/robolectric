@@ -1,15 +1,11 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-
 import android.media.AudioRoutesInfo;
 import android.media.MediaRouter;
 import android.media.MediaRouter.RouteInfo;
 import android.os.Parcel;
 import android.text.TextUtils;
 import javax.annotation.Nullable;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
@@ -30,16 +26,7 @@ public class ShadowMediaRouter {
   public void addBluetoothRoute() {
     updateBluetoothAudioRoute(BLUETOOTH_DEVICE_NAME);
 
-    if (RuntimeEnvironment.getApiLevel() <= JELLY_BEAN_MR1) {
-      ReflectionHelpers.callInstanceMethod(
-          MediaRouter.class,
-          realObject,
-          "selectRouteInt",
-          ClassParameter.from(int.class, MediaRouter.ROUTE_TYPE_LIVE_AUDIO),
-          ClassParameter.from(RouteInfo.class, getBluetoothA2dpRoute()));
-    } else {
-      realObject.selectRoute(MediaRouter.ROUTE_TYPE_LIVE_AUDIO, getBluetoothA2dpRoute());
-    }
+    realObject.selectRoute(MediaRouter.ROUTE_TYPE_LIVE_AUDIO, getBluetoothA2dpRoute());
   }
 
   /** Removes the Bluetooth A2DP route, simulating disconnecting the Bluetooth device. */
@@ -85,9 +72,7 @@ public class ShadowMediaRouter {
   private void callUpdateAudioRoutes(AudioRoutesInfo routesInfo) {
     ReflectionHelpers.callInstanceMethod(
         ReflectionHelpers.getStaticField(MediaRouter.class, "sStatic"),
-        RuntimeEnvironment.getApiLevel() <= JELLY_BEAN
-            ? "updateRoutes"
-            : "updateAudioRoutes",
+        "updateAudioRoutes",
         ClassParameter.from(AudioRoutesInfo.class, routesInfo));
   }
 

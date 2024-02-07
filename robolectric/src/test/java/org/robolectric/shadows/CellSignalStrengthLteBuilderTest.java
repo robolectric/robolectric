@@ -12,7 +12,6 @@ import org.robolectric.annotation.Config;
 
 /** Test for {@link CellSignalStrengthLteBuilder} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class CellSignalStrengthLteBuilderTest {
 
   // The platform enforces that some of these values are within a certain range - otherwise, it will
@@ -35,7 +34,7 @@ public class CellSignalStrengthLteBuilderTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.JELLY_BEAN_MR1, maxSdk = Build.VERSION_CODES.N_MR1)
+  @Config(maxSdk = Build.VERSION_CODES.N_MR1)
   public void build_sdkJtoN() {
     CellSignalStrengthLte cellSignalStrength = getCellSignalStrength();
 

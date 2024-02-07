@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
@@ -83,7 +82,7 @@ public class ShadowParcel {
   }
 
   @HiddenApi
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   public Parcelable.Creator<?> readParcelableCreator(ClassLoader loader) {
     // note: calling `readString` will also consume the string, and increment the data-pointer.
     // which is exactly what we need, since we do not call the real `readParcelableCreator`.

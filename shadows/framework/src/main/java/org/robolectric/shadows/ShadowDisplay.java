@@ -69,19 +69,9 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected void getMetrics(DisplayMetrics outMetrics) {
-    if (isJB()) {
-      outMetrics.density = densityDpi * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-      outMetrics.densityDpi = densityDpi;
+    reflector(_Display_.class, realObject).getMetrics(outMetrics);
+    if (scaledDensity != null) {
       outMetrics.scaledDensity = scaledDensity;
-      outMetrics.widthPixels = width;
-      outMetrics.heightPixels = height;
-      outMetrics.xdpi = xdpi;
-      outMetrics.ydpi = ydpi;
-    } else {
-      reflector(_Display_.class, realObject).getMetrics(outMetrics);
-      if (scaledDensity != null) {
-        outMetrics.scaledDensity = scaledDensity;
-      }
     }
   }
 
@@ -94,15 +84,9 @@ public class ShadowDisplay {
   @Deprecated
   @Implementation
   protected void getRealMetrics(DisplayMetrics outMetrics) {
-    if (isJB()) {
-      getMetrics(outMetrics);
-      outMetrics.widthPixels = realWidth;
-      outMetrics.heightPixels = realHeight;
-    } else {
-      reflector(_Display_.class, realObject).getRealMetrics(outMetrics);
-      if (scaledDensity != null) {
-        outMetrics.scaledDensity = scaledDensity;
-      }
+    reflector(_Display_.class, realObject).getRealMetrics(outMetrics);
+    if (scaledDensity != null) {
+      outMetrics.scaledDensity = scaledDensity;
     }
   }
 
@@ -185,12 +169,8 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setDensityDpi(int densityDpi) {
-    if (isJB()) {
-      this.densityDpi = densityDpi;
-    } else {
-      ShadowDisplayManager.changeDisplay(
-          realObject.getDisplayId(), di -> di.logicalDensityDpi = densityDpi);
-    }
+    ShadowDisplayManager.changeDisplay(
+        realObject.getDisplayId(), di -> di.logicalDensityDpi = densityDpi);
   }
 
   /**
@@ -200,11 +180,7 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setXdpi(float xdpi) {
-    if (isJB()) {
-      this.xdpi = xdpi;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.physicalXDpi = xdpi);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.physicalXDpi = xdpi);
   }
 
   /**
@@ -214,11 +190,7 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setYdpi(float ydpi) {
-    if (isJB()) {
-      this.ydpi = ydpi;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.physicalYDpi = ydpi);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.physicalYDpi = ydpi);
   }
 
   /**
@@ -251,11 +223,7 @@ public class ShadowDisplay {
    * notified of the change.
    */
   public void setName(String name) {
-    if (isJB()) {
-      this.name = name;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.name = name);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.name = name);
   }
 
   /**
@@ -267,9 +235,7 @@ public class ShadowDisplay {
   public void setFlags(int flags) {
     reflector(_Display_.class, realObject).setFlags(flags);
 
-    if (!isJB()) {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.flags = flags);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.flags = flags);
   }
 
   /**
@@ -281,11 +247,7 @@ public class ShadowDisplay {
    * @param width the new width in pixels
    */
   public void setWidth(int width) {
-    if (isJB()) {
-      this.width = width;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.appWidth = width);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.appWidth = width);
   }
 
   /**
@@ -297,11 +259,7 @@ public class ShadowDisplay {
    * @param height new height in pixels
    */
   public void setHeight(int height) {
-    if (isJB()) {
-      this.height = height;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.appHeight = height);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.appHeight = height);
   }
 
   /**
@@ -313,11 +271,7 @@ public class ShadowDisplay {
    * @param width the new width in pixels
    */
   public void setRealWidth(int width) {
-    if (isJB()) {
-      this.realWidth = width;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.logicalWidth = width);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.logicalWidth = width);
   }
 
   /**
@@ -329,12 +283,7 @@ public class ShadowDisplay {
    * @param height the new height in pixels
    */
   public void setRealHeight(int height) {
-    if (isJB()) {
-      this.realHeight = height;
-    } else {
-      ShadowDisplayManager.changeDisplay(
-          realObject.getDisplayId(), di -> di.logicalHeight = height);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.logicalHeight = height);
   }
 
   /**
@@ -357,11 +306,7 @@ public class ShadowDisplay {
    *     Surface#ROTATION_180}, {@link Surface#ROTATION_270}
    */
   public void setRotation(int rotation) {
-    if (isJB()) {
-      this.rotation = rotation;
-    } else {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.rotation = rotation);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.rotation = rotation);
   }
 
   /**
@@ -384,9 +329,7 @@ public class ShadowDisplay {
    *     Display#STATE_DOZE}, {@link Display#STATE_DOZE_SUSPEND}, or {@link Display#STATE_UNKNOWN}.
    */
   public void setState(int state) {
-    if (!isJB()) {
-      ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.state = state);
-    }
+    ShadowDisplayManager.changeDisplay(realObject.getDisplayId(), di -> di.state = state);
   }
 
   /**
@@ -448,10 +391,6 @@ public class ShadowDisplay {
 
     ShadowDisplayManager.changeDisplay(
         realObject.getDisplayId(), displayConfig -> displayConfig.displayCutout = displayCutout);
-  }
-
-  private boolean isJB() {
-    return RuntimeEnvironment.getApiLevel() == JELLY_BEAN;
   }
 
   void configureForJBOnly(Configuration configuration, DisplayMetrics displayMetrics) {

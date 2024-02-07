@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_DISABLED;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED;
 import static android.net.ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -611,7 +610,6 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT)
   public void setAirplaneMode() {
     connectivityManager.setAirplaneMode(false);
     assertThat(

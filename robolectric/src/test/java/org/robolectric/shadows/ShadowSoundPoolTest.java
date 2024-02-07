@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -29,13 +28,6 @@ public class ShadowSoundPoolTest {
 
     SoundPool.OnLoadCompleteListener listener = mock(SoundPool.OnLoadCompleteListener.class);
     soundPool.setOnLoadCompleteListener(listener);
-  }
-
-  @Test
-  @Config(maxSdk = JELLY_BEAN_MR2)
-  public void shouldCreateSoundPool_JellyBean() {
-    SoundPool soundPool = new SoundPool(1, AudioManager.STREAM_MUSIC, 0);
-    assertThat(soundPool).isNotNull();
   }
 
   @Test

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
@@ -52,7 +50,7 @@ public class ShadowSurface {
     return surfaceTexture;
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR1)
+  @Implementation
   protected void finalize() throws Throwable {
     // Suppress noisy CloseGuard errors that may exist in SDK 17+.
     CloseGuard closeGuard = surfaceReflector.getCloseGuard();
@@ -129,12 +127,12 @@ public class ShadowSurface {
     canvasLocked.set(false);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static Object nativeCreateFromSurfaceTexture(Object surfaceTexture) {
     return nativeObject.incrementAndGet();
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2)
+  @Implementation
   protected static Object nativeCreateFromSurfaceControl(Object surfaceControlNativeObject) {
     return nativeObject.incrementAndGet();
   }

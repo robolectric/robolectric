@@ -3,8 +3,6 @@ package org.robolectric.shadows;
 import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -198,7 +196,7 @@ public class ShadowInstrumentation {
    *
    * <p>Currently ignores the user.
    */
-  @Implementation(minSdk = JELLY_BEAN_MR1, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected ActivityResult execStartActivity(
       Context who,
       IBinder contextThread,
@@ -234,7 +232,7 @@ public class ShadowInstrumentation {
     ShadowWindowManagerGlobal.setInTouchMode(inTouchMode);
   }
 
-  @Implementation(minSdk = JELLY_BEAN_MR2, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected UiAutomation getUiAutomation() {
     return getUiAutomation(0);
   }
@@ -1064,14 +1062,6 @@ public class ShadowInstrumentation {
   /** Reflector interface for {@link Instrumentation}'s internals. */
   @ForType(Instrumentation.class)
   public interface _Instrumentation_ {
-    // <= JELLY_BEAN_MR1:
-    void init(
-        ActivityThread thread,
-        Context instrContext,
-        Context appContext,
-        ComponentName component,
-        @WithType("android.app.IInstrumentationWatcher") Object watcher);
-
     // > JELLY_BEAN_MR1:
     void init(
         ActivityThread thread,

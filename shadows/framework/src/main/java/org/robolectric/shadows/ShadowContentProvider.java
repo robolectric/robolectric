@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -24,7 +23,7 @@ public class ShadowContentProvider {
     return callingPackage;
   }
 
-  @Implementation(minSdk = KITKAT)
+  @Implementation
   protected String getCallingPackage() {
     if (callingPackage != null) {
       return callingPackage;

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.fail;
@@ -17,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowCameraTest {
@@ -279,7 +277,6 @@ public class ShadowCameraTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testCameraInfoShutterSound() {
     Camera.CameraInfo cameraQueryCannotDisable = new Camera.CameraInfo();
     Camera.CameraInfo cameraInfoCannotDisable = new Camera.CameraInfo();
@@ -313,7 +310,6 @@ public class ShadowCameraTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void testShutterEnabled() {
     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
     cameraInfo.facing = Camera.CameraInfo.CAMERA_FACING_BACK;

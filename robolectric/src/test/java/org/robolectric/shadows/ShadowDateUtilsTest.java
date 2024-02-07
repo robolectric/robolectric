@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
@@ -31,8 +29,8 @@ public class ShadowDateUtilsTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT, maxSdk = LOLLIPOP_MR1)
-  public void formatDateTime_withCurrentYear_worksSinceKitKat() {
+  @Config(maxSdk = LOLLIPOP_MR1)
+  public void formatDateTime_withCurrentYear() {
     final long millisAtStartOfYear = getMillisAtStartOfYear();
 
     String actual =
@@ -53,18 +51,6 @@ public class ShadowDateUtilsTest {
             millisAtStartOfYear,
             DateUtils.FORMAT_SHOW_YEAR | DateUtils.FORMAT_NUMERIC_DATE);
     final int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-    assertThat(actual).isEqualTo("1/1/" + currentYear);
-  }
-
-  @Test
-  @Config(maxSdk = JELLY_BEAN_MR2)
-  public void formatDateTime_withCurrentYear_worksPreKitKat() {
-    Calendar calendar = Calendar.getInstance();
-    final int currentYear = calendar.get(Calendar.YEAR);
-    final long millisAtStartOfYear = getMillisAtStartOfYear();
-
-    String actual =
-        DateUtils.formatDateTime(context, millisAtStartOfYear, DateUtils.FORMAT_NUMERIC_DATE);
     assertThat(actual).isEqualTo("1/1/" + currentYear);
   }
 

@@ -6,7 +6,6 @@ import android.os.Build;
 import android.telephony.CellIdentityLte;
 import android.telephony.CellInfo;
 import android.telephony.ClosedSubscriberGroupInfo;
-import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,7 +15,6 @@ import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 
 /** Builder for {@link android.telephony.CellIdentityLte}. */
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
 public class CellIdentityLteBuilder {
 
   @Nullable private String mcc = null;

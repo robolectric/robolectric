@@ -5,7 +5,6 @@ import static android.bluetooth.BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES;
 import static android.bluetooth.BluetoothDevice.BOND_BONDED;
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.bluetooth.BluetoothDevice.DEVICE_TYPE_CLASSIC;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -167,7 +166,6 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void connectGatt_doesntCrash() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice bluetoothDevice = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
@@ -221,7 +219,6 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void canSetAndGetType() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(MOCK_MAC_ADDRESS);
@@ -231,7 +228,6 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void canGetBluetoothGatts() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
@@ -248,7 +244,6 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void connectGatt_setsBluetoothGattCallback() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);
@@ -262,7 +257,6 @@ public class ShadowBluetoothDeviceTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR2)
   public void canSimulateGattConnectionChange() {
     shadowOf(application).grantPermissions(BLUETOOTH_CONNECT);
     BluetoothDevice device = ShadowBluetoothDevice.newInstance(MOCK_MAC_ADDRESS);

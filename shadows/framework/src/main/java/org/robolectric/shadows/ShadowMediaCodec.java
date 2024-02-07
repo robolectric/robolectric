@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -54,7 +53,7 @@ import org.robolectric.versioning.AndroidVersions.U;
  * implementation will present an input buffer, which will be copied to an output buffer once
  * queued, which will be subsequently presented to the callback handler.
  */
-@Implements(value = MediaCodec.class, minSdk = JELLY_BEAN, looseSignatures = true)
+@Implements(value = MediaCodec.class, looseSignatures = true)
 public class ShadowMediaCodec {
   private static final int DEFAULT_BUFFER_SIZE = 512;
   @VisibleForTesting static final int BUFFER_COUNT = 10;
