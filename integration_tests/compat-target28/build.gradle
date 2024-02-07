@@ -38,7 +38,7 @@ android {
 dependencies {
     implementation libs.kotlin.stdlib
 
-    testImplementation project(path: ':testapp')
+    testImplementation project(":testapp")
     testImplementation project(":robolectric")
     testImplementation libs.junit4
     testImplementation libs.truth

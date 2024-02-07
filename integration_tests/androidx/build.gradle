@@ -31,7 +31,7 @@ dependencies {
     implementation libs.androidx.window
 
     // Testing dependencies
-    testImplementation project(path: ':testapp')
+    testImplementation project(":testapp")
     testImplementation project(":robolectric")
     testImplementation libs.junit4
     testImplementation libs.androidx.test.core
