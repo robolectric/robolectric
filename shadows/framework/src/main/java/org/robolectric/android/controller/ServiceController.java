@@ -94,14 +94,4 @@ public class ServiceController<T extends Service>
     shadowMainLooper.idleIfPaused();
     return this;
   }
-
-  /**
-   * @deprecated Use the appropriate builder in {@link org.robolectric.Robolectric} instead.
-   *     <p>This method will be removed in Robolectric 3.6.
-   */
-  @Deprecated
-  public ServiceController<T> withIntent(Intent intent) {
-    this.intent = intent;
-    return this;
-  }
 }
