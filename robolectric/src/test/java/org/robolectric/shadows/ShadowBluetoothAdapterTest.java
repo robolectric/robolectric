@@ -939,4 +939,21 @@ public class ShadowBluetoothAdapterTest {
     assertThat(bluetoothAdapter.isDistanceMeasurementSupported())
         .isEqualTo(BluetoothStatusCodes.FEATURE_SUPPORTED);
   }
+
+  @Test
+  @SuppressWarnings("JdkImmutableCollections")
+  public void getBondedDevices_whenSeededWithSet_returnsThatSet() {
+    BluetoothDevice device1 = bluetoothAdapter.getRemoteDevice("AB:CD:EF:12:34:56");
+    BluetoothDevice device2 = bluetoothAdapter.getRemoteDevice("12:34:56:AB:CD:EF");
+    shadowOf(bluetoothAdapter).setBondedDevices(Set.of(device1, device2));
+
+    assertThat(bluetoothAdapter.getBondedDevices()).containsExactly(device1, device2);
+  }
+
+  @Test
+  public void getBondedDevices_whenSeededWithNull_returnsNull() {
+    shadowOf(bluetoothAdapter).setBondedDevices(null);
+
+    assertThat(bluetoothAdapter.getBondedDevices()).isNull();
+  }
 }

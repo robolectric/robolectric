@@ -207,11 +207,16 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
+  @Nullable
   protected Set<BluetoothDevice> getBondedDevices() {
+    // real android will return null in error conditions
+    if (bondedDevices == null) {
+      return null;
+    }
     return Collections.unmodifiableSet(bondedDevices);
   }
 
-  public void setBondedDevices(Set<BluetoothDevice> bluetoothDevices) {
+  public void setBondedDevices(@Nullable Set<BluetoothDevice> bluetoothDevices) {
     bondedDevices = bluetoothDevices;
   }
 
