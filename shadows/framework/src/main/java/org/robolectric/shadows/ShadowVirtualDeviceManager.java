@@ -14,6 +14,15 @@ import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtual.sensor.VirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensorDirectChannelCallback;
 import android.content.Context;
+import android.hardware.display.VirtualDisplay;
+import android.hardware.input.VirtualKeyboard;
+import android.hardware.input.VirtualKeyboardConfig;
+import android.hardware.input.VirtualMouse;
+import android.hardware.input.VirtualMouseConfig;
+import android.hardware.input.VirtualTouchscreen;
+import android.hardware.input.VirtualTouchscreenConfig;
+import android.os.Binder;
+import android.os.IBinder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -84,7 +93,7 @@ public class ShadowVirtualDeviceManager {
                 DeviceManagerVirtualDeviceReflector virtualDeviceReflector =
                     reflector(DeviceManagerVirtualDeviceReflector.class, virtualDevice);
                 return accessor.newInstance(
-                    virtualDeviceReflector.getVirtualDevice(),
+                    ReflectionHelpers.createNullProxy(IVirtualDevice.class),
                     virtualDevice.getDeviceId(),
                     virtualDeviceReflector.getPersistentDeviceId(),
                     deviceName);
@@ -193,6 +202,53 @@ public class ShadowVirtualDeviceManager {
       executor.execute(() -> listener.accept(pendingIntentResultCode));
     }
 
+    @Implementation
+    protected VirtualMouse createVirtualMouse(
+        @NonNull VirtualDisplay display,
+        @NonNull String inputDeviceName,
+        int vendorId,
+        int productId) {
+      IBinder token = new Binder("android.hardware.input.VirtualMouse:" + inputDeviceName);
+      return new VirtualMouse(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
+    }
+
+    @Implementation
+    protected VirtualMouse createVirtualMouse(@NonNull VirtualMouseConfig config) {
+      IBinder token =
+          new Binder("android.hardware.input.VirtualMouse:" + config.getInputDeviceName());
+      return new VirtualMouse(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
+    }
+
+    @Implementation
+    protected void setShowPointerIcon(boolean showPointerIcon) {
+      // no-op
+    }
+
+    @Implementation
+    protected VirtualTouchscreen createVirtualTouchscreen(
+        @NonNull VirtualDisplay display,
+        @NonNull String inputDeviceName,
+        int vendorId,
+        int productId) {
+      IBinder token = new Binder("android.hardware.input.VirtualTouchscreen:" + inputDeviceName);
+      return new VirtualTouchscreen(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
+    }
+
+    @Implementation
+    protected VirtualTouchscreen createVirtualTouchscreen(
+        @NonNull VirtualTouchscreenConfig config) {
+      IBinder token =
+          new Binder("android.hardware.input.VirtualTouchscreen:" + config.getInputDeviceName());
+      return new VirtualTouchscreen(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
+    }
+
+    @Implementation
+    protected VirtualKeyboard createVirtualKeyboard(@NonNull VirtualKeyboardConfig config) {
+      IBinder token =
+          new Binder("android.hardware.input.VirtualKeyboard:" + config.getInputDeviceName());
+      return new VirtualKeyboard(ReflectionHelpers.createNullProxy(IVirtualDevice.class), token);
+    }
+
     public void setPendingIntentCallbackResultCode(int resultCode) {
       this.pendingIntentResultCode = resultCode;
     }
@@ -248,10 +304,6 @@ public class ShadowVirtualDeviceManager {
 
   @ForType(VirtualDeviceManager.VirtualDevice.class)
   private interface DeviceManagerVirtualDeviceReflector {
-    // U and before var and method
-    @Accessor("mVirtualDevice")
-    IVirtualDevice getVirtualDevice();
-
     String getPersistentDeviceId();
   }
 }
