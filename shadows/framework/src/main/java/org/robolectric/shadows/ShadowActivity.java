@@ -578,6 +578,15 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return pendingTransitionExitAnimResId;
   }
 
+  /**
+   * @param overrideType Use {@link Activity#OVERRIDE_TRANSITION_OPEN} to get the overridden
+   *     activity transition animation details when starting/entering an activity. Use {@link
+   *     Activity#OVERRIDE_TRANSITION_CLOSE} to get the overridden activity transition animation
+   *     details when finishing/closing an activity.
+   * @return overridden activity transition details after calling {@link
+   *     Activity#overrideActivityTransition(int, int, int, int)} or null if was not overridden.
+   * @see #clearOverrideActivityTransition(int)
+   */
   @Nullable
   @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
   public OverriddenActivityTransition getOverriddenActivityTransition(int overrideType) {
@@ -950,6 +959,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         });
   }
 
+  /**
+   * Class to hold overridden activity transition details after calling {@link
+   * Activity#overrideActivityTransition(int, int, int, int)}
+   */
   public static class OverriddenActivityTransition {
     @AnimRes public final int enterAnim;
     @AnimRes public final int exitAnim;
