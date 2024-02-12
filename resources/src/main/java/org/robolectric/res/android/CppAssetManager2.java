@@ -1321,8 +1321,8 @@ public class CppAssetManager2 {
                         // const auto iter_end = spec->types + spec->type_count;
                         //   for (auto iter = spec->types; iter != iter_end; ++iter) {
                         for (ResTable_type iter : spec.types) {
-                          ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
-                          if (this_config.match(configuration_)) {
+                          if (iter.config.match(configuration_)) {
+                            ResTable_config this_config = ResTable_config.fromDtoH(iter.config);
                             configGroup.configurations.add(this_config);
                             configGroup.types.add(iter);
                           }
