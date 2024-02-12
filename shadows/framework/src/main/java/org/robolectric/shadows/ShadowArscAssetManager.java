@@ -1375,6 +1375,12 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     return paths;
   }
 
+  @VisibleForTesting
+  @Override
+  long getNativePtr() {
+    return reflector(_AssetManager_.class, realObject).getNativePtr();
+  }
+
   @Override
   List<AssetPath> getAssetPaths() {
     return assetManagerForJavaObject().getAssetPaths();

@@ -27,6 +27,7 @@ import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.util.TypedValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Ordering;
 import dalvik.system.VMRuntime;
 import java.io.ByteArrayInputStream;
@@ -1486,6 +1487,12 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
       }
       reflector(_AssetManager_.class).setSystem(null);
     }
+  }
+
+  @VisibleForTesting
+  @Override
+  long getNativePtr() {
+    return 0;
   }
 
   @ForType(AssetManager.class)
