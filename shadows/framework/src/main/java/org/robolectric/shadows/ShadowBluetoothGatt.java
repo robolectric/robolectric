@@ -184,6 +184,21 @@ public class ShadowBluetoothGatt {
   }
 
   /**
+   * Overrides {@link BluetoothGatt#requestMtu} to always fail before {@link
+   * ShadowBlueoothGatt.setGattCallback} is called, and always succeed after.
+   */
+  @Implementation(minSdk = O)
+  protected boolean requestMtu(int mtu) {
+    if (this.bluetoothGattCallback == null) {
+      return false;
+    }
+
+    this.bluetoothGattCallback.onMtuChanged(
+        this.realBluetoothGatt, mtu, BluetoothGatt.GATT_SUCCESS);
+    return true;
+  }
+
+  /**
    * Overrides {@link BluetoothGatt#discoverServices} to always return false unless there are
    * discoverable services made available by {@link ShadowBluetoothGatt#addDiscoverableService}
    *

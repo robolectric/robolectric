@@ -33,10 +33,12 @@ public class ShadowBluetoothGattTest {
   private static final String ACTION_DISCOVER = "DISCOVER";
   private static final String ACTION_READ = "READ";
   private static final String ACTION_WRITE = "WRITE";
+  private static final String ACTION_MTU = "MTU";
   private static final String REMOTE_ADDRESS = "R-A";
 
   private int resultStatus = INITIAL_VALUE;
   private int resultState = INITIAL_VALUE;
+  private int resultMtu = INITIAL_VALUE;
   private String resultAction;
   private BluetoothGattCharacteristic resultCharacteristic;
   private BluetoothGattDescriptor resultDescriptor;
@@ -88,6 +90,13 @@ public class ShadowBluetoothGattTest {
           resultStatus = status;
           resultDescriptor = descriptor;
           resultAction = ACTION_WRITE;
+        }
+
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+          resultStatus = status;
+          resultMtu = mtu;
+          resultAction = ACTION_MTU;
         }
       };
 
@@ -232,6 +241,24 @@ public class ShadowBluetoothGattTest {
   public void requestConnectionPriority_notInRange_throwsException() {
     assertThrows(IllegalArgumentException.class, () -> bluetoothGatt.requestConnectionPriority(-9));
     assertThrows(IllegalArgumentException.class, () -> bluetoothGatt.requestConnectionPriority(9));
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestMtu_failsBeforeCallbackSet() {
+    assertThat(bluetoothGatt.requestMtu(1)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void requestMtu_success() {
+    shadowOf(bluetoothGatt).setGattCallback(callback);
+
+    int mtu = 1;
+    assertThat(bluetoothGatt.requestMtu(mtu)).isTrue();
+    assertThat(resultAction).isEqualTo(ACTION_MTU);
+    assertThat(resultStatus).isEqualTo(BluetoothGatt.GATT_SUCCESS);
+    assertThat(resultMtu).isEqualTo(mtu);
   }
 
   @Test
