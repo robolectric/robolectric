@@ -577,6 +577,9 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   /**
+   * Get the overridden {@link Activity} transition, set by {@link
+   * Activity#overrideActivityTransition}.
+   *
    * @param overrideType Use {@link Activity#OVERRIDE_TRANSITION_OPEN} to get the overridden
    *     activity transition animation details when starting/entering an activity. Use {@link
    *     Activity#OVERRIDE_TRANSITION_CLOSE} to get the overridden activity transition animation
