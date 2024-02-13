@@ -238,8 +238,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
     Instrumentation instrumentation = createInstrumentation();
     InstrumentationRegistry.registerInstance(instrumentation, new Bundle());
-    Supplier<Application> applicationSupplier =
-        createApplicationSupplier(appManifest, config, androidConfiguration, displayMetrics);
+    Supplier<Application> applicationSupplier = createApplicationSupplier(appManifest, config);
     RuntimeEnvironment.setApplicationSupplier(applicationSupplier);
 
     if (configuration.get(LazyLoad.class) == LazyLoad.ON) {
@@ -269,10 +268,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
   // TODO Move synchronization logic into its own class for better readability
   private Supplier<Application> createApplicationSupplier(
-      AndroidManifest appManifest,
-      Config config,
-      android.content.res.Configuration androidConfiguration,
-      DisplayMetrics displayMetrics) {
+      AndroidManifest appManifest, Config config) {
     final ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     final _ActivityThread_ _activityThread_ = reflector(_ActivityThread_.class, activityThread);
     final ShadowActivityThread shadowActivityThread = Shadow.extract(activityThread);
@@ -286,8 +282,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
                         installAndCreateApplication(
                             appManifest,
                             config,
-                            androidConfiguration,
-                            displayMetrics,
                             shadowActivityThread,
                             _activityThread_,
                             activityThread.getInstrumentation())));
@@ -296,8 +290,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private Application installAndCreateApplication(
       AndroidManifest appManifest,
       Config config,
-      android.content.res.Configuration androidConfiguration,
-      DisplayMetrics displayMetrics,
       ShadowActivityThread shadowActivityThread,
       _ActivityThread_ activityThreadReflector,
       Instrumentation androidInstrumentation) {
@@ -339,6 +331,9 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // code in there that can be reusable, e.g: the XxxxIntentResolver code.
     ShadowActivityThread.setApplicationInfo(applicationInfo);
 
+    // Bootstrap.getConfiguration gets any potential updates to configuration via
+    // RuntimeEnvironment.setQualifiers.
+    android.content.res.Configuration androidConfiguration = Bootstrap.getConfiguration();
     shadowActivityThread.setCompatConfiguration(androidConfiguration);
 
     Bootstrap.setUpDisplay();
@@ -398,9 +393,7 @@ public class AndroidTestEnvironment implements TestEnvironment {
       }
       registerBroadcastReceivers(application, appManifest, loadedApk);
 
-      appResources.updateConfiguration(androidConfiguration, displayMetrics);
-      // propagate any updates to configuration via RuntimeEnvironment.setQualifiers
-      Bootstrap.updateConfiguration(appResources);
+      appResources.updateConfiguration(androidConfiguration, Bootstrap.getDisplayMetrics());
 
       if (ShadowAssetManager.useLegacy()) {
         populateAssetPaths(appResources.getAssets(), appManifest);

@@ -81,10 +81,8 @@ public class ShadowResources {
   protected static Resources getSystem() {
     if (system == null) {
       AssetManager assetManager = AssetManager.getSystem();
-      DisplayMetrics metrics = new DisplayMetrics();
-      Configuration config = new Configuration();
-      system = new Resources(assetManager, metrics, config);
-      Bootstrap.updateConfiguration(system);
+      system =
+          new Resources(assetManager, Bootstrap.getDisplayMetrics(), Bootstrap.getConfiguration());
     }
     return system;
   }
