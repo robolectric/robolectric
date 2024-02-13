@@ -2,12 +2,14 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.unmodifiableList;
 
 import android.app.PendingIntent;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
@@ -26,8 +28,10 @@ import org.robolectric.annotation.Implements;
 /** Adds Robolectric support for BLE scanning. */
 @Implements(value = BluetoothLeScanner.class, minSdk = LOLLIPOP)
 public class ShadowBluetoothLeScanner {
-
   private List<ScanParams> activeScanParams = new ArrayList<>();
+
+  // Set of ScanResults that will be immediately returned when startScan is called.
+  private final Set<ScanResult> scanResults = new HashSet<>();
 
   /**
    * Encapsulates scan params passed to {@link android.bluetooth.BluetoothAdapter} startScan
@@ -69,11 +73,19 @@ public class ShadowBluetoothLeScanner {
    */
   @Implementation
   protected void startScan(List<ScanFilter> filters, ScanSettings settings, ScanCallback callback) {
+    checkNotNull(callback);
+
     if (filters != null) {
       filters = unmodifiableList(filters);
     }
 
     activeScanParams.add(ScanParams.create(filters, settings, callback));
+
+    for (ScanResult scanResult : scanResults) {
+      if (filters == null || filters.stream().anyMatch(f -> f.matches(scanResult))) {
+        callback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES, scanResult);
+      }
+    }
   }
 
   /**
@@ -121,5 +133,10 @@ public class ShadowBluetoothLeScanner {
   /** Returns all {@link ScanParams}s representing active scans. */
   public List<ScanParams> getActiveScans() {
     return Collections.unmodifiableList(activeScanParams);
+  }
+
+  public void addScanResult(ScanResult scanResult) {
+    checkNotNull(scanResult);
+    this.scanResults.add(scanResult);
   }
 }

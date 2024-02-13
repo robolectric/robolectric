@@ -11,11 +11,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanRecord;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Intent;
 import android.os.ParcelUuid;
 import androidx.test.core.app.ApplicationProvider;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -30,15 +33,27 @@ import org.robolectric.annotation.Config;
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = LOLLIPOP)
 public class ShadowBluetoothLeScannerTest {
+  private BluetoothAdapter adapter;
   private BluetoothLeScanner bluetoothLeScanner;
   private List<ScanFilter> scanFilters;
   private ScanSettings scanSettings;
-  private ScanCallback scanCallback;
   private PendingIntent pendingIntent;
+
+  private static final class FakeScanCallback extends ScanCallback {
+    List<ScanResult> scanResults = new ArrayList<>();
+
+    @Override
+    public void onScanResult(int callbackType, ScanResult scanResult) {
+      assertThat(callbackType).isEqualTo(ScanSettings.CALLBACK_TYPE_ALL_MATCHES);
+      scanResults.add(scanResult);
+    }
+  }
+
+  private FakeScanCallback scanCallback;
 
   @Before
   public void setUp() throws Exception {
-    BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+    adapter = BluetoothAdapter.getDefaultAdapter();
     if (RuntimeEnvironment.getApiLevel() < M) {
       // On SDK < 23, bluetooth has to be in STATE_ON in order to get a BluetoothLeScanner.
       shadowOf(adapter).setState(BluetoothAdapter.STATE_ON);
@@ -61,14 +76,7 @@ public class ShadowBluetoothLeScannerTest {
             .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
             .setReportDelay(0)
             .build();
-    scanCallback =
-        new ScanCallback() {
-          @Override
-          public void onScanResult(int callbackType, ScanResult scanResult) {}
-
-          @Override
-          public void onScanFailed(int errorCode) {}
-        };
+    scanCallback = new FakeScanCallback();
     pendingIntent =
         PendingIntent.getBroadcast(
             ApplicationProvider.getApplicationContext(), 0, new Intent("SCAN_CALLBACK"), 0);
@@ -158,5 +166,81 @@ public class ShadowBluetoothLeScannerTest {
     bluetoothLeScanner.startScan(scanFilters, scanSettings, pendingIntent);
     assertThat(shadowOf(bluetoothLeScanner).getActiveScans().get(0).scanSettings())
         .isEqualTo(scanSettings);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void startScan_withScanResult_andNullFilters() {
+    ScanResult scanResultOne =
+        new ScanResult(
+            adapter.getRemoteDevice("AA:BB:CC:DD:EE:FF"),
+            /* eventType= */ 1,
+            /* primaryPhy= */ 1,
+            /* secondaryPhy= */ 1,
+            /* advertisingSid= */ 1,
+            /* txPower= */ 1,
+            /* rssi= */ 1,
+            /* periodicActivitySignal= */ 1,
+            /* scanRecord= */ ScanRecord.parseFromBytes(new byte[] {}),
+            /* timestamp= */ 1);
+    ScanResult scanResultTwo =
+        new ScanResult(
+            adapter.getRemoteDevice("BB:BB:CC:DD:EE:FF"),
+            /* eventType= */ 2,
+            /* primaryPhy= */ 2,
+            /* secondaryPhy= */ 2,
+            /* advertisingSid= */ 2,
+            /* txPower= */ 2,
+            /* rssi= */ 2,
+            /* periodicActivitySignal= */ 2,
+            /* scanRecord= */ ScanRecord.parseFromBytes(new byte[] {}),
+            /* timestamp= */ 2);
+
+    ShadowBluetoothLeScanner shadowBluetoothLeScanner = shadowOf(bluetoothLeScanner);
+    shadowBluetoothLeScanner.addScanResult(scanResultOne);
+    shadowBluetoothLeScanner.addScanResult(scanResultTwo);
+
+    bluetoothLeScanner.startScan(/* filters= */ null, /* settings= */ null, scanCallback);
+
+    assertThat(scanCallback.scanResults).containsExactly(scanResultOne, scanResultTwo);
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void startScan_withScanResult_andFilter() {
+    String addressOne = "AA:BB:CC:DD:EE:FF";
+    ScanResult scanResultOne =
+        new ScanResult(
+            adapter.getRemoteDevice(addressOne),
+            /* eventType= */ 1,
+            /* primaryPhy= */ 1,
+            /* secondaryPhy= */ 1,
+            /* advertisingSid= */ 1,
+            /* txPower= */ 1,
+            /* rssi= */ 1,
+            /* periodicActivitySignal= */ 1,
+            /* scanRecord= */ ScanRecord.parseFromBytes(new byte[] {}),
+            /* timestamp= */ 1);
+    ScanResult scanResultTwo =
+        new ScanResult(
+            adapter.getRemoteDevice("BB:BB:CC:DD:EE:FF"),
+            /* eventType= */ 2,
+            /* primaryPhy= */ 2,
+            /* secondaryPhy= */ 2,
+            /* advertisingSid= */ 2,
+            /* txPower= */ 2,
+            /* rssi= */ 2,
+            /* periodicActivitySignal= */ 2,
+            /* scanRecord= */ ScanRecord.parseFromBytes(new byte[] {}),
+            /* timestamp= */ 2);
+
+    ShadowBluetoothLeScanner shadowBluetoothLeScanner = shadowOf(bluetoothLeScanner);
+    shadowBluetoothLeScanner.addScanResult(scanResultOne);
+    shadowBluetoothLeScanner.addScanResult(scanResultTwo);
+
+    ScanFilter filter = new ScanFilter.Builder().setDeviceAddress(addressOne).build();
+    bluetoothLeScanner.startScan(Arrays.asList(filter), /* settings= */ null, scanCallback);
+
+    assertThat(scanCallback.scanResults).containsExactly(scanResultOne);
   }
 }
