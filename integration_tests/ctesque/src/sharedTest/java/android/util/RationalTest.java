@@ -27,9 +27,18 @@ import static android.util.Rational.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.lang.reflect.Field;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -318,6 +327,65 @@ public class RationalTest {
   }
 
   @Test
+  public void testSerialize() throws ClassNotFoundException, IOException, NoSuchFieldException {
+    /*
+     * Check correct [de]serialization
+     */
+    verifyEqualsAfterSerializing(ZERO);
+    verifyEqualsAfterSerializing(NaN);
+    verifyEqualsAfterSerializing(NEGATIVE_INFINITY);
+    verifyEqualsAfterSerializing(POSITIVE_INFINITY);
+    verifyEqualsAfterSerializing(UNIT);
+    verifyEqualsAfterSerializing(new Rational(100, 200));
+    verifyEqualsAfterSerializing(new Rational(-100, 200));
+    verifyEqualsAfterSerializing(new Rational(5, 1));
+    verifyEqualsAfterSerializing(new Rational(Integer.MAX_VALUE, Integer.MIN_VALUE));
+
+    /*
+     * Check bad deserialization fails
+     */
+    try {
+      Rational badZero = createIllegalRational(0, 100); // [0, 100] , should be [0, 1]
+      Rational results = serializeRoundTrip(badZero);
+      fail("Deserializing " + results + " should not have succeeded");
+    } catch (InvalidObjectException e) {
+      // OK
+    }
+
+    try {
+      Rational badPosInfinity = createIllegalRational(100, 0); // [100, 0] , should be [1, 0]
+      Rational results = serializeRoundTrip(badPosInfinity);
+      fail("Deserializing " + results + " should not have succeeded");
+    } catch (InvalidObjectException e) {
+      // OK
+    }
+
+    try {
+      Rational badNegInfinity = createIllegalRational(-100, 0); // [-100, 0] , should be [-1, 0]
+      Rational results = serializeRoundTrip(badNegInfinity);
+      fail("Deserializing " + results + " should not have succeeded");
+    } catch (InvalidObjectException e) {
+      // OK
+    }
+
+    try {
+      Rational badReduced = createIllegalRational(2, 4); // [2,4] , should be [1, 2]
+      Rational results = serializeRoundTrip(badReduced);
+      fail("Deserializing " + results + " should not have succeeded");
+    } catch (InvalidObjectException e) {
+      // OK
+    }
+
+    try {
+      Rational badReducedNeg = createIllegalRational(-2, 4); // [-2, 4] should be [-1, 2]
+      Rational results = serializeRoundTrip(badReducedNeg);
+      fail("Deserializing " + results + " should not have succeeded");
+    } catch (InvalidObjectException e) {
+      // OK
+    }
+  }
+
+  @Test
   public void testParseRational() {
     assertEquals(new Rational(1, 2), Rational.parseRational("3:+6"));
     assertEquals(new Rational(1, 2), Rational.parseRational("-3:-6"));
@@ -410,5 +478,57 @@ public class RationalTest {
     assertTrue(
         "Expected (RL) left " + left + " to be compareEquals to right " + right,
         right.compareTo(left) == 0);
+  }
+
+  private static <T extends Serializable> byte[] serialize(T obj) throws IOException {
+    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+    try (ObjectOutputStream objectStream = new ObjectOutputStream(byteStream)) {
+      objectStream.writeObject(obj);
+    }
+    return byteStream.toByteArray();
+  }
+
+  private static <T extends Serializable> T deserialize(byte[] array, Class<T> klass)
+      throws IOException, ClassNotFoundException {
+    ByteArrayInputStream bais = new ByteArrayInputStream(array);
+    ObjectInputStream ois = new ObjectInputStream(bais);
+    Object obj = ois.readObject();
+    return klass.cast(obj);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T extends Serializable> T serializeRoundTrip(T obj)
+      throws IOException, ClassNotFoundException {
+    Class<T> klass = (Class<T>) obj.getClass();
+    byte[] arr = serialize(obj);
+    T serialized = deserialize(arr, klass);
+    return serialized;
+  }
+
+  private static <T extends Serializable> void verifyEqualsAfterSerializing(T obj)
+      throws ClassNotFoundException, IOException {
+    T serialized = serializeRoundTrip(obj);
+    assertEquals("Expected values to be equal after serialization round-trip", obj, serialized);
+  }
+
+  private static Rational createIllegalRational(int numerator, int denominator) {
+    Rational r = new Rational(numerator, denominator);
+    mutateField(r, "mNumerator", numerator);
+    mutateField(r, "mDenominator", denominator);
+    return r;
+  }
+
+  private static <T> void mutateField(T object, String name, int value) {
+    try {
+      Field f = object.getClass().getDeclaredField(name);
+      f.setAccessible(true);
+      f.set(object, value);
+    } catch (NoSuchFieldException e) {
+      throw new AssertionError(e);
+    } catch (IllegalAccessException e) {
+      throw new AssertionError(e);
+    } catch (IllegalArgumentException e) {
+      throw new AssertionError(e);
+    }
   }
 }

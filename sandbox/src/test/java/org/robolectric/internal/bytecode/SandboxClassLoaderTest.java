@@ -147,6 +147,7 @@ public class SandboxClassLoaderTest {
     Field roboDataField = exampleClass.getField(ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME);
     assertNotNull(roboDataField);
     assertThat(Modifier.isPublic(roboDataField.getModifiers())).isTrue();
+    assertThat(Modifier.isTransient(roboDataField.getModifiers())).isTrue();
 
     // Java 9 doesn't allow updates to final fields from outside <init> or <clinit>:
     // https://bugs.openjdk.java.net/browse/JDK-8157181
