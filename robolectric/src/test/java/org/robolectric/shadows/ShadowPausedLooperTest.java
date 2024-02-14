@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -29,16 +30,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.res.android.Ref;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LooperMode.Mode.PAUSED)
@@ -697,6 +702,73 @@ public class ShadowPausedLooperTest {
     Looper.getMainLooper().getQueue().removeSyncBarrier(barrier);
   }
 
+  /**
+   * Verify that calling a control operation like idle while a sync barrier is being held doesn't
+   * deadlock the looper
+   */
+  @Test
+  public void idle_paused_onSyncBarrier() {
+
+    Handler handler = new Handler(handlerThread.getLooper());
+    Handler asyncHandler = ShadowPausedLooper.createAsyncHandler(handlerThread.getLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
+    shadowLooper.pause();
+
+    AtomicInteger token = new AtomicInteger(-1);
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    handler.post(
+        () -> {
+          token.set(postSyncBarrierCompat(handlerThread.getLooper()));
+          handler.post(
+              () -> {
+                wasRun.set(true);
+              });
+        });
+    shadowLooper.idle();
+    assertThat(token.get()).isNotEqualTo(-1);
+    assertThat(wasRun.get()).isEqualTo(false);
+    // should be effectively a no-op and not deadlock
+    shadowLooper.idle();
+    // remove sync barriers messages need to get posted as async
+    asyncHandler.post(
+        () -> {
+          removeSyncBarrierCompat(handlerThread.getLooper(), token.get());
+        });
+    shadowLooper.idle();
+    assertThat(wasRun.get()).isEqualTo(true);
+  }
+
+  /** Similar to previous test but with a running aka unpaused looper. */
+  @Test
+  public void idle_running_onSyncBarrier() {
+    Handler handler = new Handler(handlerThread.getLooper());
+    Handler asyncHandler = ShadowPausedLooper.createAsyncHandler(handlerThread.getLooper());
+    ShadowPausedLooper shadowLooper = Shadow.extract(handlerThread.getLooper());
+
+    AtomicInteger token = new AtomicInteger(-1);
+    AtomicBoolean wasRun = new AtomicBoolean(false);
+    handler.post(
+        () -> {
+          token.set(postSyncBarrierCompat(handlerThread.getLooper()));
+          handler.post(
+              () -> {
+                wasRun.set(true);
+              });
+        });
+    shadowLooper.idle();
+    assertThat(token.get()).isNotEqualTo(-1);
+    assertThat(wasRun.get()).isEqualTo(false);
+    // should be effectively a no-op and not deadlock
+    shadowLooper.idle();
+    // remove sync barriers messages need to get posted as async
+    asyncHandler.post(
+        () -> {
+          removeSyncBarrierCompat(handlerThread.getLooper(), token.get());
+        });
+    shadowLooper.idle();
+    assertThat(wasRun.get()).isEqualTo(true);
+  }
+
   private static class BlockingRunnable implements Runnable {
     CountDownLatch latch = new CountDownLatch(1);
 
@@ -712,7 +784,31 @@ public class ShadowPausedLooperTest {
   private void postToMainLooper() {
     // just post a runnable and rely on setUp to check
     Handler handler = new Handler(getMainLooper());
-    Runnable mockRunnable = mock(Runnable.class);
-    handler.post(mockRunnable);
+    handler.post(() -> {});
+  }
+
+  private static int postSyncBarrierCompat(Looper looper) {
+    if (RuntimeEnvironment.getApiLevel() >= 23) {
+      return looper.getQueue().postSyncBarrier();
+    } else {
+      return reflector(LooperReflector.class, looper).postSyncBarrier();
+    }
+  }
+
+  private static void removeSyncBarrierCompat(Looper looper, int token) {
+    if (RuntimeEnvironment.getApiLevel() >= 23) {
+      looper.getQueue().removeSyncBarrier(token);
+    } else {
+      reflector(LooperReflector.class, looper).removeSyncBarrier(token);
+    }
+  }
+
+  @ForType(Looper.class)
+  private interface LooperReflector {
+    @Direct
+    int postSyncBarrier();
+
+    @Direct
+    void removeSyncBarrier(int token);
   }
 }

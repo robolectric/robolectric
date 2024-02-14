@@ -80,7 +80,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     invokeConstructor(Looper.class, realLooper, from(boolean.class, quitAllowed));
 
     loopingLoopers.add(realLooper);
-    looperExecutor = new HandlerExecutor(new Handler(realLooper));
+    looperExecutor = new HandlerExecutor(realLooper);
   }
 
   protected static Collection<Looper> getLoopers() {
@@ -687,16 +687,27 @@ public final class ShadowPausedLooper extends ShadowLooper {
   private class UnPauseRunnable extends ControlRunnable {
     @Override
     public void doRun() {
-      setLooperExecutor(new HandlerExecutor(new Handler(realLooper)));
+      setLooperExecutor(new HandlerExecutor(realLooper));
       isPaused = false;
+    }
+  }
+
+  static Handler createAsyncHandler(Looper looper) {
+    if (RuntimeEnvironment.getApiLevel() >= 28) {
+      // createAsync is only available in API 28+
+      return Handler.createAsync(looper);
+    } else {
+      return new Handler(looper, null, true);
     }
   }
 
   private static class HandlerExecutor implements Executor {
     private final Handler handler;
 
-    private HandlerExecutor(Handler handler) {
-      this.handler = handler;
+    private HandlerExecutor(Looper looper) {
+      // always post async messages so ControlRunnables get processed even if Looper is blocked on a
+      // sync barrier
+      this.handler = createAsyncHandler(looper);
     }
 
     @Override
