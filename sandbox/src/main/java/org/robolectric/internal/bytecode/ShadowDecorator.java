@@ -22,7 +22,7 @@ public class ShadowDecorator implements ClassInstrumentor.Decorator {
     mutableClass.addField(
         0,
         new FieldNode(
-            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC,
+            Opcodes.ACC_PUBLIC | Opcodes.ACC_SYNTHETIC | Opcodes.ACC_TRANSIENT,
             ShadowConstants.CLASS_HANDLER_DATA_FIELD_NAME,
             OBJECT_DESC,
             OBJECT_DESC,
