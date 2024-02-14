@@ -735,7 +735,11 @@ public class ShadowBluetoothGattTest {
     service1.addCharacteristic(characteristicWithReadProperty);
     shadowOf(bluetoothGatt).addDiscoverableService(service1);
     shadowOf(bluetoothGatt).allowCharacteristicNotification(characteristicWithReadProperty);
+
+    // All setCharacteristicNotification calls are allowed on characteristicWithReadProperty.
     assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, true))
+        .isTrue();
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, false))
         .isTrue();
   }
 
@@ -745,7 +749,43 @@ public class ShadowBluetoothGattTest {
     service1.addCharacteristic(characteristicWithReadProperty);
     shadowOf(bluetoothGatt).addDiscoverableService(service1);
     shadowOf(bluetoothGatt).disallowCharacteristicNotification(characteristicWithReadProperty);
+
+    // No setCharacteristicNotification calls are allowed on characteristicWithReadProperty.
     assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, true))
+        .isFalse();
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, false))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void disallowCharacteristicNotification_byDefault() {
+    service1.addCharacteristic(characteristicWithReadProperty);
+    shadowOf(bluetoothGatt).addDiscoverableService(service1);
+
+    // setCharacteristicNotification calls are disallowed by default when neither
+    // allowCharacteristicNotification nor disallowCharacteristicNotification is called.
+
+    // No setCharacteristicNotification calls are allowed on characteristicWithReadProperty.
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, true))
+        .isFalse();
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, false))
+        .isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void disallowCharacteristicNotification_overridesPreviousAllow() {
+    service1.addCharacteristic(characteristicWithReadProperty);
+    shadowOf(bluetoothGatt).addDiscoverableService(service1);
+
+    shadowOf(bluetoothGatt).allowCharacteristicNotification(characteristicWithReadProperty);
+    shadowOf(bluetoothGatt).disallowCharacteristicNotification(characteristicWithReadProperty);
+
+    // No setCharacteristicNotification calls are allowed on characteristicWithReadProperty.
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, true))
+        .isFalse();
+    assertThat(bluetoothGatt.setCharacteristicNotification(characteristicWithReadProperty, false))
         .isFalse();
   }
 }

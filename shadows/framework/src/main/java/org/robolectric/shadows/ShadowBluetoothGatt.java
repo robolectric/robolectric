@@ -257,7 +257,7 @@ public class ShadowBluetoothGatt {
   @Implementation(minSdk = O)
   protected boolean setCharacteristicNotification(
       BluetoothGattCharacteristic characteristic, boolean enable) {
-    return characteristicNotificationEnableSet.contains(characteristic) == enable;
+    return characteristicNotificationEnableSet.contains(characteristic);
   }
 
   @Implementation(minSdk = O)
