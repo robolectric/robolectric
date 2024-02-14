@@ -17,5 +17,3 @@ updates:
        # don't auto update nativeruntime-dist-compat since it needs
        # to be updated with code changes together
        - dependency-name: "org.robolectric:nativeruntime-dist-compat"
-       # don't auto update androidx-annotation since it brings higher Kotlin dependency
-       - dependency-name: "androidx.annotation:annotation"
