@@ -19,6 +19,7 @@ package org.robolectric.shadows;
 import android.util.TypedValue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.robolectric.util.Logger;
 
 /**
  * Helper class to provide various conversion method used in handling android resources.
@@ -141,17 +142,19 @@ public final class ResourceHelper {
     }
   }
 
-  private final static UnitEntry[] sUnitNames = new UnitEntry[] {
-    new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
-    new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
-    new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
-    new UnitEntry("sp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_SP, 1.0f),
-    new UnitEntry("pt", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PT, 1.0f),
-    new UnitEntry("in", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_IN, 1.0f),
-    new UnitEntry("mm", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_MM, 1.0f),
-    new UnitEntry("%", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION, 1.0f/100),
-    new UnitEntry("%p", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION_PARENT, 1.0f/100),
-  };
+  private static final UnitEntry[] sUnitNames =
+      new UnitEntry[] {
+        new UnitEntry("px", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PX, 1.0f),
+        new UnitEntry("dip", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
+        new UnitEntry("dp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_DIP, 1.0f),
+        new UnitEntry("sp", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_SP, 1.0f),
+        new UnitEntry("pt", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_PT, 1.0f),
+        new UnitEntry("in", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_IN, 1.0f),
+        new UnitEntry("mm", TypedValue.TYPE_DIMENSION, TypedValue.COMPLEX_UNIT_MM, 1.0f),
+        new UnitEntry("%", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION, 1.0f / 100),
+        new UnitEntry(
+            "%p", TypedValue.TYPE_FRACTION, TypedValue.COMPLEX_UNIT_FRACTION_PARENT, 1.0f / 100),
+      };
 
   /**
    * Returns the raw value from the given attribute float-type value string.
@@ -187,6 +190,17 @@ public final class ResourceHelper {
     int len = value.length();
 
     if (len <= 0) {
+      return false;
+    }
+
+    // Limit the maximum float attribute string length to mitigate potential
+    // "Polynomial regular expression used on uncontrolled data" check severity
+    // from GitHub CodeQL.
+    if (len > 1000) {
+      Logger.info(
+          "Skip to parse attribute for float attribute, because it is too long. The attribute is "
+              + attribute
+              + ".");
       return false;
     }
 
