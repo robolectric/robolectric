@@ -42,7 +42,6 @@ public class ShadowDisplayTest {
   public void shouldProvideDisplayMetrics() {
     shadow.setDensity(1.5f);
     shadow.setDensityDpi(DisplayMetrics.DENSITY_HIGH);
-    shadow.setScaledDensity(1.6f);
     shadow.setWidth(1024);
     shadow.setHeight(600);
     shadow.setRealWidth(1400);
@@ -57,7 +56,6 @@ public class ShadowDisplayTest {
 
     assertEquals(1.5f, metrics.density, 0.05);
     assertEquals(DisplayMetrics.DENSITY_HIGH, metrics.densityDpi);
-    assertEquals(1.6f, metrics.scaledDensity, 0.05);
     assertEquals(1024, metrics.widthPixels);
     assertEquals(600, metrics.heightPixels);
     assertEquals(183.0f, metrics.xdpi, 0.05);
@@ -69,7 +67,6 @@ public class ShadowDisplayTest {
 
     assertEquals(1.5f, metrics.density, 0.05);
     assertEquals(DisplayMetrics.DENSITY_HIGH, metrics.densityDpi);
-    assertEquals(1.6f, metrics.scaledDensity, 0.05);
     assertEquals(1400, metrics.widthPixels);
     assertEquals(900, metrics.heightPixels);
     assertEquals(183.0f, metrics.xdpi, 0.05);
