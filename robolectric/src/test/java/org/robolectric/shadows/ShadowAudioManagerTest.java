@@ -380,6 +380,24 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
+  public void lockMode_locked_modeRemainsTheSame() {
+    shadowOf(audioManager).lockMode(true);
+
+    audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+    assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+  }
+
+  @Test
+  public void lockMode_notLocked_modeIsSet() {
+    shadowOf(audioManager).lockMode(false);
+
+    audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+    assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_IN_COMMUNICATION);
+  }
+
+  @Test
   public void isSpeakerphoneOn_shouldReturnSpeakerphoneState() {
     assertThat(audioManager.isSpeakerphoneOn()).isFalse();
     audioManager.setSpeakerphoneOn(true);
@@ -894,7 +912,29 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = S)
   public void setCommunicationDevice_updatesCommunicationDevice() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
-    shadowOf(audioManager).setCommunicationDevice(scoDevice);
+    audioManager.setCommunicationDevice(scoDevice);
+
+    assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void lockCommunicationDevice_locked_deviceIsNotSet() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+    shadowOf(audioManager).lockCommunicationDevice(true);
+
+    audioManager.setCommunicationDevice(scoDevice);
+
+    assertThat(audioManager.getCommunicationDevice()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void lockCommunicationDevice_notLocked_deviceIsSet() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+    shadowOf(audioManager).lockCommunicationDevice(false);
+
+    audioManager.setCommunicationDevice(scoDevice);
 
     assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
   }
@@ -903,10 +943,10 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = S)
   public void clearCommunicationDevice_clearsCommunicationDevice() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
-    shadowOf(audioManager).setCommunicationDevice(scoDevice);
+    audioManager.setCommunicationDevice(scoDevice);
     assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
 
-    shadowOf(audioManager).clearCommunicationDevice();
+    audioManager.clearCommunicationDevice();
     assertThat(audioManager.getCommunicationDevice()).isNull();
   }
 
