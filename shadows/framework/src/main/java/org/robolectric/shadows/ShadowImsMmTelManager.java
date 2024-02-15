@@ -4,6 +4,8 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
+import android.annotation.NonNull;
+import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.os.Build.VERSION_CODES;
@@ -17,8 +19,6 @@ import android.telephony.ims.RegistrationManager;
 import android.telephony.ims.feature.MmTelFeature.MmTelCapabilities;
 import android.telephony.ims.stub.ImsRegistrationImplBase;
 import android.util.ArrayMap;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;

@@ -2,13 +2,13 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.annotation.TargetApi;
 import android.hardware.location.ContextHubClient;
 import android.hardware.location.ContextHubInfo;
 import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.NanoAppMessage;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.RequiresApi;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;

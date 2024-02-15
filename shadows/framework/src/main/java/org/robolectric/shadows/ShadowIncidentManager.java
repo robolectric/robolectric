@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.R;
 
+import android.annotation.NonNull;
 import android.net.Uri;
 import android.os.IncidentManager;
 import android.os.IncidentManager.IncidentReport;
-import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

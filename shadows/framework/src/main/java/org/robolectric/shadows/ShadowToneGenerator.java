@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import android.media.ToneGenerator;
-import androidx.annotation.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting;
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import java.time.Duration;

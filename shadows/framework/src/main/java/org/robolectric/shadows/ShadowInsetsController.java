@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
+import android.annotation.RequiresApi;
 import android.os.Build;
 import android.view.InsetsController;
 import android.view.WindowInsets;
-import androidx.annotation.RequiresApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;

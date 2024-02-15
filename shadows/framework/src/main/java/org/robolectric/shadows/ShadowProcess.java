@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.base.Preconditions.checkArgument;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

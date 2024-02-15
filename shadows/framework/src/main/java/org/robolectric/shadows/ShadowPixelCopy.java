@@ -4,6 +4,8 @@ import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -18,8 +20,6 @@ import android.view.View;
 import android.view.ViewRootImpl;
 import android.view.Window;
 import android.view.WindowManagerGlobal;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import java.util.function.Consumer;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;

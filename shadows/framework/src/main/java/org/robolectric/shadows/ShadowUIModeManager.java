@@ -12,7 +12,7 @@ import android.content.res.Configuration;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.provider.Settings;
-import androidx.annotation.GuardedBy;
+import com.android.internal.annotations.GuardedBy;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashSet;
 import java.util.Set;

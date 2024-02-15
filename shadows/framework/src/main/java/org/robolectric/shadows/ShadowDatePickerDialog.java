@@ -7,10 +7,10 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
-import androidx.annotation.RequiresApi;
 import java.util.Calendar;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;

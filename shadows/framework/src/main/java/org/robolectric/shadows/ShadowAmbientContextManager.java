@@ -1,11 +1,11 @@
 package org.robolectric.shadows;
 
+import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.app.ambientcontext.AmbientContextEventRequest;
 import android.app.ambientcontext.AmbientContextManager;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.GuardedBy;
-import androidx.annotation.Nullable;
+import com.android.internal.annotations.GuardedBy;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;

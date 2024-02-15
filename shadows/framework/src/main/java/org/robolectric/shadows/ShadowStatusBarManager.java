@@ -6,7 +6,7 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.StatusBarManager;
-import androidx.annotation.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.reflector.Accessor;

@@ -9,6 +9,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static java.util.stream.Collectors.toCollection;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.ApplicationExitInfo;
@@ -24,7 +25,6 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.SparseIntArray;
-import androidx.annotation.RequiresApi;
 import com.google.common.base.Preconditions;
 import java.util.ArrayDeque;
 import java.util.ArrayList;

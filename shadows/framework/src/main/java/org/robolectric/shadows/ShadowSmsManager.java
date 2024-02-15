@@ -5,13 +5,13 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
+import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
-import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

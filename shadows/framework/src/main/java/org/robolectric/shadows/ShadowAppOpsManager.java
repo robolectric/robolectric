@@ -13,6 +13,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresApi;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.AppOpsManager;
@@ -32,7 +33,6 @@ import android.os.Build;
 import android.util.ArrayMap;
 import android.util.LongSparseArray;
 import android.util.LongSparseLongArray;
-import androidx.annotation.RequiresApi;
 import com.android.internal.app.IAppOpsService;
 import com.google.auto.value.AutoValue;
 import com.google.common.base.Preconditions;

@@ -2,12 +2,12 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.media.AudioDeviceInfo;
 import android.media.AudioProfile;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.SparseIntArray;
-import androidx.annotation.RequiresApi;
 import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.List;

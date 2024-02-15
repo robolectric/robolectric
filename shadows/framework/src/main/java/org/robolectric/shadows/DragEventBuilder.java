@@ -3,11 +3,11 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 
+import android.annotation.Nullable;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.view.DragEvent;
 import android.view.SurfaceControl;
-import androidx.annotation.Nullable;
 import com.android.internal.view.IDragAndDropPermissions;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.ReflectionHelpers;

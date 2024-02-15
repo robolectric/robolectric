@@ -4,10 +4,10 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.Window;
-import androidx.annotation.RequiresApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;

@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
+import android.annotation.RequiresApi;
 import android.net.NetworkSpecifier;
 import android.net.StringNetworkSpecifier;
 import android.os.Build;
-import androidx.annotation.RequiresApi;
 
 /** Factory to create {@link NetworkSpecifier} types that are hidden on certain SDK levels. */
 @RequiresApi(Build.VERSION_CODES.O)

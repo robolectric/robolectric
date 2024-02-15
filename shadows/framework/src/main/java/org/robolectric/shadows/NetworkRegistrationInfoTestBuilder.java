@@ -4,12 +4,12 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.os.Build.VERSION;
 import android.telephony.CellIdentity;
 import android.telephony.DataSpecificRegistrationInfo;
 import android.telephony.NetworkRegistrationInfo;
 import android.telephony.VoiceSpecificRegistrationInfo;
-import androidx.annotation.RequiresApi;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.reflector.Accessor;

@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
+import android.annotation.RequiresApi;
 import android.hardware.camera2.params.DeviceStateSensorOrientationMap;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 
 /** Builder for {@link DeviceStateSensorOrientationMap} which was introduced in Android T. */

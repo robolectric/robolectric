@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.app.backup.BackupDataOutput;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.RequiresApi;
 import java.io.FileDescriptor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;

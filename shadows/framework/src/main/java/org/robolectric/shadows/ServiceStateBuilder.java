@@ -5,10 +5,10 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.os.Build.VERSION;
 import android.telephony.NetworkRegistrationInfo;
 import android.telephony.ServiceState;
-import androidx.annotation.RequiresApi;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.util.reflector.Accessor;

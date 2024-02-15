@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.RequiresApi;
 import android.os.Build;
 import android.telephony.CellInfo;
 import android.telephony.CellSignalStrengthNr;
-import androidx.annotation.RequiresApi;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;

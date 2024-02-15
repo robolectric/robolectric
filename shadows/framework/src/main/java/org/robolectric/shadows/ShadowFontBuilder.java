@@ -4,10 +4,10 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 
+import android.annotation.RequiresApi;
 import android.content.res.AssetManager;
 import android.graphics.fonts.Font;
 import android.graphics.fonts.FontStyle;
-import androidx.annotation.RequiresApi;
 import com.google.common.base.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
