@@ -493,7 +493,6 @@ public class ShadowDisplayManagerTest {
   }
 
   @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
   public void configureDefaultDisplay_calledTwice_showsReasonableException() {
     IllegalStateException e =
         Assert.assertThrows(
