@@ -1,5 +1,5 @@
 [versions]
-robolectric-nativeruntime-dist-compat = "1.0.7"
+robolectric-nativeruntime-dist-compat = "1.0.8"
 
 # https://developer.android.com/studio/releases
 android-gradle = "8.2.2"
@@ -60,7 +60,7 @@ guava-jre = "31.1-jre"
 gson = "2.10.1"
 
 # https://github.com/google/truth/releases
-truth = "1.1.5"
+truth = "1.4.0"
 
 # https://github.com/unicode-org/icu/releases
 icu4j = "74.2"

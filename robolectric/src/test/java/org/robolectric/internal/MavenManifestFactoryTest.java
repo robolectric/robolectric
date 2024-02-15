@@ -1,7 +1,6 @@
 package org.robolectric.internal;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,14 +22,16 @@ public class MavenManifestFactoryTest {
     myMavenManifestFactory = new MyMavenManifestFactory();
   }
 
-  @Test public void identify() throws Exception {
+  @Test
+  public void identify() throws Exception {
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
     assertThat(manifestIdentifier.getManifestFile())
         .isEqualTo(Paths.get("_fakefs_path").resolve("to").resolve("DifferentManifest.xml"));
     assertThat(manifestIdentifier.getResDir()).isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
-  @Test public void withDotSlashManifest_identify() throws Exception {
+  @Test
+  public void withDotSlashManifest_identify() throws Exception {
     configBuilder.setManifest("./DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());
@@ -40,7 +41,8 @@ public class MavenManifestFactoryTest {
         .isEqualTo(Paths.get("_fakefs_path/to/res"));
   }
 
-  @Test public void withDotDotSlashManifest_identify() throws Exception {
+  @Test
+  public void withDotDotSlashManifest_identify() throws Exception {
     configBuilder.setManifest("../DifferentManifest.xml");
 
     ManifestIdentifier manifestIdentifier = myMavenManifestFactory.identify(configBuilder.build());

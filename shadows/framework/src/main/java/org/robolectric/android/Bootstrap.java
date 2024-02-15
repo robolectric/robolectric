@@ -16,6 +16,20 @@ public class Bootstrap {
   /** internal only */
   public static boolean displaySet = false;
 
+  public static Configuration getConfiguration() {
+    if (displayResources != null) {
+      return displayResources.getConfiguration();
+    }
+    return Bootstrap.configuration;
+  }
+
+  public static DisplayMetrics getDisplayMetrics() {
+    if (displayResources != null) {
+      return displayResources.getDisplayMetrics();
+    }
+    return Bootstrap.displayMetrics;
+  }
+
   /** internal only */
   public static void setDisplayConfiguration(
       Configuration configuration, DisplayMetrics displayMetrics) {
@@ -40,16 +54,6 @@ public class Bootstrap {
               AssetManager.getSystem(), Bootstrap.displayMetrics, Bootstrap.configuration);
     }
     displayResources.updateConfiguration(configuration, displayMetrics);
-  }
-
-  /** internal only */
-  public static void updateConfiguration(Resources resources) {
-    if (displayResources == null) {
-      resources.updateConfiguration(Bootstrap.configuration, Bootstrap.displayMetrics);
-    } else {
-      resources.updateConfiguration(
-          displayResources.getConfiguration(), displayResources.getDisplayMetrics());
-    }
   }
 
   /** internal only */

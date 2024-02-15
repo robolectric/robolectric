@@ -5,10 +5,12 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import android.util.Log;
+import android.util.Log.TerribleFailure;
+import android.util.Log.TerribleFailureHandler;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Iterables;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +18,9 @@ import java.io.PrintStream;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLog.LogItem;
+import org.robolectric.versioning.AndroidVersions.L;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowLogTest {
@@ -129,12 +133,32 @@ public class ShadowLogTest {
     ShadowLog.setWtfIsFatal(true);
 
     Throwable throwable = new Throwable();
-    try {
-      Log.wtf("tag", "msg", throwable);
-      fail("TerribleFailure should be thrown");
-    } catch (ShadowLog.TerribleFailure e) {
-      // pass
-    }
+    assertThrows(TerribleFailure.class, () -> Log.wtf("tag", "msg", throwable));
+    assertLogged(Log.ASSERT, "tag", "msg", throwable);
+  }
+
+  @Test
+  @Config(minSdk = L.SDK_INT)
+  public void wtf_shouldLogAppropriately_withNewWtfHandler() {
+    Throwable throwable = new Throwable();
+
+    String[] captured = new String[1];
+
+    TerribleFailureHandler prevWtfHandler =
+        Log.setWtfHandler(
+            new TerribleFailureHandler() {
+              @Override
+              public void onTerribleFailure(String tag, TerribleFailure what, boolean system) {
+                captured[0] = what.getMessage();
+              }
+            });
+
+    Log.wtf("tag", "msg", throwable);
+    // assert that the new handler captures the message
+    assertEquals("msg", captured[0]);
+    // reset the handler
+    Log.setWtfHandler(prevWtfHandler);
+
     assertLogged(Log.ASSERT, "tag", "msg", throwable);
   }
 

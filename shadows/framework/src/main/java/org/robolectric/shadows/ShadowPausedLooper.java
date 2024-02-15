@@ -13,6 +13,7 @@ import android.os.Message;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import android.util.Log;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -78,7 +79,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
     invokeConstructor(Looper.class, realLooper, from(boolean.class, quitAllowed));
 
     loopingLoopers.add(realLooper);
-    looperExecutor = new HandlerExecutor(new Handler(realLooper));
+    looperExecutor = new HandlerExecutor(realLooper);
   }
 
   protected static Collection<Looper> getLoopers() {
@@ -358,7 +359,8 @@ public final class ShadowPausedLooper extends ShadowLooper {
     }
   }
 
-  private synchronized void resetLooperToInitialState() {
+  @VisibleForTesting
+  synchronized void resetLooperToInitialState() {
     // Do not use looperMode() here, because its cached value might already have been reset
     LooperMode.Mode looperMode = ConfigurationRegistry.get(LooperMode.Mode.class);
 
@@ -366,12 +368,14 @@ public final class ShadowPausedLooper extends ShadowLooper {
     shadowQueue.reset();
 
     boolean canBeUnpaused =
-        !(realLooper == Looper.getMainLooper()
-            && looperMode != LooperMode.Mode.INSTRUMENTATION_TEST);
-    if (canBeUnpaused && realLooper.getThread().isAlive()) {
-      if (isPaused()) {
-        unPause();
-      }
+        isPaused()
+            && !(realLooper == Looper.getMainLooper()
+                && looperMode != LooperMode.Mode.INSTRUMENTATION_TEST)
+            && realLooper.getThread().isAlive()
+            && !shadowQueue
+                .isQuitting(); // Trying to unpause a quitted background Looper may deadlock.
+    if (canBeUnpaused) {
+      unPause();
     }
   }
 
@@ -619,6 +623,7 @@ public final class ShadowPausedLooper extends ShadowLooper {
 
   /** Executes the given runnable on the loopers thread, and waits for it to complete. */
   private void executeOnLooper(ControlRunnable runnable) {
+    checkState(!shadowQueue().isQuitting(), "Looper is quitting");
     if (Thread.currentThread() == realLooper.getThread()) {
       if (runnable instanceof UnPauseRunnable) {
         // Need to trigger the unpause action in PausedLooperExecutor
@@ -681,16 +686,27 @@ public final class ShadowPausedLooper extends ShadowLooper {
   private class UnPauseRunnable extends ControlRunnable {
     @Override
     public void doRun() {
-      setLooperExecutor(new HandlerExecutor(new Handler(realLooper)));
+      setLooperExecutor(new HandlerExecutor(realLooper));
       isPaused = false;
+    }
+  }
+
+  static Handler createAsyncHandler(Looper looper) {
+    if (RuntimeEnvironment.getApiLevel() >= 28) {
+      // createAsync is only available in API 28+
+      return Handler.createAsync(looper);
+    } else {
+      return new Handler(looper, null, true);
     }
   }
 
   private static class HandlerExecutor implements Executor {
     private final Handler handler;
 
-    private HandlerExecutor(Handler handler) {
-      this.handler = handler;
+    private HandlerExecutor(Looper looper) {
+      // always post async messages so ControlRunnables get processed even if Looper is blocked on a
+      // sync barrier
+      this.handler = createAsyncHandler(looper);
     }
 
     @Override

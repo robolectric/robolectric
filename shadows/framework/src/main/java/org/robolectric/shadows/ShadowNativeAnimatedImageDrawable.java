@@ -15,11 +15,16 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.AnimatedImageDrawableNatives;
 import org.robolectric.shadows.ShadowNativeAnimatedImageDrawable.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link AnimatedImageDrawable} that is backed by native code */
-@Implements(value = AnimatedImageDrawable.class, shadowPicker = Picker.class, minSdk = P)
+@Implements(
+    value = AnimatedImageDrawable.class,
+    shadowPicker = Picker.class,
+    minSdk = P,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeAnimatedImageDrawable extends ShadowDrawable {
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static long nCreate(
       long nativeImageDecoder,
       ImageDecoder decoder,
@@ -40,52 +45,52 @@ public class ShadowNativeAnimatedImageDrawable extends ShadowDrawable {
     return nCreate(nativeImageDecoder, decoder, width, height, 0, false, cropRect);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nGetNativeFinalizer() {
     return AnimatedImageDrawableNatives.nGetNativeFinalizer();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nDraw(long nativePtr, long canvasNativePtr) {
     return AnimatedImageDrawableNatives.nDraw(nativePtr, canvasNativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetAlpha(long nativePtr, int alpha) {
     AnimatedImageDrawableNatives.nSetAlpha(nativePtr, alpha);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetAlpha(long nativePtr) {
     return AnimatedImageDrawableNatives.nGetAlpha(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetColorFilter(long nativePtr, long nativeFilter) {
     AnimatedImageDrawableNatives.nSetColorFilter(nativePtr, nativeFilter);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nIsRunning(long nativePtr) {
     return AnimatedImageDrawableNatives.nIsRunning(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nStart(long nativePtr) {
     return AnimatedImageDrawableNatives.nStart(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nStop(long nativePtr) {
     return AnimatedImageDrawableNatives.nStop(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetRepeatCount(long nativePtr) {
     return AnimatedImageDrawableNatives.nGetRepeatCount(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetRepeatCount(long nativePtr, int repeatCount) {
     AnimatedImageDrawableNatives.nSetRepeatCount(nativePtr, repeatCount);
   }
@@ -95,23 +100,23 @@ public class ShadowNativeAnimatedImageDrawable extends ShadowDrawable {
     AnimatedImageDrawableNatives.nSetOnAnimationEndListener(nativePtr, drawable);
   }
 
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   protected static void nSetOnAnimationEndListener(
       long nativePtr, WeakReference<AnimatedImageDrawable> drawable) {
     AnimatedImageDrawableNatives.nSetOnAnimationEndListener(nativePtr, drawable.get());
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nNativeByteSize(long nativePtr) {
     return AnimatedImageDrawableNatives.nNativeByteSize(nativePtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetMirrored(long nativePtr, boolean mirror) {
     AnimatedImageDrawableNatives.nSetMirrored(nativePtr, mirror);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetBounds(long nativePtr, Rect rect) {
     AnimatedImageDrawableNatives.nSetBounds(nativePtr, rect);
   }

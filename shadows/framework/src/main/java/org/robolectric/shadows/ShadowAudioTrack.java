@@ -16,12 +16,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.RequiresApi;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
+import android.media.AudioRouting.OnRoutingChangedListener;
 import android.media.AudioTrack;
 import android.media.AudioTrack.WriteMode;
 import android.media.PlaybackParams;
 import android.os.Build.VERSION;
+import android.os.Handler;
 import android.os.Parcel;
 import android.util.Log;
 import com.google.common.collect.HashMultimap;
@@ -31,8 +36,10 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -80,6 +87,9 @@ public class ShadowAudioTrack {
   private static final Set<Integer> allowedNonPcmEncodings =
       Collections.synchronizedSet(new HashSet<>());
 
+  private static AudioDeviceInfo routedDevice;
+  private static final Set<OnRoutingChangedListenerInfo> onRoutingChangedListeners =
+      new CopyOnWriteArraySet<>();
   private static final List<OnAudioDataWrittenListener> audioDataWrittenListeners =
       new CopyOnWriteArrayList<>();
   private static int minBufferSize = DEFAULT_MIN_BUFFER_SIZE;
@@ -151,6 +161,25 @@ public class ShadowAudioTrack {
   /** Clears all encodings that have been added with {@link #addAllowedNonPcmEncoding(int)}. */
   public static void clearAllowedNonPcmEncodings() {
     allowedNonPcmEncodings.clear();
+  }
+
+  /**
+   * Sets the routed device returned from {@link AudioTrack#getRoutedDevice()} and informs all
+   * registered {@link OnRoutingChangedListener}.
+   *
+   * <p>Note that this affects the routed device for all {@link AudioTrack} instances.
+   *
+   * @param routedDevice The route device, or null to reset it to unknown.
+   */
+  @RequiresApi(N)
+  public static void setRoutedDevice(@Nullable AudioDeviceInfo routedDevice) {
+    if (Objects.equals(routedDevice, ShadowAudioTrack.routedDevice)) {
+      return;
+    }
+    ShadowAudioTrack.routedDevice = routedDevice;
+    for (OnRoutingChangedListenerInfo listenerInfo : onRoutingChangedListeners) {
+      listenerInfo.callListener();
+    }
   }
 
   @Implementation(minSdk = N, maxSdk = P)
@@ -289,6 +318,28 @@ public class ShadowAudioTrack {
     return sizeInBytes;
   }
 
+  @Implementation(minSdk = N)
+  protected AudioDeviceInfo getRoutedDevice() {
+    return routedDevice;
+  }
+
+  @Implementation(minSdk = N)
+  protected void addOnRoutingChangedListener(
+      @NonNull OnRoutingChangedListener listener, Handler handler) {
+    OnRoutingChangedListenerInfo listenerInfo =
+        new OnRoutingChangedListenerInfo(listener, audioTrack, handler);
+    onRoutingChangedListeners.add(listenerInfo);
+    if (routedDevice != null) {
+      listenerInfo.callListener();
+    }
+  }
+
+  @Implementation(minSdk = N)
+  protected void removeOnRoutingChangedListener(@NonNull OnRoutingChangedListener listener) {
+    onRoutingChangedListeners.removeIf(
+        registeredListener -> registeredListener.listener.equals(listener));
+  }
+
   @Implementation(minSdk = M)
   public void setPlaybackParams(@NonNull PlaybackParams params) {
     playbackParams = checkNotNull(params, "Illegal null params");
@@ -369,6 +420,7 @@ public class ShadowAudioTrack {
     audioDataWrittenListeners.clear();
     clearDirectPlaybackSupportedFormats();
     clearAllowedNonPcmEncodings();
+    routedDevice = null;
   }
 
   private static boolean isPcm(int encoding) {
@@ -464,6 +516,23 @@ public class ShadowAudioTrack {
       result = 31 * result + usage;
       result = 31 * result + flags;
       return result;
+    }
+  }
+
+  private static final class OnRoutingChangedListenerInfo {
+    private final OnRoutingChangedListener listener;
+    private final AudioTrack audioTrack;
+    private final Handler handler;
+
+    public OnRoutingChangedListenerInfo(
+        OnRoutingChangedListener listener, AudioTrack audioTrack, Handler handler) {
+      this.listener = listener;
+      this.audioTrack = audioTrack;
+      this.handler = handler;
+    }
+
+    public void callListener() {
+      handler.post(() -> listener.onRoutingChanged(audioTrack));
     }
   }
 }

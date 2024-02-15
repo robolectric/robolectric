@@ -13,19 +13,21 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.HardwareRendererObserverNatives;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowNativeHardwareRendererObserver.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link HardwareRendererObserver} that is backed by native code */
 @Implements(
     value = HardwareRendererObserver.class,
     minSdk = R,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false)
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeHardwareRendererObserver {
 
   public HardwareRendererObserverNatives hardwareRendererObserverNatives =
       new HardwareRendererObserverNatives();
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetNextBuffer(long nativePtr, long[] data) {
     return HardwareRendererObserverNatives.nGetNextBuffer(nativePtr, data);
   }
@@ -41,7 +43,7 @@ public class ShadowNativeHardwareRendererObserver {
     return hardwareRendererObserverNatives.nCreateObserver(waitForPresentTime);
   }
 
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   protected static long nCreateObserver(
       WeakReference<HardwareRendererObserver> observer, boolean waitForPresentTime) {
     HardwareRendererObserver hardwareRendererObserver = observer.get();

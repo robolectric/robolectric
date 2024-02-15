@@ -75,8 +75,7 @@ public class DefaultNativeRuntimeLoader implements NativeRuntimeLoader {
               "loadNativeRuntime",
               () -> {
                 extractDirectory = new TempDirectory("nativeruntime");
-                System.setProperty(
-                    "robolectric.nativeruntime.languageTag", Locale.getDefault().toLanguageTag());
+                System.setProperty("icu.locale.default", Locale.getDefault().toLanguageTag());
                 if (Build.VERSION.SDK_INT >= O) {
                   maybeCopyFonts(extractDirectory);
                 }

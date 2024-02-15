@@ -1,8 +1,10 @@
 package org.robolectric.shadows;
 
+
 import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import android.util.ArraySet;
+import com.google.common.annotations.VisibleForTesting;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +15,7 @@ import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.String8;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
@@ -48,6 +51,9 @@ abstract public class ShadowAssetManager {
 
   abstract Collection<Path> getAllAssetDirs();
 
+  @VisibleForTesting
+  abstract long getNativePtr();
+
   public abstract static class ArscBase extends ShadowAssetManager {
     private ResTable compileTimeResTable;
 
@@ -78,12 +84,16 @@ abstract public class ShadowAssetManager {
   /** Accessor interface for {@link AssetManager}'s internals. */
   @ForType(AssetManager.class)
   interface _AssetManager_ {
-
-    @Static @Accessor("sSystem")
+    @Direct
+    @Static
     AssetManager getSystem();
 
-    @Static @Accessor("sSystem")
+    @Static
+    @Accessor("sSystem")
     void setSystem(AssetManager o);
+
+    @Accessor("mObject")
+    long getNativePtr();
   }
 
   /** Accessor interface for {@link AssetManager}'s internals added in API level 28. */

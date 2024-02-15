@@ -51,6 +51,7 @@ public class ShadowWallpaperManager {
   private int homeScreenId;
 
   private float wallpaperDimAmount = 0.0f;
+  private final ArrayList<Float> allWallpaperDimAmounts = new ArrayList<>();
 
   @Implementation
   protected void sendWallpaperCommand(
@@ -239,6 +240,15 @@ public class ShadowWallpaperManager {
   @Implementation(minSdk = TIRAMISU)
   protected void setWallpaperDimAmount(@FloatRange(from = 0f, to = 1f) float dimAmount) {
     wallpaperDimAmount = MathUtils.saturate(dimAmount);
+    allWallpaperDimAmounts.add(dimAmount);
+  }
+
+  /**
+   * Returns a list of all dim amounts set from calls to setWallpaperDimAmount. This can be used to
+   * verify that repeated calls to setWallpaperDimAmount are not done which can cause issues.
+   */
+  public List<Float> getAllWallpaperDimAmounts() {
+    return Collections.unmodifiableList(allWallpaperDimAmounts);
   }
 
   @Implementation(minSdk = TIRAMISU)

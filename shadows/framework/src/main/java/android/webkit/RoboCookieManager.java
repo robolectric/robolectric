@@ -1,8 +1,8 @@
 package android.webkit;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -242,8 +242,8 @@ public class RoboCookieManager extends CookieManager {
     }
 
     try {
-      return new URI(url).getHost();
-    } catch (URISyntaxException e) {
+      return new URL(url).getHost();
+    } catch (MalformedURLException e) {
       throw new IllegalArgumentException("wrong URL : " + url, e);
     }
   }

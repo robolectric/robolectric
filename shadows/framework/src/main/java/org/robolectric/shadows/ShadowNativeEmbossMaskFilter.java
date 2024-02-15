@@ -8,12 +8,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.EmbossMaskFilterNatives;
 import org.robolectric.shadows.ShadowNativeEmbossMaskFilter.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link EmbossMaskFilter} that is backed by native code */
-@Implements(value = EmbossMaskFilter.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = EmbossMaskFilter.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeEmbossMaskFilter {
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeConstructor(
       float[] direction, float ambient, float specular, float blurRadius) {
     DefaultNativeRuntimeLoader.injectAndLoad();

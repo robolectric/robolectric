@@ -6,24 +6,29 @@ import static android.os.Build.VERSION_CODES.Q;
 import android.graphics.ColorSpace;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.nativeruntime.ColorSpaceRgbNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeColorSpaceRgb.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link ColorSpace.Rgb} that is backed by native code */
 @Implements(
     value = ColorSpace.Rgb.class,
     minSdk = O,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false)
-public class ShadowNativeColorSpaceRgb {
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
+public class ShadowNativeColorSpaceRgb extends ShadowNativeColorSpace {
 
-  @Implementation(minSdk = Q)
+  @RealObject ColorSpace.Rgb colorSpaceRgb;
+
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static long nativeGetNativeFinalizer() {
     return ColorSpaceRgbNatives.nativeGetNativeFinalizer();
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static long nativeCreate(
       float a, float b, float c, float d, float e, float f, float g, float[] xyz) {
     DefaultNativeRuntimeLoader.injectAndLoad();

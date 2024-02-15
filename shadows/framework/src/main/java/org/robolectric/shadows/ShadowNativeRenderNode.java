@@ -8,37 +8,43 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.graphics.RenderNode;
 import android.graphics.RenderNode.PositionUpdateListener;
+import java.lang.ref.WeakReference;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.RenderNodeNatives;
 import org.robolectric.shadows.ShadowNativeRenderNode.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link RenderNode} that is backed by native code */
-@Implements(value = RenderNode.class, minSdk = Q, shadowPicker = Picker.class)
+@Implements(
+    value = RenderNode.class,
+    minSdk = Q,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeRenderNode {
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nCreate(String name) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return RenderNodeNatives.nCreate(name);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nGetNativeFinalizer() {
     return RenderNodeNatives.nGetNativeFinalizer();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nOutput(long renderNode) {
     RenderNodeNatives.nOutput(renderNode);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static int nGetUsageSize(long renderNode) {
     return RenderNodeNatives.nGetUsageSize(renderNode);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static int nGetAllocatedSize(long renderNode) {
     return RenderNodeNatives.nGetAllocatedSize(renderNode);
   }
@@ -48,429 +54,446 @@ public class ShadowNativeRenderNode {
     RenderNodeNatives.nRequestPositionUpdates(renderNode, callback);
   }
 
-  @Implementation
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  protected static void nRequestPositionUpdates(
+      long renderNode, WeakReference<PositionUpdateListener> callback) {
+    nRequestPositionUpdates(renderNode, callback.get());
+  }
+
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nAddAnimator(long renderNode, long animatorPtr) {
     RenderNodeNatives.nAddAnimator(renderNode, animatorPtr);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nEndAllAnimators(long renderNode) {
     RenderNodeNatives.nEndAllAnimators(renderNode);
   }
 
-  @Implementation(minSdk = TIRAMISU)
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   protected static void nForceEndAnimators(long renderNode) {
     RenderNodeNatives.nForceEndAnimators(renderNode);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nDiscardDisplayList(long renderNode) {
     RenderNodeNatives.nDiscardDisplayList(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nIsValid(long renderNode) {
     return RenderNodeNatives.nIsValid(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nGetTransformMatrix(long renderNode, long nativeMatrix) {
     RenderNodeNatives.nGetTransformMatrix(renderNode, nativeMatrix);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nGetInverseTransformMatrix(long renderNode, long nativeMatrix) {
     RenderNodeNatives.nGetInverseTransformMatrix(renderNode, nativeMatrix);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nHasIdentityMatrix(long renderNode) {
     return RenderNodeNatives.nHasIdentityMatrix(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nOffsetTopAndBottom(long renderNode, int offset) {
     return RenderNodeNatives.nOffsetTopAndBottom(renderNode, offset);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nOffsetLeftAndRight(long renderNode, int offset) {
     return RenderNodeNatives.nOffsetLeftAndRight(renderNode, offset);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetLeftTopRightBottom(
       long renderNode, int left, int top, int right, int bottom) {
     return RenderNodeNatives.nSetLeftTopRightBottom(renderNode, left, top, right, bottom);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetLeft(long renderNode, int left) {
     return RenderNodeNatives.nSetLeft(renderNode, left);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetTop(long renderNode, int top) {
     return RenderNodeNatives.nSetTop(renderNode, top);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetRight(long renderNode, int right) {
     return RenderNodeNatives.nSetRight(renderNode, right);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetBottom(long renderNode, int bottom) {
     return RenderNodeNatives.nSetBottom(renderNode, bottom);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetLeft(long renderNode) {
     return RenderNodeNatives.nGetLeft(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetTop(long renderNode) {
     return RenderNodeNatives.nGetTop(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetRight(long renderNode) {
     return RenderNodeNatives.nGetRight(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetBottom(long renderNode) {
     return RenderNodeNatives.nGetBottom(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetCameraDistance(long renderNode, float distance) {
     return RenderNodeNatives.nSetCameraDistance(renderNode, distance);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetPivotY(long renderNode, float pivotY) {
     return RenderNodeNatives.nSetPivotY(renderNode, pivotY);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetPivotX(long renderNode, float pivotX) {
     return RenderNodeNatives.nSetPivotX(renderNode, pivotX);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nResetPivot(long renderNode) {
     return RenderNodeNatives.nResetPivot(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetLayerType(long renderNode, int layerType) {
     return RenderNodeNatives.nSetLayerType(renderNode, layerType);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetLayerType(long renderNode) {
     return RenderNodeNatives.nGetLayerType(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetLayerPaint(long renderNode, long paint) {
     return RenderNodeNatives.nSetLayerPaint(renderNode, paint);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetClipToBounds(long renderNode, boolean clipToBounds) {
     return RenderNodeNatives.nSetClipToBounds(renderNode, clipToBounds);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nGetClipToBounds(long renderNode) {
     return RenderNodeNatives.nGetClipToBounds(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetClipBounds(
       long renderNode, int left, int top, int right, int bottom) {
     return RenderNodeNatives.nSetClipBounds(renderNode, left, top, right, bottom);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetClipBoundsEmpty(long renderNode) {
     return RenderNodeNatives.nSetClipBoundsEmpty(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetProjectBackwards(long renderNode, boolean shouldProject) {
     return RenderNodeNatives.nSetProjectBackwards(renderNode, shouldProject);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetProjectionReceiver(long renderNode, boolean shouldReceive) {
     return RenderNodeNatives.nSetProjectionReceiver(renderNode, shouldReceive);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetOutlineRoundRect(
       long renderNode, int left, int top, int right, int bottom, float radius, float alpha) {
     return RenderNodeNatives.nSetOutlineRoundRect(
         renderNode, left, top, right, bottom, radius, alpha);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static boolean nSetOutlinePath(long renderNode, long nativePath, float alpha) {
     return RenderNodeNatives.nSetOutlinePath(renderNode, nativePath, alpha);
   }
 
-  @Implementation
+  @Implementation(maxSdk = Q)
+  protected static boolean nSetOutlineConvexPath(long renderNode, long nativePath, float alpha) {
+    return nSetOutlinePath(renderNode, nativePath, alpha);
+  }
+
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetOutlineEmpty(long renderNode) {
     return RenderNodeNatives.nSetOutlineEmpty(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetOutlineNone(long renderNode) {
     return RenderNodeNatives.nSetOutlineNone(renderNode);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static boolean nClearStretch(long renderNode) {
     return RenderNodeNatives.nClearStretch(renderNode);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static boolean nStretch(
       long renderNode, float vecX, float vecY, float maxStretchX, float maxStretchY) {
     return RenderNodeNatives.nStretch(renderNode, vecX, vecY, maxStretchX, maxStretchY);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nHasShadow(long renderNode) {
     return RenderNodeNatives.nHasShadow(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetSpotShadowColor(long renderNode, int color) {
     return RenderNodeNatives.nSetSpotShadowColor(renderNode, color);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetAmbientShadowColor(long renderNode, int color) {
     return RenderNodeNatives.nSetAmbientShadowColor(renderNode, color);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetSpotShadowColor(long renderNode) {
     return RenderNodeNatives.nGetSpotShadowColor(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetAmbientShadowColor(long renderNode) {
     return RenderNodeNatives.nGetAmbientShadowColor(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetClipToOutline(long renderNode, boolean clipToOutline) {
     return RenderNodeNatives.nSetClipToOutline(renderNode, clipToOutline);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetRevealClip(
       long renderNode, boolean shouldClip, float x, float y, float radius) {
     return RenderNodeNatives.nSetRevealClip(renderNode, shouldClip, x, y, radius);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetAlpha(long renderNode, float alpha) {
     return RenderNodeNatives.nSetAlpha(renderNode, alpha);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static boolean nSetRenderEffect(long renderNode, long renderEffect) {
     return RenderNodeNatives.nSetRenderEffect(renderNode, renderEffect);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetHasOverlappingRendering(
       long renderNode, boolean hasOverlappingRendering) {
     return RenderNodeNatives.nSetHasOverlappingRendering(renderNode, hasOverlappingRendering);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetUsageHint(long renderNode, int usageHint) {
     RenderNodeNatives.nSetUsageHint(renderNode, usageHint);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetElevation(long renderNode, float lift) {
     return RenderNodeNatives.nSetElevation(renderNode, lift);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetTranslationX(long renderNode, float translationX) {
     return RenderNodeNatives.nSetTranslationX(renderNode, translationX);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetTranslationY(long renderNode, float translationY) {
     return RenderNodeNatives.nSetTranslationY(renderNode, translationY);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetTranslationZ(long renderNode, float translationZ) {
     return RenderNodeNatives.nSetTranslationZ(renderNode, translationZ);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetRotation(long renderNode, float rotation) {
     return RenderNodeNatives.nSetRotation(renderNode, rotation);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetRotationX(long renderNode, float rotationX) {
     return RenderNodeNatives.nSetRotationX(renderNode, rotationX);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetRotationY(long renderNode, float rotationY) {
     return RenderNodeNatives.nSetRotationY(renderNode, rotationY);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetScaleX(long renderNode, float scaleX) {
     return RenderNodeNatives.nSetScaleX(renderNode, scaleX);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetScaleY(long renderNode, float scaleY) {
     return RenderNodeNatives.nSetScaleY(renderNode, scaleY);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetStaticMatrix(long renderNode, long nativeMatrix) {
     return RenderNodeNatives.nSetStaticMatrix(renderNode, nativeMatrix);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetAnimationMatrix(long renderNode, long animationMatrix) {
     return RenderNodeNatives.nSetAnimationMatrix(renderNode, animationMatrix);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nHasOverlappingRendering(long renderNode) {
     return RenderNodeNatives.nHasOverlappingRendering(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nGetAnimationMatrix(long renderNode, long animationMatrix) {
     return RenderNodeNatives.nGetAnimationMatrix(renderNode, animationMatrix);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nGetClipToOutline(long renderNode) {
     return RenderNodeNatives.nGetClipToOutline(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetAlpha(long renderNode) {
     return RenderNodeNatives.nGetAlpha(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetCameraDistance(long renderNode) {
     return RenderNodeNatives.nGetCameraDistance(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetScaleX(long renderNode) {
     return RenderNodeNatives.nGetScaleX(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetScaleY(long renderNode) {
     return RenderNodeNatives.nGetScaleY(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetElevation(long renderNode) {
     return RenderNodeNatives.nGetElevation(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetTranslationX(long renderNode) {
     return RenderNodeNatives.nGetTranslationX(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetTranslationY(long renderNode) {
     return RenderNodeNatives.nGetTranslationY(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetTranslationZ(long renderNode) {
     return RenderNodeNatives.nGetTranslationZ(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetRotation(long renderNode) {
     return RenderNodeNatives.nGetRotation(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetRotationX(long renderNode) {
     return RenderNodeNatives.nGetRotationX(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetRotationY(long renderNode) {
     return RenderNodeNatives.nGetRotationY(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nIsPivotExplicitlySet(long renderNode) {
     return RenderNodeNatives.nIsPivotExplicitlySet(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetPivotX(long renderNode) {
     return RenderNodeNatives.nGetPivotX(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static float nGetPivotY(long renderNode) {
     return RenderNodeNatives.nGetPivotY(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetWidth(long renderNode) {
     return RenderNodeNatives.nGetWidth(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetHeight(long renderNode) {
     return RenderNodeNatives.nGetHeight(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nSetAllowForceDark(long renderNode, boolean allowForceDark) {
     return RenderNodeNatives.nSetAllowForceDark(renderNode, allowForceDark);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nGetAllowForceDark(long renderNode) {
     return RenderNodeNatives.nGetAllowForceDark(renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nGetUniqueId(long renderNode) {
     return RenderNodeNatives.nGetUniqueId(renderNode);
   }
 
   @Implementation(minSdk = Q, maxSdk = R)
   protected static void nSetDisplayList(long renderNode, long newData) {
-    // No-op in Q and R
-    // In S and above, the functionality of nSetDisplayList is a part of
-    // RecordingCanvas.finishRecording (which gets called just prior to this). So this method is a
-    // no-op.
+    // No-op
+    // In Q and R, ending recording was a two-part operation, one part is calling
+    // RecordingCanvas.finishRecording (which returned a long displayList),
+    // and then calling RenderNode.nSetDisplayList with that result. However, in S, these
+    // were combined into one, and all that is needed is to call RecordingCanvas.finishRecording.
+  }
+
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static void nSetIsTextureView(long renderNode) {
+    // no-op
   }
 
   /** Shadow picker for {@link RenderNode}. */

@@ -553,6 +553,16 @@ public class ShadowWallpaperManagerTest {
         .isEqualTo(testImageBytes);
   }
 
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void getAllWallpaperDimAmounts_returnsFullListOfAllDimAmountsSet() {
+    assertThat(shadowOf(manager).getAllWallpaperDimAmounts()).isEmpty();
+    manager.setWallpaperDimAmount(0.5f);
+    assertThat(shadowOf(manager).getAllWallpaperDimAmounts()).containsExactly(0.5f);
+    manager.setWallpaperDimAmount(0f);
+    assertThat(shadowOf(manager).getAllWallpaperDimAmounts()).containsExactly(0.5f, 0f);
+  }
+
   private static byte[] getBytesFromFileDescriptor(FileDescriptor fileDescriptor)
       throws IOException {
     InputStream inputStream = new FileInputStream(fileDescriptor);

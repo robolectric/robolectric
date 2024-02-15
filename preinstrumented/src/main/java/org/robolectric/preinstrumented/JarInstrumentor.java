@@ -20,7 +20,6 @@ import org.robolectric.internal.bytecode.ClassInstrumentor;
 import org.robolectric.internal.bytecode.ClassNodeProvider;
 import org.robolectric.internal.bytecode.InstrumentationConfiguration;
 import org.robolectric.internal.bytecode.Interceptors;
-import org.robolectric.internal.bytecode.NativeCallHandler;
 import org.robolectric.util.inject.Injector;
 import org.robolectric.versioning.AndroidVersionInitTools;
 import org.robolectric.versioning.AndroidVersions.AndroidRelease;
@@ -51,35 +50,15 @@ public class JarInstrumentor {
 
   @VisibleForTesting
   void processCommandLine(String[] args) throws IOException, ClassNotFoundException {
-    if (args.length >= 2) {
+    if (args.length == 2) {
       File sourceFile = new File(args[0]);
       File destJarFile = new File(args[1]);
 
-      File destNativesFile = null;
-      boolean throwOnNatives = false;
-      boolean parseError = false;
-      for (int i = 2; i < args.length; i++) {
-        if (args[i].startsWith("--write-natives=")) {
-          destNativesFile = new File(args[i].substring("--write-natives=".length()));
-        } else if (args[i].equals("--throw-on-natives")) {
-          throwOnNatives = true;
-        } else {
-          System.err.println("Unknown argument: " + args[i]);
-          parseError = true;
-          break;
-        }
-      }
-
-      if (!parseError) {
-        instrumentJar(sourceFile, destJarFile, destNativesFile, throwOnNatives);
-        return;
-      }
+      instrumentJar(sourceFile, destJarFile);
+      return;
     }
 
-    System.err.println(
-        "Usage: JarInstrumentor <source jar> <dest jar> "
-            + "[--write-natives=<file>] "
-            + "[--throw-on-natives]");
+    System.err.println("Usage: JarInstrumentor <source jar> <dest jar> ");
     exit(1);
   }
 
@@ -94,13 +73,9 @@ public class JarInstrumentor {
    *
    * @param sourceJarFile The source JAR to process.
    * @param destJarFile The destination JAR with the instrumented method calls.
-   * @param destNativesFile Optional file to write native calls signature. Null to disable.
-   * @param throwOnNatives Whether native calls should be instrumented as throwing a dedicated
-   *     exception (true) or no-op (false).
    */
   @VisibleForTesting
-  protected void instrumentJar(
-      File sourceJarFile, File destJarFile, File destNativesFile, boolean throwOnNatives)
+  protected void instrumentJar(File sourceJarFile, File destJarFile)
       throws IOException, ClassNotFoundException {
     long startNs = System.nanoTime();
     JarFile jarFile = new JarFile(sourceJarFile);
@@ -111,23 +86,6 @@ public class JarInstrumentor {
             return JarInstrumentor.getClassBytes(className, jarFile);
           }
         };
-
-    NativeCallHandler nativeCallHandler;
-    final boolean writeNativesFile = destNativesFile != null;
-
-    if (destNativesFile == null) {
-      destNativesFile =
-          new File(
-              sourceJarFile.getParentFile(),
-              sourceJarFile.getName().replace(".jar", "-natives.txt"));
-    }
-
-    try {
-      nativeCallHandler = new NativeCallHandler(destNativesFile, writeNativesFile, throwOnNatives);
-      classInstrumentor.setNativeCallHandler(nativeCallHandler);
-    } catch (IOException e) {
-      throw new AssertionError("Unable to load native exemptions file", e);
-    }
 
     int nonClassCount = 0;
     int classCount = 0;
@@ -174,10 +132,6 @@ public class JarInstrumentor {
           nonClassCount++;
         }
       }
-    }
-
-    if (writeNativesFile) {
-      nativeCallHandler.writeExemptionsList();
     }
 
     long elapsedNs = System.nanoTime() - startNs;

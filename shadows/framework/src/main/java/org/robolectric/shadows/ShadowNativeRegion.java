@@ -17,21 +17,27 @@ import org.robolectric.shadows.ShadowNativeRegion.Picker;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Region} that is backed by native code */
-@Implements(value = Region.class, minSdk = O, shadowPicker = Picker.class, isInAndroidSdk = false)
+@Implements(
+    value = Region.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeRegion {
 
   RegionNatives regionNatives = new RegionNatives();
   @RealObject Region realRegion;
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected void __constructor__(long ni) {
     invokeConstructor(Region.class, realRegion, ClassParameter.from(long.class, ni));
     regionNatives.mNativeRegion = ni;
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected void __constructor__(int left, int top, int right, int bottom) {
     invokeConstructor(
         Region.class,
@@ -43,128 +49,128 @@ public class ShadowNativeRegion {
     regionNatives.mNativeRegion = reflector(RegionReflector.class, realRegion).getNativeRegion();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected void __constructor__(Rect rect) {
     invokeConstructor(Region.class, realRegion, ClassParameter.from(Rect.class, rect));
     regionNatives.mNativeRegion = reflector(RegionReflector.class, realRegion).getNativeRegion();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeEquals(long nativeR1, long nativeR2) {
     return RegionNatives.nativeEquals(nativeR1, nativeR2);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeConstructor() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return RegionNatives.nativeConstructor();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nativeDestructor(long nativeRegion) {
     RegionNatives.nativeDestructor(nativeRegion);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static void nativeSetRegion(long nativeDst, long nativeSrc) {
     RegionNatives.nativeSetRegion(nativeDst, nativeSrc);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeSetRect(long nativeDst, int left, int top, int right, int bottom) {
     return RegionNatives.nativeSetRect(nativeDst, left, top, right, bottom);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeSetPath(long nativeDst, long nativePath, long nativeClip) {
     return RegionNatives.nativeSetPath(nativeDst, nativePath, nativeClip);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeGetBounds(long nativeRegion, Rect rect) {
     return RegionNatives.nativeGetBounds(nativeRegion, rect);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeGetBoundaryPath(long nativeRegion, long nativePath) {
     return RegionNatives.nativeGetBoundaryPath(nativeRegion, nativePath);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeOp(
       long nativeDst, int left, int top, int right, int bottom, int op) {
     return RegionNatives.nativeOp(nativeDst, left, top, right, bottom, op);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeOp(long nativeDst, Rect rect, long nativeRegion, int op) {
     return RegionNatives.nativeOp(nativeDst, rect, nativeRegion, op);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeOp(
       long nativeDst, long nativeRegion1, long nativeRegion2, int op) {
     return RegionNatives.nativeOp(nativeDst, nativeRegion1, nativeRegion2, op);
   }
 
   @DoNotCall("Always throws java.lang.UnsupportedOperationException")
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeCreateFromParcel(Parcel p) {
     throw new UnsupportedOperationException();
   }
 
   @DoNotCall("Always throws java.lang.UnsupportedOperationException")
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static boolean nativeWriteToParcel(long nativeRegion, Parcel p) {
     throw new UnsupportedOperationException();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static String nativeToString(long nativeRegion) {
     return RegionNatives.nativeToString(nativeRegion);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean isEmpty() {
     return regionNatives.isEmpty();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean isRect() {
     return regionNatives.isRect();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean isComplex() {
     return regionNatives.isComplex();
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean contains(int x, int y) {
     return regionNatives.contains(x, y);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean quickContains(int left, int top, int right, int bottom) {
     return regionNatives.quickContains(left, top, right, bottom);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean quickReject(int left, int top, int right, int bottom) {
     return regionNatives.quickReject(left, top, right, bottom);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected boolean quickReject(Region rgn) {
     return regionNatives.quickReject(rgn);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected void translate(int dx, int dy, Region dst) {
     regionNatives.translate(dx, dy, dst);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected void scale(float scale, Region dst) {
     regionNatives.scale(scale, dst);
   }

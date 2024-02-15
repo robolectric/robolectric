@@ -1,7 +1,6 @@
 package org.robolectric.internal;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -100,7 +99,6 @@ public class DefaultManifestFactoryTest {
         .isEqualTo(Paths.get("gradle/AndroidManifest.xml"));
     assertThat(manifest.getResDirectory()).isEqualTo(Paths.get("gradle/res"));
     assertThat(manifest.getAssetsDirectory()).isEqualTo(Paths.get("gradle/assets"));
-    assertThat(manifest.getRClassName())
-        .isEqualTo("overridden.package.R");
+    assertThat(manifest.getRClassName()).isEqualTo("overridden.package.R");
   }
 }

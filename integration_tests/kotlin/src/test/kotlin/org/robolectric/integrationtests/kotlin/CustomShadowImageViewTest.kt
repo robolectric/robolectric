@@ -1,10 +1,12 @@
 package org.robolectric.integrationtests.kotlin
 
+import android.app.Activity
+import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.shadow.api.Shadow
@@ -14,12 +16,14 @@ import org.robolectric.shadow.api.Shadow
 class CustomShadowImageViewTest {
   @Test
   fun `use custom ShadowImageView`() {
-    val imageView = ImageView(ApplicationProvider.getApplicationContext())
+    val activity = Robolectric.setupActivity(Activity::class.java)
+    val imageView = ImageView(activity)
+    (activity.findViewById(android.R.id.content) as ViewGroup).addView(imageView)
     val shadowImageView = Shadow.extract<CustomShadowImageView>(imageView)
     assertThat(shadowImageView).isNotNull()
     assertThat(shadowImageView.realImageView).isSameInstanceAs(imageView)
     val resourceId = Int.MAX_VALUE
-    imageView.setImageResource(resourceId)
-    assertThat(shadowImageView.setImageResource).isEqualTo(resourceId)
+    imageView.performLongClick()
+    assertThat(shadowImageView.longClickPerformed).isTrue()
   }
 }

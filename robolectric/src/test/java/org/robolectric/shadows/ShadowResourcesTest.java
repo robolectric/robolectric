@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
@@ -20,8 +21,10 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -294,5 +297,25 @@ public class ShadowResourcesTest {
         };
 
     assertThat(resourcesSubclass).isNotNull();
+  }
+
+  @Ignore("Re-enable when performing benchmarks")
+  @Test
+  @Config(sdk = Q)
+  public void benchmarkUpdateConfiguration() {
+    long startTime = System.nanoTime();
+    Resources systemResources = Resources.getSystem();
+    for (int i = 0; i < 10_000; i++) {
+      Configuration oldConfig = resources.getConfiguration();
+      Configuration newConfig = new Configuration(oldConfig);
+      // This change triggers RebuildFilterList in CppAssetManager2
+      newConfig.colorMode = 3;
+      systemResources.updateConfiguration(newConfig, resources.getDisplayMetrics());
+      systemResources.updateConfiguration(oldConfig, resources.getDisplayMetrics());
+    }
+    long endTime = System.nanoTime();
+    long elapsedNs = endTime - startTime;
+    System.err.println(
+        "updateConfiguration benchmark took " + TimeUnit.NANOSECONDS.toMillis(elapsedNs) + " ms");
   }
 }

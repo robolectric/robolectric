@@ -23,7 +23,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Priority;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
-import org.robolectric.sandbox.NativeMethodNotFoundException;
 import org.robolectric.sandbox.ShadowMatcher;
 import org.robolectric.util.Function;
 import org.robolectric.util.PerfStatsCollector;
@@ -183,21 +182,7 @@ public class ShadowWrangler implements ClassHandler {
       } else {
         RobolectricInternals.performStaticInitialization(clazz);
       }
-    } catch (InvocationTargetException e) {
-      // Note: target exception originates from the sandbox classloader.
-      // "instanceof" does not check class equality across classloaders (since they differ).
-      // A simple workaround is to check the class FQCN instead.
-      String nativeMethodNotFoundException = NativeMethodNotFoundException.class.getName();
-
-      for (Throwable t = e.getTargetException(); t != null; ) {
-        if (nativeMethodNotFoundException.equals(t.getClass().getName())) {
-          throw (RuntimeException) t;
-        }
-
-        t = t.getCause();
-      }
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
+    } catch (InvocationTargetException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

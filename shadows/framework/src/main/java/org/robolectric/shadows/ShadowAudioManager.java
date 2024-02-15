@@ -89,6 +89,7 @@ public class ShadowAudioManager {
   private final HashSet<AudioDeviceCallback> audioDeviceCallbacks = new HashSet<>();
   private int ringerMode = AudioManager.RINGER_MODE_NORMAL;
   private int mode = AudioManager.MODE_NORMAL;
+  private boolean lockMode = false;
   private boolean bluetoothA2dpOn;
   private boolean isBluetoothScoOn;
   private boolean isSpeakerphoneOn;
@@ -109,6 +110,7 @@ public class ShadowAudioManager {
   private List<AudioDeviceInfo> outputDevices = new ArrayList<>();
   private List<AudioDeviceInfo> availableCommunicationDevices = new ArrayList<>();
   private AudioDeviceInfo communicationDevice = null;
+  private boolean lockCommunicationDevice = false;
   private final List<KeyEvent> dispatchedMediaKeyEvents = new ArrayList<>();
   private boolean isHotwordStreamSupportedForLookbackAudio = false;
   private boolean isHotwordStreamSupportedWithoutLookbackAudio = false;
@@ -217,8 +219,12 @@ public class ShadowAudioManager {
             <= (int) ReflectionHelpers.getStaticField(AudioManager.class, "RINGER_MODE_MAX");
   }
 
+  /** Note that this method can silently fail. See {@link lockMode}. */
   @Implementation
   protected void setMode(int mode) {
+    if (lockMode) {
+      return;
+    }
     int previousMode = this.mode;
     this.mode = mode;
     if (RuntimeEnvironment.getApiLevel() >= S && mode != previousMode) {
@@ -233,6 +239,11 @@ public class ShadowAudioManager {
         .dispatchAudioModeChanged(newMode);
   }
 
+  /** Sets whether subsequent calls to {@link setMode} will succeed or not. */
+  public void lockMode(boolean lockMode) {
+    this.lockMode = lockMode;
+  }
+
   @Implementation
   protected int getMode() {
     return this.mode;
@@ -245,6 +256,7 @@ public class ShadowAudioManager {
 
     void dispatchAudioModeChanged(int newMode);
   }
+
   public void setStreamMaxVolume(int streamMaxVolume) {
     streamStatus.forEach((key, value) -> value.setMaxVolume(streamMaxVolume));
   }
@@ -659,10 +671,18 @@ public class ShadowAudioManager {
     return outputDevices;
   }
 
+  /** Note that this method can silently fail. See {@link lockCommunicationDevice}. */
   @Implementation(minSdk = S)
   protected boolean setCommunicationDevice(AudioDeviceInfo communicationDevice) {
-    this.communicationDevice = communicationDevice;
-    return true;
+    if (!lockCommunicationDevice) {
+      this.communicationDevice = communicationDevice;
+    }
+    return !lockCommunicationDevice;
+  }
+
+  /** Sets whether subsequent calls to {@link setCommunicationDevice} will succeed. */
+  public void lockCommunicationDevice(boolean lockCommunicationDevice) {
+    this.lockCommunicationDevice = lockCommunicationDevice;
   }
 
   @Implementation(minSdk = S)

@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.List;
 import java.util.Map;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
@@ -36,7 +37,12 @@ import org.robolectric.util.reflector.Static;
 import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link Typeface} that is backed by native code */
-@Implements(value = Typeface.class, looseSignatures = true, minSdk = O, isInAndroidSdk = false)
+@Implements(
+    value = Typeface.class,
+    looseSignatures = true,
+    minSdk = O,
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeTypeface extends ShadowTypeface {
 
   private static final String TAG = "ShadowNativeTypeface";
@@ -45,12 +51,17 @@ public class ShadowNativeTypeface extends ShadowTypeface {
   private static final int STYLE_NORMAL = 0;
   private static final int STYLE_ITALIC = 1;
 
+
   @Implementation(minSdk = S)
   protected static void __staticInitializer__() {
-    Shadow.directInitialize(Typeface.class);
-    // Initialize the system font map. In real Android this is done as part of Application startup
-    // and uses a more complex SharedMemory system not supported in Robolectric.
-    Typeface.loadPreinstalledSystemFontMap();
+    if (RuntimeEnvironment.getApiLevel() <= U.SDK_INT) {
+      Shadow.directInitialize(Typeface.class);
+      // Initialize the system font map. In real Android this is done as part of Application startup
+      // and uses a more complex SharedMemory system not supported in Robolectric.
+      Typeface.loadPreinstalledSystemFontMap();
+    }
+    // The Typeface static initializer invokes its own native methods. This has to be deferred
+    // starting in Android V.
   }
 
   @Implementation(minSdk = P, maxSdk = P)
@@ -126,24 +137,24 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return fontFamily;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativeCreateFromTypeface(long nativeInstance, int style) {
     return TypefaceNatives.nativeCreateFromTypeface(nativeInstance, style);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeCreateFromTypefaceWithExactStyle(
       long nativeInstance, int weight, boolean italic) {
     return TypefaceNatives.nativeCreateFromTypefaceWithExactStyle(nativeInstance, weight, italic);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeCreateFromTypefaceWithVariation(
       long nativeInstance, List<FontVariationAxis> axes) {
     return TypefaceNatives.nativeCreateFromTypefaceWithVariation(nativeInstance, axes);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativeCreateWeightAlias(long nativeInstance, int weight) {
     return TypefaceNatives.nativeCreateWeightAlias(nativeInstance, weight);
   }
@@ -153,33 +164,33 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeCreateFromArray(familyArray, 0, weight, italic);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateFromArray(
       long[] familyArray, long fallbackTypeface, int weight, int italic) {
     return TypefaceNatives.nativeCreateFromArray(familyArray, fallbackTypeface, weight, italic);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int[] nativeGetSupportedAxes(long nativeInstance) {
     return TypefaceNatives.nativeGetSupportedAxes(nativeInstance);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeSetDefault(long nativePtr) {
     TypefaceNatives.nativeSetDefault(nativePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetStyle(long nativePtr) {
     return TypefaceNatives.nativeGetStyle(nativePtr);
   }
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static int nativeGetWeight(long nativePtr) {
     return TypefaceNatives.nativeGetWeight(nativePtr);
   }
 
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static long nativeGetReleaseFunc() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return TypefaceNatives.nativeGetReleaseFunc();
@@ -195,7 +206,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeGetFamily(nativePtr, index);
   }
 
-  @Implementation(minSdk = Q)
+  @Implementation(minSdk = Q, maxSdk = U.SDK_INT)
   protected static void nativeRegisterGenericFamily(String str, long nativePtr) {
     TypefaceNatives.nativeRegisterGenericFamily(str, nativePtr);
   }
@@ -205,7 +216,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeWriteTypefaces(buffer, nativePtrs);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
   protected static int nativeWriteTypefaces(ByteBuffer buffer, int position, long[] nativePtrs) {
     return nativeWriteTypefaces(buffer, nativePtrs);
   }
@@ -215,19 +226,24 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeReadTypefaces(buffer);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
   protected static long[] nativeReadTypefaces(ByteBuffer buffer, int position) {
     return nativeReadTypefaces(buffer);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nativeForceSetStaticFinalField(String fieldName, Typeface typeface) {
     TypefaceNatives.nativeForceSetStaticFinalField(fieldName, typeface);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nativeAddFontCollections(long nativePtr) {
     TypefaceNatives.nativeAddFontCollections(nativePtr);
+  }
+
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
+  protected static void nativeRegisterLocaleList(String locales) {
+    // no-op
   }
 
   static void ensureInitialized() {

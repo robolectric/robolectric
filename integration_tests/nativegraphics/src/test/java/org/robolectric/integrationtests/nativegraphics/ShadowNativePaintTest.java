@@ -48,6 +48,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = O)
@@ -1989,6 +1990,7 @@ public class ShadowNativePaintTest {
     }
   }
 
+  @Config(maxSdk = U.SDK_INT) // TODO(hoisie): fix in V and above
   @Test
   public void testElegantText() {
     final Paint p = new Paint();

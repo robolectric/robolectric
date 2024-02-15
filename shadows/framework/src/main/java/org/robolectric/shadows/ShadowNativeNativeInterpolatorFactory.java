@@ -8,70 +8,72 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.NativeInterpolatorFactoryNatives;
 import org.robolectric.shadows.ShadowNativeNativeInterpolatorFactory.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link NativeInterpolatorFactory} that is backed by native code */
 @Implements(
     value = NativeInterpolatorFactory.class,
     minSdk = R,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false)
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeNativeInterpolatorFactory {
 
   static {
     DefaultNativeRuntimeLoader.injectAndLoad();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createAccelerateDecelerateInterpolator() {
     return NativeInterpolatorFactoryNatives.createAccelerateDecelerateInterpolator();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createAccelerateInterpolator(float factor) {
     return NativeInterpolatorFactoryNatives.createAccelerateInterpolator(factor);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createAnticipateInterpolator(float tension) {
     return NativeInterpolatorFactoryNatives.createAnticipateInterpolator(tension);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createAnticipateOvershootInterpolator(float tension) {
     return NativeInterpolatorFactoryNatives.createAnticipateOvershootInterpolator(tension);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createBounceInterpolator() {
     return NativeInterpolatorFactoryNatives.createBounceInterpolator();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createCycleInterpolator(float cycles) {
     return NativeInterpolatorFactoryNatives.createCycleInterpolator(cycles);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createDecelerateInterpolator(float factor) {
     return NativeInterpolatorFactoryNatives.createDecelerateInterpolator(factor);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createLinearInterpolator() {
     return NativeInterpolatorFactoryNatives.createLinearInterpolator();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createOvershootInterpolator(float tension) {
     return NativeInterpolatorFactoryNatives.createOvershootInterpolator(tension);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createPathInterpolator(float[] x, float[] y) {
     return NativeInterpolatorFactoryNatives.createPathInterpolator(x, y);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long createLutInterpolator(float[] values) {
     return NativeInterpolatorFactoryNatives.createLutInterpolator(values);
   }

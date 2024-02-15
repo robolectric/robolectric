@@ -105,6 +105,24 @@ public class ShadowStorageManagerTest {
         .isTrue();
   }
 
+  @Test
+  @Config(minSdk = N)
+  public void getStorageVolumeFromAnUserContext() {
+    File file1 = new File(internalStorage);
+    shadowOf(storageManager).addStorageVolume(buildAndGetStorageVolume(file1, "internal"));
+    Context userContext = getApplication();
+
+    try {
+      userContext =
+          getApplication().createPackageContextAsUser("system", 0, UserHandle.of(0 /* userId */));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    StorageManager anotherStorageManager = userContext.getSystemService(StorageManager.class);
+    assertThat(shadowOf(anotherStorageManager).getStorageVolume(file1)).isNotNull();
+  }
+
   private StorageVolume buildAndGetStorageVolume(File file, String description) {
     Parcel parcel = Parcel.obtain();
     parcel.writeInt(0);

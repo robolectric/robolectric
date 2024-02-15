@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 
 import android.graphics.Bitmap;
@@ -26,50 +27,51 @@ import org.robolectric.versioning.AndroidVersions.U;
     value = HardwareRenderer.class,
     minSdk = Q,
     looseSignatures = true,
-    shadowPicker = Picker.class)
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeHardwareRenderer {
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void disableVsync() {
     HardwareRendererNatives.disableVsync();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void preload() {
     HardwareRendererNatives.preload();
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static boolean isWebViewOverlaysEnabled() {
     return HardwareRendererNatives.isWebViewOverlaysEnabled();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void setupShadersDiskCache(String cacheFile, String skiaCacheFile) {
     HardwareRendererNatives.setupShadersDiskCache(cacheFile, skiaCacheFile);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nRotateProcessStatsBuffer() {
     HardwareRendererNatives.nRotateProcessStatsBuffer();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetProcessStatsBuffer(int fd) {
     HardwareRendererNatives.nSetProcessStatsBuffer(fd);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetRenderThreadTid(long nativeProxy) {
     return HardwareRendererNatives.nGetRenderThreadTid(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nCreateRootRenderNode() {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return HardwareRendererNatives.nCreateRootRenderNode();
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nCreateProxy(boolean translucent, long rootRenderNode) {
     return HardwareRendererNatives.nCreateProxy(translucent, rootRenderNode);
   }
@@ -85,194 +87,194 @@ public class ShadowNativeHardwareRenderer {
     return nCreateProxy((boolean) translucent, (long) rootRenderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDeleteProxy(long nativeProxy) {
     HardwareRendererNatives.nDeleteProxy(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nLoadSystemProperties(long nativeProxy) {
     return HardwareRendererNatives.nLoadSystemProperties(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetName(long nativeProxy, String name) {
     HardwareRendererNatives.nSetName(nativeProxy, name);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static void nSetSurface(long nativeProxy, Surface window, boolean discardBuffer) {
     HardwareRendererNatives.nSetSurface(nativeProxy, window, discardBuffer);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetSurfaceControl(long nativeProxy, long nativeSurfaceControl) {
     HardwareRendererNatives.nSetSurfaceControl(nativeProxy, nativeSurfaceControl);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nPause(long nativeProxy) {
     return HardwareRendererNatives.nPause(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetStopped(long nativeProxy, boolean stopped) {
     HardwareRendererNatives.nSetStopped(nativeProxy, stopped);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetLightGeometry(
       long nativeProxy, float lightX, float lightY, float lightZ, float lightRadius) {
     HardwareRendererNatives.nSetLightGeometry(nativeProxy, lightX, lightY, lightZ, lightRadius);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetLightAlpha(
       long nativeProxy, float ambientShadowAlpha, float spotShadowAlpha) {
     HardwareRendererNatives.nSetLightAlpha(nativeProxy, ambientShadowAlpha, spotShadowAlpha);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetOpaque(long nativeProxy, boolean opaque) {
     HardwareRendererNatives.nSetOpaque(nativeProxy, opaque);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static Object nSetColorMode(long nativeProxy, int colorMode) {
     HardwareRendererNatives.nSetColorMode(nativeProxy, colorMode);
     return null;
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetSdrWhitePoint(long nativeProxy, float whitePoint) {
     HardwareRendererNatives.nSetSdrWhitePoint(nativeProxy, whitePoint);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetIsHighEndGfx(boolean isHighEndGfx) {
     HardwareRendererNatives.nSetIsHighEndGfx(isHighEndGfx);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nSyncAndDrawFrame(long nativeProxy, long[] frameInfo, int size) {
     return HardwareRendererNatives.nSyncAndDrawFrame(nativeProxy, frameInfo, size);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDestroy(long nativeProxy, long rootRenderNode) {
     HardwareRendererNatives.nDestroy(nativeProxy, rootRenderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nRegisterAnimatingRenderNode(long rootRenderNode, long animatingNode) {
     HardwareRendererNatives.nRegisterAnimatingRenderNode(rootRenderNode, animatingNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nRegisterVectorDrawableAnimator(long rootRenderNode, long animator) {
     HardwareRendererNatives.nRegisterVectorDrawableAnimator(rootRenderNode, animator);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nCreateTextureLayer(long nativeProxy) {
     return HardwareRendererNatives.nCreateTextureLayer(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nBuildLayer(long nativeProxy, long node) {
     HardwareRendererNatives.nBuildLayer(nativeProxy, node);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nCopyLayerInto(long nativeProxy, long layer, long bitmapHandle) {
     return HardwareRendererNatives.nCopyLayerInto(nativeProxy, layer, bitmapHandle);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nPushLayerUpdate(long nativeProxy, long layer) {
     HardwareRendererNatives.nPushLayerUpdate(nativeProxy, layer);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nCancelLayerUpdate(long nativeProxy, long layer) {
     HardwareRendererNatives.nCancelLayerUpdate(nativeProxy, layer);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDetachSurfaceTexture(long nativeProxy, long layer) {
     HardwareRendererNatives.nDetachSurfaceTexture(nativeProxy, layer);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDestroyHardwareResources(long nativeProxy) {
     HardwareRendererNatives.nDestroyHardwareResources(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nTrimMemory(int level) {
     HardwareRendererNatives.nTrimMemory(level);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nOverrideProperty(String name, String value) {
     HardwareRendererNatives.nOverrideProperty(name, value);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nFence(long nativeProxy) {
     HardwareRendererNatives.nFence(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nStopDrawing(long nativeProxy) {
     HardwareRendererNatives.nStopDrawing(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nNotifyFramePending(long nativeProxy) {
     HardwareRendererNatives.nNotifyFramePending(nativeProxy);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDumpProfileInfo(long nativeProxy, FileDescriptor fd, int dumpFlags) {
     HardwareRendererNatives.nDumpProfileInfo(nativeProxy, fd, dumpFlags);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nAddRenderNode(long nativeProxy, long rootRenderNode, boolean placeFront) {
     HardwareRendererNatives.nAddRenderNode(nativeProxy, rootRenderNode, placeFront);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nRemoveRenderNode(long nativeProxy, long rootRenderNode) {
     HardwareRendererNatives.nRemoveRenderNode(nativeProxy, rootRenderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDrawRenderNode(long nativeProxy, long rootRenderNode) {
     HardwareRendererNatives.nDrawRenderNode(nativeProxy, rootRenderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetContentDrawBounds(
       long nativeProxy, int left, int top, int right, int bottom) {
     HardwareRendererNatives.nSetContentDrawBounds(nativeProxy, left, top, right, bottom);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetPictureCaptureCallback(
       long nativeProxy, PictureCapturedCallback callback) {
     HardwareRendererNatives.nSetPictureCaptureCallback(nativeProxy, callback);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetASurfaceTransactionCallback(Object nativeProxy, Object callback) {
     // Requires looseSignatures because ASurfaceTransactionCallback is S+.
     HardwareRendererNatives.nSetASurfaceTransactionCallback(
         (long) nativeProxy, (ASurfaceTransactionCallback) callback);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetPrepareSurfaceControlForWebviewCallback(
       Object nativeProxy, Object callback) {
     // Need to use loose signatures here as PrepareSurfaceControlForWebviewCallback is S+.
@@ -280,23 +282,23 @@ public class ShadowNativeHardwareRenderer {
         (long) nativeProxy, (PrepareSurfaceControlForWebviewCallback) callback);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetFrameCallback(long nativeProxy, FrameDrawingCallback callback) {
     HardwareRendererNatives.nSetFrameCallback(nativeProxy, callback);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetFrameCompleteCallback(
       long nativeProxy, FrameCompleteCallback callback) {
     HardwareRendererNatives.nSetFrameCompleteCallback(nativeProxy, callback);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static void nAddObserver(long nativeProxy, long nativeObserver) {
     HardwareRendererNatives.nAddObserver(nativeProxy, nativeObserver);
   }
 
-  @Implementation(minSdk = R)
+  @Implementation(minSdk = R, maxSdk = U.SDK_INT)
   protected static void nRemoveObserver(long nativeProxy, long nativeObserver) {
     HardwareRendererNatives.nRemoveObserver(nativeProxy, nativeObserver);
   }
@@ -308,38 +310,43 @@ public class ShadowNativeHardwareRenderer {
         surface, srcLeft, srcTop, srcRight, srcBottom, bitmapHandle);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static Bitmap nCreateHardwareBitmap(long renderNode, int width, int height) {
     return HardwareRendererNatives.nCreateHardwareBitmap(renderNode, width, height);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetHighContrastText(boolean enabled) {
     HardwareRendererNatives.nSetHighContrastText(enabled);
   }
 
-  @Implementation(minSdk = Q, maxSdk = S)
+  @Implementation(minSdk = Q, maxSdk = S_V2)
   protected static void nHackySetRTAnimationsEnabled(boolean enabled) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     HardwareRendererNatives.nHackySetRTAnimationsEnabled(enabled);
   }
 
-  @Implementation
+  @Implementation(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
+  protected static void nSetRtAnimationsEnabled(boolean enabled) {
+    nHackySetRTAnimationsEnabled(enabled);
+  }
+
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetDebuggingEnabled(boolean enabled) {
     HardwareRendererNatives.nSetDebuggingEnabled(enabled);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetIsolatedProcess(boolean enabled) {
     HardwareRendererNatives.nSetIsolatedProcess(enabled);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nSetContextPriority(int priority) {
     HardwareRendererNatives.nSetContextPriority(priority);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nAllocateBuffers(long nativeProxy) {
     HardwareRendererNatives.nAllocateBuffers(nativeProxy);
   }
@@ -351,7 +358,7 @@ public class ShadowNativeHardwareRenderer {
 
   // TODO(brettchabot): add support for V nSetForceDark(long, int)
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nSetDisplayDensityDpi(int densityDpi) {
     HardwareRendererNatives.nSetDisplayDensityDpi(densityDpi);
   }
@@ -373,7 +380,7 @@ public class ShadowNativeHardwareRenderer {
         presentationDeadlineNanos);
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
   protected static void nInitDisplayInfo(
       int width,
       int height,
@@ -390,6 +397,11 @@ public class ShadowNativeHardwareRenderer {
         wideColorDataspace,
         appVsyncOffsetNanos,
         presentationDeadlineNanos);
+  }
+
+  @Implementation(maxSdk = R)
+  protected static void nSetWideGamut(long nativeProxy, boolean wideGamut) {
+    // No-op
   }
 
   /** Shadow picker for {@link HardwareRenderer}. */

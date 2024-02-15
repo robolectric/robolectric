@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @Config(minSdk = S)
 @RunWith(AndroidJUnit4.class)
@@ -68,7 +69,8 @@ public class ShadowNativeRuntimeShaderTest {
             ClassParameter.from(boolean.class, false));
   }
 
-  @Config(minSdk = TIRAMISU)
+  /** {@link #SKSL} does not compile on V and above. */
+  @Config(minSdk = TIRAMISU, maxSdk = U.SDK_INT)
   @Test
   public void testConstructorT() {
     var unused = new RuntimeShader(SKSL);

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.annotation.Nullable;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -43,6 +44,15 @@ import org.robolectric.util.reflector.Static;
 /** Shadow for {@link BluetoothDevice}. */
 @Implements(value = BluetoothDevice.class, looseSignatures = true)
 public class ShadowBluetoothDevice {
+  /**
+   * Interceptor interface for {@link BluetoothGatt} objects. Tests that require configuration of
+   * their ShadowBluetoothGatt's may inject an interceptor, which will be called with the newly
+   * constructed BluetoothGatt before {@link ShadowBluetoothGatt#connectGatt} returns.
+   */
+  public static interface BluetoothGattConnectionInterceptor {
+    public void onNewGattConnection(BluetoothGatt gatt);
+  }
+
   @Deprecated // Prefer {@link android.bluetooth.BluetoothAdapter#getRemoteDevice}
   public static BluetoothDevice newInstance(String address) {
     return ReflectionHelpers.callConstructor(
@@ -75,6 +85,7 @@ public class ShadowBluetoothDevice {
   private int batteryLevel = BluetoothDevice.BATTERY_LEVEL_BLUETOOTH_OFF;
   private boolean isInSilenceMode = false;
   private boolean isConnected = false;
+  @Nullable private BluetoothGattConnectionInterceptor bluetoothGattConnectionInterceptor = null;
 
   /**
    * Implements getService() in the same way the original method does, but ignores any Exceptions
@@ -349,6 +360,11 @@ public class ShadowBluetoothDevice {
     bluetoothGatts.add(bluetoothGatt);
     ShadowBluetoothGatt shadowBluetoothGatt = Shadow.extract(bluetoothGatt);
     shadowBluetoothGatt.setGattCallback(callback);
+
+    if (bluetoothGattConnectionInterceptor != null) {
+      bluetoothGattConnectionInterceptor.onNewGattConnection(bluetoothGatt);
+    }
+
     return bluetoothGatt;
   }
 
@@ -433,6 +449,15 @@ public class ShadowBluetoothDevice {
   protected boolean isInSilenceMode() {
     checkForBluetoothConnectPermission();
     return isInSilenceMode;
+  }
+
+  /**
+   * Allows tests to intercept the {@link BluetoothDevice.connectGatt} method and set state on both
+   * BluetoothDevice and BluetoothGatt objects. This is useful for e2e testing situations where the
+   * fine-grained execution of Bluetooth connection logic is onerous.
+   */
+  public void setGattConnectionInterceptor(BluetoothGattConnectionInterceptor interceptor) {
+    bluetoothGattConnectionInterceptor = interceptor;
   }
 
   @ForType(BluetoothDevice.class)

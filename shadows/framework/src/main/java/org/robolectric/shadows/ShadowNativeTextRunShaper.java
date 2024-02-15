@@ -7,12 +7,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.TextRunShaperNatives;
 import org.robolectric.shadows.ShadowNativeTextRunShaper.Picker;
 import org.robolectric.versioning.AndroidVersions.S;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link TextRunShaper} that is backed by native code */
-@Implements(value = TextRunShaper.class, minSdk = S.SDK_INT, shadowPicker = Picker.class)
+@Implements(
+    value = TextRunShaper.class,
+    minSdk = S.SDK_INT,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeTextRunShaper {
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeShapeTextRun(
       char[] text,
       int start,
@@ -25,7 +30,7 @@ public class ShadowNativeTextRunShaper {
         text, start, count, contextStart, contextCount, isRtl, nativePaint);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeShapeTextRun(
       String text,
       int start,

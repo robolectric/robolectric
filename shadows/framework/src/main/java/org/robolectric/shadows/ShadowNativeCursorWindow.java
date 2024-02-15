@@ -11,12 +11,13 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CursorWindowNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link CursorWindow} that is backed by native code */
-@Implements(value = CursorWindow.class, isInAndroidSdk = false)
+@Implements(value = CursorWindow.class, isInAndroidSdk = false, callNativeMethodsByDefault = true)
 public class ShadowNativeCursorWindow extends ShadowCursorWindow {
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static Number nativeCreate(String name, int cursorWindowSize) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     long result = CursorWindowNatives.nativeCreate(name, cursorWindowSize);
@@ -32,7 +33,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     PreLPointers.remove(windowPtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeDispose(long windowPtr) {
     CursorWindowNatives.nativeDispose(windowPtr);
   }
@@ -42,7 +43,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetName(PreLPointers.get(windowPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static String nativeGetName(long windowPtr) {
     return CursorWindowNatives.nativeGetName(windowPtr);
   }
@@ -52,7 +53,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetBlob(PreLPointers.get(windowPtr), row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static byte[] nativeGetBlob(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativeGetBlob(windowPtr, row, column);
   }
@@ -62,12 +63,12 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetString(PreLPointers.get(windowPtr), row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static String nativeGetString(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativeGetString(windowPtr, row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeCopyStringToBuffer(
       long windowPtr, int row, int column, CharArrayBuffer buffer) {
     CursorWindowNatives.nativeCopyStringToBuffer(windowPtr, row, column, buffer);
@@ -78,7 +79,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativePutBlob(PreLPointers.get(windowPtr), value, row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativePutBlob(long windowPtr, byte[] value, int row, int column) {
     // Real Android will crash in native code if putBlob is called with a null value.
     Preconditions.checkNotNull(value);
@@ -90,7 +91,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativePutString(PreLPointers.get(windowPtr), value, row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativePutString(long windowPtr, String value, int row, int column) {
     // Real Android will crash in native code if putString is called with a null value.
     Preconditions.checkNotNull(value);
@@ -102,7 +103,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     nativeClear(PreLPointers.get(windowPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeClear(long windowPtr) {
     CursorWindowNatives.nativeClear(windowPtr);
   }
@@ -112,7 +113,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetNumRows(PreLPointers.get(windowPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetNumRows(long windowPtr) {
     return CursorWindowNatives.nativeGetNumRows(windowPtr);
   }
@@ -122,7 +123,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeSetNumColumns(PreLPointers.get(windowPtr), columnNum);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativeSetNumColumns(long windowPtr, int columnNum) {
     return CursorWindowNatives.nativeSetNumColumns(windowPtr, columnNum);
   }
@@ -132,12 +133,12 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeAllocRow(PreLPointers.get(windowPtr));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativeAllocRow(long windowPtr) {
     return CursorWindowNatives.nativeAllocRow(windowPtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static void nativeFreeLastRow(long windowPtr) {
     CursorWindowNatives.nativeFreeLastRow(windowPtr);
   }
@@ -147,7 +148,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetType(PreLPointers.get(windowPtr), row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static int nativeGetType(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativeGetType(windowPtr, row, column);
   }
@@ -157,7 +158,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetLong(PreLPointers.get(windowPtr), row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static long nativeGetLong(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativeGetLong(windowPtr, row, column);
   }
@@ -167,7 +168,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativeGetDouble(PreLPointers.get(windowPtr), row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static double nativeGetDouble(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativeGetDouble(windowPtr, row, column);
   }
@@ -177,7 +178,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativePutLong(PreLPointers.get(windowPtr), value, row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativePutLong(long windowPtr, long value, int row, int column) {
     return CursorWindowNatives.nativePutLong(windowPtr, value, row, column);
   }
@@ -187,7 +188,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativePutDouble(PreLPointers.get(windowPtr), value, row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativePutDouble(long windowPtr, double value, int row, int column) {
     return CursorWindowNatives.nativePutDouble(windowPtr, value, row, column);
   }
@@ -197,7 +198,7 @@ public class ShadowNativeCursorWindow extends ShadowCursorWindow {
     return nativePutNull(PreLPointers.get(windowPtr), row, column);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
   protected static boolean nativePutNull(long windowPtr, int row, int column) {
     return CursorWindowNatives.nativePutNull(windowPtr, row, column);
   }

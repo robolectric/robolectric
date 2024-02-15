@@ -8,12 +8,17 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.CornerPathEffectNatives;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.shadows.ShadowNativeCornerPathEffect.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link CornerPathEffect} that is backed by native code */
-@Implements(value = CornerPathEffect.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = CornerPathEffect.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeCornerPathEffect {
 
-  @Implementation(minSdk = O)
+  @Implementation(minSdk = O, maxSdk = U.SDK_INT)
   protected static long nativeCreate(float radius) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     return CornerPathEffectNatives.nativeCreate(radius);

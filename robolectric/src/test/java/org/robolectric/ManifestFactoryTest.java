@@ -1,7 +1,6 @@
 package org.robolectric;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 
 import java.net.URL;
 import java.nio.file.Paths;
@@ -20,7 +19,8 @@ import org.robolectric.res.Fs;
 public class ManifestFactoryTest {
 
   @Test
-  public void whenBuildSystemApiPropertiesFileIsPresent_shouldUseDefaultManifestFactory() throws Exception {
+  public void whenBuildSystemApiPropertiesFileIsPresent_shouldUseDefaultManifestFactory()
+      throws Exception {
     final Properties properties = new Properties();
     properties.setProperty("android_sdk_home", "");
     properties.setProperty("android_merged_manifest", "/path/to/MergedManifest.xml");
@@ -46,8 +46,8 @@ public class ManifestFactoryTest {
     assertThat(manifestIdentifier.getLibraries()).isEmpty();
     assertThat(manifestIdentifier.getPackageName()).isNull();
 
-    AndroidManifest androidManifest = RobolectricTestRunner
-        .createAndroidManifest(manifestIdentifier);
+    AndroidManifest androidManifest =
+        RobolectricTestRunner.createAndroidManifest(manifestIdentifier);
     assertThat(androidManifest.getAndroidManifestFile())
         .isEqualTo(Paths.get("/path/to/MergedManifest.xml"));
     assertThat(androidManifest.getResDirectory()).isEqualTo(Paths.get("/path/to/merged-resources"));
@@ -70,10 +70,11 @@ public class ManifestFactoryTest {
           }
         };
 
-    Config.Implementation config = Config.Builder.defaults()
-        .setManifest("TestAndroidManifest.xml")
-        .setPackageName("another.package")
-        .build();
+    Config.Implementation config =
+        Config.Builder.defaults()
+            .setManifest("TestAndroidManifest.xml")
+            .setPackageName("another.package")
+            .build();
     ManifestFactory manifestFactory = testRunner.getManifestFactory(config);
     assertThat(manifestFactory).isInstanceOf(DefaultManifestFactory.class);
     ManifestIdentifier manifestIdentifier = manifestFactory.identify(config);

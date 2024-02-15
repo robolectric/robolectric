@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -99,7 +100,10 @@ public class ShadowBluetoothAdapter {
   private boolean isBleScanAlwaysAvailable = true;
   private boolean isMultipleAdvertisementSupported = true;
   private int isLeAudioSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
+  private int isDistanceMeasurementSupported = BluetoothStatusCodes.FEATURE_NOT_SUPPORTED;
   private boolean isLeExtendedAdvertisingSupported = true;
+  private boolean isLeCodedPhySupported = true;
+  private boolean isLe2MPhySupported = true;
   private boolean isOverridingProxyBehavior;
   private final Map<Integer, Integer> profileConnectionStateData = new HashMap<>();
   private final Map<Integer, BluetoothProfile> profileProxies = new HashMap<>();
@@ -157,6 +161,19 @@ public class ShadowBluetoothAdapter {
   }
 
   /**
+   * Sets whether the distance measurement is supported or not. Minimum sdk version required is
+   * UPSIDE_DOWN_CAKE.
+   */
+  public void setDistanceMeasurementSupported(int supported) {
+    isDistanceMeasurementSupported = supported;
+  }
+
+  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  protected int isDistanceMeasurementSupported() {
+    return isDistanceMeasurementSupported;
+  }
+
+  /**
    * @deprecated use real BluetoothLeAdvertiser instead
    */
   @Deprecated
@@ -188,11 +205,16 @@ public class ShadowBluetoothAdapter {
   }
 
   @Implementation
+  @Nullable
   protected Set<BluetoothDevice> getBondedDevices() {
+    // real android will return null in error conditions
+    if (bondedDevices == null) {
+      return null;
+    }
     return Collections.unmodifiableSet(bondedDevices);
   }
 
-  public void setBondedDevices(Set<BluetoothDevice> bluetoothDevices) {
+  public void setBondedDevices(@Nullable Set<BluetoothDevice> bluetoothDevices) {
     bondedDevices = bluetoothDevices;
   }
 
@@ -616,6 +638,28 @@ public class ShadowBluetoothAdapter {
     isLeExtendedAdvertisingSupported = supported;
   }
 
+  /** Returns the last value of {@link #setIsLeCodedPhySupported}, defaulting to true. */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isLeCodedPhySupported() {
+    return isLeCodedPhySupported;
+  }
+
+  /** Sets the {@link #isLeCodedPhySupported} to enable/disable LE coded phy supported featured. */
+  public void setIsLeCodedPhySupported(boolean supported) {
+    isLeCodedPhySupported = supported;
+  }
+
+  /** Returns the last value of {@link #setIsLe2MPhySupported}, defaulting to true. */
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  protected boolean isLe2MPhySupported() {
+    return isLe2MPhySupported;
+  }
+
+  /** Sets the {@link #isLe2MPhySupported} to enable/disable LE 2M phy supported featured. */
+  public void setIsLe2MPhySupported(boolean supported) {
+    isLe2MPhySupported = supported;
+  }
+
   @Implementation(minSdk = O)
   protected int getLeMaximumAdvertisingDataLength() {
     return isLeExtendedAdvertisingSupported
@@ -628,7 +672,7 @@ public class ShadowBluetoothAdapter {
     // PendingIntent#isImmutable throws an NPE if the component does not exist, so verify directly
     // against the flags for now.
     if ((shadowOf(pendingIntent).getFlags() & PendingIntent.FLAG_IMMUTABLE) == 0) {
-      throw new IllegalArgumentException("RFCOMM server PendingIntent must be marked immutable");
+      throw new IllegalArgumentException("RFCOMM servers PendingIntent must be marked immutable");
     }
 
     boolean[] isNewServerSocket = {false};

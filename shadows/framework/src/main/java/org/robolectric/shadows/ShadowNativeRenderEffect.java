@@ -9,26 +9,31 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.RenderEffectNatives;
 import org.robolectric.shadows.ShadowNativeRenderEffect.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link RenderEffect} that is backed by native code */
-@Implements(value = RenderEffect.class, minSdk = O, shadowPicker = Picker.class)
+@Implements(
+    value = RenderEffect.class,
+    minSdk = O,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeRenderEffect {
   static {
     DefaultNativeRuntimeLoader.injectAndLoad();
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateOffsetEffect(float offsetX, float offsetY, long nativeInput) {
     return RenderEffectNatives.nativeCreateOffsetEffect(offsetX, offsetY, nativeInput);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateBlurEffect(
       float radiusX, float radiusY, long nativeInput, int edgeTreatment) {
     return RenderEffectNatives.nativeCreateBlurEffect(radiusX, radiusY, nativeInput, edgeTreatment);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateBitmapEffect(
       long bitmapHandle,
       float srcLeft,
@@ -43,27 +48,27 @@ public class ShadowNativeRenderEffect {
         bitmapHandle, srcLeft, srcTop, srcRight, srcBottom, dstLeft, dstTop, dstRight, dstBottom);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateColorFilterEffect(long colorFilter, long nativeInput) {
     return RenderEffectNatives.nativeCreateColorFilterEffect(colorFilter, nativeInput);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateBlendModeEffect(long dst, long src, int blendmode) {
     return RenderEffectNatives.nativeCreateBlendModeEffect(dst, src, blendmode);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateChainEffect(long outer, long inner) {
     return RenderEffectNatives.nativeCreateChainEffect(outer, inner);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeCreateShaderEffect(long shader) {
     return RenderEffectNatives.nativeCreateShaderEffect(shader);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nativeGetFinalizer() {
     return RenderEffectNatives.nativeGetFinalizer();
   }

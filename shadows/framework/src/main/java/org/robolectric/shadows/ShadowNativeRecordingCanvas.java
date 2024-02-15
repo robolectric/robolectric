@@ -14,16 +14,20 @@ import org.robolectric.annotation.Resetter;
 import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.RecordingCanvasNatives;
 import org.robolectric.shadows.ShadowNativeRecordingCanvas.Picker;
+import org.robolectric.versioning.AndroidVersions.U;
 
 /** Shadow for {@link RecordingCanvas} that is backed by native code */
-@Implements(value = RecordingCanvas.class, minSdk = Q, shadowPicker = Picker.class)
+@Implements(
+    value = RecordingCanvas.class,
+    minSdk = Q,
+    shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas {
 
-  // Used for'nFinishRecording' for Android Q and R.
   private static final Map<Long, Long> recordingCanvasToRenderNode =
       Collections.synchronizedMap(new HashMap<>());
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nCreateDisplayListCanvas(long node, int width, int height) {
     DefaultNativeRuntimeLoader.injectAndLoad();
     long result = RecordingCanvasNatives.nCreateDisplayListCanvas(node, width, height);
@@ -31,28 +35,28 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
     return result;
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nResetDisplayListCanvas(long canvas, long node, int width, int height) {
     RecordingCanvasNatives.nResetDisplayListCanvas(canvas, node, width, height);
     recordingCanvasToRenderNode.put(canvas, node);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetMaximumTextureWidth() {
     return RecordingCanvasNatives.nGetMaximumTextureWidth();
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetMaximumTextureHeight() {
     return RecordingCanvasNatives.nGetMaximumTextureHeight();
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nEnableZ(long renderer, boolean enableZ) {
     RecordingCanvasNatives.nEnableZ(renderer, enableZ);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nFinishRecording(long renderer, long renderNode) {
     RecordingCanvasNatives.nFinishRecording(renderer, renderNode);
   }
@@ -66,23 +70,23 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
     return 0;
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDrawRenderNode(long renderer, long renderNode) {
     RecordingCanvasNatives.nDrawRenderNode(renderer, renderNode);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDrawTextureLayer(long renderer, long layer) {
     RecordingCanvasNatives.nDrawTextureLayer(renderer, layer);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDrawCircle(
       long renderer, long propCx, long propCy, long propRadius, long propPaint) {
     RecordingCanvasNatives.nDrawCircle(renderer, propCx, propCy, propRadius, propPaint);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static void nDrawRipple(
       long renderer,
       long propCx,
@@ -105,7 +109,7 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
         runtimeEffect);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDrawRoundRect(
       long renderer,
       long propLeft,
@@ -119,9 +123,14 @@ public class ShadowNativeRecordingCanvas extends ShadowNativeBaseRecordingCanvas
         renderer, propLeft, propTop, propRight, propBottom, propRx, propRy, propPaint);
   }
 
-  @Implementation
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nDrawWebViewFunctor(long canvas, int functor) {
     RecordingCanvasNatives.nDrawWebViewFunctor(canvas, functor);
+  }
+
+  @Implementation(maxSdk = R)
+  protected static void nInsertReorderBarrier(long renderer, boolean enableReorder) {
+    // no-op
   }
 
   @Resetter

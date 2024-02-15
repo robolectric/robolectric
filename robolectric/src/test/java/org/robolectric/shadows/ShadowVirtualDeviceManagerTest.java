@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.hardware.Sensor.TYPE_ACCELEROMETER;
+import static android.hardware.input.VirtualKeyEvent.ACTION_DOWN;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
@@ -17,6 +18,19 @@ import android.companion.virtual.sensor.VirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensorConfig;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.input.VirtualKeyEvent;
+import android.hardware.input.VirtualKeyboard;
+import android.hardware.input.VirtualKeyboardConfig;
+import android.hardware.input.VirtualMouse;
+import android.hardware.input.VirtualMouseButtonEvent;
+import android.hardware.input.VirtualMouseConfig;
+import android.hardware.input.VirtualMouseRelativeEvent;
+import android.hardware.input.VirtualMouseScrollEvent;
+import android.hardware.input.VirtualTouchEvent;
+import android.hardware.input.VirtualTouchscreen;
+import android.hardware.input.VirtualTouchscreenConfig;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import java.time.Duration;
 import java.util.function.IntConsumer;
 import org.junit.Before;
@@ -42,6 +56,9 @@ public class ShadowVirtualDeviceManagerTest {
   private Context context;
   private VirtualDeviceManager virtualDeviceManager;
   @Mock private IntConsumer mockCallback;
+
+  private static final int DISPLAY_WIDTH = 720;
+  private static final int DISPLAY_HEIGHT = 1280;
 
   @Before
   public void setUp() throws Exception {
@@ -166,5 +183,112 @@ public class ShadowVirtualDeviceManagerTest {
 
     assertThat(retrievedCallback).isNotNull();
     verify(mockVirtualSensorCallback).onConfigurationChanged(any(), eq(true), any(), any());
+  }
+
+  @Test
+  public void testCreateVirtualMouse() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+    VirtualMouseButtonEvent buttonDownEvent =
+        new VirtualMouseButtonEvent.Builder()
+            .setButtonCode(VirtualMouseButtonEvent.BUTTON_PRIMARY)
+            .setAction(VirtualMouseButtonEvent.ACTION_BUTTON_PRESS)
+            .build();
+    VirtualMouseButtonEvent buttonUpEvent =
+        new VirtualMouseButtonEvent.Builder()
+            .setButtonCode(VirtualMouseButtonEvent.BUTTON_PRIMARY)
+            .setAction(VirtualMouseButtonEvent.ACTION_BUTTON_RELEASE)
+            .build();
+    VirtualMouseScrollEvent scrollEvent =
+        new VirtualMouseScrollEvent.Builder().setXAxisMovement(0.5f).setYAxisMovement(0.5f).build();
+    VirtualMouseRelativeEvent relativeEvent =
+        new VirtualMouseRelativeEvent.Builder().setRelativeX(0.1f).setRelativeY(0.1f).build();
+
+    VirtualMouse virtualMouse =
+        virtualDevice.createVirtualMouse(new VirtualMouseConfig.Builder().build());
+    virtualMouse.sendButtonEvent(buttonDownEvent);
+    virtualMouse.sendButtonEvent(buttonUpEvent);
+    virtualMouse.sendScrollEvent(scrollEvent);
+    virtualMouse.sendRelativeEvent(relativeEvent);
+
+    assertThat(virtualMouse).isNotNull();
+    ShadowVirtualMouse shadowVirtualMouse = Shadow.extract(virtualMouse);
+    assertThat(shadowVirtualMouse.getSentButtonEvents())
+        .containsExactly(buttonDownEvent, buttonUpEvent);
+    assertThat(shadowVirtualMouse.getSentScrollEvents()).containsExactly(scrollEvent);
+    assertThat(shadowVirtualMouse.getSentRelativeEvents()).containsExactly(relativeEvent);
+  }
+
+  @Test
+  public void testCreateVirtualTouchscreen() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+    VirtualTouchEvent virtualTouchEvent =
+        new VirtualTouchEvent.Builder()
+            .setToolType(MotionEvent.TOOL_TYPE_FINGER)
+            .setAction(MotionEvent.ACTION_DOWN)
+            .setPointerId(1)
+            .setX(1.0f)
+            .setY(1.0f)
+            .build();
+
+    VirtualTouchscreen virtualTouchscreen =
+        virtualDevice.createVirtualTouchscreen(
+            new VirtualTouchscreenConfig.Builder(DISPLAY_WIDTH, DISPLAY_HEIGHT).build());
+    virtualTouchscreen.sendTouchEvent(virtualTouchEvent);
+
+    assertThat(virtualTouchscreen).isNotNull();
+    ShadowVirtualTouchscreen shadowVirtualTouchscreen = Shadow.extract(virtualTouchscreen);
+    assertThat(shadowVirtualTouchscreen.getSentEvents()).containsExactly(virtualTouchEvent);
+  }
+
+  @Test
+  public void testCreateVirtualKeyboard() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+    VirtualKeyEvent keyEvent1 =
+        new VirtualKeyEvent.Builder().setAction(ACTION_DOWN).setKeyCode(KeyEvent.KEYCODE_A).build();
+    VirtualKeyEvent keyEvent2 =
+        new VirtualKeyEvent.Builder()
+            .setAction(ACTION_DOWN)
+            .setKeyCode(KeyEvent.KEYCODE_ENTER)
+            .build();
+
+    VirtualKeyboard virtualKeyboard =
+        virtualDevice.createVirtualKeyboard(new VirtualKeyboardConfig.Builder().build());
+    virtualKeyboard.sendKeyEvent(keyEvent1);
+    virtualKeyboard.sendKeyEvent(keyEvent2);
+
+    assertThat(virtualKeyboard).isNotNull();
+    ShadowVirtualKeyboard shadowVirtualKeyboard = Shadow.extract(virtualKeyboard);
+    assertThat(shadowVirtualKeyboard.getSentEvents()).containsExactly(keyEvent1, keyEvent2);
+  }
+
+  @Test
+  public void testCloseVirtualInputDevices() {
+    VirtualDevice virtualDevice =
+        virtualDeviceManager.createVirtualDevice(
+            0, new VirtualDeviceParams.Builder().setName("foo").build());
+    VirtualKeyboard virtualKeyboard =
+        virtualDevice.createVirtualKeyboard(new VirtualKeyboardConfig.Builder().build());
+    VirtualTouchscreen virtualTouchscreen =
+        virtualDevice.createVirtualTouchscreen(
+            new VirtualTouchscreenConfig.Builder(DISPLAY_WIDTH, DISPLAY_HEIGHT).build());
+    VirtualMouse virtualMouse =
+        virtualDevice.createVirtualMouse(new VirtualMouseConfig.Builder().build());
+
+    virtualKeyboard.close();
+    virtualTouchscreen.close();
+    virtualMouse.close();
+
+    ShadowVirtualKeyboard shadowVirtualKeyboard = Shadow.extract(virtualKeyboard);
+    ShadowVirtualTouchscreen shadowVirtualTouchscreen = Shadow.extract(virtualTouchscreen);
+    ShadowVirtualMouse shadowVirtualMouse = Shadow.extract(virtualMouse);
+    assertThat(shadowVirtualKeyboard.isClosed()).isTrue();
+    assertThat(shadowVirtualTouchscreen.isClosed()).isTrue();
+    assertThat(shadowVirtualMouse.isClosed()).isTrue();
   }
 }

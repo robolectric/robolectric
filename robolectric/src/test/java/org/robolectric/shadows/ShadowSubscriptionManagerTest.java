@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SUBSCRIPTION_SERVICE;
 import static android.os.Build.VERSION_CODES.N;
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -286,6 +287,43 @@ public class ShadowSubscriptionManagerTest {
   }
 
   @Test
+  @Config(minSdk = O_MR1)
+  public void getAccessibleSubscriptionInfoList() {
+    SubscriptionInfo expectedSubscriptionInfo =
+        SubscriptionInfoBuilder.newBuilder().setId(123).setIsEmbedded(true).buildSubscriptionInfo();
+
+    // Default
+    assertThat(shadowOf(subscriptionManager).getAccessibleSubscriptionInfoList()).isEmpty();
+
+    // Null vararg
+    shadowOf(subscriptionManager).setAccessibleSubscriptionInfos();
+    assertThat(shadowOf(subscriptionManager).getAccessibleSubscriptionInfoList()).isEmpty();
+
+    // A specific subscription
+    shadowOf(subscriptionManager).setAccessibleSubscriptionInfos(expectedSubscriptionInfo);
+    assertThat(shadowOf(subscriptionManager).getAccessibleSubscriptionInfoList())
+        .containsExactly(expectedSubscriptionInfo);
+  }
+
+  @Test
+  @Config(minSdk = O_MR1)
+  public void setAccessibleSubscriptionInfoList_triggersSubscriptionsChanged() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    subscriptionManager.addOnSubscriptionsChangedListener(listener);
+    // Invoked upon registration, but that's not important for this test
+    int initialInvocationCount = listener.subscriptionChangedCount;
+
+    shadowOf(subscriptionManager)
+        .setAccessibleSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder()
+                .setId(123)
+                .setIsEmbedded(true)
+                .buildSubscriptionInfo());
+
+    assertThat(listener.subscriptionChangedCount - initialInvocationCount).isEqualTo(1);
+  }
+
+  @Test
   public void getAvailableSubscriptionInfoList() {
     SubscriptionInfo expectedSubscriptionInfo =
         SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo();
@@ -302,6 +340,20 @@ public class ShadowSubscriptionManagerTest {
     assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList()).hasSize(1);
     assertThat(shadowOf(subscriptionManager).getAvailableSubscriptionInfoList().get(0))
         .isSameInstanceAs(expectedSubscriptionInfo);
+  }
+
+  @Test
+  public void setAvailableSubscriptionInfoList_triggersSubscriptionsChanged() {
+    DummySubscriptionsChangedListener listener = new DummySubscriptionsChangedListener();
+    subscriptionManager.addOnSubscriptionsChangedListener(listener);
+    // Invoked upon registration, but that's not important for this test
+    int initialInvocationCount = listener.subscriptionChangedCount;
+
+    shadowOf(subscriptionManager)
+        .setAvailableSubscriptionInfos(
+            SubscriptionInfoBuilder.newBuilder().setId(123).buildSubscriptionInfo());
+
+    assertThat(listener.subscriptionChangedCount - initialInvocationCount).isEqualTo(1);
   }
 
   @Test

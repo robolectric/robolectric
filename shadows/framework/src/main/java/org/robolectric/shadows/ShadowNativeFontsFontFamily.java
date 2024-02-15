@@ -19,24 +19,26 @@ import org.robolectric.versioning.AndroidVersions.V;
     value = FontFamily.class,
     minSdk = Q,
     shadowPicker = Picker.class,
-    isInAndroidSdk = false)
+    isInAndroidSdk = false,
+    callNativeMethodsByDefault = true)
 public class ShadowNativeFontsFontFamily {
-  @Implementation(minSdk = S)
+
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static int nGetFontSize(long family) {
     return FontsFontFamilyNatives.nGetFontSize(family);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static long nGetFont(long family, int i) {
     return FontsFontFamilyNatives.nGetFont(family, i);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static String nGetLangTags(long family) {
     return FontsFontFamilyNatives.nGetLangTags(family);
   }
 
-  @Implementation(minSdk = S)
+  @Implementation(minSdk = S, maxSdk = U.SDK_INT)
   protected static int nGetVariant(long family) {
     return FontsFontFamilyNatives.nGetVariant(family);
   }
@@ -46,15 +48,20 @@ public class ShadowNativeFontsFontFamily {
       value = FontFamily.Builder.class,
       minSdk = Q,
       shadowPicker = ShadowNativeFontFamilyBuilder.Picker.class,
-      isInAndroidSdk = false)
+      isInAndroidSdk = false,
+      callNativeMethodsByDefault = true)
   public static class ShadowNativeFontFamilyBuilder {
-    @Implementation
+
+    @Implementation(minSdk = V.SDK_INT)
+    protected static void __staticInitializer__() {}
+
+    @Implementation(maxSdk = U.SDK_INT)
     protected static long nInitBuilder() {
       DefaultNativeRuntimeLoader.injectAndLoad();
       return FontFamilyBuilderNatives.nInitBuilder();
     }
 
-    @Implementation
+    @Implementation(maxSdk = U.SDK_INT)
     protected static void nAddFont(long builderPtr, long fontPtr) {
       FontFamilyBuilderNatives.nAddFont(builderPtr, fontPtr);
     }
@@ -75,18 +82,7 @@ public class ShadowNativeFontsFontFamily {
       return FontFamilyBuilderNatives.nBuild(builderPtr, langTags, variant, isCustomFallback);
     }
 
-    @Implementation(minSdk = V.SDK_INT)
-    protected static long nBuild(
-        long builderPtr,
-        String langTags,
-        int variant,
-        boolean isCustomFallback,
-        boolean isDefaultFallback,
-        int variableFamilyType) {
-      return FontFamilyBuilderNatives.nBuild(builderPtr, langTags, variant, isCustomFallback);
-    }
-
-    @Implementation
+    @Implementation(maxSdk = U.SDK_INT)
     protected static long nGetReleaseNativeFamily() {
       return FontFamilyBuilderNatives.nGetReleaseNativeFamily();
     }

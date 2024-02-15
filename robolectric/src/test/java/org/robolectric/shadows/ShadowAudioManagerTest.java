@@ -11,7 +11,6 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth8.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -377,6 +376,24 @@ public class ShadowAudioManagerTest {
   public void setMode_shouldSetAudioMode() {
     audioManager.setMode(AudioManager.MODE_RINGTONE);
     assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_RINGTONE);
+  }
+
+  @Test
+  public void lockMode_locked_modeRemainsTheSame() {
+    shadowOf(audioManager).lockMode(true);
+
+    audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+    assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_NORMAL);
+  }
+
+  @Test
+  public void lockMode_notLocked_modeIsSet() {
+    shadowOf(audioManager).lockMode(false);
+
+    audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
+    assertThat(audioManager.getMode()).isEqualTo(AudioManager.MODE_IN_COMMUNICATION);
   }
 
   @Test
@@ -894,7 +911,29 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = S)
   public void setCommunicationDevice_updatesCommunicationDevice() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
-    shadowOf(audioManager).setCommunicationDevice(scoDevice);
+    audioManager.setCommunicationDevice(scoDevice);
+
+    assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void lockCommunicationDevice_locked_deviceIsNotSet() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+    shadowOf(audioManager).lockCommunicationDevice(true);
+
+    audioManager.setCommunicationDevice(scoDevice);
+
+    assertThat(audioManager.getCommunicationDevice()).isNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void lockCommunicationDevice_notLocked_deviceIsSet() throws Exception {
+    AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
+    shadowOf(audioManager).lockCommunicationDevice(false);
+
+    audioManager.setCommunicationDevice(scoDevice);
 
     assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
   }
@@ -903,10 +942,10 @@ public class ShadowAudioManagerTest {
   @Config(minSdk = S)
   public void clearCommunicationDevice_clearsCommunicationDevice() throws Exception {
     AudioDeviceInfo scoDevice = createAudioDevice(DEVICE_OUT_BLUETOOTH_SCO);
-    shadowOf(audioManager).setCommunicationDevice(scoDevice);
+    audioManager.setCommunicationDevice(scoDevice);
     assertThat(audioManager.getCommunicationDevice()).isEqualTo(scoDevice);
 
-    shadowOf(audioManager).clearCommunicationDevice();
+    audioManager.clearCommunicationDevice();
     assertThat(audioManager.getCommunicationDevice()).isNull();
   }
 
