@@ -16,7 +16,7 @@ import android.os.MessageQueue;
 import android.os.MessageQueue.IdleHandler;
 import android.os.SystemClock;
 import android.util.Log;
-import androidx.annotation.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import java.time.Duration;
 import java.util.ArrayList;

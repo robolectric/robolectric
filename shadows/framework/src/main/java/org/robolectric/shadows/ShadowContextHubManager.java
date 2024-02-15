@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.hardware.location.ContextHubClient;
@@ -13,7 +14,6 @@ import android.hardware.location.NanoAppState;
 import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.Nullable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;

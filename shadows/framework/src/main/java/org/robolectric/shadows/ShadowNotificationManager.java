@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 
+import android.annotation.NonNull;
 import android.app.AutomaticZenRule;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -17,7 +18,6 @@ import android.content.ComponentName;
 import android.os.Build;
 import android.os.Parcel;
 import android.service.notification.StatusBarNotification;
-import androidx.annotation.NonNull;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;

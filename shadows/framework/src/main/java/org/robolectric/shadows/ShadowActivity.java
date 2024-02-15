@@ -12,6 +12,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.AnimRes;
 import android.annotation.ColorInt;
+import android.annotation.RequiresApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
@@ -52,7 +53,6 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import androidx.annotation.RequiresApi;
 import com.android.internal.app.IVoiceInteractor;
 import java.util.ArrayList;
 import java.util.HashMap;

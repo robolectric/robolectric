@@ -3,13 +3,13 @@ package org.robolectric.shadows;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import android.annotation.Nullable;
 import android.content.pm.VersionedPackage;
 import android.content.rollback.PackageRollbackInfo;
 import android.content.rollback.PackageRollbackInfo.RestoreInfo;
 import android.os.Build.VERSION_CODES;
 import android.util.IntArray;
 import android.util.SparseLongArray;
-import androidx.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;

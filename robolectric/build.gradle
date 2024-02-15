@@ -30,10 +30,12 @@ dependencies {
 
     compileOnly AndroidSdk.MAX_SDK.coordinates
     compileOnly libs.junit4
+    compileOnly libs.androidx.annotation
 
     api "androidx.test:monitor:$axtMonitorVersion@aar"
     implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion@aar"
 
+    testImplementation libs.androidx.annotation
     testImplementation libs.junit4
     testImplementation libs.truth
     testImplementation libs.truth.java8.extension

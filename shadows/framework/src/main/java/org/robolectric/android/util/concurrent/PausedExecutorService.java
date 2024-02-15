@@ -1,6 +1,6 @@
 package org.robolectric.android.util.concurrent;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 import com.google.common.annotations.Beta;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.AbstractFuture;

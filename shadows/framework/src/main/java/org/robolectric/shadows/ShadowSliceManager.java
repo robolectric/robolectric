@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.P;
 
+import android.annotation.NonNull;
 import android.app.slice.SliceManager;
 import android.app.slice.SliceSpec;
 import android.content.Context;
@@ -9,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Handler;
-import androidx.annotation.NonNull;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collection;

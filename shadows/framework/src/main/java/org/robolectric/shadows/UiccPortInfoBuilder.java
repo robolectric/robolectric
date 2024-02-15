@@ -1,8 +1,8 @@
 package org.robolectric.shadows;
 
+import android.annotation.RequiresApi;
 import android.os.Build.VERSION_CODES;
 import android.telephony.UiccPortInfo;
-import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

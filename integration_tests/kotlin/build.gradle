@@ -23,6 +23,7 @@ compileTestKotlin {
 dependencies {
     api project(":robolectric")
     compileOnly AndroidSdk.MAX_SDK.coordinates
+    implementation libs.androidx.annotation
 
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates

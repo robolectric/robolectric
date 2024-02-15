@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.os.Build.VERSION_CODES;
 import android.safetycenter.SafetyCenterManager;
 import android.safetycenter.SafetyEvent;
 import android.safetycenter.SafetySourceData;
 import android.safetycenter.SafetySourceErrorDetails;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import com.google.errorprone.annotations.concurrent.GuardedBy;
 import java.util.HashMap;
 import java.util.HashSet;

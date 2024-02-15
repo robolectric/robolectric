@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.P;
 import static org.robolectric.shadows.ShadowView.useRealGraphics;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.Nullable;
 import android.app.Instrumentation;
 import android.content.ClipData;
 import android.content.Context;
@@ -17,7 +18,6 @@ import android.view.IWindowManager;
 import android.view.IWindowSession;
 import android.view.View;
 import android.view.WindowManagerGlobal;
-import androidx.annotation.Nullable;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import org.robolectric.RuntimeEnvironment;

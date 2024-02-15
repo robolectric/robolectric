@@ -3,13 +3,13 @@ package org.robolectric.shadows;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.role.IRoleManager;
 import android.app.role.RoleManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import com.android.internal.util.Preconditions;
 import java.util.Arrays;
 import java.util.HashMap;

@@ -1,9 +1,9 @@
 package org.robolectric.fakes;
 
+import android.annotation.RequiresApi;
 import android.annotation.StyleRes;
 import android.os.Build;
 import android.window.SplashScreen;
-import androidx.annotation.RequiresApi;
 
 /** Robolectric implementation of {@link android.window.SplashScreen}. */
 @RequiresApi(api = Build.VERSION_CODES.S)

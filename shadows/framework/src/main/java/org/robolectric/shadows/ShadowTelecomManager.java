@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Verify.verifyNotNull;
 
+import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
@@ -27,7 +28,6 @@ import android.telecom.TelecomManager;
 import android.telecom.VideoProfile;
 import android.text.TextUtils;
 import android.util.ArrayMap;
-import androidx.annotation.Nullable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;

@@ -47,12 +47,12 @@ import static android.telephony.BarringInfo.BarringServiceInfo.BARRING_TYPE_NONE
 import static android.telephony.BarringInfo.BarringServiceInfo.BARRING_TYPE_UNCONDITIONAL;
 import static android.telephony.BarringInfo.BarringServiceInfo.BARRING_TYPE_UNKNOWN;
 
+import android.annotation.RequiresApi;
 import android.os.Build.VERSION_CODES;
 import android.telephony.BarringInfo;
 import android.telephony.BarringInfo.BarringServiceInfo;
 import android.telephony.CellIdentity;
 import android.util.SparseArray;
-import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

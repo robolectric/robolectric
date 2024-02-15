@@ -1,9 +1,8 @@
 package org.robolectric.shadows;
 
-
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.res.AssetManager;
-import androidx.annotation.NonNull;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.versioning.AndroidVersions.U;

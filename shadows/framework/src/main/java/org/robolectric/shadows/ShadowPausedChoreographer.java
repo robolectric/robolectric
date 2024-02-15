@@ -4,7 +4,7 @@ import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.view.Choreographer;
 import android.view.DisplayEventReceiver;
-import androidx.annotation.VisibleForTesting;
+import com.android.internal.annotations.VisibleForTesting;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.Resetter;

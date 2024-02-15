@@ -1,10 +1,10 @@
 package org.robolectric.shadows;
 
+import android.annotation.NonNull;
+import android.annotation.RequiresApi;
 import android.os.Build.VERSION_CODES;
 import android.telephony.UiccCardInfo;
 import android.telephony.UiccPortInfo;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayList;
 import java.util.List;

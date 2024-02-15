@@ -9,6 +9,8 @@ import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.annotation.Nullable;
+import android.annotation.RequiresApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.display.BrightnessChangeEvent;
@@ -19,8 +21,6 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.Surface;
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import com.google.auto.value.AutoBuilder;
 import java.util.HashMap;
 import java.util.List;

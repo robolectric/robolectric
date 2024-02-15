@@ -4,11 +4,11 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 
+import android.annotation.Nullable;
 import android.os.BugreportManager;
 import android.os.BugreportManager.BugreportCallback;
 import android.os.BugreportParams;
 import android.os.ParcelFileDescriptor;
-import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;

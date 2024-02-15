@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
+import android.annotation.RequiresApi;
 import android.media.AudioFormat;
 import android.media.AudioProfile;
 import android.os.Build.VERSION_CODES;
-import androidx.annotation.RequiresApi;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;

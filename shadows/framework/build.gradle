@@ -62,7 +62,6 @@ dependencies {
     api libs.sqlite4java
     compileOnly(AndroidSdk.MAX_SDK.coordinates)
     api libs.icu4j
-    api libs.androidx.annotation
     api libs.auto.value.annotations
     annotationProcessor libs.auto.value
 
