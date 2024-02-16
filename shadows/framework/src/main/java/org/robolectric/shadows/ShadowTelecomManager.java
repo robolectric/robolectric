@@ -1,11 +1,13 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION.SDK_INT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Verify.verifyNotNull;
 
 import android.annotation.SystemApi;
@@ -245,7 +247,20 @@ public class ShadowTelecomManager {
 
   @Implementation
   protected void registerPhoneAccount(PhoneAccount account) {
+    account = adjustCapabilities(account);
     accounts.put(account.getAccountHandle(), account);
+  }
+
+  private PhoneAccount adjustCapabilities(PhoneAccount account) {
+    // Mirror the capabilities adjustments done in com.android.server.telecom.PhoneAccountRegistrar.
+    if (SDK_INT >= UPSIDE_DOWN_CAKE
+        && account.hasCapabilities(PhoneAccount.CAPABILITY_SUPPORTS_TRANSACTIONAL_OPERATIONS)
+        && !account.hasCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED)) {
+      return account.toBuilder()
+          .setCapabilities(account.getCapabilities() | PhoneAccount.CAPABILITY_SELF_MANAGED)
+          .build();
+    }
+    return account;
   }
 
   @Implementation

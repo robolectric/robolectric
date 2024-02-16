@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
@@ -93,6 +94,20 @@ public class ShadowTelecomManagerTest {
     assertThat(shadowOf(telecomService).getAllPhoneAccountsCount()).isEqualTo(0);
     assertThat(shadowOf(telecomService).getAllPhoneAccounts()).hasSize(0);
     assertThat(telecomService.getAllPhoneAccountHandles()).hasSize(0);
+  }
+
+  @Test
+  @Config(minSdk = UPSIDE_DOWN_CAKE)
+  public void registerWithTransactionalCapabilites_addsSelfManagedCapability() {
+    PhoneAccountHandle handle = createHandle("id");
+    PhoneAccount phoneAccount =
+        PhoneAccount.builder(handle, "main_account")
+            // Transactional, but not explicitly self-managed.
+            .setCapabilities(PhoneAccount.CAPABILITY_SUPPORTS_TRANSACTIONAL_OPERATIONS)
+            .build();
+    telecomService.registerPhoneAccount(phoneAccount);
+
+    assertThat(telecomService.getSelfManagedPhoneAccounts()).contains(handle);
   }
 
   @Test
