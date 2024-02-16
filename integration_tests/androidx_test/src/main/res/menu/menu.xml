@@ -3,6 +3,5 @@
   <item
       android:id="@+id/menu_filter"
       android:title="menu_title"
-
-      android:showAsAction="never" />
+      app:showAsAction="never" />
 </menu>
