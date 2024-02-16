@@ -68,6 +68,15 @@ public class ShadowBuild {
   }
 
   /**
+   * Sets the value of the {@link Build#IS_DEBUGGABLE} field.
+   *
+   * <p>It will be reset for the next test.
+   */
+  public static void setDebuggable(Boolean isDebuggable) {
+    ReflectionHelpers.setStaticField(Build.class, "IS_DEBUGGABLE", isDebuggable);
+  }
+
+  /**
    * Sets the value of the {@link Build#MODEL} field.
    *
    * <p>It will be reset for the next test.
