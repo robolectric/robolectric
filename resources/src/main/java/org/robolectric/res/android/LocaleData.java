@@ -103,7 +103,7 @@ public class LocaleData {
             (((long) script.charAt(1) & 0xff) << 16) |
             (((long) script.charAt(2) & 0xff) << 8) |
             ((long) script.charAt(3) & 0xff));
-    return (REPRESENTATIVE_LOCALES.contains(packed_locale));
+    return REPRESENTATIVE_LOCALES.contains(packed_locale);
   }
 
   private static final int US_SPANISH = 0x65735553; // es-US

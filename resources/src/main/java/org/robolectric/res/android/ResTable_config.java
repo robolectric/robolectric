@@ -1210,11 +1210,11 @@ public class ResTable_config {
     if (isTruthy(requested)) {
       if (isTruthy(imsi()) || isTruthy(o.imsi())) {
         if ((mcc != o.mcc) && isTruthy(requested.mcc)) {
-          return (isTruthy(mcc));
+          return isTruthy(mcc);
         }
 
         if ((mnc != o.mnc) && isTruthy(requested.mnc)) {
-          return (isTruthy(mnc));
+          return isTruthy(mnc);
         }
       }
 

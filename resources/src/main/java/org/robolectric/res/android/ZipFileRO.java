@@ -145,7 +145,7 @@ public class ZipFileRO {
       final Ref<Long> pUncompLen, Ref<Long> pCompLen, Ref<Long> pOffset,
       final Ref<Long> pModWhen, Ref<Long> pCrc32)
   {
-    final ZipEntryRO zipEntry = /*reinterpret_cast<ZipEntryRO*>*/(entry);
+    final ZipEntryRO zipEntry = /*reinterpret_cast<ZipEntryRO*>*/ entry;
     final ZipEntry ze = zipEntry.entry;
 
     if (pMethod != null) {
