@@ -63,6 +63,8 @@ public final class ImageReaderNatives {
   public synchronized native void nativeDiscardFreeBuffers(); // Q+
 
   /**
+   * Setup image in native level.
+   *
    * @return A return code {@code ACQUIRE_*}
    * @see #ACQUIRE_SUCCESS
    * @see #ACQUIRE_NO_BUFS
