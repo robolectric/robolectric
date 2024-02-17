@@ -4,7 +4,6 @@ import static com.google.errorprone.BugPattern.SeverityLevel.WARNING;
 import static com.google.errorprone.matchers.Description.NO_MATCH;
 import static com.google.errorprone.matchers.Matchers.instanceMethod;
 import static com.google.errorprone.matchers.Matchers.staticMethod;
-import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
 import static org.robolectric.errorprone.bugpatterns.Helpers.isCastableTo;
 import static org.robolectric.errorprone.bugpatterns.Helpers.isInShadowClass;
 
@@ -19,6 +18,7 @@ import com.google.errorprone.fixes.Fix;
 import com.google.errorprone.fixes.SuggestedFix;
 import com.google.errorprone.matchers.Description;
 import com.google.errorprone.matchers.method.MethodMatchers.MethodNameMatcher;
+import com.google.errorprone.util.ASTHelpers;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -127,7 +127,8 @@ public class DeprecatedMethodsCheck extends BugChecker implements ClassTreeMatch
       @Override
       public Void visitClass(ClassTree classTree, VisitorState visitorState) {
         boolean priorInShadowClass = inShadowClass;
-        inShadowClass = hasAnnotation(classTree, Implements.class, visitorState);
+        inShadowClass =
+            ASTHelpers.hasAnnotation(classTree, Implements.class.getName(), visitorState);
         try {
           return super.visitClass(classTree, visitorState);
         } finally {

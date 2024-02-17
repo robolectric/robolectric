@@ -1,7 +1,6 @@
 package org.robolectric.errorprone.bugpatterns;
 
 import static com.google.errorprone.util.ASTHelpers.findEnclosingNode;
-import static com.google.errorprone.util.ASTHelpers.hasAnnotation;
 
 import com.google.errorprone.VisitorState;
 import com.google.errorprone.predicates.TypePredicate;
@@ -14,7 +13,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import org.robolectric.annotation.Implements;
 
-/** Matchers for {@link ShadowUsageCheck}. */
+/** Matchers for {@link DeprecatedMethodsCheck}. */
 public class Helpers {
 
   /** Match sub-types or implementations of the given type. */
@@ -33,7 +32,7 @@ public class Helpers {
         ? (JCClassDecl) leaf
         : findEnclosingNode(state.getPath(), JCClassDecl.class);
 
-    return hasAnnotation(classDecl, Implements.class, state);
+    return ASTHelpers.hasAnnotation(classDecl, Implements.class.getName(), state);
   }
 
   /** Matches implementations of the given interface. */
