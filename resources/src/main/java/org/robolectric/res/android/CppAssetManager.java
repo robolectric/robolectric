@@ -1431,8 +1431,8 @@ public class CppAssetManager {
         pNewSorted.add(pMergedInfo.itemAt(mergeIdx));
         mergeIdx++;
       } else {
-              /* "cont" is lower, add that one */
-        assert (pContents.itemAt(contIdx).isLessThan(pMergedInfo.itemAt(mergeIdx)));
+        /* "cont" is lower, add that one */
+        assert pContents.itemAt(contIdx).isLessThan(pMergedInfo.itemAt(mergeIdx));
         pNewSorted.add(pContents.itemAt(contIdx));
         contIdx++;
       }

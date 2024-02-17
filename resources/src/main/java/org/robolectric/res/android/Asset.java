@@ -555,14 +555,13 @@ static Asset createFromCompressedMap(FileMap dataMap,
       default:
         ALOGW("unexpected whence %d\n", whence);
         // this was happening due to an long size mismatch
-        assert(false);
-        return (long) -1;
+        assert false;
+        return -1;
     }
 
     if (newOffset < 0 || newOffset > maxPosn) {
-      ALOGW("seek out of range: want %d, end=%d\n",
-          (long) newOffset, (long) maxPosn);
-      return (long) -1;
+      ALOGW("seek out of range: want %d, end=%d\n", newOffset, maxPosn);
+      return -1;
     }
 
     return newOffset;
@@ -786,7 +785,7 @@ static Asset createFromCompressedMap(FileMap dataMap,
           if (mFp.getFilePointer() != mStart + mOffset) {
             ALOGE("Hosed: %d != %d+%d\n",
                 mFp.getFilePointer(), (long) mStart, (long) mOffset);
-            assert(false);
+            assert false;
           }
 
           /*
