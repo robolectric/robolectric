@@ -1,7 +1,6 @@
 package org.robolectric.internal.bytecode;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.robolectric.util.ReflectionHelpers.newInstance;
 import static org.robolectric.util.ReflectionHelpers.setStaticField;
 
 import java.io.IOException;
@@ -16,6 +15,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import javax.inject.Inject;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.Util;
 
 public class Sandbox {
@@ -92,7 +92,10 @@ public class Sandbox {
     setStaticField(invokeDynamicSupportClass, "INTERCEPTORS", interceptors);
 
     Class<?> shadowClass = bootstrappedClass(Shadow.class);
-    setStaticField(shadowClass, "SHADOW_IMPL", newInstance(bootstrappedClass(ShadowImpl.class)));
+    setStaticField(
+        shadowClass,
+        "SHADOW_IMPL",
+        ReflectionHelpers.newInstance(bootstrappedClass(ShadowImpl.class)));
   }
 
   public void runOnMainThread(Runnable runnable) {
