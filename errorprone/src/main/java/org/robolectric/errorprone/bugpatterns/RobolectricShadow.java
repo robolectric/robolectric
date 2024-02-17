@@ -49,7 +49,6 @@ import org.robolectric.annotation.Implements;
  * @author christianw@google.com (Christian Williams)
  */
 @BugPattern(
-    name = "RobolectricShadow",
     summary = "Robolectric @Implementation methods should be protected.",
     severity = SUGGESTION,
     documentSuppression = false,
