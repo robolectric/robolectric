@@ -41,7 +41,6 @@ import org.robolectric.annotation.Implements;
  */
 @AutoService(BugChecker.class)
 @BugPattern(
-    name = "DeprecatedMethods",
     summary = "Prefer supported APIs.",
     severity = WARNING,
     documentSuppression = false,
