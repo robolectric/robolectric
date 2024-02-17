@@ -20,7 +20,8 @@ import org.robolectric.util.Util;
 public class BuckManifestFactory implements ManifestFactory {
 
   private static final String BUCK_ROBOLECTRIC_RES_DIRECTORIES = "buck.robolectric_res_directories";
-  private static final String BUCK_ROBOLECTRIC_ASSETS_DIRECTORIES = "buck.robolectric_assets_directories";
+  private static final String BUCK_ROBOLECTRIC_ASSETS_DIRECTORIES =
+      "buck.robolectric_assets_directories";
   private static final String BUCK_ROBOLECTRIC_MANIFEST = "buck.robolectric_manifest";
 
   @Override
@@ -83,6 +84,6 @@ public class BuckManifestFactory implements ManifestFactory {
     for (String dir : dirs) {
       files.add(Fs.fromUrl(dir));
     }
-    return files;
+    return Collections.unmodifiableList(files);
   }
 }
