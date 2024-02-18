@@ -42,6 +42,47 @@ public class ShadowDisplay {
   @RealObject Display realObject;
 
   private Float refreshRate;
+  private Float scaledDensity;
+
+  /**
+   * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity} will
+   * be modified to reflect the value specified. Note that this is not a realistic state.
+   *
+   * @deprecated This behavior is deprecated and will be removed in Robolectric 4.13.
+   */
+  @Deprecated
+  @Implementation
+  protected void getMetrics(DisplayMetrics outMetrics) {
+    reflector(_Display_.class, realObject).getMetrics(outMetrics);
+    if (scaledDensity != null) {
+      outMetrics.scaledDensity = scaledDensity;
+    }
+  }
+
+  /**
+   * If {@link #setScaledDensity(float)} has been called, {@link DisplayMetrics#scaledDensity} will
+   * be modified to reflect the value specified. Note that this is not a realistic state.
+   *
+   * @deprecated This behavior is deprecated and will be removed in Robolectric 4.13.
+   */
+  @Deprecated
+  @Implementation
+  protected void getRealMetrics(DisplayMetrics outMetrics) {
+    reflector(_Display_.class, realObject).getRealMetrics(outMetrics);
+    if (scaledDensity != null) {
+      outMetrics.scaledDensity = scaledDensity;
+    }
+  }
+
+  /**
+   * Changes the scaled density for this display.
+   *
+   * @deprecated This method is deprecated and will be removed in Robolectric 4.13.
+   */
+  @Deprecated
+  public void setScaledDensity(float scaledDensity) {
+    this.scaledDensity = scaledDensity;
+  }
 
   /**
    * If {@link #setRefreshRate(float)} has been called, this method will return the specified value.
@@ -273,6 +314,11 @@ public class ShadowDisplay {
   /** Reflector interface for {@link Display}'s internals. */
   @ForType(Display.class)
   interface _Display_ {
+    @Direct
+    void getMetrics(DisplayMetrics outMetrics);
+
+    @Direct
+    void getRealMetrics(DisplayMetrics outMetrics);
 
     @Direct
     float getRefreshRate();
