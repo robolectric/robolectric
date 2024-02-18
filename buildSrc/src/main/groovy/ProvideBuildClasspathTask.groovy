@@ -6,18 +6,18 @@ class ProvideBuildClasspathTask extends DefaultTask {
     @OutputFile File outFile
 
     @TaskAction
-    public void writeProperties() throws Exception {
+    void writeProperties() throws Exception {
         final Properties props = new Properties()
 
-        String preinstrumentedKey = "robolectric.usePreinstrumentedJars";
+        String preinstrumentedKey = "robolectric.usePreinstrumentedJars"
         boolean usePreinstrumentedJars =
             Boolean.parseBoolean(
-              System.getProperty(preinstrumentedKey, "true"));
+              System.getProperty(preinstrumentedKey, "true"))
 
         AndroidSdk.ALL_SDKS.each { androidSdk ->
             String coordinates =
               usePreinstrumentedJars ?
-                androidSdk.preinstrumentedCoordinates : androidSdk.coordinates;
+                androidSdk.preinstrumentedCoordinates : androidSdk.coordinates
             def config =
                 project.configurations.create("sdk${androidSdk.apiLevel}")
             project.dependencies.add(

@@ -57,9 +57,9 @@ public class AarDepsPlugin implements Plugin<Project> {
             // incremental compile breaks (run `gradlew -i classes` twice to see impact):
             t ->
                 t.doFirst(
-                    new Action<Task>() {
+                    new Action<>() {
                       @Override
-                      public void execute(Task task) {
+                      public void execute(@NotNull Task task) {
                         List<File> aarFiles = AarDepsPlugin.this.findAarFiles(t.getClasspath());
                         if (!aarFiles.isEmpty()) {
                           throw new IllegalStateException(
@@ -91,8 +91,9 @@ public class AarDepsPlugin implements Plugin<Project> {
       super.transform(
           new TransformOutputs() {
             // This is the one that ExtractAarTransform calls.
+            @NotNull
             @Override
-            public File dir(Object o) {
+            public File dir(@NotNull Object o) {
               // ExtractAarTransform needs a place to extract the AAR. We don't really need to
               // register this as an output, but it'd be tricky to avoid it.
               File dir = outputs.dir(o);
@@ -105,8 +106,9 @@ public class AarDepsPlugin implements Plugin<Project> {
               return outputs.dir(o);
             }
 
+            @NotNull
             @Override
-            public File file(Object o) {
+            public File file(@NotNull Object o) {
               throw new IllegalStateException("shouldn't be called");
             }
           });
