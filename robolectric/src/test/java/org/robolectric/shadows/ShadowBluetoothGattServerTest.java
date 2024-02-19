@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
@@ -52,6 +53,10 @@ public class ShadowBluetoothGattServerTest {
           UUID.fromString("00000000-0000-0000-0000-0000000000A3"),
           BluetoothGattCharacteristic.PROPERTY_READ,
           BluetoothGattCharacteristic.PERMISSION_READ);
+  private static final BluetoothGattService service =
+      new BluetoothGattService(
+          UUID.fromString("00000000-0000-0000-0001-0000000000A1"),
+          BluetoothGattService.SERVICE_TYPE_PRIMARY);
 
   private BluetoothManager manager;
   private Context context;
@@ -395,5 +400,55 @@ public class ShadowBluetoothGattServerTest {
     shadowOf(server).notifyDisconnection(device);
     shadowOf(server).notifyConnection(device);
     assertThat(shadowOf(server).isConnectionCancelled(device)).isFalse();
+  }
+
+  @Test
+  public void test_getServices_beforeAddService() {
+    assertThat(shadowOf(server).getServices()).isEmpty();
+  }
+
+  @Test
+  public void test_getServices_afterAddService() {
+    server.addService(service);
+    assertThat(shadowOf(server).getServices()).containsExactly(service);
+  }
+
+  @Test
+  public void test_getServices_afterAddService_afterRemoveService() {
+    server.addService(service);
+    server.removeService(service);
+    assertThat(shadowOf(server).getServices()).isEmpty();
+  }
+
+  @Test
+  public void test_getServices_afterAddService_afterClearService() {
+    server.addService(service);
+    server.clearServices();
+    assertThat(shadowOf(server).getServices()).isEmpty();
+  }
+
+  @Test
+  public void test_getService_beforeAddService() {
+    assertThat(shadowOf(server).getService(service.getUuid())).isNull();
+  }
+
+  @Test
+  public void test_getService_afterAddService() {
+    server.addService(service);
+    assertThat(shadowOf(server).getService(service.getUuid())).isEqualTo(service);
+  }
+
+  @Test
+  public void test_getService_afterAddService_afterRemoveService() {
+    server.addService(service);
+    server.removeService(service);
+    assertThat(shadowOf(server).getService(service.getUuid())).isNull();
+  }
+
+  @Test
+  public void test_getService_afterAddService_afterClearService() {
+    server.addService(service);
+    server.clearServices();
+    assertThat(shadowOf(server).getService(service.getUuid())).isNull();
   }
 }

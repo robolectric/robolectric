@@ -9,11 +9,13 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothGattServerCallback;
 import android.bluetooth.BluetoothGattService;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
@@ -76,6 +78,41 @@ public class ShadowBluetoothGattServer {
     bluetoothGattServerReflector.addService(service);
     this.services.add(service);
     return true;
+  }
+
+  /**
+   * Remove a service from the GATT server.
+   *
+   * @param service service to be removed from GattServer
+   */
+  @Implementation
+  protected boolean removeService(BluetoothGattService service) {
+    return this.services.remove(service);
+  }
+
+  /** Remove all services from the list of provided services. */
+  @Implementation
+  protected void clearServices() {
+    this.services.clear();
+  }
+
+  /** Returns a list of GATT services offered by this device. */
+  @Implementation
+  protected List<BluetoothGattService> getServices() {
+    return ImmutableList.copyOf(this.services);
+  }
+
+  /**
+   * Returns a {@link BluetoothGattService} from the list of services offered by this device.
+   *
+   * <p>If multiple instances of the same service (as identified by UUID) exist, the first instance
+   * of the service is returned.
+   *
+   * @param uuid uuid of service
+   */
+  @Implementation
+  protected BluetoothGattService getService(UUID uuid) {
+    return this.services.stream().filter(s -> s.getUuid().equals(uuid)).findFirst().orElse(null);
   }
 
   /**
