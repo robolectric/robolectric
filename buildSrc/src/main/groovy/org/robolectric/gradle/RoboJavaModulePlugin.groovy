@@ -11,11 +11,11 @@ class RoboJavaModulePlugin implements Plugin<Project> {
 
         def skipErrorprone = System.getenv('SKIP_ERRORPRONE') == "true"
         if (!skipErrorprone) {
-          apply plugin: "net.ltgt.errorprone"
-          project.dependencies {
-            errorprone(libs.error.prone.core)
-            errorproneJavac(libs.error.prone.javac)
-          }
+            apply plugin: "net.ltgt.errorprone"
+            project.dependencies {
+                errorprone(libs.error.prone.core)
+                errorproneJavac(libs.error.prone.javac)
+            }
         }
 
         apply plugin: AarDepsPlugin
@@ -23,7 +23,7 @@ class RoboJavaModulePlugin implements Plugin<Project> {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
 
-        tasks.withType(JavaCompile) { task ->
+        tasks.withType(JavaCompile).configureEach { task ->
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -68,8 +68,8 @@ class RoboJavaModulePlugin implements Plugin<Project> {
             }
 
             def forwardedSystemProperties = System.properties
-                    .findAll { k,v -> k.startsWith("robolectric.") }
-                    .collect { k,v -> "-D$k=$v" }
+                    .findAll { k, v -> k.startsWith("robolectric.") }
+                    .collect { k, v -> "-D$k=$v" }
             jvmArgs = forwardedSystemProperties
             jvmArgs += [
                     '--add-opens=java.base/java.lang=ALL-UNNAMED',
