@@ -6,11 +6,10 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 
 class GenerateSdksFileTask extends DefaultTask {
-    @OutputFile
-    File outFile
+    @OutputFile File outFile
 
     @TaskAction
-    void writeProperties() throws Exception {
+    public void writeProperties() throws Exception {
         File outDir = outFile.parentFile
         if (!outDir.directory) outDir.mkdirs()
         outFile.withPrintWriter { out ->
@@ -27,12 +26,10 @@ class GenerateSdksFileTask extends DefaultTask {
 }
 
 task('generateSdksFile', type: GenerateSdksFileTask) {
-    outFile = project.rootProject.layout.buildDirectory.file('sdks.txt').get().asFile
+    outFile = new File(project.rootProject.buildDir, 'sdks.txt')
 }
 
-tasks.named("classes").configure { task ->
-    task.dependsOn(generateSdksFile)
-}
+tasks['classes'].dependsOn(generateSdksFile)
 
 dependencies {
     api project(":annotations")
