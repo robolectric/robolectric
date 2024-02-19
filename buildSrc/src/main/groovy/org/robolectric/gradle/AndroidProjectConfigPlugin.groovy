@@ -4,9 +4,9 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 
-public class AndroidProjectConfigPlugin implements Plugin<Project> {
+class AndroidProjectConfigPlugin implements Plugin<Project> {
     @Override
-    public void apply(Project project) {
+    void apply(Project project) {
         project.android.testOptions.unitTests.all {
             // TODO: DRY up code with RoboJavaModulePlugin...
             testLogging {
@@ -26,8 +26,8 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
             }
 
             def forwardedSystemProperties = System.properties
-                    .findAll { k,v -> k.startsWith("robolectric.") }
-                    .collect { k,v -> "-D$k=$v" }
+                    .findAll { k, v -> k.startsWith("robolectric.") }
+                    .collect { k, v -> "-D$k=$v" }
             jvmArgs = forwardedSystemProperties
             jvmArgs += [
                     '--add-opens=java.base/java.lang=ALL-UNNAMED',
@@ -51,8 +51,8 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
         }
 
         project.task('provideBuildClasspath', type: ProvideBuildClasspathTask) {
-            File outDir = new File(project.buildDir, "generated/robolectric")
-            outFile = new File(outDir, 'robolectric-deps.properties')
+            File outDir = project.layout.buildDirectory.dir("generated/robolectric").get().asFile
+            outFile = new File(outDir, "robolectric-deps.properties")
 
             project.android.sourceSets['test'].resources.srcDir(outDir)
         }
@@ -66,7 +66,7 @@ public class AndroidProjectConfigPlugin implements Plugin<Project> {
         }
 
         // Only run tests in the debug variant. This is to avoid running tests twice when `./gradlew test` is run at the top-level.
-        project.tasks.withType(Test) {
+        project.tasks.withType(Test).configureEach {
             onlyIf { variantName.toLowerCase().contains('debug') }
         }
     }

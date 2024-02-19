@@ -9,13 +9,13 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final N_MR1 = new AndroidSdk(25, "7.1.0_r7", "r1")
     static final O = new AndroidSdk(26, "8.0.0_r4", "r1")
     static final O_MR1 = new AndroidSdk(27, "8.1.0", "4611349")
-    static final P = new AndroidSdk(28, "9", "4913185-2");
-    static final Q = new AndroidSdk(29, "10", "5803371");
-    static final R = new AndroidSdk(30, "11", "6757853");
-    static final S = new AndroidSdk(31, "12", "7732740");
-    static final S_V2 = new AndroidSdk(32, "12.1", "8229987");
-    static final TIRAMISU = new AndroidSdk(33, "13", "9030017");
-    static final U = new AndroidSdk(34, "14", "10818077");
+    static final P = new AndroidSdk(28, "9", "4913185-2")
+    static final Q = new AndroidSdk(29, "10", "5803371")
+    static final R = new AndroidSdk(30, "11", "6757853")
+    static final S = new AndroidSdk(31, "12", "7732740")
+    static final S_V2 = new AndroidSdk(32, "12.1", "8229987")
+    static final TIRAMISU = new AndroidSdk(33, "13", "9030017")
+    static final U = new AndroidSdk(34, "14", "10818077")
 
     static final List<AndroidSdk> ALL_SDKS = [
             KITKAT,
@@ -26,7 +26,7 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final MAX_SDK = Collections.max(ALL_SDKS)
 
     public final int apiLevel
-    private final String androidVersion
+    public final String androidVersion
     private final String frameworkSdkBuildVersion
 
     AndroidSdk(int apiLevel, String androidVersion, String frameworkSdkBuildVersion) {
