@@ -58,9 +58,8 @@ project.afterEvaluate {
         // prevent compiler from complaining about duplicate classes...
         def excludeFromCompile = compilerConfiguration.appendNode 'excludeFromCompile'
         configAnnotationProcessing.each { Project subProject ->
-            def buildDirectory = subProject.layout.buildDirectory.get().asFile
             excludeFromCompile.appendNode('directory',
-                    [url: "file://$buildDirectory/classes/java/main/generated", includeSubdirectories: "true"])
+                    [url: "file://${subProject.buildDir}/classes/java/main/generated", includeSubdirectories: "true"])
         }
 
         // replace existing annotationProcessing tag with a new one...
@@ -74,16 +73,13 @@ project.afterEvaluate {
                         processor(name: "org.robolectric.annotation.processing.RobolectricProcessor")
 
                         processorPath(useClasspath: "false") {
-                            project.project(":processor")
-                                    .configurations.named("runtime")
-                                    .configure { runtimeConfiguration ->
-                                        runtimeConfiguration.allArtifacts.each { artifact ->
-                                            entry(name: artifact.file)
-                                        }
-                                        runtimeConfiguration.files.each { file ->
-                                            entry(name: file)
-                                        }
-                                    }
+                            def processorRuntimeCfg = project.project(":processor").configurations['runtime']
+                            processorRuntimeCfg.allArtifacts.each { artifact ->
+                                entry(name: artifact.file)
+                            }
+                            processorRuntimeCfg.files.each { file ->
+                                entry(name: file)
+                            }
                         }
                     }
                 }
@@ -95,9 +91,7 @@ project.afterEvaluate {
 apply plugin: 'nebula-aggregate-javadocs'
 
 rootProject.gradle.projectsEvaluated {
-    rootProject.tasks.named("aggregateJavadocs").configure {
-        it.failOnError = false
-    }
+    rootProject.tasks['aggregateJavadocs'].failOnError = false
 }
 
 gradle.projectsEvaluated {
@@ -128,10 +122,10 @@ gradle.projectsEvaluated {
 gradle.projectsEvaluated {
     tasks.register('aggregateJsondocs', Copy) {
         project.subprojects.findAll { it.plugins.hasPlugin(ShadowsPlugin) }.each { subproject ->
-            dependsOn subproject.tasks.named("compileJava")
-            from subproject.layout.buildDirectory.dir("docs/json")
+            dependsOn subproject.tasks["compileJava"]
+            from "${subproject.buildDir}/docs/json"
         }
-        into layout.buildDirectory.dir("docs/json")
+        into "$buildDir/docs/json"
     }
 }
 
