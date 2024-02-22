@@ -19,6 +19,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
@@ -273,6 +274,32 @@ public class ShadowUIModeManagerTest {
             Settings.Secure.getInt(
                 context.getContentResolver(), Settings.Secure.UI_NIGHT_MODE_CUSTOM_TYPE))
         .isEqualTo(UiModeManager.MODE_NIGHT_CUSTOM_TYPE_SCHEDULE);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProjectingPackages_noProjectingPackages_returnsEmpty() {
+    assertThat(uiModeManager.getProjectingPackages(UiModeManager.PROJECTION_TYPE_ALL)).isEmpty();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProjectingPackages_projecting_returnsNotEmpty() {
+    setPermissions(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+    uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+    assertThat(uiModeManager.getProjectingPackages(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE))
+        .contains(RuntimeEnvironment.getApplication().getPackageName());
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getProjectingPackages_projecting_allTypes_returnsNotEmpty() {
+    setPermissions(android.Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION);
+    uiModeManager.requestProjection(UiModeManager.PROJECTION_TYPE_AUTOMOTIVE);
+
+    assertThat(uiModeManager.getProjectingPackages(UiModeManager.PROJECTION_TYPE_ALL))
+        .contains(RuntimeEnvironment.getApplication().getPackageName());
   }
 
   private void setPermissions(String... permissions) {

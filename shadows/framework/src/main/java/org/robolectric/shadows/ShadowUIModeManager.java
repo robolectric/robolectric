@@ -14,7 +14,9 @@ import android.os.Build.VERSION_CODES;
 import android.provider.Settings;
 import com.android.internal.annotations.GuardedBy;
 import com.google.common.collect.ImmutableSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
@@ -32,7 +34,7 @@ public class ShadowUIModeManager {
   public int lastFlags;
   public int lastCarModePriority;
   private int currentApplicationNightMode = 0;
-  private final Set<Integer> activeProjectionTypes = new HashSet<>();
+  private final Map<Integer, Set<String>> activeProjectionTypes = new HashMap<>();
   private boolean failOnProjectionToggle;
 
   private static final ImmutableSet<Integer> VALID_NIGHT_MODES =
@@ -116,12 +118,22 @@ public class ShadowUIModeManager {
     }
   }
 
+  @Implementation(minSdk = VERSION_CODES.S)
+  protected Set<String> getProjectingPackages(int projectionType) {
+    if (projectionType == UiModeManager.PROJECTION_TYPE_ALL) {
+      Set<String> projections = new HashSet<>();
+      activeProjectionTypes.values().forEach(projections::addAll);
+      return projections;
+    }
+    return activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
+  }
+
   public int getApplicationNightMode() {
     return currentApplicationNightMode;
   }
 
   public Set<Integer> getActiveProjectionTypes() {
-    return new HashSet<>(activeProjectionTypes);
+    return new HashSet<>(activeProjectionTypes.keySet());
   }
 
   public void setFailOnProjectionToggle(boolean failOnProjectionToggle) {
@@ -143,7 +155,10 @@ public class ShadowUIModeManager {
     if (failOnProjectionToggle) {
       return false;
     }
-    activeProjectionTypes.add(projectionType);
+    Set<String> projections = activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
+    projections.add(RuntimeEnvironment.getApplication().getPackageName());
+    activeProjectionTypes.put(projectionType, projections);
+
     return true;
   }
 
@@ -156,7 +171,19 @@ public class ShadowUIModeManager {
     if (failOnProjectionToggle) {
       return false;
     }
-    return activeProjectionTypes.remove(projectionType);
+    String packageName = RuntimeEnvironment.getApplication().getPackageName();
+    Set<String> projections = activeProjectionTypes.getOrDefault(projectionType, new HashSet<>());
+    if (projections.contains(packageName)) {
+      projections.remove(packageName);
+      if (projections.isEmpty()) {
+        activeProjectionTypes.remove(projectionType);
+      } else {
+        activeProjectionTypes.put(projectionType, projections);
+      }
+      return true;
+    }
+
+    return false;
   }
 
   @Implementation(minSdk = TIRAMISU)
@@ -228,8 +255,10 @@ public class ShadowUIModeManager {
   private void assertHasPermission(String... permissions) {
     Context context = RuntimeEnvironment.getApplication();
     for (String permission : permissions) {
-      if (context.getPackageManager().checkPermission(permission, context.getPackageName())
-          != PackageManager.PERMISSION_GRANTED) {
+      // Check both the Runtime based and Manifest based permissions
+      if (context.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED
+          && context.getPackageManager().checkPermission(permission, context.getPackageName())
+              != PackageManager.PERMISSION_GRANTED) {
         throw new SecurityException("Missing required permission: " + permission);
       }
     }
