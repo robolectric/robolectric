@@ -1,8 +1,10 @@
+import org.robolectric.gradle.DependencyGuardPlugin
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
+apply plugin: DependencyGuardPlugin
 
 dependencies {
     compileOnly libs.findbugs.jsr305

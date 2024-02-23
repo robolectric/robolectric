@@ -1,8 +1,10 @@
+import org.robolectric.gradle.DependencyGuardPlugin
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
+apply plugin: DependencyGuardPlugin
 
 if (System.getenv('PUBLISH_NATIVERUNTIME_DIST_COMPAT') == "true") {
   apply plugin: 'maven-publish'
