@@ -1,10 +1,11 @@
+import org.robolectric.gradle.DependencyGuardPlugin
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
-
 apply plugin: ShadowsPlugin
+apply plugin: DependencyGuardPlugin
 
 shadows {
     packageName "org.robolectric.shadows.gms"

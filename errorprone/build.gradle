@@ -1,9 +1,11 @@
 import org.gradle.internal.jvm.Jvm
+import org.robolectric.gradle.DependencyGuardPlugin
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
 apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
+apply plugin: DependencyGuardPlugin
 
 // Disable annotation processor for tests
 compileTestJava {

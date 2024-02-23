@@ -1,7 +1,10 @@
+import org.robolectric.gradle.DependencyGuardPlugin
+
 plugins {
     id "application"
 }
 apply plugin: 'java'
+apply plugin: DependencyGuardPlugin
 
 ext {
     javaMainClass = "org.robolectric.preinstrumented.JarInstrumentor"

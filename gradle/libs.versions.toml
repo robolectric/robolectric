@@ -126,6 +126,9 @@ play-services-for-shadows = "17.0.0"
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
 
+# https://github.com/dropbox/dependency-guard/releases
+dependency-guard-plugin = "0.5.0"
+
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-gradle" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -240,6 +243,8 @@ play-services-base-for-shadows = { module = "com.google.android.gms:play-service
 play-services-basement-for-shadows = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-for-shadows" }
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
+
+dependency-guard-gradle = { module = "com.dropbox.dependency-guard:dependency-guard", version.ref = "dependency-guard-plugin" }
 
 [bundles]
 play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]

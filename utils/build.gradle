@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.robolectric.gradle.DependencyGuardPlugin
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 import org.robolectric.gradle.SpotlessPlugin
@@ -8,6 +9,7 @@ apply plugin: 'kotlin'
 apply plugin: DeployedRoboJavaModulePlugin
 apply plugin: SpotlessPlugin
 apply plugin: "io.gitlab.arturbosch.detekt"
+apply plugin: DependencyGuardPlugin
 
 tasks.withType(GenerateModuleMetadata).configureEach {
     // We don't want to release gradle module metadata now to avoid
