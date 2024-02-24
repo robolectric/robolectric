@@ -5,8 +5,11 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import android.os.Build.VERSION_CODES;
 import android.os.CancellationSignal;
 import android.os.PersistableBundle;
+import android.uwb.AdapterState;
 import android.uwb.RangingSession;
+import android.uwb.StateChangeReason;
 import android.uwb.UwbManager;
+import android.uwb.UwbManager.AdapterStateCallback;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +21,12 @@ import org.robolectric.shadow.api.Shadow;
 /** Adds Robolectric support for UWB ranging. */
 @Implements(value = UwbManager.class, minSdk = VERSION_CODES.S, isInAndroidSdk = false)
 public class ShadowUwbManager {
+
+  private AdapterStateCallback callback;
+
+  private int adapterState = AdapterStateCallback.STATE_ENABLED_INACTIVE;
+
+  private int stateChangedReason = AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY;
 
   private PersistableBundle specificationInfo = new PersistableBundle();
 
@@ -44,6 +53,32 @@ public class ShadowUwbManager {
         public void onClose(RangingSession session, RangingSession.Callback callback) {}
       };
 
+  @Implementation
+  protected void registerAdapterStateCallback(Executor executor, AdapterStateCallback callback) {
+    this.callback = callback;
+    callback.onStateChanged(adapterState, stateChangedReason);
+  }
+
+  /**
+   * Simulates adapter state change by invoking a callback registered by {@link
+   * ShadowUwbManager#registerAdapterStateCallback(Executor executor, AdapterStateCallback
+   * callback)}.
+   *
+   * @param state A state that should be passed to the callback.
+   * @param reason A reason that should be passed to the callback.
+   * @throws IllegalArgumentException if the callback is missing.
+   */
+  public void simulateAdapterStateChange(@AdapterState int state, @StateChangeReason int reason) {
+    if (this.callback == null) {
+      throw new IllegalArgumentException("AdapterStateCallback should not be null");
+    }
+
+    adapterState = state;
+    stateChangedReason = reason;
+
+    this.callback.onStateChanged(state, reason);
+  }
+
   /**
    * Simply returns the bundle provided by {@link ShadowUwbManager#setSpecificationInfo()}, allowing
    * the tester to dictate available features.
@@ -56,10 +91,15 @@ public class ShadowUwbManager {
   /**
    * Instantiates a {@link ShadowRangingSession} with the adapter provided by {@link
    * ShadowUwbManager#setUwbAdapter()}, allowing the tester dictate the results of ranging attempts.
+   *
+   * @throws IllegalArgumentException if UWB is disabled.
    */
   @Implementation
   protected CancellationSignal openRangingSession(
       PersistableBundle params, Executor executor, RangingSession.Callback callback) {
+    if (!isUwbEnabled()) {
+      throw new IllegalStateException("Uwb is not enabled");
+    }
     RangingSession session = ShadowRangingSession.newInstance(executor, callback, adapter);
     CancellationSignal cancellationSignal = new CancellationSignal();
     cancellationSignal.setOnCancelListener(session::close);
@@ -89,6 +129,35 @@ public class ShadowUwbManager {
       RangingSession.Callback callback,
       String chipId) {
     return openRangingSession(params, executor, callback);
+  }
+
+  /** Returns whether UWB is enabled or disabled. */
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean isUwbEnabled() {
+    return adapterState != AdapterStateCallback.STATE_DISABLED;
+  }
+
+  /**
+   * Disables or enables UWB by the user.
+   *
+   * @param enabled value representing intent to disable or enable UWB.
+   */
+  @Implementation
+  protected void setUwbEnabled(boolean enabled) {
+    boolean stateChanged = false;
+
+    if (enabled && adapterState == AdapterStateCallback.STATE_DISABLED) {
+      adapterState = AdapterStateCallback.STATE_ENABLED_INACTIVE;
+      stateChanged = true;
+    } else if (!enabled && adapterState != AdapterStateCallback.STATE_DISABLED) {
+      adapterState = AdapterStateCallback.STATE_DISABLED;
+      stateChanged = true;
+    }
+
+    if (this.callback != null && stateChanged) {
+      this.callback.onStateChanged(
+          adapterState, AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
+    }
   }
 
   /**

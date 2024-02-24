@@ -6,14 +6,17 @@ import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.os.PersistableBundle;
 import android.uwb.RangingSession;
 import android.uwb.UwbManager;
+import android.uwb.UwbManager.AdapterStateCallback;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.junit.Before;
@@ -29,14 +32,46 @@ import org.robolectric.shadow.api.Shadow;
 @Config(minSdk = S)
 public class ShadowUwbManagerTest {
   private /* RangingSession.Callback */ Object callbackObject;
+  private /* AdapterStateCallback */ Object adapterStateCallbackObject;
   private /* UwbManager */ Object uwbManagerObject;
   private ShadowRangingSession.Adapter adapter;
 
   @Before
   public void setUp() {
     callbackObject = mock(RangingSession.Callback.class);
+    adapterStateCallbackObject = mock(AdapterStateCallback.class);
     adapter = mock(ShadowRangingSession.Adapter.class);
     uwbManagerObject = getApplicationContext().getSystemService(UwbManager.class);
+    ((UwbManager) uwbManagerObject)
+        .unregisterAdapterStateCallback((AdapterStateCallback) adapterStateCallbackObject);
+  }
+
+  @Test
+  public void registerAdapterStateCallback_invokesCallbackOnceInitially() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+
+    Shadow.<ShadowUwbManager>extract(manager)
+        .registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    verify(adapterStateCallback).onStateChanged(anyInt(), anyInt());
+  }
+
+  @Test
+  public void simulateAdapterStateChange_invokesCallbackWithGivenStateAndReason() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+    manager.registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    Shadow.<ShadowUwbManager>extract(manager)
+        .simulateAdapterStateChange(
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION,
+            AdapterStateCallback.STATE_DISABLED);
+
+    verify(adapterStateCallback)
+        .onStateChanged(
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_REGULATION,
+            AdapterStateCallback.STATE_DISABLED);
   }
 
   @Test
@@ -69,6 +104,72 @@ public class ShadowUwbManagerTest {
     verify(adapter)
         .onOpen(
             any(RangingSession.class), eq(callback), argThat(checkParams("openRangingSession")));
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setUwbEnabled_setToTrue_enablesUwbAndInvokesCallback() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+    manager.registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    Shadow.<ShadowUwbManager>extract(manager).setUwbEnabled(false);
+    Shadow.<ShadowUwbManager>extract(manager).setUwbEnabled(true);
+
+    assertThat(manager.isUwbEnabled()).isTrue();
+    // Invoked once when the callback is initially registered
+    verify(adapterStateCallback, times(2))
+        .onStateChanged(
+            AdapterStateCallback.STATE_ENABLED_INACTIVE,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setUwbEnabled_setToFalse_disablesUwbAndInvokesCallback() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+    manager.registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    Shadow.<ShadowUwbManager>extract(manager).setUwbEnabled(false);
+
+    assertThat(manager.isUwbEnabled()).isFalse();
+    verify(adapterStateCallback)
+        .onStateChanged(
+            AdapterStateCallback.STATE_DISABLED,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setUwbEnabled_enabledStateNotChanged_doesNothing() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+    manager.registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    Shadow.<ShadowUwbManager>extract(manager).setUwbEnabled(true);
+
+    assertThat(manager.isUwbEnabled()).isTrue();
+    // Invoked once when the callback is initially registered
+    verify(adapterStateCallback).onStateChanged(anyInt(), anyInt());
+  }
+
+  @Config(minSdk = TIRAMISU)
+  @Test
+  public void setUwbEnabled_disabledStateNotChanged_doesNothing() {
+    UwbManager manager = (UwbManager) uwbManagerObject;
+    AdapterStateCallback adapterStateCallback = (AdapterStateCallback) adapterStateCallbackObject;
+    manager.registerAdapterStateCallback(directExecutor(), adapterStateCallback);
+
+    Shadow.<ShadowUwbManager>extract(manager).setUwbEnabled(false);
+    Shadow.<ShadowUwbManager>extract(manager).setUwbEnabled(false);
+
+    assertThat(manager.isUwbEnabled()).isFalse();
+    // Invoked only once when UWB is initially disabled
+    verify(adapterStateCallback)
+        .onStateChanged(
+            AdapterStateCallback.STATE_DISABLED,
+            AdapterStateCallback.STATE_CHANGED_REASON_SYSTEM_POLICY);
   }
 
   @Config(minSdk = TIRAMISU)
