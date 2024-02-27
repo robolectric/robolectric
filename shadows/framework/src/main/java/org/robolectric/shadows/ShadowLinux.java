@@ -83,7 +83,8 @@ public class ShadowLinux {
   @Implementation(minSdk = R)
   protected FileDescriptor memfd_create(String name, int flags) throws ErrnoException {
     try {
-      File tempFile = File.createTempFile(name, /* suffix= */ null);
+      File tempFile = File.createTempFile(name, /* suffix= */ "robo_memfd");
+      tempFile.deleteOnExit();
       RandomAccessFile randomAccessFile = new RandomAccessFile(tempFile, /* mode= */ "rw");
       return randomAccessFile.getFD();
     } catch (IOException e) {
