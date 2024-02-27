@@ -47,6 +47,9 @@ testImplementation "org.robolectric:robolectric:4.11.1"
 
 Robolectric is built using Gradle. Both IntelliJ and Android Studio can import the top-level `build.gradle` file and will automatically generate their project files from it.
 
+To get a high-level overview of Robolectric's architecture, check out
+[ARCHITECTURE.md](ARCHITECTURE.md).
+
 ### Prerequisites
 
 See [Building Robolectric](http://robolectric.org/building-robolectric/) for more details about setting up a build environment for Robolectric.
