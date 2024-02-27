@@ -5,6 +5,8 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -621,6 +623,12 @@ public class ShadowAccessibilityNodeInfo {
     if (getApiLevel() >= P) {
       newInfo.setTooltipText(realAccessibilityNodeInfo.getTooltipText());
       newInfo.setPaneTitle(realAccessibilityNodeInfo.getPaneTitle());
+    }
+    if (getApiLevel() >= R) {
+      newInfo.setStateDescription(realAccessibilityNodeInfo.getStateDescription());
+    }
+    if (getApiLevel() >= UPSIDE_DOWN_CAKE) {
+      newInfo.setContainerTitle(realAccessibilityNodeInfo.getContainerTitle());
     }
 
     return newInfo;
