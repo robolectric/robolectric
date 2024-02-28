@@ -16,21 +16,32 @@ import org.robolectric.Robolectric;
 public class ShadowScrollViewTest {
   @Test
   public void shouldSmoothScrollTo() {
-    ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
-    scrollView.smoothScrollTo(7, 6);
+    // This test depends on broken scrolling behavior.
+    System.setProperty("robolectric.useRealScrolling", "false");
+    try {
+      ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
+      scrollView.smoothScrollTo(7, 6);
 
-    assertEquals(7, scrollView.getScrollX());
-    assertEquals(6, scrollView.getScrollY());
+      assertEquals(7, scrollView.getScrollX());
+      assertEquals(6, scrollView.getScrollY());
+    } finally {
+      System.clearProperty("robolectric.useRealScrolling");
+    }
   }
 
   @Test
   public void shouldSmoothScrollBy() {
-    ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
-    scrollView.smoothScrollTo(7, 6);
-    scrollView.smoothScrollBy(10, 20);
-
-    assertEquals(17, scrollView.getScrollX());
-    assertEquals(26, scrollView.getScrollY());
+    // This test depends on broken scrolling behavior.
+    System.setProperty("robolectric.useRealScrolling", "false");
+    try {
+      ScrollView scrollView = new ScrollView(ApplicationProvider.getApplicationContext());
+      scrollView.smoothScrollTo(7, 6);
+      scrollView.smoothScrollBy(10, 20);
+      assertEquals(17, scrollView.getScrollX());
+      assertEquals(26, scrollView.getScrollY());
+    } finally {
+      System.clearProperty("robolectric.useRealScrolling");
+    }
   }
 
   @Test
