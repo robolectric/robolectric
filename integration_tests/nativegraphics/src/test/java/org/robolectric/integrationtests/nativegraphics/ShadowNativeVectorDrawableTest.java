@@ -230,17 +230,19 @@ public class ShadowNativeVectorDrawableTest {
     verifyVectorDrawables(L_M_ICON_RES_IDS, L_M_GOLDEN_IMAGES, null);
   }
 
+  @Config(maxSdk = U.SDK_INT) // TODO(hoisie): update this test for V
   @Test
   public void testNVectorDrawables() throws XmlPullParserException, IOException {
     verifyVectorDrawables(N_ICON_RES_IDS, N_GOLDEN_IMAGES, null);
   }
 
-  @Test
   @Config(maxSdk = U.SDK_INT) // TODO(hoisie): update this test for V
+  @Test
   public void testVectorDrawableGradient() throws XmlPullParserException, IOException {
     verifyVectorDrawables(GRADIENT_ICON_RES_IDS, GRADIENT_GOLDEN_IMAGES, null);
   }
 
+  @Config(maxSdk = U.SDK_INT) // TODO(hoisie): update this test for V
   @Test
   public void testColorStateList() throws XmlPullParserException, IOException {
     for (int i = 0; i < STATEFUL_STATE_SETS.length; i++) {

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -96,7 +97,8 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
       int uiMode,
       int colorMode,
       int grammaticalGender,
-      int majorVersion) {
+      int majorVersion,
+      boolean forceRefresh) {
     String localeToUse;
     if (locales != null && locales.length != 0) {
       localeToUse = locales[0];
@@ -124,6 +126,12 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
         colorMode,
         grammaticalGender,
         majorVersion);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected static void nativeSetApkAssets(
+      long ptr, @NonNull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
+    nativeSetApkAssets(ptr, apkAssets, invalidateCaches);
   }
 }
 // namespace android
