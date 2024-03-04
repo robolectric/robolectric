@@ -1091,6 +1091,7 @@ public class ShadowView {
    * set.
    */
   static boolean useRealScrolling() {
-    return useRealGraphics() || Boolean.getBoolean("robolectric.useRealScrolling");
+    return useRealGraphics()
+        || Boolean.parseBoolean(System.getProperty("robolectric.useRealScrolling", "true"));
   }
 }
