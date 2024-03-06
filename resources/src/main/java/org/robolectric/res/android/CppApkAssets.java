@@ -9,6 +9,10 @@ import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.ZipFileRO.OpenArchive;
 import static org.robolectric.res.android.ZipFileRO.kCompressDeflated;
 
+import com.google.common.io.ByteStreams;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Enumeration;
@@ -41,17 +45,21 @@ import org.robolectric.util.PerfStatsCollector;
 @SuppressWarnings("NewApi")
 public class CppApkAssets {
   private static final String kResourcesArsc = "resources.arsc";
-//  public:
-//   static std::unique_ptr<const ApkAssets> Load(const String& path, bool system = false);
-//   static std::unique_ptr<const ApkAssets> LoadAsSharedLibrary(const String& path,
-//                                                               bool system = false);
-//
-//   std::unique_ptr<Asset> Open(const String& path,
-//                               Asset::AccessMode mode = Asset::AccessMode::ACCESS_RANDOM) const;
-//
-//   bool ForEachFile(const String& path,
-//                    const std::function<void(const StringPiece&, FileType)>& f) const;
 
+  //  public:
+  //   static std::unique_ptr<const ApkAssets> Load(const String& path, bool system = false);
+  //   static std::unique_ptr<const ApkAssets> LoadAsSharedLibrary(const String& path,
+  //                                                               bool system = false);
+  //
+  //   std::unique_ptr<Asset> Open(const String& path,
+  //                               Asset::AccessMode mode = Asset::AccessMode::ACCESS_RANDOM) const;
+  //
+  //   bool ForEachFile(const String& path,
+  //                    const std::function<void(const StringPiece&, FileType)>& f) const;
+
+  private CppApkAssets() {
+    this.zipFileRO = null;
+  }
 
   public CppApkAssets(ZipArchiveHandle zip_handle_, String path_) {
     this.zip_handle_ = zip_handle_;
@@ -169,6 +177,23 @@ public class CppApkAssets {
   //         system, force_shared_lib);
   //   }
 
+  // Creates an ApkAssets of the format ARSC from the given file descriptor, and takes ownership of
+  // the file descriptor.
+  public static CppApkAssets loadArscFromFd(FileDescriptor fd) {
+    CppApkAssets loadedApk = new CppApkAssets();
+    try {
+      byte[] bytes = ByteStreams.toByteArray(new FileInputStream(fd));
+
+      StringPiece data = new StringPiece(ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN), 0);
+      loadedApk.loaded_arsc_ = LoadedArsc.Load(data, null, false, false);
+
+    } catch (IOException e) {
+      // logError("Error loading assets from fd: " + e.getLocalizedMessage());
+      return null;
+    }
+    return loadedApk;
+  }
+
   // std::unique_ptr<Asset> ApkAssets::CreateAssetFromFile(const std::string& path) {
   @SuppressWarnings("DoNotCallSuggester")
   static Asset CreateAssetFromFile(String path) {
@@ -275,7 +300,10 @@ public class CppApkAssets {
   }
 
   public Asset Open(String path, AccessMode mode) {
-    CHECK(zip_handle_ != null);
+    if (zip_handle_ == null || zipFileRO == null) {
+      // In this case, the ApkAssets was loaded from a pure ARSC, and does not have assets.
+      return null;
+    }
 
     String name = path;
     ZipEntryRO entry;

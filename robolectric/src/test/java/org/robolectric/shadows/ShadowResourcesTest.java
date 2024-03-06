@@ -2,11 +2,13 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
+import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -16,13 +18,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.SparseIntArray;
 import android.util.TypedValue;
+import android.widget.RemoteViews;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.Range;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.IntStream;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -34,6 +39,23 @@ import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowResourcesTest {
+  private static final int FIRST_RESOURCE_COLOR_ID = android.R.color.system_neutral1_0;
+  private static final int LAST_RESOURCE_COLOR_ID = android.R.color.system_accent3_1000;
+
+  /**
+   * Some green/blue colors, from system_neutral1_0 to system_accent3_1000, extracted using 0xB1EBFF
+   * as seed color and "FRUIT_SALAD" as theme style.
+   */
+  private static final int[] greenBlueColorBase = {
+    -1, -393729, -1641480, -2562838, -4405043, -6181454, -7892073, -9668483, -11181979, -12760755,
+    -14208458, -15590111, -16777216, -1, -393729, -2296322, -3217680, -4994349, -6770760, -8547171,
+    -10257790, -11836822, -13350318, -14863301, -16376283, -16777216, -1, -720905, -4456478,
+    -8128307, -10036302, -12075112, -14638210, -16742810, -16749487, -16756420, -16762839,
+    -16768746, -16777216, -1, -720905, -4456478, -5901613, -7678281, -9454947, -11231613, -13139095,
+    -15111342, -16756420, -16762839, -16768746, -16777216, -1, -393729, -2361857, -5051393,
+    -7941655, -9783603, -11625551, -13729642, -16750723, -16757153, -16763326, -16769241, -16777216
+  };
+
   private Resources resources;
 
   @Before
@@ -297,6 +319,25 @@ public class ShadowResourcesTest {
         };
 
     assertThat(resourcesSubclass).isNotNull();
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void getColor_shouldReturnCorrectMaterialYouColor() throws Exception {
+    SparseIntArray sparseArray =
+        new SparseIntArray(LAST_RESOURCE_COLOR_ID - FIRST_RESOURCE_COLOR_ID + 1);
+    IntStream.range(0, greenBlueColorBase.length)
+        .forEach(i -> sparseArray.put(FIRST_RESOURCE_COLOR_ID + i, greenBlueColorBase[i]));
+    int basicColor = android.R.color.system_neutral1_10;
+    Context context = ApplicationProvider.getApplicationContext();
+    RemoteViews.ColorResources colorResources =
+        RemoteViews.ColorResources.create(context, sparseArray);
+    assertThat(colorResources).isNotNull();
+
+    colorResources.apply(context);
+
+    assertThat(basicColor).isNotEqualTo(0);
+    assertThat(resources.getColor(basicColor, /* theme= */ null)).isEqualTo(-393729);
   }
 
   @Ignore("Re-enable when performing benchmarks")
