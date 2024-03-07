@@ -41,10 +41,7 @@ dependencies {
     testImplementation libs.truth.java8.extension
     testImplementation libs.mockito
     testImplementation libs.hamcrest.junit
-    testImplementation "androidx.test:core:$axtCoreVersion@aar"
-    testImplementation "androidx.test.ext:junit:$axtJunitVersion@aar"
     testImplementation "androidx.test.ext:truth:$axtTruthVersion@aar"
-    testImplementation "androidx.test:runner:$axtRunnerVersion@aar"
     testImplementation libs.guava
     testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
