@@ -1,18 +1,8 @@
 import org.robolectric.gradle.AndroidProjectConfigPlugin
-
 apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
 apply plugin: 'kotlin-android'
-apply plugin: "com.diffplug.spotless"
 apply plugin: "io.github.takahirom.roborazzi"
-
-spotless {
-    kotlin {
-        target '**/*.kt'
-        ktfmt('0.42').googleStyle()
-    }
-}
-
 android {
     compileSdk 34
     namespace 'org.robolectric.integration.roborazzi'
@@ -54,7 +44,6 @@ android {
         }
     }
 }
-
 dependencies {
     api project(":robolectric")
     testImplementation libs.androidx.test.core

@@ -1,18 +1,8 @@
 import org.robolectric.gradle.AndroidProjectConfigPlugin
-
 apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
 apply plugin: 'kotlin-android'
-apply plugin: "com.diffplug.spotless"
 apply plugin: "io.gitlab.arturbosch.detekt"
-
-spotless {
-    kotlin {
-        target '**/*.kt'
-        ktfmt('0.42').googleStyle()
-    }
-}
-
 android {
     compileSdk 34
     namespace 'org.robolectric.sparsearray'
@@ -37,7 +27,6 @@ android {
         }
     }
 }
-
 dependencies {
     compileOnly AndroidSdk.MAX_SDK.coordinates
     implementation project(path: ':shadowapi', configuration: 'default')
