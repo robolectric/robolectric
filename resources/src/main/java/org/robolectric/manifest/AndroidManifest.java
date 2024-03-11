@@ -614,7 +614,7 @@ public class AndroidManifest implements UsesSdk {
    * <p>Note that if {@link #targetSdkVersion} isn't set, this value changes the behavior of some
    * Android code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
    *
-   * @return the minimum SDK version, or Jelly Bean (16) by default
+   * @return the minimum SDK version, or KitKat (19) by default
    */
   @Override
   public int getMinSdkVersion() {
@@ -629,7 +629,7 @@ public class AndroidManifest implements UsesSdk {
    * <p>Note that this value changes the behavior of some Android code (notably {@link
    * android.content.SharedPreferences}) to emulate old bugs.
    *
-   * @return the minimum SDK version, or Jelly Bean (16) by default
+   * @return the target SDK version, or KitKat (19) by default
    */
   @Override
   public int getTargetSdkVersion() {
