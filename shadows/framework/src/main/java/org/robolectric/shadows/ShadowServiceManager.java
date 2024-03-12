@@ -98,7 +98,6 @@ import com.android.internal.statusbar.IStatusBar;
 import com.android.internal.telephony.ITelephony;
 import com.android.internal.telephony.ITelephonyRegistry;
 import com.android.internal.view.IInputMethodManager;
-import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -116,9 +115,9 @@ import org.robolectric.util.ReflectionHelpers;
 @Implements(value = ServiceManager.class, isInAndroidSdk = false)
 public class ShadowServiceManager {
 
-  // BinderService is mutable, so this isn’t deeply immutable.
-  private static final ImmutableMap<String, BinderService> binderServices =
-      buildBinderServicesMap();
+  // A mutable map that contains a list of binder services. It is mutable so entries can be added by
+  // ShadowServiceManager subclasses. This is useful to support prerelease SDKs.
+  protected static final Map<String, BinderService> binderServices = buildBinderServicesMap();
 
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> unavailableServices = new HashSet<>();
@@ -154,7 +153,7 @@ public class ShadowServiceManager {
     }
   }
 
-  private static ImmutableMap<String, BinderService> buildBinderServicesMap() {
+  private static Map<String, BinderService> buildBinderServicesMap() {
     Map<String, BinderService> binderServices = new HashMap<>();
     addBinderService(binderServices, Context.CLIPBOARD_SERVICE, IClipboard.class);
     addBinderService(binderServices, Context.WIFI_P2P_SERVICE, IWifiP2pManager.class);
@@ -272,10 +271,10 @@ public class ShadowServiceManager {
       addBinderService(
           binderServices, Context.WEARABLE_SENSING_SERVICE, IWearableSensingManager.class);
     }
-    return ImmutableMap.copyOf(binderServices);
+    return binderServices;
   }
 
-  private static void addBinderService(
+  protected static void addBinderService(
       Map<String, BinderService> binderServices, String name, Class<? extends IInterface> clazz) {
     addBinderService(binderServices, name, clazz, clazz.getCanonicalName(), false);
   }
