@@ -275,6 +275,11 @@ public class ShadowBluetoothLeAdvertiser {
     return this.advertisements.size();
   }
 
+  /** Returns the count of current ongoing Bluetooth LE advertising set requests. */
+  public int getAdvertisingSetRequestCount() {
+    return this.advertisingSetMap.size();
+  }
+
   private int getTotalBytes(AdvertiseData data, boolean isConnectable) {
     if (data == null) {
       return 0;
