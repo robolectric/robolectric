@@ -50,6 +50,7 @@ import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -141,18 +142,24 @@ public class ShadowResources {
 
   @Implementation
   protected InputStream openRawResource(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      ResourceTable resourceTable = shadowAssetManager.getResourceTable();
-      InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
-      if (inputStream == null) {
-        throw newNotFoundException(id);
-      } else {
-        return inputStream;
-      }
-    } else {
-      return reflector(ResourcesReflector.class, realResources).openRawResource(id);
-    }
+    return PerfStatsCollector.getInstance()
+        .<InputStream, Resources.NotFoundException>measure(
+            "Resources-openRawResource",
+            () -> {
+              if (isLegacyAssetManager()) {
+                ShadowLegacyAssetManager shadowAssetManager =
+                    legacyShadowOf(realResources.getAssets());
+                ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+                InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
+                if (inputStream == null) {
+                  throw newNotFoundException(id);
+                } else {
+                  return inputStream;
+                }
+              } else {
+                return reflector(ResourcesReflector.class, realResources).openRawResource(id);
+              }
+            });
   }
 
   /**
@@ -162,23 +169,28 @@ public class ShadowResources {
    */
   @Implementation
   protected AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      InputStream inputStream = openRawResource(id);
-      if (!(inputStream instanceof FileInputStream)) {
-        // todo fixme
-        return null;
-      }
+    return PerfStatsCollector.getInstance()
+        .<AssetFileDescriptor, Resources.NotFoundException>measure(
+            "Resources-openRawResourceFd",
+            () -> {
+              if (isLegacyAssetManager()) {
+                InputStream inputStream = openRawResource(id);
+                if (!(inputStream instanceof FileInputStream)) {
+                  // todo fixme
+                  return null;
+                }
 
-      FileInputStream fis = (FileInputStream) inputStream;
-      try {
-        return new AssetFileDescriptor(
-            ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-      } catch (IOException e) {
-        throw newNotFoundException(id);
-      }
-    } else {
-      return reflector(ResourcesReflector.class, realResources).openRawResourceFd(id);
-    }
+                FileInputStream fis = (FileInputStream) inputStream;
+                try {
+                  return new AssetFileDescriptor(
+                      ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
+                } catch (IOException e) {
+                  throw newNotFoundException(id);
+                }
+              } else {
+                return reflector(ResourcesReflector.class, realResources).openRawResourceFd(id);
+              }
+            });
   }
 
   private Resources.NotFoundException newNotFoundException(int id) {
@@ -210,26 +222,41 @@ public class ShadowResources {
   @Implementation
   protected XmlResourceParser loadXmlResourceParser(int resId, String type)
       throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      return setSourceResourceId(shadowAssetManager.loadXmlResourceParser(resId, type), resId);
-    } else {
-      ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
-      return setSourceResourceId(relectedResources.loadXmlResourceParser(resId, type), resId);
-    }
+    return PerfStatsCollector.getInstance()
+        .<XmlResourceParser, Resources.NotFoundException>measure(
+            "Resources-loadXmlResourceParser",
+            () -> {
+              if (isLegacyAssetManager()) {
+                ShadowLegacyAssetManager shadowAssetManager =
+                    legacyShadowOf(realResources.getAssets());
+                return setSourceResourceId(
+                    shadowAssetManager.loadXmlResourceParser(resId, type), resId);
+              } else {
+                ResourcesReflector relectedResources =
+                    reflector(ResourcesReflector.class, realResources);
+                return setSourceResourceId(
+                    relectedResources.loadXmlResourceParser(resId, type), resId);
+              }
+            });
   }
 
   @HiddenApi
   @Implementation
   protected XmlResourceParser loadXmlResourceParser(
       String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      return loadXmlResourceParser(id, type);
-    } else {
-      ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
-      return setSourceResourceId(
-          relectedResources.loadXmlResourceParser(file, id, assetCookie, type), id);
-    }
+    return PerfStatsCollector.getInstance()
+        .<XmlResourceParser, Resources.NotFoundException>measure(
+            "Resources-loadXmlResourceParser",
+            () -> {
+              if (isLegacyAssetManager()) {
+                return loadXmlResourceParser(id, type);
+              } else {
+                ResourcesReflector relectedResources =
+                    reflector(ResourcesReflector.class, realResources);
+                return setSourceResourceId(
+                    relectedResources.loadXmlResourceParser(file, id, assetCookie, type), id);
+              }
+            });
   }
 
   private static XmlResourceParser setSourceResourceId(XmlResourceParser parser, int resourceId) {
@@ -242,19 +269,30 @@ public class ShadowResources {
 
   @HiddenApi
   @Implementation(maxSdk = KITKAT_WATCH)
-  protected Drawable loadDrawable(TypedValue value, int id) {
-    Drawable drawable = reflector(ResourcesReflector.class, realResources).loadDrawable(value, id);
-    setCreatedFromResId(realResources, id, drawable);
-    return drawable;
+  protected Drawable loadDrawable(TypedValue value, int id) throws Exception {
+    return PerfStatsCollector.getInstance()
+        .<Drawable, Exception>measure(
+            "Resources-loadDrawable",
+            () -> {
+              Drawable drawable =
+                  reflector(ResourcesReflector.class, realResources).loadDrawable(value, id);
+              setCreatedFromResId(realResources, id, drawable);
+              return drawable;
+            });
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme)
       throws Resources.NotFoundException {
-    Drawable drawable =
-        reflector(ResourcesReflector.class, realResources).loadDrawable(value, id, theme);
-    setCreatedFromResId(realResources, id, drawable);
-    return drawable;
+    return PerfStatsCollector.getInstance()
+        .<Drawable, Resources.NotFoundException>measure(
+            "Resources-loadDrawable",
+            () -> {
+              Drawable drawable =
+                  reflector(ResourcesReflector.class, realResources).loadDrawable(value, id, theme);
+              setCreatedFromResId(realResources, id, drawable);
+              return drawable;
+            });
   }
 
   private static List<LongSparseArray<?>> obtainResettableArrays() {

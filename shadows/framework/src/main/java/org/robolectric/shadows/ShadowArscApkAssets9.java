@@ -23,6 +23,7 @@ import org.robolectric.res.android.CppApkAssets;
 import org.robolectric.res.android.Registries;
 import org.robolectric.res.android.ResXMLTree;
 import org.robolectric.shadows.ShadowApkAssets.Picker;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
@@ -96,7 +97,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
 
-    return reflector(_ApkAssets_.class).loadFromPath(path, system);
+    String finalPath = path;
+    return PerfStatsCollector.getInstance()
+        .<ApkAssets, IOException>measure(
+            "ApkAssets-loadFromPath",
+            () -> reflector(_ApkAssets_.class).loadFromPath(finalPath, system));
   }
 
   @Implementation(minSdk = R)
@@ -104,7 +109,11 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
     if (FRAMEWORK_APK_PATH.equals(path)) {
       path = RuntimeEnvironment.getAndroidFrameworkJarPath().toString();
     }
-    return reflector(_ApkAssets_.class).loadFromPath(path, flags);
+    String finalPath = path;
+    return PerfStatsCollector.getInstance()
+        .<ApkAssets, IOException>measure(
+            "ApkAssets-loadFromPath",
+            () -> reflector(_ApkAssets_.class).loadFromPath(finalPath, flags));
   }
 
   // static jlong NativeLoad(JNIEnv* env, jclass /*clazz*/, jstring java_path, jboolean system,
@@ -113,39 +122,45 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   @Implementation(maxSdk = Q)
   protected static long nativeLoad(
       String path, boolean system, boolean forceSharedLib, boolean overlay) throws IOException {
-    if (path == null) {
-      return 0;
-    }
+    return PerfStatsCollector.getInstance()
+        .<Long, IOException>measure(
+            "ApkAssets-nativeLoad",
+            () -> {
+              if (path == null) {
+                return 0L;
+              }
 
-    long cachedApkAssetsPtr = ApkAssetsCache.get(path, system, RuntimeEnvironment.getApiLevel());
-    if (cachedApkAssetsPtr != -1) {
-      return cachedApkAssetsPtr;
-    }
+              long cachedApkAssetsPtr =
+                  ApkAssetsCache.get(path, system, RuntimeEnvironment.getApiLevel());
+              if (cachedApkAssetsPtr != -1) {
+                return cachedApkAssetsPtr;
+              }
 
-    ATRACE_NAME(String.format("LoadApkAssets(%s)", path));
+              ATRACE_NAME(String.format("LoadApkAssets(%s)", path));
 
-    CppApkAssets apk_assets;
-    try {
-      if (overlay) {
-        apk_assets = CppApkAssets.LoadOverlay(path, system);
-      } else if (forceSharedLib) {
-        apk_assets = CppApkAssets.LoadAsSharedLibrary(path, system);
-      } else {
-        apk_assets = CppApkAssets.Load(path, system);
-      }
-    } catch (OutOfMemoryError e) {
-      OutOfMemoryError outOfMemoryError = new OutOfMemoryError("Failed to load " + path);
-      outOfMemoryError.initCause(e);
-      throw outOfMemoryError;
-    }
+              CppApkAssets apk_assets;
+              try {
+                if (overlay) {
+                  apk_assets = CppApkAssets.LoadOverlay(path, system);
+                } else if (forceSharedLib) {
+                  apk_assets = CppApkAssets.LoadAsSharedLibrary(path, system);
+                } else {
+                  apk_assets = CppApkAssets.Load(path, system);
+                }
+              } catch (OutOfMemoryError e) {
+                OutOfMemoryError outOfMemoryError = new OutOfMemoryError("Failed to load " + path);
+                outOfMemoryError.initCause(e);
+                throw outOfMemoryError;
+              }
 
-    if (apk_assets == null) {
-      String error_msg = String.format("Failed to load asset path %s", path);
-      throw new IOException(error_msg);
-    }
-    long ptr = Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
-    ApkAssetsCache.put(path, system, RuntimeEnvironment.getApiLevel(), ptr);
-    return ptr;
+              if (apk_assets == null) {
+                String error_msg = String.format("Failed to load asset path %s", path);
+                throw new IOException(error_msg);
+              }
+              long ptr = Registries.NATIVE_APK_ASSETS_REGISTRY.register(apk_assets);
+              ApkAssetsCache.put(path, system, RuntimeEnvironment.getApiLevel(), ptr);
+              return ptr;
+            });
   }
 
   @Implementation(minSdk = R)
@@ -208,13 +223,18 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
       Object propertyFlags,
       Object assetsProvider)
       throws IOException {
-    CppApkAssets apkAssets = CppApkAssets.loadArscFromFd((FileDescriptor) fileDescriptor);
-    if (apkAssets == null) {
-      String errorMessage =
-          String.format("Failed to load from the file descriptor %s", fileDescriptor);
-      throw new IOException(errorMessage);
-    }
-    return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apkAssets);
+    return PerfStatsCollector.getInstance()
+        .<Object, IOException>measure(
+            "ApkAssets-nativeLoadFd",
+            () -> {
+              CppApkAssets apkAssets = CppApkAssets.loadArscFromFd((FileDescriptor) fileDescriptor);
+              if (apkAssets == null) {
+                String errorMessage =
+                    String.format("Failed to load from the file descriptor %s", fileDescriptor);
+                throw new IOException(errorMessage);
+              }
+              return Registries.NATIVE_APK_ASSETS_REGISTRY.register(apkAssets);
+    });
   }
 
   // static jstring NativeGetAssetPath(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
@@ -241,28 +261,32 @@ public class ShadowArscApkAssets9 extends ShadowApkAssets {
   // static jlong NativeOpenXml(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring file_name) {
   @Implementation
   protected static long nativeOpenXml(long ptr, String file_name) throws FileNotFoundException {
-    String path_utf8 = file_name;
-    if (path_utf8 == null) {
-      return 0;
-    }
+    return PerfStatsCollector.getInstance()
+        .<Long, FileNotFoundException>measure(
+            "ApkAssets-nativeOpenXml",
+            () -> {
+              String path_utf8 = file_name;
+              if (path_utf8 == null) {
+                return 0L;
+              }
 
-    CppApkAssets apk_assets =
-        Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
-    Asset asset = apk_assets.Open(path_utf8, Asset.AccessMode.ACCESS_RANDOM);
-    if (asset == null) {
-      throw new FileNotFoundException(path_utf8);
-    }
+              CppApkAssets apk_assets = Registries.NATIVE_APK_ASSETS_REGISTRY.getNativeObject(ptr);
+              Asset asset = apk_assets.Open(path_utf8, Asset.AccessMode.ACCESS_RANDOM);
+              if (asset == null) {
+                throw new FileNotFoundException(path_utf8);
+              }
 
-    // DynamicRefTable is only needed when looking up resource references. Opening an XML file
-    // directly from an ApkAssets has no notion of proper resource references.
-    ResXMLTree xml_tree = new ResXMLTree(null); // util.make_unique<ResXMLTree>(nullptr /*dynamicRefTable*/);
-    int err = xml_tree.setTo(asset.getBuffer(true), (int) asset.getLength(), true);
-    // asset.reset();
+              // DynamicRefTable is only needed when looking up resource references. Opening an XML
+              // file directly from an ApkAssets has no notion of proper resource references.
+              ResXMLTree xml_tree = new ResXMLTree(null); // util.make_unique<ResXMLTree>(nullptr /*dynamicRefTable*/);
+              int err = xml_tree.setTo(asset.getBuffer(true), (int) asset.getLength(), true);
+              // asset.reset();
 
-    if (err != NO_ERROR) {
-      throw new FileNotFoundException("Corrupt XML binary file");
-    }
-    return Registries.NATIVE_RES_XML_TREES.register(xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
+              if (err != NO_ERROR) {
+                throw new FileNotFoundException("Corrupt XML binary file");
+              }
+              return Registries.NATIVE_RES_XML_TREES.register(xml_tree); // reinterpret_cast<jlong>(xml_tree.release());
+            });
   }
 
   // // JNI registration.
