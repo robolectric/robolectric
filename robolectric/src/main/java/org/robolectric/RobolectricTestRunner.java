@@ -50,7 +50,6 @@ import org.robolectric.pluginapi.SdkPicker;
 import org.robolectric.pluginapi.config.ConfigurationStrategy;
 import org.robolectric.pluginapi.config.ConfigurationStrategy.Configuration;
 import org.robolectric.pluginapi.config.GlobalConfigProvider;
-import org.robolectric.plugins.HierarchicalConfigurationStrategy.ConfigurationImpl;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
@@ -411,42 +410,9 @@ public class RobolectricTestRunner extends SandboxTestRunner {
         manifestIdentifier.getApkFile());
   }
 
-  /**
-   * Compute the effective Robolectric configuration for a given test method.
-   *
-   * <p>Configuration information is collected from package-level {@code robolectric.properties}
-   * files and {@link Config} annotations on test classes, superclasses, and methods.
-   *
-   * <p>Custom TestRunner subclasses may wish to override this method to provide alternate
-   * configuration.
-   *
-   * @param method the test method
-   * @return the effective Robolectric configuration for the given test method
-   * @deprecated Provide an implementation of {@link javax.inject.Provider<Config>} instead. This
-   *     method will be removed in Robolectric 4.3.
-   * @since 2.0
-   * @see <a href="http://robolectric.org/migrating/#migrating-to-40">Migration Notes</a> for more
-   *     details.
-   */
-  @Deprecated
-  public Config getConfig(Method method) {
-    throw new UnsupportedOperationException();
-  }
-
   /** Calculate the configuration for a given test method. */
   private Configuration getConfiguration(Method method) {
-    Configuration configuration =
-        configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
-
-    // in case #getConfig(Method) has been overridden...
-    try {
-      Config config = getConfig(method);
-      ((ConfigurationImpl) configuration).put(Config.class, config);
-    } catch (UnsupportedOperationException e) {
-      // no problem
-    }
-
-    return configuration;
+    return configurationStrategy.getConfig(getTestClass().getJavaClass(), method);
   }
 
   /**
