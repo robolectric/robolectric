@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.hardware.location.ContextHubClient;
@@ -67,6 +68,23 @@ public final class ShadowContextHubClientTest {
 
     // Ensure an error was returned while attempting to send a message to the nano app.
     assertThat(returnValue).isEqualTo(ContextHubTransaction.RESULT_FAILED_UNKNOWN);
+  }
+
+  @Test
+  public void whenContextHubRevokedPermission_ensureSendingAMessageThrowsSecurityException() {
+    ContextHubClient contextHubClient = (ContextHubClient) createContextHubClient();
+    ShadowContextHubClient shadowContextHubClient = Shadow.extract(contextHubClient);
+    NanoAppMessage message =
+        NanoAppMessage.createMessageToNanoApp(
+            /* targetNanoAppId= */ 0L, /* messageType= */ 0, /* messageBody= */ new byte[10]);
+
+    shadowContextHubClient.revokePermission();
+
+    try {
+      contextHubClient.sendMessageToNanoApp(message);
+      fail();
+    } catch (SecurityException expected) {
+    }
   }
 
   private Object createContextHubClient() {
