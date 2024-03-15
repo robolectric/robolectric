@@ -47,7 +47,7 @@ final class OsConstantsValues {
           .put("O_EXCL", 0x0200)
           .put("O_TRUNC", 0x1000)
           .put("O_APPEND", 0x2000)
-          .build();
+          .buildOrThrow();
 
   /** Returns the st_mode for the path. */
   public static int getMode(String path) {
