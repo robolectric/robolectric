@@ -162,6 +162,7 @@ public abstract class ShadowChoreographer {
   public static void reset() {
     isPaused = false;
     frameDelay = Duration.ofMillis(1);
+    ShadowBackdropFrameRenderer.reset();
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
