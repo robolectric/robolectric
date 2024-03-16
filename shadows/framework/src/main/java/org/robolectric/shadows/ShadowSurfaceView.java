@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -32,6 +33,8 @@ public class ShadowSurfaceView extends ShadowView {
    */
   public static class FakeSurfaceHolder implements SurfaceHolder {
     private final Set<Callback> callbacks = new HashSet<>();
+    // The default format is RGB_565.
+    private int requestedFormat = PixelFormat.RGB_565;
 
     @Override
     public void addCallback(Callback callback) {
@@ -65,7 +68,12 @@ public class ShadowSurfaceView extends ShadowView {
     }
 
     @Override
-    public void setFormat(int i) {
+    public void setFormat(int format) {
+      if (format == PixelFormat.OPAQUE) {
+        requestedFormat = PixelFormat.RGB_565;
+      } else {
+        requestedFormat = format;
+      }
     }
 
     @Override
@@ -94,6 +102,16 @@ public class ShadowSurfaceView extends ShadowView {
     @Override
     public Surface getSurface() {
       return null;
+    }
+
+    /**
+     * Retrieve the requested format by the developers or by Android Frameworks internal logic.
+     *
+     * @return The requested format, and the default value is {@link PixelFormat#RGB_565}.
+     * @see PixelFormat
+     */
+    public int getRequestedFormat() {
+      return requestedFormat;
     }
   }
 }
