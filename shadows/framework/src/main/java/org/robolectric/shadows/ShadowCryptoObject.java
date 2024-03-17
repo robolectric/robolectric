@@ -25,7 +25,7 @@ public class ShadowCryptoObject {
    */
   @Implementation
   @HiddenApi
-  protected final long getOpId() {
+  protected long getOpId() {
     return 0L;
   }
 }

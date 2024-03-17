@@ -51,7 +51,7 @@ public class ShadowAccessibilityService extends ShadowService {
   private boolean isScreenshotError = false;
 
   @Implementation
-  protected final boolean performGlobalAction(int action) {
+  protected boolean performGlobalAction(int action) {
     globalActionsPerformed.add(action);
     return true;
   }
@@ -61,7 +61,7 @@ public class ShadowAccessibilityService extends ShadowService {
   }
 
   @Implementation(minSdk = S)
-  protected final List<AccessibilityNodeInfo.AccessibilityAction> getSystemActions() {
+  protected List<AccessibilityNodeInfo.AccessibilityAction> getSystemActions() {
     return systemActions;
   }
 

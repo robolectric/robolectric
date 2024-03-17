@@ -82,12 +82,12 @@ public class ShadowNotificationListenerService extends ShadowService {
   }
 
   @Implementation
-  protected final void cancelAllNotifications() {
+  protected void cancelAllNotifications() {
     activeNotifications.clear();
   }
 
   @Implementation
-  protected final void cancelNotification(String key) {
+  protected void cancelNotification(String key) {
     synchronized (activeNotifications) {
       Iterator<StatusBarNotification> iterator = activeNotifications.iterator();
       while (iterator.hasNext()) {

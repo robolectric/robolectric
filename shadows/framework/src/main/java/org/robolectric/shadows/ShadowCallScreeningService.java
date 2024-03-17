@@ -43,7 +43,7 @@ public final class ShadowCallScreeningService {
 
   /** Shadows {@link CallScreeningService#respondToCall}. */
   @Implementation(minSdk = N)
-  protected final void respondToCall(Call.Details callDetails, CallResponse response) {
+  protected void respondToCall(Call.Details callDetails, CallResponse response) {
     lastRespondToCallInput = Optional.of(new RespondToCallInput(callDetails, response));
 
     if (shouldForwardResponseToRealObject()) {

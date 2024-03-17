@@ -155,7 +155,7 @@ public class ShadowMediaExtractor {
   }
 
   @Implementation
-  protected final int getTrackCount() {
+  protected int getTrackCount() {
     return tracks.size();
   }
 

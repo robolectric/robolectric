@@ -39,14 +39,14 @@ public class ShadowProcess {
    * list.
    */
   @Implementation
-  protected static final void killProcess(int pid) {
+  protected static void killProcess(int pid) {
     synchronized (killedProcessesLock) {
       killedProcesses.add(pid);
     }
   }
 
   @Implementation
-  protected static final int myPid() {
+  protected static int myPid() {
     return pid;
   }
 
@@ -57,7 +57,7 @@ public class ShadowProcess {
    * #setUid(int)}.
    */
   @Implementation
-  protected static final int myUid() {
+  protected static int myUid() {
     if (uidOverride != null) {
       return uidOverride;
     }
@@ -69,7 +69,7 @@ public class ShadowProcess {
    * java.lang.Thread#currentThread()}).
    */
   @Implementation
-  protected static final int myTid() {
+  protected static int myTid() {
     return (int) Thread.currentThread().getId();
   }
 
@@ -78,7 +78,7 @@ public class ShadowProcess {
    * runner. Unlike real implementation does not throw any exceptions.
    */
   @Implementation
-  protected static final void setThreadPriority(int priority) {
+  protected static void setThreadPriority(int priority) {
     synchronized (threadPrioritiesLock) {
       threadPriorities.put(ShadowProcess.myTid(), priority);
     }
@@ -94,7 +94,7 @@ public class ShadowProcess {
    *     specified by {@link android.os.Process#setThreadPriority(int, int)}, which is [-20,19].
    */
   @Implementation
-  protected static final void setThreadPriority(int tid, int priority) {
+  protected static void setThreadPriority(int tid, int priority) {
     checkArgument(
         priority >= THREAD_PRIORITY_HIGHEST && priority <= THREAD_PRIORITY_LOWEST,
         "priority %s out of range [%s, %s]. It is recommended to use a Process.THREAD_PRIORITY_*"
@@ -118,7 +118,7 @@ public class ShadowProcess {
    *     will be used.
    */
   @Implementation
-  protected static final int getThreadPriority(int tid) {
+  protected static int getThreadPriority(int tid) {
     if (tid == 0) {
       tid = ShadowProcess.myTid();
     }
