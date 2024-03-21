@@ -115,6 +115,19 @@ public class ShadowBackupManagerTest {
   }
 
   @Test
+  public void getAvailableRestoreToken_setNullAvailableRestoreSets_returnsNull() {
+    shadowOf(backupManager).setNullAvailableRestoreSets(true);
+    RestoreSession restoreSession = backupManager.beginRestoreSession();
+
+    int result = restoreSession.getAvailableRestoreSets(restoreObserver);
+    shadowMainLooper().idle();
+
+    assertThat(result).isEqualTo(BackupManager.SUCCESS);
+    assertThat(restoreObserver.restoreSetsAvailableCalled).isTrue();
+    assertThat(restoreObserver.getRestoreSets()).isNull();
+  }
+
+  @Test
   public void restoreAll_shouldRestoreData() {
     RestoreSession restoreSession = backupManager.beginRestoreSession();
     int result = restoreSession.restoreAll(123L, restoreObserver);
@@ -291,12 +304,14 @@ public class ShadowBackupManagerTest {
 
   private static class TestRestoreObserver extends RestoreObserver {
     @Nullable private RestoreSet[] restoreSets;
+    private boolean restoreSetsAvailableCalled;
     @Nullable private Integer restoreStartingNumPackages;
     @Nullable private Integer restoreFinishedResult;
 
     @Override
     public void restoreSetsAvailable(RestoreSet[] restoreSets) {
       this.restoreSets = restoreSets;
+      this.restoreSetsAvailableCalled = true;
     }
 
     @Override

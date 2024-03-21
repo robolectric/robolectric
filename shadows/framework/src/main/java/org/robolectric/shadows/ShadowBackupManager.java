@@ -130,6 +130,15 @@ public class ShadowBackupManager {
     serviceState.restoreData.put(restoreToken, new RestoreData(packages, result));
   }
 
+  /**
+   * Causes the {@link IRestoreObserver#restoreSetsAvailable} callback to receive {@code null},
+   * regardless of whether any restore sets were added to this shadow. Can be used to simulate a
+   * failure by the transport to fetch available restore sets.
+   */
+  public void setNullAvailableRestoreSets(boolean value) {
+    serviceState.nullRestoreData = value;
+  }
+
   private void enforceBackupPermission(String message) {
     RuntimeEnvironment.getApplication()
         .enforceCallingOrSelfPermission(android.Manifest.permission.BACKUP, message);
@@ -147,6 +156,11 @@ public class ShadowBackupManager {
         throws RemoteException {
       post(
           () -> {
+            if (serviceState.nullRestoreData) {
+              observer.restoreSetsAvailable(null);
+              return;
+            }
+
             Set<Long> restoreTokens = serviceState.restoreData.keySet();
             Set<RestoreSet> restoreSets = new HashSet<>();
             for (long token : restoreTokens) {
@@ -251,6 +265,7 @@ public class ShadowBackupManager {
 
   private static class BackupManagerServiceState {
     boolean backupEnabled = true;
+    boolean nullRestoreData;
     long lastRestoreToken = 0L;
     final Map<String, Integer> dataChangedCount = new HashMap<>();
     final ListMultimap<Long, RestoreData> restoreData = ArrayListMultimap.create();
