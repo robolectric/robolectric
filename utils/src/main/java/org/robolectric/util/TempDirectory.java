@@ -2,19 +2,30 @@ package org.robolectric.util;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * A helper class for working with temporary directories. All temporary directories created by this
+ * class are automatically removed in a JVM shutdown hook.
+ */
 @SuppressWarnings({"NewApi", "AndroidJdkLibsChecker"})
 public class TempDirectory {
   /**
@@ -24,8 +35,31 @@ public class TempDirectory {
    */
   private static final int DELETE_THREAD_POOL_SIZE = 5;
 
-  /** Set to track the undeleted TempDirectory instances which we need to erase. */
+  /**
+   * Assets related to the Robolectric Native Runtime (shared object files, ICU dat file, fonts) are
+   * extracted from a Jar file into a TempDirectory during runtime in order to be used. On Windows,
+   * it is not possible for the current JVM process to delete certain files due to OS constraints.
+   */
+  @SuppressWarnings("ConstantCaseForConstants")
+  private static final List<String> KNOWN_WINDOWS_UNDELETEABLE_FILES =
+      Collections.unmodifiableList(Arrays.asList("robolectric-nativeruntime.dll", "icudt68l.dat"));
+
+  private static final String TEMP_DIR_PREFIX = "robolectric-";
+
+  static final String OBSOLETE_MARKER_FILE_NAME = ".obsolete";
+
+  /* Set to track the undeleted TempDirectory instances which we need to erase. */
   private static final Set<TempDirectory> tempDirectoriesToDelete = new HashSet<>();
+
+  /* Prior temp directories in Windows that were unable to be deleted */
+  private static final Set<Path> obsoleteTempDirectoriesToDelete =
+      Collections.synchronizedSet(new HashSet<>());
+
+  static {
+    if (isWindows()) {
+      TempDirectory.findObsoleteWindowsTempDirectoriesInBackground();
+    }
+  }
 
   private final Path basePath;
 
@@ -35,7 +69,7 @@ public class TempDirectory {
 
   public TempDirectory(String name) {
     try {
-      basePath = Files.createTempDirectory("robolectric-" + name);
+      basePath = Files.createTempDirectory(TEMP_DIR_PREFIX + name);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -63,9 +97,16 @@ public class TempDirectory {
         deletionExecutorService.execute(undeletedDirectory::destroy);
       }
     }
+    if (isWindows()) {
+      synchronized (obsoleteTempDirectoriesToDelete) {
+        for (Path obsoletePath : obsoleteTempDirectoriesToDelete) {
+          deletionExecutorService.execute(() -> destroyObsoleteTempDirectory(obsoletePath));
+        }
+      }
+    }
     deletionExecutorService.shutdown();
     try {
-      deletionExecutorService.awaitTermination(5, SECONDS);
+      deletionExecutorService.awaitTermination(10, SECONDS);
     } catch (InterruptedException e) {
       deletionExecutorService.shutdownNow();
       // Preserve interrupt status
@@ -110,26 +151,76 @@ public class TempDirectory {
     try {
       clearDirectory(basePath);
       Files.delete(basePath);
-    } catch (IOException ignored) {
-      Logger.error("Failed to destroy temp directory", ignored);
+    } catch (IOException e) {
+      if (isWindows()) {
+        createFile(OBSOLETE_MARKER_FILE_NAME, "");
+        // Avoid spurious logging.
+        for (String s : KNOWN_WINDOWS_UNDELETEABLE_FILES) {
+          if (e.getLocalizedMessage().contains(s)) {
+            return;
+          }
+        }
+      }
+      Logger.error("Failed to destroy temp directory", e);
     }
   }
 
-  private void clearDirectory(final Path directory) throws IOException {
-    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
-      @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        Files.delete(file);
-        return FileVisitResult.CONTINUE;
-      }
+  private static void clearDirectory(final Path directory) throws IOException {
+    Files.walkFileTree(
+        directory,
+        new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+              throws IOException {
+            // Avoid deleting the obsolete temp directory marker
+            if (!(isWindows() && file.getFileName().toString().equals(OBSOLETE_MARKER_FILE_NAME))) {
+              Files.delete(file);
+            }
+            return FileVisitResult.CONTINUE;
+          }
 
-      @Override
-      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        if (!dir.equals(directory)) {
-          Files.delete(dir);
+          @Override
+          public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            if (!dir.equals(directory)) {
+              Files.delete(dir);
+            }
+            return FileVisitResult.CONTINUE;
+          }
+        });
+  }
+
+  private static boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase(Locale.US).contains("win");
+  }
+
+  private static void findObsoleteWindowsTempDirectoriesInBackground() {
+    Thread thread = new Thread(TempDirectory::collectObsoleteWindowsTempDirectories);
+    thread.setDaemon(true);
+    thread.start();
+  }
+
+  @VisibleForTesting
+  static void collectObsoleteWindowsTempDirectories() {
+    Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"));
+    try (DirectoryStream<Path> stream = Files.newDirectoryStream(tmpDir, TEMP_DIR_PREFIX + "*")) {
+      for (Path entry : stream) {
+        if (Files.isDirectory(entry) && Files.exists(entry.resolve(OBSOLETE_MARKER_FILE_NAME))) {
+          obsoleteTempDirectoriesToDelete.add(entry);
         }
-        return FileVisitResult.CONTINUE;
       }
-    });
+    } catch (IOException ignored) {
+      // Ignore
+    }
+  }
+
+  private static void destroyObsoleteTempDirectory(Path basePath) {
+    try {
+      clearDirectory(basePath);
+      Files.deleteIfExists(
+          basePath.resolve(OBSOLETE_MARKER_FILE_NAME)); // Delete the obsolete marker
+      Files.delete(basePath); // Delete the directory
+    } catch (IOException e) {
+      // Ignored
+    }
   }
 }
