@@ -18,6 +18,7 @@ package org.robolectric.integrationtests.nativegraphics;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -221,6 +222,8 @@ public class ShadowNativeVectorDrawableTest {
   @Config(maxSdk = U.SDK_INT) // TODO(hoisie): update this test for V
   @Test
   public void testBasicVectorDrawables() throws XmlPullParserException, IOException {
+    // Skip this test on Windows because of slight difference in rendering
+    assume().that(System.getProperty("os.name").toLowerCase().contains("win")).isFalse();
     verifyVectorDrawables(BASIC_ICON_RES_IDS, BASIC_GOLDEN_IMAGES, null);
   }
 

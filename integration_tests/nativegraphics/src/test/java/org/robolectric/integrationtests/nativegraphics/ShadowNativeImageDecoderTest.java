@@ -67,8 +67,13 @@ public class ShadowNativeImageDecoderTest {
                 new Record(R.drawable.png_test, 640, 480, "image/png", false, false, SRGB),
                 new Record(R.drawable.gif_test, 320, 240, "image/gif", false, false, SRGB),
                 new Record(R.drawable.bmp_test, 320, 240, "image/bmp", false, false, SRGB),
-                new Record(R.drawable.webp_test, 640, 480, "image/webp", false, false, SRGB),
-                new Record(R.raw.sample_1mp, 600, 338, "image/x-adobe-dng", false, false, SRGB)));
+                new Record(R.drawable.webp_test, 640, 480, "image/webp", false, false, SRGB)));
+
+    // x-adobe-dng is not supported on Windows
+    if (!System.getProperty("os.name").toLowerCase().contains("win")) {
+      records.add(new Record(R.raw.sample_1mp, 600, 338, "image/x-adobe-dng", false, false, SRGB));
+    }
+
     return records.toArray(new Record[] {});
   }
 
