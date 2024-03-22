@@ -179,7 +179,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final InputStream openInputStream(final Uri uri) throws FileNotFoundException {
+  protected InputStream openInputStream(final Uri uri) throws FileNotFoundException {
     Supplier<InputStream> supplier = inputStreamMap.get(uri);
     if (supplier != null) {
       InputStream inputStream = supplier.get();
@@ -197,7 +197,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final OutputStream openOutputStream(final Uri uri) throws FileNotFoundException {
+  protected OutputStream openOutputStream(final Uri uri) throws FileNotFoundException {
     try {
       return openOutputStream(uri, "w");
     } catch (SecurityException | FileNotFoundException e) {
@@ -215,7 +215,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final OutputStream openOutputStream(Uri uri, String mode) throws FileNotFoundException {
+  protected OutputStream openOutputStream(Uri uri, String mode) throws FileNotFoundException {
     Supplier<OutputStream> supplier = outputStreamMap.get(uri);
     if (supplier != null) {
       OutputStream outputStream = supplier.get();
@@ -239,7 +239,7 @@ public class ShadowContentResolver {
    * returned.
    */
   @Implementation
-  protected final Uri insert(Uri url, ContentValues values) {
+  protected Uri insert(Uri url, ContentValues values) {
     ContentProvider provider = getProvider(url, getContext());
     ContentValues valuesCopy = (values == null) ? null : new ContentValues(values);
     InsertStatement insertStatement = new InsertStatement(url, provider, valuesCopy);
@@ -304,7 +304,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final Cursor query(
+  protected Cursor query(
       Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
     ContentProvider provider = getProvider(uri, getContext());
     if (provider != null) {
@@ -364,7 +364,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final ContentProviderClient acquireContentProviderClient(String name) {
+  protected ContentProviderClient acquireContentProviderClient(String name) {
     ContentProvider provider = getProvider(name, getContext());
     if (provider == null) {
       return null;
@@ -373,7 +373,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final ContentProviderClient acquireContentProviderClient(Uri uri) {
+  protected ContentProviderClient acquireContentProviderClient(Uri uri) {
     ContentProvider provider = getProvider(uri, getContext());
     if (provider == null) {
       return null;
@@ -382,7 +382,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final ContentProviderClient acquireUnstableContentProviderClient(String name) {
+  protected ContentProviderClient acquireUnstableContentProviderClient(String name) {
     ContentProvider provider = getProvider(name, getContext());
     if (provider == null) {
       return null;
@@ -391,7 +391,7 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final ContentProviderClient acquireUnstableContentProviderClient(Uri uri) {
+  protected ContentProviderClient acquireUnstableContentProviderClient(Uri uri) {
     ContentProvider provider = getProvider(uri, getContext());
     if (provider == null) {
       return null;
@@ -412,17 +412,17 @@ public class ShadowContentResolver {
   }
 
   @Implementation
-  protected final IContentProvider acquireProvider(String name) {
+  protected IContentProvider acquireProvider(String name) {
     return acquireUnstableProvider(name);
   }
 
   @Implementation
-  protected final IContentProvider acquireProvider(Uri uri) {
+  protected IContentProvider acquireProvider(Uri uri) {
     return acquireUnstableProvider(uri);
   }
 
   @Implementation
-  protected final IContentProvider acquireUnstableProvider(String name) {
+  protected IContentProvider acquireUnstableProvider(String name) {
     ContentProvider cp = getProvider(name, getContext());
     if (cp != null) {
       return cp.getIContentProvider();
@@ -450,7 +450,7 @@ public class ShadowContentResolver {
    * will be returned.
    */
   @Implementation
-  protected final int delete(Uri url, String where, String[] selectionArgs) {
+  protected int delete(Uri url, String where, String[] selectionArgs) {
     ContentProvider provider = getProvider(url, getContext());
 
     DeleteStatement deleteStatement = new DeleteStatement(url, provider, where, selectionArgs);
@@ -475,7 +475,7 @@ public class ShadowContentResolver {
    * of rows in {@code values} will be returned.
    */
   @Implementation
-  protected final int bulkInsert(Uri url, ContentValues[] values) {
+  protected int bulkInsert(Uri url, ContentValues[] values) {
     ContentProvider provider = getProvider(url, getContext());
 
     InsertStatement insertStatement = new InsertStatement(url, provider, values);

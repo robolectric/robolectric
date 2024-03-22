@@ -26,7 +26,7 @@ public class ShadowPhone {
   private final List<Call> calls = new ArrayList<>();
 
   @Implementation(minSdk = M)
-  protected final List<Call> getCalls() {
+  protected List<Call> getCalls() {
     List<Call> unmodifiableCalls = reflector(ReflectorPhone.class, phone).getUnmodifiableCalls();
     if (unmodifiableCalls != null) {
       return unmodifiableCalls;
@@ -35,7 +35,7 @@ public class ShadowPhone {
   }
 
   @Implementation(minSdk = M)
-  protected final CallAudioState getCallAudioState() {
+  protected CallAudioState getCallAudioState() {
     CallAudioState callAudioState = reflector(ReflectorPhone.class, phone).getCallAudioState();
     if (callAudioState != null) {
       return callAudioState;

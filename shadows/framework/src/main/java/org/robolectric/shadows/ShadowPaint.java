@@ -333,22 +333,22 @@ public class ShadowPaint {
   }
 
   @Implementation
-  protected final boolean isDither() {
+  protected boolean isDither() {
     return dither;
   }
 
   @Implementation
-  protected final boolean isAntiAlias() {
+  protected boolean isAntiAlias() {
     return (flags & Paint.ANTI_ALIAS_FLAG) == Paint.ANTI_ALIAS_FLAG;
   }
 
   @Implementation
-  protected final boolean isFilterBitmap() {
+  protected boolean isFilterBitmap() {
     return (flags & Paint.FILTER_BITMAP_FLAG) == Paint.FILTER_BITMAP_FLAG;
   }
 
   @Implementation
-  protected final void setFilterBitmap(boolean filterBitmap) {
+  protected void setFilterBitmap(boolean filterBitmap) {
     this.flags =
         (flags & ~Paint.FILTER_BITMAP_FLAG) | (filterBitmap ? Paint.FILTER_BITMAP_FLAG : 0);
   }

@@ -10,11 +10,16 @@ import android.os.Handler;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
+import android.system.Os;
+import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
@@ -202,7 +207,11 @@ public class ShadowParcelFileDescriptor {
   @Implementation
   protected FileDescriptor getFileDescriptor() {
     try {
-      return getFile().getFD();
+      RandomAccessFile file = getFile();
+      if (file != null) {
+        return file.getFD();
+      }
+      return reflector(ParcelFileDescriptorReflector.class, realParcelFd).getFileDescriptor();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -265,6 +274,34 @@ public class ShadowParcelFileDescriptor {
     return new ParcelFileDescriptor(realParcelFd);
   }
 
+  /**
+   * Support shadowing of the static method {@link ParcelFileDescriptor#dup}.
+   *
+   * <p>The real implementation calls {@link Os#fcntlInt} in order to duplicate the FileDescriptor
+   * in native code. This cannot be simulated on the JVM without the use of native code.
+   */
+  @Implementation
+  protected static ParcelFileDescriptor dup(FileDescriptor fileDescriptor) throws IOException {
+    File dupFile =
+        new File(
+            RuntimeEnvironment.getTempDirectory().createIfNotExists(PIPE_TMP_DIR).toFile(),
+            "dupfd-" + UUID.randomUUID());
+
+    // Duplicate the file represented by the file descriptor. Note that neither file streams should
+    // be closed because doing so will invalidate the corresponding file descriptor.
+    FileInputStream fileInputStream = new FileInputStream(fileDescriptor);
+    FileOutputStream fileOutputStream = new FileOutputStream(dupFile);
+    FileChannel sourceChannel = fileInputStream.getChannel();
+
+    long originalPosition = sourceChannel.position();
+
+    sourceChannel.position(0);
+    ByteStreams.copy(fileInputStream, fileOutputStream);
+    sourceChannel.position(originalPosition);
+    RandomAccessFile randomAccessFile = new RandomAccessFile(dupFile, "rw");
+    return new ParcelFileDescriptor(randomAccessFile.getFD());
+  }
+
   static class FileDescriptorFromParcelUnavailableException extends RuntimeException {
     FileDescriptorFromParcelUnavailableException() {
       super(
@@ -281,5 +318,8 @@ public class ShadowParcelFileDescriptor {
 
     @Direct
     void close();
+
+    @Direct
+    FileDescriptor getFileDescriptor();
   }
 }

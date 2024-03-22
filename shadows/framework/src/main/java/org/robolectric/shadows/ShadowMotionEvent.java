@@ -950,7 +950,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
   }
 
   @Implementation
-  protected final void transform(Matrix matrix) {
+  protected void transform(Matrix matrix) {
     checkNotNull(matrix);
     NativeInput.MotionEvent event = getNativeMotionEvent();
 

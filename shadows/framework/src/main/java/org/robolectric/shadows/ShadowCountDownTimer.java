@@ -28,13 +28,13 @@ public class ShadowCountDownTimer {
   }
 
   @Implementation
-  protected final synchronized CountDownTimer start() {
+  protected synchronized CountDownTimer start() {
     started = true;
     return countDownTimer;
   }
 
   @Implementation
-  protected final void cancel() {
+  protected void cancel() {
     started = false;
   }
 

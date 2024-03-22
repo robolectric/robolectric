@@ -376,17 +376,17 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected final InputStream open(String fileName) throws IOException {
+  protected InputStream open(String fileName) throws IOException {
     return Fs.getInputStream(findAssetFile(fileName));
   }
 
   @Implementation
-  protected final InputStream open(String fileName, int accessMode) throws IOException {
+  protected InputStream open(String fileName, int accessMode) throws IOException {
     return Fs.getInputStream(findAssetFile(fileName));
   }
 
   @Implementation
-  protected final AssetFileDescriptor openFd(String fileName) throws IOException {
+  protected AssetFileDescriptor openFd(String fileName) throws IOException {
     Path path = findAssetFile(fileName);
     if (path.getFileSystem().provider().getScheme().equals("jar")) {
       path = getFileFromZip(path);
@@ -433,7 +433,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected final String[] list(String path) throws IOException {
+  protected String[] list(String path) throws IOException {
     List<String> assetFiles = new ArrayList<>();
 
     for (Path assetsDir : getAllAssetDirs()) {
@@ -461,8 +461,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return null;
   }
 
-  @HiddenApi @Implementation
-  public final InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
+  @HiddenApi
+  @Implementation
+  public InputStream openNonAsset(int cookie, String fileName, int accessMode) throws IOException {
     final ResName resName = qualifyFromNonAssetFileName(fileName);
 
     final FileTypedResource typedResource =
@@ -522,8 +523,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     }
   }
 
-  @HiddenApi @Implementation
-  public final AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
+  @HiddenApi
+  @Implementation
+  public AssetFileDescriptor openNonAssetFd(int cookie, String fileName) throws IOException {
     throw new IllegalStateException();
   }
 
@@ -539,7 +541,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation
-  protected final XmlResourceParser openXmlResourceParser(int cookie, String fileName)
+  protected XmlResourceParser openXmlResourceParser(int cookie, String fileName)
       throws IOException {
     XmlBlock xmlBlock = XmlBlock.create(Fs.fromUrl(fileName), getResourceTable().getPackageName());
     if (xmlBlock == null) {
@@ -548,8 +550,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return getXmlResourceParser(getResourceTable(), xmlBlock, getResourceTable().getPackageName());
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected final long seekAsset(int asset, long offset, int whence) {
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected long seekAsset(int asset, long offset, int whence) {
     return seekAsset((long) asset, offset, whence);
   }
 
@@ -558,8 +561,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected final long getAssetLength(int asset) {
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected long getAssetLength(int asset) {
     return getAssetLength((long) asset);
   }
 
@@ -568,8 +572,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected final long getAssetRemainingLength(int asset) {
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected long getAssetRemainingLength(int asset) {
     return getAssetRemainingLength((long) asset);
   }
 
@@ -578,8 +583,9 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return 0;
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected final void destroyAsset(int asset) {
+  @HiddenApi
+  @Implementation(maxSdk = KITKAT_WATCH)
+  protected void destroyAsset(int asset) {
     destroyAsset((long) asset);
   }
 
@@ -623,7 +629,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
 
   @HiddenApi
   @Implementation(maxSdk = M)
-  final protected int addAssetPathNative(String path) {
+  protected int addAssetPathNative(String path) {
     return addAssetPathNative(path, false);
   }
 
@@ -1418,7 +1424,7 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   }
 
   @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
-  protected final SparseArray<String> getAssignedPackageIdentifiers() {
+  protected SparseArray<String> getAssignedPackageIdentifiers() {
     return new SparseArray<>();
   }
 

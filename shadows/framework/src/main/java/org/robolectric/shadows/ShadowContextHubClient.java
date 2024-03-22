@@ -26,10 +26,14 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowContextHubClient {
   @RealObject private ContextHubClient realContextHubClient;
   private final List<NanoAppMessage> messages = new ArrayList<>();
+  private Boolean hasPermission = true;
 
   @Implementation(minSdk = VERSION_CODES.P)
   @HiddenApi
   protected int sendMessageToNanoApp(NanoAppMessage message) {
+    if (!hasPermission) {
+      throw new SecurityException("ShadowContextHubClient does not have permission");
+    }
     if (isClosed()) {
       return ContextHubTransaction.RESULT_FAILED_UNKNOWN;
     }
@@ -41,6 +45,10 @@ public class ShadowContextHubClient {
   @HiddenApi
   protected void close() {
     reflector(ContextHubClientReflector.class, realContextHubClient).getIsClosed().set(true);
+  }
+
+  public void revokePermission() {
+    hasPermission = false;
   }
 
   public List<NanoAppMessage> getMessages() {

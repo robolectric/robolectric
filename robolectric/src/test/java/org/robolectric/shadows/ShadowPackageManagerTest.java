@@ -3355,6 +3355,14 @@ public class ShadowPackageManagerTest {
   }
 
   @Test
+  @Config(minSdk = VERSION_CODES.R)
+  public void getInstallerSourceInfo_notExists_throwsException() throws Exception {
+    assertThrows(
+        NameNotFoundException.class,
+        () -> packageManager.getInstallSourceInfo("nonExistTarget.package"));
+  }
+
+  @Test
   public void getXml() {
     XmlResourceParser in =
         packageManager.getXml(

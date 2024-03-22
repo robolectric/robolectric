@@ -304,12 +304,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  protected final void setResult(int resultCode) {
+  protected void setResult(int resultCode) {
     this.resultCode = resultCode;
   }
 
   @Implementation
-  protected final void setResult(int resultCode, Intent data) {
+  protected void setResult(int resultCode, Intent data) {
     this.resultCode = resultCode;
     this.resultIntent = data;
   }
@@ -337,7 +337,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  protected final Activity getParent() {
+  protected Activity getParent() {
     return parent;
   }
 
@@ -519,6 +519,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return the next started {@code Intent} for an activity, wrapped in an {@link
    *     ShadowActivity.IntentForResult} object
    */
+  @Override
   public IntentForResult getNextStartedActivityForResult() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     ShadowInstrumentation shadowInstrumentation =
@@ -533,6 +534,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * @return the most recently started {@code Intent}, wrapped in an {@link
    *     ShadowActivity.IntentForResult} object
    */
+  @Override
   public IntentForResult peekNextStartedActivityForResult() {
     ActivityThread activityThread = (ActivityThread) RuntimeEnvironment.getActivityThread();
     ShadowInstrumentation shadowInstrumentation =
@@ -693,27 +695,12 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  protected final void showDialog(int id) {
+  protected void showDialog(int id) {
     showDialog(id, null);
   }
 
   @Implementation
-  protected final void dismissDialog(int id) {
-    final Dialog dialog = dialogForId.get(id);
-    if (dialog == null) {
-      throw new IllegalArgumentException();
-    }
-
-    dialog.dismiss();
-  }
-
-  @Implementation
-  protected final void removeDialog(int id) {
-    dialogForId.remove(id);
-  }
-
-  @Implementation
-  protected final boolean showDialog(int id, Bundle bundle) {
+  protected boolean showDialog(int id, Bundle bundle) {
     this.lastShownDialogId = id;
     Dialog dialog = dialogForId.get(id);
 
@@ -735,12 +722,27 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     return true;
   }
 
+  @Implementation
+  protected void dismissDialog(int id) {
+    final Dialog dialog = dialogForId.get(id);
+    if (dialog == null) {
+      throw new IllegalArgumentException();
+    }
+
+    dialog.dismiss();
+  }
+
+  @Implementation
+  protected void removeDialog(int id) {
+    dialogForId.remove(id);
+  }
+
   public void setIsTaskRoot(boolean isRoot) {
     mIsTaskRoot = isRoot;
   }
 
   @Implementation
-  protected final boolean isTaskRoot() {
+  protected boolean isTaskRoot() {
     return mIsTaskRoot;
   }
 
@@ -822,17 +824,17 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
   }
 
   @Implementation
-  protected final void setVolumeControlStream(int streamType) {
+  protected void setVolumeControlStream(int streamType) {
     this.streamType = streamType;
   }
 
   @Implementation
-  protected final int getVolumeControlStream() {
+  protected int getVolumeControlStream() {
     return streamType;
   }
 
   @Implementation(minSdk = M)
-  protected final void requestPermissions(String[] permissions, int requestCode) {
+  protected void requestPermissions(String[] permissions, int requestCode) {
     lastRequestedPermission = new PermissionsRequest(permissions, requestCode);
     reflector(DirectActivityReflector.class, realActivity)
         .requestPermissions(permissions, requestCode);

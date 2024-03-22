@@ -8,8 +8,14 @@ import static org.robolectric.Shadows.shadowOf;
 
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.SystemClock;
+import android.view.Choreographer;
 import java.time.Duration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +27,7 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.util.TimeUtils;
 
 /** A specialized test for verifying that looper state is cleared properly between tests. */
 @RunWith(JUnit4.class)
@@ -184,6 +191,144 @@ public class ShadowLooperResetterTest {
   @Test
   public void delayedTaskRunningLooper() throws InitializationError {
     Runner runner = new RobolectricTestRunner(DelayedTaskRunningLooperTest.class);
+
+    // run and assert no failures
+    runner.run(runNotifier);
+  }
+
+  /** Test that uses Choreographer. ShadowLooper should clear Choreographer state between tests */
+  public static class ChoreographerResetTest {
+
+    // use a static thread so both tests share the same Looper + Choreographer
+    static HandlerThread handlerThread;
+
+    @Before
+    public void init() {
+      if (handlerThread == null) {
+        handlerThread = new HandlerThread("ChoreographerResetTest");
+        handlerThread.start();
+      }
+    }
+
+    @AfterClass
+    public static void shutDown() throws InterruptedException {
+      handlerThread.quit();
+      handlerThread.join();
+    }
+
+    private void doPostToChoreographerTest() {
+      checkNotNull(handlerThread.getLooper());
+      Handler handler = new Handler(handlerThread.getLooper());
+
+      AtomicLong frameTimeNanosResult = new AtomicLong(-1);
+      // you can only access Choreographer from Looper thread
+      handler.post(() -> Choreographer.getInstance().postFrameCallback(frameTimeNanosResult::set));
+      shadowOf(handlerThread.getLooper()).idle();
+
+      // ensure callback happened and that clock is consistent with Choreographer's frame time
+      // tracking
+      assertThat(frameTimeNanosResult.get())
+          .isEqualTo(SystemClock.uptimeMillis() * TimeUtils.NANOS_PER_MS);
+
+      // Now set Choreographer so it expects there is a pending vsync+frame callback.
+      // Choreographer will ignore vsync+frame requests if there is already one pending.
+      // If Choreographer state isn't clearly properly between tests the next test will fail.
+
+      // Setting Choreographer into paused mode makes this test deterministic, as vsync callbacks
+      // won't occur until clock has been incremented.
+      ShadowChoreographer.setPaused(true);
+      ShadowChoreographer.setFrameDelay(Duration.ofMillis(16));
+
+      handler.post(() -> Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {}));
+      shadowOf(handlerThread.getLooper()).idle();
+    }
+
+    @Test
+    public void postToChoreographerTest() {
+      doPostToChoreographerTest();
+    }
+
+    @Test
+    public void anotherPostToChoreographerTest() {
+      doPostToChoreographerTest();
+    }
+  }
+
+  @Test
+  public void choreographerPost() throws InitializationError {
+    Runner runner = new RobolectricTestRunner(ChoreographerResetTest.class);
+
+    // run and assert no failures
+    runner.run(runNotifier);
+  }
+
+  /** Test that uses Choreographer and asynchronously kills thread between tests */
+  public static class ChoreographerResetQuitTest {
+
+    // use a static thread so both tests share the same Looper + Choreographer
+    private HandlerThread handlerThread;
+    private final Executor executor = Executors.newSingleThreadExecutor();
+
+    @Before
+    public void init() {
+      handlerThread = new HandlerThread("ChoreographerResetQuitTest");
+      handlerThread.start();
+    }
+
+    @After
+    public void shutDown() throws InterruptedException {
+      // asynchronously quit handler thread to try to expose race conditions
+      executor.execute(
+          new Runnable() {
+            @Override
+            public void run() {
+              handlerThread.quit();
+            }
+          });
+    }
+
+    private void doPostToChoreographerTest() {
+      checkNotNull(handlerThread.getLooper());
+      Handler handler = new Handler(handlerThread.getLooper());
+
+      AtomicLong frameTimeNanosResult = new AtomicLong(-1);
+      // you can only access Choreographer from Looper thread
+      handler.post(() -> Choreographer.getInstance().postFrameCallback(frameTimeNanosResult::set));
+      shadowOf(handlerThread.getLooper()).idle();
+
+      // ensure callback happened and that clock is consistent with Choreographer's frame time
+      // tracking
+      assertThat(frameTimeNanosResult.get())
+          .isEqualTo(SystemClock.uptimeMillis() * TimeUtils.NANOS_PER_MS);
+
+      // Now set Choreographer so it expects there is a pending vsync+frame callback.
+      // Choreographer will ignore vsync+frame requests if there is already one pending.
+      // If Choreographer state isn't clearly properly between tests the next test will fail.
+
+      // Setting Choreographer into paused mode makes this test deterministic, as vsync callbacks
+      // won't occur until clock has been incremented.
+      ShadowChoreographer.setPaused(true);
+      ShadowChoreographer.setFrameDelay(Duration.ofMillis(16));
+
+      handler.post(() -> Choreographer.getInstance().postFrameCallback(frameTimeNanos -> {}));
+      shadowOf(handlerThread.getLooper()).idle();
+    }
+
+    @Test
+    public void postToChoreographerTest() {
+      doPostToChoreographerTest();
+    }
+
+    @Test
+    public void anotherPostToChoreographerTest() {
+      doPostToChoreographerTest();
+    }
+  }
+
+  /** Tests for potentially race conditions where Looper is quit asynchrounously at end of test */
+  @Test
+  public void choreographerQuitPost() throws InitializationError {
+    Runner runner = new RobolectricTestRunner(ChoreographerResetQuitTest.class);
 
     // run and assert no failures
     runner.run(runNotifier);

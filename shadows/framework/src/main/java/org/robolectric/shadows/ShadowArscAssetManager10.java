@@ -79,6 +79,8 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
+
 // TODO: update path to released version.
 // transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-10.0.0_rXX/core/jni/android_util_AssetManager.cpp
@@ -521,7 +523,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
   // static void NativeSetApkAssets(JNIEnv* env, jclass /*clazz*/, jlong ptr,
   //                                jobjectArray apk_assets_array, jboolean invalidate_caches) {
-  @Implementation(minSdk = P)
+  @Implementation(minSdk = P, maxSdk = U.SDK_INT)
   protected static void nativeSetApkAssets(
       long ptr,
       @NonNull android.content.res.ApkAssets[] apk_assets_array,

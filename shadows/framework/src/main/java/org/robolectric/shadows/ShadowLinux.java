@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.N_MR1;
+import static android.os.Build.VERSION_CODES.R;
 
 import android.os.Build;
 import android.system.ErrnoException;
@@ -76,6 +77,18 @@ public class ShadowLinux {
     } catch (IOException e) {
       Log.e("ShadowLinux", "open failed for " + path, e);
       throw new ErrnoException("open", OsConstants.EIO);
+    }
+  }
+
+  @Implementation(minSdk = R)
+  protected FileDescriptor memfd_create(String name, int flags) throws ErrnoException {
+    try {
+      File tempFile = File.createTempFile(name, /* suffix= */ "robo_memfd");
+      tempFile.deleteOnExit();
+      RandomAccessFile randomAccessFile = new RandomAccessFile(tempFile, /* mode= */ "rw");
+      return randomAccessFile.getFD();
+    } catch (IOException e) {
+      throw new ErrnoException("memfd_create", OsConstants.EIO, e);
     }
   }
 

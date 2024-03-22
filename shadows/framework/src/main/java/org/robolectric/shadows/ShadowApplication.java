@@ -227,7 +227,7 @@ public class ShadowApplication extends ShadowContextWrapper {
    * @deprecated Use {@link BluetoothAdapter#getDefaultAdapter()} ()} instead.
    */
   @Deprecated
-  public final BluetoothAdapter getBluetoothAdapter() {
+  public BluetoothAdapter getBluetoothAdapter() {
     return BluetoothAdapter.getDefaultAdapter();
   }
 

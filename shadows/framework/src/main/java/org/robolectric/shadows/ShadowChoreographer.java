@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.os.Looper;
 import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.DisplayEventReceiver;
@@ -161,6 +162,7 @@ public abstract class ShadowChoreographer {
   public static void reset() {
     isPaused = false;
     frameDelay = Duration.ofMillis(1);
+    ShadowBackdropFrameRenderer.reset();
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
@@ -175,5 +177,14 @@ public abstract class ShadowChoreographer {
 
     @Accessor("mDisplayEventReceiver")
     DisplayEventReceiver getReceiver();
+
+    @Direct
+    void __constructor__(Looper looper);
+
+    @Direct
+    void __constructor__(Looper looper, int vsyncSource, long layerHandle);
+
+    @Direct
+    void __constructor__(Looper looper, int vsyncSource);
   }
 }

@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Shadows.shadowOf;
@@ -337,6 +338,18 @@ public class ShadowContextImplTest {
     assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
     assertThat(shadowOf(context).getBroadcastIntentsForUser(userHandle).get(0).getAction())
         .isEqualTo(action);
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void sendBroadcastWithBundle_sendBroadcast() {
+    String action = "foo-action";
+    Bundle options = new Bundle();
+    Intent intent = new Intent(action);
+    context.sendBroadcast(intent, null, options);
+
+    assertThat(shadowOf(context).getBroadcastIntents().get(0).getAction()).isEqualTo(action);
+    assertThat(shadowOf(context).getBroadcastOptions(intent)).isEqualTo(options);
   }
 
   @Test

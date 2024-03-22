@@ -25,7 +25,7 @@ public class ShadowQuickAccessWalletService extends ShadowService {
   /** Capture events sent by the service to SysUI */
   @Implementation
   @SystemApi
-  public final void sendWalletServiceEvent(@Nonnull WalletServiceEvent serviceEvent) {
+  public void sendWalletServiceEvent(@Nonnull WalletServiceEvent serviceEvent) {
     serviceEvents.add(serviceEvent);
   }
 

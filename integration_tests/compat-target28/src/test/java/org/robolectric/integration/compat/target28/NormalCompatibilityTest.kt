@@ -79,7 +79,7 @@ class NormalCompatibilityTest {
       srcRect,
       bitmap,
       listener,
-      Handler(Looper.getMainLooper())
+      Handler(Looper.getMainLooper()),
     )
   }
 

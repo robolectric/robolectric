@@ -668,7 +668,9 @@ public class CppAssetManager2 {
     // and we don't need to match the configurations, since they already matched.
     boolean use_fast_path = desired_config == configuration_;
 
-    for (int pi = 0; pi < package_count; pi++) {
+    // Search the entry in reverse order. This favors the newly added package in case neither
+    // configuration is considered "better than" the other.
+    for (int pi = package_count - 1; pi >= 0; pi--) {
       ConfiguredPackage loaded_package_impl = package_group.packages_.get(pi);
       LoadedPackage loaded_package = loaded_package_impl.loaded_package_;
       ApkAssetsCookie cookie = package_group.cookies_.get(pi);

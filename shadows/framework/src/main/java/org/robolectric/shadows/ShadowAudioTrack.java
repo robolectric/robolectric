@@ -306,7 +306,7 @@ public class ShadowAudioTrack {
    * AudioTrack#ERROR_DEAD_OBJECT};
    */
   @Implementation(minSdk = M)
-  protected final int native_write_byte(
+  protected int native_write_byte(
       byte[] audioData, int offsetInBytes, int sizeInBytes, int format, boolean isBlocking) {
     int encoding = audioTrack.getAudioFormat();
     // Assume that offload support does not change during the lifetime of the instance.
@@ -347,7 +347,7 @@ public class ShadowAudioTrack {
 
   @Implementation(minSdk = M)
   @NonNull
-  protected final PlaybackParams getPlaybackParams() {
+  protected PlaybackParams getPlaybackParams() {
     return playbackParams;
   }
 

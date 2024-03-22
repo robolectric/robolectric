@@ -101,8 +101,8 @@ public class ShadowContentProviderClient {
   }
 
   @Implementation
-  protected final AssetFileDescriptor openTypedAssetFileDescriptor(
-      Uri uri, String mimeType, Bundle opts) throws RemoteException, FileNotFoundException {
+  protected AssetFileDescriptor openTypedAssetFileDescriptor(Uri uri, String mimeType, Bundle opts)
+      throws RemoteException, FileNotFoundException {
     return provider.openTypedAssetFile(uri, mimeType, opts);
   }
 

@@ -125,6 +125,11 @@ public final class ShadowAudioRecord {
         .readInDirectBuffer(((ByteBuffer) jBuffer).duplicate(), sizeInBytes, isBlocking);
   }
 
+  @Implementation(minSdk = M)
+  protected boolean native_setInputDevice(int preferredDeviceId) {
+    return true;
+  }
+
   private AudioRecordSource getAudioRecordSource() {
     return audioRecordSourceProvider.get().get(audioRecord);
   }
