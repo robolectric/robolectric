@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static org.robolectric.shadow.api.Shadow.directlyOn;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -172,6 +173,13 @@ public class ShadowContextImpl {
     getShadowInstrumentation()
         .sendBroadcastWithPermission(
             intent, /*userHandle=*/ null, receiverPermission, realContextImpl);
+  }
+
+  @Implementation(minSdk = TIRAMISU)
+  protected void sendBroadcast(Intent intent, String receiverPermission, Bundle options) {
+    getShadowInstrumentation()
+        .sendBroadcastWithPermission(
+            intent, receiverPermission, realContextImpl, options, /* resultCode= */ 0);
   }
 
   @Implementation
