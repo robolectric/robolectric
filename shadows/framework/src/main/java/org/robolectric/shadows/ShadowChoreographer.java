@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.R;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.ShadowLooper.looperMode;
@@ -10,6 +11,7 @@ import android.view.Choreographer;
 import android.view.Choreographer.FrameCallback;
 import android.view.DisplayEventReceiver;
 import java.time.Duration;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -162,7 +164,9 @@ public abstract class ShadowChoreographer {
   public static void reset() {
     isPaused = false;
     frameDelay = Duration.ofMillis(1);
-    ShadowBackdropFrameRenderer.reset();
+    if (RuntimeEnvironment.getApiLevel() >= N) {
+      ShadowBackdropFrameRenderer.reset();
+    }
   }
 
   /** Accessor interface for {@link Choreographer}'s internals */
