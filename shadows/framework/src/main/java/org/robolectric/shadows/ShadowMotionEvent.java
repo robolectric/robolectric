@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_AXIS_ORIENTATION;
@@ -32,6 +33,7 @@ import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /**
  * Shadow of MotionEvent.
@@ -50,7 +52,7 @@ import org.robolectric.util.ReflectionHelpers;
  *     the MotionEvent.obtain methods or via MotionEventBuilder.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(MotionEvent.class)
+@Implements(value = MotionEvent.class)
 public class ShadowMotionEvent extends ShadowInputEvent {
 
   private static NativeObjRegistry<NativeInput.MotionEvent> nativeMotionEventRegistry =
@@ -814,7 +816,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return nativeGetXOffset((long) nativePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = UPSIDE_DOWN_CAKE)
   @HiddenApi
   protected static float nativeGetXOffset(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -827,11 +829,29 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return nativeGetYOffset((long) nativePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation(minSdk = LOLLIPOP, maxSdk = UPSIDE_DOWN_CAKE)
   @HiddenApi
   protected static float nativeGetYOffset(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getYOffset();
+  }
+
+  @Implementation(minSdk = LOLLIPOP)
+  protected final MotionEvent split(int idBits) {
+    NativeInput.MotionEvent event = getNativeMotionEvent();
+    return event.nativeSplit(idBits);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  @HiddenApi
+  protected static float nativeGetRawXOffset(long nativePtr) {
+    return getNativeMotionEvent(nativePtr).getXOffset();
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  @HiddenApi
+  protected static float nativeGetRawYOffset(long nativePtr) {
+    return getNativeMotionEvent(nativePtr).getYOffset();
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -938,7 +958,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.scale(scale);
   }
 
-  private static NativeInput.MotionEvent getNativeMotionEvent(long nativePtr) {
+  protected static NativeInput.MotionEvent getNativeMotionEvent(long nativePtr) {
     // check that MotionEvent was initialized properly. This can occur if MotionEvent was mocked
     checkState(
         nativePtr > 0,
@@ -959,7 +979,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.transform(m);
   }
 
-  private NativeInput.MotionEvent getNativeMotionEvent() {
+  protected NativeInput.MotionEvent getNativeMotionEvent() {
     long nativePtr;
     if (RuntimeEnvironment.getApiLevel() <= KITKAT_WATCH) {
       Integer nativePtrInt = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");

@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static com.google.common.base.Preconditions.checkState;
 import static org.robolectric.shadows.NativeAndroidInput.AINPUT_EVENT_TYPE_MOTION;
 import static org.robolectric.shadows.NativeAndroidInput.AINPUT_SOURCE_CLASS_POINTER;
+import static org.robolectric.shadows.NativeAndroidInput.AKEY_EVENT_FLAG_CANCELED;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_CANCEL;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_DOWN;
 import static org.robolectric.shadows.NativeAndroidInput.AMOTION_EVENT_ACTION_MASK;
@@ -28,6 +29,7 @@ import android.view.MotionEvent.PointerProperties;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import org.robolectric.res.android.Ref;
 
 /**
@@ -64,11 +66,11 @@ public class NativeInput {
    */
   static class AInputEvent {}
 
-  /*
+  /**
    * Pointer coordinate data.
    *
-   * Deviates from original platform implementation to store axises in simple SparseArray as opposed
-   * to complicated bitset + array arrangement.
+   * <p>Deviates from original platform implementation to store axises in simple SparseArray as
+   * opposed to complicated bitset + array arrangement.
    */
   static class PointerCoords {
 
@@ -272,9 +274,7 @@ public class NativeInput {
     //     nsecs_t mEventTime;
   }
 
-  /*
-   * Motion events.
-   */
+  /** Motion events. */
   static class MotionEvent extends InputEvent {
 
     // constants copied from android bionic/libc/include/math.h
@@ -283,6 +283,18 @@ public class NativeInput {
 
     @SuppressWarnings("FloatingPointLiteralPrecision")
     private static final double M_PI_2 = 1.57079632679489661923f; /* pi/2 */
+
+    public static final int ACTION_MASK = 0xff;
+    public static final int ACTION_DOWN = 0;
+    public static final int ACTION_UP = 1;
+    public static final int ACTION_MOVE = 2;
+    public static final int ACTION_CANCEL = 3;
+    public static final int ACTION_POINTER_DOWN = 5;
+    public static final int ACTION_POINTER_UP = 6;
+    private static final int HISTORY_CURRENT = -0x80000000;
+    public static final int FLAG_CANCELED = 0x20;
+    public static final int ACTION_POINTER_INDEX_MASK = 0xff00;
+    public static final int ACTION_POINTER_INDEX_SHIFT = 8;
 
     private int mAction;
     private int mActionButton;
@@ -538,6 +550,115 @@ public class NativeInput {
 
     public float getHistoricalOrientation(int pointerIndex, int historicalIndex) {
       return getHistoricalAxisValue(AMOTION_EVENT_AXIS_ORIENTATION, pointerIndex, historicalIndex);
+    }
+
+    private android.view.MotionEvent.PointerCoords[] getNativePointerCoords() {
+      android.view.MotionEvent.PointerCoords[] nativePointerCoords =
+          new android.view.MotionEvent.PointerCoords[mSamplePointerCoords.size()];
+      for (int i = 0; i < mSamplePointerCoords.size(); i++) {
+        android.view.MotionEvent.PointerCoords newPc = new android.view.MotionEvent.PointerCoords();
+        PointerCoords pc = mSamplePointerCoords.get(i);
+        newPc.x = pc.getX();
+        newPc.y = pc.getY();
+        newPc.setAxisValue(AMOTION_EVENT_AXIS_X, pc.getX());
+        newPc.setAxisValue(AMOTION_EVENT_AXIS_Y, pc.getY());
+        nativePointerCoords[i] = newPc;
+      }
+      return nativePointerCoords;
+    }
+
+    private int resolveActionForSplitMotionEvent(
+        int action,
+        int flags,
+        PointerProperties[] pointerProperties,
+        PointerProperties[] splitPointerProperties) {
+      int maskedAction = getActionMasked();
+      if (maskedAction != AMOTION_EVENT_ACTION_POINTER_DOWN
+          && maskedAction != AMOTION_EVENT_ACTION_POINTER_UP) {
+        // The action is unaffected by splitting this motion event.
+        return action;
+      }
+
+      int actionIndex = getActionIndex();
+
+      int affectedPointerId = pointerProperties[actionIndex].id;
+      Optional<Integer> splitActionIndex = Optional.empty();
+      for (int i = 0; i < splitPointerProperties.length; i++) {
+        if (affectedPointerId == splitPointerProperties[i].id) {
+          splitActionIndex = Optional.of(i);
+          break;
+        }
+      }
+      if (!splitActionIndex.isPresent()) {
+        // The affected pointer is not part of the split motion event.
+        return AMOTION_EVENT_ACTION_MOVE;
+      }
+
+      if (splitPointerProperties.length > 1) {
+        return maskedAction | (splitActionIndex.get() << AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT);
+      }
+
+      if (maskedAction == AMOTION_EVENT_ACTION_POINTER_UP) {
+        return ((flags & AKEY_EVENT_FLAG_CANCELED) != 0)
+            ? AMOTION_EVENT_ACTION_CANCEL
+            : AMOTION_EVENT_ACTION_UP;
+      }
+      return AMOTION_EVENT_ACTION_DOWN;
+    }
+
+    public android.view.MotionEvent nativeSplit(int idBits) {
+      final int pointerCount = getPointerCount();
+      List<PointerProperties> pointerProperties = new ArrayList<>(mPointerProperties);
+      final PointerProperties[] pp = pointerProperties.toArray(new PointerProperties[pointerCount]);
+      final android.view.MotionEvent.PointerCoords[] pc = getNativePointerCoords();
+
+      List<PointerProperties> splitPointerProperties = new ArrayList<>();
+      List<android.view.MotionEvent.PointerCoords> splitPointerCoords = new ArrayList<>();
+
+      // Split the matching ids out for the new MotionEvent.
+      for (int i = 0; i < pointerCount; i++) {
+        final int idBit = 1 << pp[i].id;
+        if ((idBit & idBits) != 0) {
+          splitPointerProperties.add(pp[i]);
+        }
+      }
+      for (int i = 0; i < pc.length; i++) {
+        final int idBit = 1 << pp[i % pointerCount].id;
+        if ((idBit & idBits) != 0) {
+          splitPointerCoords.add(pc[i]);
+        }
+      }
+
+      // Convert them to arrays
+      PointerProperties[] splitPointerPropertiesArray =
+          new PointerProperties[splitPointerProperties.size()];
+      splitPointerProperties.toArray(splitPointerPropertiesArray);
+
+      android.view.MotionEvent.PointerCoords[] splitPointerCoordsArray =
+          new android.view.MotionEvent.PointerCoords[splitPointerCoords.size()];
+      splitPointerCoords.toArray(splitPointerCoordsArray);
+
+      int splitAction =
+          resolveActionForSplitMotionEvent(
+              getAction(), getFlags(), pp, splitPointerPropertiesArray);
+
+      android.view.MotionEvent newEvent =
+          android.view.MotionEvent.obtain(
+              getDownTime(),
+              getEventTime(),
+              splitAction,
+              splitPointerProperties.size(),
+              splitPointerPropertiesArray,
+              splitPointerCoordsArray,
+              getMetaState(),
+              getButtonState(),
+              getXPrecision(),
+              getYPrecision(),
+              getDeviceId(),
+              getEdgeFlags(),
+              getSource(),
+              getFlags());
+      return newEvent;
     }
 
     public int findPointerIndex(int pointerId) {
