@@ -20,7 +20,7 @@ hamcrest = "2.0.0.0"
 aggregate-javadocs-gradle = "3.0.1"
 
 # https://github.com/google/error-prone/releases
-error-prone = "2.19.1"
+error-prone = "2.21.1"
 error-prone-javac = "9+181-r4173-1"
 
 # https://github.com/tbroyer/gradle-errorprone-plugin/releases
@@ -54,7 +54,7 @@ auto-value = "1.10.4"
 compile-testing = "0.21.0"
 
 # https://github.com/google/guava/releases
-guava-jre = "31.1-jre"
+guava-jre = "32.1.3-jre"
 
 # https://github.com/google/gson/releases
 gson = "2.10.1"
