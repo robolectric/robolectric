@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Priority;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.sandbox.ShadowMatcher;
@@ -305,9 +306,18 @@ public class ShadowWrangler implements ClassHandler {
       Class<?>[] types,
       ShadowInfo shadowInfo,
       Class<?> shadowClass) {
+    // First, try to find shadow method with the exact method signature.
     Method method = findShadowMethodDeclaredOnClass(shadowClass, name, types);
 
+    if (method == null) {
+      // Second, try to find mapped shadow method with the exact method signature except method
+      // name.
+      method = findMappedShadowMethodDeclaredOnClass(shadowClass, name, types);
+    }
+
     if (method == null && shadowInfo.looseSignatures) {
+      // Third, try to find special all Object method signature if this class is marked by
+      // looseSignature.
       Class<?>[] genericTypes = MethodType.genericMethodType(types.length).parameterArray();
       method = findShadowMethodDeclaredOnClass(shadowClass, name, genericTypes);
     }
@@ -331,6 +341,29 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     return method;
+  }
+
+  private Method findMappedShadowMethodDeclaredOnClass(
+      Class<?> shadowClass, String methodName, Class<?>[] paramCLasses) {
+    String mappedMethodName = methodName;
+    if (methodName != null) {
+      Method[] methods = shadowClass.getDeclaredMethods();
+      for (Method method : methods) {
+        if (method == null) {
+          continue;
+        }
+        Implementation implementation = method.getAnnotation(Implementation.class);
+        if (implementation == null) {
+          continue;
+        }
+        if (methodName.equals(implementation.methodName())) {
+          mappedMethodName = method.getName();
+          break;
+        }
+      }
+    }
+    // Leverage findShadowMethodDeclaredOnClass to validate mapped method's parameter list.
+    return findShadowMethodDeclaredOnClass(shadowClass, mappedMethodName, paramCLasses);
   }
 
   private Method findShadowMethodDeclaredOnClass(
