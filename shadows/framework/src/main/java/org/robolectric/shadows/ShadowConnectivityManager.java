@@ -4,6 +4,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -149,6 +150,14 @@ public class ShadowConnectivityManager {
   @Implementation(minSdk = N)
   protected void registerDefaultNetworkCallback(
       ConnectivityManager.NetworkCallback networkCallback) {
+    networkCallbacks.add(networkCallback);
+  }
+
+  @Implementation(minSdk = S)
+  protected void registerBestMatchingNetworkCallback(
+      NetworkRequest request,
+      ConnectivityManager.NetworkCallback networkCallback,
+      Handler handler) {
     networkCallbacks.add(networkCallback);
   }
 
