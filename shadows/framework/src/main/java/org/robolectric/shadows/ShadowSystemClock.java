@@ -9,6 +9,7 @@ import android.os.SystemClock;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.LooperMode;
@@ -17,12 +18,11 @@ import org.robolectric.annotation.LooperMode.Mode;
 /**
  * The shadow API for {@link SystemClock}.
  *
- * The behavior of SystemClock in Robolectric will differ based on the current {@link
+ * <p>The behavior of SystemClock in Robolectric will differ based on the current {@link
  * LooperMode}. See {@link ShadowLegacySystemClock} and {@link ShadowPausedSystemClock} for more
  * details.
  */
-@Implements(value = SystemClock.class, shadowPicker = ShadowSystemClock.Picker.class,
-    looseSignatures = true)
+@Implements(value = SystemClock.class, shadowPicker = ShadowSystemClock.Picker.class)
 public abstract class ShadowSystemClock {
   protected static boolean networkTimeAvailable = true;
   private static boolean gnssTimeAvailable = true;
@@ -96,7 +96,7 @@ public abstract class ShadowSystemClock {
   }
 
   @Implementation(minSdk = Q)
-  protected static Object currentGnssTimeClock() {
+  protected static @ClassName("java.time.Clock") Object currentGnssTimeClock() {
     if (gnssTimeAvailable) {
       return new SimpleClock(UTC) {
         @Override

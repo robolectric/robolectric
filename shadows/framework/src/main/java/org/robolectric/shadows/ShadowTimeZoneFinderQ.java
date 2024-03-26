@@ -14,8 +14,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
     className = "libcore.timezone.TimeZoneFinder",
     minSdk = Q,
     maxSdk = R,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+    isInAndroidSdk = false)
 public class ShadowTimeZoneFinderQ {
 
   @Implementation

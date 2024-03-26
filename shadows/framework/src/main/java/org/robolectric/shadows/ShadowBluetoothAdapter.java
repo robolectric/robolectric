@@ -133,9 +133,9 @@ public class ShadowBluetoothAdapter {
     return reflector(BluetoothAdapterReflector.class).getDefaultAdapter();
   }
 
-  /** Requires LooseSignatures because of {@link AttributionSource} parameter */
   @Implementation(minSdk = VERSION_CODES.TIRAMISU)
-  protected static Object createAdapter(Object attributionSource) {
+  protected static /*android.bluetooth.BluetoothAdapter*/ Object createAdapter(
+      /*android.content.AttributionSource*/ Object attributionSource) {
     IBluetoothManager service =
         ReflectionHelpers.createDelegatingProxy(
             IBluetoothManager.class, new BluetoothManagerDelegate());
@@ -377,12 +377,10 @@ public class ShadowBluetoothAdapter {
     return true;
   }
 
-  /**
-   * Needs looseSignatures because in Android T the return value of this method was changed from
-   * bool to int.
-   */
+  /** T return value changed from {@code int} to {@link Duration} starting in T. */
   @Implementation
   protected Object setScanMode(int scanMode) {
+    // TODO Support ClassName for different return values in different SDKs.
     boolean result = true;
     if (scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE
         && scanMode != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE
@@ -416,12 +414,10 @@ public class ShadowBluetoothAdapter {
     return scanMode;
   }
 
-  /**
-   * Needs looseSignatures because the return value changed from {@code int} to {@link Duration}
-   * starting in T.
-   */
+  /** In Android T the return value of this method was changed from bool to int. */
   @Implementation
   protected Object getDiscoverableTimeout() {
+    // TODO Support ClassName for different return values in different SDKs.
     if (RuntimeEnvironment.getApiLevel() <= S_V2) {
       return (int) discoverableTimeout.toSeconds();
     } else {
