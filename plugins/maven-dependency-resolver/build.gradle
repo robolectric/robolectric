@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.robolectric.gradle.DependencyGuardPlugin
 import org.robolectric.gradle.DeployedRoboJavaModulePlugin
 import org.robolectric.gradle.RoboJavaModulePlugin
 
@@ -6,6 +7,7 @@ apply plugin: RoboJavaModulePlugin
 apply plugin: DeployedRoboJavaModulePlugin
 apply plugin: 'kotlin'
 apply plugin: "com.diffplug.spotless"
+apply plugin: DependencyGuardPlugin
 
 spotless {
     kotlin {

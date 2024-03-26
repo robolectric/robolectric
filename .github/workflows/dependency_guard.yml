@@ -1,0 +1,28 @@
+name: Dependency guard
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-guard:
+    name: Dependency guard
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v3
+
+      - name: Run dependency guard
+        run: ./gradlew dependencyGuard
