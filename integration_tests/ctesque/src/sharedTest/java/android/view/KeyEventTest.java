@@ -1,7 +1,10 @@
 package android.view;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,5 +45,17 @@ public final class KeyEventTest {
     assertEquals(
         KeyEvent.getMaxKeyCode(),
         KeyEvent.keyCodeFromString(Integer.toString(KeyEvent.getMaxKeyCode())));
+  }
+
+  /**
+   * Verify the "starting in {@link android.os.Build.VERSION_CODES#Q} the prefix "KEYCODE_" is
+   * optional." statement in {@link KeyEvent#keyCodeFromString(String)} reference docs.
+   */
+  @Test
+  public void testKeyCodeFromString_prefixOptionalFromQ() {
+    assumeTrue(VERSION.SDK_INT >= VERSION_CODES.Q);
+    assertEquals(KeyEvent.KEYCODE_A, KeyEvent.keyCodeFromString("A"));
+
+    assertEquals(KeyEvent.KEYCODE_POWER, KeyEvent.keyCodeFromString("POWER"));
   }
 }
