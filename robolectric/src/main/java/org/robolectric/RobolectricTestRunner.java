@@ -28,7 +28,6 @@ import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.config.AndroidConfigurer;
 import org.robolectric.interceptors.AndroidInterceptors;
 import org.robolectric.internal.AndroidSandbox;
-import org.robolectric.internal.BuckManifestFactory;
 import org.robolectric.internal.DefaultManifestFactory;
 import org.robolectric.internal.ManifestFactory;
 import org.robolectric.internal.ManifestIdentifier;
@@ -338,11 +337,7 @@ public class RobolectricTestRunner extends SandboxTestRunner {
       return new DefaultManifestFactory(buildSystemApiProperties);
     }
 
-    if (BuckManifestFactory.isBuck()) {
-      return new BuckManifestFactory();
-    } else {
-      return new MavenManifestFactory();
-    }
+    return new MavenManifestFactory();
   }
 
   protected Properties getBuildSystemApiProperties() {
