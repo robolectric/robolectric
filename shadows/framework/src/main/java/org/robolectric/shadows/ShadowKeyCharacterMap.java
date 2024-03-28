@@ -182,11 +182,8 @@ public class ShadowKeyCharacterMap {
     return ReflectionHelpers.callConstructor(KeyCharacterMap.class);
   }
 
-  @Implementation
-  protected KeyEvent[] getEvents(char[] chars) {
-    if (chars == null) {
-      throw new IllegalArgumentException("chars must not be null.");
-    }
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected static KeyEvent[] nativeGetEvents(long ptr, char[] chars) {
     int eventsPerChar = 2;
     KeyEvent[] events = new KeyEvent[chars.length * eventsPerChar];
 
@@ -198,13 +195,28 @@ public class ShadowKeyCharacterMap {
     return events;
   }
 
-  @Implementation
-  protected int getKeyboardType() {
+  @Implementation(maxSdk = KITKAT)
+  protected static KeyEvent[] nativeGetEvents(int ptr, char[] chars) {
+    return nativeGetEvents((long) ptr, chars);
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected static int nativeGetKeyboardType(long ptr) {
     return KeyCharacterMap.FULL;
   }
 
-  @Implementation
-  protected int get(int keyCode, int metaState) {
+  @Implementation(maxSdk = KITKAT)
+  protected static int nativeGetKeyboardType(int ptr) {
+    return KeyCharacterMap.FULL;
+  }
+
+  @Implementation(maxSdk = KITKAT)
+  protected static char nativeGetCharacter(int ptr, int keyCode, int metaState) {
+    return nativeGetCharacter((long) ptr, keyCode, metaState);
+  }
+
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected static char nativeGetCharacter(long ptr, int keyCode, int metaState) {
     boolean metaShiftOn = (metaState & KeyEvent.META_SHIFT_ON) != 0;
     Character character = KEY_CODE_TO_CHAR.get(keyCode);
     if (character == null) {
@@ -216,7 +228,7 @@ public class ShadowKeyCharacterMap {
     }
   }
 
-  public KeyEvent getDownEvent(char a) {
+  private static KeyEvent getDownEvent(char a) {
     return new KeyEvent(
         0,
         0,
@@ -228,7 +240,7 @@ public class ShadowKeyCharacterMap {
         0);
   }
 
-  public KeyEvent getUpEvent(char a) {
+  private static KeyEvent getUpEvent(char a) {
     return new KeyEvent(
         0,
         0,
@@ -240,24 +252,14 @@ public class ShadowKeyCharacterMap {
         0);
   }
 
-  @Implementation
-  protected char getDisplayLabel(int keyCode) {
+  @Implementation(minSdk = KITKAT_WATCH)
+  protected static char nativeGetDisplayLabel(long ptr, int keyCode) {
     return KEY_CODE_TO_CHAR.getOrDefault(keyCode, (char) 0);
   }
 
-  @Implementation
-  protected boolean isPrintingKey(int keyCode) {
-    int type = Character.getType(getDisplayLabel(keyCode));
-    switch (type) {
-      case Character.SPACE_SEPARATOR:
-      case Character.LINE_SEPARATOR:
-      case Character.PARAGRAPH_SEPARATOR:
-      case Character.CONTROL:
-      case Character.FORMAT:
-        return false;
-      default:
-        return true;
-    }
+  @Implementation(maxSdk = KITKAT)
+  protected static char nativeGetDisplayLabel(int ptr, int keyCode) {
+    return KEY_CODE_TO_CHAR.getOrDefault(keyCode, (char) 0);
   }
 
   @Implementation(minSdk = KITKAT_WATCH)
@@ -278,7 +280,7 @@ public class ShadowKeyCharacterMap {
     return character;
   }
 
-  private int toCharKeyCode(char a) {
+  private static int toCharKeyCode(char a) {
     if (CHAR_TO_KEY_CODE.containsKey(Character.toUpperCase(a))) {
       return CHAR_TO_KEY_CODE.get(Character.toUpperCase(a));
     } else if (CHAR_TO_KEY_CODE_SHIFT_ON.containsKey(a)) {
@@ -288,7 +290,7 @@ public class ShadowKeyCharacterMap {
     }
   }
 
-  private int getMetaState(char a) {
+  private static int getMetaState(char a) {
     if (Character.isUpperCase(a) || CHAR_TO_KEY_CODE_SHIFT_ON.containsKey(a)) {
       return KeyEvent.META_SHIFT_ON;
     } else {

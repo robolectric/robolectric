@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
+import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
 import android.hardware.location.ContextHubClient;
@@ -13,14 +14,22 @@ import android.hardware.location.ContextHubTransaction;
 import android.hardware.location.NanoAppMessage;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = Q)
 public final class ShadowContextHubClientTest {
+
+  @Before
+  public void setUp() {
+    shadowOf(RuntimeEnvironment.getApplication())
+        .grantPermissions(android.Manifest.permission.ACCESS_CONTEXT_HUB);
+  }
 
   @Test
   public void whenAMessageIsSent_ensureItIsReturnedInTheMessageList() {
@@ -73,12 +82,12 @@ public final class ShadowContextHubClientTest {
   @Test
   public void whenContextHubRevokedPermission_ensureSendingAMessageThrowsSecurityException() {
     ContextHubClient contextHubClient = (ContextHubClient) createContextHubClient();
-    ShadowContextHubClient shadowContextHubClient = Shadow.extract(contextHubClient);
     NanoAppMessage message =
         NanoAppMessage.createMessageToNanoApp(
             /* targetNanoAppId= */ 0L, /* messageType= */ 0, /* messageBody= */ new byte[10]);
 
-    shadowContextHubClient.revokePermission();
+    shadowOf(RuntimeEnvironment.getApplication())
+        .denyPermissions(android.Manifest.permission.ACCESS_CONTEXT_HUB);
 
     try {
       contextHubClient.sendMessageToNanoApp(message);

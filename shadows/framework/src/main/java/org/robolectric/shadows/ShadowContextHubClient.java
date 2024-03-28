@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -26,12 +27,12 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowContextHubClient {
   @RealObject private ContextHubClient realContextHubClient;
   private final List<NanoAppMessage> messages = new ArrayList<>();
-  private Boolean hasPermission = true;
 
   @Implementation(minSdk = VERSION_CODES.P)
   @HiddenApi
   protected int sendMessageToNanoApp(NanoAppMessage message) {
-    if (!hasPermission) {
+    if (!ShadowInstrumentation.hasRequiredPermission(
+        RuntimeEnvironment.getApplication(), android.Manifest.permission.ACCESS_CONTEXT_HUB)) {
       throw new SecurityException("ShadowContextHubClient does not have permission");
     }
     if (isClosed()) {
@@ -45,10 +46,6 @@ public class ShadowContextHubClient {
   @HiddenApi
   protected void close() {
     reflector(ContextHubClientReflector.class, realContextHubClient).getIsClosed().set(true);
-  }
-
-  public void revokePermission() {
-    hasPermission = false;
   }
 
   public List<NanoAppMessage> getMessages() {

@@ -7,6 +7,7 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
+import static android.os.Build.VERSION_CODES.S;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -394,6 +395,16 @@ public class ShadowConnectivityManagerTest {
   public void registerDefaultCallback_shouldAddCallback() {
     ConnectivityManager.NetworkCallback callback = createSimpleCallback();
     connectivityManager.registerDefaultNetworkCallback(callback);
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
+  @Test
+  @Config(minSdk = S)
+  public void registerBestMatchingNetworkCallback_shouldAddCallback() {
+    NetworkRequest.Builder builder = new NetworkRequest.Builder();
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.registerBestMatchingNetworkCallback(
+        builder.build(), callback, new Handler());
     assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
   }
 

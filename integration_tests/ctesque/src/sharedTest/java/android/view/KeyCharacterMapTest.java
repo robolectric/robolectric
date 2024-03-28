@@ -86,6 +86,9 @@ public final class KeyCharacterMapTest {
     // Just assert that we got something back, there are many ways to return correct KeyEvents for
     // this sequence.
     assertThat(keyCharacterMap.getEvents("Test".toCharArray())).isNotEmpty();
+
+    char c = 'a';
+    keyCharacterMap.getEvents(new char[] {c});
   }
 
   @Test
