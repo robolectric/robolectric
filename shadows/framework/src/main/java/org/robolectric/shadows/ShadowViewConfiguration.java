@@ -37,25 +37,16 @@ import org.robolectric.util.reflector.ForType;
 public class ShadowViewConfiguration {
 
   private static final int SCROLL_BAR_SIZE = 10;
-  private static final int SCROLL_BAR_FADE_DURATION = 250;
-  private static final int SCROLL_BAR_DEFAULT_DELAY = 300;
-  private static final int FADING_EDGE_LENGTH = 12;
   private static final int PRESSED_STATE_DURATION = 125;
   private static final int LONG_PRESS_TIMEOUT = 500;
-  private static final int GLOBAL_ACTIONS_KEY_TIMEOUT = 500;
   private static final int TAP_TIMEOUT = 115;
-  private static final int JUMP_TAP_TIMEOUT = 500;
   private static final int DOUBLE_TAP_TIMEOUT = 300;
-  private static final int ZOOM_CONTROLS_TIMEOUT = 3000;
-  private static final int EDGE_SLOP = 12;
   private static final int TOUCH_SLOP = 16;
   private static final int PAGING_TOUCH_SLOP = TOUCH_SLOP * 2;
   private static final int DOUBLE_TAP_SLOP = 100;
   private static final int WINDOW_TOUCH_SLOP = 16;
-  private static final int MINIMUM_FLING_VELOCITY = 50;
   private static final int MAXIMUM_FLING_VELOCITY = 4000;
   private static final int MAXIMUM_DRAWING_CACHE_SIZE = 320 * 480 * 4;
-  private static final float SCROLL_FRICTION = 0.015f;
 
   private int edgeSlop;
   private int fadingEdgeLength;
@@ -72,10 +63,10 @@ public class ShadowViewConfiguration {
     DisplayMetrics metrics = context.getResources().getDisplayMetrics();
     float density = metrics.density;
 
-    edgeSlop = (int) (density * EDGE_SLOP + 0.5f);
-    fadingEdgeLength = (int) (density * FADING_EDGE_LENGTH + 0.5f);
-    minimumFlingVelocity = (int) (density * MINIMUM_FLING_VELOCITY + 0.5f);
-    maximumFlingVelocity = (int) (density * MAXIMUM_FLING_VELOCITY + 0.5f);
+    edgeSlop = (int) (density * ViewConfiguration.getEdgeSlop() + 0.5f);
+    fadingEdgeLength = (int) (density * ViewConfiguration.getFadingEdgeLength() + 0.5f);
+    minimumFlingVelocity = (int) (density * ViewConfiguration.getMinimumFlingVelocity() + 0.5f);
+    maximumFlingVelocity = (int) (density * ViewConfiguration.getMaximumFlingVelocity() + 0.5f);
     scrollbarSize = (int) (density * SCROLL_BAR_SIZE + 0.5f);
     touchSlop = (int) (density * TOUCH_SLOP + 0.5f);
     pagingTouchSlop = (int) (density * PAGING_TOUCH_SLOP + 0.5f);
@@ -108,21 +99,6 @@ public class ShadowViewConfiguration {
   }
 
   @Implementation
-  protected static int getScrollBarFadeDuration() {
-    return SCROLL_BAR_FADE_DURATION;
-  }
-
-  @Implementation
-  protected static int getScrollDefaultDelay() {
-    return SCROLL_BAR_DEFAULT_DELAY;
-  }
-
-  @Implementation
-  protected static int getFadingEdgeLength() {
-    return FADING_EDGE_LENGTH;
-  }
-
-  @Implementation
   protected int getScaledFadingEdgeLength() {
     return fadingEdgeLength;
   }
@@ -143,18 +119,8 @@ public class ShadowViewConfiguration {
   }
 
   @Implementation
-  protected static int getJumpTapTimeout() {
-    return JUMP_TAP_TIMEOUT;
-  }
-
-  @Implementation
   protected static int getDoubleTapTimeout() {
     return DOUBLE_TAP_TIMEOUT;
-  }
-
-  @Implementation
-  protected static int getEdgeSlop() {
-    return EDGE_SLOP;
   }
 
   @Implementation
@@ -193,11 +159,6 @@ public class ShadowViewConfiguration {
   }
 
   @Implementation
-  protected static int getMinimumFlingVelocity() {
-    return MINIMUM_FLING_VELOCITY;
-  }
-
-  @Implementation
   protected int getScaledMinimumFlingVelocity() {
     return minimumFlingVelocity;
   }
@@ -215,21 +176,6 @@ public class ShadowViewConfiguration {
   @Implementation
   protected static int getMaximumDrawingCacheSize() {
     return MAXIMUM_DRAWING_CACHE_SIZE;
-  }
-
-  @Implementation
-  protected static long getZoomControlsTimeout() {
-    return ZOOM_CONTROLS_TIMEOUT;
-  }
-
-  @Implementation
-  protected static long getGlobalActionKeyTimeout() {
-    return GLOBAL_ACTIONS_KEY_TIMEOUT;
-  }
-
-  @Implementation
-  protected static float getScrollFriction() {
-    return SCROLL_FRICTION;
   }
 
   @Implementation
