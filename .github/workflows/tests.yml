@@ -68,7 +68,6 @@ jobs:
           --no-watch-fs \
           -Drobolectric.enabledSdks=${{ matrix.api-versions }} \
           -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
-          -Drobolectric.usePreinstrumentedJars=false \
           -Dorg.gradle.workers.max=2 \
           -x :integration_tests:nativegraphics:test \
           -x :integration_tests:roborazzi:test
