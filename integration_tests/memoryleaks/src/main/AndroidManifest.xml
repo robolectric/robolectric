@@ -2,9 +2,6 @@
 <!--
   Manifest for androidx memoryleaks test module
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.robolectric.integrationtests.memoryleaks">
-
-    <application>
-    </application>
+<manifest>
+    <application />
 </manifest>

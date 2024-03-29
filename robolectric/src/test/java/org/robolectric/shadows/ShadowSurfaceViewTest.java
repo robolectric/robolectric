@@ -4,26 +4,35 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Robolectric.buildActivity;
 
 import android.app.Activity;
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSurfaceViewTest {
 
-  private SurfaceHolder.Callback callback1 = new TestCallback();
-  private SurfaceHolder.Callback callback2 = new TestCallback();
+  private final SurfaceHolder.Callback callback1 = new TestCallback();
+  private final SurfaceHolder.Callback callback2 = new TestCallback();
+  private final ActivityController<Activity> defaultController = buildActivity(Activity.class);
 
-  private SurfaceView view = new SurfaceView(buildActivity(Activity.class).create().get());
-  private SurfaceHolder surfaceHolder = view.getHolder();
-  private ShadowSurfaceView shadowSurfaceView = (ShadowSurfaceView) Shadows.shadowOf(view);
-  private ShadowSurfaceView.FakeSurfaceHolder fakeSurfaceHolder =
+  private final SurfaceView view = new SurfaceView(defaultController.create().get());
+  private final SurfaceHolder surfaceHolder = view.getHolder();
+  private final ShadowSurfaceView shadowSurfaceView = Shadows.shadowOf(view);
+  private final ShadowSurfaceView.FakeSurfaceHolder fakeSurfaceHolder =
       shadowSurfaceView.getFakeSurfaceHolder();
+
+  @After
+  public void tearDown() {
+    defaultController.close();
+  }
 
   @Test
   public void addCallback() {
@@ -54,8 +63,27 @@ public class ShadowSurfaceViewTest {
 
   @Test
   public void canCreateASurfaceView_attachedToAWindowWithActionBar() {
-    TestActivity testActivity = buildActivity(TestActivity.class).create().start().resume().visible().get();
-    assertThat(testActivity).isNotNull();
+    try (ActivityController<TestActivity> controller = buildActivity(TestActivity.class)) {
+      TestActivity testActivity = controller.create().start().resume().visible().get();
+      assertThat(testActivity).isNotNull();
+    }
+  }
+
+  @Test
+  public void requestedFormat_default_getRGB565() {
+    assertThat(fakeSurfaceHolder.getRequestedFormat()).isEqualTo(PixelFormat.RGB_565);
+  }
+
+  @Test
+  public void requestedFormat_setNewFormat_getNewFormat() {
+    view.getHolder().setFormat(PixelFormat.HSV_888);
+    assertThat(fakeSurfaceHolder.getRequestedFormat()).isEqualTo(PixelFormat.HSV_888);
+  }
+
+  @Test
+  public void requestedFormat_setFormatOpaque_getRGB565() {
+    view.getHolder().setFormat(PixelFormat.OPAQUE);
+    assertThat(fakeSurfaceHolder.getRequestedFormat()).isEqualTo(PixelFormat.RGB_565);
   }
 
   private static class TestCallback implements SurfaceHolder.Callback {

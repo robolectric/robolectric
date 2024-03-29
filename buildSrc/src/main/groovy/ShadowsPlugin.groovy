@@ -16,37 +16,40 @@ class ShadowsPlugin implements Plugin<Project> {
             annotationProcessor project.project(":processor")
         }
 
-        def compileJavaTask = project.tasks["compileJava"]
-
         // write generated Java into its own dir... see https://github.com/gradle/gradle/issues/4956
-        def generatedSrcRelPath = 'build/generated/src/apt/main'
-        def generatedSrcDir = project.file(generatedSrcRelPath)
+        def generatedSrcDir = project.file("build/generated/src/apt/main")
 
-        project.sourceSets.main.java { srcDir generatedSrcRelPath }
-        project.mkdir(generatedSrcDir)
-        compileJavaTask.options.annotationProcessorGeneratedSourcesDirectory = generatedSrcDir
-        compileJavaTask.outputs.dir(generatedSrcDir)
+        project.tasks.named("compileJava").configure { task ->
+            task.options.annotationProcessorGeneratedSourcesDirectory = generatedSrcDir
 
-        compileJavaTask.doFirst {
-            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.jsonDocsEnabled=true")
-            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.jsonDocsDir=${project.buildDir}/docs/json")
-            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
-            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdkCheckMode=${project.shadows.sdkCheckMode}")
-            options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdks=${project.rootProject.buildDir}/sdks.txt")
+            task.doFirst {
+                options.compilerArgs.add("-Aorg.robolectric.annotation.processing.jsonDocsEnabled=true")
+                options.compilerArgs.add("-Aorg.robolectric.annotation.processing.jsonDocsDir=${project.layout.buildDirectory.get().asFile}/docs/json")
+                options.compilerArgs.add("-Aorg.robolectric.annotation.processing.shadowPackage=${project.shadows.packageName}")
+                options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdkCheckMode=${project.shadows.sdkCheckMode}")
+                options.compilerArgs.add("-Aorg.robolectric.annotation.processing.sdks=${project.rootProject.layout.buildDirectory.get().asFile}/sdks.txt")
+            }
         }
 
         // include generated sources in javadoc jar
-        project.tasks['javadoc'].source(generatedSrcDir)
-
-        // verify that we have the apt-generated files in our javadoc and sources jars
-        project.tasks['javadocJar'].doLast { task ->
-            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
-            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.html")
+        project.tasks.named("javadoc").configure { task ->
+            task.source(generatedSrcDir)
         }
 
-        project.tasks['sourcesJar'].doLast { task ->
-            def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
-            checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")
+        // verify that we have the apt-generated files in our javadoc and sources jars
+        project.tasks.named("javadocJar").configure { task ->
+            task.doLast {
+                def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+                checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.html")
+            }
+        }
+
+        project.tasks.named("sourcesJar").configure { task ->
+            task.from(generatedSrcDir)
+            task.doLast {
+                def shadowPackageNameDir = project.shadows.packageName.replaceAll(/\./, '/')
+                checkForFile(task.archivePath, "${shadowPackageNameDir}/Shadows.java")
+            }
         }
 
         project.rootProject.configAnnotationProcessing += project
@@ -58,7 +61,7 @@ class ShadowsPlugin implements Plugin<Project> {
          *
          * See https://discuss.gradle.org/t/gradle-not-compiles-with-solder-tooling-jar/7583/20
          */
-        project.tasks.withType(JavaCompile) { options.fork = true }
+        project.tasks.withType(JavaCompile).configureEach { options.fork = true }
     }
 
     static class ShadowsPluginExtension {

@@ -25,7 +25,7 @@ jobs:
           # Check that the commit title isn't excessively long.
           commit_title="$(git log -1 --pretty=format:'%s')"
           if [ "${#commit_title}" -gt 120 ]; then
-            echo "Error: The title of commit is too long"
+            echo "Error: the title of the commit is too long (max: 120 characters)"
             exit 1
           fi
 
@@ -41,6 +41,14 @@ jobs:
           # Check that the commit has a body
           commit_body="$(git log -1 --pretty=format:'%b' | grep -v 'PiperOrigin-RevId')"
           if [ -z "$commit_body" ]; then
-            echo "Error: The commit message should have a descriptive body"
+            echo "Error: the commit should have a descriptive body"
             exit 1
           fi
+
+          while read -r line; do
+            if [ "${#line}" -gt 120 ] && [[ ! "$line" =~ (https?://|www\.) ]]; then
+              echo "Error: the following line of the commit body is too long (max: 120 characters):"
+              echo "> $line"
+              exit 1
+            fi
+          done <<< $commit_body

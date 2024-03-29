@@ -33,7 +33,7 @@ tasks.register('copySqliteNatives', Copy) {
             }
         }
     }
-    into project.file("$buildDir/resources/main/sqlite4java")
+    into project.file(layout.buildDirectory.dir("resources/main/sqlite4java"))
 }
 
 jar {

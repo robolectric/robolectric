@@ -2,7 +2,7 @@
 robolectric-nativeruntime-dist-compat = "1.0.9"
 
 # https://developer.android.com/studio/releases
-android-gradle = "8.2.2"
+android-gradle = "8.3.1"
 
 # https://github.com/google/conscrypt/tags
 conscrypt = "2.5.2"
@@ -27,23 +27,23 @@ error-prone-javac = "9+181-r4173-1"
 error-prone-gradle = "3.1.0"
 
 # https://kotlinlang.org/docs/releases.html#release-details
-kotlin = "1.9.22"
+kotlin = "1.9.23"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
-kotlinx-coroutines = '1.7.3'
+kotlinx-coroutines = '1.8.0'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
 spotless-gradle = "6.25.0"
 
 # https://detekt.dev/changelog
-detekt-gradle = "1.23.5"
+detekt-gradle = "1.23.6"
 
 # https://hc.apache.org/news.html
 apache-http-core = "4.0.1"
 apache-http-client = "4.0.3"
 
 # https://asm.ow2.io/versions.html
-asm = "9.6"
+asm = "9.7"
 
 # https://github.com/google/auto/releases
 auto-common = "1.2.2"
@@ -80,7 +80,7 @@ jetbrains-annotations = "24.1.0"
 junit4 = "4.13.2"
 
 # https://github.com/google/libphonenumber/releases
-libphonenumber = "8.13.30"
+libphonenumber = "8.13.33"
 
 # https://github.com/mockito/mockito/releases
 mockito = "4.11.0"
@@ -89,7 +89,7 @@ mockito = "4.11.0"
 mockk = "1.13.7"
 
 # https://github.com/takahirom/roborazzi/releases
-roborazzi = "1.9.0"
+roborazzi = "1.11.0"
 
 # https://square.github.io/okhttp/changelogs/changelog/
 okhttp = "4.12.0"
@@ -121,7 +121,7 @@ androidx-test-services = "1.4.2"
 
 # for shadows/playservices/build.gradle
 androidx-fragment-for-shadows = "1.2.0"
-play-services-base-for-shadows = "8.4.0"
+play-services-for-shadows = "17.0.0"
 
 # https://developers.google.com/android/guides/releases
 play-services-basement = "18.0.1"
@@ -236,14 +236,15 @@ androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "a
 androidx-test-ext-truth = { module = "androidx.test.ext:truth", version.ref = "androidx-test-ext-truth" }
 
 androidx-fragment-for-shadows = { module = "androidx.fragment:fragment", version.ref = "androidx-fragment-for-shadows" }
-play-services-base-for-shadows = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-base-for-shadows" }
-play-services-basement-for-shadows = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-base-for-shadows" }
+play-services-auth-for-shadows = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-for-shadows" }
+play-services-base-for-shadows = { module = "com.google.android.gms:play-services-base", version.ref = "play-services-for-shadows" }
+play-services-basement-for-shadows = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-for-shadows" }
 
 play-services-basement = { module = "com.google.android.gms:play-services-basement", version.ref = "play-services-basement" }
 
 [bundles]
-play-services-base-for-shadows = ["androidx-fragment-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows"]
-powermock = ["powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream"]
-sqlite4java-native = ["sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86"]
+play-services-for-shadows = [ "androidx-fragment-for-shadows", "play-services-auth-for-shadows", "play-services-base-for-shadows", "play-services-basement-for-shadows" ]
+powermock = [ "powermock-module-junit4", "powermock-module-junit4-rule", "powermock-api-mockito2", "powermock-classloading-xstream" ]
+sqlite4java-native = [ "sqlite4java-osx", "sqlite4java-linux-amd64", "sqlite4java-win32-x64", "sqlite4java-linux-i386", "sqlite4java-win32-x86" ]
 
 [plugins]
