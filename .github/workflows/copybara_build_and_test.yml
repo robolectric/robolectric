@@ -40,6 +40,5 @@ jobs:
             -Drobolectric.alwaysIncludeVariantMarkersInTestName=true \
             -Drobolectric.enabledSdks=34 \
             -Dorg.gradle.workers.max=2 \
-            -Drobolectric.usePreinstrumentedJars=false \
             -x :integration_tests:nativegraphics:test \
           )
