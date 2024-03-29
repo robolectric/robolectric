@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="FontValidation"
     android:fontProviderAuthority="com.example.fontprovider.authority"
     android:fontProviderPackage="com.example.fontprovider"
     android:fontProviderQuery="example font"/>
