@@ -34,7 +34,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
 
       - name: Run aggregateDocs
-        run: ./gradlew clean aggregateDocs
+        run: ./gradlew clean aggregateDocs --parallel
 
   run_javadocJar:
     runs-on: ubuntu-22.04
@@ -51,7 +51,8 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
 
       - name: Run javadocJar
-        run: ./gradlew clean javadocJar
+        run: ./gradlew clean javadocJar --parallel
+
 
   run_instrumentAll:
     runs-on: ubuntu-22.04
@@ -72,6 +73,9 @@ jobs:
 
       - name: Run :preinstrumented:instrumentAll with SDK 33
         run: PREINSTRUMENTED_SDK_VERSIONS=33 ./gradlew :preinstrumented:instrumentAll
+
+      - name: Run :preinstrumented:publishToMavenLocal with SDK 33
+        run: PREINSTRUMENTED_SDK_VERSIONS=33 PUBLISH_PREINSTRUMENTED_JARS=true ./gradlew :preinstrumented:publishToMavenLocal
 
   run_publishToMavenLocal:
     runs-on: ubuntu-22.04
