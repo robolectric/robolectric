@@ -153,6 +153,7 @@ public class ShadowTelephonyManager {
   private static final Map<Integer, String> simCountryIsoMap =
       Collections.synchronizedMap(new LinkedHashMap<>());
   private int simCarrierId;
+  private CharSequence simCarrierIdName;
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
   private static volatile /*UiccSlotInfo[]*/ Object uiccSlotInfos;
@@ -1223,6 +1224,16 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSimCarrierId()}. */
   public void setSimCarrierId(int simCarrierId) {
     this.simCarrierId = simCarrierId;
+  }
+
+  @Implementation(minSdk = P)
+  protected CharSequence getSimCarrierIdName() {
+    return simCarrierIdName;
+  }
+
+  /** Sets the value to be returned by {@link #getSimCarrierIdName()}. */
+  public void setSimCarrierIdName(CharSequence simCarrierIdName) {
+    this.simCarrierIdName = simCarrierIdName;
   }
 
   @Implementation
