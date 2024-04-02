@@ -19,7 +19,6 @@ java {
 dependencies {
     implementation libs.guava
     implementation project(":sandbox")
-    implementation project(":shadows:versioning")
 
     testImplementation libs.junit4
     testImplementation libs.mockito

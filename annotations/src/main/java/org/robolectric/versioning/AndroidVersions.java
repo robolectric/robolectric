@@ -19,7 +19,7 @@ package org.robolectric.versioning;
 import static java.util.Arrays.asList;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.AbstractMap;
@@ -29,12 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import javax.annotation.Nullable;
-import org.robolectric.util.Logger;
-import org.robolectric.util.ReflectionHelpers;
 
 /**
  * Android versioning is complicated.<br>
@@ -63,17 +62,13 @@ public final class AndroidVersions {
      * true if this release has already occurred, false otherwise. If unreleased, the getSdkInt may
      * still be that of the prior release.
      */
-    public int getSdkInt() {
-      return ReflectionHelpers.getStaticField(this.getClass(), "SDK_INT");
-    }
+    public abstract int getSdkInt();
 
     /**
      * single character short code for the release, multiple characters for minor releases (only
      * minor version numbers increment - usually within the same year).
      */
-    public String getShortCode() {
-      return ReflectionHelpers.getStaticField(this.getClass(), "SHORT_CODE");
-    }
+    public abstract String getShortCode();
 
     /**
      * true if this release has already occurred, false otherwise. If unreleased, the getSdkInt will
@@ -81,26 +76,22 @@ public final class AndroidVersions {
      * including most modern build tools; bazle, soong all are full build systems - and as such
      * organizations using them have no concerns.
      */
-    public boolean isReleased() {
-      return ReflectionHelpers.getStaticField(this.getClass(), "RELEASED");
-    }
+    public abstract boolean isReleased();
 
     /** major.minor version number as String. */
-    public String getVersion() {
-      return ReflectionHelpers.getStaticField(this.getClass(), "VERSION");
-    }
+    public abstract String getVersion();
 
     /**
      * Implements comparable.
      *
      * @param other the object to be compared.
      * @return 1 if this is greater than other, 0 if equal, -1 if less
-     * @throws RuntimeException if other is not an instance of AndroidRelease.
+     * @throws IllegalStateException if other is not an instance of AndroidRelease.
      */
     @Override
     public int compareTo(AndroidRelease other) {
       if (other == null) {
-        throw new RuntimeException(
+        throw new IllegalStateException(
             "Only "
                 + AndroidVersions.class.getName()
                 + " should define Releases, illegal class "
@@ -123,21 +114,80 @@ public final class AndroidVersions {
     }
   }
 
+  /** A released version of Android */
+  public abstract static class AndroidReleased extends AndroidRelease {
+    @Override
+    public boolean isReleased() {
+      return true;
+    }
+  }
+
+  /** An in-development version of Android */
+  public abstract static class AndroidUnreleased extends AndroidRelease {
+    @Override
+    public boolean isReleased() {
+      return false;
+    }
+  }
+
+  /**
+   * Version: -1 <br>
+   * ShortCode: "" <br>
+   * SDK API Level: "" <br>
+   * release: false <br>
+   */
+  public static final class Unbound extends AndroidUnreleased {
+
+    public static final int SDK_INT = -1;
+
+    public static final String SHORT_CODE = "_";
+
+    public static final String VERSION = "_";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
+  }
+
   /**
    * Version: 4.1 <br>
    * ShortCode: J <br>
    * SDK API Level: 16 <br>
    * release: true <br>
    */
-  public static final class J extends AndroidRelease {
+  public static final class J extends AndroidReleased {
 
     public static final int SDK_INT = 16;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "J";
 
     public static final String VERSION = "4.1";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -146,15 +196,28 @@ public final class AndroidVersions {
    * SDK API Level: 17 <br>
    * release: true <br>
    */
-  public static final class JMR1 extends AndroidRelease {
+  public static final class JMR1 extends AndroidReleased {
 
     public static final int SDK_INT = 17;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "JMR1";
 
     public static final String VERSION = "4.2";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -163,15 +226,28 @@ public final class AndroidVersions {
    * SDK API Level: 18 <br>
    * release: true <br>
    */
-  public static final class JMR2 extends AndroidRelease {
+  public static final class JMR2 extends AndroidReleased {
 
     public static final int SDK_INT = 18;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "JMR2";
 
     public static final String VERSION = "4.3";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -180,15 +256,28 @@ public final class AndroidVersions {
    * SDK API Level: 19 <br>
    * release: true <br>
    */
-  public static final class K extends AndroidRelease {
+  public static final class K extends AndroidReleased {
 
     public static final int SDK_INT = 19;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "K";
 
     public static final String VERSION = "4.4";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   // Skipping K Watch release, which was 20.
@@ -199,15 +288,28 @@ public final class AndroidVersions {
    * SDK API Level: 21 <br>
    * release: true <br>
    */
-  public static final class L extends AndroidRelease {
+  public static final class L extends AndroidReleased {
 
     public static final int SDK_INT = 21;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "L";
 
     public static final String VERSION = "5.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -216,15 +318,28 @@ public final class AndroidVersions {
    * SDK API Level: 22 <br>
    * release: true <br>
    */
-  public static final class LMR1 extends AndroidRelease {
+  public static final class LMR1 extends AndroidReleased {
 
     public static final int SDK_INT = 22;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "LMR1";
 
     public static final String VERSION = "5.1";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -233,15 +348,28 @@ public final class AndroidVersions {
    * SDK API Level: 23 <br>
    * release: true <br>
    */
-  public static final class M extends AndroidRelease {
+  public static final class M extends AndroidReleased {
 
     public static final int SDK_INT = 23;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "M";
 
     public static final String VERSION = "6.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -250,15 +378,28 @@ public final class AndroidVersions {
    * SDK API Level: 24 <br>
    * release: true <br>
    */
-  public static final class N extends AndroidRelease {
+  public static final class N extends AndroidReleased {
 
     public static final int SDK_INT = 24;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "N";
 
     public static final String VERSION = "7.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -267,15 +408,28 @@ public final class AndroidVersions {
    * SDK Framework: 25 <br>
    * release: true <br>
    */
-  public static final class NMR1 extends AndroidRelease {
+  public static final class NMR1 extends AndroidReleased {
 
     public static final int SDK_INT = 25;
 
-    public static final boolean RELEASED = true;
-
     public static final String SHORT_CODE = "NMR1";
 
-    private static final String VERSION = "7.1";
+    public static final String VERSION = "7.1";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -284,15 +438,28 @@ public final class AndroidVersions {
    * SDK API Level: 26 <br>
    * release: true <br>
    */
-  public static final class O extends AndroidRelease {
+  public static final class O extends AndroidReleased {
 
     public static final int SDK_INT = 26;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "O";
 
     public static final String VERSION = "8.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -301,15 +468,28 @@ public final class AndroidVersions {
    * SDK API Level: 27 <br>
    * release: true <br>
    */
-  public static final class OMR1 extends AndroidRelease {
+  public static final class OMR1 extends AndroidReleased {
 
     public static final int SDK_INT = 27;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "OMR1";
 
     public static final String VERSION = "8.1";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -318,15 +498,28 @@ public final class AndroidVersions {
    * SDK API Level: 28 <br>
    * release: true <br>
    */
-  public static final class P extends AndroidRelease {
+  public static final class P extends AndroidReleased {
 
     public static final int SDK_INT = 28;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "P";
 
     public static final String VERSION = "9.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -335,15 +528,28 @@ public final class AndroidVersions {
    * SDK API Level: 29 <br>
    * release: true <br>
    */
-  public static final class Q extends AndroidRelease {
+  public static final class Q extends AndroidReleased {
 
     public static final int SDK_INT = 29;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "Q";
 
     public static final String VERSION = "10.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -352,15 +558,28 @@ public final class AndroidVersions {
    * SDK API Level: 30 <br>
    * release: true <br>
    */
-  public static final class R extends AndroidRelease {
+  public static final class R extends AndroidReleased {
 
     public static final int SDK_INT = 30;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "R";
 
     public static final String VERSION = "11.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -369,15 +588,28 @@ public final class AndroidVersions {
    * SDK API Level: 31 <br>
    * release: true <br>
    */
-  public static final class S extends AndroidRelease {
+  public static final class S extends AndroidReleased {
 
     public static final int SDK_INT = 31;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "S";
 
     public static final String VERSION = "12.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -387,15 +619,28 @@ public final class AndroidVersions {
    * release: true <br>
    */
   @SuppressWarnings("UPPER_SNAKE_CASE")
-  public static final class Sv2 extends AndroidRelease {
+  public static final class Sv2 extends AndroidReleased {
 
     public static final int SDK_INT = 32;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "Sv2";
 
     public static final String VERSION = "12.1";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -404,15 +649,28 @@ public final class AndroidVersions {
    * SDK API Level: 33 <br>
    * release: true <br>
    */
-  public static final class T extends AndroidRelease {
+  public static final class T extends AndroidReleased {
 
     public static final int SDK_INT = 33;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "T";
 
     public static final String VERSION = "13.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -421,15 +679,28 @@ public final class AndroidVersions {
    * SDK API Level: 34 <br>
    * release: false <br>
    */
-  public static final class U extends AndroidRelease {
+  public static final class U extends AndroidReleased {
 
     public static final int SDK_INT = 34;
-
-    public static final boolean RELEASED = true;
 
     public static final String SHORT_CODE = "U";
 
     public static final String VERSION = "14.0";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /**
@@ -438,15 +709,28 @@ public final class AndroidVersions {
    * SDK API Level: 34+ <br>
    * release: false <br>
    */
-  public static final class V extends AndroidRelease {
+  public static final class V extends AndroidUnreleased {
 
     public static final int SDK_INT = 35;
-
-    public static final boolean RELEASED = false;
 
     public static final String SHORT_CODE = "V";
 
     public static final String VERSION = "15";
+
+    @Override
+    public int getSdkInt() {
+      return SDK_INT;
+    }
+
+    @Override
+    public String getShortCode() {
+      return SHORT_CODE;
+    }
+
+    @Override
+    public String getVersion() {
+      return VERSION;
+    }
   }
 
   /** The current release this process is running on. */
@@ -574,7 +858,7 @@ public final class AndroidVersions {
         }
       }
       if (errors.length() > 0) {
-        throw new RuntimeException(
+        throw new IllegalStateException(
             errors
                 .append("Please check the AndroidReleases defined ")
                 .append("in ")
@@ -587,18 +871,13 @@ public final class AndroidVersions {
 
     public AndroidRelease computeCurrentSdk(
         int reportedVersion, String releaseName, String codename, List<String> activeCodeNames) {
-      Logger.info("Reported Version: " + reportedVersion);
-      Logger.info("Release Name: " + releaseName);
-      Logger.info("Code Name: " + codename);
-      Logger.info("Active Code Names: " + String.join(",", activeCodeNames));
-
       AndroidRelease current = null;
       // Special case "REL", which means the build is not a pre-release build.
-      if ("REL".equals(codename)) {
+      if (Objects.equals(codename, "REL")) {
         // the first letter of the code name equal to the release number.
         current = sdkIntToAllReleases.get(reportedVersion);
         if (current != null && !current.isReleased()) {
-          throw new RuntimeException(
+          throw new IllegalStateException(
               "The current sdk "
                   + current.getShortCode()
                   + " has been released. Please update the contents of "
@@ -657,7 +936,7 @@ public final class AndroidVersions {
                 .append("contents of current sdk jar to the released version.\n");
           }
           if (detectedProblems.length() > 0) {
-            throw new RuntimeException(detectedProblems.toString());
+            throw new IllegalStateException(detectedProblems.toString());
           }
         }
       }
@@ -670,7 +949,7 @@ public final class AndroidVersions {
    * the shortCode, sdkInt, and release information.
    *
    * <p>All errors are stored and can be reported at once by asking the SdkInformation to throw a
-   * runtime exception after it has been populated.
+   * IllegalStateException after it has been populated.
    */
   static SdkInformation gatherStaticSdkInformationFromThisClass() {
     List<AndroidRelease> allReleases = new ArrayList<>();
@@ -678,7 +957,8 @@ public final class AndroidVersions {
     for (Class<?> clazz : AndroidVersions.class.getClasses()) {
       if (AndroidRelease.class.isAssignableFrom(clazz)
           && !clazz.isInterface()
-          && !Modifier.isAbstract(clazz.getModifiers())) {
+          && !Modifier.isAbstract(clazz.getModifiers())
+          && clazz != Unbound.class) {
         try {
           AndroidRelease rel = (AndroidRelease) clazz.getDeclaredConstructor().newInstance();
           allReleases.add(rel);
@@ -691,7 +971,7 @@ public final class AndroidVersions {
             | IllegalArgumentException
             | IllegalAccessException
             | InvocationTargetException ex) {
-          throw new RuntimeException(
+          throw new IllegalStateException(
               "Classes "
                   + clazz.getName()
                   + "should be accessible via "
@@ -731,50 +1011,19 @@ public final class AndroidVersions {
     return information.computeCurrentSdk(sdk, release, codename, asList(activeCodeNames));
   }
 
-  /**
-   * If we are working in android source, this code detects the list of active code names if any.
-   */
-  private static List<String> getActiveCodeNamesIfAny(Class<?> targetClass) {
-    try {
-      Field activeCodeFields = targetClass.getDeclaredField("ACTIVE_CODENAMES");
-      String[] activeCodeNames = (String[]) activeCodeFields.get(null);
-      if (activeCodeNames == null) {
-        return new ArrayList<>();
-      }
-      return asList(activeCodeNames);
-    } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException ex) {
-      return new ArrayList<>();
-    }
-  }
-
   private static final SdkInformation information;
 
   static {
     AndroidRelease currentRelease = null;
     information = gatherStaticSdkInformationFromThisClass();
     try {
-      Class<?> buildClass =
-          Class.forName("android.os.Build", false, Thread.currentThread().getContextClassLoader());
-      System.out.println("build class " + buildClass);
-      Class<?> versionClass = null;
-      for (Class<?> c : buildClass.getClasses()) {
-        if (c.getSimpleName().equals("VERSION")) {
-          versionClass = c;
-          System.out.println("Version class " + versionClass);
-          break;
-        }
+      InputStream is = AndroidVersions.class.getClassLoader().getResourceAsStream("build.prop");
+      if (is != null) {
+        Properties buildProps = new Properties();
+        buildProps.load(is);
+        currentRelease = computeCurrentSdkFromBuildProps(buildProps);
       }
-      if (versionClass != null) {
-        // 33, 34, etc....
-        int sdkInt = (int) ReflectionHelpers.getStaticField(versionClass, "SDK_INT");
-        // Either unset, or 13, 14, etc....
-        String release = ReflectionHelpers.getStaticField(versionClass, "RELEASE");
-        // Either REL if release is set, or Tiramasu, UpsideDownCake, etc
-        String codename = ReflectionHelpers.getStaticField(versionClass, "CODENAME");
-        List<String> activeCodeNames = getActiveCodeNamesIfAny(versionClass);
-        currentRelease = information.computeCurrentSdk(sdkInt, release, codename, activeCodeNames);
-      }
-    } catch (ClassNotFoundException | IllegalArgumentException | UnsatisfiedLinkError e) {
+    } catch (IOException ioe) {
       // No op, this class should be usable outside of a Robolectric sandbox.
     }
     CURRENT = currentRelease;
