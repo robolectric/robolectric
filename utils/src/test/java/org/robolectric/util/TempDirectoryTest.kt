@@ -69,7 +69,6 @@ class TempDirectoryTest {
     if (!Files.exists(path)) {
       latch.countDown()
     } else {
-      System.err.println("DSP rescheduling")
       val ignored =
         service.schedule(
           { waitForDirectoryDeletion(path, latch, service) },

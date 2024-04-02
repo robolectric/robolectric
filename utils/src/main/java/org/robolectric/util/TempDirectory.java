@@ -13,10 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -34,15 +32,6 @@ public class TempDirectory {
    * feel free to experiment.
    */
   private static final int DELETE_THREAD_POOL_SIZE = 5;
-
-  /**
-   * Assets related to the Robolectric Native Runtime (shared object files, ICU dat file, fonts) are
-   * extracted from a Jar file into a TempDirectory during runtime in order to be used. On Windows,
-   * it is not possible for the current JVM process to delete certain files due to OS constraints.
-   */
-  @SuppressWarnings("ConstantCaseForConstants")
-  private static final List<String> KNOWN_WINDOWS_UNDELETEABLE_FILES =
-      Collections.unmodifiableList(Arrays.asList("robolectric-nativeruntime.dll", "icudt68l.dat"));
 
   private static final String TEMP_DIR_PREFIX = "robolectric-";
 
@@ -153,15 +142,15 @@ public class TempDirectory {
       Files.delete(basePath);
     } catch (IOException e) {
       if (isWindows()) {
+        // Windows is much more protective of files that have been opened in native code. For
+        // instance, unlike in Mac and Linux, it's not possible to delete nativeruntime files
+        // (dlls, fonts, icu data) in the same process where they were opened. Because of
+        // this, we need extra cleanup logic for Windows, and we avoid logging to prevent noise
+        // and confusion.
         createFile(OBSOLETE_MARKER_FILE_NAME, "");
-        // Avoid spurious logging.
-        for (String s : KNOWN_WINDOWS_UNDELETEABLE_FILES) {
-          if (e.getLocalizedMessage().contains(s)) {
-            return;
-          }
-        }
+      } else {
+        Logger.error("Failed to destroy temp directory", e);
       }
-      Logger.error("Failed to destroy temp directory", e);
     }
   }
 
