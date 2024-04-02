@@ -115,17 +115,17 @@ public class ShadowLog {
   protected static int wtf(String tag, String msg, Throwable throwable) {
     addLog(Log.ASSERT, tag, msg, throwable);
     // invoking the wtfHandler
-    TerribleFailure terribleFailure =
+    Throwable terribleFailure =
         reflector(TerribleFailureReflector.class).newTerribleFailure(msg, throwable);
     if (wtfIsFatal) {
       Util.sneakyThrow(terribleFailure);
     }
     TerribleFailureHandler terribleFailureHandler = reflector(LogReflector.class).getWtfHandler();
     if (RuntimeEnvironment.getApiLevel() >= L.SDK_INT) {
-      terribleFailureHandler.onTerribleFailure(tag, terribleFailure, false);
+      terribleFailureHandler.onTerribleFailure(tag, (TerribleFailure) terribleFailure, false);
     } else {
       reflector(TerribleFailureHandlerReflector.class, terribleFailureHandler)
-          .onTerribleFailure(tag, terribleFailure);
+          .onTerribleFailure(tag, (TerribleFailure) terribleFailure);
     }
     return 0;
   }
@@ -374,7 +374,8 @@ public class ShadowLog {
 
   @ForType(TerribleFailure.class)
   interface TerribleFailureReflector {
+    // The return value should be generic because TerribleFailure is a hidden class.
     @Constructor
-    TerribleFailure newTerribleFailure(String msg, Throwable cause);
+    Throwable newTerribleFailure(String msg, Throwable cause);
   }
 }

@@ -867,6 +867,15 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = P)
+  public void shouldGetSimCarrierIdName() {
+    String expectedCarrierIdName = "Fi";
+    shadowOf(telephonyManager).setSimCarrierIdName(expectedCarrierIdName);
+
+    assertThat(telephonyManager.getSimCarrierIdName().toString()).isEqualTo(expectedCarrierIdName);
+  }
+
+  @Test
   @Config(minSdk = Q)
   public void shouldGetCarrierIdFromSimMccMnc() {
     int expectedCarrierId = 419;
