@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -27,21 +28,25 @@ import org.robolectric.annotation.processing.validator.ResetterValidator;
 import org.robolectric.annotation.processing.validator.SdkStore;
 import org.robolectric.annotation.processing.validator.Validator;
 
-/**
- * Annotation processor entry point for Robolectric annotations.
- */
+/** Annotation processor entry point for Robolectric annotations. */
 @SupportedOptions({
-  RobolectricProcessor.PACKAGE_OPT, 
-  RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT})
+  RobolectricProcessor.PACKAGE_OPT,
+  RobolectricProcessor.SHOULD_INSTRUMENT_PKG_OPT
+})
 @SupportedAnnotationTypes("org.robolectric.annotation.*")
 public class RobolectricProcessor extends AbstractProcessor {
   static final String PACKAGE_OPT = "org.robolectric.annotation.processing.shadowPackage";
-  static final String SHOULD_INSTRUMENT_PKG_OPT = 
+  static final String SHOULD_INSTRUMENT_PKG_OPT =
       "org.robolectric.annotation.processing.shouldInstrumentPackage";
   static final String JSON_DOCS_DIR = "org.robolectric.annotation.processing.jsonDocsDir";
   static final String JSON_DOCS_ENABLED = "org.robolectric.annotation.processing.jsonDocsEnabled";
   static final String SDK_CHECK_MODE = "org.robolectric.annotation.processing.sdkCheckMode";
   private static final String SDKS_FILE = "org.robolectric.annotation.processing.sdks";
+
+  /** required for Android Development. */
+  private static final String VALIDATE_COMPILE_SDKS =
+      "org.robolectric.annotation.processing.validateCompileSdk";
+
   private static final String PRIORITY = "org.robolectric.annotation.processing.priority";
 
   private RobolectricModel.Builder modelBuilder;
@@ -56,24 +61,30 @@ public class RobolectricProcessor extends AbstractProcessor {
   private final Map<TypeElement, Validator> elementValidators = new HashMap<>(13);
   private File jsonDocsDir;
   private boolean jsonDocsEnabled;
+  private boolean validateCompiledSdk;
+  private String overrideSdkLocation;
+  private int overrideSdkInt;
+
+  /** Default constructor. */
+  public RobolectricProcessor() {}
 
   /**
-   * Default constructor.
-   */
-  public RobolectricProcessor() {
-  }
-
-  /**
-   * Constructor to use for testing passing options in. Only
-   * necessary until compile-testing supports passing options
-   * in.
+   * Constructor to use for testing passing options in. Only necessary until compile-testing
+   * supports passing options in.
    *
-   * @param options simulated options that would ordinarily
-   *                be passed in the {@link ProcessingEnvironment}.
+   * @param options simulated options that would ordinarily be passed in the {@link
+   *     ProcessingEnvironment}.
    */
   @VisibleForTesting
   public RobolectricProcessor(Map<String, String> options) {
+    this(options, null, -1);
+  }
+
+  public RobolectricProcessor(
+      Map<String, String> options, String overrideSdkLocation, int overrideSdkInt) {
     processOptions(options);
+    this.overrideSdkLocation = overrideSdkLocation;
+    this.overrideSdkInt = overrideSdkInt;
   }
 
   @Override
@@ -82,7 +93,8 @@ public class RobolectricProcessor extends AbstractProcessor {
     processOptions(environment.getOptions());
     modelBuilder = new RobolectricModel.Builder(environment);
 
-    SdkStore sdkStore = new SdkStore(sdksFile);
+    SdkStore sdkStore =
+        new SdkStore(sdksFile, validateCompiledSdk, overrideSdkLocation, overrideSdkInt);
 
     addValidator(new ImplementationValidator(modelBuilder, environment));
     addValidator(new ImplementsValidator(modelBuilder, environment, sdkCheckMode, sdkStore));
@@ -132,10 +144,12 @@ public class RobolectricProcessor extends AbstractProcessor {
       this.jsonDocsDir = new File(options.getOrDefault(JSON_DOCS_DIR, "build/docs/json"));
       this.jsonDocsEnabled = "true".equalsIgnoreCase(options.get(JSON_DOCS_ENABLED));
       this.sdkCheckMode =
-          SdkCheckMode.valueOf(options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase());
+          SdkCheckMode.valueOf(
+              options.getOrDefault(SDK_CHECK_MODE, "WARN").toUpperCase(Locale.ROOT));
+      this.validateCompiledSdk =
+          "true".equalsIgnoreCase(options.getOrDefault(VALIDATE_COMPILE_SDKS, "false"));
       this.sdksFile = getSdksFile(options, SDKS_FILE);
-      this.priority =
-          Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
+      this.priority = Integer.parseInt(options.getOrDefault(PRIORITY, "0"));
 
       if (this.shadowPackage == null) {
         throw new IllegalArgumentException("no package specified for " + PACKAGE_OPT);

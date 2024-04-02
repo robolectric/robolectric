@@ -28,6 +28,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.res.android.NativeObjRegistry;
@@ -317,25 +318,24 @@ public class ShadowMotionEvent extends ShadowInputEvent {
       int pointerCount,
       PointerProperties[] pointerIds,
       PointerCoords[] pointerCoords) {
-        return
-        nativeInitialize(
-            nativePtr,
-            deviceId,
-            source,
-            action,
-            flags,
-            edgeFlags,
-            metaState,
-            buttonState,
-            xOffset,
-            yOffset,
-            xPrecision,
-            yPrecision,
-            downTimeNanos,
-            eventTimeNanos,
-            pointerCount,
-            pointerIds,
-            pointerCoords);
+    return nativeInitialize(
+        nativePtr,
+        deviceId,
+        source,
+        action,
+        flags,
+        edgeFlags,
+        metaState,
+        buttonState,
+        xOffset,
+        yOffset,
+        xPrecision,
+        yPrecision,
+        downTimeNanos,
+        eventTimeNanos,
+        pointerCount,
+        pointerIds,
+        pointerCoords);
   }
 
   @Implementation(maxSdk = KITKAT_WATCH)
@@ -816,6 +816,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
+  @InDevelopment
   protected static float nativeGetXOffset(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getXOffset();
@@ -829,6 +830,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation(minSdk = LOLLIPOP)
   @HiddenApi
+  @InDevelopment
   protected static float nativeGetYOffset(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getYOffset();

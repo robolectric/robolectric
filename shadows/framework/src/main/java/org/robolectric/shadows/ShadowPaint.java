@@ -23,6 +23,7 @@ import android.graphics.Shader;
 import android.graphics.Typeface;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.TextLayoutMode;
 import org.robolectric.config.ConfigurationRegistry;
@@ -574,6 +575,7 @@ public class ShadowPaint {
   }
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected static float nGetRunCharacterAdvance(
       Object /* long */ paintPtr,
       Object /* char[] */ text,
