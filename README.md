@@ -40,7 +40,7 @@ If you'd like to start a new project with Robolectric tests you can refer to `de
 
 ```groovy
 testImplementation "junit:junit:4.13.2"
-testImplementation "org.robolectric:robolectric:4.12"
+testImplementation "org.robolectric:robolectric:4.12.1"
 ```
 
 ## Building And Contributing
