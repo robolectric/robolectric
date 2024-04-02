@@ -130,7 +130,8 @@ public class ShadowTypedArray {
     System.out.println(result.toString());
   }
 
-  private static final ImmutableMap<Integer, String> TYPE_MAP = ImmutableMap.<Integer, String>builder()
+  private static final ImmutableMap<Integer, String> TYPE_MAP =
+      ImmutableMap.<Integer, String>builder()
           .put(TypedValue.TYPE_NULL, "TYPE_NULL")
           .put(TypedValue.TYPE_REFERENCE, "TYPE_REFERENCE")
           .put(TypedValue.TYPE_ATTRIBUTE, "TYPE_ATTRIBUTE")
@@ -145,7 +146,7 @@ public class ShadowTypedArray {
           .put(TypedValue.TYPE_INT_COLOR_RGB8, "TYPE_INT_COLOR_RGB8")
           .put(TypedValue.TYPE_INT_COLOR_ARGB4, "TYPE_INT_COLOR_ARGB4")
           .put(TypedValue.TYPE_INT_COLOR_RGB4, "TYPE_INT_COLOR_RGB4")
-          .build();
+          .buildOrThrow();
 
   @ForType(TypedArray.class)
   interface TypedArrayReflector {
