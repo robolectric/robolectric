@@ -11,7 +11,11 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link TranslationManager}. */
-@Implements(value = TranslationManager.class, minSdk = VERSION_CODES.S)
+@Implements(
+    value = TranslationManager.class,
+    minSdk = VERSION_CODES.S,
+    isInAndroidSdk = false // turn off shadowOf generation
+    )
 public class ShadowTranslationManager {
   private final Table<Integer, Integer, ImmutableSet<TranslationCapability>>
       onDeviceTranslationCapabilities = HashBasedTable.create();

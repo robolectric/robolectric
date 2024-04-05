@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.shadow.api.Shadow.extract;
 
 import android.icu.util.ULocale;
 import android.os.Build.VERSION_CODES;
@@ -11,27 +10,21 @@ import android.view.translation.TranslationSpec;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.collect.ImmutableSet;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = VERSION_CODES.S)
 public class ShadowTranslationManagerTest {
-  private ShadowTranslationManager instance;
-
-  @Before
-  public void setUp() {
-    instance =
-        extract(
-            ApplicationProvider.getApplicationContext().getSystemService(TranslationManager.class));
-  }
+  private final TranslationManager translationManager =
+      ApplicationProvider.getApplicationContext().getSystemService(TranslationManager.class);
 
   @Test
   public void getOnDeviceTranslationCapabilities_noCapabilitiesSet_returnsEmpty() {
     assertThat(
-            instance.getOnDeviceTranslationCapabilities(
+            translationManager.getOnDeviceTranslationCapabilities(
                 TranslationSpec.DATA_FORMAT_TEXT, TranslationSpec.DATA_FORMAT_TEXT))
         .isEmpty();
   }
@@ -52,11 +45,12 @@ public class ShadowTranslationManagerTest {
                 new TranslationSpec(ULocale.FRENCH, TranslationSpec.DATA_FORMAT_TEXT),
                 /* uiTranslationEnabled= */ true,
                 /* supportedTranslationFlags= */ 0));
-    instance.setOnDeviceTranslationCapabilities(
-        TranslationSpec.DATA_FORMAT_TEXT, TranslationSpec.DATA_FORMAT_TEXT, capabilities);
+    ((ShadowTranslationManager) Shadow.extract(translationManager))
+        .setOnDeviceTranslationCapabilities(
+            TranslationSpec.DATA_FORMAT_TEXT, TranslationSpec.DATA_FORMAT_TEXT, capabilities);
 
     assertThat(
-            instance.getOnDeviceTranslationCapabilities(
+            translationManager.getOnDeviceTranslationCapabilities(
                 TranslationSpec.DATA_FORMAT_TEXT, TranslationSpec.DATA_FORMAT_TEXT))
         .isEqualTo(capabilities);
   }
