@@ -57,6 +57,8 @@ dependencies {
 
     api "androidx.test:monitor:$axtMonitorVersion@aar"
 
+    implementation(libs.cronet.fallback)
+
     implementation libs.error.prone.annotations
     compileOnly libs.findbugs.jsr305
     api libs.sqlite4java
