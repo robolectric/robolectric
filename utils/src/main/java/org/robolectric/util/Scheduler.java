@@ -29,7 +29,11 @@ import java.util.concurrent.TimeUnit;
  *       Scheduler will continue looping through posted events (including future events), advancing
  *       its clock as it goes.
  * </ul>
+ *
+ * @deprecated Scheduler APIs only function when using LooperMode.LEGACY. Switch to
+ *     LooperMode.PAUSED and use {@link ShadowLooper} APIs instead.
  */
+@Deprecated
 public class Scheduler {
 
   /**
