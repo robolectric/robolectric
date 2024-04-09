@@ -178,6 +178,7 @@ public class ShadowTelephonyManager {
   private VisualVoicemailSmsFilterSettings visualVoicemailSmsFilterSettings;
   private static volatile boolean emergencyCallbackMode;
   private static Map<Integer, List<EmergencyNumber>> emergencyNumbersList;
+  private static volatile boolean isDataRoamingEnabled;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -1643,5 +1644,22 @@ public class ShadowTelephonyManager {
       return ShadowTelephonyManager.emergencyNumbersList;
     }
     return ImmutableMap.of();
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isDataRoamingEnabled}.
+   *
+   * @return False by default, unless set with {@link #setDataRoamingEnabled(boolean)}.
+   */
+  @Implementation(minSdk = Q)
+  protected boolean isDataRoamingEnabled() {
+    checkReadPhoneStatePermission();
+    return isDataRoamingEnabled;
+  }
+
+  /** Sets the value to be returned by {@link #isDataRoamingEnabled()} */
+  @Implementation(minSdk = Q)
+  protected void setDataRoamingEnabled(boolean isDataRoamingEnabled) {
+    ShadowTelephonyManager.isDataRoamingEnabled = isDataRoamingEnabled;
   }
 }

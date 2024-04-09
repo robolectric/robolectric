@@ -1503,4 +1503,13 @@ public class ShadowTelephonyManagerTest {
 
     assertThat(tm.getSubscriptionId()).isEqualTo(123);
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setDataRoamingEnabledChangesIsDataRoamingEnabled() {
+    shadowOf(telephonyManager).setDataRoamingEnabled(false);
+    assertThat(telephonyManager.isDataRoamingEnabled()).isFalse();
+    shadowOf(telephonyManager).setDataRoamingEnabled(true);
+    assertThat(telephonyManager.isDataRoamingEnabled()).isTrue();
+  }
 }
