@@ -82,6 +82,7 @@ import android.os.storage.IStorageManager;
 import android.permission.ILegacyPermissionManager;
 import android.permission.IPermissionManager;
 import android.safetycenter.ISafetyCenterManager;
+import android.security.IFileIntegrityService;
 import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
@@ -242,6 +243,7 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.TETHERING_SERVICE, ITetheringConnector.class);
       addBinderService(binderServices, "telephony.registry", ITelephonyRegistry.class);
       addBinderService(binderServices, Context.PLATFORM_COMPAT_SERVICE, IPlatformCompat.class);
+      addBinderService(binderServices, Context.FILE_INTEGRITY_SERVICE, IFileIntegrityService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= S) {
       addBinderService(binderServices, "permissionmgr", IPermissionManager.class);
