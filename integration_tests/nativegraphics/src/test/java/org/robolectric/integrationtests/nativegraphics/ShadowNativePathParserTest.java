@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import android.graphics.Path;
 import android.util.PathParser;
 import android.util.PathParser.PathData;
+import android.view.animation.PathInterpolator;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,5 +82,11 @@ public class ShadowNativePathParserTest {
     PathData data2 = new PathData("M 275 80");
 
     assertTrue(PathParser.canMorph(data1, data2));
+  }
+
+  @Test
+  public void testProgressBarPathData() {
+    Path path = PathParser.createPathFromPathData("C0.2,0 0.1,1 0.5, 1 L 1,1");
+    PathInterpolator pi = new PathInterpolator(path);
   }
 }

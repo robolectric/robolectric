@@ -45,6 +45,14 @@ jobs:
         run: |
           uname -a
 
+      - name: Set locale to German
+        if: runner.os == 'Linux'
+        run: |
+          sudo locale-gen de_DE.UTF-8
+          sudo update-locale LANG=de_DE.UTF-8
+          export LANG=de_DE.UTF-8
+          echo "LANG=$LANG" >> $GITHUB_ENV
+
       - name: Run unit tests
         env:
           SKIP_ERRORPRONE: true
