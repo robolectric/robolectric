@@ -76,6 +76,7 @@ public class ShadowUserManager {
   public static final int FLAG_PROFILE = UserInfo.FLAG_PROFILE;
   public static final int FLAG_FULL = UserInfo.FLAG_FULL;
   public static final int FLAG_SYSTEM = UserInfo.FLAG_SYSTEM;
+  public static final int FLAG_MAIN = UserInfo.FLAG_MAIN;
 
   private static int maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
   private static boolean isMultiUserSupported = false;
@@ -131,13 +132,10 @@ public class ShadowUserManager {
 
     private int nextUserId = DEFAULT_SECONDARY_USER_ID;
 
-    // TODO: use UserInfo.FLAG_MAIN when available
-    private static final int FLAG_MAIN = 0x00004000;
-
     public UserManagerState() {
       int id = UserHandle.USER_SYSTEM;
       String name = "system_user";
-      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN | FLAG_MAIN;
+      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN | UserInfo.FLAG_MAIN;
 
       userSerialNumbers.put(id, (long) id);
       // Start the user as shut down.
