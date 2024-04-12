@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assume.assumeTrue;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteConstraintException;
@@ -20,7 +19,6 @@ import com.google.common.base.Throwables;
 import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -30,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.SQLiteMode;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Compatibility test for {@link android.database.sqlite.SQLiteDatabase} */
@@ -40,21 +37,6 @@ public class SQLiteDatabaseTest {
 
   private SQLiteDatabase database;
   private File databasePath;
-
-  private boolean usingRobolectricNativeSQLite() {
-    try {
-      Class<?> cr =
-          SQLiteDatabaseTest.class
-              .getClassLoader()
-              .loadClass("org.robolectric.config.ConfigurationRegistry");
-      Method m = cr.getMethod("get", Class.class);
-      SQLiteMode.Mode mode = (SQLiteMode.Mode) m.invoke(null, SQLiteMode.Mode.class);
-      return mode == SQLiteMode.Mode.NATIVE;
-    } catch (ReflectiveOperationException ce) {
-      // Not running in Robolectric
-      return true;
-    }
-  }
 
   @Before
   public void setUp() {
@@ -250,7 +232,6 @@ public class SQLiteDatabaseTest {
   @Config(minSdk = LOLLIPOP)
   @SdkSuppress(minSdkVersion = LOLLIPOP)
   public void regex_selection() {
-    assumeTrue(usingRobolectricNativeSQLite());
     ContentValues values = new ContentValues();
     values.put("first_column", "test");
     database.insert("table_name", null, values);
@@ -264,7 +245,6 @@ public class SQLiteDatabaseTest {
   @Test
   @SdkSuppress(minSdkVersion = M) // This test fails on emulators for SDKs 21 and 22
   public void fts4() {
-    assumeTrue(usingRobolectricNativeSQLite());
     database.execSQL(
         "CREATE VIRTUAL TABLE documents USING fts4 ("
             + "id INTEGER PRIMARY KEY, "
@@ -308,7 +288,6 @@ public class SQLiteDatabaseTest {
   @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Test
   public void uniqueConstraintViolation_errorMessage() {
-    assumeTrue(usingRobolectricNativeSQLite());
     database.execSQL(
         "CREATE TABLE my_table(\n"
             + "  _id INTEGER PRIMARY KEY AUTOINCREMENT, \n"
