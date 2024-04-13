@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.lang.Math.max;
@@ -25,6 +26,7 @@ import android.util.Log;
 import android.view.IWindowManager;
 import android.view.IWindowSession;
 import android.view.MotionEvent;
+import android.view.RemoteAnimationTarget;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManagerGlobal;
@@ -40,15 +42,13 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
 /** Shadow for {@link WindowManagerGlobal}. */
 @SuppressWarnings("unused") // Unused params are implementations of Android SDK methods.
-@Implements(
-    value = WindowManagerGlobal.class,
-    isInAndroidSdk = false,
-    looseSignatures = true)
+@Implements(value = WindowManagerGlobal.class, isInAndroidSdk = false, looseSignatures = true)
 public class ShadowWindowManagerGlobal {
   private static WindowSessionDelegate windowSessionDelegate = new WindowSessionDelegate();
   private static IWindowSession windowSession;
@@ -414,19 +414,66 @@ public class ShadowWindowManagerGlobal {
     }
   }
 
+  @ForType(BackMotionEvent.class)
+  interface BackMotionEventReflector {
+    @Constructor
+    BackMotionEvent newBackMotionEvent(
+        float touchX,
+        float touchY,
+        float progress,
+        float velocityX,
+        float velocityY,
+        int swipeEdge,
+        RemoteAnimationTarget departingAnimationTarget);
+
+    @Constructor
+    BackMotionEvent newBackMotionEventV(
+        float touchX,
+        float touchY,
+        float progress,
+        float velocityX,
+        float velocityY,
+        boolean triggerBack,
+        int swipeEdge,
+        RemoteAnimationTarget departingAnimationTarget);
+  }
+
   private static class BackMotionEvents {
     private BackMotionEvents() {}
 
     static BackMotionEvent newBackMotionEvent(
         @BackEvent.SwipeEdge int edge, float touchX, float touchY, float progress) {
-      return new BackMotionEvent(
-          touchX,
-          touchY,
-          progress,
-          /* velocityX= */ 0f,
-          /* velocityY= */ 0f,
-          edge,
-          /* departingAnimationTarget= */ null);
+      if (RuntimeEnvironment.getApiLevel() >= UPSIDE_DOWN_CAKE) {
+        try {
+          return reflector(BackMotionEventReflector.class)
+              .newBackMotionEventV(
+                  touchX,
+                  touchY,
+                  progress,
+                  0f, // velocity x
+                  0f, // velocity y
+                  Boolean.FALSE, // trigger back
+                  edge, // swipe edge
+                  null);
+        } catch (Throwable t) {
+          if (NoSuchMethodException.class.isInstance(t) || AssertionError.class.isInstance(t)) {
+            // fall through, assuming (perhaps falsely?) this exception is thrown by reflector(),
+            // and not the method reflected in to.
+          } else {
+            if (RuntimeException.class.isInstance(t)) {
+              throw (RuntimeException) t;
+            } else {
+              throw new RuntimeException(t);
+            }
+          }
+        }
+      }
+      return reflector(BackMotionEventReflector.class)
+          .newBackMotionEvent(
+              touchX, touchY, progress, 0f, // velocity x
+              0f, // velocity y
+              edge, // swipe edge
+              null);
     }
   }
 }
