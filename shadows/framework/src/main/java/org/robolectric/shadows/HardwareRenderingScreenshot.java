@@ -16,7 +16,6 @@ import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
 import com.android.internal.R;
-import java.nio.IntBuffer;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -71,21 +70,8 @@ public final class HardwareRenderingScreenshot {
       renderer.setContentRoot(node);
 
       renderer.createRenderRequest().syncAndDraw();
-
-      int[] renderPixels = new int[width * height];
-
       Plane[] planes = nativeImage.getPlanes();
-      IntBuffer srcBuff = planes[0].getBuffer().asIntBuffer();
-      srcBuff.get(renderPixels);
-
-      destBitmap.setPixels(
-          renderPixels,
-          /* offset= */ 0,
-          /* stride= */ width,
-          /* x= */ 0,
-          /* y= */ 0,
-          width,
-          height);
+      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
       surface.release();
     }
   }
