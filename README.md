@@ -70,7 +70,7 @@ Run tests for all API levels:
 
 Run tests for part of supported API levels, e.g. run tests for API level 26, 27, 28:
 
-    ./gradlew test --parallel -Drobolectric.enabledSdks=26,27,28
+    ./gradlew test --parallel "-Drobolectric.enabledSdks=26,27,28"
 
 Run compatibility test suites on opening Emulator:
 
