@@ -1968,7 +1968,9 @@ public class ShadowLocationManager {
       ArrayList<Location> deliverableLocations = new ArrayList<>(locations.length);
       for (Location location : locations) {
         if (lastDeliveredLocation != null) {
-          if (location.getTime() - lastDeliveredLocation.getTime()
+          if (NANOSECONDS.toMillis(
+                  location.getElapsedRealtimeNanos()
+                      - lastDeliveredLocation.getElapsedRealtimeNanos())
               < request.getMinUpdateIntervalMillis()) {
             Log.w(TAG, "location rejected for simulated delivery - too fast");
             continue;
