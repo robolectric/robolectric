@@ -46,7 +46,9 @@ public class ShadowViewConfiguration {
   private static final int DOUBLE_TAP_SLOP = 100;
   private static final int WINDOW_TOUCH_SLOP = 16;
   private static final int MAXIMUM_FLING_VELOCITY = 4000;
-  private static final int MAXIMUM_DRAWING_CACHE_SIZE = 320 * 480 * 4;
+
+  // The previous hardcoded value for draw cache size. Some screenshot tests depend on this value.
+  private static final int MIN_MAXIMUM_DRAWING_CACHE_SIZE = 480 * 800 * 4;
 
   private int edgeSlop;
   private int fadingEdgeLength;
@@ -57,10 +59,11 @@ public class ShadowViewConfiguration {
   private int pagingTouchSlop;
   private int doubleTapSlop;
   private int windowTouchSlop;
+  private int maximumDrawingCacheSize;
   private static boolean hasPermanentMenuKey = true;
 
   private void setup(Context context) {
-    DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+    final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
     float density = metrics.density;
 
     edgeSlop = (int) (density * ViewConfiguration.getEdgeSlop() + 0.5f);
@@ -72,6 +75,12 @@ public class ShadowViewConfiguration {
     pagingTouchSlop = (int) (density * PAGING_TOUCH_SLOP + 0.5f);
     doubleTapSlop = (int) (density * DOUBLE_TAP_SLOP + 0.5f);
     windowTouchSlop = (int) (density * WINDOW_TOUCH_SLOP + 0.5f);
+    // Some screenshot tests were misconfigured and try to draw very large views onto small
+    // screens using SW rendering. To avoid breaking these tests, we keep the drawing cache a bit
+    // larger when screens are configured to be arbitrarily small.
+    // TODO(hoisie): Investigate removing this Math.max logic.
+    maximumDrawingCacheSize =
+        Math.max(MIN_MAXIMUM_DRAWING_CACHE_SIZE, 4 * metrics.widthPixels * metrics.heightPixels);
   }
 
   @Implementation
@@ -174,8 +183,8 @@ public class ShadowViewConfiguration {
   }
 
   @Implementation
-  protected static int getMaximumDrawingCacheSize() {
-    return MAXIMUM_DRAWING_CACHE_SIZE;
+  protected int getScaledMaximumDrawingCacheSize() {
+    return maximumDrawingCacheSize;
   }
 
   @Implementation
