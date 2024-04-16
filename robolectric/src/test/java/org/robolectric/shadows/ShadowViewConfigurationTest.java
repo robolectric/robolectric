@@ -11,6 +11,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowViewConfigurationTest {
@@ -40,7 +41,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(16, ViewConfiguration.getWindowTouchSlop());
     assertEquals(50, ViewConfiguration.getMinimumFlingVelocity());
     assertEquals(4000, ViewConfiguration.getMaximumFlingVelocity());
-    assertEquals(320 * 480 * 4, ViewConfiguration.getMaximumDrawingCacheSize());
+    assertEquals(480 * 800 * 4, ViewConfiguration.getMaximumDrawingCacheSize());
     assertEquals(3000, ViewConfiguration.getZoomControlsTimeout());
     assertEquals(500, ViewConfiguration.getGlobalActionKeyTimeout());
     assertThat(ViewConfiguration.getScrollFriction()).isEqualTo(0.015f);
@@ -56,6 +57,8 @@ public class ShadowViewConfigurationTest {
     assertEquals(16, viewConfiguration.getScaledWindowTouchSlop());
     assertEquals(50, viewConfiguration.getScaledMinimumFlingVelocity());
     assertEquals(4000, viewConfiguration.getScaledMaximumFlingVelocity());
+    // The min value of getScaledMaximumDrawingCacheSize is 480 * 800 * 4.
+    assertEquals(480 * 800 * 4, viewConfiguration.getScaledMaximumDrawingCacheSize());
   }
 
   @Test
@@ -82,5 +85,21 @@ public class ShadowViewConfigurationTest {
     ShadowViewConfiguration shadowViewConfiguration = shadowOf(viewConfiguration);
     shadowViewConfiguration.setHasPermanentMenuKey(false);
     assertThat(viewConfiguration.hasPermanentMenuKey()).isFalse();
+  }
+
+  @Config(qualifiers = "w420dp-h800dp-xxxhdpi")
+  @Test
+  public void getScaledMaximumFlingVelocity_scalesWithDisplaySize() {
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
+    int expected = 4 * (4 * 420) * (4 * 800);
+    assertThat(viewConfiguration.getScaledMaximumDrawingCacheSize()).isEqualTo(expected);
+  }
+
+  @Config(qualifiers = "w100dp-h500dp")
+  @Test
+  public void getScaledMaximumFlingVelocity_minValue() {
+    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
+    int expected = 480 * 800 * 4; // The min value
+    assertThat(viewConfiguration.getScaledMaximumDrawingCacheSize()).isEqualTo(expected);
   }
 }
