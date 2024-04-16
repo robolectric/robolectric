@@ -25,7 +25,7 @@ import org.robolectric.util.ReflectionHelpers;
  */
 public final class HardwareRenderingScreenshot {
 
-  static final String USE_HARDWARE_RENDERER_NATIVE_ENV = "robolectric.screenshot.hwrdr.native";
+  static final String PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode";
 
   private HardwareRenderingScreenshot() {}
 
@@ -36,7 +36,7 @@ public final class HardwareRenderingScreenshot {
    */
   static boolean canTakeScreenshot() {
     return VERSION.SDK_INT >= VERSION_CODES.S
-        && Boolean.getBoolean(HardwareRenderingScreenshot.USE_HARDWARE_RENDERER_NATIVE_ENV)
+        && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
         && ShadowView.useRealGraphics();
   }
 
