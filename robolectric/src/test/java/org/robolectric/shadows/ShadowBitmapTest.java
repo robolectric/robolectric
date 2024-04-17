@@ -13,7 +13,6 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.Parcel;
 import android.util.DisplayMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -624,7 +623,6 @@ public class ShadowBitmapTest {
     bitmapOriginal.copyPixelsFromBuffer(buffer);
   }
 
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
   @Test
   public void reconfigure_withArgb8888Bitmap_validDimensionsAndConfig_doesNotThrow() {
     Bitmap original = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);

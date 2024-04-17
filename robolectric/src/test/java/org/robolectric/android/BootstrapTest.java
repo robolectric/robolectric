@@ -32,7 +32,6 @@ import static android.content.res.Configuration.UI_MODE_NIGHT_YES;
 import static android.content.res.Configuration.UI_MODE_TYPE_APPLIANCE;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
 import static android.content.res.Configuration.UI_MODE_TYPE_NORMAL;
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.view.Surface.ROTATION_0;
@@ -311,7 +310,6 @@ public class BootstrapTest {
   }
 
   @Test
-  @Config(sdk = KITKAT)
   public void applyQualifiers_rtlPseudoLocale_shouldSetLayoutDirection() {
     Bootstrap.applyQualifiers(
         "ar-rXB", RuntimeEnvironment.getApiLevel(), configuration, displayMetrics);

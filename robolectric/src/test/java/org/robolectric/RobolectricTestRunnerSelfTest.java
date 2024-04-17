@@ -79,11 +79,10 @@ public class RobolectricTestRunnerSelfTest {
   }
 
   @Test
-  @Config(sdk = Build.VERSION_CODES.KITKAT)
+  @Config(sdk = Build.VERSION_CODES.LOLLIPOP)
   public void testVersionConfiguration() {
-    assertThat(Build.VERSION.SDK_INT)
-        .isEqualTo(Build.VERSION_CODES.KITKAT);
-    assertThat(Build.VERSION.RELEASE).isEqualTo("4.4");
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.LOLLIPOP);
+    assertThat(Build.VERSION.RELEASE).isEqualTo("5.0.2");
   }
 
   @Test public void hamcrestMatchersDontBlowUpDuringLinking() throws Exception {
