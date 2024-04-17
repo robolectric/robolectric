@@ -139,13 +139,4 @@ public final class AndroidVersionsTest {
     assertThat(new AndroidVersions.L().getVersion()).isEqualTo("5.0");
     assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("L");
   }
-
-  @Test
-  @Config(sdk = 19)
-  public void testStandardInitializationK() {
-    assertThat(AndroidVersions.K.SDK_INT).isEqualTo(19);
-    assertThat(AndroidVersions.K.SHORT_CODE).isEqualTo("K");
-    assertThat(new AndroidVersions.K().getVersion()).isEqualTo("4.4");
-    assertThat(AndroidVersions.CURRENT.getShortCode()).isEqualTo("K");
-  }
 }
