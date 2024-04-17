@@ -5,7 +5,6 @@ package org.robolectric.res.android;
 
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeDirectory;
 import static org.robolectric.res.android.CppAssetManager.FileType.kFileTypeRegular;
-import static org.robolectric.res.android.Util.CHECK;
 import static org.robolectric.res.android.ZipFileRO.OpenArchive;
 import static org.robolectric.res.android.ZipFileRO.kCompressDeflated;
 
@@ -57,7 +56,7 @@ public class CppApkAssets {
   //   bool ForEachFile(const String& path,
   //                    const std::function<void(const StringPiece&, FileType)>& f) const;
 
-  private CppApkAssets() {
+  CppApkAssets() {
     this.zipFileRO = null;
   }
 
@@ -357,7 +356,10 @@ public class CppApkAssets {
 
   boolean ForEachFile(String root_path,
       ForEachFileCallback f) {
-    CHECK(zip_handle_ != null);
+    if (zip_handle_ == null || zipFileRO == null) {
+      // In this case, the ApkAssets was loaded from a pure ARSC, and does not have assets.
+      return false;
+    }
 
     String root_path_full = root_path;
     // if (root_path_full.back() != '/') {
