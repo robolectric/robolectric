@@ -100,8 +100,10 @@ import org.robolectric.shadows.ShadowView;
 import org.robolectric.util.Logger;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.Scheduler;
 import org.robolectric.util.TempDirectory;
+import org.robolectric.versioning.AndroidVersions;
 import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressLint("NewApi")
@@ -399,9 +401,18 @@ public class AndroidTestEnvironment implements TestEnvironment {
         populateAssetPaths(appResources.getAssets(), appManifest);
       }
 
-      // circument the 'No Compatibility callbacks set!' log. See #8509
-      if (RuntimeEnvironment.getApiLevel() >= VERSION_CODES.R) {
-        AppCompatCallbacks.install(new long[0]);
+      // Circumvent the 'No Compatibility callbacks set!' log. See #8509
+      if (apiLevel >= AndroidVersions.V.SDK_INT) {
+        // Adds loggableChanges parameter.
+        ReflectionHelpers.callStaticMethod(
+            AppCompatCallbacks.class,
+            "install",
+            ClassParameter.from(long[].class, new long[0]),
+            ClassParameter.from(long[].class, new long[0]));
+      } else if (apiLevel >= AndroidVersions.R.SDK_INT) {
+        // Invoke the previous version.
+        ReflectionHelpers.callStaticMethod(
+            AppCompatCallbacks.class, "install", ClassParameter.from(long[].class, new long[0]));
       }
 
       PerfStatsCollector.getInstance()
