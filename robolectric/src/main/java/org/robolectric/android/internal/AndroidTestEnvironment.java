@@ -594,8 +594,12 @@ public class AndroidTestEnvironment implements TestEnvironment {
     }
   }
 
+  protected Instrumentation pickInstrumentation() {
+    return new RoboMonitoringInstrumentation();
+  }
+
   private Instrumentation createInstrumentation() {
-    Instrumentation androidInstrumentation = new RoboMonitoringInstrumentation();
+    Instrumentation androidInstrumentation = pickInstrumentation();
     androidInstrumentation.runOnMainSync(
         () -> {
           ActivityThread activityThread = ReflectionHelpers.callConstructor(ActivityThread.class);
