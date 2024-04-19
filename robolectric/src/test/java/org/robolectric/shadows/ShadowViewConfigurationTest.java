@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
@@ -11,6 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -26,8 +28,10 @@ public class ShadowViewConfigurationTest {
   @Test
   public void methodsShouldReturnAndroidConstants() {
     ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
-
-    assertEquals(10, ViewConfiguration.getScrollBarSize());
+    // Most of the constants here are private statics from ViewConfiguration circa Jelly Bean:
+    // https://cs.android.com/android/platform/superproject/+/android-4.1.1_r1:frameworks/base/core/java/android/view/ViewConfiguration.java
+    final int expectedScrollBarSize = RuntimeEnvironment.getApiLevel() >= O_MR1 ? 4 : 10;
+    assertEquals(expectedScrollBarSize, ViewConfiguration.getScrollBarSize());
     assertEquals(250, ViewConfiguration.getScrollBarFadeDuration());
     assertEquals(300, ViewConfiguration.getScrollDefaultDelay());
     assertEquals(12, ViewConfiguration.getFadingEdgeLength());
@@ -48,7 +52,7 @@ public class ShadowViewConfigurationTest {
 
     assertThat(context.getResources().getDisplayMetrics().density).isEqualTo(1f);
 
-    assertEquals(10, viewConfiguration.getScaledScrollBarSize());
+    assertEquals(expectedScrollBarSize, viewConfiguration.getScaledScrollBarSize());
     assertEquals(12, viewConfiguration.getScaledFadingEdgeLength());
     assertEquals(12, viewConfiguration.getScaledEdgeSlop());
     assertEquals(16, viewConfiguration.getScaledTouchSlop());
@@ -62,11 +66,14 @@ public class ShadowViewConfigurationTest {
   }
 
   @Test
+  @Config(qualifiers = "hdpi")
   public void methodsShouldReturnScaledAndroidConstantsDependingOnPixelDensity() {
-    context.getResources().getDisplayMetrics().density = 1.5f;
+    // Most of the constants here are private statics from ViewConfiguration circa Jelly Bean:
+    // https://cs.android.com/android/platform/superproject/+/android-4.1.1_r1:frameworks/base/core/java/android/view/ViewConfiguration.java
+    // They are multiplied by the scaling factor 1.5 for HDPI.
     ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
-
-    assertEquals(15, viewConfiguration.getScaledScrollBarSize());
+    final int expectedScaledScrollBarSize = RuntimeEnvironment.getApiLevel() >= O_MR1 ? 6 : 15;
+    assertEquals(expectedScaledScrollBarSize, viewConfiguration.getScaledScrollBarSize());
     assertEquals(18, viewConfiguration.getScaledFadingEdgeLength());
     assertEquals(18, viewConfiguration.getScaledEdgeSlop());
     assertEquals(24, viewConfiguration.getScaledTouchSlop());

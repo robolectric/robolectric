@@ -20,23 +20,28 @@
 
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.P;
+import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.Static;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewConfiguration.class)
 public class ShadowViewConfiguration {
+  @RealObject ViewConfiguration realViewConfiguration;
 
-  private static final int SCROLL_BAR_SIZE = 10;
   private static final int PRESSED_STATE_DURATION = 125;
   private static final int LONG_PRESS_TIMEOUT = 500;
   private static final int TAP_TIMEOUT = 115;
@@ -54,7 +59,6 @@ public class ShadowViewConfiguration {
   private int fadingEdgeLength;
   private int minimumFlingVelocity;
   private int maximumFlingVelocity;
-  private int scrollbarSize;
   private int touchSlop;
   private int pagingTouchSlop;
   private int doubleTapSlop;
@@ -70,7 +74,17 @@ public class ShadowViewConfiguration {
     fadingEdgeLength = (int) (density * ViewConfiguration.getFadingEdgeLength() + 0.5f);
     minimumFlingVelocity = (int) (density * ViewConfiguration.getMinimumFlingVelocity() + 0.5f);
     maximumFlingVelocity = (int) (density * ViewConfiguration.getMaximumFlingVelocity() + 0.5f);
-    scrollbarSize = (int) (density * SCROLL_BAR_SIZE + 0.5f);
+    int scrollbarSize;
+    if (RuntimeEnvironment.getApiLevel() >= P) {
+      scrollbarSize =
+          Resources.getSystem()
+              .getDimensionPixelSize(
+                  reflector(AndroidInternalDimenReflector.class).getConfigScrollbarSize());
+    } else {
+      scrollbarSize = (int) (density * ViewConfiguration.getScrollBarSize() + 0.5f);
+    }
+    reflector(ViewConfigurationReflector.class, realViewConfiguration)
+        .setScrollbarSize(scrollbarSize);
     touchSlop = (int) (density * TOUCH_SLOP + 0.5f);
     pagingTouchSlop = (int) (density * PAGING_TOUCH_SLOP + 0.5f);
     doubleTapSlop = (int) (density * DOUBLE_TAP_SLOP + 0.5f);
@@ -89,22 +103,12 @@ public class ShadowViewConfiguration {
     ShadowViewConfiguration shadowViewConfiguration = Shadow.extract(viewConfiguration);
     shadowViewConfiguration.setup(context);
 
-    if (RuntimeEnvironment.getApiLevel() >= android.os.Build.VERSION_CODES.Q) {
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
       reflector(ViewConfigurationReflector.class, viewConfiguration)
           .setConstructedWithContext(true);
     }
 
     return viewConfiguration;
-  }
-
-  @Implementation
-  protected static int getScrollBarSize() {
-    return SCROLL_BAR_SIZE;
-  }
-
-  @Implementation
-  protected int getScaledScrollBarSize() {
-    return scrollbarSize;
   }
 
   @Implementation
@@ -200,5 +204,21 @@ public class ShadowViewConfiguration {
   interface ViewConfigurationReflector {
     @Accessor("mConstructedWithContext")
     void setConstructedWithContext(boolean value);
+
+    @Accessor("mScrollbarSize")
+    void setScrollbarSize(int value);
+  }
+
+  /**
+   * Reflection is needed to access internal Android dimen constants, which are static final ints,
+   * so referencing them directly causes inlining. Note {@link AndroidInternalDimenReflector} is
+   * designed to be temporary until the real {@link
+   * android.view.ViewConfiguration#get(android.content.Context)} is called.
+   */
+  @ForType(com.android.internal.R.dimen.class)
+  interface AndroidInternalDimenReflector {
+    @Static
+    @Accessor("config_scrollbarSize")
+    int getConfigScrollbarSize();
   }
 }
