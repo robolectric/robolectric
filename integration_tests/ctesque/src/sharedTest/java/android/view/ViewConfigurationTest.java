@@ -6,6 +6,7 @@ import static com.google.common.truth.Truth.assertThat;
 import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
+import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,22 @@ public final class ViewConfigurationTest {
     }
   }
 
+  @Test
+  public void isFadingMarqueeEnabled_returnsFalse() throws Exception {
+    ViewConfiguration viewConfiguration =
+        ViewConfiguration.get(ApplicationProvider.getApplicationContext());
+    // isFadingMarqueeEnabled is a '@hide' method.
+    boolean isFadingMarqueeEnabled =
+        callMethod(viewConfiguration, "isFadingMarqueeEnabled", Boolean.class);
+    assertThat(isFadingMarqueeEnabled).isFalse();
+  }
+
   public int pxToDp(int px) {
     return Math.round(px / density);
+  }
+
+  public <T> T callMethod(Object obj, String methodName, Class<T> returnType) throws Exception {
+    Method method = obj.getClass().getMethod(methodName);
+    return returnType.cast(method.invoke(obj));
   }
 }

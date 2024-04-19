@@ -63,6 +63,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(4000, viewConfiguration.getScaledMaximumFlingVelocity());
     // The min value of getScaledMaximumDrawingCacheSize is 480 * 800 * 4.
     assertEquals(480 * 800 * 4, viewConfiguration.getScaledMaximumDrawingCacheSize());
+    assertThat(viewConfiguration.isFadingMarqueeEnabled()).isFalse();
   }
 
   @Test

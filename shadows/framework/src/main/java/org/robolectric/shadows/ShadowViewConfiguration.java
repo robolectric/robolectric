@@ -67,7 +67,8 @@ public class ShadowViewConfiguration {
   private static boolean hasPermanentMenuKey = true;
 
   private void setup(Context context) {
-    final DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+    final Resources resources = context.getResources();
+    final DisplayMetrics metrics = resources.getDisplayMetrics();
     float density = metrics.density;
 
     edgeSlop = (int) (density * ViewConfiguration.getEdgeSlop() + 0.5f);
@@ -95,6 +96,11 @@ public class ShadowViewConfiguration {
     // TODO(hoisie): Investigate removing this Math.max logic.
     maximumDrawingCacheSize =
         Math.max(MIN_MAXIMUM_DRAWING_CACHE_SIZE, 4 * metrics.widthPixels * metrics.heightPixels);
+    boolean enableFadingMarquee =
+        resources.getBoolean(
+            reflector(AndroidInternalBoolReflector.class).getEnableFadingMarquee());
+    reflector(ViewConfigurationReflector.class, realViewConfiguration)
+        .setFadingMarqueeEnabled(enableFadingMarquee);
   }
 
   @Implementation
@@ -207,6 +213,9 @@ public class ShadowViewConfiguration {
 
     @Accessor("mScrollbarSize")
     void setScrollbarSize(int value);
+
+    @Accessor("mFadingMarqueeEnabled")
+    void setFadingMarqueeEnabled(boolean enableFadingMarquee);
   }
 
   /**
@@ -220,5 +229,18 @@ public class ShadowViewConfiguration {
     @Static
     @Accessor("config_scrollbarSize")
     int getConfigScrollbarSize();
+  }
+
+  /**
+   * Reflection is needed to access internal Android dimen constants, which are static final ints,
+   * so referencing them directly causes inlining. Note {@link AndroidInternalDimenReflector} is
+   * designed to be temporary until the real {@link
+   * android.view.ViewConfiguration#get(android.content.Context)} is called.
+   */
+  @ForType(com.android.internal.R.bool.class)
+  interface AndroidInternalBoolReflector {
+    @Static
+    @Accessor("config_ui_enableFadingMarquee")
+    int getEnableFadingMarquee();
   }
 }
