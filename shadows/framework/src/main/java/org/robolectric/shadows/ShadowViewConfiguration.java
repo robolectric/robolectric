@@ -25,6 +25,7 @@ import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.view.ViewConfiguration;
@@ -70,7 +71,13 @@ public class ShadowViewConfiguration {
     final Resources resources = context.getResources();
     final DisplayMetrics metrics = resources.getDisplayMetrics();
     float density = metrics.density;
-
+    final Configuration config = resources.getConfiguration();
+    final float sizeAndDensity;
+    if (config.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE)) {
+      sizeAndDensity = density * 1.5f;
+    } else {
+      sizeAndDensity = density;
+    }
     edgeSlop = (int) (density * ViewConfiguration.getEdgeSlop() + 0.5f);
     fadingEdgeLength = (int) (density * ViewConfiguration.getFadingEdgeLength() + 0.5f);
     minimumFlingVelocity = (int) (density * ViewConfiguration.getMinimumFlingVelocity() + 0.5f);
@@ -86,6 +93,10 @@ public class ShadowViewConfiguration {
     }
     reflector(ViewConfigurationReflector.class, realViewConfiguration)
         .setScrollbarSize(scrollbarSize);
+    int baseOverflingDistance =
+        reflector(ViewConfigurationReflector.class).getBaseOverflingDistance();
+    reflector(ViewConfigurationReflector.class, realViewConfiguration)
+        .setOverflingDistance((int) (sizeAndDensity * baseOverflingDistance));
     touchSlop = (int) (density * TOUCH_SLOP + 0.5f);
     pagingTouchSlop = (int) (density * PAGING_TOUCH_SLOP + 0.5f);
     doubleTapSlop = (int) (density * DOUBLE_TAP_SLOP + 0.5f);
@@ -208,6 +219,10 @@ public class ShadowViewConfiguration {
 
   @ForType(ViewConfiguration.class)
   interface ViewConfigurationReflector {
+    @Static
+    @Accessor("OVERFLING_DISTANCE")
+    int getBaseOverflingDistance();
+
     @Accessor("mConstructedWithContext")
     void setConstructedWithContext(boolean value);
 
@@ -216,6 +231,9 @@ public class ShadowViewConfiguration {
 
     @Accessor("mFadingMarqueeEnabled")
     void setFadingMarqueeEnabled(boolean enableFadingMarquee);
+
+    @Accessor("mOverflingDistance")
+    void setOverflingDistance(int value);
   }
 
   /**

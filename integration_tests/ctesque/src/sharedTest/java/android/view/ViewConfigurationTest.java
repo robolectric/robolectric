@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Tests that {@link android.view.ViewConfiguration} behavior is consistent with real Android. */
@@ -18,17 +19,17 @@ import org.robolectric.annotation.internal.DoNotInstrument;
 public final class ViewConfigurationTest {
 
   private float density;
+  private ViewConfiguration viewConfiguration;
 
   @Before
   public void setUp() {
     density =
         ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density;
+    viewConfiguration = ViewConfiguration.get(ApplicationProvider.getApplicationContext());
   }
 
   @Test
   public void scrollbar_configuration() {
-    ViewConfiguration viewConfiguration =
-        ViewConfiguration.get(ApplicationProvider.getApplicationContext());
     int scrollBarSize = ViewConfiguration.getScrollBarSize();
     int scaledScrollBarSizeDp = pxToDp(viewConfiguration.getScaledScrollBarSize());
     if (Build.VERSION.SDK_INT >= O_MR1) {
@@ -42,12 +43,18 @@ public final class ViewConfigurationTest {
 
   @Test
   public void isFadingMarqueeEnabled_returnsFalse() throws Exception {
-    ViewConfiguration viewConfiguration =
-        ViewConfiguration.get(ApplicationProvider.getApplicationContext());
     // isFadingMarqueeEnabled is a '@hide' method.
     boolean isFadingMarqueeEnabled =
         callMethod(viewConfiguration, "isFadingMarqueeEnabled", Boolean.class);
     assertThat(isFadingMarqueeEnabled).isFalse();
+  }
+
+  // Emulators have hdpi density by default, so match this in Robolectric for consistency.
+  @Config(qualifiers = "hdpi")
+  @Test
+  public void overfling_distance() {
+    assertThat(density).isEqualTo(1.5f);
+    assertThat(viewConfiguration.getScaledOverflingDistance()).isEqualTo(9);
   }
 
   public int pxToDp(int px) {
