@@ -64,6 +64,7 @@ import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.res.android.String8;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowAssetManager.Picker;
+import org.robolectric.util.PerfStatsCollector;
 
 // native method impls transliterated from
 // https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/core/jni/android_util_AssetManager.cpp
@@ -718,12 +719,23 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
   protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
-    ResXMLParser xmlParser = xmlParserToken == 0
-        ? null
-        : Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
-    AttributeResolution.ApplyStyle(theme, xmlParser, defStyleAttr, defStyleRes,
-        attrs, attrs.length, outValues, outIndices);
+    PerfStatsCollector.getInstance()
+        .measure("AssetManager-applyStyle",
+            () -> {
+              ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
+              ResXMLParser xmlParser = xmlParserToken == 0
+                      ? null
+                      : Registries.NATIVE_RES_XML_PARSERS.getNativeObject(xmlParserToken);
+              AttributeResolution.ApplyStyle(
+                  theme,
+                  xmlParser,
+                  defStyleAttr,
+                  defStyleRes,
+                  attrs,
+                  attrs.length,
+                  outValues,
+                  outIndices);
+            });
   }
 
   @Implementation @HiddenApi

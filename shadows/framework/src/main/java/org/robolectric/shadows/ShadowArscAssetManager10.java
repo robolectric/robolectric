@@ -582,46 +582,51 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       int ui_mode,
       int color_mode,
       int major_version) {
-    ATRACE_NAME("AssetManager::SetConfiguration");
+    PerfStatsCollector.getInstance()
+        .measure(
+            "AssetManager-nativeSetConfiguration",
+            () -> {
+              ATRACE_NAME("AssetManager::SetConfiguration");
 
-    ResTable_config configuration = new ResTable_config();
-    // memset(&configuration, 0, sizeof(configuration));
-    configuration.mcc = (short) (mcc);
-    configuration.mnc = (short) (mnc);
-    configuration.orientation = (byte) (orientation);
-    configuration.touchscreen = (byte) (touchscreen);
-    configuration.density = (short) (density);
-    configuration.keyboard = (byte) (keyboard);
-    configuration.inputFlags = (byte) (keyboard_hidden);
-    configuration.navigation = (byte) (navigation);
-    configuration.screenWidth = (short) (screen_width);
-    configuration.screenHeight = (short) (screen_height);
-    configuration.smallestScreenWidthDp = (short) (smallest_screen_width_dp);
-    configuration.screenWidthDp = (short) (screen_width_dp);
-    configuration.screenHeightDp = (short) (screen_height_dp);
-    configuration.screenLayout = (byte) (screen_layout);
-    configuration.uiMode = (byte) (ui_mode);
-    configuration.colorMode = (byte) (color_mode);
-    configuration.sdkVersion = (short) (major_version);
+              ResTable_config configuration = new ResTable_config();
+              // memset(&configuration, 0, sizeof(configuration));
+              configuration.mcc = (short) (mcc);
+              configuration.mnc = (short) (mnc);
+              configuration.orientation = (byte) (orientation);
+              configuration.touchscreen = (byte) (touchscreen);
+              configuration.density = (short) (density);
+              configuration.keyboard = (byte) (keyboard);
+              configuration.inputFlags = (byte) (keyboard_hidden);
+              configuration.navigation = (byte) (navigation);
+              configuration.screenWidth = (short) (screen_width);
+              configuration.screenHeight = (short) (screen_height);
+              configuration.smallestScreenWidthDp = (short) (smallest_screen_width_dp);
+              configuration.screenWidthDp = (short) (screen_width_dp);
+              configuration.screenHeightDp = (short) (screen_height_dp);
+              configuration.screenLayout = (byte) (screen_layout);
+              configuration.uiMode = (byte) (ui_mode);
+              configuration.colorMode = (byte) (color_mode);
+              configuration.sdkVersion = (short) (major_version);
 
-    if (locale != null) {
-      String locale_utf8 = locale;
-      CHECK(locale_utf8 != null);
-      configuration.setBcp47Locale(locale_utf8);
-    }
+              if (locale != null) {
+                String locale_utf8 = locale;
+                CHECK(locale_utf8 != null);
+                configuration.setBcp47Locale(locale_utf8);
+              }
 
-    // Constants duplicated from Java class android.content.res.Configuration.
-    int kScreenLayoutRoundMask = 0x300;
-    int kScreenLayoutRoundShift = 8;
+              // Constants duplicated from Java class android.content.res.Configuration.
+              int kScreenLayoutRoundMask = 0x300;
+              int kScreenLayoutRoundShift = 8;
 
-    // In Java, we use a 32bit integer for screenLayout, while we only use an 8bit integer
-    // in C++. We must extract the round qualifier out of the Java screenLayout and put it
-    // into screenLayout2.
-    configuration.screenLayout2 =
-        (byte) ((screen_layout & kScreenLayoutRoundMask) >> kScreenLayoutRoundShift);
+              // In Java, we use a 32bit integer for screenLayout, while we only use an 8bit integer
+              // in C++. We must extract the round qualifier out of the Java screenLayout and put it
+              // into screenLayout2.
+              configuration.screenLayout2 =
+                  (byte) ((screen_layout & kScreenLayoutRoundMask) >> kScreenLayoutRoundShift);
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    assetmanager.SetConfiguration(configuration);
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              assetmanager.SetConfiguration(configuration);
+            });
   }
 
   // static jobject NativeGetAssignedPackageIdentifiers(JNIEnv* env, jclass /*clazz*/, jlong ptr) {
@@ -653,7 +658,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
 
   @Implementation(minSdk = R)
   protected static SparseArray<String> nativeGetAssignedPackageIdentifiers(
-      long ptr, boolean includeOverlays, boolean includeLoaders) {
+      long ptr, boolean includeOverlays, boolean includeLoaders) throws Exception {
     return nativeGetAssignedPackageIdentifiers(ptr);
   }
 
@@ -661,41 +666,47 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static @Nullable String[] nativeList(long ptr, @NonNull String path)
       throws IOException {
-    String path_utf8 = path;
-    if (path_utf8 == null) {
-      // This will throw NPE.
-      return null;
-    }
+    return PerfStatsCollector.getInstance()
+        .<String[], IOException>measure(
+            "AssetManager-nativeList",
+            () -> {
+              String path_utf8 = path;
+              if (path_utf8 == null) {
+                // This will throw NPE.
+                return null;
+              }
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    AssetDir asset_dir = assetmanager.OpenDir(path_utf8);
-    if (asset_dir == null) {
-      throw new FileNotFoundException(path_utf8);
-    }
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              AssetDir asset_dir = assetmanager.OpenDir(path_utf8);
+              if (asset_dir == null) {
+                throw new FileNotFoundException(path_utf8);
+              }
 
-    int file_count = asset_dir.getFileCount();
+              int file_count = asset_dir.getFileCount();
 
-    String[] array = new String[file_count]; // env.NewObjectArray(file_count, g_stringClass, null);
-    // if (array == null) {
-    //   return null;
-    // }
+              String[] array =
+                  new String[file_count]; // env.NewObjectArray(file_count, g_stringClass, null);
+              // if (array == null) {
+              //   return null;
+              // }
 
-    for (int i = 0; i < file_count; i++) {
-      String java_string = asset_dir.getFileName(i).string();
+              for (int i = 0; i < file_count; i++) {
+                String java_string = asset_dir.getFileName(i).string();
 
-      // Check for errors creating the strings (if malformed or no memory).
-      // if (env.ExceptionCheck()) {
-      //   return null;
-      // }
+                // Check for errors creating the strings (if malformed or no memory).
+                // if (env.ExceptionCheck()) {
+                //   return null;
+                // }
 
-      // env.SetObjectArrayElement(array, i, java_string);
-      array[i] = java_string;
+                // env.SetObjectArrayElement(array, i, java_string);
+                array[i] = java_string;
 
-      // If we have a large amount of string in our array, we might overflow the
-      // local reference table of the VM.
-      // env.DeleteLocalRef(java_string);
-    }
-    return array;
+                // If we have a large amount of string in our array, we might overflow the
+                // local reference table of the VM.
+                // env.DeleteLocalRef(java_string);
+              }
+              return array;
+            });
   }
 
   // static jlong NativeOpenAsset(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring asset_path,
@@ -703,27 +714,33 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static long nativeOpenAsset(long ptr, @NonNull String asset_path, int access_mode)
       throws FileNotFoundException {
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
-      // This will throw NPE.
-      return 0;
-    }
+    return PerfStatsCollector.getInstance()
+        .<Long, FileNotFoundException>measure(
+            "AssetManager-nativeOpenAsset",
+            () -> {
+              String asset_path_utf8 = asset_path;
+              if (asset_path_utf8 == null) {
+                // This will throw NPE.
+                return 0L;
+              }
 
-    ATRACE_NAME(String.format("AssetManager::OpenAsset(%s)", asset_path_utf8));
+              ATRACE_NAME(String.format("AssetManager::OpenAsset(%s)", asset_path_utf8));
 
-    if (access_mode != Asset.AccessMode.ACCESS_UNKNOWN.mode()
-        && access_mode != Asset.AccessMode.ACCESS_RANDOM.mode()
-        && access_mode != Asset.AccessMode.ACCESS_STREAMING.mode()
-        && access_mode != Asset.AccessMode.ACCESS_BUFFER.mode()) {
-      throw new IllegalArgumentException("Bad access mode");
-    }
+              if (access_mode != Asset.AccessMode.ACCESS_UNKNOWN.mode()
+                  && access_mode != Asset.AccessMode.ACCESS_RANDOM.mode()
+                  && access_mode != Asset.AccessMode.ACCESS_STREAMING.mode()
+                  && access_mode != Asset.AccessMode.ACCESS_BUFFER.mode()) {
+                throw new IllegalArgumentException("Bad access mode");
+              }
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset = assetmanager.Open(asset_path_utf8, Asset.AccessMode.fromInt(access_mode));
-    if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
-    }
-    return Registries.NATIVE_ASSET_REGISTRY.register(asset);
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              Asset asset =
+                  assetmanager.Open(asset_path_utf8, Asset.AccessMode.fromInt(access_mode));
+              if (!isTruthy(asset)) {
+                throw new FileNotFoundException(asset_path_utf8);
+              }
+              return Registries.NATIVE_ASSET_REGISTRY.register(asset);
+            });
   }
 
   // static jobject NativeOpenAssetFd(JNIEnv* env, jclass /*clazz*/, jlong ptr, jstring asset_path,
@@ -731,20 +748,25 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static ParcelFileDescriptor nativeOpenAssetFd(
       long ptr, @NonNull String asset_path, long[] out_offsets) throws IOException {
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
-      // This will throw NPE.
-      return null;
-    }
+    return PerfStatsCollector.getInstance()
+        .<ParcelFileDescriptor, IOException>measure(
+            "AssetManager-nativeOpenAssetFd",
+            () -> {
+              String asset_path_utf8 = asset_path;
+              if (asset_path_utf8 == null) {
+                // This will throw NPE.
+                return null;
+              }
 
-    ATRACE_NAME(String.format("AssetManager::OpenAssetFd(%s)", asset_path_utf8));
+              ATRACE_NAME(String.format("AssetManager::OpenAssetFd(%s)", asset_path_utf8));
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset = assetmanager.Open(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM);
-    if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
-    }
-    return ReturnParcelFileDescriptor(asset, out_offsets);
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              Asset asset = assetmanager.Open(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM);
+              if (!isTruthy(asset)) {
+                throw new FileNotFoundException(asset_path_utf8);
+              }
+              return ReturnParcelFileDescriptor(asset, out_offsets);
+            });
   }
 
   // static jlong NativeOpenNonAsset(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint jcookie,
@@ -753,35 +775,43 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   protected static long nativeOpenNonAsset(
       long ptr, int jcookie, @NonNull String asset_path, int access_mode)
       throws FileNotFoundException {
-    ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
-      // This will throw NPE.
-      return 0;
-    }
+    return PerfStatsCollector.getInstance()
+        .<Long, FileNotFoundException>measure(
+            "AssetManager-nativeOpenNonAsset",
+            () -> {
+              ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
+              String asset_path_utf8 = asset_path;
+              if (asset_path_utf8 == null) {
+                // This will throw NPE.
+                return 0L;
+              }
 
-    ATRACE_NAME(String.format("AssetManager::OpenNonAsset(%s)", asset_path_utf8));
+              ATRACE_NAME(String.format("AssetManager::OpenNonAsset(%s)", asset_path_utf8));
 
-    if (access_mode != Asset.AccessMode.ACCESS_UNKNOWN.mode()
-        && access_mode != Asset.AccessMode.ACCESS_RANDOM.mode()
-        && access_mode != Asset.AccessMode.ACCESS_STREAMING.mode()
-        && access_mode != Asset.AccessMode.ACCESS_BUFFER.mode()) {
-      throw new IllegalArgumentException("Bad access mode");
-    }
+              if (access_mode != Asset.AccessMode.ACCESS_UNKNOWN.mode()
+                  && access_mode != Asset.AccessMode.ACCESS_RANDOM.mode()
+                  && access_mode != Asset.AccessMode.ACCESS_STREAMING.mode()
+                  && access_mode != Asset.AccessMode.ACCESS_BUFFER.mode()) {
+                throw new IllegalArgumentException("Bad access mode");
+              }
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset;
-    if (cookie.intValue() != kInvalidCookie) {
-      asset =
-          assetmanager.OpenNonAsset(asset_path_utf8, cookie, Asset.AccessMode.fromInt(access_mode));
-    } else {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.fromInt(access_mode));
-    }
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              Asset asset;
+              if (cookie.intValue() != kInvalidCookie) {
+                asset =
+                    assetmanager.OpenNonAsset(
+                        asset_path_utf8, cookie, Asset.AccessMode.fromInt(access_mode));
+              } else {
+                asset =
+                    assetmanager.OpenNonAsset(
+                        asset_path_utf8, Asset.AccessMode.fromInt(access_mode));
+              }
 
-    if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
-    }
-    return Registries.NATIVE_ASSET_REGISTRY.register(asset);
+              if (!isTruthy(asset)) {
+                throw new FileNotFoundException(asset_path_utf8);
+              }
+              return Registries.NATIVE_ASSET_REGISTRY.register(asset);
+            });
   }
 
   // static jobject NativeOpenNonAssetFd(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint jcookie,
@@ -790,27 +820,34 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   protected static @Nullable ParcelFileDescriptor nativeOpenNonAssetFd(
       long ptr, int jcookie, @NonNull String asset_path, @NonNull long[] out_offsets)
       throws IOException {
-    ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
-      // This will throw NPE.
-      return null;
-    }
+    return PerfStatsCollector.getInstance()
+        .<ParcelFileDescriptor, IOException>measure(
+            "AssetManager-nativeOpenNonAssetFd",
+            () -> {
+              ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
+              String asset_path_utf8 = asset_path;
+              if (asset_path_utf8 == null) {
+                // This will throw NPE.
+                return null;
+              }
 
-    ATRACE_NAME(String.format("AssetManager::OpenNonAssetFd(%s)", asset_path_utf8));
+              ATRACE_NAME(String.format("AssetManager::OpenNonAssetFd(%s)", asset_path_utf8));
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset;
-    if (cookie.intValue() != kInvalidCookie) {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, cookie, Asset.AccessMode.ACCESS_RANDOM);
-    } else {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM);
-    }
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              Asset asset;
+              if (cookie.intValue() != kInvalidCookie) {
+                asset =
+                    assetmanager.OpenNonAsset(
+                        asset_path_utf8, cookie, Asset.AccessMode.ACCESS_RANDOM);
+              } else {
+                asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM);
+              }
 
-    if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
-    }
-    return ReturnParcelFileDescriptor(asset, out_offsets);
+              if (!isTruthy(asset)) {
+                throw new FileNotFoundException(asset_path_utf8);
+              }
+              return ReturnParcelFileDescriptor(asset, out_offsets);
+            });
   }
 
   // static jlong NativeOpenXmlAsset(JNIEnv* env, jobject /*clazz*/, jlong ptr, jint jcookie,
@@ -818,40 +855,49 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static long nativeOpenXmlAsset(long ptr, int jcookie, @NonNull String asset_path)
       throws FileNotFoundException {
-    ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
-    String asset_path_utf8 = asset_path;
-    if (asset_path_utf8 == null) {
-      // This will throw NPE.
-      return 0;
-    }
+    return PerfStatsCollector.getInstance()
+        .<Long, FileNotFoundException>measure(
+            "AssetManager-nativeOpenXmlAsset",
+            () -> {
+              ApkAssetsCookie cookie = JavaCookieToApkAssetsCookie(jcookie);
+              String asset_path_utf8 = asset_path;
+              if (asset_path_utf8 == null) {
+                // This will throw NPE.
+                return 0L;
+              }
 
-    ATRACE_NAME(String.format("AssetManager::OpenXmlAsset(%s)", asset_path_utf8));
+              ATRACE_NAME(String.format("AssetManager::OpenXmlAsset(%s)", asset_path_utf8));
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Asset asset;
-    if (cookie.intValue() != kInvalidCookie) {
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, cookie, Asset.AccessMode.ACCESS_RANDOM);
-    } else {
-      Ref<ApkAssetsCookie> cookieRef = new Ref<>(cookie);
-      asset = assetmanager.OpenNonAsset(asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM, cookieRef);
-      cookie = cookieRef.get();
-    }
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              Asset asset;
+              if (cookie.intValue() != kInvalidCookie) {
+                asset =
+                    assetmanager.OpenNonAsset(
+                        asset_path_utf8, cookie, Asset.AccessMode.ACCESS_RANDOM);
+              } else {
+                Ref<ApkAssetsCookie> cookieRef = new Ref<>(cookie);
+                asset =
+                    assetmanager.OpenNonAsset(
+                        asset_path_utf8, Asset.AccessMode.ACCESS_RANDOM, cookieRef);
+                cookie = cookieRef.get();
+              }
 
-    if (!isTruthy(asset)) {
-      throw new FileNotFoundException(asset_path_utf8);
-    }
+              if (!isTruthy(asset)) {
+                throw new FileNotFoundException(asset_path_utf8);
+              }
 
-    // May be nullptr.
-    DynamicRefTable dynamic_ref_table = assetmanager.GetDynamicRefTableForCookie(cookie);
+              // May be nullptr.
+              DynamicRefTable dynamic_ref_table = assetmanager.GetDynamicRefTableForCookie(cookie);
 
-    ResXMLTree xml_tree = new ResXMLTree(dynamic_ref_table);
-    int err = xml_tree.setTo(asset.getBuffer(true), (int) asset.getLength(), true);
-    // asset.reset();
+              ResXMLTree xml_tree = new ResXMLTree(dynamic_ref_table);
+              int err = xml_tree.setTo(asset.getBuffer(true), (int) asset.getLength(), true);
+              // asset.reset();
 
-    if (err != NO_ERROR) {
-      throw new FileNotFoundException("Corrupt XML binary file");
-    }
-    return NATIVE_RES_XML_TREES.register(xml_tree);
+              if (err != NO_ERROR) {
+                throw new FileNotFoundException("Corrupt XML binary file");
+              }
+              return NATIVE_RES_XML_TREES.register(xml_tree);
+            });
   }
 
   // static jint NativeGetResourceValue(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid,
@@ -863,27 +909,38 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       @AnyRes int resid,
       short density,
       @NonNull TypedValue typed_value,
-      boolean resolve_references) {
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    final Ref<Res_value> value = new Ref<>(null);
-    final Ref<ResTable_config> selected_config = new Ref<>(null);
-    final Ref<Integer> flags = new Ref<>(0);
-    ApkAssetsCookie cookie =
-        assetmanager.GetResource(
-            resid, false /*may_be_bag*/, (short) (density), value, selected_config, flags);
-    if (cookie.intValue() == kInvalidCookie) {
-      return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
-    }
+      boolean resolve_references)
+      throws Exception {
+    return PerfStatsCollector.getInstance()
+        .<Integer, Exception>measure(
+            "AssetManager-nativeGetResourceValue",
+            () -> {
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              final Ref<Res_value> value = new Ref<>(null);
+              final Ref<ResTable_config> selected_config = new Ref<>(null);
+              final Ref<Integer> flags = new Ref<>(0);
+              ApkAssetsCookie cookie =
+                  assetmanager.GetResource(
+                      resid,
+                      false /*may_be_bag*/,
+                      (short) (density),
+                      value,
+                      selected_config,
+                      flags);
+              if (cookie.intValue() == kInvalidCookie) {
+                return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
+              }
 
-    final Ref<Integer> ref = new Ref<>(resid);
-    if (resolve_references) {
-      cookie = assetmanager.ResolveReference(cookie, value, selected_config, flags, ref);
-      if (cookie.intValue() == kInvalidCookie) {
-        return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
-      }
-    }
-    return CopyValue(
-        cookie, value.get(), ref.get(), flags.get(), selected_config.get(), typed_value);
+              final Ref<Integer> ref = new Ref<>(resid);
+              if (resolve_references) {
+                cookie = assetmanager.ResolveReference(cookie, value, selected_config, flags, ref);
+                if (cookie.intValue() == kInvalidCookie) {
+                  return ApkAssetsCookieToJavaCookie(K_INVALID_COOKIE);
+                }
+              }
+              return CopyValue(
+                  cookie, value.get(), ref.get(), flags.get(), selected_config.get(), typed_value);
+            });
   }
 
   // static jint NativeGetResourceBagValue(JNIEnv* env, jclass /*clazz*/, jlong ptr, jint resid,
@@ -1369,7 +1426,7 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       long out_indices_ptr) {
     PerfStatsCollector.getInstance()
         .measure(
-            "applyStyle",
+            "AssetManager-applyStyle",
             () ->
                 nativeApplyStyle_measured(
                     ptr,
@@ -1527,52 +1584,60 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
       long xml_parser_ptr,
       @NonNull int[] java_attrs,
       @NonNull int[] out_java_values,
-      @NonNull int[] out_java_indices) {
-    int attrs_len = java_attrs.length;
-    int out_values_len = out_java_values.length;
-    if (out_values_len < (attrs_len * STYLE_NUM_ENTRIES)) {
-      throw new IndexOutOfBoundsException("outValues too small");
-    }
+      @NonNull int[] out_java_indices)
+      throws Exception {
+    return PerfStatsCollector.getInstance()
+        .<Boolean, Exception>measure(
+            "AssetManager-nativeRetrieveAttributes",
+            () -> {
+              int attrs_len = java_attrs.length;
+              int out_values_len = out_java_values.length;
+              if (out_values_len < (attrs_len * STYLE_NUM_ENTRIES)) {
+                throw new IndexOutOfBoundsException("outValues too small");
+              }
 
-    int[] attrs =
-        java_attrs; // reinterpret_cast<int*>(env.GetPrimitiveArrayCritical(java_attrs, null));
-    if (attrs == null) {
-      return JNI_FALSE;
-    }
+              int[] attrs =
+                  java_attrs; // reinterpret_cast<int*>(env.GetPrimitiveArrayCritical(java_attrs,
+                              // null));
+              if (attrs == null) {
+                return JNI_FALSE;
+              }
 
-    int[] out_values = out_java_values;
-    // reinterpret_cast<int*>(env.GetPrimitiveArrayCritical(out_java_values, null));
-    if (out_values == null) {
-      // env.ReleasePrimitiveArrayCritical(java_attrs, attrs, JNI_ABORT);
-      return JNI_FALSE;
-    }
+              int[] out_values = out_java_values;
+              // reinterpret_cast<int*>(env.GetPrimitiveArrayCritical(out_java_values, null));
+              if (out_values == null) {
+                // env.ReleasePrimitiveArrayCritical(java_attrs, attrs, JNI_ABORT);
+                return JNI_FALSE;
+              }
 
-    int[] out_indices = null;
-    if (out_java_indices != null) {
-      int out_indices_len = out_java_indices.length;
-      if (out_indices_len > attrs_len) {
-        out_indices = out_java_indices;
-        // reinterpret_cast<int*>(env.GetPrimitiveArrayCritical(out_java_indices, null));
-        if (out_indices == null) {
-          // env.ReleasePrimitiveArrayCritical(java_attrs, attrs, JNI_ABORT);
-          // env.ReleasePrimitiveArrayCritical(out_java_values, out_values, JNI_ABORT);
-          return JNI_FALSE;
-        }
-      }
-    }
+              int[] out_indices = null;
+              if (out_java_indices != null) {
+                int out_indices_len = out_java_indices.length;
+                if (out_indices_len > attrs_len) {
+                  out_indices = out_java_indices;
+                  // reinterpret_cast<int*>(env.GetPrimitiveArrayCritical(out_java_indices, null));
+                  if (out_indices == null) {
+                    // env.ReleasePrimitiveArrayCritical(java_attrs, attrs, JNI_ABORT);
+                    // env.ReleasePrimitiveArrayCritical(out_java_values, out_values, JNI_ABORT);
+                    return JNI_FALSE;
+                  }
+                }
+              }
 
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    ResXMLParser xml_parser = NATIVE_RES_XML_PARSERS.getNativeObject(xml_parser_ptr);
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              ResXMLParser xml_parser = NATIVE_RES_XML_PARSERS.getNativeObject(xml_parser_ptr);
 
-    boolean result =
-        RetrieveAttributes(assetmanager, xml_parser, attrs, attrs_len, out_values, out_indices);
+              boolean result =
+                  RetrieveAttributes(
+                      assetmanager, xml_parser, attrs, attrs_len, out_values, out_indices);
 
-    // if (out_indices != null) {
-    //   env.ReleasePrimitiveArrayCritical(out_java_indices, out_indices, 0);
-    // }
-    // env.ReleasePrimitiveArrayCritical(out_java_values, out_values, 0);
-    // env.ReleasePrimitiveArrayCritical(java_attrs, attrs, JNI_ABORT);
-    return result;
+              // if (out_indices != null) {
+              //   env.ReleasePrimitiveArrayCritical(out_java_indices, out_indices, 0);
+              // }
+              // env.ReleasePrimitiveArrayCritical(out_java_values, out_values, 0);
+              // env.ReleasePrimitiveArrayCritical(java_attrs, attrs, JNI_ABORT);
+              return result;
+            });
   }
 
   // static jlong NativeThemeCreate(JNIEnv* /*env*/, jclass /*clazz*/, jlong ptr) {
@@ -1599,17 +1664,23 @@ public class ShadowArscAssetManager10 extends ShadowAssetManager.ArscBase {
   @Implementation(minSdk = P)
   protected static void nativeThemeApplyStyle(
       long ptr, long theme_ptr, @StyleRes int resid, boolean force) {
-    // AssetManager is accessed via the theme, so grab an explicit lock here.
-    CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
-    Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
-    CHECK(theme.GetAssetManager() == assetmanager);
-    // (void) assetmanager;
-    theme.ApplyStyle(resid, force);
+    PerfStatsCollector.getInstance()
+        .measure(
+            "AssetManager-nativeThemeApplyStyle",
+            () -> {
+              // AssetManager is accessed via the theme, so grab an explicit lock here.
+              CppAssetManager2 assetmanager = AssetManagerFromLong(ptr);
+              Theme theme = Registries.NATIVE_THEME9_REGISTRY.getNativeObject(theme_ptr);
+              CHECK(theme.GetAssetManager() == assetmanager);
+              // (void) assetmanager;
+              theme.ApplyStyle(resid, force);
 
-    // TODO(adamlesinski): Consider surfacing exception when result is failure.
-    // CTS currently expects no exceptions from this method.
-    // std::string error_msg = StringPrintf("Failed to apply style 0x%08x to theme", resid);
-    // throw new IllegalArgumentException(error_msg.c_str());
+              // TODO(adamlesinski): Consider surfacing exception when result is failure.
+              // CTS currently expects no exceptions from this method.
+              // std::string error_msg = StringPrintf("Failed to apply style 0x%08x to theme",
+              // resid);
+              // throw new IllegalArgumentException(error_msg.c_str());
+            });
   }
 
   // static void NativeThemeCopy(JNIEnv* env, jclass /*clazz*/, jlong dst_theme_ptr,

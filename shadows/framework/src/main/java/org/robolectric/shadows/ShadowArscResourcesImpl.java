@@ -34,6 +34,7 @@ import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceTable;
 import org.robolectric.res.TypedResource;
 import org.robolectric.shadows.ShadowResourcesImpl.Picker;
+import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
@@ -107,18 +108,25 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
 
   @Implementation(maxSdk = M)
   public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    if (false) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResourcesImpl.getAssets());
-      ResourceTable resourceTable = shadowAssetManager.getResourceTable();
-      InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
-      if (inputStream == null) {
-        throw newNotFoundException(id);
-      } else {
-        return inputStream;
-      }
-    } else {
-      return reflector(ResourcesImplReflector.class, realResourcesImpl).openRawResource(id);
-    }
+    return PerfStatsCollector.getInstance()
+        .<InputStream, Resources.NotFoundException>measure(
+            "ResourcesImpl-openRawResource",
+            () -> {
+              if (false) {
+                ShadowLegacyAssetManager shadowAssetManager =
+                    legacyShadowOf(realResourcesImpl.getAssets());
+                ResourceTable resourceTable = shadowAssetManager.getResourceTable();
+                InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
+                if (inputStream == null) {
+                  throw newNotFoundException(id);
+                } else {
+                  return inputStream;
+                }
+              } else {
+                return reflector(ResourcesImplReflector.class, realResourcesImpl)
+                    .openRawResource(id);
+              }
+            });
   }
 
   /**
@@ -128,18 +136,24 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
    */
   @Implementation(maxSdk = M)
   public AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    InputStream inputStream = openRawResource(id);
-    if (!(inputStream instanceof FileInputStream)) {
-      // todo fixme
-      return null;
-    }
+    return PerfStatsCollector.getInstance()
+        .<AssetFileDescriptor, Resources.NotFoundException>measure(
+            "ResourcesImpl-openRawResourceFd",
+            () -> {
+              InputStream inputStream = openRawResource(id);
+              if (!(inputStream instanceof FileInputStream)) {
+                // todo fixme
+                return null;
+              }
 
-    FileInputStream fis = (FileInputStream) inputStream;
-    try {
-      return new AssetFileDescriptor(ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-    } catch (IOException e) {
-      throw newNotFoundException(id);
-    }
+              FileInputStream fis = (FileInputStream) inputStream;
+              try {
+                return new AssetFileDescriptor(
+                    ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
+              } catch (IOException e) {
+                throw newNotFoundException(id);
+              }
+            });
   }
 
   private Resources.NotFoundException newNotFoundException(int id) {
@@ -154,22 +168,34 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
 
   @Implementation(maxSdk = N_MR1)
   public Drawable loadDrawable(Resources wrapper, TypedValue value, int id, Resources.Theme theme, boolean useCache) throws Resources.NotFoundException {
-    Drawable drawable =
-        reflector(ResourcesImplReflector.class, realResourcesImpl)
-            .loadDrawable(wrapper, value, id, theme, useCache);
+    return PerfStatsCollector.getInstance()
+        .<Drawable, Resources.NotFoundException>measure(
+            "ResourcesImpl-loadDrawable",
+            () -> {
+              Drawable drawable =
+                  reflector(ResourcesImplReflector.class, realResourcesImpl)
+                      .loadDrawable(wrapper, value, id, theme, useCache);
 
-    ShadowResources.setCreatedFromResId(wrapper, id, drawable);
-    return drawable;
+              ShadowResources.setCreatedFromResId(wrapper, id, drawable);
+              return drawable;
+            });
   }
 
   @Implementation(minSdk = O)
-  public Drawable loadDrawable(Resources wrapper,  TypedValue value, int id, int density, Resources.Theme theme) {
-    Drawable drawable =
-        reflector(ResourcesImplReflector.class, realResourcesImpl)
-            .loadDrawable(wrapper, value, id, density, theme);
+  public Drawable loadDrawable(
+      Resources wrapper, TypedValue value, int id, int density, Resources.Theme theme)
+      throws Exception {
+    return PerfStatsCollector.getInstance()
+        .<Drawable, Exception>measure(
+            "ResourcesImpl-loadDrawable",
+            () -> {
+              Drawable drawable =
+                  reflector(ResourcesImplReflector.class, realResourcesImpl)
+                      .loadDrawable(wrapper, value, id, density, theme);
 
-    ShadowResources.setCreatedFromResId(wrapper, id, drawable);
-    return drawable;
+              ShadowResources.setCreatedFromResId(wrapper, id, drawable);
+              return drawable;
+            });
   }
 
   @ForType(ResourcesImpl.class)
