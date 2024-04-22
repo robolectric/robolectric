@@ -112,6 +112,15 @@ public class ShadowViewConfiguration {
             reflector(AndroidInternalBoolReflector.class).getEnableFadingMarquee());
     reflector(ViewConfigurationReflector.class, realViewConfiguration)
         .setFadingMarqueeEnabled(enableFadingMarquee);
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      int minScalingSpan =
+          useRealMinScalingSpan()
+              ? resources.getDimensionPixelSize(
+                  reflector(AndroidInternalDimenReflector.class).getConfigMinScalingSpan())
+              : 0;
+      reflector(ViewConfigurationReflector.class, realViewConfiguration)
+          .setMinScalingSpan(minScalingSpan);
+    }
   }
 
   @Implementation
@@ -234,6 +243,9 @@ public class ShadowViewConfiguration {
 
     @Accessor("mOverflingDistance")
     void setOverflingDistance(int value);
+
+    @Accessor("mMinScalingSpan")
+    void setMinScalingSpan(int minScalingSpan);
   }
 
   /**
@@ -247,6 +259,21 @@ public class ShadowViewConfiguration {
     @Static
     @Accessor("config_scrollbarSize")
     int getConfigScrollbarSize();
+
+    @Static
+    @Accessor("config_minScalingSpan")
+    int getConfigMinScalingSpan();
+  }
+
+  /**
+   * Due to overzealous shadowing, the return value of {@link
+   * ViewConfiguration#getScaledMinimumScalingSpan} was previously 0, when it should be around 170
+   * for an mdpi display with density factor 1. This issue has been fixed, but there may be tests
+   * that emit touch events to trigger pinching/spreading that rely on the previous incorrect
+   * behavior. These tests have an option to use a system property to enable this previous bug.
+   */
+  private static boolean useRealMinScalingSpan() {
+    return Boolean.parseBoolean(System.getProperty("robolectric.useRealMinScalingSpan", "true"));
   }
 
   /**

@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.O_MR1;
+import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.robolectric.Shadows.shadowOf;
@@ -19,15 +20,16 @@ import org.robolectric.annotation.Config;
 public class ShadowViewConfigurationTest {
 
   private Application context;
+  private ViewConfiguration viewConfiguration;
 
   @Before
   public void setUp() throws Exception {
     context = ApplicationProvider.getApplicationContext();
+    viewConfiguration = ViewConfiguration.get(context);
   }
 
   @Test
   public void methodsShouldReturnAndroidConstants() {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
     // Most of the constants here are private statics from ViewConfiguration circa Jelly Bean:
     // https://cs.android.com/android/platform/superproject/+/android-4.1.1_r1:frameworks/base/core/java/android/view/ViewConfiguration.java
     final int expectedScrollBarSize = RuntimeEnvironment.getApiLevel() >= O_MR1 ? 4 : 10;
@@ -65,6 +67,9 @@ public class ShadowViewConfigurationTest {
     assertEquals(480 * 800 * 4, viewConfiguration.getScaledMaximumDrawingCacheSize());
     assertThat(viewConfiguration.isFadingMarqueeEnabled()).isFalse();
     assertThat(viewConfiguration.getScaledOverflingDistance()).isEqualTo(6);
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(170);
+    }
   }
 
   @Test
@@ -73,7 +78,6 @@ public class ShadowViewConfigurationTest {
     // Most of the constants here are private statics from ViewConfiguration circa Jelly Bean:
     // https://cs.android.com/android/platform/superproject/+/android-4.1.1_r1:frameworks/base/core/java/android/view/ViewConfiguration.java
     // They are multiplied by the scaling factor 1.5 for HDPI.
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
     final int expectedScaledScrollBarSize = RuntimeEnvironment.getApiLevel() >= O_MR1 ? 6 : 15;
     assertEquals(expectedScaledScrollBarSize, viewConfiguration.getScaledScrollBarSize());
     assertEquals(18, viewConfiguration.getScaledFadingEdgeLength());
@@ -85,11 +89,13 @@ public class ShadowViewConfigurationTest {
     assertEquals(75, viewConfiguration.getScaledMinimumFlingVelocity());
     assertEquals(6000, viewConfiguration.getScaledMaximumFlingVelocity());
     assertThat(viewConfiguration.getScaledOverflingDistance()).isEqualTo(9);
+    if (RuntimeEnvironment.getApiLevel() >= Q) {
+      assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(255);
+    }
   }
 
   @Test
   public void testHasPermanentMenuKey() {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
     assertThat(viewConfiguration.hasPermanentMenuKey()).isTrue();
 
     ShadowViewConfiguration shadowViewConfiguration = shadowOf(viewConfiguration);
@@ -100,7 +106,6 @@ public class ShadowViewConfigurationTest {
   @Config(qualifiers = "w420dp-h800dp-xxxhdpi")
   @Test
   public void getScaledMaximumFlingVelocity_scalesWithDisplaySize() {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
     int expected = 4 * (4 * 420) * (4 * 800);
     assertThat(viewConfiguration.getScaledMaximumDrawingCacheSize()).isEqualTo(expected);
   }
@@ -108,8 +113,25 @@ public class ShadowViewConfigurationTest {
   @Config(qualifiers = "w100dp-h500dp")
   @Test
   public void getScaledMaximumFlingVelocity_minValue() {
-    ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
     int expected = 480 * 800 * 4; // The min value
     assertThat(viewConfiguration.getScaledMaximumDrawingCacheSize()).isEqualTo(expected);
+  }
+
+  @Config(minSdk = Q, qualifiers = "w600dp-h800dp")
+  @Test
+  public void getScaledMinimumScalingSpan_largeScreen() {
+    assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(202);
+  }
+
+  @Config(minSdk = Q)
+  @Test
+  public void getScaledMinimumScalingSpan_usePreviousBug() {
+    System.setProperty("robolectric.useRealMinScalingSpan", "false");
+    try {
+      ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
+      assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(0);
+    } finally {
+      System.clearProperty("robolectric.useRealMinScalingSpan");
+    }
   }
 }
