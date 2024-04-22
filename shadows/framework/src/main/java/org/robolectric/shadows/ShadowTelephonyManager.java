@@ -33,6 +33,7 @@ import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.Annotation.NetworkType;
 import android.telephony.Annotation.OverrideNetworkType;
+import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -179,6 +180,7 @@ public class ShadowTelephonyManager {
   private static volatile boolean emergencyCallbackMode;
   private static Map<Integer, List<EmergencyNumber>> emergencyNumbersList;
   private static volatile boolean isDataRoamingEnabled;
+  private /*CarrierRestrictionRules*/ Object carrierRestrictionRules;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -1661,5 +1663,25 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = Q)
   protected void setDataRoamingEnabled(boolean isDataRoamingEnabled) {
     ShadowTelephonyManager.isDataRoamingEnabled = isDataRoamingEnabled;
+  }
+
+  /**
+   * Sets the value to be returned by {@link #getCarrierRestrictionRules()}. Marked as public in
+   * order to allow it to be used as a test API.
+   *
+   * @param carrierRestrictionRules An object of type {@link CarrierRestrictionRules}
+   */
+  public void setCarrierRestrictionRules(Object carrierRestrictionRules) {
+    Preconditions.checkState(carrierRestrictionRules instanceof CarrierRestrictionRules);
+    this.carrierRestrictionRules = carrierRestrictionRules;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#getCarrierRestrictionRules} that is set for tests by
+   * {@link TelephonyManager#setCarrierRestrictionRules}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected /*CarrierRestrictionRules*/ Object getCarrierRestrictionRules() {
+    return carrierRestrictionRules;
   }
 }

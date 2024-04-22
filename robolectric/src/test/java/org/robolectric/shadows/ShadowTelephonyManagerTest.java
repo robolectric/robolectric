@@ -53,6 +53,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
+import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneCapability;
@@ -1511,5 +1512,22 @@ public class ShadowTelephonyManagerTest {
     assertThat(telephonyManager.isDataRoamingEnabled()).isFalse();
     shadowOf(telephonyManager).setDataRoamingEnabled(true);
     assertThat(telephonyManager.isDataRoamingEnabled()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setCarrierRestrictionRules_changesCarrierRestrictionRules() {
+    CarrierRestrictionRules carrierRestrictionRules = CarrierRestrictionRules.newBuilder().build();
+    shadowOf(telephonyManager).setCarrierRestrictionRules(carrierRestrictionRules);
+
+    assertThat(telephonyManager.getCarrierRestrictionRules()).isEqualTo(carrierRestrictionRules);
+  }
+
+  @Test()
+  @Config(minSdk = Q)
+  public void setCarrierRestrictionRules_throwsIllegalStateException() {
+    assertThrows(
+        IllegalStateException.class,
+        () -> shadowTelephonyManager.setCarrierRestrictionRules(new Object()));
   }
 }
