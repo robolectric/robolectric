@@ -63,7 +63,7 @@ gson = "2.10.1"
 truth = "1.4.0"
 
 # https://github.com/unicode-org/icu/releases
-icu4j = "74.2"
+icu4j = "75.1"
 
 # https://www.eclemma.org/jacoco/
 jacoco = "0.8.11"
