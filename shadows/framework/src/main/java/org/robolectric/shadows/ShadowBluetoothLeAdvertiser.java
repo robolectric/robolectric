@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -19,7 +20,10 @@ import android.bluetooth.le.AdvertisingSetParameters;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.PeriodicAdvertisingParameters;
 import android.content.AttributionSource;
+import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelUuid;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +40,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link BluetoothLeAdvertiser}. */
-@Implements(value = BluetoothLeAdvertiser.class, minSdk = O)
+@Implements(value = BluetoothLeAdvertiser.class, minSdk = LOLLIPOP)
 public class ShadowBluetoothLeAdvertiser {
 
   private static final String CALLBACK_NULL_MESSAGE = "callback cannot be null.";
@@ -135,23 +139,116 @@ public class ShadowBluetoothLeAdvertiser {
   }
 
   /**
-   * Start Bluetooth LE Advertising Set. This method returns immediately, the operation status is
-   * delivered through {@code callback}.
-   *
-   * @param parameters Advertising set parameters.
-   * @param advertiseData Advertisement data to be broadcasted.
-   * @param scanResponse Scan response associated with the advertisement data.
-   * @param periodicParameters Periodic advertisng parameters.
-   * @param periodicData Periodic advertising data.
-   * @param duration Advertising duration, in 10ms unit.
-   * @param maxExtendedAdvertisingEvents Maximum number of extended advertising events the
-   *     controller shall attempt to send prior to terminating the extended advertising, even if the
-   *     duration has not expired.
-   * @param gattServer GattServer the GATT server that will "own" connections derived from this
-   *     advertising.
-   * @param callback Callback for advertising set.
-   * @param handler Thread upon which the callbacks will be invoked.
-   * @throws IllegalArgumentException When {@code callback} is not present.
+   * Creates a new advertising set. If operation succeed, device will start advertising. This method
+   * returns immediately, the operation status is delivered through {@code
+   * callback.onAdvertisingSetStarted()} on the caller thread.
+   */
+  @Implementation(minSdk = O)
+  protected void startAdvertisingSet(
+      AdvertisingSetParameters parameters,
+      AdvertiseData advertiseData,
+      AdvertiseData scanResponse,
+      PeriodicAdvertisingParameters periodicParameters,
+      AdvertiseData periodicData,
+      AdvertisingSetCallback callback) {
+    startAdvertisingSet(
+        parameters,
+        advertiseData,
+        scanResponse,
+        periodicParameters,
+        periodicData,
+        /* duration= */ 0,
+        /* maxExtendedAdvertisingEvents= */ 0,
+        callback,
+        new Handler(Looper.getMainLooper()));
+  }
+
+  /**
+   * Creates a new advertising set. If operation succeed, device will start advertising. This method
+   * returns immediately, the operation status is delivered through {@code
+   * callback.onAdvertisingSetStarted()} on the caller thread instead of the {@code handler}.
+   */
+  @Implementation(minSdk = O)
+  protected void startAdvertisingSet(
+      AdvertisingSetParameters parameters,
+      AdvertiseData advertiseData,
+      AdvertiseData scanResponse,
+      PeriodicAdvertisingParameters periodicParameters,
+      AdvertiseData periodicData,
+      AdvertisingSetCallback callback,
+      Handler handler) {
+    startAdvertisingSet(
+        parameters,
+        advertiseData,
+        scanResponse,
+        periodicParameters,
+        periodicData,
+        /* duration= */ 0,
+        /* maxExtendedAdvertisingEvents= */ 0,
+        callback,
+        handler);
+  }
+
+  /**
+   * Creates a new advertising set. If operation succeed, device will start advertising. This method
+   * returns immediately, the operation status is delivered through {@code
+   * callback.onAdvertisingSetStarted()} on the caller thread.
+   */
+  @Implementation(minSdk = O)
+  protected void startAdvertisingSet(
+      AdvertisingSetParameters parameters,
+      AdvertiseData advertiseData,
+      AdvertiseData scanResponse,
+      PeriodicAdvertisingParameters periodicParameters,
+      AdvertiseData periodicData,
+      int duration,
+      int maxExtendedAdvertisingEvents,
+      AdvertisingSetCallback callback) {
+    startAdvertisingSet(
+        parameters,
+        advertiseData,
+        scanResponse,
+        periodicParameters,
+        periodicData,
+        duration,
+        maxExtendedAdvertisingEvents,
+        callback,
+        new Handler(Looper.getMainLooper()));
+  }
+
+  /**
+   * Creates a new advertising set. If operation succeed, device will start advertising. This method
+   * returns immediately, the operation status is delivered through {@code
+   * callback.onAdvertisingSetStarted()} on the caller thread instead of the {@code handler}.
+   */
+  @Implementation(minSdk = O)
+  protected void startAdvertisingSet(
+      AdvertisingSetParameters parameters,
+      AdvertiseData advertiseData,
+      AdvertiseData scanResponse,
+      PeriodicAdvertisingParameters periodicParameters,
+      AdvertiseData periodicData,
+      int duration,
+      int maxExtendedAdvertisingEvents,
+      AdvertisingSetCallback callback,
+      Handler handler) {
+    startAdvertisingSet(
+        parameters,
+        advertiseData,
+        scanResponse,
+        periodicParameters,
+        periodicData,
+        duration,
+        maxExtendedAdvertisingEvents,
+        /* gattServer= */ null,
+        callback,
+        handler);
+  }
+
+  /**
+   * Creates a new advertising set. If operation succeed, device will start advertising. This method
+   * returns immediately, the operation status is delivered through {@code
+   * callback.onAdvertisingSetStarted()} on the caller thread instead of the {@code handler}.
    */
   @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected void startAdvertisingSet(
@@ -170,7 +267,10 @@ public class ShadowBluetoothLeAdvertiser {
     }
 
     boolean isConnectable = parameters.isConnectable();
-    boolean isDiscoverable = parameters.isDiscoverable();
+    boolean isDiscoverable = true;
+    if (Build.VERSION.SDK_INT >= UPSIDE_DOWN_CAKE) {
+      isDiscoverable = parameters.isDiscoverable();
+    }
     boolean hasFlags = isConnectable && isDiscoverable;
     if (parameters.isLegacy()) {
       if (getTotalBytes(advertiseData, hasFlags) > MAX_LEGACY_ADVERTISING_DATA_BYTES) {
@@ -231,16 +331,27 @@ public class ShadowBluetoothLeAdvertiser {
       return;
     }
 
-    AdvertisingSet advertisingSet =
-        ReflectionHelpers.callConstructor(
-            AdvertisingSet.class,
-            ClassParameter.from(int.class, advertiserId.getAndAdd(1)),
-            ClassParameter.from(
-                IBluetoothManager.class,
-                ReflectionHelpers.createNullProxy(IBluetoothManager.class)),
-            ClassParameter.from(
-                AttributionSource.class,
-                ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getAttributionSource")));
+    AdvertisingSet advertisingSet;
+    if (Build.VERSION.SDK_INT >= VERSION_CODES.S) {
+      advertisingSet =
+          ReflectionHelpers.callConstructor(
+              AdvertisingSet.class,
+              ClassParameter.from(int.class, advertiserId.getAndAdd(1)),
+              ClassParameter.from(
+                  IBluetoothManager.class,
+                  ReflectionHelpers.createNullProxy(IBluetoothManager.class)),
+              ClassParameter.from(
+                  AttributionSource.class,
+                  ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getAttributionSource")));
+    } else {
+      advertisingSet =
+          ReflectionHelpers.callConstructor(
+              AdvertisingSet.class,
+              ClassParameter.from(int.class, advertiserId.getAndAdd(1)),
+              ClassParameter.from(
+                  IBluetoothManager.class,
+                  ReflectionHelpers.createNullProxy(IBluetoothManager.class)));
+    }
 
     callback.onAdvertisingSetStarted(
         advertisingSet, parameters.getTxPowerLevel(), AdvertisingSetCallback.ADVERTISE_SUCCESS);
@@ -255,7 +366,7 @@ public class ShadowBluetoothLeAdvertiser {
    * @param callback Callback for advertising set.
    * @throws IllegalArgumentException When {@code callback} is not present.
    */
-  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = O)
   protected void stopAdvertisingSet(AdvertisingSetCallback callback) {
     if (callback == null) {
       throw new IllegalArgumentException("callback cannot be null");
