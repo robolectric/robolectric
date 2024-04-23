@@ -52,15 +52,12 @@ public class ShadowViewConfiguration {
   private static final int PAGING_TOUCH_SLOP = TOUCH_SLOP * 2;
   private static final int DOUBLE_TAP_SLOP = 100;
   private static final int WINDOW_TOUCH_SLOP = 16;
-  private static final int MAXIMUM_FLING_VELOCITY = 4000;
 
   // The previous hardcoded value for draw cache size. Some screenshot tests depend on this value.
   private static final int MIN_MAXIMUM_DRAWING_CACHE_SIZE = 480 * 800 * 4;
 
   private int edgeSlop;
   private int fadingEdgeLength;
-  private int minimumFlingVelocity;
-  private int maximumFlingVelocity;
   private int touchSlop;
   private int pagingTouchSlop;
   private int doubleTapSlop;
@@ -79,8 +76,6 @@ public class ShadowViewConfiguration {
     float density = metrics.density;
     edgeSlop = (int) (density * ViewConfiguration.getEdgeSlop() + 0.5f);
     fadingEdgeLength = (int) (density * ViewConfiguration.getFadingEdgeLength() + 0.5f);
-    minimumFlingVelocity = (int) (density * ViewConfiguration.getMinimumFlingVelocity() + 0.5f);
-    maximumFlingVelocity = (int) (density * ViewConfiguration.getMaximumFlingVelocity() + 0.5f);
     touchSlop = (int) (density * TOUCH_SLOP + 0.5f);
     pagingTouchSlop = (int) (density * PAGING_TOUCH_SLOP + 0.5f);
     doubleTapSlop = (int) (density * DOUBLE_TAP_SLOP + 0.5f);
@@ -154,21 +149,6 @@ public class ShadowViewConfiguration {
   @Implementation
   protected int getScaledWindowTouchSlop() {
     return windowTouchSlop;
-  }
-
-  @Implementation
-  protected int getScaledMinimumFlingVelocity() {
-    return minimumFlingVelocity;
-  }
-
-  @Implementation
-  protected static int getMaximumFlingVelocity() {
-    return MAXIMUM_FLING_VELOCITY;
-  }
-
-  @Implementation
-  protected int getScaledMaximumFlingVelocity() {
-    return maximumFlingVelocity;
   }
 
   @Implementation

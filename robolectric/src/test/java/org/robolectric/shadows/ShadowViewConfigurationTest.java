@@ -46,7 +46,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(16, ViewConfiguration.getTouchSlop());
     assertEquals(16, ViewConfiguration.getWindowTouchSlop());
     assertEquals(50, ViewConfiguration.getMinimumFlingVelocity());
-    assertEquals(4000, ViewConfiguration.getMaximumFlingVelocity());
+    assertEquals(8000, ViewConfiguration.getMaximumFlingVelocity());
     assertEquals(480 * 800 * 4, ViewConfiguration.getMaximumDrawingCacheSize());
     assertEquals(3000, ViewConfiguration.getZoomControlsTimeout());
     assertEquals(500, ViewConfiguration.getGlobalActionKeyTimeout());
@@ -62,7 +62,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(100, viewConfiguration.getScaledDoubleTapSlop());
     assertEquals(16, viewConfiguration.getScaledWindowTouchSlop());
     assertEquals(50, viewConfiguration.getScaledMinimumFlingVelocity());
-    assertEquals(4000, viewConfiguration.getScaledMaximumFlingVelocity());
+    assertEquals(8000, viewConfiguration.getScaledMaximumFlingVelocity());
     // The min value of getScaledMaximumDrawingCacheSize is 480 * 800 * 4.
     assertEquals(480 * 800 * 4, viewConfiguration.getScaledMaximumDrawingCacheSize());
     assertThat(viewConfiguration.isFadingMarqueeEnabled()).isFalse();
@@ -87,7 +87,7 @@ public class ShadowViewConfigurationTest {
     assertEquals(150, viewConfiguration.getScaledDoubleTapSlop());
     assertEquals(24, viewConfiguration.getScaledWindowTouchSlop());
     assertEquals(75, viewConfiguration.getScaledMinimumFlingVelocity());
-    assertEquals(6000, viewConfiguration.getScaledMaximumFlingVelocity());
+    assertEquals(12000, viewConfiguration.getScaledMaximumFlingVelocity());
     assertThat(viewConfiguration.getScaledOverflingDistance()).isEqualTo(9);
     if (RuntimeEnvironment.getApiLevel() >= Q) {
       assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(255);
