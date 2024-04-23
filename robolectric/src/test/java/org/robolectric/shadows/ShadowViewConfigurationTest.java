@@ -127,6 +127,7 @@ public class ShadowViewConfigurationTest {
   @Test
   public void getScaledMinimumScalingSpan_usePreviousBug() {
     System.setProperty("robolectric.useRealMinScalingSpan", "false");
+    ShadowViewConfiguration.reset(); // clear the static cache
     try {
       ViewConfiguration viewConfiguration = ViewConfiguration.get(context);
       assertThat(viewConfiguration.getScaledMinimumScalingSpan()).isEqualTo(0);

@@ -20,20 +20,21 @@
 
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import android.util.SparseArray;
 import android.view.ViewConfiguration;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
+import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
@@ -67,36 +68,19 @@ public class ShadowViewConfiguration {
   private int maximumDrawingCacheSize;
   private static boolean hasPermanentMenuKey = true;
 
-  private void setup(Context context) {
+  @Implementation
+  protected void __constructor__(Context context) {
+    Shadow.invokeConstructor(
+        ViewConfiguration.class,
+        realViewConfiguration,
+        ClassParameter.from(Context.class, context));
     final Resources resources = context.getResources();
     final DisplayMetrics metrics = resources.getDisplayMetrics();
     float density = metrics.density;
-    final Configuration config = resources.getConfiguration();
-    final float sizeAndDensity;
-    if (config.isLayoutSizeAtLeast(Configuration.SCREENLAYOUT_SIZE_XLARGE)) {
-      sizeAndDensity = density * 1.5f;
-    } else {
-      sizeAndDensity = density;
-    }
     edgeSlop = (int) (density * ViewConfiguration.getEdgeSlop() + 0.5f);
     fadingEdgeLength = (int) (density * ViewConfiguration.getFadingEdgeLength() + 0.5f);
     minimumFlingVelocity = (int) (density * ViewConfiguration.getMinimumFlingVelocity() + 0.5f);
     maximumFlingVelocity = (int) (density * ViewConfiguration.getMaximumFlingVelocity() + 0.5f);
-    int scrollbarSize;
-    if (RuntimeEnvironment.getApiLevel() >= P) {
-      scrollbarSize =
-          Resources.getSystem()
-              .getDimensionPixelSize(
-                  reflector(AndroidInternalDimenReflector.class).getConfigScrollbarSize());
-    } else {
-      scrollbarSize = (int) (density * ViewConfiguration.getScrollBarSize() + 0.5f);
-    }
-    reflector(ViewConfigurationReflector.class, realViewConfiguration)
-        .setScrollbarSize(scrollbarSize);
-    int baseOverflingDistance =
-        reflector(ViewConfigurationReflector.class).getBaseOverflingDistance();
-    reflector(ViewConfigurationReflector.class, realViewConfiguration)
-        .setOverflingDistance((int) (sizeAndDensity * baseOverflingDistance));
     touchSlop = (int) (density * TOUCH_SLOP + 0.5f);
     pagingTouchSlop = (int) (density * PAGING_TOUCH_SLOP + 0.5f);
     doubleTapSlop = (int) (density * DOUBLE_TAP_SLOP + 0.5f);
@@ -107,34 +91,9 @@ public class ShadowViewConfiguration {
     // TODO(hoisie): Investigate removing this Math.max logic.
     maximumDrawingCacheSize =
         Math.max(MIN_MAXIMUM_DRAWING_CACHE_SIZE, 4 * metrics.widthPixels * metrics.heightPixels);
-    boolean enableFadingMarquee =
-        resources.getBoolean(
-            reflector(AndroidInternalBoolReflector.class).getEnableFadingMarquee());
-    reflector(ViewConfigurationReflector.class, realViewConfiguration)
-        .setFadingMarqueeEnabled(enableFadingMarquee);
-    if (RuntimeEnvironment.getApiLevel() >= Q) {
-      int minScalingSpan =
-          useRealMinScalingSpan()
-              ? resources.getDimensionPixelSize(
-                  reflector(AndroidInternalDimenReflector.class).getConfigMinScalingSpan())
-              : 0;
-      reflector(ViewConfigurationReflector.class, realViewConfiguration)
-          .setMinScalingSpan(minScalingSpan);
+    if (RuntimeEnvironment.getApiLevel() >= Q && !useRealMinScalingSpan()) {
+      reflector(ViewConfigurationReflector.class, realViewConfiguration).setMinScalingSpan(0);
     }
-  }
-
-  @Implementation
-  protected static ViewConfiguration get(Context context) {
-    ViewConfiguration viewConfiguration = new ViewConfiguration();
-    ShadowViewConfiguration shadowViewConfiguration = Shadow.extract(viewConfiguration);
-    shadowViewConfiguration.setup(context);
-
-    if (RuntimeEnvironment.getApiLevel() >= Q) {
-      reflector(ViewConfigurationReflector.class, viewConfiguration)
-          .setConstructedWithContext(true);
-    }
-
-    return viewConfiguration;
   }
 
   @Implementation
@@ -228,41 +187,13 @@ public class ShadowViewConfiguration {
 
   @ForType(ViewConfiguration.class)
   interface ViewConfigurationReflector {
-    @Static
-    @Accessor("OVERFLING_DISTANCE")
-    int getBaseOverflingDistance();
-
-    @Accessor("mConstructedWithContext")
-    void setConstructedWithContext(boolean value);
-
-    @Accessor("mScrollbarSize")
-    void setScrollbarSize(int value);
-
-    @Accessor("mFadingMarqueeEnabled")
-    void setFadingMarqueeEnabled(boolean enableFadingMarquee);
-
-    @Accessor("mOverflingDistance")
-    void setOverflingDistance(int value);
 
     @Accessor("mMinScalingSpan")
     void setMinScalingSpan(int minScalingSpan);
-  }
-
-  /**
-   * Reflection is needed to access internal Android dimen constants, which are static final ints,
-   * so referencing them directly causes inlining. Note {@link AndroidInternalDimenReflector} is
-   * designed to be temporary until the real {@link
-   * android.view.ViewConfiguration#get(android.content.Context)} is called.
-   */
-  @ForType(com.android.internal.R.dimen.class)
-  interface AndroidInternalDimenReflector {
-    @Static
-    @Accessor("config_scrollbarSize")
-    int getConfigScrollbarSize();
 
     @Static
-    @Accessor("config_minScalingSpan")
-    int getConfigMinScalingSpan();
+    @Accessor("sConfigurations")
+    SparseArray<ViewConfiguration> getStaticCache();
   }
 
   /**
@@ -276,16 +207,10 @@ public class ShadowViewConfiguration {
     return Boolean.parseBoolean(System.getProperty("robolectric.useRealMinScalingSpan", "true"));
   }
 
-  /**
-   * Reflection is needed to access internal Android dimen constants, which are static final ints,
-   * so referencing them directly causes inlining. Note {@link AndroidInternalDimenReflector} is
-   * designed to be temporary until the real {@link
-   * android.view.ViewConfiguration#get(android.content.Context)} is called.
-   */
-  @ForType(com.android.internal.R.bool.class)
-  interface AndroidInternalBoolReflector {
-    @Static
-    @Accessor("config_ui_enableFadingMarquee")
-    int getEnableFadingMarquee();
+  @Resetter
+  public static void reset() {
+    SparseArray<ViewConfiguration> configurations =
+        reflector(ViewConfigurationReflector.class).getStaticCache();
+    configurations.clear();
   }
 }
