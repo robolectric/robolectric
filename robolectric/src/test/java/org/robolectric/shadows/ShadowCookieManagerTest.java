@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.webkit.CookieManager;
@@ -8,7 +7,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.google.common.base.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowCookieManagerTest {
@@ -36,7 +34,6 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldGetCookieWhenSetAsyncWithNormalCallback() {
     CookieManager cookieManager = CookieManager.getInstance();
     String url = "http://www.google.com";
@@ -54,7 +51,6 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldGetCookieWhenSetAsyncWithNullCallback() {
     CookieManager cookieManager = CookieManager.getInstance();
     String url = "http://www.google.com";
@@ -207,7 +203,6 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldRemoveAllCookiesWithCallback() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
@@ -237,7 +232,6 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldRemoveSessionCookiesWithNormalCallback() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
@@ -251,7 +245,6 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldRemoveSessionCookiesWithNullCallback() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
     cookieManager.setCookie(url, "name2=value2;");
@@ -261,7 +254,6 @@ public class ShadowCookieManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldRemoveSessionCookiesWhenSessionCookieIsNoPresent() {
     cookieManager.setCookie(url, "name=value; Expires=Wed, 09 Jun 2121 10:18:14 GMT");
 

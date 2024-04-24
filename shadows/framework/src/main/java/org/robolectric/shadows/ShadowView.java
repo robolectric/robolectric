@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -164,16 +162,8 @@ public class ShadowView {
     return locationInSurface;
   }
 
-  // Only override up to kitkat, while this version exists after kitkat it just calls through to the
-  // __constructor__(Context, AttributeSet, int, int) variant below.
-  @Implementation(maxSdk = KITKAT)
-  protected void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
-    this.attributeSet = attributeSet;
-    reflector(_View_.class, realView).__constructor__(context, attributeSet, defStyle);
-  }
-
   /* Note: maxSdk is R because capturing `attributeSet` is not needed any more after R. */
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = R)
+  @Implementation(maxSdk = R)
   protected void __constructor__(
       Context context, AttributeSet attributeSet, int defStyleAttr, int defStyleRes) {
     this.attributeSet = attributeSet;

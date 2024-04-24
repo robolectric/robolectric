@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.hardware.usb.UsbDeviceConnection;
@@ -57,7 +56,7 @@ public class ShadowUsbDeviceConnection {
    * No-op on Robolectrict. The real implementation would return false on Robolectric and make it
    * impossible to test callers that expect a successful result. Always returns {@code true}.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean setInterface(UsbInterface intf) {
     return true;
   }

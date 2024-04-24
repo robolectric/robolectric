@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -154,7 +153,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void canGetBluetoothLeScanner() {
     if (RuntimeEnvironment.getApiLevel() < M) {
       // On SDK < 23, bluetooth has to be in STATE_ON in order to get a BluetoothLeScanner.
@@ -165,7 +163,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void canGetBluetoothLeAdvertiser() throws Exception {
     // bluetooth needs to be ON in APIS 21 and 22 for getBluetoothLeAdvertiser to return a
     // non null value
@@ -187,7 +184,6 @@ public class ShadowBluetoothAdapterTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void canGetAndSetMultipleAdvertisementSupport() throws Exception {
     BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
 

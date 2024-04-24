@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -492,7 +491,7 @@ public class ShadowAppOpsManager {
    *
    * <p>This method is public for testing, as the original method is {@code @hide}.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   public void setRestriction(
       int code, @AttributeUsage int usage, int mode, String[] exceptionPackages) {

@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.pm.PackageInfo;
@@ -17,7 +16,7 @@ import org.robolectric.util.ReflectionHelpers;
 public class LoadWeirdClassesTest {
 
   @Test
-  @Config(sdk = KITKAT)
+  @Config(sdk = Config.OLDEST_SDK)
   public void shouldLoadDisplay() {
     ReflectionHelpers.callInstanceMethod(
         Display.class, ShadowDisplay.getDefaultDisplay(), "getDisplayAdjustments");

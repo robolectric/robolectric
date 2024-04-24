@@ -4,7 +4,6 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREG
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -93,7 +92,6 @@ public class ShadowActivityManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAppTasks_shouldReturnAppTaskList() {
     final AppTask task1 = ShadowAppTask.newInstance();
     final AppTask task2 = ShadowAppTask.newInstance();

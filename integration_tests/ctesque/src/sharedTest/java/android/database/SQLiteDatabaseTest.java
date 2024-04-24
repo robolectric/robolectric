@@ -1,6 +1,5 @@
 package android.database;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -27,7 +26,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 /** Compatibility test for {@link android.database.sqlite.SQLiteDatabase} */
@@ -207,8 +205,6 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
   public void collate_unicode() {
     String[] names = new String[] {"aaa", "abc", "ABC", "bbb"};
     for (String name : names) {
@@ -229,8 +225,6 @@ public class SQLiteDatabaseTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
   public void regex_selection() {
     ContentValues values = new ContentValues();
     values.put("first_column", "test");
@@ -284,8 +278,6 @@ public class SQLiteDatabaseTest {
     results.close();
   }
 
-  @Config(minSdk = LOLLIPOP) // The SQLite error messages were updated significantly in Lollipop.
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Test
   public void uniqueConstraintViolation_errorMessage() {
     database.execSQL(

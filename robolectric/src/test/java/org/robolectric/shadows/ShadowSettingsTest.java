@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.provider.Settings.Secure.LOCATION_MODE;
 import static android.provider.Settings.Secure.LOCATION_MODE_BATTERY_SAVING;
@@ -11,6 +10,7 @@ import static android.provider.Settings.Secure.LOCATION_MODE_HIGH_ACCURACY;
 import static android.provider.Settings.Secure.LOCATION_MODE_OFF;
 import static android.provider.Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
 import static com.google.common.truth.Truth.assertThat;
+import static org.robolectric.annotation.Config.OLDEST_SDK;
 import static org.robolectric.shadows.ShadowLooper.idleMainLooper;
 
 import android.animation.ValueAnimator;
@@ -172,7 +172,7 @@ public class ShadowSettingsTest {
         .isEqualTo(0);
   }
 
-  @Config(minSdk = LOLLIPOP, maxSdk = O) // TODO(christianw) fix location mode
+  @Config(minSdk = OLDEST_SDK, maxSdk = O) // TODO(christianw) fix location mode
   @Test
   public void locationProviders_affectsLocationMode() {
     // Verify default values
@@ -200,7 +200,7 @@ public class ShadowSettingsTest {
     assertThat(Secure.getInt(contentResolver, LOCATION_MODE, -1)).isEqualTo(LOCATION_MODE_OFF);
   }
 
-  @Config(minSdk = LOLLIPOP, maxSdk = O) // TODO(christianw) fix location mode
+  @Config(minSdk = OLDEST_SDK, maxSdk = O) // TODO(christianw) fix location mode
   @Test
   public void locationMode_affectsLocationProviders() {
     // Verify the default value

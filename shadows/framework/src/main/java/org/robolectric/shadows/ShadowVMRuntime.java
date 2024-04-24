@@ -25,7 +25,7 @@ public class ShadowVMRuntime {
 
   @Nullable private static String currentInstructionSet = null;
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public Object newUnpaddedArray(Class<?> klass, int size) {
     return Array.newInstance(klass, size);
   }
@@ -57,7 +57,7 @@ public class ShadowVMRuntime {
   /**
    * Returns whether the VM is running in 64-bit mode. Available in Android L+. Defaults to true.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean is64Bit() {
     return ShadowVMRuntime.is64Bit;
   }
@@ -69,7 +69,7 @@ public class ShadowVMRuntime {
   }
 
   /** Returns the instruction set of the current runtime. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected static String getCurrentInstructionSet() {
     return currentInstructionSet;
   }

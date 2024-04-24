@@ -388,15 +388,6 @@ public class ShadowViewRootImpl {
     @Accessor("mWindowAttributes")
     WindowManager.LayoutParams getWindowAttributes();
 
-    // == KITKAT
-    void dispatchResized(
-        Rect frame,
-        Rect overscanInsets,
-        Rect contentInsets,
-        Rect visibleInsets,
-        boolean reportDraw,
-        Configuration newConfig);
-
     // <= LOLLIPOP_MR1
     void dispatchResized(
         Rect frame,
@@ -467,9 +458,7 @@ public class ShadowViewRootImpl {
       Rect emptyRect = new Rect(0, 0, 0, 0);
 
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel == Build.VERSION_CODES.KITKAT) {
-        dispatchResized(frame, emptyRect, emptyRect, emptyRect, true, null);
-      } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+      if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
         dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, true, null);
       } else if (apiLevel <= Build.VERSION_CODES.M) {
         dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, emptyRect, true, null);

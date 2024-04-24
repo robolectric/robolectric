@@ -63,7 +63,6 @@ public class ShadowUsbRequestTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void initialize() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
@@ -73,7 +72,6 @@ public class ShadowUsbRequestTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void queue() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);

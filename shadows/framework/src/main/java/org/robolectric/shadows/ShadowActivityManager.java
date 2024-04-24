@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -112,7 +111,7 @@ public class ShadowActivityManager {
    * @see #setAppTasks(List)
    * @return List of current AppTask.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<ActivityManager.AppTask> getAppTasks() {
     return appTasks;
   }
@@ -294,7 +293,7 @@ public class ShadowActivityManager {
     return lockTaskModeState;
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected boolean isInLockTaskMode() {
     return getLockTaskModeState() != ActivityManager.LOCK_TASK_MODE_NONE;
   }

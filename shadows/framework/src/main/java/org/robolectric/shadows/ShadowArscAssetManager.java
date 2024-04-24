@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -419,25 +417,13 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected void destroyAsset(int asset) {
-    destroyAsset((long) asset);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void destroyAsset(long asset) {
     Registries.NATIVE_ASSET_REGISTRY.unregister(asset);
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected int readAssetChar(int asset) {
-    return readAssetChar((long) asset);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int readAssetChar(long asset) {
     Asset a = getAsset(asset);
     byte[] b = new byte[1];
@@ -446,13 +432,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected int readAsset(int asset, byte[] b, int off, int len) throws IOException {
-    return readAsset((long) asset, b, off, len);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int readAsset(long asset, byte[] bArray, int off, int len) throws IOException {
     Asset a = getAsset(asset);
 
@@ -481,39 +461,21 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected long seekAsset(int asset, long offset, int whence) {
-    return seekAsset((long) asset, offset, whence);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected long seekAsset(long asset, long offset, int whence) {
     Asset a = getAsset(asset);
     return a.seek(offset, whence < 0 ? SEEK_SET : SEEK_CUR);
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected long getAssetLength(int asset) {
-    return getAssetLength((long) asset);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected long getAssetLength(long asset) {
     Asset a = getAsset(asset);
     return a.getLength();
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected long getAssetRemainingLength(int asset) {
-    return getAssetRemainingLength((long) asset);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected long getAssetRemainingLength(long assetHandle) {
     Asset a = getAsset(assetHandle);
 
@@ -697,13 +659,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 //      # define PRIx16		"x"
 //      # define PRIx32		"x"
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static void applyStyle(int themeToken, int defStyleAttr, int defStyleRes,
-      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    applyStyle((long)themeToken, defStyleAttr, defStyleRes, (long)xmlParserToken, attrs,
-        outValues, outIndices);
-  }
-
   @HiddenApi @Implementation(minSdk = O, maxSdk = O_MR1)
   protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
       long xmlParserToken, int[] inAttrs, int length, long outValuesAddress,
@@ -715,9 +670,16 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
         outValues, outIndices);
   }
 
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
-  protected static void applyStyle(long themeToken, int defStyleAttr, int defStyleRes,
-      long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
+  @HiddenApi
+  @Implementation(maxSdk = N_MR1)
+  protected static void applyStyle(
+      long themeToken,
+      int defStyleAttr,
+      int defStyleRes,
+      long xmlParserToken,
+      int[] attrs,
+      int[] outValues,
+      int[] outIndices) {
     ResTableTheme theme = Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeToken);
     ResXMLParser xmlParser = xmlParserToken == 0
         ? null
@@ -786,14 +748,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected boolean retrieveAttributes(
-      int xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
-    return retrieveAttributes((long)xmlParserToken, attrs, outValues, outIndices);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean retrieveAttributes(
       long xmlParserToken, int[] attrs, int[] outValues, int[] outIndices) {
     if (xmlParserToken == 0) {
@@ -1003,49 +958,29 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected void deleteTheme(int theme) {
-    deleteTheme((long) theme);
-  }
-
-  @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void deleteTheme(long theme) {
     Registries.NATIVE_THEME_REGISTRY.unregister(theme);
   }
 
   @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  public static void applyThemeStyle(int themePtr, int styleRes, boolean force) {
-    applyThemeStyle((long)themePtr, styleRes, force);
-  }
-
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   public static void applyThemeStyle(long themePtr, int styleRes, boolean force) {
     Registries.NATIVE_THEME_REGISTRY.getNativeObject(themePtr).applyStyle(styleRes, force);
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  public static void copyTheme(int destPtr, int sourcePtr) {
-    copyTheme((long) destPtr, (long) sourcePtr);
-  }
-
-  @HiddenApi @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @HiddenApi
+  @Implementation(maxSdk = O_MR1)
   public static void copyTheme(long destPtr, long sourcePtr) {
     ResTableTheme dest = Registries.NATIVE_THEME_REGISTRY.getNativeObject(destPtr);
     ResTableTheme src = Registries.NATIVE_THEME_REGISTRY.getNativeObject(sourcePtr);
     dest.setTo(src);
   }
 
-  @HiddenApi @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int loadThemeAttributeValue(int themeHandle, int ident,
-      TypedValue outValue, boolean resolve) {
-    return loadThemeAttributeValue((long) themeHandle, ident, outValue, resolve);
-  }
-
-  @HiddenApi @Implementation(minSdk = LOLLIPOP)
-  protected static int loadThemeAttributeValue(long themeHandle, int ident,
-      TypedValue outValue, boolean resolve) {
+  @HiddenApi
+  @Implementation
+  protected static int loadThemeAttributeValue(
+      long themeHandle, int ident, TypedValue outValue, boolean resolve) {
     ResTableTheme theme = Preconditions.checkNotNull(Registries.NATIVE_THEME_REGISTRY.getNativeObject(themeHandle));
     ResTable res = theme.getResTable();
 
@@ -1274,17 +1209,10 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     return array;
   }
 
-  @HiddenApi @Implementation(maxSdk = VERSION_CODES.KITKAT)
-  protected void init() {
-  //  if (isSystem) {
-  //    verifySystemIdmaps();
-  //  }
-    init(false);
-  }
-
   private static CppAssetManager systemCppAssetManager;
 
-  @HiddenApi @Implementation(minSdk = VERSION_CODES.KITKAT_WATCH)
+  @HiddenApi
+  @Implementation
   protected void init(boolean isSystem) {
     //  if (isSystem) {
     //    verifySystemIdmaps();

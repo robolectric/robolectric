@@ -1,6 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
+
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -240,15 +240,7 @@ public class ShadowResources {
     return parser;
   }
 
-  @HiddenApi
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected Drawable loadDrawable(TypedValue value, int id) {
-    Drawable drawable = reflector(ResourcesReflector.class, realResources).loadDrawable(value, id);
-    setCreatedFromResId(realResources, id, drawable);
-    return drawable;
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected Drawable loadDrawable(TypedValue value, int id, Resources.Theme theme)
       throws Resources.NotFoundException {
     Drawable drawable =

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,7 +60,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.DeviceConfig;
 import org.robolectric.android.controller.ActivityController;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.TestRunnable;
 
 @RunWith(AndroidJUnit4.class)
@@ -678,7 +676,6 @@ public class ShadowViewTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void cameraDistance() {
     view.setCameraDistance(100f);
     assertThat(view.getCameraDistance()).isEqualTo(100f);
@@ -711,7 +708,6 @@ public class ShadowViewTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void elevation() {
     view.setElevation(10f);
     assertThat(view.getElevation()).isEqualTo(10f);
@@ -730,14 +726,12 @@ public class ShadowViewTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void translationZ() {
     view.setTranslationZ(10f);
     assertThat(view.getTranslationZ()).isEqualTo(10f);
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void clipToOutline() {
     view.setClipToOutline(true);
     assertThat(view.getClipToOutline()).isTrue();

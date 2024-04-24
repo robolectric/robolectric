@@ -22,7 +22,6 @@ import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -463,7 +462,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected ProviderInfo resolveContentProviderAsUser(
       String name, int flags, @UserIdInt int userId) {
     return null;
@@ -1281,7 +1280,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getApplicationIcon(info.packageName);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected Drawable getUserBadgeForDensity(UserHandle userHandle, int i) {
     return null;
   }
@@ -1383,7 +1382,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LAUNCHER);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected Intent getLeanbackLaunchIntentForPackage(String packageName) {
     return getLaunchIntentForPackage(packageName, Intent.CATEGORY_LEANBACK_LAUNCHER);
   }
@@ -2014,7 +2013,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = N)
   protected void flushPackageRestrictionsAsUser(int userId) {}
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean setApplicationHiddenSettingAsUser(
       String packageName, boolean hidden, UserHandle user) {
     synchronized (lock) {
@@ -2033,7 +2032,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean getApplicationHiddenSettingAsUser(String packageName, UserHandle user) {
     // Note that this ignores the UserHandle parameter
     synchronized (lock) {
@@ -2055,16 +2054,16 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
     return false;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isPackageAvailable(String packageName) {
     return false;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void addCrossProfileIntentFilter(
       IntentFilter filter, int sourceUserId, int targetUserId, int flags) {}
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void clearCrossProfileIntentFilters(int sourceUserId) {}
 
   /**
@@ -2087,7 +2086,7 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
    * <p>This implementation just returns the unbadged icon, as some default implementations add an
    * internal resource to the icon that is unavailable to Robolectric.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected Drawable getUserBadgedIcon(Drawable icon, UserHandle user) {
     return icon;
   }

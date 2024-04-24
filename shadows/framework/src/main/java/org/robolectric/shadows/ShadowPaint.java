@@ -1,10 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.L;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -389,19 +385,7 @@ public class ShadowPaint {
     return Math.max(0f, textScaleX) * textWidth;
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected int native_breakText(
-      char[] text, int index, int count, float maxWidth, float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
-  }
-
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected int native_breakText(
-      char[] text, int index, int count, float maxWidth, int bidiFlags, float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected static int native_breakText(
       long native_object,
       long native_typeface,
@@ -446,19 +430,7 @@ public class ShadowPaint {
     return text.length;
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected int native_breakText(
-      String text, boolean measureForwards, float maxWidth, float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
-  }
-
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected int native_breakText(
-      String text, boolean measureForwards, float maxWidth, int bidiFlags, float[] measuredWidth) {
-    return breakText(text, maxWidth, measuredWidth);
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = M)
+  @Implementation(maxSdk = M)
   protected static int native_breakText(
       long native_object,
       long native_typeface,
@@ -630,7 +602,7 @@ public class ShadowPaint {
     return nGetRunAdvance(0, text, start, end, contextStart, contextEnd, isRtl, offset);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected static float native_getTextRunAdvances(
       long nativeObject,
       long nativeTypeface,
@@ -646,7 +618,7 @@ public class ShadowPaint {
         0, text, index, index + count, contextIndex, contextIndex + contextCount, isRtl, index);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH, maxSdk = LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected static float native_getTextRunAdvances(
       long nativeObject,
       long nativeTypeface,
@@ -659,65 +631,5 @@ public class ShadowPaint {
       float[] advances,
       int advancesIndex) {
     return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, isRtl, 0);
-  }
-
-  @Implementation(maxSdk = KITKAT)
-  protected static float native_getTextRunAdvances(
-      int nativeObject,
-      char[] text,
-      int index,
-      int count,
-      int contextIndex,
-      int contextCount,
-      int flags,
-      float[] advances,
-      int advancesIndex) {
-    return nGetRunAdvance(
-        0, text, index, index + count, contextIndex, contextIndex + contextCount, false, index);
-  }
-
-  @Implementation(maxSdk = KITKAT)
-  protected static float native_getTextRunAdvances(
-      int nativeObject,
-      String text,
-      int start,
-      int end,
-      int contextStart,
-      int contextEnd,
-      int flags,
-      float[] advances,
-      int advancesIndex) {
-    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, false, 0);
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected static float native_getTextRunAdvances(
-      int nativeObject,
-      char[] text,
-      int index,
-      int count,
-      int contextIndex,
-      int contextCount,
-      int flags,
-      float[] advances,
-      int advancesIndex,
-      int reserved) {
-    return nGetRunAdvance(
-        0, text, index, index + count, contextIndex, contextIndex + contextCount, false, index);
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected static float native_getTextRunAdvances(
-      int nativeObject,
-      String text,
-      int start,
-      int end,
-      int contextStart,
-      int contextEnd,
-      int flags,
-      float[] advances,
-      int advancesIndex,
-      int reserved) {
-    return nGetRunAdvance(0, text.toCharArray(), start, end, contextStart, contextEnd, false, 0);
   }
 }

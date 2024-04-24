@@ -204,7 +204,7 @@ public class ShadowAlarmManager {
   }
 
   @RequiresApi(VERSION_CODES.LOLLIPOP)
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void setAlarmClock(AlarmClockInfo info, PendingIntent operation) {
     setImpl(RTC_WAKEUP, info.getTriggerTime(), WINDOW_EXACT, 0L, operation, null, info, true);
   }
@@ -356,7 +356,7 @@ public class ShadowAlarmManager {
   }
 
   @RequiresApi(VERSION_CODES.LOLLIPOP)
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   @Nullable
   protected AlarmClockInfo getNextAlarmClock() {
     synchronized (scheduledAlarms) {

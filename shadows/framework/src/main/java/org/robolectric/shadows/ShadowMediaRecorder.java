@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Build.VERSION_CODES;
 import android.view.Surface;
 import com.google.common.base.Preconditions;
 import org.robolectric.annotation.Implementation;
@@ -190,7 +189,7 @@ public class ShadowMediaRecorder {
     }
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected Surface getSurface() {
     Preconditions.checkState(
         getVideoSource() == MediaRecorder.VideoSource.SURFACE,

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.util.ReflectionHelpers.callInstanceMethod;
@@ -16,7 +15,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 /**
@@ -24,7 +22,6 @@ import org.robolectric.util.ReflectionHelpers;
  * RenderNode} was moved to a public API to open access to it.
  */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public final class ShadowRenderNodeTest {
 
   @Test

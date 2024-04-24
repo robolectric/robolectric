@@ -193,7 +193,7 @@ public class ShadowUserManager {
     return userManagerState.userSerialNumbers.get(userHandle.getIdentifier());
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<UserHandle> getUserProfiles() {
     ImmutableList.Builder<UserHandle> builder = new ImmutableList.Builder<>();
     List<UserHandle> profiles = userManagerState.userProfilesListMap.get(UserHandle.myUserId());
@@ -213,7 +213,7 @@ public class ShadowUserManager {
    *
    * <p>Otherwise follow real android behaviour.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<UserInfo> getProfiles(int userHandle) {
     if (userManagerState.userProfilesListMap.containsKey(userHandle)) {
       ArrayList<UserInfo> infos = new ArrayList<>();
@@ -249,7 +249,7 @@ public class ShadowUserManager {
     return userHandles;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected UserInfo getProfileParent(int userId) {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException("Requires MANAGE_USERS permission");
@@ -367,7 +367,7 @@ public class ShadowUserManager {
    * @see #enforcePermissionChecks(boolean)
    * @see #setManagedProfile(boolean)
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isManagedProfile() {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException(
@@ -484,7 +484,7 @@ public class ShadowUserManager {
     return userInfo.profileGroupId == otherUserInfo.profileGroupId;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     synchronized (lock) {
       Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());

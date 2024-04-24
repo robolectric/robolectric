@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.JELLY_BEAN;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -240,7 +239,7 @@ public class ShadowSettings {
       return true;
     }
 
-    @Implementation(minSdk = LOLLIPOP)
+    @Implementation
     protected static boolean putIntForUser(
         ContentResolver cr, String name, int value, int userHandle) {
       putInt(cr, name, value);

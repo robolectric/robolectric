@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.bluetooth.BluetoothDevice.BOND_NONE;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -436,7 +435,7 @@ public class ShadowBluetoothDevice {
     return true;
   }
 
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected boolean isConnected() {
     return isConnected;
   }

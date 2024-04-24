@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -436,7 +435,7 @@ public class ShadowTelephonyManager {
     setNetworkOperatorName(networkOperatorName);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected String getImei() {
     checkReadPhoneStatePermission();
     return imei;
@@ -1199,7 +1198,7 @@ public class ShadowTelephonyManager {
     return carrierPackageNames.get(phoneId);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected List<String> getCarrierPackageNamesForIntent(Intent intent) {
     return carrierPackageNames.get(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);

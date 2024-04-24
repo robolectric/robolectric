@@ -429,7 +429,7 @@ public class ShadowAccessibilityNodeInfo {
     this.view = root;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected AccessibilityWindowInfo getWindow() {
     return accessibilityWindowInfo;
   }

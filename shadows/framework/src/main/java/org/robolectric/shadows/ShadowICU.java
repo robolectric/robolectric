@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 
 import android.icu.util.ULocale;
@@ -31,7 +29,7 @@ public class ShadowICU {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public static String getBestDateTimePattern(String skeleton, Locale locale) {
     switch (skeleton) {
       case "jmm":
@@ -45,11 +43,6 @@ public class ShadowICU {
       default:
         return skeleton;
     }
-  }
-
-  @Implementation(maxSdk = KITKAT_WATCH)
-  public static String getBestDateTimePattern(String skeleton, String locale) {
-    return skeleton;
   }
 
   private static String getjmmPattern(Locale locale) {

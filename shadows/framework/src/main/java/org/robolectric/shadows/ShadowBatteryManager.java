@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 
@@ -27,7 +26,7 @@ public class ShadowBatteryManager {
     isCharging = charging;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int getIntProperty(int id) {
     return intProperties.containsKey(id) ? intProperties.get(id) : Integer.MIN_VALUE;
   }
@@ -36,7 +35,7 @@ public class ShadowBatteryManager {
     intProperties.put(id, value);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected long getLongProperty(int id) {
     return longProperties.containsKey(id) ? longProperties.get(id) : Long.MIN_VALUE;
   }

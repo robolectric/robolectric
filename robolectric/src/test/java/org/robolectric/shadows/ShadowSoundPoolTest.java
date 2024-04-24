@@ -14,14 +14,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowSoundPool.Playback;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSoundPoolTest {
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldCreateSoundPool_Lollipop() {
     SoundPool soundPool = new SoundPool.Builder().build();
     assertThat(soundPool).isNotNull();

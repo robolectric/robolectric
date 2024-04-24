@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Rect;
@@ -13,7 +12,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowSurfaceTexture}. */
 @RunWith(AndroidJUnit4.class)
@@ -21,7 +19,6 @@ public class ShadowSurfaceTextureTest {
   private final SurfaceTexture surfaceTexture = new SurfaceTexture(0);
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void surfaceUnlockAndPost_callsBackListener() throws Exception {
     final AtomicBoolean frameCallback = new AtomicBoolean(false);
     CountDownLatch latch = new CountDownLatch(1);

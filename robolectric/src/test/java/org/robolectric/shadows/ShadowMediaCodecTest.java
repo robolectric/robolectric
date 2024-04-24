@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.copyOfRange;
 import static java.util.Collections.max;
@@ -33,13 +32,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig.Codec;
 
 /** Tests for {@link ShadowMediaCodec}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public final class ShadowMediaCodecTest {
   private static final String AUDIO_MIME = "audio/fake";
   private static final String AUDIO_DECODER_NAME = "audio-fake.decoder";

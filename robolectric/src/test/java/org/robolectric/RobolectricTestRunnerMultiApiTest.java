@@ -317,7 +317,7 @@ public class RobolectricTestRunnerMultiApiTest {
   public static class TestMethodWithSdkAndMinMax {
     @Config(sdk = M, minSdk = M, maxSdk = N)
     @Test
-    public void testWithKitKatAndLollipop() {
+    public void testWithSdkRange() {
       assertThat(Build.VERSION.SDK_INT).isIn(Range.closed(M, N));
     }
   }

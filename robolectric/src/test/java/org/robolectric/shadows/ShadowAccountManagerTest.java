@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
@@ -829,7 +828,6 @@ public class ShadowAccountManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void addPreviousAccount() {
     Account account = new Account("name_a", "type_a");
     shadowOf(am).setPreviousAccountName(account, "old_name");

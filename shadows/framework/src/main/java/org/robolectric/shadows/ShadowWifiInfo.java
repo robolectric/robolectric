@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.net.wifi.SupplicantState;
@@ -69,7 +68,7 @@ public class ShadowWifiInfo {
     reflector(WifiInfoReflector.class, realObject).setLinkSpeed(linkSpeed);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public void setFrequency(int frequency) {
     reflector(WifiInfoReflector.class, realObject).setFrequency(frequency);
   }

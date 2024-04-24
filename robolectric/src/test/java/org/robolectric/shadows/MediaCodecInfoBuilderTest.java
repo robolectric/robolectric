@@ -4,7 +4,6 @@ import static android.media.MediaFormat.MIMETYPE_AUDIO_AAC;
 import static android.media.MediaFormat.MIMETYPE_AUDIO_OPUS;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_AVC;
 import static android.media.MediaFormat.MIMETYPE_VIDEO_VP9;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static com.google.common.truth.Truth.assertThat;
@@ -23,7 +22,6 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link MediaCodecInfoBuilder}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class MediaCodecInfoBuilderTest {
 
   private static final String AAC_ENCODER_NAME = "test.encoder.aac";
@@ -365,7 +363,6 @@ public class MediaCodecInfoBuilderTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void mediaCodecInfo_preQ() {
     if (RuntimeEnvironment.getApiLevel() <= M) {
       MediaCodecList.getCodecCount();

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
@@ -140,7 +139,6 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldProvideServicesIntroducedInLollipop() throws Exception {
     assertThat(context.getSystemService(Context.MEDIA_SESSION_SERVICE))
         .isInstanceOf(MediaSessionManager.class);

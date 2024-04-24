@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -37,7 +36,7 @@ public class ShadowStaticLayout {
   }
 
   @HiddenApi
-  @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   public static int[] nLineBreakOpportunities(
       String locale, char[] text, int length, int[] recycle) {
     return new int[] {-1};

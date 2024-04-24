@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
+
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -25,7 +24,6 @@ import android.view.MotionEvent.PointerProperties;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -195,48 +193,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     ReflectionHelpers.setField(outPointerCoordsObj, "mPackedAxisBits", outBits);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeInitialize(
-      int nativePtr,
-      int deviceId,
-      int source,
-      int action,
-      int flags,
-      int edgeFlags,
-      int metaState,
-      int buttonState,
-      float xOffset,
-      float yOffset,
-      float xPrecision,
-      float yPrecision,
-      long downTimeNanos,
-      long eventTimeNanos,
-      int pointerCount,
-      PointerProperties[] pointerIds,
-      PointerCoords[] pointerCoords) {
-    return (int)
-        nativeInitialize(
-            (long) nativePtr,
-            deviceId,
-            source,
-            action,
-            flags,
-            edgeFlags,
-            metaState,
-            buttonState,
-            xOffset,
-            yOffset,
-            xPrecision,
-            yPrecision,
-            downTimeNanos,
-            eventTimeNanos,
-            pointerCount,
-            pointerIds,
-            pointerCoords);
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = P)
+  @Implementation(maxSdk = P)
   @HiddenApi
   protected static long nativeInitialize(
       long nativePtr,
@@ -340,26 +297,13 @@ public class ShadowMotionEvent extends ShadowInputEvent {
         pointerCoords);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeDispose(int nativePtr) {
-    nativeDispose((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeDispose(long nativePtr) {
     nativeMotionEventRegistry.unregister(nativePtr);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeAddBatch(
-      int nativePtr, long eventTimeNanos, PointerCoords[] pointerCoordsObjArray, int metaState) {
-    nativeAddBatch((long) nativePtr, eventTimeNanos, pointerCoordsObjArray, metaState);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeAddBatch(
       long nativePtr, long eventTimeNanos, PointerCoords[] pointerCoordsObjArray, int metaState) {
@@ -377,14 +321,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.setMetaState(event.getMetaState() | metaState);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeGetPointerCoords(
-      int nativePtr, int pointerIndex, int historyPos, PointerCoords outPointerCoordsObj) {
-    nativeGetPointerCoords((long) nativePtr, pointerIndex, historyPos, outPointerCoordsObj);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeGetPointerCoords(
       long nativePtr, int pointerIndex, int historyPos, PointerCoords outPointerCoordsObj) {
@@ -405,14 +342,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
         rawPointerCoords, event.getXOffset(), event.getYOffset(), outPointerCoordsObj);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeGetPointerProperties(
-      int nativePtr, int pointerIndex, PointerProperties outPointerPropertiesObj) {
-    nativeGetPointerProperties((long) nativePtr, pointerIndex, outPointerPropertiesObj);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeGetPointerProperties(
       long nativePtr, int pointerIndex, PointerProperties outPointerPropertiesObj) {
@@ -426,13 +356,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     outPointerPropertiesObj.copyFrom(pointerProperties);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeReadFromParcel(int nativePtr, Parcel parcelObj) {
-    return (int) nativeReadFromParcel((long) nativePtr, parcelObj);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static long nativeReadFromParcel(long nativePtr, Parcel parcelObj) {
     NativeInput.MotionEvent event;
@@ -452,13 +376,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return nativePtr;
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeWriteToParcel(int nativePtr, Parcel parcel) {
-    nativeWriteToParcel((long) nativePtr, parcel);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeWriteToParcel(long nativePtr, Parcel parcel) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -467,7 +385,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static String nativeAxisToString(int axis) {
     // The native code just mirrors the AXIS_* constants defined in MotionEvent.java.
@@ -489,7 +407,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeAxisFromString(String label) {
     // The native code just mirrors the AXIS_* constants defined in MotionEvent.java. Look up
@@ -502,13 +420,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     }
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetPointerId(int nativePtr, int pointerIndex) {
-    return nativeGetPointerId((long) nativePtr, pointerIndex);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetPointerId(long nativePtr, int pointerIndex) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -517,13 +429,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return event.getPointerId(pointerIndex);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetToolType(int nativePtr, int pointerIndex) {
-    return nativeGetToolType((long) nativePtr, pointerIndex);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetToolType(long nativePtr, int pointerIndex) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -532,13 +438,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return event.getToolType(pointerIndex);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static long nativeGetEventTimeNanos(int nativePtr, int historyPos) {
-    return nativeGetEventTimeNanos((long) nativePtr, historyPos);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static long nativeGetEventTimeNanos(long nativePtr, int historyPos) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -551,14 +451,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     }
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static float nativeGetRawAxisValue(
-      int nativePtr, int axis, int pointerIndex, int historyPos) {
-    return nativeGetRawAxisValue((long) nativePtr, axis, pointerIndex, historyPos);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static float nativeGetRawAxisValue(
       long nativePtr, int axis, int pointerIndex, int historyPos) {
@@ -575,14 +468,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     }
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static float nativeGetAxisValue(
-      int nativePtr, int axis, int pointerIndex, int historyPos) {
-    return nativeGetAxisValue((long) nativePtr, axis, pointerIndex, historyPos);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static float nativeGetAxisValue(
       long nativePtr, int axis, int pointerIndex, int historyPos) {
@@ -599,13 +485,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     }
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeCopy(int destNativePtr, int sourceNativePtr, boolean keepHistory) {
-    return (int) nativeCopy((long) destNativePtr, (long) sourceNativePtr, keepHistory);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static long nativeCopy(long destNativePtr, long sourceNativePtr, boolean keepHistory) {
     NativeInput.MotionEvent destEvent = nativeMotionEventRegistry.peekNativeObject(destNativePtr);
@@ -618,40 +498,21 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return destNativePtr;
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetDeviceId(int nativePtr) {
-    return nativeGetDeviceId((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetDeviceId(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getDeviceId();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetSource(int nativePtr) {
-    return nativeGetSource((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetSource(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getSource();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeSetSource(int nativePtr, int source) {
-    nativeSetSource((long) nativePtr, source);
-    return 0;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   @SuppressWarnings("robolectric.ShadowReturnTypeMismatch")
   protected static void nativeSetSource(long nativePtr, int source) {
@@ -659,26 +520,14 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.setSource(source);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetAction(int nativePtr) {
-    return nativeGetAction((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetAction(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getAction();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeSetAction(int nativePtr, int action) {
-    nativeSetAction((long) nativePtr, action);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeSetAction(long nativePtr, int action) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -699,91 +548,49 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.setActionButton(button);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static boolean nativeIsTouchEvent(int nativePtr) {
-    return nativeIsTouchEvent((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static boolean nativeIsTouchEvent(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.isTouchEvent();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetFlags(int nativePtr) {
-    return nativeGetFlags((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetFlags(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getFlags();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeSetFlags(int nativePtr, int flags) {
-    nativeSetFlags((long) nativePtr, flags);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeSetFlags(long nativePtr, int flags) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setFlags(flags);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetEdgeFlags(int nativePtr) {
-    return nativeGetEdgeFlags((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetEdgeFlags(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getEdgeFlags();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeSetEdgeFlags(int nativePtr, int edgeFlags) {
-    nativeSetEdgeFlags((long) nativePtr, edgeFlags);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeSetEdgeFlags(long nativePtr, int edgeFlags) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setEdgeFlags(edgeFlags);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetMetaState(int nativePtr) {
-    return nativeGetMetaState((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetMetaState(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getMetaState();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetButtonState(int nativePtr) {
-    return nativeGetButtonState((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetButtonState(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -797,26 +604,14 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     event.setButtonState(buttonState);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeOffsetLocation(int nativePtr, float deltaX, float deltaY) {
-    nativeOffsetLocation((long) nativePtr, deltaX, deltaY);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeOffsetLocation(long nativePtr, float deltaX, float deltaY) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.offsetLocation(deltaX, deltaY);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static float nativeGetXOffset(int nativePtr) {
-    return nativeGetXOffset((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   @HiddenApi
   @InDevelopment
   protected static float nativeGetXOffset(long nativePtr) {
@@ -824,13 +619,7 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return event.getXOffset();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static float nativeGetYOffset(int nativePtr) {
-    return nativeGetYOffset((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = UPSIDE_DOWN_CAKE)
+  @Implementation(maxSdk = UPSIDE_DOWN_CAKE)
   @HiddenApi
   @InDevelopment
   protected static float nativeGetYOffset(long nativePtr) {
@@ -856,104 +645,56 @@ public class ShadowMotionEvent extends ShadowInputEvent {
     return getNativeMotionEvent(nativePtr).getYOffset();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static float nativeGetXPrecision(int nativePtr) {
-    return nativeGetXPrecision((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static float nativeGetXPrecision(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getXPrecision();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static float nativeGetYPrecision(int nativePtr) {
-    return nativeGetYPrecision((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static float nativeGetYPrecision(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getYPrecision();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static long nativeGetDownTimeNanos(int nativePtr) {
-    return nativeGetDownTimeNanos((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static long nativeGetDownTimeNanos(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getDownTime();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeSetDownTimeNanos(int nativePtr, long downTimeNanos) {
-    nativeSetDownTimeNanos((long) nativePtr, downTimeNanos);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeSetDownTimeNanos(long nativePtr, long downTimeNanos) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     event.setDownTime(downTimeNanos);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetPointerCount(int nativePtr) {
-    return nativeGetPointerCount((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetPointerCount(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getPointerCount();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeFindPointerIndex(int nativePtr, int pointerId) {
-    return nativeFindPointerIndex((long) nativePtr, pointerId);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeFindPointerIndex(long nativePtr, int pointerId) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.findPointerIndex(pointerId);
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static int nativeGetHistorySize(int nativePtr) {
-    return nativeGetHistorySize((long) nativePtr);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static int nativeGetHistorySize(long nativePtr) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
     return event.getHistorySize();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  @HiddenApi
-  protected static void nativeScale(int nativePtr, float scale) {
-    nativeScale((long) nativePtr, scale);
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected static void nativeScale(long nativePtr, float scale) {
     NativeInput.MotionEvent event = getNativeMotionEvent(nativePtr);
@@ -982,13 +723,9 @@ public class ShadowMotionEvent extends ShadowInputEvent {
   }
 
   protected NativeInput.MotionEvent getNativeMotionEvent() {
-    long nativePtr;
-    if (RuntimeEnvironment.getApiLevel() <= KITKAT_WATCH) {
-      Integer nativePtrInt = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
-      nativePtr = nativePtrInt.longValue();
-    } else {
-      nativePtr = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
-    }
+
+    long nativePtr = ReflectionHelpers.getField(realMotionEvent, "mNativePtr");
+
     return nativeMotionEventRegistry.getNativeObject(nativePtr);
   }
 

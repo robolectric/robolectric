@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,7 +26,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowTextToSpeechTest {
@@ -170,7 +168,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void speak_withUtteranceId_shouldReturnSpokenText() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     textToSpeech.speak("Hello", TextToSpeech.QUEUE_FLUSH, null, "TTSEnable");
@@ -178,7 +175,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void onUtteranceProgressListener_shouldGetCallbackUtteranceId() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -192,7 +188,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_lastSynthesizeToFileTextStored() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     Bundle bundle = new Bundle();
@@ -204,7 +199,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_byDefault_doesNotCallOnStart() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -218,7 +212,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_byDefault_doesNotCallOnDone() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -232,7 +225,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_successSimulated_callsOnStart() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -249,7 +241,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_successSimulated_callsOnDone() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -266,7 +257,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_setToFail_doesNotCallIsDone() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -284,7 +274,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_setToFail_callsOnErrorWithErrorCode() throws IOException {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     UtteranceProgressListener mockListener = mock(UtteranceProgressListener.class);
@@ -302,7 +291,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void synthesizeToFile_neverCalled_lastSynthesizeToFileTextNull() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
     assertThat(shadowOf(textToSpeech).getLastSynthesizeToFileText()).isNull();
@@ -431,7 +419,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getCurrentVoice_voiceSet_returnsVoice() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
 
@@ -449,7 +436,6 @@ public class ShadowTextToSpeechTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getVoices_returnsAvailableVoices() {
     TextToSpeech textToSpeech = new TextToSpeech(activity, result -> {});
 

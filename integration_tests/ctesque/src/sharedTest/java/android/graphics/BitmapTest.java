@@ -1,6 +1,5 @@
 package android.graphics;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -654,8 +653,6 @@ public class BitmapTest {
     assertThat(bitmap.getColorSpace()).isEqualTo(ColorSpace.get(ColorSpace.Named.ADOBE_RGB));
   }
 
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
-  @Config(minSdk = LOLLIPOP)
   @Test
   public void bitmapDrawable_mutate() {
     BitmapDrawable drawable1 = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);

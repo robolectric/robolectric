@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -100,7 +99,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
         colors, offset, stride, width, height, nativeConfig, mutable, colorSpacePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static Bitmap nativeCopy(long nativeSrcBitmap, int nativeConfig, boolean isMutable) {
     return BitmapNatives.nativeCopy(nativeSrcBitmap, nativeConfig, isMutable);
   }
@@ -120,7 +119,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeGetNativeFinalizer();
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static Object nativeRecycle(Object nativeBitmap) {
     BitmapNatives.nativeRecycle((long) nativeBitmap);
     return true;
@@ -132,13 +131,13 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     BitmapNatives.nativeReconfigure(nativeBitmap, width, height, config, isPremultiplied);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nativeCompress(
       long nativeBitmap, int format, int quality, OutputStream stream, byte[] tempStorage) {
     return BitmapNatives.nativeCompress(nativeBitmap, format, quality, stream, tempStorage);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeErase(long nativeBitmap, int color) {
     BitmapNatives.nativeErase(nativeBitmap, color);
   }
@@ -148,17 +147,17 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     BitmapNatives.nativeErase(nativeBitmap, colorSpacePtr, color);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeRowBytes(long nativeBitmap) {
     return BitmapNatives.nativeRowBytes(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeConfig(long nativeBitmap) {
     return BitmapNatives.nativeConfig(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeGetPixel(long nativeBitmap, int x, int y) {
     return BitmapNatives.nativeGetPixel(nativeBitmap, x, y);
   }
@@ -168,7 +167,7 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeGetColor(nativeBitmap, x, y);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeGetPixels(
       long nativeBitmap,
       int[] pixels,
@@ -181,12 +180,12 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     BitmapNatives.nativeGetPixels(nativeBitmap, pixels, offset, stride, x, y, width, height);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetPixel(long nativeBitmap, int x, int y, int color) {
     BitmapNatives.nativeSetPixel(nativeBitmap, x, y, color);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetPixels(
       long nativeBitmap,
       int[] colors,
@@ -225,17 +224,17 @@ public class ShadowNativeBitmap extends ShadowBitmap {
     return BitmapNatives.nativeHasAlpha(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static boolean nativeIsPremultiplied(long nativeBitmap) {
     return BitmapNatives.nativeIsPremultiplied(nativeBitmap);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetPremultiplied(long nativeBitmap, boolean isPremul) {
     BitmapNatives.nativeSetPremultiplied(nativeBitmap, isPremul);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetHasAlpha(
       long nativeBitmap, boolean hasAlpha, boolean requestPremul) {
     BitmapNatives.nativeSetHasAlpha(nativeBitmap, hasAlpha, requestPremul);

@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-versions: [ '19,21,34', '22,23,33', '24,25,32', '26,27,28', '29,30,31', ]
+        api-versions: [ '21,34', '22,23,33', '24,25,32', '26,27,28', '29,30,31', ]
 
     steps:
       - uses: actions/checkout@v4

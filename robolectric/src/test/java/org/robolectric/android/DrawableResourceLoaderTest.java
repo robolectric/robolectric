@@ -1,7 +1,5 @@
 package org.robolectric.android;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertEquals;
@@ -59,12 +57,7 @@ public class DrawableResourceLoaderTest {
     assertThat(resources.getDrawable(R.drawable.rainbow)).isInstanceOf(LayerDrawable.class);
   }
 
-  @Test @Config(maxSdk = KITKAT_WATCH)
-  public void testVectorDrawableType_preVectors() {
-    assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(BitmapDrawable.class);
-  }
-
-  @Test @Config(minSdk = LOLLIPOP)
+  @Test
   public void testVectorDrawableType() {
     assertThat(resources.getDrawable(R.drawable.an_image_or_vector)).isInstanceOf(VectorDrawable.class);
   }

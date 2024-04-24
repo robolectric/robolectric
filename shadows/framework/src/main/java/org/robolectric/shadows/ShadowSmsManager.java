@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -317,7 +316,7 @@ public class ShadowSmsManager {
   protected SendMultimediaMessageParams lastSentMultimediaMessageParams;
   protected DownloadMultimediaMessageParams lastDownloadedMultimediaMessageParams;
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void sendMultimediaMessage(
       Context context,
       Uri contentUri,
@@ -349,7 +348,7 @@ public class ShadowSmsManager {
             contentUri, locationUrl, configOverrides, sentIntent, messageId);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void downloadMultimediaMessage(
       Context context,
       String locationUrl,

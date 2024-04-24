@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -520,7 +519,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldCallFinishOnFinishAndRemoveTask() {
     Activity activity = new Activity();
     activity.finishAndRemoveTask();
@@ -1312,7 +1310,6 @@ public class ShadowActivityTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void lockTask() {
     Activity activity = Robolectric.setupActivity(Activity.class);
 

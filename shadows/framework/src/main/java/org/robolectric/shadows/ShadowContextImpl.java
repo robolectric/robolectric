@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -364,7 +363,7 @@ public class ShadowContextImpl {
   }
 
   /** Binds to a service but ignores the given UserHandle. */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean bindServiceAsUser(
       Intent intent, final ServiceConnection serviceConnection, int i, UserHandle userHandle) {
     return bindService(intent, serviceConnection, i);
@@ -389,7 +388,7 @@ public class ShadowContextImpl {
    * Behaves as {@link android.app.ContextImpl#startActivity(Intent, Bundle)}. The user parameter is
    * ignored.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void startActivityAsUser(Intent intent, Bundle options, UserHandle user) {
     // TODO: Remove this once {@link com.android.server.wmActivityTaskManagerService} is
     // properly shadowed.

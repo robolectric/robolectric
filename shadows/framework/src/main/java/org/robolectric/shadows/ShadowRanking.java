@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.NotificationChannel;
-import android.os.Build.VERSION_CODES;
 import android.service.notification.NotificationListenerService.Ranking;
 import java.util.ArrayList;
 import org.robolectric.annotation.Implements;
@@ -12,7 +11,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link android.service.notification.NotificationListenerService.Ranking}. */
-@Implements(value = Ranking.class, minSdk = VERSION_CODES.KITKAT_WATCH)
+@Implements(value = Ranking.class)
 public class ShadowRanking {
   @RealObject private Ranking realObject;
 

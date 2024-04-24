@@ -98,9 +98,7 @@ public class BootstrapTest {
     assertThat(displayInfo.logicalDensityDpi).isEqualTo(160);
     assertThat(displayInfo.physicalXDpi).isEqualTo(160f);
     assertThat(displayInfo.physicalYDpi).isEqualTo(160f);
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-      assertThat(displayInfo.state).isEqualTo(Display.STATE_ON);
-    }
+    assertThat(displayInfo.state).isEqualTo(Display.STATE_ON);
 
     DisplayMetrics displayMetrics =
         ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics();
@@ -131,9 +129,7 @@ public class BootstrapTest {
     assertThat(displayInfo.logicalDensityDpi).isEqualTo(240);
     assertThat(displayInfo.physicalXDpi).isEqualTo(240f);
     assertThat(displayInfo.physicalYDpi).isEqualTo(240f);
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
-      assertThat(displayInfo.state).isEqualTo(Display.STATE_ON);
-    }
+    assertThat(displayInfo.state).isEqualTo(Display.STATE_ON);
 
     DisplayMetrics displayMetrics =
         ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics();
