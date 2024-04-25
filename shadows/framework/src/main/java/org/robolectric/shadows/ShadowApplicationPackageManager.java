@@ -21,7 +21,6 @@ import static android.content.pm.PackageManager.MATCH_DEFAULT_ONLY;
 import static android.content.pm.PackageManager.MATCH_DISABLED_COMPONENTS;
 import static android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES;
 import static android.content.pm.PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -1194,21 +1193,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
   @Implementation(minSdk = M)
   protected String getPermissionControllerPackageName() {
     return null;
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN)
-  protected void getPackageSizeInfo(Object pkgName, Object observer) {
-    final PackageStats packageStats = packageStatsMap.get((String) pkgName);
-    new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              try {
-                ((IPackageStatsObserver) observer)
-                    .onGetStatsCompleted(packageStats, packageStats != null);
-              } catch (RemoteException remoteException) {
-                remoteException.rethrowFromSystemServer();
-              }
-            });
   }
 
   @Implementation(maxSdk = M)

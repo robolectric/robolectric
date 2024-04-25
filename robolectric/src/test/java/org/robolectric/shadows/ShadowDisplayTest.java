@@ -90,7 +90,7 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay_postKitKatFields() {
+  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay() {
     shadow.setState(Display.STATE_DOZE_SUSPEND);
 
     display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);

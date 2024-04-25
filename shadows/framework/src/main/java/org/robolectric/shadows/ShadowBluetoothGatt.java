@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.R;
@@ -95,7 +94,7 @@ public class ShadowBluetoothGatt {
                   iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE, Integer.TYPE
                 },
                 new Object[] {null, device, 0, 0});
-      } else if (apiLevel >= LOLLIPOP) {
+      } else {
         bluetoothGatt =
             Shadow.newInstance(
                 BluetoothGatt.class,
@@ -103,12 +102,6 @@ public class ShadowBluetoothGatt {
                   Context.class, iBluetoothGattClass, BluetoothDevice.class, Integer.TYPE
                 },
                 new Object[] {RuntimeEnvironment.getApplication(), null, device, 0});
-      } else {
-        bluetoothGatt =
-            Shadow.newInstance(
-                BluetoothGatt.class,
-                new Class<?>[] {Context.class, iBluetoothGattClass, BluetoothDevice.class},
-                new Object[] {RuntimeEnvironment.getApplication(), null, device});
       }
 
       PerfStatsCollector.getInstance().incrementCount("constructShadowBluetoothGatt");

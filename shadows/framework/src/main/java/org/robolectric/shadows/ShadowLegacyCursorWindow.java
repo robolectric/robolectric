@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.database.Cursor;
 import android.database.CursorWindow;
@@ -24,8 +23,8 @@ public class ShadowLegacyCursorWindow extends ShadowCursorWindow {
   private static final WindowData WINDOW_DATA = new WindowData();
 
   @Implementation
-  protected static Number nativeCreate(String name, int cursorWindowSize) {
-    return castNativePtr(WINDOW_DATA.create(name, cursorWindowSize));
+  protected static long nativeCreate(String name, int cursorWindowSize) {
+    return WINDOW_DATA.create(name, cursorWindowSize);
   }
 
   @Implementation

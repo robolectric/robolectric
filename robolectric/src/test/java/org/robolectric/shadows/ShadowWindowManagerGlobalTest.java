@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -9,7 +8,6 @@ import android.content.ClipData;
 import android.graphics.Rect;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.os.Looper;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
@@ -46,13 +44,6 @@ public class ShadowWindowManagerGlobalTest {
   @Test
   public void getWindowSession_shouldReturnSession() {
     assertThat(ShadowWindowManagerGlobal.getWindowSession()).isNotNull();
-  }
-
-  @Test
-  @Config(minSdk = JELLY_BEAN_MR1)
-  public void getWindowSession_withLooper_shouldReturnSession() {
-    // method not available in JELLY BEAN, sorry :(
-    assertThat(ShadowWindowManagerGlobal.getWindowSession(Looper.getMainLooper())).isNotNull();
   }
 
   @Test

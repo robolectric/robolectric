@@ -9,7 +9,6 @@ import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.os.BadParcelableException;
 import android.os.IBinder;
@@ -422,8 +421,8 @@ public class ShadowParcel {
 
   @Implementation
   @HiddenApi
-  public static Number nativeCreate() {
-    return castNativePtr(NATIVE_BYTE_BUFFER_REGISTRY.register(new ByteBuffer()));
+  public static long nativeCreate() {
+    return NATIVE_BYTE_BUFFER_REGISTRY.register(new ByteBuffer());
   }
 
   @Implementation

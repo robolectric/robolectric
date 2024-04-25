@@ -125,27 +125,19 @@ public class ShadowApplicationTest {
   }
 
   @Test
-  public void shouldProvideServicesIntroducedInJellyBeanMr1() throws Exception {
+  public void shouldProvideServicesAvailableInAllSdKs() throws Exception {
     assertThat(context.getSystemService(Context.DISPLAY_SERVICE))
         .isInstanceOf(android.hardware.display.DisplayManager.class);
     assertThat(context.getSystemService(Context.USER_SERVICE)).isInstanceOf(UserManager.class);
-  }
-
-  @Test
-  public void shouldProvideServicesIntroducedInKitKat() throws Exception {
-    assertThat(context.getSystemService(Context.PRINT_SERVICE)).isInstanceOf(PrintManager.class);
-    assertThat(context.getSystemService(Context.CAPTIONING_SERVICE))
-        .isInstanceOf(CaptioningManager.class);
-  }
-
-  @Test
-  public void shouldProvideServicesIntroducedInLollipop() throws Exception {
     assertThat(context.getSystemService(Context.MEDIA_SESSION_SERVICE))
         .isInstanceOf(MediaSessionManager.class);
     assertThat(context.getSystemService(Context.BATTERY_SERVICE))
         .isInstanceOf(BatteryManager.class);
     assertThat(context.getSystemService(Context.RESTRICTIONS_SERVICE))
         .isInstanceOf(RestrictionsManager.class);
+    assertThat(context.getSystemService(Context.PRINT_SERVICE)).isInstanceOf(PrintManager.class);
+    assertThat(context.getSystemService(Context.CAPTIONING_SERVICE))
+        .isInstanceOf(CaptioningManager.class);
   }
 
   @Test

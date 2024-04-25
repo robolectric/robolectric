@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 
 import android.os.Build.VERSION_CODES;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.res.android.Ref;
@@ -17,7 +16,7 @@ import org.xmlpull.v1.XmlPullParserException;
 public class ShadowXmlBlock {
 
   @Implementation
-  protected static Number nativeCreate(byte[] bArray, int off, int len) {
+  protected static long nativeCreate(byte[] bArray, int off, int len) {
     if (bArray == null) {
       throw new NullPointerException();
     }
@@ -39,18 +38,18 @@ public class ShadowXmlBlock {
       throw new IllegalArgumentException();
     }
 
-    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_RES_XML_TREES.register(osb));
+    return Registries.NATIVE_RES_XML_TREES.register(osb);
   }
 
   @Implementation
-  protected static Number nativeGetStringBlock(long obj) {
+  protected static long nativeGetStringBlock(long obj) {
     ResXMLTree osb = Registries.NATIVE_RES_XML_TREES.getNativeObject(obj);
-//    if (osb == NULL) {
-//      jniThrowNullPointerException(env, NULL);
-//      return 0;
-//    }
+    //    if (osb == NULL) {
+    //      jniThrowNullPointerException(env, NULL);
+    //      return 0;
+    //    }
 
-    return RuntimeEnvironment.castNativePtr(osb.getStrings().getNativePtr());
+    return osb.getStrings().getNativePtr();
   }
 
   @Implementation(maxSdk = VERSION_CODES.P)

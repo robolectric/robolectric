@@ -5,7 +5,6 @@ import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static org.robolectric.RuntimeEnvironment.castNativePtr;
 
 import android.database.sqlite.SQLiteAbortException;
 import android.database.sqlite.SQLiteAccessPermException;
@@ -67,10 +66,10 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
   private static final int IGNORED_REINDEX_STMT = -2;
 
   @Implementation(maxSdk = O)
-  protected static Number nativeOpen(
+  protected static long nativeOpen(
       String path, int openFlags, String label, boolean enableTrace, boolean enableProfile) {
     SQLiteLibraryLoader.load();
-    return castNativePtr(CONNECTIONS.open(path));
+    return CONNECTIONS.open(path);
   }
 
   @Implementation(minSdk = O_MR1)
@@ -82,7 +81,7 @@ public class ShadowLegacySQLiteConnection extends ShadowSQLiteConnection {
       boolean enableProfile,
       int lookasideSlotSize,
       int lookasideSlotCount) {
-    return nativeOpen(path, openFlags, label, enableTrace, enableProfile).longValue();
+    return nativeOpen(path, openFlags, label, enableTrace, enableProfile);
   }
 
   @Implementation

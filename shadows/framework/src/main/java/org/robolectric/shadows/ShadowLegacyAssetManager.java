@@ -7,7 +7,6 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
-import static org.robolectric.RuntimeEnvironment.castNativePtr;
 import static org.robolectric.shadow.api.Shadow.invokeConstructor;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -874,12 +873,13 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
     return type;
   }
 
-  @HiddenApi @Implementation
-  public Number createTheme() {
+  @HiddenApi
+  @Implementation
+  public long createTheme() {
     synchronized (nativeThemes) {
       long nativePtr = nextInternalThemeId++;
       nativeThemes.put(nativePtr, new NativeTheme(new ThemeStyleSet()));
-      return castNativePtr(nativePtr);
+      return nativePtr;
     }
   }
 

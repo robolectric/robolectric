@@ -257,7 +257,6 @@ public class ShadowAlarmManagerTest {
     verify(onFire).onAlarm();
   }
 
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   @Test
   public void setAlarmClock_pendingIntent() {
     AlarmClockInfo alarmClockInfo =
@@ -534,7 +533,6 @@ public class ShadowAlarmManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void getNextAlarmClockInfo() {
     AlarmClockInfo alarmClockInfo1 =
         new AlarmClockInfo(

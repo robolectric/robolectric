@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -18,7 +17,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -320,11 +318,6 @@ public class ShadowWindowManagerGlobal {
                   });
     }
     return windowSession;
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected static Object getWindowSession(Looper looper) {
-    return getWindowSession();
   }
 
   @Implementation

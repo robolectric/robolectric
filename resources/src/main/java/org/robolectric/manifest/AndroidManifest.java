@@ -614,12 +614,12 @@ public class AndroidManifest implements UsesSdk {
    * <p>Note that if {@link #targetSdkVersion} isn't set, this value changes the behavior of some
    * Android code (notably {@link android.content.SharedPreferences}) to emulate old bugs.
    *
-   * @return the minimum SDK version, or KitKat (19) by default
+   * @return the minimum SDK version, or Lollipop (21) by default
    */
   @Override
   public int getMinSdkVersion() {
     parseAndroidManifest();
-    return minSdkVersion == null ? 19 : minSdkVersion;
+    return minSdkVersion == null ? 21 : minSdkVersion;
   }
 
   /**
@@ -629,7 +629,7 @@ public class AndroidManifest implements UsesSdk {
    * <p>Note that this value changes the behavior of some Android code (notably {@link
    * android.content.SharedPreferences}) to emulate old bugs.
    *
-   * @return the target SDK version, or KitKat (19) by default
+   * @return the target SDK version, or Lollipop (21) by default
    */
   @Override
   public int getTargetSdkVersion() {

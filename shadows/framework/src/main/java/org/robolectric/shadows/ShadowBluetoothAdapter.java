@@ -116,7 +116,7 @@ public class ShadowBluetoothAdapter {
     setIsBluetoothSupported(true);
     BluetoothAdapterReflector bluetoothReflector = reflector(BluetoothAdapterReflector.class);
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel >= VERSION_CODES.LOLLIPOP && apiLevel <= VERSION_CODES.R) {
+    if (apiLevel <= VERSION_CODES.R) {
       bluetoothReflector.setSBluetoothLeAdvertiser(null);
       bluetoothReflector.setSBluetoothLeScanner(null);
     }

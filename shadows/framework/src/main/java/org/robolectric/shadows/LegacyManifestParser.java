@@ -15,7 +15,6 @@ import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
 import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
 import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
 import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.PatternMatcher.PATTERN_LITERAL;
 import static android.os.PatternMatcher.PATTERN_PREFIX;
 import static android.os.PatternMatcher.PATTERN_SIMPLE_GLOB;
@@ -272,12 +271,7 @@ public class LegacyManifestParser {
         .createIfNotExists(pkg.packageName + "-codePath")
         .toAbsolutePath()
         .toString();
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      pkg.codePath = codePath;
-    } else {
-      ReflectionHelpers.setField(Package.class, pkg, "mPath", codePath);
-    }
-
+    pkg.codePath = codePath;
     return pkg;
   }
 

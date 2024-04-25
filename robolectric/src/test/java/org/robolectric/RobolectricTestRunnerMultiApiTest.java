@@ -189,8 +189,8 @@ public class RobolectricTestRunnerMultiApiTest {
 
     assertThat(runListener.ignored).isEmpty();
     // Since test method should only be run once
-    int sdksInclusivelyBetweenJellyBeanMr2AndLollipop = 3;
-    assertThat(runListener.finished).hasSize(sdksInclusivelyBetweenJellyBeanMr2AndLollipop);
+    int sdksInclusivelyInRange = 3;
+    assertThat(runListener.finished).hasSize(sdksInclusivelyInRange);
   }
 
   @Test
@@ -225,8 +225,8 @@ public class RobolectricTestRunnerMultiApiTest {
     runner.run(runNotifier);
 
     assertThat(runListener.ignored).isEmpty();
-    int sdksInclusivelyBetweenJellyBeanMr2AndLollipop = 3;
-    assertThat(runListener.finished).hasSize(sdksInclusivelyBetweenJellyBeanMr2AndLollipop);
+    int sdksInclusivelyInRange = 3;
+    assertThat(runListener.finished).hasSize(sdksInclusivelyInRange);
   }
 
   ///////////////////////////

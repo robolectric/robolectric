@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -162,12 +161,6 @@ public class ShadowSettings {
     protected static boolean setLocationProviderEnabledForUser(
         ContentResolver cr, String provider, boolean enabled, int uid) {
       return updateEnabledProviders(cr, provider, enabled);
-    }
-
-    @Implementation(maxSdk = JELLY_BEAN)
-    protected static void setLocationProviderEnabled(
-        ContentResolver cr, String provider, boolean enabled) {
-      updateEnabledProviders(cr, provider, enabled);
     }
 
     // only for use locally and by ShadowLocationManager, which requires a tight integration with

@@ -238,8 +238,7 @@ public class ShadowSQLiteConnectionTest {
   private SQLiteConnection getSQLiteConnection() {
     ptr =
         ShadowLegacySQLiteConnection.nativeOpen(
-                databasePath.getPath(), 0, "test connection", false, false)
-            .longValue();
+            databasePath.getPath(), 0, "test connection", false, false);
     connections =
         ReflectionHelpers.getStaticField(ShadowLegacySQLiteConnection.class, "CONNECTIONS");
     return connections.getConnection(ptr);

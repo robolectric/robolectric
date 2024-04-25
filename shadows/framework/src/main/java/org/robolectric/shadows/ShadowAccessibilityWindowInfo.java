@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
@@ -25,7 +24,7 @@ import org.robolectric.util.reflector.ForType;
  * Shadow of {@link android.view.accessibility.AccessibilityWindowInfo} that allows a test to set
  * properties that are locked in the original class.
  */
-@Implements(value = AccessibilityWindowInfo.class, minSdk = LOLLIPOP)
+@Implements(value = AccessibilityWindowInfo.class)
 public class ShadowAccessibilityWindowInfo {
 
   private static final Map<StrictEqualityWindowWrapper, StackTraceElement[]> obtainedInstances =

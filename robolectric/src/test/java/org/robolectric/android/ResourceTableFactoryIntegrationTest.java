@@ -4,16 +4,13 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
 import org.robolectric.res.ResName;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
 public class ResourceTableFactoryIntegrationTest {
   @Test
   public void shouldIncludeStyleableAttributesThatDoNotHaveACorrespondingEntryInAttrClass() throws Exception {

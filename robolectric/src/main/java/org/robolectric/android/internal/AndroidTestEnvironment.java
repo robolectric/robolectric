@@ -16,7 +16,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageParser;
 import android.content.pm.PackageParser.Package;
 import android.content.res.AssetManager;
@@ -362,18 +361,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
           activityThread.getPackageInfo(applicationInfo, null, Context.CONTEXT_INCLUDE_CODE);
       final _LoadedApk_ _loadedApk_ = reflector(_LoadedApk_.class, loadedApk);
 
-      Context contextImpl;
-      if (apiLevel >= VERSION_CODES.LOLLIPOP) {
-        contextImpl = reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
-      } else {
-        try {
-          contextImpl =
-              systemContextImpl.createPackageContext(
-                  applicationInfo.packageName, Context.CONTEXT_INCLUDE_CODE);
-        } catch (PackageManager.NameNotFoundException e) {
-          throw new RuntimeException(e);
-        }
-      }
+      Context contextImpl =
+          reflector(_ContextImpl_.class).createAppContext(activityThread, loadedApk);
       ShadowPackageManager shadowPackageManager = Shadow.extract(contextImpl.getPackageManager());
       shadowPackageManager.addPackageInternal(parsedPackage);
       activityThreadReflector.setInitialApplication(application);

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
@@ -221,9 +220,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected void quit() {
-    reflector(MessageQueueReflector.class, realQueue).quit(false);
+  void quit() {
+    quit(true);
   }
 
   @Implementation

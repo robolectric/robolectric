@@ -272,12 +272,6 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
   //
 
   @HiddenApi
-  @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN_MR1)
-  public int addAssetPath(String path) {
-    return addAssetPathNative(path);
-  }
-
-  @HiddenApi
   @Implementation(maxSdk = M)
   final protected int addAssetPathNative(String path) {
     return addAssetPathNative(path, false);
@@ -315,7 +309,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi
   @Implementation
-  protected Number openAsset(String fileName, int mode) throws FileNotFoundException {
+  protected long openAsset(String fileName, int mode) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
 
     ALOGV("openAsset in %s", am);
@@ -336,9 +330,9 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       throw new FileNotFoundException(fileName8);
     }
 
-    //printf("Created Asset Stream: %p\n", a);
+    // printf("Created Asset Stream: %p\n", a);
 
-    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_ASSET_REGISTRY.register(a));
+    return Registries.NATIVE_ASSET_REGISTRY.register(a);
   }
 
   @HiddenApi @Implementation
@@ -363,16 +357,16 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi
   @Implementation
-  protected Number openNonAssetNative(int cookie, String fileName, int accessMode)
+  protected long openNonAssetNative(int cookie, String fileName, int accessMode)
       throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return RuntimeEnvironment.castNativePtr(0);
+      return 0;
     }
     ALOGV("openNonAssetNative in %s (Java object %s)\n", am, AssetManager.class);
     String fileName8 = fileName;
     if (fileName8 == null) {
-      return RuntimeEnvironment.castNativePtr(-1);
+      return -1;
     }
     AccessMode mode = AccessMode.fromInt(accessMode);
     if (mode != Asset.AccessMode.ACCESS_UNKNOWN && mode != Asset.AccessMode.ACCESS_RANDOM
@@ -388,8 +382,8 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
     long assetId = Registries.NATIVE_ASSET_REGISTRY.register(a);
     // todo: something better than this [xw]
     a.onClose = () -> destroyAsset(assetId);
-    //printf("Created Asset Stream: %p\n", a);
-    return RuntimeEnvironment.castNativePtr(assetId);
+    // printf("Created Asset Stream: %p\n", a);
+    return assetId;
   }
 
   @HiddenApi @Implementation
@@ -921,15 +915,15 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   }
 
-  @HiddenApi @Implementation
-  protected Number getNativeStringBlock(int block) {
+  @HiddenApi
+  @Implementation
+  protected long getNativeStringBlock(int block) {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return RuntimeEnvironment.castNativePtr(0);
+      return 0;
     }
 
-    return RuntimeEnvironment.castNativePtr(
-        am.getResources().getTableStringBlock(block).getNativePtr());
+    return am.getResources().getTableStringBlock(block).getNativePtr();
   }
 
   @Implementation
@@ -948,13 +942,13 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi
   @Implementation
-  protected Number newTheme() {
+  protected long newTheme() {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return RuntimeEnvironment.castNativePtr(0);
+      return 0;
     }
     ResTableTheme theme = new ResTableTheme(am.getResources());
-    return RuntimeEnvironment.castNativePtr(Registries.NATIVE_THEME_REGISTRY.register(theme));
+    return Registries.NATIVE_THEME_REGISTRY.register(theme);
   }
 
   @HiddenApi
@@ -1005,17 +999,17 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
 
   @HiddenApi
   @Implementation
-  protected Number openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
+  protected long openXmlAssetNative(int cookie, String fileName) throws FileNotFoundException {
     CppAssetManager am = assetManagerForJavaObject();
     if (am == null) {
-      return RuntimeEnvironment.castNativePtr(0);
+      return 0;
     }
 
     ALOGV("openXmlAsset in %s (Java object %s)\n", am, ShadowArscAssetManager.class);
 
     String fileName8 = fileName;
     if (fileName8 == null) {
-      return RuntimeEnvironment.castNativePtr(0);
+      return 0;
     }
 
     int assetCookie = cookie;
@@ -1043,8 +1037,7 @@ public class ShadowArscAssetManager extends ShadowAssetManager.ArscBase {
       throw new FileNotFoundException("Corrupt XML binary file");
     }
 
-    return RuntimeEnvironment.castNativePtr(
-        Registries.NATIVE_RES_XML_TREES.register(block));
+    return Registries.NATIVE_RES_XML_TREES.register(block);
   }
 
   @HiddenApi

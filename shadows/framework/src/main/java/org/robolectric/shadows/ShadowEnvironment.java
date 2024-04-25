@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -134,11 +133,6 @@ public class ShadowEnvironment {
       throw new RuntimeException(e);
     }
     return new File[] {path.toFile()};
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN_MR2)
-  protected static File getExternalStorageAppCacheDirectory(String packageName) {
-    return buildExternalStorageAppCacheDirs(packageName)[0];
   }
 
   /**
