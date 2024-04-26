@@ -15,6 +15,7 @@ import org.robolectric.versioning.AndroidVersions.V;
     value = PositionedGlyphs.class,
     minSdk = S.SDK_INT,
     shadowPicker = Picker.class,
+    isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativePositionedGlyphs {
   /**

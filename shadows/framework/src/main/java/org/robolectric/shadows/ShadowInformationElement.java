@@ -5,7 +5,10 @@ import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link android.net.wifi.ScanResult.InformationElement}. */
-@Implements(value = ScanResult.InformationElement.class, minSdk = VERSION_CODES.R)
+@Implements(
+    value = ScanResult.InformationElement.class,
+    minSdk = VERSION_CODES.R,
+    isInAndroidSdk = false)
 public class ShadowInformationElement {
   /**
    * A builder for creating ShadowInformationElement objects. Use build() to return the
