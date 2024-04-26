@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Intent;
 import android.net.Ikev2VpnProfile;
@@ -15,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
 @Config(minSdk = VERSION_CODES.R)
@@ -25,7 +25,7 @@ public class ShadowVpnManagerTest {
   @Before
   public void setUp() throws Exception {
     vpnManager = ApplicationProvider.getApplicationContext().getSystemService(VpnManager.class);
-    shadowVpnManager = shadowOf(vpnManager);
+    shadowVpnManager = Shadow.extract(vpnManager);
   }
 
   @Test

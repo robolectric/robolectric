@@ -6,6 +6,8 @@ import android.os.Build;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.Shadows;
 
 /**
  * Test class for Java's class resolve compatibility test. We must keep it with Java instead of
@@ -21,8 +23,6 @@ public class JavaClassResolveCompatibilityTest {
   @Test
   public void shadowOf() {
     // https://github.com/robolectric/robolectric/issues/7095
-    // Enable this assertion when resolving all shadowOf compatibility problem
-    // assertThat(Shadows.shadowOf((Application) ApplicationProvider.getApplicationContext()))
-    //     .isNotNull();
+    assertThat(Shadows.shadowOf(RuntimeEnvironment.getApplication())).isNotNull();
   }
 }

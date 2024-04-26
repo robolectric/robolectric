@@ -11,7 +11,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link VpnManager}. */
-@Implements(value = VpnManager.class, minSdk = VERSION_CODES.R)
+@Implements(value = VpnManager.class, minSdk = VERSION_CODES.R, isInAndroidSdk = false)
 public class ShadowVpnManager {
 
   private VpnProfileState vpnProfileState;
