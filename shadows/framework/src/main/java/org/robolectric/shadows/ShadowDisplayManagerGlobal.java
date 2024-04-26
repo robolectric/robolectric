@@ -3,11 +3,17 @@ package org.robolectric.shadows;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
+import static android.os.Build.VERSION_CODES.S;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
+import android.app.WindowConfiguration;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.hardware.display.BrightnessChangeEvent;
 import android.hardware.display.BrightnessConfiguration;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.IDisplayManager;
 import android.hardware.display.IDisplayManagerCallback;
@@ -17,6 +23,7 @@ import android.hardware.display.WifiDisplayStatus;
 import android.media.projection.IMediaProjection;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayInfo;
@@ -36,10 +43,12 @@ import org.robolectric.annotation.ClassName;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link DisplayManagerGlobal}. */
@@ -50,6 +59,8 @@ public class ShadowDisplayManagerGlobal {
 
   // TODO: remove and use DisplayManagerGlobal directly when compiling against Baklava
   private static final int EVENT_DISPLAY_BASIC_CHANGED = 2;
+
+  @RealObject private DisplayManagerGlobal realDisplayManagerGlobal;
 
   private float saturationLevel = 1f;
   private final SparseArray<BrightnessConfiguration> brightnessConfiguration = new SparseArray<>();
@@ -115,6 +126,53 @@ public class ShadowDisplayManagerGlobal {
     } catch (NoSuchFieldException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static boolean startPrinting = false;
+
+  @Implementation(minSdk = S)
+  protected Display getCompatibleDisplay(int displayId, Resources resources) {
+    Display display =
+        reflector(DisplayManagerGlobalReflector.class, realDisplayManagerGlobal)
+            .getCompatibleDisplay(displayId, resources);
+    if (startPrinting) {
+      Point realSize = new Point();
+      display.getRealSize(realSize);
+      System.err.println(
+          "  ^^^^^ getCompatibleDisplay: "
+              + displayId
+              + " "
+              + realSize.x
+              + " "
+              + realSize.y
+              + " "
+              + display.getWidth()
+              + " "
+              + display.getHeight()
+              + " "
+              + resources.getConfiguration().windowConfiguration);
+    }
+    return display;
+  }
+
+  @Implementation(minSdk = S)
+  protected DisplayInfo getDisplayInfo(int displayId) throws RemoteException {
+    DisplayInfo displayInfo = mDm.getDisplayInfo(displayId);
+    if (startPrinting) {
+      DisplayInfo otherDisplayInfo =
+          reflector(DisplayManagerGlobalReflector.class, realDisplayManagerGlobal)
+              .getDisplayInfo(displayId);
+      System.err.println(
+          "  ^^^^^ getDisplayInfo: "
+              + otherDisplayInfo.logicalWidth
+              + " "
+              + otherDisplayInfo.logicalHeight
+              + " "
+              + displayInfo.logicalWidth
+              + " "
+              + displayInfo.logicalHeight);
+    }
+    return displayInfo;
   }
 
   @VisibleForTesting
@@ -324,9 +382,77 @@ public class ShadowDisplayManagerGlobal {
       if (!displayInfos.containsKey(displayId)) {
         throw new IllegalStateException("no display " + displayId);
       }
-
+      DisplayInfo oldDisplayInfo = displayInfos.size() > 0 ? displayInfos.get(displayId) : null;
+      DisplayManager displayManager =
+          (DisplayManager)
+              RuntimeEnvironment.getApplication()
+                  .getBaseContext()
+                  .getSystemService(Context.DISPLAY_SERVICE);
+      if (displayId == 0) {
+        Resources resources =
+            reflector(DisplayReflector.class, ShadowDisplay.getDefaultDisplay()).getResources();
+        WindowConfiguration windowConfiguration = resources.getConfiguration().windowConfiguration;
+        Rect bounds = new Rect(0, 0, displayInfo.logicalWidth, displayInfo.logicalHeight);
+        windowConfiguration.setMaxBounds(bounds);
+        windowConfiguration.setBounds(bounds);
+        windowConfiguration.setAppBounds(bounds);
+      }
       displayInfos.put(displayId, displayInfo);
       notifyListeners(displayId, EVENT_DISPLAY_BASIC_CHANGED);
+
+      if (startPrinting) {
+        System.err.println("  @@@@@@ Time Start@@@@@");
+
+        float lastCachedAppSizeUpdate =
+            reflector(DisplayReflector.class, displayManager.getDisplays()[0])
+                .getLastCachedAppSizeUpdate();
+        float cachedAppSizeUpdate =
+            reflector(DisplayReflector.class, displayManager.getDisplays()[0])
+                .getCachedAppSizeUpdate();
+        reflector(DisplayReflector.class, displayManager.getDisplays()[0])
+            .setLastCachedAppSizeUpdate(0);
+        long now = SystemClock.uptimeMillis();
+        System.err.println("  @@@ Now: " + now);
+        System.err.println("  @@@ lastCachedAppSizeUpdate: " + lastCachedAppSizeUpdate);
+        System.err.println("  @@@ cachedAppSizeUpdate: " + cachedAppSizeUpdate);
+        System.err.println(
+            "  @@@ added: " + (now - (lastCachedAppSizeUpdate + cachedAppSizeUpdate)));
+
+        System.err.println("  @@@@@@ Time End @@@@@");
+      }
+
+      Point realSize = new Point();
+      displayManager.getDisplays()[0].getRealSize(realSize);
+      if (startPrinting) {
+        System.err.println("  ^^^^^ DisplayInfo was originally: " + oldDisplayInfo);
+        System.err.println("  ^^^^^ And then was set to...: " + displayInfo);
+        System.err.println(
+            "  ^^^^^ And getting it in a Display yields...: "
+                + displayId
+                + " "
+                + realSize.x
+                + " "
+                + realSize.y
+                + " "
+                + displayManager.getDisplays()[0].getWidth()
+                + " "
+                + displayManager.getDisplays()[0].getHeight());
+      }
+    }
+
+    @ForType(Display.class)
+    interface DisplayReflector {
+      @Accessor("mResources")
+      Resources getResources();
+
+      @Accessor("mLastCachedAppSizeUpdate")
+      long getLastCachedAppSizeUpdate();
+
+      @Accessor("mLastCachedAppSizeUpdate")
+      void setLastCachedAppSizeUpdate(long time);
+
+      @Accessor("CACHED_APP_SIZE_DURATION_MILLIS")
+      long getCachedAppSizeUpdate();
     }
 
     private synchronized void removeDisplay(int displayId) {
@@ -412,6 +538,13 @@ public class ShadowDisplayManagerGlobal {
 
   @ForType(DisplayManagerGlobal.class)
   interface DisplayManagerGlobalReflector {
+
+    @Direct
+    Display getCompatibleDisplay(int displayId, Resources resources);
+
+    @Direct
+    DisplayInfo getDisplayInfo(int displayId);
+
     @Accessor("mDm")
     void setDm(IDisplayManager displayManager);
 

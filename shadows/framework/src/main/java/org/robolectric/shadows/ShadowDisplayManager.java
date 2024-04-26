@@ -245,6 +245,8 @@ public class ShadowDisplayManager {
    */
   public static void changeDisplay(int displayId, String qualifiersStr) {
     DisplayInfo displayInfo = createDisplayInfo(qualifiersStr, displayId);
+    System.err.println(
+        "changeDisplay0: " + displayInfo.logicalWidth + " " + displayInfo.logicalHeight);
     getShadowDisplayManagerGlobal().changeDisplay(displayId, displayInfo);
     shadowMainLooper().idle();
   }
