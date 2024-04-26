@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import java.util.Locale;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.res.Qualifiers;
 import org.robolectric.res.android.ResTable_config;
 import org.robolectric.util.ReflectionHelpers;
@@ -258,6 +259,16 @@ public class DeviceConfig {
           ReflectionHelpers.getField(configuration, "windowConfiguration");
       windowConfiguration.setBounds(bounds);
       windowConfiguration.setAppBounds(bounds);
+      if (apiLevel >= VERSION_CODES.S) {
+        windowConfiguration.setMaxBounds(bounds);
+        if (RuntimeEnvironment.getApplication() != null) {
+          RuntimeEnvironment.getApplication()
+              .getResources()
+              .getConfiguration()
+              .windowConfiguration
+              .setMaxBounds(bounds);
+        }
+      }
     }
   }
 
@@ -266,6 +277,7 @@ public class DeviceConfig {
    * href="http://robolectric.org/device-configuration/">here</a>.
    */
   static void applyRules(Configuration configuration, DisplayMetrics displayMetrics, int apiLevel) {
+    System.err.println("JULIA applyRules: " + configuration);
     Locale locale = getLocale(configuration, apiLevel);
 
     String language = locale == null ? "" : locale.getLanguage();
