@@ -98,6 +98,8 @@ public class ShadowMediaCodec {
 
   @Nullable private MediaFormat pendingOutputFormat;
   @Nullable private MediaFormat outputFormat;
+  @Nullable private String[] initialPendingOutputFormatKeys;
+  @Nullable private Object[] initialPendingOutputFormatValues;
 
   private final BlockingQueue<Integer> inputBuffersPendingDequeue = new LinkedBlockingDeque<>();
   private final BlockingQueue<Integer> outputBuffersPendingDequeue = new LinkedBlockingDeque<>();
@@ -175,13 +177,15 @@ public class ShadowMediaCodec {
   }
 
   private void innerConfigure(
-      String[] keys,
-      Object[] values,
+      @Nullable String[] keys,
+      @Nullable Object[] values,
       @Nullable Surface surface,
       @Nullable MediaCrypto mediaCrypto,
       int flags) {
     isAsync = callback != null;
     pendingOutputFormat = recreateMediaFormatFromKeysValues(keys, values);
+    initialPendingOutputFormatKeys = keys;
+    initialPendingOutputFormatValues = values;
     fakeCodec.onConfigured(pendingOutputFormat, surface, mediaCrypto, flags);
   }
 
@@ -202,10 +206,21 @@ public class ShadowMediaCodec {
       // Report the format as changed, to simulate adding codec specific info before making input
       // buffers available.
       HashMap<String, Object> format = new HashMap<>();
+      if (pendingOutputFormat != null) {
+        pendingOutputFormat.setByteBuffer("csd-0", ByteBuffer.wrap(new byte[] {0x13, 0x10}));
+        pendingOutputFormat.setByteBuffer("csd-1", ByteBuffer.wrap(new byte[0]));
+        if (initialPendingOutputFormatKeys != null
+            && initialPendingOutputFormatValues != null
+            && initialPendingOutputFormatKeys.length == initialPendingOutputFormatValues.length) {
+          for (int i = 0; i < initialPendingOutputFormatKeys.length; i++) {
+            format.put(initialPendingOutputFormatKeys[i], initialPendingOutputFormatValues[i]);
+          }
+        }
+      }
       format.put("csd-0", ByteBuffer.wrap(new byte[] {0x13, 0x10}));
       format.put("csd-1", ByteBuffer.wrap(new byte[0]));
-      postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_FORMAT_CHANGE, 0, format);
 
+      postFakeNativeEvent(EVENT_CALLBACK, CB_OUTPUT_FORMAT_CHANGE, 0, format);
       try {
         makeInputBufferAvailable(inputBuffersPendingDequeue.take());
       } catch (InterruptedException e) {
@@ -544,6 +559,7 @@ public class ShadowMediaCodec {
 
       /** Move the bytes on the in buffer to the out buffer */
       void process(ByteBuffer in, ByteBuffer out);
+
       /** Called when the codec is configured. @see MediaCodec#configure */
       default void onConfigured(
           MediaFormat format, @Nullable Surface surface, @Nullable MediaCrypto crypto, int flags) {}

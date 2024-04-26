@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
@@ -209,7 +210,13 @@ public final class ShadowMediaCodecTest {
   @Test
   public void formatChangeReported() throws IOException {
     MediaCodec codec = createAsyncEncoder();
-    verify(callback).onOutputFormatChanged(same(codec), any());
+    MediaFormat mediaFormat = getBasicAacFormat();
+    // ShadowMediaCodec if async, simulates adding codec specific info before making input
+    // buffers available.
+    mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(new byte[] {0x13, 0x10}));
+    mediaFormat.setByteBuffer("csd-1", ByteBuffer.wrap(new byte[0]));
+
+    verify(callback).onOutputFormatChanged(same(codec), refEq(mediaFormat));
   }
 
   @Test
