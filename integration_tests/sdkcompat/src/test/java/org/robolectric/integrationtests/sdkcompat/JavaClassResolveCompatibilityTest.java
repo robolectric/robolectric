@@ -14,8 +14,8 @@ import org.robolectric.RobolectricTestRunner;
 @RunWith(RobolectricTestRunner.class)
 public class JavaClassResolveCompatibilityTest {
   @Test
-  public void sdkIs28() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.P);
+  public void sdkIs29() {
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.Q);
   }
 
   @Test

@@ -27,8 +27,8 @@ class NormalCompatibilityTest {
   private val application = RuntimeEnvironment.getApplication()
 
   @Test
-  fun `Environment SDK is 28`() {
-    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.P)
+  fun `Environment SDK is 29`() {
+    assertThat(Build.VERSION.SDK_INT).isEqualTo(Build.VERSION_CODES.Q)
   }
 
   @Test
