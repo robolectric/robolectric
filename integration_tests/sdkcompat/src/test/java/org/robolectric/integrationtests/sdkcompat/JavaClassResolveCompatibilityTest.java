@@ -1,4 +1,4 @@
-package org.robolectric.integration.compat.target28;
+package org.robolectric.integrationtests.sdkcompat;
 
 import static com.google.common.truth.Truth.assertThat;
 
