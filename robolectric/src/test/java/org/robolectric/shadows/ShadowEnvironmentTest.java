@@ -151,7 +151,6 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isExternalStorageRemovable_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageRemovable(file)).isFalse();
@@ -160,7 +159,6 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isExternalStorageEmulated_shouldReturnSavedValue() {
     final File file = new File("/mnt/media/file");
     assertThat(Environment.isExternalStorageEmulated(file)).isFalse();
@@ -178,7 +176,6 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void storageIsLazy() {
     assertNull(ShadowEnvironment.EXTERNAL_CACHE_DIR);
     assertNull(ShadowEnvironment.EXTERNAL_FILES_DIR);
@@ -191,7 +188,6 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void reset_shouldClearRemovableFiles() {
     final File file = new File("foo");
     ShadowEnvironment.setExternalStorageRemovable(file, true);
@@ -202,7 +198,6 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void reset_shouldClearEmulatedFiles() {
     final File file = new File("foo");
     ShadowEnvironment.setExternalStorageEmulated(file, true);
@@ -213,7 +208,6 @@ public class ShadowEnvironmentTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void reset_shouldResetExternalStorageState() {
     ShadowEnvironment.setExternalStorageState(Environment.MEDIA_UNKNOWN);
     ShadowEnvironment.reset();

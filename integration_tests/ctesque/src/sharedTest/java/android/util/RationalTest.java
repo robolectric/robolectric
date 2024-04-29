@@ -29,7 +29,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -41,11 +40,9 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
 @DoNotInstrument
-@Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public class RationalTest {
 

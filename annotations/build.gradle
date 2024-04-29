@@ -6,5 +6,11 @@ apply plugin: DeployedRoboJavaModulePlugin
 
 dependencies {
     compileOnly libs.findbugs.jsr305
+    compileOnly libs.javax.annotation.api
     compileOnly AndroidSdk.MAX_SDK.coordinates
+    testImplementation libs.truth
+    testImplementation libs.junit4
+    testImplementation libs.javax.annotation.api
+    testCompileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK
+    testRuntimeOnly AndroidSdk.MAX_SDK.coordinates // run against whatever this JDK supports
 }

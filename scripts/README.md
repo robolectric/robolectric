@@ -52,16 +52,20 @@ Now use repo to sync the android source, and then build.
 
 The currently supported Android versions are:
 
-*  `4.1.2_r1`    - Jelly Bean API 16
-*  `4.2.2_r1.2`  - Jelly Bean MR1 API 17
-*  `4.3_r2`      - Jelly Bean MR2 API 18
-*  `4.4_r1`      - Kit Kat API 19
 *  `5.0.2_r3`    - Lollipop API 21
 *  `5.1.1_r9`    - Lollipop MR1 API 22
 *  `6.0.1_r3`    - Marshmallow API 23
 *  `7.0.0_r1`    - Nougat API 24
 *  `7.1.0_r7`    - Nougat MR1 API 25
 *  `8.0.0_r4`    - Oreo API 26
+*  `8.1.0`       - Oreo MR1 API 27
+*  `9`           - P API 28
+*  `10`          - Q API 29
+*  `11`          - R API 30
+*  `12`          - S API 31
+*  `12.1`        - S V2 API 32
+*  `13`          - T API 33
+*  `14`          - U API 34
 
 Beware it can take upwards of 100 GB of space to sync and build. 
 

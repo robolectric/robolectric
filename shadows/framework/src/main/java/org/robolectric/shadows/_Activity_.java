@@ -28,23 +28,6 @@ public interface _Activity_ {
   @Accessor("mToken")
   IBinder getToken();
 
-  // == KITKAT:
-  void attach(
-      Context context,
-      ActivityThread activityThread,
-      Instrumentation instrumentation,
-      IBinder token,
-      int ident,
-      Application application,
-      Intent intent,
-      ActivityInfo activityInfo,
-      CharSequence title,
-      Activity parent,
-      String id,
-      @WithType("android.app.Activity$NonConfigurationInstances")
-          Object lastNonConfigurationInstances,
-      Configuration configuration);
-
   // <= LOLLIPOP:
   void attach(
       Context context,
@@ -181,22 +164,7 @@ public interface _Activity_ {
       @WithType("android.app.Activity$NonConfigurationInstances")
           Object lastNonConfigurationInstances) {
     int apiLevel = RuntimeEnvironment.getApiLevel();
-    if (apiLevel == Build.VERSION_CODES.KITKAT) {
-      attach(
-          baseContext,
-          activityThread,
-          instrumentation,
-          token,
-          0,
-          application,
-          intent,
-          activityInfo,
-          activityTitle,
-          null,
-          null,
-          lastNonConfigurationInstances,
-          application.getResources().getConfiguration());
-    } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
+    if (apiLevel <= Build.VERSION_CODES.LOLLIPOP) {
       attach(
           baseContext,
           activityThread,

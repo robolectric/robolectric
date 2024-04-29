@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
@@ -608,8 +607,10 @@ public class ShadowAccountManager {
     previousNames.put(account, previousName);
   }
 
-  /** @see #setPreviousAccountName(Account, String) */
-  @Implementation(minSdk = LOLLIPOP)
+  /**
+   * @see #setPreviousAccountName(Account, String)
+   */
+  @Implementation
   protected String getPreviousName(Account account) {
     return previousNames.get(account);
   }

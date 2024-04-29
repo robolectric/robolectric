@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
@@ -137,11 +135,6 @@ public class ShadowEnvironment {
     return new File[] {path.toFile()};
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR2)
-  protected static File getExternalStorageAppCacheDirectory(String packageName) {
-    return buildExternalStorageAppCacheDirs(packageName)[0];
-  }
-
   /**
    * Sets the return value of {@link #getExternalStoragePublicDirectory}. Note that the default
    * value provides a directory that is usable in the test environment. If the test app uses this
@@ -208,7 +201,7 @@ public class ShadowEnvironment {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected static String getExternalStorageState(File directory) {
     Path directoryPath = directory.toPath();
     for (Map.Entry<Path, String> entry : storageState.entrySet()) {
@@ -219,13 +212,13 @@ public class ShadowEnvironment {
     return null;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected static boolean isExternalStorageRemovable(File path) {
     final Boolean exists = STORAGE_REMOVABLE.get(path);
     return exists != null ? exists : false;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected static boolean isExternalStorageEmulated(File path) {
     final Boolean emulated = STORAGE_EMULATED.get(path);
     return emulated != null ? emulated : false;

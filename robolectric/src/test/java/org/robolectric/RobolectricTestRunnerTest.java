@@ -31,6 +31,7 @@ import javax.inject.Named;
 import org.junit.After;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -512,5 +513,24 @@ public class RobolectricTestRunnerTest {
       }
       events.add("failure: " + message);
     }
+  }
+
+  @Test
+  public void shouldReportExceptionsInBeforeClass() throws Exception {
+    RobolectricTestRunner runner =
+        new SingleSdkRobolectricTestRunner(TestWithBeforeClassThatThrowsRuntimeException.class);
+    runner.run(notifier);
+    assertThat(events.get(1)).startsWith("failure: fail");
+  }
+
+  @Ignore
+  public static class TestWithBeforeClassThatThrowsRuntimeException {
+    @BeforeClass
+    public static void beforeClass() {
+      throw new RuntimeException("fail");
+    }
+
+    @Test
+    public void test() {}
   }
 }

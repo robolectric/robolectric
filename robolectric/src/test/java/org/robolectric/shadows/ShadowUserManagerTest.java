@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -64,7 +62,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldGetUserProfiles() {
     assertThat(userManager.getUserProfiles()).contains(Process.myUserHandle());
 
@@ -76,7 +73,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getUserProfiles_calledFromProfile_shouldReturnList() {
     ShadowProcess.setUid(2 * 100000);
     assertThat(userManager.getUserProfiles()).contains(new UserHandle(2));
@@ -87,7 +83,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getUserProfiles_noProfiles_shouldReturnListOfSelf() {
     assertThat(userManager.getUserProfiles()).containsExactly(new UserHandle(0));
   }
@@ -118,7 +113,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void hasUserRestriction() {
     assertThat(userManager.hasUserRestriction(UserManager.ENSURE_VERIFY_APPS)).isFalse();
 
@@ -180,7 +174,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isManagedProfile() {
     assertThat(userManager.isManagedProfile()).isFalse();
     shadowOf(userManager).setManagedProfile(true);
@@ -257,7 +250,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void enforcePermissionChecks() {
     shadowOf(userManager).enforcePermissionChecks(true);
 
@@ -452,7 +444,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = KITKAT_WATCH)
   public void isGuestUser() {
     assertThat(userManager.isGuestUser()).isFalse();
 
@@ -698,7 +689,6 @@ public class ShadowUserManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getProfiles_addedProfile_containsProfile() {
     shadowOf(userManager).addUser(TEST_USER_HANDLE, "", 0);
     shadowOf(userManager)

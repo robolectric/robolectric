@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.annotation.Nullable;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraCharacteristics.Key;
-import android.os.Build.VERSION_CODES;
 import com.google.common.base.Preconditions;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +10,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = CameraCharacteristics.class, minSdk = VERSION_CODES.LOLLIPOP)
+@Implements(value = CameraCharacteristics.class)
 public class ShadowCameraCharacteristics {
 
   private final Map<Key<?>, Object> charactersKeyToValue = new HashMap<>();

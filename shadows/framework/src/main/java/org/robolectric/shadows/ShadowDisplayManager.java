@@ -151,10 +151,6 @@ public class ShadowDisplayManager {
       displayInfo.state = Display.STATE_ON;
     }
 
-    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-      displayInfo.getAppMetrics(displayMetrics);
-    }
-
     return displayInfo;
   }
 

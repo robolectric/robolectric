@@ -32,7 +32,7 @@ public class ShadowPausedMessage extends ShadowMessage {
 
   // TODO: Reconsider this being exposed as a public method
   @Override
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   public void recycleUnchecked() {
     if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
       reflector(MessageReflector.class, realMessage).recycleUnchecked();

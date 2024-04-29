@@ -5,7 +5,7 @@
 
 Robolectric is the industry-standard unit testing framework for Android. With Robolectric, your tests run in a simulated Android environment inside a JVM, without the overhead and flakiness of an emulator. Robolectric tests routinely run 10x faster than those on cold-started emulators.
 
-Robolectric supports running unit tests for *15* different versions of Android, ranging from KitKat (API level 19) to U (API level 34).
+Robolectric supports running unit tests for *14* different versions of Android, ranging from Lollipop (API level 21) to U (API level 34).
 
 ## Usage
 

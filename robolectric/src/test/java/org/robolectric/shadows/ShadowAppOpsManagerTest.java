@@ -467,7 +467,6 @@ public class ShadowAppOpsManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void setRestrictions() {
     appOps.setRestriction(
         OP_VIBRATE, AudioAttributes.USAGE_NOTIFICATION, MODE_ERRORED, new String[] {PACKAGE_NAME1});

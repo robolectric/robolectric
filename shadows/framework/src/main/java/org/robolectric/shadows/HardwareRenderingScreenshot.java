@@ -16,7 +16,6 @@ import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
 import com.android.internal.R;
-import java.nio.IntBuffer;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -26,7 +25,7 @@ import org.robolectric.util.ReflectionHelpers;
  */
 public final class HardwareRenderingScreenshot {
 
-  static final String USE_HARDWARE_RENDERER_NATIVE_ENV = "robolectric.screenshot.hwrdr.native";
+  static final String PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode";
 
   private HardwareRenderingScreenshot() {}
 
@@ -37,7 +36,7 @@ public final class HardwareRenderingScreenshot {
    */
   static boolean canTakeScreenshot() {
     return VERSION.SDK_INT >= VERSION_CODES.S
-        && Boolean.getBoolean(HardwareRenderingScreenshot.USE_HARDWARE_RENDERER_NATIVE_ENV)
+        && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
         && ShadowView.useRealGraphics();
   }
 
@@ -71,21 +70,8 @@ public final class HardwareRenderingScreenshot {
       renderer.setContentRoot(node);
 
       renderer.createRenderRequest().syncAndDraw();
-
-      int[] renderPixels = new int[width * height];
-
       Plane[] planes = nativeImage.getPlanes();
-      IntBuffer srcBuff = planes[0].getBuffer().asIntBuffer();
-      srcBuff.get(renderPixels);
-
-      destBitmap.setPixels(
-          renderPixels,
-          /* offset= */ 0,
-          /* stride= */ width,
-          /* x= */ 0,
-          /* y= */ 0,
-          width,
-          height);
+      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
       surface.release();
     }
   }

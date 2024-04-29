@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
@@ -91,8 +90,7 @@ public class ShadowDisplayTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
-  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay_postKitKatFields() {
+  public void stateChangeShouldApplyToOtherInstancesOfSameDisplay() {
     shadow.setState(Display.STATE_DOZE_SUSPEND);
 
     display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);

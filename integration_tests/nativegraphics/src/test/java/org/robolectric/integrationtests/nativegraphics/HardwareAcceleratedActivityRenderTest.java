@@ -1,29 +1,73 @@
 package org.robolectric.integrationtests.nativegraphics;
 
 import static android.os.Build.VERSION_CODES.S;
+import static com.google.common.truth.Truth.assertThat;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.PixelCopy;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = S)
 public class HardwareAcceleratedActivityRenderTest {
   @Test
-  public void setupHardwareAcceleratedActivity() {
-    // This will exercise much of the HardwareRenderer / RenderNode / RecordingCanvas native code.
-    ActivityController<Activity> controller = Robolectric.buildActivity(Activity.class);
-    controller
-        .get()
-        .getWindow()
-        .setFlags(
-            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
-    controller.setup();
+  public void hardwareAcceleratedActivity_setup() throws Exception {
+    // Setting up an Activity is a smoke test that exercises much of the HardwareRenderer /
+    // RenderNode / RecordingCanvas native code.
+    Robolectric.setupActivity(HardwareAcceleratedActivity.class);
+  }
+
+  @Test
+  public void hardwareAcceleratedActivity_pixelCopy() throws Exception {
+    System.setProperty("robolectric.pixelCopyRenderMode", "hardware");
+    try {
+      HardwareAcceleratedActivity activity =
+          Robolectric.setupActivity(HardwareAcceleratedActivity.class);
+      Window window = activity.getWindow();
+      View decorView = window.getDecorView();
+      Bitmap bitmap =
+          Bitmap.createBitmap(decorView.getWidth(), decorView.getHeight(), Bitmap.Config.ARGB_8888);
+      CountDownLatch latch = new CountDownLatch(1);
+      PixelCopy.request(
+          window, bitmap, copyResult -> latch.countDown(), new Handler(Looper.getMainLooper()));
+      latch.await(1, TimeUnit.SECONDS);
+      assertThat(bitmap.getPixel(100, 100)).isEqualTo(Color.RED);
+    } finally {
+      System.clearProperty("robolectric.pixelCopyRenderMode");
+    }
+  }
+
+  static class HardwareAcceleratedActivity extends Activity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      // TODO(hoisie): manually setting these flags should not be required. Robolectric should
+      // set them automatically by default (they have been default since ICS).
+      getWindow()
+          .setFlags(
+              WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+              WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+      FrameLayout frameLayout = new FrameLayout(this);
+      frameLayout.setLayoutParams(
+          new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+      frameLayout.setBackgroundColor(Color.RED);
+      setContentView(frameLayout);
+    }
   }
 }

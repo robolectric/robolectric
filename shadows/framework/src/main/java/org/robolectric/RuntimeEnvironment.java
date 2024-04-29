@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
@@ -248,16 +247,6 @@ public class RuntimeEnvironment {
 
   public static int getApiLevel() {
     return apiLevel;
-  }
-
-  public static Number castNativePtr(long ptr) {
-    // Weird, using a ternary here doesn't work, there's some auto promotion of boxed types
-    // happening.
-    if (getApiLevel() >= LOLLIPOP) {
-      return ptr;
-    } else {
-      return (int) ptr;
-    }
   }
 
   /**

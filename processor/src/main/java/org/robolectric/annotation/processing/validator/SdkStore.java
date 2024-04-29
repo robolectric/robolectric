@@ -16,16 +16,23 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -39,17 +46,27 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersionInitTools;
+import org.robolectric.versioning.AndroidVersions;
 
 /** Encapsulates a collection of Android framework jars. */
 public class SdkStore {
 
   private final Set<Sdk> sdks = new TreeSet<>();
   private boolean loaded = false;
+  private final boolean loadFromClasspath;
+  private final String overrideSdkLocation;
+  private final int overrideSdkInt;
   private final String sdksFile;
 
-  public SdkStore(String sdksFile) {
+  /** */
+  public SdkStore(
+      String sdksFile, boolean loadFromClasspath, String overrideSdkLocation, int overrideSdkInt) {
     this.sdksFile = sdksFile;
+    this.loadFromClasspath = loadFromClasspath;
+    this.overrideSdkLocation = overrideSdkLocation;
+    this.overrideSdkInt = overrideSdkInt;
   }
 
   List<Sdk> sdksMatching(Implementation implementation, int classMinSdk, int classMaxSdk) {
@@ -73,7 +90,7 @@ public class SdkStore {
 
     List<Sdk> matchingSdks = new ArrayList<>();
     for (Sdk sdk : sdks) {
-      Integer sdkInt = sdk.sdkInt;
+      int sdkInt = sdk.sdkRelease.getSdkInt();
       if (sdkInt >= minSdk && sdkInt <= maxSdk) {
         matchingSdks.add(sdk);
       }
@@ -83,21 +100,90 @@ public class SdkStore {
 
   private synchronized void loadSdksOnce() {
     if (!loaded) {
-      sdks.addAll(loadFromSdksFile(sdksFile));
+      sdks.addAll(
+          loadFromSources(loadFromClasspath, sdksFile, overrideSdkLocation, overrideSdkInt));
       loaded = true;
     }
   }
 
-  private static ImmutableList<Sdk> loadFromSdksFile(String fileName) {
-    if (fileName == null || Files.notExists(Paths.get(fileName))) {
+  /**
+   * @return a list of sdk_int's to jar locations as a string, one tuple per line.
+   */
+  @Override
+  @SuppressWarnings("JdkCollectors")
+  public String toString() {
+    loadSdksOnce();
+    StringBuilder builder = new StringBuilder();
+    builder.append("SdkStore [");
+    for (Sdk sdk : sdks.stream().sorted().collect(Collectors.toList())) {
+      builder.append("    " + sdk.sdkRelease.getSdkInt() + " : " + sdk.path + "\n");
+    }
+    builder.append("]");
+    return builder.toString();
+  }
+
+  /**
+   * Scans the jvm properties for the command that executed it, in this command will be the
+   * classpath. <br>
+   * <br>
+   * Scans all jars on the classpath for the first one with a /build.prop on resource. This is
+   * assumed to be the sdk that the processor is running with.
+   *
+   * @return the detected sdk location.
+   */
+  private static String compilationSdkTarget() {
+    String cmd = System.getProperty("sun.java.command");
+    Pattern pattern = Pattern.compile("((-cp)|(-classpath))\\s(?<cp>[a-zA-Z-_0-9\\-\\:\\/\\.]*)");
+    Matcher matcher = pattern.matcher(cmd);
+    if (matcher.find()) {
+      String classpathString = matcher.group("cp");
+      List<String> cp = Arrays.asList(classpathString.split(":"));
+      for (String fileStr : cp) {
+        try (JarFile jarFile = new JarFile(fileStr)) {
+          ZipEntry entry = jarFile.getEntry("build.prop");
+          if (entry != null) {
+            return fileStr;
+          }
+        } catch (IOException ioe) {
+          System.out.println("Error detecting compilation SDK: " + ioe.getMessage());
+          ioe.printStackTrace();
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns a list of sdks to process, either the compilation's classpaths sdk in a list of size
+   * one, or the list of sdks in a sdkFile.
+   *
+   * @param localSdk validate sdk found in compile time classpath, takes precedence over sdkFile
+   * @param sdkFileName the sdkFile name, may be null, or empty
+   * @param overrideSdkLocation if provided overrides the default lookup of the localSdk, iff
+   *     localSdk is on.
+   * @return a list of sdks to check with annotation processing validators.
+   */
+  private static ImmutableList<Sdk> loadFromSources(
+      boolean localSdk, String sdkFileName, String overrideSdkLocation, int overrideSdkInt) {
+    if (localSdk) {
+      Sdk sdk = null;
+      if (overrideSdkLocation != null) {
+        sdk = new Sdk(overrideSdkLocation, overrideSdkInt);
+      } else {
+        String target = compilationSdkTarget();
+        if (target != null) {
+          sdk = new Sdk(target);
+        }
+      }
+      return sdk == null ? ImmutableList.of() : ImmutableList.of(sdk);
+    }
+    if (sdkFileName == null || Files.notExists(Paths.get(sdkFileName))) {
       return ImmutableList.of();
     }
-
-    try (InputStream resIn = new FileInputStream(fileName)) {
+    try (InputStream resIn = new FileInputStream(sdkFileName)) {
       if (resIn == null) {
-        throw new RuntimeException("no such file " + fileName);
+        throw new RuntimeException("no such file " + sdkFileName);
       }
-
       BufferedReader in =
           new BufferedReader(new InputStreamReader(resIn, Charset.defaultCharset()));
       List<Sdk> sdks = new ArrayList<>();
@@ -109,7 +195,7 @@ public class SdkStore {
       }
       return ImmutableList.copyOf(sdks);
     } catch (IOException e) {
-      throw new RuntimeException("failed reading " + fileName, e);
+      throw new RuntimeException("failed reading " + sdkFileName, e);
     }
   }
 
@@ -132,14 +218,29 @@ public class SdkStore {
 
     private final String path;
     private final JarFile jarFile;
+    final AndroidVersions.AndroidRelease sdkRelease;
     final int sdkInt;
     private final Map<String, ClassInfo> classInfos = new HashMap<>();
     private static File tempDir;
 
     Sdk(String path) {
+      this(path, null);
+    }
+
+    Sdk(String path, Integer sdkInt) {
       this.path = path;
-      this.jarFile = ensureJar();
-      this.sdkInt = readSdkInt();
+      if (path.startsWith("classpath:") || path.endsWith(".jar")) {
+        this.jarFile = ensureJar();
+      } else {
+        this.jarFile = null;
+      }
+      if (sdkInt == null) {
+        this.sdkRelease = readSdkVersion();
+        this.sdkInt = sdkRelease.getSdkInt();
+      } else {
+        this.sdkRelease = AndroidVersions.getReleaseForSdkInt(sdkInt);
+        this.sdkInt = sdkRelease.getSdkInt();
+      }
     }
 
     /**
@@ -156,34 +257,40 @@ public class SdkStore {
       String className = getClassFQName(sdkClassElem);
       ClassInfo classInfo = getClassInfo(className);
 
-      if (classInfo == null) {
+      if (classInfo == null && !suppressWarnings(sdkClassElem, null)) {
         return "No such class " + className;
       }
 
       MethodExtraInfo sdkMethod = classInfo.findMethod(methodElement, looseSignatures);
-      if (sdkMethod == null) {
+      if (sdkMethod == null && !suppressWarnings(methodElement, null)) {
         return "No such method in " + className;
       }
-
-      MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
-      if (!sdkMethod.equals(implMethod)
-          && !suppressWarnings(methodElement, "robolectric.ShadowReturnTypeMismatch")) {
-        if (implMethod.isStatic != sdkMethod.isStatic) {
-          return "@Implementation for " + methodElement.getSimpleName()
-              + " is " + (implMethod.isStatic ? "static" : "not static")
-              + " unlike the SDK method";
-        }
-        if (!implMethod.returnType.equals(sdkMethod.returnType)) {
-          if (
-              (looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
-                  || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))
-                  // Number is allowed for int or long return types
-                  || typeIsNumeric(sdkMethod, implMethod)) {
-            return null;
-          } else {
-            return "@Implementation for " + methodElement.getSimpleName()
-                + " has a return type of " + implMethod.returnType
-                + ", not " + sdkMethod.returnType + " as in the SDK method";
+      if (sdkMethod != null) {
+        MethodExtraInfo implMethod = new MethodExtraInfo(methodElement);
+        if (!sdkMethod.equals(implMethod)
+            && !suppressWarnings(methodElement, "robolectric.ShadowReturnTypeMismatch")) {
+          if (implMethod.isStatic != sdkMethod.isStatic) {
+            return "@Implementation for "
+                + methodElement.getSimpleName()
+                + " is "
+                + (implMethod.isStatic ? "static" : "not static")
+                + " unlike the SDK method";
+          }
+          if (!implMethod.returnType.equals(sdkMethod.returnType)) {
+            if ((looseSignatures && typeIsOkForLooseSignatures(implMethod, sdkMethod))
+                || (looseSignatures && implMethod.returnType.equals("java.lang.Object[]"))
+                // Number is allowed for int or long return types
+                || typeIsNumeric(sdkMethod, implMethod)) {
+              return null;
+            } else {
+              return "@Implementation for "
+                  + methodElement.getSimpleName()
+                  + " has a return type of "
+                  + implMethod.returnType
+                  + ", not "
+                  + sdkMethod.returnType
+                  + " as in the SDK method";
+            }
           }
         }
       }
@@ -191,32 +298,45 @@ public class SdkStore {
       return null;
     }
 
-    private static boolean suppressWarnings(ExecutableElement methodElement, String warningName) {
+    /**
+     * Warnings (or potentially Errors, depending on processing flags) can be suppressed in one of
+     * two ways, either with @SuppressWarnings("robolectric.<warningName>"), or with
+     * the @InDevelopment annotation, if and only the target Sdk is in development.
+     *
+     * @param annotatedElement element to inspect for annotations
+     * @param warningName the name of the warning, if null, @InDevelopment will still be honored.
+     * @return true if the warning should be suppressed, else false
+     */
+    private boolean suppressWarnings(Element annotatedElement, String warningName) {
       SuppressWarnings[] suppressWarnings =
-          methodElement.getAnnotationsByType(SuppressWarnings.class);
+          annotatedElement.getAnnotationsByType(SuppressWarnings.class);
       for (SuppressWarnings suppression : suppressWarnings) {
         for (String name : suppression.value()) {
-          if (warningName.equals(name)) {
+          if (warningName != null && warningName.equals(name)) {
             return true;
           }
         }
+      }
+      InDevelopment[] inDev = annotatedElement.getAnnotationsByType(InDevelopment.class);
+      if (inDev.length > 0 && !sdkRelease.isReleased()) {
+        return true;
       }
       return false;
     }
 
     private static boolean typeIsNumeric(MethodExtraInfo sdkMethod, MethodExtraInfo implMethod) {
       return implMethod.returnType.equals("java.lang.Number")
-      && isNumericType(sdkMethod.returnType);
+          && isNumericType(sdkMethod.returnType);
     }
 
     private static boolean typeIsOkForLooseSignatures(
         MethodExtraInfo implMethod, MethodExtraInfo sdkMethod) {
       return
-          // loose signatures allow a return type of Object...
-          implMethod.returnType.equals("java.lang.Object")
-              // or Object[] for arrays...
-              || (implMethod.returnType.equals("java.lang.Object[]")
-                  && sdkMethod.returnType.endsWith("[]"));
+      // loose signatures allow a return type of Object...
+      implMethod.returnType.equals("java.lang.Object")
+          // or Object[] for arrays...
+          || (implMethod.returnType.equals("java.lang.Object[]")
+              && sdkMethod.returnType.endsWith("[]"));
     }
 
     private static boolean isNumericType(String type) {
@@ -250,9 +370,9 @@ public class SdkStore {
      *
      * @return the API level
      */
-    private int readSdkInt() {
+    private AndroidVersions.AndroidRelease readSdkVersion() {
       try {
-        return AndroidVersionInitTools.computeReleaseVersion(jarFile).getSdkInt();
+        return AndroidVersionInitTools.computeReleaseVersion(jarFile);
       } catch (IOException e) {
         throw new RuntimeException("failed to read build.prop from " + path);
       }
@@ -267,12 +387,13 @@ public class SdkStore {
         }
 
       } catch (IOException e) {
-        throw new RuntimeException("failed to open SDK " + sdkInt + " at " + path, e);
+        throw new RuntimeException(
+            "failed to open SDK " + sdkRelease.getSdkInt() + " at " + path, e);
       }
     }
 
     private static File copyResourceToFile(String resourcePath) throws IOException {
-      if (tempDir == null){
+      if (tempDir == null) {
         File tempFile = File.createTempFile("prefix", "suffix");
         tempFile.deleteOnExit();
         tempDir = tempFile.getParentFile();
@@ -296,15 +417,45 @@ public class SdkStore {
 
     private ClassNode loadClassNode(String name) {
       String classFileName = name.replace('.', '/') + ".class";
-      ZipEntry entry = jarFile.getEntry(classFileName);
-      if (entry == null) {
+      Supplier<InputStream> inputStreamSupplier = null;
+
+      if (jarFile != null) {
+        // working with a jar file.
+        ZipEntry entry = jarFile.getEntry(classFileName);
+        if (entry == null) {
+          return null;
+        }
+        inputStreamSupplier =
+            () -> {
+              try {
+                return jarFile.getInputStream(entry);
+              } catch (IOException ioe) {
+                throw new RuntimeException("could not read zip entry", ioe);
+              }
+            };
+      } else {
+        // working with an exploded path location.
+        Path working = Path.of(path, classFileName);
+        File classFile = working.toFile();
+        if (classFile.isFile()) {
+          inputStreamSupplier =
+              () -> {
+                try {
+                  return new FileInputStream(classFile);
+                } catch (IOException ioe) {
+                  throw new RuntimeException("could not read file in path " + working, ioe);
+                }
+              };
+        }
+      }
+      if (inputStreamSupplier == null) {
         return null;
       }
-      try (InputStream inputStream = jarFile.getInputStream(entry)) {
+      try (InputStream inputStream = inputStreamSupplier.get()) {
         ClassReader classReader = new ClassReader(inputStream);
         ClassNode classNode = new ClassNode();
-        classReader.accept(classNode,
-            ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        classReader.accept(
+            classNode, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         return classNode;
       } catch (IOException e) {
         throw new RuntimeException("failed to analyze " + classFileName + " in " + path, e);
@@ -313,7 +464,7 @@ public class SdkStore {
 
     @Override
     public int compareTo(Sdk sdk) {
-      return sdk.sdkInt - sdkInt;
+      return sdk.sdkRelease.getSdkInt() - sdkRelease.getSdkInt();
     }
   }
 
@@ -321,8 +472,7 @@ public class SdkStore {
     private final Map<MethodInfo, MethodExtraInfo> methods = new HashMap<>();
     private final Map<MethodInfo, MethodExtraInfo> erasedParamTypesMethods = new HashMap<>();
 
-    private ClassInfo() {
-    }
+    private ClassInfo() {}
 
     public ClassInfo(ClassNode classNode) {
       for (Object aMethod : classNode.methods) {
@@ -401,20 +551,17 @@ public class SdkStore {
         return false;
       }
       MethodInfo that = (MethodInfo) o;
-      return Objects.equals(name, that.name)
-          && Objects.equals(paramTypes, that.paramTypes);
+      return Objects.equals(name, that.name) && Objects.equals(paramTypes, that.paramTypes);
     }
 
     @Override
     public int hashCode() {
       return Objects.hash(name, paramTypes);
     }
+
     @Override
     public String toString() {
-      return "MethodInfo{"
-          + "name='" + name + '\''
-          + ", paramTypes=" + paramTypes
-          + '}';
+      return "MethodInfo{" + "name='" + name + '\'' + ", paramTypes=" + paramTypes + '}';
     }
   }
 

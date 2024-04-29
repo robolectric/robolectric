@@ -627,7 +627,6 @@ public class ShadowWifiManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void is5GhzBandSupportedAndConfigurable() {
     assertThat(wifiManager.is5GHzBandSupported()).isFalse();
     shadowOf(wifiManager).setIs5GHzBandSupported(true);

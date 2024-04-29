@@ -16,7 +16,6 @@ import org.robolectric.annotation.Config;
 
 /** Test for {@link ShadowRanking}. */
 @RunWith(RobolectricTestRunner.class)
-@Config(minSdk = VERSION_CODES.KITKAT_WATCH)
 public class ShadowRankingTest {
   private Ranking ranking;
 

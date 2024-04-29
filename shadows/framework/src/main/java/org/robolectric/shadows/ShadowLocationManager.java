@@ -905,7 +905,7 @@ public class ShadowLocationManager {
   /**
    * Returns the list of {@link LocationRequest} currently registered under the given provider.
    * Clients compiled against the public Android SDK should only use this method on S+, clients
-   * compiled against the system Android SDK may only use this method on Kitkat+.
+   * compiled against the system Android SDK can use this method on any supported SDK.
    *
    * <p>Prior to Android S {@link LocationRequest} equality is not well defined, so prefer using
    * {@link #getLegacyLocationRequests(String)} instead if equality is required for testing.
@@ -1785,8 +1785,8 @@ public class ShadowLocationManager {
   }
 
   /**
-   * LocationRequest doesn't exist prior to Kitkat, and is not public prior to S, so a new class is
-   * required to represent it prior to those platforms.
+   * LocationRequest is not public prior to S, so a new class is required to represent it prior to
+   * those platforms.
    */
   public static final class RoboLocationRequest {
     @Nullable private final Object locationRequest;
@@ -1968,7 +1968,9 @@ public class ShadowLocationManager {
       ArrayList<Location> deliverableLocations = new ArrayList<>(locations.length);
       for (Location location : locations) {
         if (lastDeliveredLocation != null) {
-          if (location.getTime() - lastDeliveredLocation.getTime()
+          if (NANOSECONDS.toMillis(
+                  location.getElapsedRealtimeNanos()
+                      - lastDeliveredLocation.getElapsedRealtimeNanos())
               < request.getMinUpdateIntervalMillis()) {
             Log.w(TAG, "location rejected for simulated delivery - too fast");
             continue;

@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -74,12 +72,7 @@ public class ShadowBitmapRegionDecoder {
   }
 
   private static BitmapRegionDecoder newInstance() {
-    if (getApiLevel() >= LOLLIPOP) {
-      return ReflectionHelpers.callConstructor(BitmapRegionDecoder.class,
-          new ReflectionHelpers.ClassParameter<>(long.class, 0L));
-    } else {
-      return ReflectionHelpers.callConstructor(BitmapRegionDecoder.class,
-          new ReflectionHelpers.ClassParameter<>(int.class, 0));
-    }
+    return ReflectionHelpers.callConstructor(
+        BitmapRegionDecoder.class, new ReflectionHelpers.ClassParameter<>(long.class, 0L));
   }
 }

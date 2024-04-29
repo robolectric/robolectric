@@ -51,12 +51,7 @@ class RoborazziCaptureTest {
         RoborazziRule.Options(
           outputDirectoryPath = OUTPUT_DIRECTORY_PATH,
           roborazziOptions =
-            RoborazziOptions(
-              recordOptions =
-                RoborazziOptions.RecordOptions(
-                  resizeScale = 0.5,
-                )
-            )
+            RoborazziOptions(recordOptions = RoborazziOptions.RecordOptions(resizeScale = 0.5)),
         )
     )
 
@@ -99,13 +94,16 @@ class RoborazziCaptureTest {
         |run `./gradlew integration_tests:roborazzi:recordRoborazziDebug -Drobolectric.alwaysIncludeVariantMarkersInTestName=true` and commit the changes.
         |"""
           .trimMargin(),
-        e
+        e,
       )
     }
   }
 
   companion object {
+    // TODO(hoisie): `robolectric.screenshot.hwrdr.native` is obsolete, remove it after the next
+    // Robolectric point release.
     const val USE_HARDWARE_RENDERER_NATIVE_ENV = "robolectric.screenshot.hwrdr.native"
+    const val PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode"
   }
 }
 
@@ -113,17 +111,14 @@ private fun registerActivityToPackageManager(activity: String) {
   val appContext: Application =
     InstrumentationRegistry.getInstrumentation().targetContext.applicationContext as Application
   Shadows.shadowOf(appContext.packageManager)
-    .addActivityIfNotPresent(
-      ComponentName(
-        appContext.packageName,
-        activity,
-      )
-    )
+    .addActivityIfNotPresent(ComponentName(appContext.packageName, activity))
 }
 
 private fun hardwareRendererEnvironment(block: () -> Unit) {
   val originalHwrdrOption =
     System.getProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV, null)
+  val originalPixelCopyOption =
+    System.getProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE, null)
   // This cause ClassNotFoundException: java.nio.NioUtils
   // TODO: Remove comment out after fix this issue
   // https://github.com/robolectric/robolectric/issues/8081#issuecomment-1858726896
@@ -133,8 +128,10 @@ private fun hardwareRendererEnvironment(block: () -> Unit) {
   } finally {
     if (originalHwrdrOption == null) {
       System.clearProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV)
+      System.clearProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE)
     } else {
       System.setProperty(RoborazziCaptureTest.USE_HARDWARE_RENDERER_NATIVE_ENV, originalHwrdrOption)
+      System.setProperty(RoborazziCaptureTest.PIXEL_COPY_RENDER_MODE, originalPixelCopyOption)
     }
   }
 }
@@ -158,9 +155,9 @@ private class RoborazziViewWithElevationTestActivity : Activity() {
           },
           LinearLayout.LayoutParams(
               LinearLayout.LayoutParams.MATCH_PARENT,
-              LinearLayout.LayoutParams.MATCH_PARENT
+              LinearLayout.LayoutParams.MATCH_PARENT,
             )
-            .apply { setMargins(10.toDp(), 10.toDp(), 10.toDp(), 10.toDp()) }
+            .apply { setMargins(10.toDp(), 10.toDp(), 10.toDp(), 10.toDp()) },
         )
       }
     )
@@ -181,9 +178,9 @@ private class RoborazziDialogTestActivity : Activity() {
           TextView(this.context).apply { text = "Under the dialog" },
           LinearLayout.LayoutParams(
               LinearLayout.LayoutParams.WRAP_CONTENT,
-              LinearLayout.LayoutParams.WRAP_CONTENT
+              LinearLayout.LayoutParams.WRAP_CONTENT,
             )
-            .apply { setMargins(10.toDp(), 10.toDp(), 10.toDp(), 10.toDp()) }
+            .apply { setMargins(10.toDp(), 10.toDp(), 10.toDp(), 10.toDp()) },
         )
       }
     )

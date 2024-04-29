@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -14,10 +13,8 @@ import com.google.common.collect.Iterables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public final class ShadowRestrictionsManagerTest {
 
   private RestrictionsManager restrictionsManager;

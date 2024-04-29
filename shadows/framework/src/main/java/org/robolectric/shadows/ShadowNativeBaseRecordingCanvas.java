@@ -21,6 +21,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     value = BaseRecordingCanvas.class,
     minSdk = Q,
     shadowPicker = Picker.class,
+    callNativeMethodsByDefault = true,
     isInAndroidSdk = false)
 public class ShadowNativeBaseRecordingCanvas extends ShadowNativeCanvas {
 

@@ -16,7 +16,6 @@ import org.robolectric.util.ReflectionHelpers;
 /** Shadow class for {@link CameraCaptureSessionImpl} */
 @Implements(
     value = CameraCaptureSessionImpl.class,
-    minSdk = VERSION_CODES.LOLLIPOP,
     isInAndroidSdk = false)
 public class ShadowCameraCaptureSessionImpl {
   @RealObject private CameraCaptureSessionImpl realObject;

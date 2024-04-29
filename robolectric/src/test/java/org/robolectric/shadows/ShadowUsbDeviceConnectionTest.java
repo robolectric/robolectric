@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertThrows;
@@ -26,7 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.annotation.Config;
 
 /** Unit tests for {@link ShadowUsbDeviceConnection}. */
 @RunWith(AndroidJUnit4.class)
@@ -54,7 +52,6 @@ public class ShadowUsbDeviceConnectionTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void claimInterface() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
@@ -64,7 +61,6 @@ public class ShadowUsbDeviceConnectionTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setInterface() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
@@ -73,7 +69,6 @@ public class ShadowUsbDeviceConnectionTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void controlTransfer() {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
@@ -104,7 +99,6 @@ public class ShadowUsbDeviceConnectionTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void bulkTransfer() throws Exception {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);
@@ -132,7 +126,6 @@ public class ShadowUsbDeviceConnectionTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void releaseInterface_closesOutgoingDataStream() throws Exception {
     UsbDeviceConnection usbDeviceConnection = usbManager.openDevice(usbDevice);
     UsbInterface usbInterface = selectInterface(usbDevice);

@@ -9,7 +9,6 @@ configurations {
 }
 
 dependencies {
-    api project(":shadowapi")
     compileOnly AndroidSdk.MAX_SDK.coordinates // compile against latest Android SDK (AndroidSdk.s.coordinates) { force = true }
     testImplementation project(":robolectric")
     testImplementation libs.truth

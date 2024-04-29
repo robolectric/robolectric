@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -33,6 +32,7 @@ import android.os.SystemProperties;
 import android.telecom.PhoneAccountHandle;
 import android.telephony.Annotation.NetworkType;
 import android.telephony.Annotation.OverrideNetworkType;
+import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneStateListener;
@@ -153,6 +153,7 @@ public class ShadowTelephonyManager {
   private static final Map<Integer, String> simCountryIsoMap =
       Collections.synchronizedMap(new LinkedHashMap<>());
   private int simCarrierId;
+  private int simSpecificCarrierId;
   private CharSequence simCarrierIdName;
   private int carrierIdFromSimMccMnc;
   private String subscriberId;
@@ -177,6 +178,8 @@ public class ShadowTelephonyManager {
   private VisualVoicemailSmsFilterSettings visualVoicemailSmsFilterSettings;
   private static volatile boolean emergencyCallbackMode;
   private static Map<Integer, List<EmergencyNumber>> emergencyNumbersList;
+  private static volatile boolean isDataRoamingEnabled;
+  private /*CarrierRestrictionRules*/ Object carrierRestrictionRules;
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -432,7 +435,7 @@ public class ShadowTelephonyManager {
     setNetworkOperatorName(networkOperatorName);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected String getImei() {
     checkReadPhoneStatePermission();
     return imei;
@@ -1195,7 +1198,7 @@ public class ShadowTelephonyManager {
     return carrierPackageNames.get(phoneId);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi
   protected List<String> getCarrierPackageNamesForIntent(Intent intent) {
     return carrierPackageNames.get(SubscriptionManager.DEFAULT_SUBSCRIPTION_ID);
@@ -1224,6 +1227,16 @@ public class ShadowTelephonyManager {
   /** Sets the value to be returned by {@link #getSimCarrierId()}. */
   public void setSimCarrierId(int simCarrierId) {
     this.simCarrierId = simCarrierId;
+  }
+
+  @Implementation(minSdk = Q)
+  protected int getSimSpecificCarrierId() {
+    return simSpecificCarrierId;
+  }
+
+  /** Sets the value to be returned by {@link #getSimSpecificCarrierId()}. */
+  public void setSimSpecificCarrierId(int simSpecificCarrierId) {
+    this.simSpecificCarrierId = simSpecificCarrierId;
   }
 
   @Implementation(minSdk = P)
@@ -1632,5 +1645,42 @@ public class ShadowTelephonyManager {
       return ShadowTelephonyManager.emergencyNumbersList;
     }
     return ImmutableMap.of();
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#isDataRoamingEnabled}.
+   *
+   * @return False by default, unless set with {@link #setDataRoamingEnabled(boolean)}.
+   */
+  @Implementation(minSdk = Q)
+  protected boolean isDataRoamingEnabled() {
+    checkReadPhoneStatePermission();
+    return isDataRoamingEnabled;
+  }
+
+  /** Sets the value to be returned by {@link #isDataRoamingEnabled()} */
+  @Implementation(minSdk = Q)
+  protected void setDataRoamingEnabled(boolean isDataRoamingEnabled) {
+    ShadowTelephonyManager.isDataRoamingEnabled = isDataRoamingEnabled;
+  }
+
+  /**
+   * Sets the value to be returned by {@link #getCarrierRestrictionRules()}. Marked as public in
+   * order to allow it to be used as a test API.
+   *
+   * @param carrierRestrictionRules An object of type {@link CarrierRestrictionRules}
+   */
+  public void setCarrierRestrictionRules(Object carrierRestrictionRules) {
+    Preconditions.checkState(carrierRestrictionRules instanceof CarrierRestrictionRules);
+    this.carrierRestrictionRules = carrierRestrictionRules;
+  }
+
+  /**
+   * Implementation for {@link TelephonyManager#getCarrierRestrictionRules} that is set for tests by
+   * {@link TelephonyManager#setCarrierRestrictionRules}.
+   */
+  @Implementation(minSdk = Build.VERSION_CODES.Q)
+  protected /*CarrierRestrictionRules*/ Object getCarrierRestrictionRules() {
+    return carrierRestrictionRules;
   }
 }

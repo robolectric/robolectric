@@ -21,6 +21,7 @@ import java.util.Queue;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.util.ReflectionHelpers;
@@ -114,6 +115,7 @@ public class ShadowSpeechRecognizer {
    * sets the latest SpeechRecognizer.
    */
   @Implementation(maxSdk = U.SDK_INT) // TODO(hoisie): Update this to support Android V
+  @InDevelopment
   protected void handleChangeListener(RecognitionListener listener) {
     recognitionListener = listener;
   }

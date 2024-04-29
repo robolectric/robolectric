@@ -4,7 +4,6 @@ import static android.app.AlarmManager.RTC_WAKEUP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.Nullable;
-import android.annotation.RequiresApi;
 import android.app.AlarmManager;
 import android.app.AlarmManager.AlarmClockInfo;
 import android.app.AlarmManager.OnAlarmListener;
@@ -203,8 +202,7 @@ public class ShadowAlarmManager {
         false);
   }
 
-  @RequiresApi(VERSION_CODES.LOLLIPOP)
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void setAlarmClock(AlarmClockInfo info, PendingIntent operation) {
     setImpl(RTC_WAKEUP, info.getTriggerTime(), WINDOW_EXACT, 0L, operation, null, info, true);
   }
@@ -355,8 +353,7 @@ public class ShadowAlarmManager {
     return canScheduleExactAlarms;
   }
 
-  @RequiresApi(VERSION_CODES.LOLLIPOP)
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   @Nullable
   protected AlarmClockInfo getNextAlarmClock() {
     synchronized (scheduledAlarms) {
@@ -533,9 +530,7 @@ public class ShadowAlarmManager {
           WINDOW_HEURISTIC,
           operation,
           null,
-          VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && showIntent != null
-              ? new AlarmClockInfo(triggerAtMs, showIntent)
-              : null,
+          showIntent != null ? new AlarmClockInfo(triggerAtMs, showIntent) : null,
           allowWhileIdle);
     }
 
@@ -561,7 +556,7 @@ public class ShadowAlarmManager {
       this.allowWhileIdle = allowWhileIdle;
 
       this.handler = null;
-      if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && alarmClockInfo != null) {
+      if (alarmClockInfo != null) {
         this.showIntent = ((AlarmClockInfo) alarmClockInfo).getShowIntent();
       } else {
         this.showIntent = null;
@@ -596,7 +591,7 @@ public class ShadowAlarmManager {
       } else {
         this.handler = null;
       }
-      if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && alarmClockInfo != null) {
+      if (alarmClockInfo != null) {
         this.showIntent = ((AlarmClockInfo) alarmClockInfo).getShowIntent();
       } else {
         this.showIntent = null;
@@ -646,7 +641,6 @@ public class ShadowAlarmManager {
       return workSource;
     }
 
-    @RequiresApi(VERSION_CODES.LOLLIPOP)
     @Nullable
     public AlarmClockInfo getAlarmClockInfo() {
       return (AlarmClockInfo) alarmClockInfo;

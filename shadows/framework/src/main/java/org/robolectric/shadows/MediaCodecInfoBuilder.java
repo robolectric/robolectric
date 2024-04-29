@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 import static java.util.Arrays.asList;
 
@@ -119,14 +118,12 @@ public class MediaCodecInfoBuilder {
           ClassParameter.from(String.class, name), // canonicalName
           ClassParameter.from(int.class, flags),
           ClassParameter.from(CodecCapabilities[].class, capabilities));
-    } else if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
+    } else {
       return ReflectionHelpers.callConstructor(
           MediaCodecInfo.class,
           ClassParameter.from(String.class, name),
           ClassParameter.from(boolean.class, isEncoder),
           ClassParameter.from(CodecCapabilities[].class, capabilities));
-    } else {
-      throw new UnsupportedOperationException("Unable to create MediaCodecInfo");
     }
   }
 

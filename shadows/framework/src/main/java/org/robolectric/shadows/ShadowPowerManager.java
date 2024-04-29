@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -110,7 +109,7 @@ public class ShadowPowerManager {
     setIsInteractive(screenOn);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isInteractive() {
     return isInteractive;
   }
@@ -131,7 +130,7 @@ public class ShadowPowerManager {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isPowerSaveMode() {
     return isPowerSaveMode;
   }
@@ -142,7 +141,7 @@ public class ShadowPowerManager {
 
   private Map<Integer, Boolean> supportedWakeLockLevels = new HashMap<>();
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isWakeLockLevelSupported(int level) {
     return supportedWakeLockLevels.containsKey(level) ? supportedWakeLockLevels.get(level) : false;
   }

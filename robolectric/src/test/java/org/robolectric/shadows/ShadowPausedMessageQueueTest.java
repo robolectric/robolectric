@@ -36,7 +36,7 @@ public class ShadowPausedMessageQueueTest {
 
   @After
   public void tearDown() {
-    if (shadowQueue != null) {
+    if (queue != null) {
       shadowQueue.quit();
     }
   }

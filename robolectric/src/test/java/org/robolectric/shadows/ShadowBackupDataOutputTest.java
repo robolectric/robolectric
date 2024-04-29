@@ -6,17 +6,14 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.backup.BackupDataOutput;
-import android.os.Build.VERSION_CODES;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
 import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.ForType;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public final class ShadowBackupDataOutputTest {
 
   private static final String TEST_PREFIX = "prefix";

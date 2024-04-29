@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.copyOfRange;
 import static java.util.Collections.max;
@@ -8,6 +7,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
@@ -33,13 +33,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig.Codec;
 
 /** Tests for {@link ShadowMediaCodec}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public final class ShadowMediaCodecTest {
   private static final String AUDIO_MIME = "audio/fake";
   private static final String AUDIO_DECODER_NAME = "audio-fake.decoder";
@@ -212,7 +210,13 @@ public final class ShadowMediaCodecTest {
   @Test
   public void formatChangeReported() throws IOException {
     MediaCodec codec = createAsyncEncoder();
-    verify(callback).onOutputFormatChanged(same(codec), any());
+    MediaFormat mediaFormat = getBasicAacFormat();
+    // ShadowMediaCodec if async, simulates adding codec specific info before making input
+    // buffers available.
+    mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(new byte[] {0x13, 0x10}));
+    mediaFormat.setByteBuffer("csd-1", ByteBuffer.wrap(new byte[0]));
+
+    verify(callback).onOutputFormatChanged(same(codec), refEq(mediaFormat));
   }
 
   @Test

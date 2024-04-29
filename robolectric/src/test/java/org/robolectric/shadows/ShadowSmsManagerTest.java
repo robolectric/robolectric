@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
@@ -144,7 +143,6 @@ public class ShadowSmsManagerTest {
   // Tests for {@link SmsManager#sendMultimediaMessage}
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void sendMultimediaMessage_shouldStoreLastSentMultimediaMessageParameters() {
     Bundle configOverrides = new Bundle();
     configOverrides.putBoolean("enableMMSDeliveryReports", true);
@@ -162,7 +160,6 @@ public class ShadowSmsManagerTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @Config(minSdk = LOLLIPOP)
   public void sendMultimediaMessage_shouldThrowExceptionWithEmptyContentUri() {
     smsManager.sendMultimediaMessage(
         null,
@@ -188,7 +185,6 @@ public class ShadowSmsManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void clearLastSentMultimediaMessageParams_shouldClearParameters() {
     smsManager.sendMultimediaMessage(
         null,
@@ -205,7 +201,6 @@ public class ShadowSmsManagerTest {
   // Tests for {@link SmsManager#downloadMultimediaMessage}
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void downloadMultimediaMessage_shouldStoreLastDownloadedMultimediaMessageParameters() {
     Bundle configOverrides = new Bundle();
     configOverrides.putBoolean("enableMMSDeliveryReports", true);
@@ -239,7 +234,6 @@ public class ShadowSmsManagerTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @Config(minSdk = LOLLIPOP)
   public void downloadMultimediaMessage_shouldThrowExceptionWithEmptyLocationUrl() {
     smsManager.downloadMultimediaMessage(
         null,
@@ -250,7 +244,6 @@ public class ShadowSmsManagerTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  @Config(minSdk = LOLLIPOP)
   public void downloadMultimediaMessage_shouldThrowExceptionWithEmptyContentUri() {
     smsManager.downloadMultimediaMessage(
         null,
@@ -261,7 +254,6 @@ public class ShadowSmsManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void clearLastDownloadedMultimediaMessageParams_shouldClearParameters() {
     smsManager.downloadMultimediaMessage(
         null,

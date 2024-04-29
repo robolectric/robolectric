@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.content.Context.WIFI_SERVICE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.RuntimeEnvironment.getApplication;
 import static org.robolectric.Shadows.shadowOf;
@@ -14,7 +13,6 @@ import java.net.InetAddress;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowWifiInfoTest {
@@ -95,7 +93,6 @@ public class ShadowWifiInfoTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldReturnFrequency() {
     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
     assertThat(wifiInfo.getFrequency()).isEqualTo(-1);

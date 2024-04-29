@@ -8,7 +8,6 @@ import static org.junit.Assert.fail;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -97,7 +96,8 @@ public class QualifiersTest {
     assertThat(resources.getConfiguration().smallestScreenWidthDp).isEqualTo(720);
   }
 
-  @Test @Config(qualifiers = "b+sr+Latn", minSdk = VERSION_CODES.LOLLIPOP)
+  @Test
+  @Config(qualifiers = "b+sr+Latn")
   public void supportsBcp47() throws Exception {
     assertThat(resources.getString(R.string.hello)).isEqualTo("Zdravo");
   }

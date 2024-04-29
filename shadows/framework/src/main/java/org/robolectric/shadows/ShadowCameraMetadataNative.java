@@ -14,12 +14,12 @@ import org.robolectric.annotation.Implements;
     maxSdk = Q,
     isInAndroidSdk = false)
 public class ShadowCameraMetadataNative {
-  @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   protected long nativeAllocate() {
     return 1L;
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = Q)
+  @Implementation(maxSdk = Q)
   protected long nativeAllocateCopy(CameraMetadataNative other) {
     return 1L;
   }

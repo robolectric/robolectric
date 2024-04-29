@@ -23,7 +23,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectric test for {@link android.telecom.Call}. */
-@Implements(value = Call.class, minSdk = VERSION_CODES.LOLLIPOP)
+@Implements(value = Call.class)
 public class ShadowCall {
   @RealObject Call realObject;
   private boolean hasSentRttRequest;

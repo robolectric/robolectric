@@ -6,7 +6,6 @@ import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN;
 import static android.net.NetworkCapabilities.NET_CAPABILITY_TRUSTED;
 import static android.net.NetworkCapabilities.TRANSPORT_CELLULAR;
 import static android.net.NetworkCapabilities.TRANSPORT_WIFI;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -26,7 +25,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowNetworkCapabilitiesTest {
 
   @Test

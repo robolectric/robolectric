@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.android.CustomView;
-import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAlertDialogTest {
@@ -136,7 +134,6 @@ public class ShadowAlertDialogTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldSetView_withLayoutId() {
     AlertDialog.Builder builder = new AlertDialog.Builder(getApplication());
     builder.setView(R.layout.custom_layout);

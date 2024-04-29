@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.graphics.Region;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -36,8 +35,8 @@ public class ShadowRegion {
 
   @HiddenApi
   @Implementation
-  protected static Number nativeConstructor() {
-    return RuntimeEnvironment.castNativePtr(nextId++);
+  protected static long nativeConstructor() {
+    return nextId++;
   }
 
   @ForType(Region.class)

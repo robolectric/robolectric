@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
@@ -34,7 +33,6 @@ import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowAudioTrack}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowAudioTrackTest implements ShadowAudioTrack.OnAudioDataWrittenListener {
 
   private static final int SAMPLE_RATE_IN_HZ = 44100;

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 
@@ -32,7 +31,7 @@ public class ShadowNativeMatrix extends ShadowMatrix {
     // deferred
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected static long native_create(long nSrcOrZero) {
     return nCreate(nSrcOrZero);
   }

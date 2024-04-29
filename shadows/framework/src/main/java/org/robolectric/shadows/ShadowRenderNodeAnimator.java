@@ -19,7 +19,8 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
 
-@Implements(value = RenderNodeAnimator.class, isInAndroidSdk = false, minSdk = LOLLIPOP, maxSdk = Q)
+/** Shadow for {@link RenderNodeAnimator}. */
+@Implements(value = RenderNodeAnimator.class, isInAndroidSdk = false, maxSdk = Q)
 public class ShadowRenderNodeAnimator {
   private static final int STATE_FINISHED = 3;
 

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.view.View.SYSTEM_UI_FLAG_VISIBLE;
@@ -64,11 +63,6 @@ public class ShadowWindowManagerImpl extends ShadowWindowManager {
 
   public List<View> getViews() {
     return ImmutableList.copyOf(views.get(realObject.getDefaultDisplay().getDisplayId()));
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN)
-  public Display getDefaultDisplay() {
-    return reflector(ReflectorWindowManagerImpl.class, realObject).getDefaultDisplay();
   }
 
   /** Re implement to avoid server call */

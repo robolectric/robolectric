@@ -1,6 +1,5 @@
 package org.robolectric.integrationtests.axt;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
@@ -26,13 +25,11 @@ import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.filters.SdkSuppress;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.annotation.LooperMode.Mode;
 import org.robolectric.integration.axt.R;
@@ -184,8 +181,6 @@ public final class EspressoTest {
             });
   }
 
-  @Config(minSdk = LOLLIPOP)
-  @SdkSuppress(minSdkVersion = LOLLIPOP)
   @Test
   public void textViewWithLetterSpacing() {
     onView(withId(R.id.text_view_letter_spacing))

@@ -107,7 +107,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isDeviceOwnerShouldReturnFalseForProfileOwner() {
     // GIVEN an test package which is the profile owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -167,7 +166,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isProfileOwnerAppShouldReturnFalseForNonProfileOwnerApp() {
     // GIVEN an test package which is not the profile owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -178,7 +176,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isProfileOwnerShouldReturnFalseForDeviceOwner() {
     // GIVEN an test package which is the device owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -190,7 +187,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isProfileOwnerShouldReturnTrueForProfileOwner() {
     // GIVEN an test package which is the profile owner app of the device
     String testPackage = testComponent.getPackageName();
@@ -202,7 +198,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getProfileOwnerShouldReturnDeviceOwnerComponentName() {
     // GIVEN an test package which is the profile owner app of the device
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -213,7 +208,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getProfileOwnerShouldReturnNullWhenThereIsNoProfileOwner() {
     // WHEN DevicePolicyManager#getProfileOwner is called without a profile owner
     // THEN the method should return null
@@ -296,7 +290,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getActiveAdminsShouldReturnProfileOwner() {
     // GIVEN an test package which is the profile owner app of the device
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -307,7 +300,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void addUserRestrictionShouldWorkAsIntendedForDeviceOwner() {
     // GIVEN a user restriction to set
     String restrictionKey = "restriction key";
@@ -324,7 +316,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void addUserRestrictionShouldWorkAsIntendedForProfileOwner() {
     // GIVEN a user restriction to set
     String restrictionKey = "restriction key";
@@ -341,7 +332,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void clearUserRestrictionShouldWorkAsIntendedForActiveAdmins() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -359,7 +349,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isApplicationHiddenShouldReturnTrueForNotExistingApps() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -373,7 +362,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isApplicationHiddenShouldReturnFalseForAppsByDefault() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -388,7 +376,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isApplicationHiddenShouldReturnTrueForHiddenApps() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -404,7 +391,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isApplicationHiddenShouldReturnFalseForNonHiddenApps() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -420,7 +406,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenShouldBeAbleToUnhideHiddenApps() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -438,7 +423,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenShouldReturnFalseForNotExistingApps() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -451,7 +435,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenShouldFailForNeitherOwnerNorDelegated() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -479,7 +462,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationHiddenShouldFailForNeitherOwnerNorDelegatedAdminIsNull() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -557,7 +539,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void wasPackageEverHiddenShouldReturnFalseForPackageNeverHidden() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -572,7 +553,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void wasPackageEverHiddenShouldReturnTrueForPackageWhichIsHidden() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -588,7 +568,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void wasPackageEverHiddenShouldReturnTrueForPackageWhichWasHidden() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -605,7 +584,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void enableSystemAppShouldWorkForActiveAdmins() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -621,7 +599,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isUninstallBlockedShouldReturnFalseForAppsNeverBeingBlocked() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -635,7 +612,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isUninstallBlockedShouldReturnTrueForAppsBeingUnblocked() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -650,7 +626,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isUninstallBlockedShouldReturnFalseForAppsBeingBlocked() {
     // GIVEN the caller is the device owner, and thus an active admin
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -710,7 +685,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationRestrictionsShouldWorkAsIntendedForDeviceOwner() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -732,7 +706,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationRestrictionsShouldWorkAsIntendedForProfileOwner() {
     // GIVEN the caller is the profile owner
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -754,7 +727,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationRestrictionsShouldFailForNeitherOwnerNorDelegated() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -779,7 +751,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setApplicationRestrictionsShouldFailForNeitherOwnerNorDelegatedAdminIsNull() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -854,7 +825,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getApplicationRestrictionsShouldReturnEmptyBundleIfAppHasNone() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -870,7 +840,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAccountTypesWithManagementDisabledShouldReturnNothingWhenNoAccountIsDislabed() {
     // GIVEN no account type has ever been disabled
 
@@ -881,7 +850,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAccountTypesWithManagementDisabledShouldReturnDisabledAccountTypesIfAny() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -898,7 +866,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAccountTypesWithManagementDisabledShouldNotReturnReenabledAccountTypesIfAny() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1056,7 +1023,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAutoTimeRequiredShouldWorkAsIntendedForDeviceOwner() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1069,7 +1035,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAutoTimeRequiredShouldWorkAsIntendedForProfileOwner() {
     // GIVEN the caller is the profile owner
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
@@ -1082,7 +1047,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getAutoTimeRequiredShouldReturnFalseIfNotSet() {
     // GIVEN the caller is the device owner
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1235,7 +1199,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getPermittedAccessibilityServicesShouldWorkAsIntendedForDeviceOwner() {
     List<String> accessibilityServices =
         Arrays.asList("com.example.accessibility1", "com.example.accessibility2");
@@ -1252,7 +1215,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getPermittedAccessibilityServicesShouldWorkAsIntendedForProfileOwner() {
     List<String> accessibilityServices = new ArrayList<>();
 
@@ -1267,7 +1229,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getPermittedAccessibilityServicesShouldReturnNullIfNullIsSet() {
     List<String> accessibilityServices = null;
 
@@ -1282,7 +1243,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getPermittedInputMethodsShouldWorkAsIntendedForDeviceOwner() {
     List<String> inputMethods = Arrays.asList("com.example.input1", "com.example.input2");
 
@@ -1297,7 +1257,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getPermittedInputMethodsShouldWorkAsIntendedForProfileOwner() {
     List<String> inputMethods = new ArrayList<>();
 
@@ -1312,7 +1271,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getPermittedInputMethodsShouldReturnNullIfNullIsSet() {
     List<String> inputMethods = null;
 
@@ -1925,7 +1883,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getProfileOwnerNameAsUser() {
     int userId = 0;
     String orgName = "organization";
@@ -1937,7 +1894,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setPersistentPreferrecActivity_exists() {
     ComponentName randomActivity = new ComponentName("random.package", "Activity");
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
@@ -1973,7 +1929,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void clearPersistentPreferredActivity_packageNotAdded() {
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
     devicePolicyManager.clearPackagePersistentPreferredActivities(testComponent, "package");
@@ -1987,7 +1942,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void clearPersistentPreferredActivity_packageAdded() {
     shadowOf(devicePolicyManager).setDeviceOwner(testComponent);
     ComponentName randomActivity = new ComponentName("random.package", "Activity");
@@ -2127,7 +2081,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getLockTaskPackages_notOwner() {
     try {
       devicePolicyManager.getLockTaskPackages(testComponent);
@@ -2138,7 +2091,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void setLockTaskPackages_notOwner() {
     try {
       devicePolicyManager.setLockTaskPackages(testComponent, new String[] {"allowed.package"});
@@ -2148,7 +2100,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void getSetLockTaskPackages() {
     shadowOf(devicePolicyManager).setProfileOwner(testComponent);
 
@@ -2162,7 +2113,6 @@ public final class ShadowDevicePolicyManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isLockTaskPermitted() {
     assertThat(devicePolicyManager.isLockTaskPermitted("allowed.package")).isFalse();
 

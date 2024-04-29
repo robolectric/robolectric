@@ -205,14 +205,14 @@ public class ShadowCameraManager {
     return deviceImpl;
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void registerAvailabilityCallback(
       CameraManager.AvailabilityCallback callback, Handler handler) {
     Preconditions.checkNotNull(callback);
     registeredCallbacks.add(callback);
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void unregisterAvailabilityCallback(CameraManager.AvailabilityCallback callback) {
     Preconditions.checkNotNull(callback);
     registeredCallbacks.remove(callback);

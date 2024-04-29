@@ -4,7 +4,6 @@ import static java.lang.Math.min;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.app.backup.BackupDataInput;
-import android.os.Build.VERSION_CODES;
 import com.google.common.collect.ImmutableList;
 import java.io.FileDescriptor;
 import java.util.ArrayList;
@@ -15,7 +14,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for BackupDataInput. */
-@Implements(value = BackupDataInput.class, minSdk = VERSION_CODES.LOLLIPOP, looseSignatures = true)
+@Implements(value = BackupDataInput.class, looseSignatures = true)
 public class ShadowBackupDataInput {
 
   private List<BackupDataEntity> entities = new ArrayList<>();

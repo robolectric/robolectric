@@ -177,8 +177,11 @@ public class ClassInstrumentor {
               .visitAnnotation("Lcom/google/errorprone/annotations/DoNotMock;", true)
               .visit(
                   "value",
-                  "This class is final. Consider using the real thing, or "
-                      + "adding/enhancing a Robolectric shadow for it.");
+                  "This class is final. Consider either:\n"
+                      + "1. Using the real class.\n"
+                      + "2. If it's a pure data class, adding a Robolectric Builder for it.\n"
+                      + "3. If it cannot function on the JVM, adding or enhancing a Robolectric"
+                      + " Shadow for it");
         }
         mutableClass.classNode.access = mutableClass.classNode.access & ~Opcodes.ACC_FINAL;
 

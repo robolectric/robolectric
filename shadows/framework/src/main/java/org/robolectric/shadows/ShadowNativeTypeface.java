@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static android.os.Build.VERSION_CODES.P;
@@ -137,7 +136,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return fontFamily;
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeCreateFromTypeface(long nativeInstance, int style) {
     return TypefaceNatives.nativeCreateFromTypeface(nativeInstance, style);
   }
@@ -154,7 +153,7 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeCreateFromTypefaceWithVariation(nativeInstance, axes);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static long nativeCreateWeightAlias(long nativeInstance, int weight) {
     return TypefaceNatives.nativeCreateWeightAlias(nativeInstance, weight);
   }
@@ -175,12 +174,12 @@ public class ShadowNativeTypeface extends ShadowTypeface {
     return TypefaceNatives.nativeGetSupportedAxes(nativeInstance);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static void nativeSetDefault(long nativePtr) {
     TypefaceNatives.nativeSetDefault(nativePtr);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = U.SDK_INT)
+  @Implementation(maxSdk = U.SDK_INT)
   protected static int nativeGetStyle(long nativePtr) {
     return TypefaceNatives.nativeGetStyle(nativePtr);
   }

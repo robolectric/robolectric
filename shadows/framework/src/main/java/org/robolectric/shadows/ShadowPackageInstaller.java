@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -210,7 +209,7 @@ public class ShadowPackageInstaller {
     }
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void uninstall(String packageName, IntentSender statusReceiver) {
     uninstalledPackages.put(
         packageName,
@@ -340,8 +339,6 @@ public class ShadowPackageInstaller {
     private ShadowPackageInstaller shadowPackageInstaller;
     private PersistableBundle appMetadata = new PersistableBundle();
 
-    @Implementation(maxSdk = KITKAT_WATCH)
-    protected void __constructor__() {}
 
     @Implementation(minSdk = UPSIDE_DOWN_CAKE)
     protected void requestUserPreapproval(

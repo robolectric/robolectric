@@ -76,6 +76,7 @@ public class ShadowUserManager {
   public static final int FLAG_PROFILE = UserInfo.FLAG_PROFILE;
   public static final int FLAG_FULL = UserInfo.FLAG_FULL;
   public static final int FLAG_SYSTEM = UserInfo.FLAG_SYSTEM;
+  public static final int FLAG_MAIN = UserInfo.FLAG_MAIN;
 
   private static int maxSupportedUsers = DEFAULT_MAX_SUPPORTED_USERS;
   private static boolean isMultiUserSupported = false;
@@ -131,13 +132,10 @@ public class ShadowUserManager {
 
     private int nextUserId = DEFAULT_SECONDARY_USER_ID;
 
-    // TODO: use UserInfo.FLAG_MAIN when available
-    private static final int FLAG_MAIN = 0x00004000;
-
     public UserManagerState() {
       int id = UserHandle.USER_SYSTEM;
       String name = "system_user";
-      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN | FLAG_MAIN;
+      int flags = UserInfo.FLAG_PRIMARY | UserInfo.FLAG_ADMIN | UserInfo.FLAG_MAIN;
 
       userSerialNumbers.put(id, (long) id);
       // Start the user as shut down.
@@ -195,7 +193,7 @@ public class ShadowUserManager {
     return userManagerState.userSerialNumbers.get(userHandle.getIdentifier());
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<UserHandle> getUserProfiles() {
     ImmutableList.Builder<UserHandle> builder = new ImmutableList.Builder<>();
     List<UserHandle> profiles = userManagerState.userProfilesListMap.get(UserHandle.myUserId());
@@ -215,7 +213,7 @@ public class ShadowUserManager {
    *
    * <p>Otherwise follow real android behaviour.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected List<UserInfo> getProfiles(int userHandle) {
     if (userManagerState.userProfilesListMap.containsKey(userHandle)) {
       ArrayList<UserInfo> infos = new ArrayList<>();
@@ -251,7 +249,7 @@ public class ShadowUserManager {
     return userHandles;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected UserInfo getProfileParent(int userId) {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException("Requires MANAGE_USERS permission");
@@ -369,7 +367,7 @@ public class ShadowUserManager {
    * @see #enforcePermissionChecks(boolean)
    * @see #setManagedProfile(boolean)
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isManagedProfile() {
     if (enforcePermissions && !hasManageUsersPermission()) {
       throw new SecurityException(
@@ -486,7 +484,7 @@ public class ShadowUserManager {
     return userInfo.profileGroupId == otherUserInfo.profileGroupId;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean hasUserRestriction(String restrictionKey, UserHandle userHandle) {
     synchronized (lock) {
       Bundle bundle = userManagerState.userRestrictions.get(userHandle.getIdentifier());

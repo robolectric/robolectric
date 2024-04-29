@@ -53,6 +53,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.PersistableBundle;
 import android.telecom.PhoneAccountHandle;
+import android.telephony.CarrierRestrictionRules;
 import android.telephony.CellInfo;
 import android.telephony.CellLocation;
 import android.telephony.PhoneCapability;
@@ -867,6 +868,15 @@ public class ShadowTelephonyManagerTest {
   }
 
   @Test
+  @Config(minSdk = Q)
+  public void shouldGetSimSpecificCarrierId() {
+    int expectedCarrierId = 132;
+    shadowOf(telephonyManager).setSimSpecificCarrierId(expectedCarrierId);
+
+    assertThat(telephonyManager.getSimSpecificCarrierId()).isEqualTo(expectedCarrierId);
+  }
+
+  @Test
   @Config(minSdk = P)
   public void shouldGetSimCarrierIdName() {
     String expectedCarrierIdName = "Fi";
@@ -1493,5 +1503,31 @@ public class ShadowTelephonyManagerTest {
     TelephonyManager tm = Shadow.newInstance(TelephonyManager.class, parameters, arguments);
 
     assertThat(tm.getSubscriptionId()).isEqualTo(123);
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setDataRoamingEnabledChangesIsDataRoamingEnabled() {
+    shadowOf(telephonyManager).setDataRoamingEnabled(false);
+    assertThat(telephonyManager.isDataRoamingEnabled()).isFalse();
+    shadowOf(telephonyManager).setDataRoamingEnabled(true);
+    assertThat(telephonyManager.isDataRoamingEnabled()).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = Q)
+  public void setCarrierRestrictionRules_changesCarrierRestrictionRules() {
+    CarrierRestrictionRules carrierRestrictionRules = CarrierRestrictionRules.newBuilder().build();
+    shadowOf(telephonyManager).setCarrierRestrictionRules(carrierRestrictionRules);
+
+    assertThat(telephonyManager.getCarrierRestrictionRules()).isEqualTo(carrierRestrictionRules);
+  }
+
+  @Test()
+  @Config(minSdk = Q)
+  public void setCarrierRestrictionRules_throwsIllegalStateException() {
+    assertThrows(
+        IllegalStateException.class,
+        () -> shadowTelephonyManager.setCarrierRestrictionRules(new Object()));
   }
 }

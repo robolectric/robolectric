@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 
 import android.app.backup.BackupManager;
@@ -75,14 +74,14 @@ public class ShadowBackupManager {
     return serviceState.dataChangedCount.getOrDefault(context.getPackageName(), 0);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi // SystemApi
   protected void setBackupEnabled(boolean isEnabled) {
     enforceBackupPermission("setBackupEnabled");
     serviceState.backupEnabled = isEnabled;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   @HiddenApi // SystemApi
   protected boolean isBackupEnabled() {
     enforceBackupPermission("isBackupEnabled");

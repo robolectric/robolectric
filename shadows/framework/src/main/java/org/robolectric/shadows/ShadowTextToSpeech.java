@@ -120,7 +120,7 @@ public class ShadowTextToSpeech {
         text, queueMode, null, params == null ? null : params.get(Engine.KEY_PARAM_UTTERANCE_ID));
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int speak(
       final CharSequence text, final int queueMode, final Bundle params, final String utteranceId) {
     stopped = false;
@@ -193,7 +193,7 @@ public class ShadowTextToSpeech {
    *
    * @see #getLastSynthesizeToFileText()
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int synthesizeToFile(CharSequence text, Bundle params, File file, String utteranceId)
       throws IOException {
     this.lastSynthesizeToFileText = text.toString();
@@ -237,13 +237,13 @@ public class ShadowTextToSpeech {
     return TextToSpeech.SUCCESS;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int setVoice(Voice voice) {
     this.currentVoice = voice;
     return TextToSpeech.SUCCESS;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected Set<Voice> getVoices() {
     return voices;
   }

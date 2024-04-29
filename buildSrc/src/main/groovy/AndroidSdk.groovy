@@ -1,7 +1,6 @@
 class AndroidSdk implements Comparable<AndroidSdk> {
     static final PREINSTRUMENTED_VERSION = 6
 
-    static final KITKAT = new AndroidSdk(19, "4.4_r1", "r2")
     static final LOLLIPOP = new AndroidSdk(21, "5.0.2_r3", "r0")
     static final LOLLIPOP_MR1 = new AndroidSdk(22, "5.1.1_r9", "r2")
     static final M = new AndroidSdk(23, "6.0.1_r3", "r1")
@@ -18,7 +17,6 @@ class AndroidSdk implements Comparable<AndroidSdk> {
     static final U = new AndroidSdk(34, "14", "10818077")
 
     static final List<AndroidSdk> ALL_SDKS = [
-            KITKAT,
             LOLLIPOP, LOLLIPOP_MR1, M, N, N_MR1, O, O_MR1, P, Q, R, S, S_V2,
             TIRAMISU, U
     ]
