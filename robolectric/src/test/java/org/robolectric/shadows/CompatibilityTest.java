@@ -10,6 +10,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.experimental.LazyApplication;
 import org.robolectric.annotation.experimental.LazyApplication.LazyLoad;
+import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Tests to make sure {@link android.compat.Compatibility} is instrumented correctly */
 @RunWith(RobolectricTestRunner.class)
@@ -32,5 +34,11 @@ public class CompatibilityTest {
     Compatibility.isChangeEnabled(100);
     // verify there are no CompatibilityChangeReporter spam logs
     assertThat(ShadowLog.getLogsForTag("CompatibilityChangeReporter")).isEmpty();
+  }
+
+  @Test
+  public void edgeToEdgeEncorcement_minSdk() {
+    assertThat(ShadowCompatibility.isEdgeToEdgeEnabled(U.SDK_INT)).isFalse();
+    assertThat(ShadowCompatibility.isEdgeToEdgeEnabled(V.SDK_INT)).isTrue();
   }
 }
