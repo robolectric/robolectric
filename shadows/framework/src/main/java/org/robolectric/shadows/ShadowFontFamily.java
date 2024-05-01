@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 
 import android.content.res.AssetManager;
@@ -9,7 +8,7 @@ import android.graphics.fonts.FontVariationAxis;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = FontFamily.class, minSdk = LOLLIPOP, isInAndroidSdk = false)
+@Implements(value = FontFamily.class, isInAndroidSdk = false)
 public class ShadowFontFamily {
 
   @Implementation(minSdk = O)

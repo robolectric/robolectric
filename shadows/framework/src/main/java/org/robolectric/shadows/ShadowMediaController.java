@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
@@ -25,7 +24,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Implementation of {@link android.media.session.MediaController}. */
-@Implements(value = MediaController.class, minSdk = LOLLIPOP)
+@Implements(value = MediaController.class)
 public class ShadowMediaController {
   @RealObject private MediaController realMediaController;
   private PlaybackState playbackState;

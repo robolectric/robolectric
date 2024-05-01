@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -9,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeech.Engine;
 import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import com.google.common.collect.ImmutableList;
@@ -22,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -113,11 +110,7 @@ public class ShadowTextToSpeech {
   @Implementation
   protected int speak(
       final String text, final int queueMode, final HashMap<String, String> params) {
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      return reflector(TextToSpeechReflector.class, tts).speak(text, queueMode, params);
-    }
-    return speak(
-        text, queueMode, null, params == null ? null : params.get(Engine.KEY_PARAM_UTTERANCE_ID));
+    return reflector(TextToSpeechReflector.class, tts).speak(text, queueMode, params);
   }
 
   @Implementation

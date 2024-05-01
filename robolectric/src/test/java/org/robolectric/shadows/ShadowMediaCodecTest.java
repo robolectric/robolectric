@@ -20,7 +20,6 @@ import android.media.MediaCodec.CodecException;
 import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
-import android.os.Build;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
@@ -735,10 +734,6 @@ public final class ShadowMediaCodecTest {
   private static void writeToInputBuffer(MediaCodec codec, ByteBuffer src) {
     int inputBufferId = codec.dequeueInputBuffer(WITHOUT_TIMEOUT);
     ByteBuffer inputBuffer = codec.getInputBuffer(inputBufferId);
-    // API versions lower than 21 don't clear the buffer before returning it.
-    if (Build.VERSION.SDK_INT < 21) {
-      inputBuffer.clear();
-    }
     int srcLimit = src.limit();
     int numberOfBytesToWrite = Math.min(src.remaining(), inputBuffer.remaining());
     src.limit(src.position() + numberOfBytesToWrite);

@@ -20,7 +20,7 @@ import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow class for {@link CameraDeviceImpl} */
-@Implements(value = CameraDeviceImpl.class, minSdk = VERSION_CODES.LOLLIPOP, isInAndroidSdk = false)
+@Implements(value = CameraDeviceImpl.class, isInAndroidSdk = false)
 public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;

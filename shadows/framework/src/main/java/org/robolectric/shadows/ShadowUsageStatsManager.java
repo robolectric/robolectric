@@ -47,7 +47,6 @@ import org.robolectric.annotation.Resetter;
 /** Shadow of {@link UsageStatsManager}. */
 @Implements(
     value = UsageStatsManager.class,
-    minSdk = Build.VERSION_CODES.LOLLIPOP,
     looseSignatures = true)
 public class ShadowUsageStatsManager {
   private static @StandbyBuckets int currentAppStandbyBucket =

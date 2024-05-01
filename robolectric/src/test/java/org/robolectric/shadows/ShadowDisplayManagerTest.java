@@ -506,8 +506,7 @@ public class ShadowDisplayManagerTest {
         .contains("configureDefaultDisplay was called a second time");
   }
 
-  // because DisplayManagerGlobal don't exist in Jelly Bean,
-  // and we don't want them resolved as part of the test class.
+  // because we don't want DisplayManagerGlobal resolved as part of the test class.
   static class HideFromJB {
     public static DisplayManagerGlobal getGlobal() {
       return DisplayManagerGlobal.getInstance();

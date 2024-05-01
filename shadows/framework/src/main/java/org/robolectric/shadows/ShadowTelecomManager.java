@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -46,7 +45,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = TelecomManager.class, minSdk = LOLLIPOP)
+@Implements(value = TelecomManager.class)
 public class ShadowTelecomManager {
 
   /**

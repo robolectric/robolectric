@@ -113,7 +113,7 @@ public class ShadowLocaleData {
       // Lollipop MR1 uses a String
       localDataReflector.setPercent("%");
     } else {
-      // Upto Lollipop was a char
+      // Lollipop was a char
       localDataReflector.setPercent('%');
     }
 

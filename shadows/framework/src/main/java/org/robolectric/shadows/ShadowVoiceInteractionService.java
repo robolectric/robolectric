@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 import static org.robolectric.util.reflector.Reflector.reflector;
@@ -23,7 +22,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionService}. */
-@Implements(value = VoiceInteractionService.class, minSdk = LOLLIPOP)
+@Implements(value = VoiceInteractionService.class)
 public class ShadowVoiceInteractionService extends ShadowService {
 
   private final List<Bundle> hintBundles = Collections.synchronizedList(new ArrayList<>());

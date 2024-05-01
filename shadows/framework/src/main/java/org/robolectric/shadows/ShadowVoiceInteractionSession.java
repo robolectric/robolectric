@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.util.ReflectionHelpers.callConstructor;
 
 import android.app.Dialog;
@@ -28,7 +27,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow implementation of {@link android.service.voice.VoiceInteractionSession}. */
-@Implements(value = VoiceInteractionSession.class, minSdk = LOLLIPOP)
+@Implements(value = VoiceInteractionSession.class)
 public class ShadowVoiceInteractionSession {
 
   private final List<Intent> assistantActivityIntents = new ArrayList<>();

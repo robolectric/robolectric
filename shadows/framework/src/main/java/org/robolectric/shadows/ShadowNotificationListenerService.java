@@ -24,7 +24,7 @@ import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow implementation of {@link NotificationListenerService}. */
-@Implements(value = NotificationListenerService.class, minSdk = VERSION_CODES.LOLLIPOP)
+@Implements(value = NotificationListenerService.class)
 public class ShadowNotificationListenerService extends ShadowService {
   private static final AtomicInteger rebindRequestCount = new AtomicInteger(0);
 

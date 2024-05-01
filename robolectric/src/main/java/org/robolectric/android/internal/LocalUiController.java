@@ -9,7 +9,6 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.shadows.ShadowLooper.shadowMainLooper;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -141,18 +140,8 @@ public class LocalUiController implements UiController {
 
   @SuppressLint("InlinedApi")
   @VisibleForTesting
-  @SuppressWarnings("deprecation")
   static KeyCharacterMap getKeyCharacterMap() {
-    KeyCharacterMap keyCharacterMap = null;
-
-    // KeyCharacterMap.VIRTUAL_KEYBOARD is present from API11.
-    // For earlier APIs we use KeyCharacterMap.BUILT_IN_KEYBOARD
-    if (Build.VERSION.SDK_INT < 11) {
-      keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.BUILT_IN_KEYBOARD);
-    } else {
-      keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
-    }
-    return keyCharacterMap;
+    return KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
   }
 
   @Override
