@@ -924,9 +924,9 @@ public class ShadowLocationManager {
 
   /**
    * Returns the list of {@link RoboLocationRequest} currently registered under the given provider.
-   * Since {@link LocationRequest} was not publicly visible prior to S, and did not exist prior to
-   * Kitkat, {@link RoboLocationRequest} allows querying the location requests prior to those
-   * platforms, and also implements proper equality comparisons for testing.
+   * Since {@link LocationRequest} was not publicly visible prior to S, {@link RoboLocationRequest}
+   * allows querying the location requests prior to those platforms, and also implements proper
+   * equality comparisons for testing.
    */
   public List<RoboLocationRequest> getLegacyLocationRequests(String provider) {
     ProviderEntry providerEntry = getProviderEntry(provider);

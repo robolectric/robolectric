@@ -55,7 +55,7 @@ public class ShadowRenderNodeAnimator {
   @Implementation
   public void doStart() {
     reflector(RenderNodeAnimatorReflector.class, realObject).doStart();
-    if (getApiLevel() <= LOLLIPOP) {
+    if (getApiLevel() == LOLLIPOP) {
       schedule();
     }
   }
@@ -65,7 +65,7 @@ public class ShadowRenderNodeAnimator {
     RenderNodeAnimatorReflector renderNodeReflector =
         reflector(RenderNodeAnimatorReflector.class, realObject);
     renderNodeReflector.cancel();
-    if (getApiLevel() <= LOLLIPOP) {
+    if (getApiLevel() == LOLLIPOP) {
       int state = renderNodeReflector.getState();
       if (state != STATE_FINISHED) {
         // In 21, RenderNodeAnimator only calls nEnd, it doesn't call the Java end method. Thus, it

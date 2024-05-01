@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
@@ -19,7 +18,7 @@ import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 
 /** Robolectic provides overrides for fetching and updating transport. */
-@Implements(value = NetworkCapabilities.class, minSdk = LOLLIPOP, looseSignatures = true)
+@Implements(value = NetworkCapabilities.class, looseSignatures = true)
 public class ShadowNetworkCapabilities {
 
   @RealObject protected NetworkCapabilities realNetworkCapabilities;

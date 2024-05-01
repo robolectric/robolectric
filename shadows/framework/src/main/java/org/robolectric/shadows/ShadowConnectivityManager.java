@@ -1,11 +1,9 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.PendingIntent;
@@ -66,20 +64,18 @@ public class ShadowConnectivityManager {
 
     this.activeNetworkInfo = mobile;
 
-    if (getApiLevel() >= LOLLIPOP) {
-      netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
-      netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
-      netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
-      netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
+    netIdToNetwork.put(NET_ID_WIFI, ShadowNetwork.newInstance(NET_ID_WIFI));
+    netIdToNetwork.put(NET_ID_MOBILE, ShadowNetwork.newInstance(NET_ID_MOBILE));
+    netIdToNetworkInfo.put(NET_ID_WIFI, wifi);
+    netIdToNetworkInfo.put(NET_ID_MOBILE, mobile);
 
-      NetworkCapabilities wifiNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
-      shadowOf(wifiNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-      NetworkCapabilities mobileNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
-      shadowOf(mobileNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+    NetworkCapabilities wifiNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(wifiNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+    NetworkCapabilities mobileNetworkCapabilities = ShadowNetworkCapabilities.newInstance();
+    shadowOf(mobileNetworkCapabilities).addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
 
-      networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
-      networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
-    }
+    networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_WIFI), wifiNetworkCapabilities);
+    networkCapabilitiesMap.put(netIdToNetwork.get(NET_ID_MOBILE), mobileNetworkCapabilities);
     defaultNetworkActive = true;
   }
 
@@ -308,23 +304,14 @@ public class ShadowConnectivityManager {
   }
 
   public void setActiveNetworkInfo(NetworkInfo info) {
-    if (getApiLevel() >= LOLLIPOP) {
-      activeNetworkInfo = info;
-      if (info != null) {
-        networkTypeToNetworkInfo.put(info.getType(), info);
-        netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
-        netIdToNetworkInfo.put(info.getType(), info);
-      } else {
-        networkTypeToNetworkInfo.clear();
-        netIdToNetwork.clear();
-      }
+    activeNetworkInfo = info;
+    if (info != null) {
+      networkTypeToNetworkInfo.put(info.getType(), info);
+      netIdToNetwork.put(info.getType(), ShadowNetwork.newInstance(info.getType()));
+      netIdToNetworkInfo.put(info.getType(), info);
     } else {
-      activeNetworkInfo = info;
-      if (info != null) {
-        networkTypeToNetworkInfo.put(info.getType(), info);
-      } else {
-        networkTypeToNetworkInfo.clear();
-      }
+      networkTypeToNetworkInfo.clear();
+      netIdToNetwork.clear();
     }
   }
 

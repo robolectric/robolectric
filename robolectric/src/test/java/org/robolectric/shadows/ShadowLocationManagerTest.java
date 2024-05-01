@@ -902,7 +902,6 @@ public class ShadowLocationManagerTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void testRequestLocationUpdates_LocationRequest() {
     Location loc1 = createLocation(NETWORK_PROVIDER);
     Location loc2 = createLocation(NETWORK_PROVIDER);

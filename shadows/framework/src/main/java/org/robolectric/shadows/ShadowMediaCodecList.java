@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.Q;
 
@@ -23,7 +22,7 @@ import org.robolectric.util.ReflectionHelpers;
  * <p>Custom {@link MediaCodecInfo} can be created using {@link MediaCodecInfoBuilder} and added to
  * the list of codecs via {@link #addCodec}.
  */
-@Implements(value = MediaCodecList.class, minSdk = LOLLIPOP)
+@Implements(value = MediaCodecList.class)
 public class ShadowMediaCodecList {
 
   private static final List<MediaCodecInfo> mediaCodecInfos =

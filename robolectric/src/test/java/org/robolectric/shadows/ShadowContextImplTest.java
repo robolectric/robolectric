@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
@@ -225,30 +224,13 @@ public class ShadowContextImplTest {
     assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
   }
 
-  @Test
-  public void bindService_shouldAllowImplicitIntentPreLollipop() {
-    context.getApplicationInfo().targetSdkVersion = KITKAT;
+  @Test(expected = IllegalArgumentException.class)
+  public void bindService_shouldThrowOnImplicitIntent() {
     Intent serviceIntent = new Intent();
     ServiceConnection serviceConnection = buildServiceConnection();
     int flags = 0;
 
-    assertThat(context.bindService(serviceIntent, serviceConnection, flags)).isTrue();
-
-    assertThat(shadowOf(context).getBoundServiceConnections()).hasSize(1);
-  }
-
-  @Test
-  public void bindService_shouldThrowOnImplicitIntentOnLollipop() {
-    Intent serviceIntent = new Intent();
-    ServiceConnection serviceConnection = buildServiceConnection();
-    int flags = 0;
-
-    try {
-      context.bindService(serviceIntent, serviceConnection, flags);
-      fail("bindService should throw IllegalArgumentException!");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    context.bindService(serviceIntent, serviceConnection, flags);
   }
 
   @Test
@@ -292,37 +274,14 @@ public class ShadowContextImplTest {
     assertThat(serviceConnection.isConnected).isTrue();
   }
 
-  @Test
-  public void startService_shouldAllowImplicitIntentPreLollipop() {
-    context.getApplicationInfo().targetSdkVersion = KITKAT;
+  @Test(expected = IllegalArgumentException.class)
+  public void startService_shouldThrowOnImplicitIntent() {
     context.startService(new Intent("dummy_action"));
-    assertThat(shadowOf(context).getNextStartedService().getAction()).isEqualTo("dummy_action");
   }
 
-  @Test
-  public void startService_shouldThrowOnImplicitIntentOnLollipop() {
-    try {
-      context.startService(new Intent("dummy_action"));
-      fail("startService should throw IllegalArgumentException!");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-  }
-
-  @Test
-  public void stopService_shouldAllowImplicitIntentPreLollipop() {
-    context.getApplicationInfo().targetSdkVersion = KITKAT;
+  @Test(expected = IllegalArgumentException.class)
+  public void stopService_shouldThrowOnImplicitIntent() {
     context.stopService(new Intent("dummy_action"));
-  }
-
-  @Test
-  public void stopService_shouldThrowOnImplicitIntentOnLollipop() {
-    try {
-      context.stopService(new Intent("dummy_action"));
-      fail("stopService should throw IllegalArgumentException!");
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
   }
 
   @Test
@@ -372,7 +331,7 @@ public class ShadowContextImplTest {
   @Test
   public void createPackageContext_absent() {
     try {
-      context.createPackageContext("doesnt.exist", 0);
+      context.createPackageContext("does.not.exist", 0);
       fail("Should throw NameNotFoundException");
     } catch (NameNotFoundException e) {
       // expected

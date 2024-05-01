@@ -91,6 +91,12 @@ jobs:
         api-level: [ 29, 34 ]
 
     steps:
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: true
+          android: false
+
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17

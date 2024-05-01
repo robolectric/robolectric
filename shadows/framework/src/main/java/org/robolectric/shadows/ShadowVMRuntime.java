@@ -1,9 +1,7 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.Q;
 
-import android.annotation.TargetApi;
 import dalvik.system.VMRuntime;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
@@ -63,7 +61,6 @@ public class ShadowVMRuntime {
   }
 
   /** Sets whether the VM is running in 64-bit mode. */
-  @TargetApi(LOLLIPOP)
   public static void setIs64Bit(boolean is64Bit) {
     ShadowVMRuntime.is64Bit = is64Bit;
   }
@@ -75,7 +72,6 @@ public class ShadowVMRuntime {
   }
 
   /** Sets the instruction set of the current runtime. */
-  @TargetApi(LOLLIPOP)
   public static void setCurrentInstructionSet(@Nullable String currentInstructionSet) {
     ShadowVMRuntime.currentInstructionSet = currentInstructionSet;
   }
