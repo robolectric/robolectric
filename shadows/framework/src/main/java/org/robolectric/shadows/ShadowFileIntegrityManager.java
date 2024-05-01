@@ -7,7 +7,7 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 /** Shadow for {@link FileIntegrityManager}. */
-@Implements(value = FileIntegrityManager.class, minSdk = R)
+@Implements(value = FileIntegrityManager.class, minSdk = R, isInAndroidSdk = false)
 public class ShadowFileIntegrityManager {
 
   private boolean isApkVeritySupported = true;
