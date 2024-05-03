@@ -3,6 +3,7 @@ package org.robolectric.integrationtests.nativegraphics;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.TruthJUnit.assume;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,6 +17,8 @@ import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.view.Choreographer;
 import android.view.Surface;
+import java.util.Locale;
+import java.util.Objects;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -40,6 +43,13 @@ public class ShadowNativeHardwareRendererTest {
   @Test
   @Config(minSdk = S)
   public void imageReader_readsRenderedDisplayList() {
+    // This API is not supported correctly on macOS now.
+    assume()
+        .that(
+            Objects.requireNonNull(System.getProperty("os.name"))
+                .toLowerCase(Locale.US)
+                .contains("mac"))
+        .isFalse();
     int width = 100;
     int height = 100;
 
