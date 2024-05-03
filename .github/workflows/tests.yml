@@ -139,6 +139,8 @@ jobs:
 
       - name: Run device tests
         # See https://github.com/orgs/community/discussions/27121
+        # We need to use adb shell wm density to reset device's density to ensure it can work
+        # with some tests correctly.
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
@@ -147,9 +149,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-
           profile: Nexus One
           script: |
+            adb shell wm density 240
             SKIP_ERRORPRONE=true SKIP_JAVADOC=true ./gradlew cAT --info --stacktrace --no-watch-fs -Dorg.gradle.workers.max=2
 
       - name: Upload test results
