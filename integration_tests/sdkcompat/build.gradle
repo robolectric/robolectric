@@ -1,17 +1,11 @@
 import org.robolectric.gradle.AndroidProjectConfigPlugin
+import org.robolectric.gradle.SpotlessPlugin
 
 apply plugin: 'com.android.library'
 apply plugin: AndroidProjectConfigPlugin
 apply plugin: 'kotlin-android'
-apply plugin: "com.diffplug.spotless"
+apply plugin: SpotlessPlugin
 apply plugin: "io.gitlab.arturbosch.detekt"
-
-spotless {
-    kotlin {
-        target '**/*.kt'
-        ktfmt('0.42').googleStyle()
-    }
-}
 
 android {
     compileSdk 29
