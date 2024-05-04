@@ -12,10 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * This test is created from Android CTS tests:
- *
- * https://cs.android.com/android/platform/superproject/main/+/main:cts/tests/tests/util/src/android/util/cts/RationalTest.java
  */
 
 package android.util;
@@ -29,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.os.Build;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +39,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.internal.DoNotInstrument;
 
+/**
+ * CTS tests for {@link Rational}.
+ *
+ * <p>Copied from <a
+ * href="https://cs.android.com/android/platform/superproject/main/+/main:cts/tests/tests/util/src/android/util/cts/RationalTest.java">RationalTest</a>
+ */
 @DoNotInstrument
 @RunWith(AndroidJUnit4.class)
 public class RationalTest {
@@ -324,7 +327,7 @@ public class RationalTest {
   }
 
   @Test
-  public void testSerialize() throws ClassNotFoundException, IOException, NoSuchFieldException {
+  public void testSerialize() throws ClassNotFoundException, IOException {
     /*
      * Check correct [de]serialization
      */
@@ -338,47 +341,54 @@ public class RationalTest {
     verifyEqualsAfterSerializing(new Rational(5, 1));
     verifyEqualsAfterSerializing(new Rational(Integer.MAX_VALUE, Integer.MIN_VALUE));
 
-    /*
-     * Check bad deserialization fails
-     */
-    try {
-      Rational badZero = createIllegalRational(0, 100); // [0, 100] , should be [0, 1]
-      Rational results = serializeRoundTrip(badZero);
-      fail("Deserializing " + results + " should not have succeeded");
-    } catch (InvalidObjectException e) {
-      // OK
-    }
+    // We only run following illegal Rational serialization tests as it use reflections
+    // to construct illegal Rational and these private fields are restricted after
+    // Android S. We have tried Test Orchestrator with --no-hidden-api-checks, but it didn't
+    // work and we don't want to bring external libraries to bypass it. So just disabling it
+    // for Android S+ devices.
+    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+      /*
+       * Check bad deserialization fails
+       */
+      try {
+        Rational badZero = createIllegalRational(0, 100); // [0, 100] , should be [0, 1]
+        Rational results = serializeRoundTrip(badZero);
+        fail("Deserializing " + results + " should not have succeeded");
+      } catch (InvalidObjectException e) {
+        // OK
+      }
 
-    try {
-      Rational badPosInfinity = createIllegalRational(100, 0); // [100, 0] , should be [1, 0]
-      Rational results = serializeRoundTrip(badPosInfinity);
-      fail("Deserializing " + results + " should not have succeeded");
-    } catch (InvalidObjectException e) {
-      // OK
-    }
+      try {
+        Rational badPosInfinity = createIllegalRational(100, 0); // [100, 0] , should be [1, 0]
+        Rational results = serializeRoundTrip(badPosInfinity);
+        fail("Deserializing " + results + " should not have succeeded");
+      } catch (InvalidObjectException e) {
+        // OK
+      }
 
-    try {
-      Rational badNegInfinity = createIllegalRational(-100, 0); // [-100, 0] , should be [-1, 0]
-      Rational results = serializeRoundTrip(badNegInfinity);
-      fail("Deserializing " + results + " should not have succeeded");
-    } catch (InvalidObjectException e) {
-      // OK
-    }
+      try {
+        Rational badNegInfinity = createIllegalRational(-100, 0); // [-100, 0] , should be [-1, 0]
+        Rational results = serializeRoundTrip(badNegInfinity);
+        fail("Deserializing " + results + " should not have succeeded");
+      } catch (InvalidObjectException e) {
+        // OK
+      }
 
-    try {
-      Rational badReduced = createIllegalRational(2, 4); // [2,4] , should be [1, 2]
-      Rational results = serializeRoundTrip(badReduced);
-      fail("Deserializing " + results + " should not have succeeded");
-    } catch (InvalidObjectException e) {
-      // OK
-    }
+      try {
+        Rational badReduced = createIllegalRational(2, 4); // [2,4] , should be [1, 2]
+        Rational results = serializeRoundTrip(badReduced);
+        fail("Deserializing " + results + " should not have succeeded");
+      } catch (InvalidObjectException e) {
+        // OK
+      }
 
-    try {
-      Rational badReducedNeg = createIllegalRational(-2, 4); // [-2, 4] should be [-1, 2]
-      Rational results = serializeRoundTrip(badReducedNeg);
-      fail("Deserializing " + results + " should not have succeeded");
-    } catch (InvalidObjectException e) {
-      // OK
+      try {
+        Rational badReducedNeg = createIllegalRational(-2, 4); // [-2, 4] should be [-1, 2]
+        Rational results = serializeRoundTrip(badReducedNeg);
+        fail("Deserializing " + results + " should not have succeeded");
+      } catch (InvalidObjectException e) {
+        // OK
+      }
     }
   }
 
@@ -498,8 +508,7 @@ public class RationalTest {
       throws IOException, ClassNotFoundException {
     Class<T> klass = (Class<T>) obj.getClass();
     byte[] arr = serialize(obj);
-    T serialized = deserialize(arr, klass);
-    return serialized;
+    return deserialize(arr, klass);
   }
 
   private static <T extends Serializable> void verifyEqualsAfterSerializing(T obj)
@@ -520,11 +529,7 @@ public class RationalTest {
       Field f = object.getClass().getDeclaredField(name);
       f.setAccessible(true);
       f.set(object, value);
-    } catch (NoSuchFieldException e) {
-      throw new AssertionError(e);
-    } catch (IllegalAccessException e) {
-      throw new AssertionError(e);
-    } catch (IllegalArgumentException e) {
+    } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException e) {
       throw new AssertionError(e);
     }
   }
