@@ -88,7 +88,7 @@ jobs:
       # Allow tests to continue on other devices if they fail on one device.
       fail-fast: false
       matrix:
-        api-level: [ 29 ]
+        api-level: [ 29, 34 ]
 
     steps:
       - uses: actions/checkout@v4
@@ -138,7 +138,6 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run device tests
-        # See https://github.com/orgs/community/discussions/27121
         # We need to use adb shell wm density to reset device's density to ensure it can work
         # with some tests correctly.
         uses: reactivecircus/android-emulator-runner@v2
