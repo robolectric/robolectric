@@ -22,7 +22,6 @@ class CustomShadowImageViewTest {
     val shadowImageView = Shadow.extract<CustomShadowImageView>(imageView)
     assertThat(shadowImageView).isNotNull()
     assertThat(shadowImageView.realImageView).isSameInstanceAs(imageView)
-    val resourceId = Int.MAX_VALUE
     imageView.performLongClick()
     assertThat(shadowImageView.longClickPerformed).isTrue()
   }
