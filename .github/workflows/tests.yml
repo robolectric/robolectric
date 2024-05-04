@@ -138,8 +138,8 @@ jobs:
           script: echo "Generated AVD snapshot for caching."
 
       - name: Run device tests
-        # We need to use adb shell wm density to reset device's density to ensure it can work
-        # with some tests correctly.
+        # We need to use adb shell wm density to reset device's density to use fixed density
+        # for all devices. Hope it can improve the stability of Emulator testing.
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}

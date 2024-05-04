@@ -3,7 +3,10 @@ package android.view;
 import static android.os.Build.VERSION_CODES.O_MR1;
 import static com.google.common.truth.Truth.assertThat;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.lang.reflect.Method;
@@ -23,6 +26,15 @@ public final class ViewConfigurationTest {
 
   @Before
   public void setUp() {
+    Resources resources = ApplicationProvider.getApplicationContext().getResources();
+    DisplayMetrics metrics = resources.getDisplayMetrics();
+    metrics.density = 1.5f;
+    metrics.densityDpi = 240;
+    metrics.setTo(metrics);
+    Configuration configuration = resources.getConfiguration();
+    configuration.densityDpi = 240;
+    configuration.setTo(configuration);
+    resources.updateConfiguration(configuration, metrics);
     density =
         ApplicationProvider.getApplicationContext().getResources().getDisplayMetrics().density;
     viewConfiguration = ViewConfiguration.get(ApplicationProvider.getApplicationContext());
@@ -49,7 +61,6 @@ public final class ViewConfigurationTest {
     assertThat(isFadingMarqueeEnabled).isFalse();
   }
 
-  // Emulators have hdpi density by default, so match this in Robolectric for consistency.
   @Config(qualifiers = "hdpi")
   @Test
   public void overfling_distance() {
