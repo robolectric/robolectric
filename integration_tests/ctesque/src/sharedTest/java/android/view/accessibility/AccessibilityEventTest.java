@@ -16,7 +16,6 @@
 package android.view.accessibility;
 
 import static com.google.common.truth.Truth.assertWithMessage;
-import static org.junit.Assert.assertFalse;
 
 import android.os.Build;
 import android.os.Message;
@@ -269,9 +268,10 @@ public class AccessibilityEventTest {
           .isEqualTo(expectedRecord.getDisplayId());
     }
 
-    assertFalse(
-        "one of the parcelableData is null",
-        expectedRecord.getParcelableData() == null ^ receivedRecord.getParcelableData() == null);
+    assertWithMessage("one of the parcelableData is null")
+        .that(
+            expectedRecord.getParcelableData() == null ^ receivedRecord.getParcelableData() == null)
+        .isFalse();
     if (expectedRecord.getParcelableData() != null && receivedRecord.getParcelableData() != null) {
       assertWithMessage("parcelableData has incorrect value")
           .that(((Message) receivedRecord.getParcelableData()).what)

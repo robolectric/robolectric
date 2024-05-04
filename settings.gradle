@@ -42,4 +42,5 @@ include ":integration_tests:play_services"
 include ":integration_tests:sparsearray"
 include ":integration_tests:nativegraphics"
 include ":integration_tests:room"
+include ":integration_tests:versioning"
 include ':testapp'
