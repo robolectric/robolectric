@@ -18,6 +18,7 @@ dependencies {
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation libs.kotlin.stdlib
+    testImplementation libs.kotlinx.coroutines.android
     testImplementation libs.junit4
     testImplementation libs.truth
     testImplementation "androidx.test:core:$axtCoreVersion@aar"
