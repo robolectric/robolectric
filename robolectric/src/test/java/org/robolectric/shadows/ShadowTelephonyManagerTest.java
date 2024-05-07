@@ -1530,4 +1530,21 @@ public class ShadowTelephonyManagerTest {
         IllegalStateException.class,
         () -> shadowTelephonyManager.setCarrierRestrictionRules(new Object()));
   }
+
+  @Test
+  @Config(minSdk = Q)
+  public void rebootModem_rebootsModem() {
+    shadowOf((Application) ApplicationProvider.getApplicationContext())
+        .grantPermissions(permission.MODIFY_PHONE_STATE);
+
+    shadowTelephonyManager.rebootModem();
+
+    assertThat(shadowTelephonyManager.getModemRebootCount()).isEqualTo(1);
+  }
+
+  @Test()
+  @Config(minSdk = Q)
+  public void rebootModem_noModifyPhoneStatePermission_throwsSecurityException() {
+    assertThrows(SecurityException.class, () -> shadowTelephonyManager.rebootModem());
+  }
 }
