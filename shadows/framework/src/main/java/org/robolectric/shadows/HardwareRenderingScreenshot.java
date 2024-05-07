@@ -15,7 +15,10 @@ import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewRootImpl;
 import com.android.internal.R;
+import com.google.common.base.Preconditions;
+import java.util.WeakHashMap;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -24,6 +27,11 @@ import org.robolectric.util.ReflectionHelpers;
  * ShadowUiAutomation}.
  */
 public final class HardwareRenderingScreenshot {
+
+  // It is important to reuse HardwareRenderer objects, and ensure that after a HardwareRenderer is
+  // collected, no associated views in the same View hierarchy will be rendered as well.
+  private static final WeakHashMap<ViewRootImpl, HardwareRenderer> hardwareRenderers =
+      new WeakHashMap<>();
 
   static final String PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode";
 
@@ -58,8 +66,10 @@ public final class HardwareRenderingScreenshot {
       // - ImageReader is configured as RGBA_8888.
       // - However the native libs/hwui/pipeline/skia/SkiaHostPipeline.cpp always treats
       //   the buffer as BGRA_8888, thus matching what the Android Bitmap object requires.
-
-      HardwareRenderer renderer = new HardwareRenderer();
+      ViewRootImpl viewRootImpl = view.getViewRootImpl();
+      Preconditions.checkNotNull(viewRootImpl, "View not attached");
+      HardwareRenderer renderer =
+          hardwareRenderers.computeIfAbsent(viewRootImpl, k -> new HardwareRenderer());
       Surface surface = imageReader.getSurface();
       renderer.setSurface(surface);
       Image nativeImage = imageReader.acquireNextImage();
