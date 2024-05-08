@@ -1,7 +1,9 @@
 package org.robolectric.res.android;
 
-// transliterated from https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
+// transliterated from
+// https://android.googlesource.com/platform/frameworks/base/+/android-9.0.0_r12/include/androidfw/ResourceTypes.h
 
+import static org.robolectric.res.android.Errors.BAD_TYPE;
 import static org.robolectric.res.android.Errors.NO_ERROR;
 import static org.robolectric.res.android.Errors.UNKNOWN_ERROR;
 import static org.robolectric.res.android.ResTable.APP_PACKAGE_ID;
@@ -145,7 +147,15 @@ public class DynamicRefTable
   int lookupResourceValue(Ref<Res_value> value) {
     byte resolvedType = DataType.REFERENCE.code();
     Res_value inValue = value.get();
-    switch (DataType.fromCode(inValue.dataType)) {
+
+    DataType dataType;
+    try {
+      dataType = DataType.fromCode(inValue.dataType);
+    } catch (IllegalArgumentException e) {
+      return BAD_TYPE;
+    }
+
+    switch (dataType) {
       case ATTRIBUTE:
         resolvedType = DataType.ATTRIBUTE.code();
         // fallthrough
