@@ -42,10 +42,11 @@ public final class HardwareRenderingScreenshot {
    * the presence of the {@link #USE_HARDWARE_RENDERER_NATIVE_ENV} property, and the {@link
    * GraphicsMode}.
    */
-  static boolean canTakeScreenshot() {
+  static boolean canTakeScreenshot(View view) {
     return VERSION.SDK_INT >= VERSION_CODES.S
         && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
-        && ShadowView.useRealGraphics();
+        && ShadowView.useRealGraphics()
+        && view.canHaveDisplayList();
   }
 
   /**

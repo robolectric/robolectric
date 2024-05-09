@@ -167,7 +167,7 @@ public class ShadowPixelCopy {
 
     Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
 
-    if (HardwareRenderingScreenshot.canTakeScreenshot()) {
+    if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
       HardwareRenderingScreenshot.takeScreenshot(view, bitmap);
     } else {
       Canvas screenshotCanvas = new Canvas(bitmap);
