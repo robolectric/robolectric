@@ -97,6 +97,7 @@ public class ShadowTelecomManager {
   private boolean callPhonePermission = true;
   private boolean handleMmiValue = false;
   private ConnectionService connectionService;
+  private boolean isOutgoingCallPermitted = false;
 
   public CallRequestMode getCallRequestMode() {
     return callRequestMode;
@@ -117,6 +118,11 @@ public class ShadowTelecomManager {
   /** Remove default outgoing phone account for corresponding {@code uriScheme}. */
   public void removeDefaultOutgoingPhoneAccount(String uriScheme) {
     defaultOutgoingPhoneAccounts.remove(uriScheme);
+  }
+
+  /** Sets the result of {@link TelecomManager#isOutgoingCallPermitted(PhoneAccountHandle)}. */
+  public void setIsOutgoingCallPermitted(boolean isOutgoingCallPermitted) {
+    this.isOutgoingCallPermitted = isOutgoingCallPermitted;
   }
 
   /**
@@ -728,6 +734,11 @@ public class ShadowTelecomManager {
       intent.setData(Uri.parse("tel:" + number));
     }
     return intent;
+  }
+
+  @Implementation(minSdk = O)
+  protected boolean isOutgoingCallPermitted(PhoneAccountHandle phoneAccountHandle) {
+    return this.isOutgoingCallPermitted;
   }
 
   /**
