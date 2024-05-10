@@ -19,20 +19,16 @@ import android.content.res.ResourcesImpl;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
-import android.os.ParcelFileDescriptor;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.LongSparseArray;
 import android.util.TypedValue;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.android.Bootstrap;
@@ -42,12 +38,8 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.bytecode.ShadowedObject;
-import org.robolectric.res.Plural;
-import org.robolectric.res.PluralRules;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceTable;
-import org.robolectric.res.TypedResource;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 import org.robolectric.util.ReflectionHelpers;
@@ -89,70 +81,26 @@ public class ShadowResources {
 
   @Implementation
   protected TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    if (isLegacyAssetManager()) {
-      return legacyShadowOf(realResources.getAssets())
-          .attrsToTypedArray(realResources, set, attrs, 0, 0, 0);
-    } else {
-      return reflector(ResourcesReflector.class, realResources).obtainAttributes(set, attrs);
-    }
+    return reflector(ResourcesReflector.class, realResources).obtainAttributes(set, attrs);
   }
 
   @Implementation
   protected String getQuantityString(int id, int quantity, Object... formatArgs)
       throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      String raw = getQuantityString(id, quantity);
-      return String.format(Locale.ENGLISH, raw, formatArgs);
-    } else {
-      return reflector(ResourcesReflector.class, realResources)
-          .getQuantityString(id, quantity, formatArgs);
-    }
+
+    return reflector(ResourcesReflector.class, realResources)
+        .getQuantityString(id, quantity, formatArgs);
   }
 
   @Implementation
   protected String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-
-      TypedResource typedResource =
-          shadowAssetManager.getResourceTable().getValue(resId, shadowAssetManager.config);
-      if (typedResource != null && typedResource instanceof PluralRules) {
-        PluralRules pluralRules = (PluralRules) typedResource;
-        Plural plural = pluralRules.find(quantity);
-
-        if (plural == null) {
-          return null;
-        }
-
-        TypedResource<?> resolvedTypedResource =
-            shadowAssetManager.resolve(
-                new TypedResource<>(
-                    plural.getString(), ResType.CHAR_SEQUENCE, pluralRules.getXmlContext()),
-                shadowAssetManager.config,
-                resId);
-        return resolvedTypedResource == null ? null : resolvedTypedResource.asString();
-      } else {
-        return null;
-      }
-    } else {
-      return reflector(ResourcesReflector.class, realResources).getQuantityString(resId, quantity);
-    }
+    return reflector(ResourcesReflector.class, realResources).getQuantityString(resId, quantity);
   }
 
   @Implementation
   protected InputStream openRawResource(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      ResourceTable resourceTable = shadowAssetManager.getResourceTable();
-      InputStream inputStream = resourceTable.getRawValue(id, shadowAssetManager.config);
-      if (inputStream == null) {
-        throw newNotFoundException(id);
-      } else {
-        return inputStream;
-      }
-    } else {
-      return reflector(ResourcesReflector.class, realResources).openRawResource(id);
-    }
+
+    return reflector(ResourcesReflector.class, realResources).openRawResource(id);
   }
 
   /**
@@ -162,23 +110,7 @@ public class ShadowResources {
    */
   @Implementation
   protected AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      InputStream inputStream = openRawResource(id);
-      if (!(inputStream instanceof FileInputStream)) {
-        // todo fixme
-        return null;
-      }
-
-      FileInputStream fis = (FileInputStream) inputStream;
-      try {
-        return new AssetFileDescriptor(
-            ParcelFileDescriptor.dup(fis.getFD()), 0, fis.getChannel().size());
-      } catch (IOException e) {
-        throw newNotFoundException(id);
-      }
-    } else {
       return reflector(ResourcesReflector.class, realResources).openRawResourceFd(id);
-    }
   }
 
   private Resources.NotFoundException newNotFoundException(int id) {
@@ -193,43 +125,26 @@ public class ShadowResources {
 
   @Implementation
   protected TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      TypedArray typedArray = shadowAssetManager.getTypedArrayResource(realResources, id);
-      if (typedArray != null) {
-        return typedArray;
-      } else {
-        throw newNotFoundException(id);
-      }
-    } else {
-      return reflector(ResourcesReflector.class, realResources).obtainTypedArray(id);
-    }
+    return reflector(ResourcesReflector.class, realResources).obtainTypedArray(id);
   }
 
   @HiddenApi
   @Implementation
   protected XmlResourceParser loadXmlResourceParser(int resId, String type)
       throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      ShadowLegacyAssetManager shadowAssetManager = legacyShadowOf(realResources.getAssets());
-      return setSourceResourceId(shadowAssetManager.loadXmlResourceParser(resId, type), resId);
-    } else {
-      ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
-      return setSourceResourceId(relectedResources.loadXmlResourceParser(resId, type), resId);
-    }
+
+    ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
+    return setSourceResourceId(relectedResources.loadXmlResourceParser(resId, type), resId);
   }
 
   @HiddenApi
   @Implementation
   protected XmlResourceParser loadXmlResourceParser(
       String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
-    if (isLegacyAssetManager()) {
-      return loadXmlResourceParser(id, type);
-    } else {
-      ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
-      return setSourceResourceId(
-          relectedResources.loadXmlResourceParser(file, id, assetCookie, type), id);
-    }
+
+    ResourcesReflector relectedResources = reflector(ResourcesReflector.class, realResources);
+    return setSourceResourceId(
+        relectedResources.loadXmlResourceParser(file, id, assetCookie, type), id);
   }
 
   private static XmlResourceParser setSourceResourceId(XmlResourceParser parser, int resourceId) {
@@ -404,10 +319,6 @@ public class ShadowResources {
 
       shadowDrawable.setCreatedFromResId(id, resourceName);
     }
-  }
-
-  private boolean isLegacyAssetManager() {
-    return ShadowAssetManager.useLegacy();
   }
 
   /** Shadow for {@link Resources.NotFoundException}. */

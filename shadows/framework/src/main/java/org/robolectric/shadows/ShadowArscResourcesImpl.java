@@ -22,11 +22,9 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralRules;
 import org.robolectric.res.ResName;
@@ -47,13 +45,6 @@ public class ShadowArscResourcesImpl extends ShadowResourcesImpl {
   private static List<LongSparseArray<?>> resettableArrays;
 
   @RealObject ResourcesImpl realResourcesImpl;
-
-  @Resetter
-  public static void reset() {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      ShadowResourcesImpl.reset();
-    }
-  }
 
   private static List<LongSparseArray<?>> obtainResettableArrays() {
     List<LongSparseArray<?>> resettableArrays = new ArrayList<>();

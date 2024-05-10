@@ -1029,14 +1029,6 @@ public class ShadowApplicationPackageManager extends ShadowPackageManager {
       }
       Resources resources = null;
 
-      if (RuntimeEnvironment.useLegacyResources()
-          && (applicationInfo.publicSourceDir == null
-              || !new File(applicationInfo.publicSourceDir).exists())) {
-        // In legacy mode, the underlying getResourcesForApplication implementation just returns an
-        // empty Resources instance in this case.
-        throw new NameNotFoundException(applicationInfo.packageName);
-      }
-
       try {
         resources =
             reflector(ReflectorApplicationPackageManager.class, realObject)

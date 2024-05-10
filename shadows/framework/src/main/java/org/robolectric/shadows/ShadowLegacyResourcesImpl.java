@@ -21,12 +21,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.res.Plural;
 import org.robolectric.res.PluralRules;
 import org.robolectric.res.ResName;
@@ -45,13 +43,6 @@ import org.robolectric.util.reflector.ForType;
     minSdk = N,
     shadowPicker = Picker.class)
 public class ShadowLegacyResourcesImpl extends ShadowResourcesImpl {
-
-  @Resetter
-  public static void reset() {
-    if (RuntimeEnvironment.useLegacyResources()) {
-      ShadowResourcesImpl.reset();
-    }
-  }
 
   @RealObject private ResourcesImpl realResourcesImpl;
 

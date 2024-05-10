@@ -43,7 +43,6 @@ import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static com.google.common.truth.TruthJUnit.assume;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -2758,8 +2757,6 @@ public class ShadowPackageManagerTest {
 
   @Test
   public void getResourcesForApplication_ApkNotInstalled() throws NameNotFoundException {
-    assume().that(RuntimeEnvironment.useLegacyResources()).isFalse();
-
     File testApk = TestUtil.resourcesBaseDir().resolve(REAL_TEST_APP_ASSET_PATH).toFile();
 
     PackageInfo packageInfo = packageManager.getPackageArchiveInfo(testApk.getAbsolutePath(), 0);

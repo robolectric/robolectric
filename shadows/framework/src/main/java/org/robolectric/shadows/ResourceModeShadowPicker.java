@@ -7,6 +7,7 @@ import org.robolectric.shadow.api.ShadowPicker;
 
 public class ResourceModeShadowPicker<T> implements ShadowPicker<T> {
 
+  // TODO(brettchabot): remove unused legacyShadowClass
   private Class<? extends T> legacyShadowClass;
   private Class<? extends T> binaryShadowClass;
   private Class<? extends T> binary9ShadowClass;
@@ -38,18 +39,14 @@ public class ResourceModeShadowPicker<T> implements ShadowPicker<T> {
 
   @Override
   public Class<? extends T> pickShadowClass() {
-    if (ShadowAssetManager.useLegacy()) {
-      return legacyShadowClass;
+    if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
+      return binary14ShadowClass;
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+      return binary10ShadowClass;
+    } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
+      return binary9ShadowClass;
     } else {
-      if (RuntimeEnvironment.getApiLevel() > VERSION_CODES.TIRAMISU) {
-        return binary14ShadowClass;
-      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
-        return binary10ShadowClass;
-      } else if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.P) {
-        return binary9ShadowClass;
-      } else {
-        return binaryShadowClass;
-      }
+      return binaryShadowClass;
     }
   }
 }

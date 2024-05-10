@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -14,7 +13,6 @@ import android.graphics.ColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.VectorDrawable;
-import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.ByteArrayInputStream;
@@ -120,11 +118,6 @@ public class ShadowDrawableTest {
   @Test
   @Config(qualifiers = "hdpi")
   public void drawableShouldLoadImageOfCorrectSizeWithHdpiQualifier() {
-    if (Build.VERSION.SDK_INT >= 28) {
-      // getDrawable depends on ImageDecoder, which depends on binary resources
-      assume().that(ShadowAssetManager.useLegacy()).isFalse();
-    }
-
     final Drawable anImage = context.getResources().getDrawable(R.drawable.robolectric);
 
     assertThat(anImage.getIntrinsicHeight()).isEqualTo(251);

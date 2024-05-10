@@ -2,7 +2,6 @@ package org.robolectric;
 
 import static android.os.Build.VERSION_CODES.P;
 import static com.google.common.base.Preconditions.checkState;
-import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.annotation.IdRes;
 import android.annotation.RequiresApi;
@@ -24,7 +23,6 @@ import android.view.View;
 import javax.annotation.Nullable;
 import org.robolectric.android.AttributeSetBuilderImpl;
 import org.robolectric.android.AttributeSetBuilderImpl.ArscResourceResolver;
-import org.robolectric.android.AttributeSetBuilderImpl.LegacyResourceResolver;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.android.controller.BackupAgentController;
 import org.robolectric.android.controller.ContentProviderController;
@@ -307,15 +305,10 @@ public class Robolectric {
    * Useful for testing {@link View} classes without the need for creating XML snippets.
    */
   public static org.robolectric.android.AttributeSetBuilder buildAttributeSet() {
-    if (useLegacy()) {
-      return new AttributeSetBuilderImpl(
-          new LegacyResourceResolver(
-              RuntimeEnvironment.getApplication(),
-              RuntimeEnvironment.getCompileTimeResourceTable())) {};
-    } else {
+
       return new AttributeSetBuilderImpl(
           new ArscResourceResolver(RuntimeEnvironment.getApplication())) {};
-    }
+
   }
 
   /**

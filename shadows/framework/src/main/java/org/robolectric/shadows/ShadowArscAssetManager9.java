@@ -207,7 +207,7 @@ public class ShadowArscAssetManager9 extends ShadowAssetManager.ArscBase {
   public static void reset() {
     // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for
     // resetters...
-    if (!useLegacy() && RuntimeEnvironment.getApiLevel() >= P) {
+    if (RuntimeEnvironment.getApiLevel() >= P) {
       _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
       _assetManagerStatic_.setSystemApkAssetsSet(null);
       _assetManagerStatic_.setSystemApkAssets(null);

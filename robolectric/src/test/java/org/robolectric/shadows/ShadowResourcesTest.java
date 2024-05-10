@@ -4,9 +4,7 @@ import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.S;
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.robolectric.Shadows.shadowOf;
-import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
@@ -34,7 +32,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.android.XmlResourceParserImpl;
 import org.robolectric.annotation.Config;
 
 @RunWith(AndroidJUnit4.class)
@@ -108,16 +105,7 @@ public class ShadowResourcesTest {
   }
 
   @Test
-  public void openRawResourceFd_shouldReturnsNullForLegacyResource() throws Exception {
-    assume().that(useLegacy()).isTrue();
-    try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
-        assertThat(afd).isNull();
-    }
-  }
-
-  @Test
   public void openRawResourceFd_shouldReturnsValidFdForUnCompressFile() throws Exception {
-    assume().that(useLegacy()).isFalse();
     try (AssetFileDescriptor afd = resources.openRawResourceFd(R.raw.raw_resource)) {
         assertThat(afd).isNotNull();
     }
@@ -178,19 +166,6 @@ public class ShadowResourcesTest {
     assertThat(typedArray.getFloat(0, 0)).isEqualTo(12.0f);
     assertThat(typedArray.getFloat(1, 0)).isEqualTo(24.0f);
     typedArray.recycle();
-  }
-
-  @Test
-  public void getXml_shouldHavePackageContextForReferenceResolution() {
-    if (!useLegacy()) {
-      return;
-    }
-    XmlResourceParserImpl xmlResourceParser =
-        (XmlResourceParserImpl) resources.getXml(R.xml.preferences);
-    assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?org.robolectric:attr/ref");
-
-    xmlResourceParser = (XmlResourceParserImpl) resources.getXml(android.R.layout.list_content);
-    assertThat(xmlResourceParser.qualify("?ref")).isEqualTo("?android:attr/ref");
   }
 
   @Test

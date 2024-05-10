@@ -37,14 +37,6 @@ abstract public class ShadowAssetManager {
    * @deprecated Avoid use.
    */
   @Deprecated
-  public static boolean useLegacy() {
-    return RuntimeEnvironment.useLegacyResources();
-  }
-
-  /**
-   * @deprecated Avoid use.
-   */
-  @Deprecated
   static ShadowLegacyAssetManager legacyShadowOf(AssetManager assetManager) {
     return Shadow.extract(assetManager);
   }

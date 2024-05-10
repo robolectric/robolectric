@@ -54,7 +54,6 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
-import org.robolectric.annotation.Resetter;
 import org.robolectric.res.AttrData;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.EmptyStyle;
@@ -1402,19 +1401,6 @@ public class ShadowLegacyAssetManager extends ShadowAssetManager {
   @Implementation(minSdk = VERSION_CODES.Q, maxSdk = VERSION_CODES.R)
   protected static String[] nativeCreateIdmapsForStaticOverlaysTargetingAndroid() {
     return new String[0];
-  }
-
-  @Resetter
-  public static void reset() {
-    // todo: ShadowPicker doesn't discriminate properly between concrete shadow classes for resetters...
-    if (useLegacy()) {
-      if (RuntimeEnvironment.getApiLevel() >= P) {
-        _AssetManager28_ _assetManagerStatic_ = reflector(_AssetManager28_.class);
-        _assetManagerStatic_.setSystemApkAssetsSet(null);
-        _assetManagerStatic_.setSystemApkAssets(null);
-      }
-      reflector(_AssetManager_.class).setSystem(null);
-    }
   }
 
   @VisibleForTesting

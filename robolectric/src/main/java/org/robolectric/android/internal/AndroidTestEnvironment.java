@@ -34,7 +34,6 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.Certificate;
@@ -78,12 +77,10 @@ import org.robolectric.res.ResourceTableFactory;
 import org.robolectric.res.RoutingResourceTable;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ClassNameResolver;
-import org.robolectric.shadows.LegacyManifestParser;
 import org.robolectric.shadows.ShadowActivityThread;
 import org.robolectric.shadows.ShadowActivityThread._ActivityThread_;
 import org.robolectric.shadows.ShadowActivityThread._AppBindData_;
 import org.robolectric.shadows.ShadowApplication;
-import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowContextImpl._ContextImpl_;
 import org.robolectric.shadows.ShadowInstrumentation;
 import org.robolectric.shadows.ShadowInstrumentation._Instrumentation_;
@@ -385,10 +382,6 @@ public class AndroidTestEnvironment implements TestEnvironment {
 
       appResources.updateConfiguration(androidConfiguration, Bootstrap.getDisplayMetrics());
 
-      if (ShadowAssetManager.useLegacy()) {
-        populateAssetPaths(appResources.getAssets(), appManifest);
-      }
-
       // Circumvent the 'No Compatibility callbacks set!' log. See #8509
       if (apiLevel >= AndroidVersions.V.SDK_INT) {
         // Adds loggableChanges parameter.
@@ -420,35 +413,17 @@ public class AndroidTestEnvironment implements TestEnvironment {
   private Package loadAppPackage_measured(Config config, AndroidManifest appManifest) {
 
     Package parsedPackage;
-    if (RuntimeEnvironment.useLegacyResources()) {
-      injectResourceStuffForLegacy(appManifest);
 
-      if (appManifest.getAndroidManifestFile() != null
-          && Files.exists(appManifest.getAndroidManifestFile())) {
-        parsedPackage = LegacyManifestParser.createPackage(appManifest);
-      } else {
-        parsedPackage = new Package("org.robolectric.default");
-        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-      }
-      // Support overriding the package name specified in the Manifest.
-      if (!Config.DEFAULT_PACKAGE_NAME.equals(config.packageName())) {
-        parsedPackage.packageName = config.packageName();
-        parsedPackage.applicationInfo.packageName = config.packageName();
-      } else {
-        parsedPackage.packageName = appManifest.getPackageName();
-        parsedPackage.applicationInfo.packageName = appManifest.getPackageName();
-      }
+    RuntimeEnvironment.compileTimeSystemResourcesFile = compileSdk.getJarPath();
+
+    Path packageFile = appManifest.getApkFile();
+    if (packageFile != null) {
+      parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
     } else {
-      RuntimeEnvironment.compileTimeSystemResourcesFile = compileSdk.getJarPath();
-
-      Path packageFile = appManifest.getApkFile();
-      if (packageFile != null) {
-        parsedPackage = ShadowPackageParser.callParsePackage(packageFile);
-      } else {
-        parsedPackage = new Package("org.robolectric.default");
-        parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
-      }
+      parsedPackage = new Package("org.robolectric.default");
+      parsedPackage.applicationInfo.targetSdkVersion = appManifest.getTargetSdkVersion();
     }
+
     if (parsedPackage != null
         && parsedPackage.applicationInfo != null
         && RuntimeEnvironment.getApiLevel() >= P) {
@@ -696,14 +671,8 @@ public class AndroidTestEnvironment implements TestEnvironment {
     // packageInfo.setVolumeUuid(tempDirectory.createIfNotExists(packageInfo.packageName +
     // "-dataDir").toAbsolutePath().toString());
 
-    if (RuntimeEnvironment.useLegacyResources()) {
-      applicationInfo.sourceDir = createTempDir(applicationInfo.packageName + "-sourceDir");
-      applicationInfo.publicSourceDir =
-          createTempDir(applicationInfo.packageName + "-publicSourceDir");
-    } else {
-      applicationInfo.publicSourceDir = parsedPackage.codePath;
-      applicationInfo.sourceDir = parsedPackage.codePath;
-    }
+    applicationInfo.publicSourceDir = parsedPackage.codePath;
+    applicationInfo.sourceDir = parsedPackage.codePath;
 
     applicationInfo.dataDir = createTempDir(applicationInfo.packageName + "-dataDir");
 
