@@ -99,24 +99,6 @@ public class Qualifiers {
   }
 
   /**
-   * If the Config already has a version qualifier, do nothing. Otherwise, add a version
-   * qualifier for the target api level (which comes from the manifest or Config.sdk()).
-   *
-   * @deprecated Figure something else out.
-   */
-  @Deprecated
-  public static String addPlatformVersion(String qualifiers, int apiLevel) {
-    int versionQualifierApiLevel = Qualifiers.getPlatformVersion(qualifiers);
-    if (versionQualifierApiLevel == -1) {
-      if (qualifiers.length() > 0) {
-        qualifiers += "-";
-      }
-      qualifiers += "v" + apiLevel;
-    }
-    return qualifiers;
-  }
-
-  /**
    * If the Config already has a {@code sw} qualifier, do nothing. Otherwise, add a {@code sw}
    * qualifier for the given width.
    *

@@ -147,12 +147,11 @@ public class BootstrapTest {
             "en-rUS-ldltr-sw320dp-w320dp-h470dp-normal-notlong-notround-"
                 + optsForO
                 + "port-notnight-mdpi"
-                + "-finger-keyssoft-nokeys-navhidden-nonav-v"
-                + Build.VERSION.RESOURCES_SDK_INT);
+                + "-finger-keyssoft-nokeys-navhidden-nonav");
 
     assertThat(configuration.mcc).isEqualTo(0);
     assertThat(configuration.mnc).isEqualTo(0);
-    assertThat(configuration.locale).isEqualTo(new Locale("en", "US"));
+    assertThat(configuration.locale).isEqualTo(Locale.US);
     assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK).isEqualTo(SCREENLAYOUT_LAYOUTDIR_LTR);
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(320);
     assertThat(configuration.screenWidthDp).isEqualTo(320);
@@ -187,9 +186,11 @@ public class BootstrapTest {
 
     Bootstrap.applyQualifiers(
         "mcc310-mnc004-fr-rFR-ldrtl-sw400dp-w480dp-h456dp-"
-            + "xlarge-long-round" + altOptsForO + "-land-appliance-night-hdpi-notouch-"
+            + "xlarge-long-round"
+            + altOptsForO
+            + "-land-appliance-night-hdpi-notouch-"
             + "keyshidden-12key-navhidden-dpad",
-        Build.VERSION.RESOURCES_SDK_INT,
+        RuntimeEnvironment.getApiLevel(),
         configuration,
         displayMetrics);
     String outQualifiers = ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
@@ -201,12 +202,11 @@ public class BootstrapTest {
                 + "-xlarge-long-round"
                 + altOptsForO
                 + "-land-appliance-night-hdpi-notouch-"
-                + "keyshidden-12key-navhidden-dpad-v"
-                + Build.VERSION.RESOURCES_SDK_INT);
+                + "keyshidden-12key-navhidden-dpad");
 
     assertThat(configuration.mcc).isEqualTo(310);
     assertThat(configuration.mnc).isEqualTo(4);
-    assertThat(configuration.locale).isEqualTo(new Locale("fr", "FR"));
+    assertThat(configuration.locale).isEqualTo(Locale.FRANCE);
     assertThat(configuration.screenLayout & SCREENLAYOUT_LAYOUTDIR_MASK)
         .isEqualTo(SCREENLAYOUT_LAYOUTDIR_LTR);
     assertThat(configuration.smallestScreenWidthDp).isEqualTo(400);
@@ -350,7 +350,7 @@ public class BootstrapTest {
   @Test
   @Config(minSdk = N)
   public void testUpdateDisplayResourcesWithDifferentLocale() {
-    Locale locale = new Locale("en", "IN");
+    Locale locale = Locale.forLanguageTag("en-IN");
     RuntimeEnvironment.setQualifiers("ar");
     LocaleList originalDefault = LocaleList.getDefault();
     try {

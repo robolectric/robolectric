@@ -101,15 +101,7 @@ public class DeviceConfigTest {
     String language = "he";
     applyQualifiers(language);
     DeviceConfig.applyRules(configuration, displayMetrics, apiLevel);
-    // Locale's constructor has always converted three language codes to their earlier, obsoleted
-    // forms: he maps to iw, yi maps to ji, and id maps to in. Since Java SE 17, this is no longer
-    // the case. Each language maps to its new form; iw maps to he, ji maps to yi, and in maps to
-    // id.
-    // See
-    // https://stackoverflow.com/questions/8202406/locale-code-for-hebrew-reference-to-other-locale-codes/70882234#70882234,
-    // and https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Locale.html.
-    // To make sure this test can work with different JDK versions, using the following workaround.
-    Locale locale = new Locale(language);
+    Locale locale = Locale.forLanguageTag(language);
     assertThat(asQualifierString())
         .isEqualTo(
             locale.getLanguage()
@@ -230,6 +222,6 @@ public class DeviceConfigTest {
   }
 
   private String asQualifierString() {
-    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics, false);
+    return ConfigurationV25.resourceQualifierString(configuration, displayMetrics);
   }
 }
