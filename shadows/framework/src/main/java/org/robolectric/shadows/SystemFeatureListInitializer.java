@@ -27,6 +27,12 @@ final class SystemFeatureListInitializer {
       features.put(PackageManager.FEATURE_WIFI_RTT, true);
     }
 
+    if (apiLevel >= VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      // Starting in V, FEATURE_TELEPHONY_SUBSCRIPTION is required for some system services,
+      // such as VcnManager.
+      features.put(PackageManager.FEATURE_TELEPHONY_SUBSCRIPTION, true);
+    }
+
     return ImmutableMap.copyOf(features);
   }
 }

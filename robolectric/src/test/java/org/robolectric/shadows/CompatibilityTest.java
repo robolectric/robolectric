@@ -17,6 +17,9 @@ import org.robolectric.versioning.AndroidVersions.V;
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = Build.VERSION_CODES.S)
 public class CompatibilityTest {
+
+  private static final long ENFORCE_EDGE_TO_EDGE = 309578419L;
+
   @Test
   public void isChangeEnabled() {
     assertThat(Compatibility.isChangeEnabled(100)).isTrue();
@@ -38,7 +41,7 @@ public class CompatibilityTest {
 
   @Test
   public void edgeToEdgeEncorcement_minSdk() {
-    assertThat(ShadowCompatibility.isEdgeToEdgeEnabled(U.SDK_INT)).isFalse();
-    assertThat(ShadowCompatibility.isEdgeToEdgeEnabled(V.SDK_INT)).isTrue();
+    assertThat(ShadowCompatibility.isEnabled(ENFORCE_EDGE_TO_EDGE, U.SDK_INT)).isFalse();
+    assertThat(ShadowCompatibility.isEnabled(ENFORCE_EDGE_TO_EDGE, V.SDK_INT)).isTrue();
   }
 }
