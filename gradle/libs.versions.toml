@@ -30,7 +30,7 @@ error-prone-gradle = "3.1.0"
 kotlin = "1.9.23"
 
 # https://github.com/Kotlin/kotlinx.coroutines/releases/
-kotlinx-coroutines = '1.8.0'
+kotlinx-coroutines = '1.8.1'
 
 # https://github.com/diffplug/spotless/blob/main/plugin-gradle/CHANGES.md
 spotless-gradle = "6.25.0"
