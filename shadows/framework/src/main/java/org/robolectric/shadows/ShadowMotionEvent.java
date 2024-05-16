@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -635,12 +634,14 @@ public class ShadowMotionEvent extends ShadowInputEvent {
 
   @Implementation(minSdk = V.SDK_INT)
   @HiddenApi
+  @InDevelopment
   protected static float nativeGetRawXOffset(long nativePtr) {
     return getNativeMotionEvent(nativePtr).getXOffset();
   }
 
   @Implementation(minSdk = V.SDK_INT)
   @HiddenApi
+  @InDevelopment
   protected static float nativeGetRawYOffset(long nativePtr) {
     return getNativeMotionEvent(nativePtr).getYOffset();
   }
