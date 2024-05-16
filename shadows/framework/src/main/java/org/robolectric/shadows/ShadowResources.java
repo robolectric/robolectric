@@ -1,12 +1,8 @@
 package org.robolectric.shadows;
 
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static android.os.Build.VERSION_CODES.M;
-import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.Q;
-import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.res.AssetFileDescriptor;
@@ -15,7 +11,6 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
-import android.content.res.ResourcesImpl;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
@@ -38,10 +33,7 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
 import org.robolectric.internal.bytecode.ShadowedObject;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceTable;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowLegacyResourcesImpl.ShadowLegacyThemeImpl;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -77,55 +69,6 @@ public class ShadowResources {
           new Resources(assetManager, Bootstrap.getDisplayMetrics(), Bootstrap.getConfiguration());
     }
     return system;
-  }
-
-  @Implementation
-  protected TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
-    return reflector(ResourcesReflector.class, realResources).obtainAttributes(set, attrs);
-  }
-
-  @Implementation
-  protected String getQuantityString(int id, int quantity, Object... formatArgs)
-      throws Resources.NotFoundException {
-
-    return reflector(ResourcesReflector.class, realResources)
-        .getQuantityString(id, quantity, formatArgs);
-  }
-
-  @Implementation
-  protected String getQuantityString(int resId, int quantity) throws Resources.NotFoundException {
-    return reflector(ResourcesReflector.class, realResources).getQuantityString(resId, quantity);
-  }
-
-  @Implementation
-  protected InputStream openRawResource(int id) throws Resources.NotFoundException {
-
-    return reflector(ResourcesReflector.class, realResources).openRawResource(id);
-  }
-
-  /**
-   * Since {@link AssetFileDescriptor}s are not yet supported by Robolectric, {@code null} will be
-   * returned if the resource is found. If the resource cannot be found, {@link
-   * Resources.NotFoundException} will be thrown.
-   */
-  @Implementation
-  protected AssetFileDescriptor openRawResourceFd(int id) throws Resources.NotFoundException {
-      return reflector(ResourcesReflector.class, realResources).openRawResourceFd(id);
-  }
-
-  private Resources.NotFoundException newNotFoundException(int id) {
-    ResourceTable resourceTable = legacyShadowOf(realResources.getAssets()).getResourceTable();
-    ResName resName = resourceTable.getResName(id);
-    if (resName == null) {
-      return new Resources.NotFoundException("resource ID #0x" + Integer.toHexString(id));
-    } else {
-      return new Resources.NotFoundException(resName.getFullyQualifiedName());
-    }
-  }
-
-  @Implementation
-  protected TypedArray obtainTypedArray(int id) throws Resources.NotFoundException {
-    return reflector(ResourcesReflector.class, realResources).obtainTypedArray(id);
   }
 
   @HiddenApi
@@ -245,63 +188,6 @@ public class ShadowResources {
       for (OnConfigurationChangeListener listener : configurationChangeListeners) {
         listener.onConfigurationChange(oldConfig, config, metrics);
       }
-    }
-  }
-
-  /** Base class for shadows of {@link Resources.Theme}. */
-  public abstract static class ShadowTheme {
-
-    /** Shadow picker for {@link ShadowTheme}. */
-    public static class Picker extends ResourceModeShadowPicker<ShadowTheme> {
-
-      public Picker() {
-        super(ShadowLegacyTheme.class, null, null);
-      }
-    }
-  }
-
-  /** Shadow for {@link Resources.Theme}. */
-  @Implements(value = Resources.Theme.class, shadowPicker = ShadowTheme.Picker.class)
-  public static class ShadowLegacyTheme extends ShadowTheme {
-    @RealObject Resources.Theme realTheme;
-
-    long getNativePtr() {
-      if (RuntimeEnvironment.getApiLevel() >= N) {
-        ResourcesImpl.ThemeImpl themeImpl = ReflectionHelpers.getField(realTheme, "mThemeImpl");
-        return ((ShadowLegacyThemeImpl) Shadow.extract(themeImpl)).getNativePtr();
-      } else {
-        return ((Number) ReflectionHelpers.getField(realTheme, "mTheme")).longValue();
-      }
-    }
-
-    @Implementation(maxSdk = M)
-    protected TypedArray obtainStyledAttributes(int[] attrs) {
-      return obtainStyledAttributes(0, attrs);
-    }
-
-    @Implementation(maxSdk = M)
-    protected TypedArray obtainStyledAttributes(int resid, int[] attrs)
-        throws Resources.NotFoundException {
-      return obtainStyledAttributes(null, attrs, 0, resid);
-    }
-
-    @Implementation(maxSdk = M)
-    protected TypedArray obtainStyledAttributes(
-        AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-      return getShadowAssetManager()
-          .attrsToTypedArray(
-              innerGetResources(), set, attrs, defStyleAttr, getNativePtr(), defStyleRes);
-    }
-
-    private ShadowLegacyAssetManager getShadowAssetManager() {
-      return legacyShadowOf(innerGetResources().getAssets());
-    }
-
-    private Resources innerGetResources() {
-      if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-        return realTheme.getResources();
-      }
-      return ReflectionHelpers.getField(realTheme, "this$0");
     }
   }
 

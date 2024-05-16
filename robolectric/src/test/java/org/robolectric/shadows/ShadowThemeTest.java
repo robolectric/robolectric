@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.Button;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +32,6 @@ public class ShadowThemeTest {
   @Before
   public void setUp() throws Exception {
     resources = ApplicationProvider.getApplicationContext().getResources();
-  }
-
-  @After
-  public void tearDown() {
-    ShadowLegacyAssetManager.strictErrors = false;
   }
 
   @Test
