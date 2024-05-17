@@ -25,6 +25,7 @@ import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.util.SparseIntArray;
 import com.google.common.base.Preconditions;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -393,66 +394,79 @@ public class ShadowActivityManager {
       return new ApplicationExitInfoBuilder();
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setDefiningUid(int uid) {
       instance.setDefiningUid(uid);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setDescription(String description) {
       instance.setDescription(description);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setImportance(int importance) {
       instance.setImportance(importance);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setPackageUid(int packageUid) {
       instance.setPackageUid(packageUid);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setPid(int pid) {
       instance.setPid(pid);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setProcessName(String processName) {
       instance.setProcessName(processName);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setProcessStateSummary(byte[] processStateSummary) {
       instance.setProcessStateSummary(processStateSummary);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setPss(long pss) {
       instance.setPss(pss);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setRealUid(int realUid) {
       instance.setRealUid(realUid);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setReason(int reason) {
       instance.setReason(reason);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setRss(long rss) {
       instance.setRss(rss);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setStatus(int status) {
       instance.setStatus(status);
       return this;
     }
 
+    @CanIgnoreReturnValue
     public ApplicationExitInfoBuilder setTimestamp(long timestamp) {
       instance.setTimestamp(timestamp);
       return this;
