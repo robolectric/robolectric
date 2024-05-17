@@ -153,6 +153,12 @@ public class ShadowConnectivityManager {
     networkCallbacks.add(networkCallback);
   }
 
+  @Implementation(minSdk = O)
+  protected void registerDefaultNetworkCallback(
+      ConnectivityManager.NetworkCallback networkCallback, Handler handler) {
+    networkCallbacks.add(networkCallback);
+  }
+
   @Implementation(minSdk = S)
   protected void registerBestMatchingNetworkCallback(
       NetworkRequest request,

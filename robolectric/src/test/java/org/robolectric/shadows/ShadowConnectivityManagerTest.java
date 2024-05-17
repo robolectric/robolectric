@@ -386,6 +386,14 @@ public class ShadowConnectivityManagerTest {
   }
 
   @Test
+  @Config(minSdk = O)
+  public void registerDefaultCallback_withHandler_shouldAddCallback() {
+    ConnectivityManager.NetworkCallback callback = createSimpleCallback();
+    connectivityManager.registerDefaultNetworkCallback(callback, new Handler());
+    assertThat(shadowOf(connectivityManager).getNetworkCallbacks()).hasSize(1);
+  }
+
+  @Test
   @Config(minSdk = S)
   public void registerBestMatchingNetworkCallback_shouldAddCallback() {
     NetworkRequest.Builder builder = new NetworkRequest.Builder();
