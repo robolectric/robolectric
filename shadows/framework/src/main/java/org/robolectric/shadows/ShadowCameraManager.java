@@ -33,6 +33,7 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraManager} */
 @Implements(value = CameraManager.class, minSdk = VERSION_CODES.LOLLIPOP)
@@ -83,7 +84,7 @@ public class ShadowCameraManager {
     }
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -91,6 +92,17 @@ public class ShadowCameraManager {
       final int uid,
       final int oomScoreOffset,
       boolean overrideToPortrait) {
+    return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected CameraDevice openCameraDeviceUserAsync(
+      String cameraId,
+      CameraDevice.StateCallback callback,
+      Executor executor,
+      final int uid,
+      final int oomScoreOffset,
+      int rotationOverride) {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
   }
 

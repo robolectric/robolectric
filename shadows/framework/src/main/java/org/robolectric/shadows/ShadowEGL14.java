@@ -37,7 +37,11 @@ public class ShadowEGL14 {
       int configSize,
       int[] numConfig,
       int numConfigOffset) {
-    configs[configsOffset] = createEglConfig();
+    // The configs array here can be null, in which case the numConfig output is supposed to be
+    // set to the number of matching configs instead of the number of returned configs.
+    if (configs != null) {
+      configs[configsOffset] = createEglConfig();
+    }
     numConfig[numConfigOffset] = 1;
     return true;
   }

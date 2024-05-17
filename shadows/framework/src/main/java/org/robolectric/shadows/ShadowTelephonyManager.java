@@ -68,6 +68,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
@@ -180,6 +181,7 @@ public class ShadowTelephonyManager {
   private static Map<Integer, List<EmergencyNumber>> emergencyNumbersList;
   private static volatile boolean isDataRoamingEnabled;
   private /*CarrierRestrictionRules*/ Object carrierRestrictionRules;
+  private final AtomicInteger modemRebootCount = new AtomicInteger();
 
   /**
    * Should be {@link TelephonyManager.BootstrapAuthenticationCallback} but this object was
@@ -676,6 +678,12 @@ public class ShadowTelephonyManager {
 
   private void checkReadPrivilegedPhoneStatePermission() {
     if (!checkPermission(permission.READ_PRIVILEGED_PHONE_STATE)) {
+      throw new SecurityException();
+    }
+  }
+
+  private void checkModifyPhoneStatePermission() {
+    if (!checkPermission(permission.MODIFY_PHONE_STATE)) {
       throw new SecurityException();
     }
   }
@@ -1682,5 +1690,16 @@ public class ShadowTelephonyManager {
   @Implementation(minSdk = Build.VERSION_CODES.Q)
   protected /*CarrierRestrictionRules*/ Object getCarrierRestrictionRules() {
     return carrierRestrictionRules;
+  }
+
+  /** Implementation for {@link TelephonyManager#rebootModem} */
+  @Implementation(minSdk = Build.VERSION_CODES.TIRAMISU)
+  protected void rebootModem() {
+    checkModifyPhoneStatePermission();
+    modemRebootCount.incrementAndGet();
+  }
+
+  public int getModemRebootCount() {
+    return modemRebootCount.get();
   }
 }

@@ -27,13 +27,25 @@ public final class ShadowEGL14Test {
   }
 
   @Test
-  public void eglChooseConfig() {
+  public void eglChooseConfig_retrieveConfigs() {
     EGLDisplay display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+    // When the config array is not null, numConfig is filled with the number of configs returned
+    // (up to the size of the config array).
     EGLConfig[] configs = new EGLConfig[1];
     int[] numConfig = new int[1];
     assertThat(EGL14.eglChooseConfig(display, new int[0], 0, configs, 0, 1, numConfig, 0)).isTrue();
     assertThat(numConfig[0]).isGreaterThan(0);
     assertThat(configs[0]).isNotNull();
+  }
+
+  @Test
+  public void eglChooseConfig_countMatching() {
+    EGLDisplay display = EGL14.eglGetDisplay(EGL14.EGL_DEFAULT_DISPLAY);
+    // When the config array is null, numConfig is filled with the total number of configs matched.
+    EGLConfig[] configs = null;
+    int[] numConfig = new int[1];
+    assertThat(EGL14.eglChooseConfig(display, new int[0], 0, configs, 0, 0, numConfig, 0)).isTrue();
+    assertThat(numConfig[0]).isGreaterThan(0);
   }
 
   @Test

@@ -12,7 +12,6 @@ import org.robolectric.nativeruntime.FontFamilyBuilderNatives;
 import org.robolectric.nativeruntime.FontsFontFamilyNatives;
 import org.robolectric.shadows.ShadowNativeFontsFontFamily.Picker;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link FontFamily} that is backed by native code */
 @Implements(
@@ -51,10 +50,6 @@ public class ShadowNativeFontsFontFamily {
       isInAndroidSdk = false,
       callNativeMethodsByDefault = true)
   public static class ShadowNativeFontFamilyBuilder {
-
-    @Implementation(minSdk = V.SDK_INT)
-    protected static void __staticInitializer__() {}
-
     @Implementation(maxSdk = U.SDK_INT)
     protected static long nInitBuilder() {
       DefaultNativeRuntimeLoader.injectAndLoad();

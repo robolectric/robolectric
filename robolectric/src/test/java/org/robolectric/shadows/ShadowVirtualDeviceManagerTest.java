@@ -206,7 +206,11 @@ public class ShadowVirtualDeviceManagerTest {
         new VirtualMouseRelativeEvent.Builder().setRelativeX(0.1f).setRelativeY(0.1f).build();
 
     VirtualMouse virtualMouse =
-        virtualDevice.createVirtualMouse(new VirtualMouseConfig.Builder().build());
+        virtualDevice.createVirtualMouse(
+            new VirtualMouseConfig.Builder()
+                .setAssociatedDisplayId(0)
+                .setInputDeviceName("mouse")
+                .build());
     virtualMouse.sendButtonEvent(buttonDownEvent);
     virtualMouse.sendButtonEvent(buttonUpEvent);
     virtualMouse.sendScrollEvent(scrollEvent);
@@ -236,7 +240,10 @@ public class ShadowVirtualDeviceManagerTest {
 
     VirtualTouchscreen virtualTouchscreen =
         virtualDevice.createVirtualTouchscreen(
-            new VirtualTouchscreenConfig.Builder(DISPLAY_WIDTH, DISPLAY_HEIGHT).build());
+            new VirtualTouchscreenConfig.Builder(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+                .setAssociatedDisplayId(0)
+                .setInputDeviceName("touchscreen")
+                .build());
     virtualTouchscreen.sendTouchEvent(virtualTouchEvent);
 
     assertThat(virtualTouchscreen).isNotNull();
@@ -258,7 +265,11 @@ public class ShadowVirtualDeviceManagerTest {
             .build();
 
     VirtualKeyboard virtualKeyboard =
-        virtualDevice.createVirtualKeyboard(new VirtualKeyboardConfig.Builder().build());
+        virtualDevice.createVirtualKeyboard(
+            new VirtualKeyboardConfig.Builder()
+                .setAssociatedDisplayId(0)
+                .setInputDeviceName("keyboard")
+                .build());
     virtualKeyboard.sendKeyEvent(keyEvent1);
     virtualKeyboard.sendKeyEvent(keyEvent2);
 
@@ -273,12 +284,23 @@ public class ShadowVirtualDeviceManagerTest {
         virtualDeviceManager.createVirtualDevice(
             0, new VirtualDeviceParams.Builder().setName("foo").build());
     VirtualKeyboard virtualKeyboard =
-        virtualDevice.createVirtualKeyboard(new VirtualKeyboardConfig.Builder().build());
+        virtualDevice.createVirtualKeyboard(
+            new VirtualKeyboardConfig.Builder()
+                .setAssociatedDisplayId(0)
+                .setInputDeviceName("keyboard")
+                .build());
     VirtualTouchscreen virtualTouchscreen =
         virtualDevice.createVirtualTouchscreen(
-            new VirtualTouchscreenConfig.Builder(DISPLAY_WIDTH, DISPLAY_HEIGHT).build());
+            new VirtualTouchscreenConfig.Builder(DISPLAY_WIDTH, DISPLAY_HEIGHT)
+                .setAssociatedDisplayId(1)
+                .setInputDeviceName("touchscreen")
+                .build());
     VirtualMouse virtualMouse =
-        virtualDevice.createVirtualMouse(new VirtualMouseConfig.Builder().build());
+        virtualDevice.createVirtualMouse(
+            new VirtualMouseConfig.Builder()
+                .setAssociatedDisplayId(2)
+                .setInputDeviceName("mouse")
+                .build());
 
     virtualKeyboard.close();
     virtualTouchscreen.close();

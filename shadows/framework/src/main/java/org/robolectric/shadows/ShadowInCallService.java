@@ -207,9 +207,9 @@ public class ShadowInCallService extends ShadowService {
     InCallAdapter adapter = Shadow.newInstanceOf(InCallAdapter.class);
     Phone phone;
     if (VERSION.SDK_INT > N_MR1) {
-      phone = reflector(ReflectorPhone.class, inCallService).newInstance(adapter, "", 0);
+      phone = reflector(ReflectorPhone.class).newInstance(adapter, "", 0);
     } else {
-      phone = reflector(ReflectorPhone.class, inCallService).newInstance(adapter);
+      phone = reflector(ReflectorPhone.class).newInstance(adapter);
     }
     ReflectionHelpers.setField(inCallService, "mPhone", phone);
   }

@@ -131,7 +131,7 @@ public class ShadowUiAutomation {
                 Bitmap window =
                     Bitmap.createBitmap(
                         rootView.getWidth(), rootView.getHeight(), Bitmap.Config.ARGB_8888);
-                if (HardwareRenderingScreenshot.canTakeScreenshot()) {
+                if (HardwareRenderingScreenshot.canTakeScreenshot(rootView)) {
                   HardwareRenderingScreenshot.takeScreenshot(rootView, window);
                 } else {
                   Canvas windowCanvas = new Canvas(window);

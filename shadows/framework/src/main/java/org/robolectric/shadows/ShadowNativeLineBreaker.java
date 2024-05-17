@@ -11,7 +11,6 @@ import org.robolectric.nativeruntime.DefaultNativeRuntimeLoader;
 import org.robolectric.nativeruntime.LineBreakerNatives;
 import org.robolectric.shadows.ShadowNativeLineBreaker.Picker;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link LineBreaker} that is backed by native code */
 @Implements(
@@ -20,10 +19,6 @@ import org.robolectric.versioning.AndroidVersions.V;
     shadowPicker = Picker.class,
     callNativeMethodsByDefault = true)
 public class ShadowNativeLineBreaker {
-
-  @Implementation(minSdk = V.SDK_INT)
-  protected static void __staticInitializer__() {}
-
   @Implementation(maxSdk = U.SDK_INT)
   protected static long nInit(
       int breakStrategy, int hyphenationFrequency, boolean isJustified, int[] indents) {

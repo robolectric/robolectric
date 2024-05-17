@@ -14,7 +14,6 @@ import android.view.PixelCopy;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import java.util.Locale;
 import java.util.Objects;
@@ -67,12 +66,6 @@ public class HardwareAcceleratedActivityRenderTest {
     @Override
     public void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
-      // TODO(hoisie): manually setting these flags should not be required. Robolectric should
-      // set them automatically by default (they have been default since ICS).
-      getWindow()
-          .setFlags(
-              WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-              WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
       FrameLayout frameLayout = new FrameLayout(this);
       frameLayout.setLayoutParams(
           new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));

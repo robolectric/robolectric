@@ -710,6 +710,22 @@ public class ShadowTelecomManagerTest {
     assertThat(telecomService.handleMmi("123", phoneAccountHandle)).isTrue();
   }
 
+  @Test
+  @Config(minSdk = O)
+  public void isOutgoingCallPermitted_false() {
+    shadowOf(telecomService).setIsOutgoingCallPermitted(false);
+
+    assertThat(telecomService.isOutgoingCallPermitted(/* phoneAccountHandle= */ null)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isOutgoingCallPermitted_true() {
+    shadowOf(telecomService).setIsOutgoingCallPermitted(true);
+
+    assertThat(telecomService.isOutgoingCallPermitted(/* phoneAccountHandle= */ null)).isTrue();
+  }
+
   private static PhoneAccountHandle createHandle(String id) {
     return new PhoneAccountHandle(
         new ComponentName(ApplicationProvider.getApplicationContext(), TestConnectionService.class),

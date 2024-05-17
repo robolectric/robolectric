@@ -315,14 +315,4 @@ public class RuntimeEnvironment {
   public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
   }
-
-  /**
-   * Internal only.
-   *
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  public static boolean useLegacyResources() {
-    return false;
-  }
 }

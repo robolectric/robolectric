@@ -1,72 +1,48 @@
 package org.robolectric.shadows;
 
-import android.annotation.NonNull;
-import android.util.ArraySet;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
+import static org.robolectric.util.reflector.Reflector.reflector;
+
+import android.content.ContentResolver;
+import android.provider.Settings;
 import android.view.accessibility.CaptioningManager;
-import android.view.accessibility.CaptioningManager.CaptioningChangeListener;
-import java.util.Locale;
-import javax.annotation.Nullable;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.RealObject;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.ForType;
 
 /** Shadow of {@link android.view.accessibility.CaptioningManager}. */
 @Implements(CaptioningManager.class)
 public class ShadowCaptioningManager {
-  private float fontScale = 1;
-  private boolean isEnabled = false;
-  @Nullable private Locale locale;
+  @RealObject private CaptioningManager realCaptioningManager;
 
-  private final ArraySet<CaptioningChangeListener> listeners = new ArraySet<>();
-
-  /** Returns 1.0 as default or the most recent value passed to {@link #setFontScale()} */
-  @Implementation(minSdk = 19)
-  protected float getFontScale() {
-    return fontScale;
+  @Implementation(minSdk = TIRAMISU)
+  protected void setSystemAudioCaptioningEnabled(boolean isEnabled) {
+    Settings.Secure.putInt(
+        getContentResolver(), Settings.Secure.ODI_CAPTIONS_ENABLED, isEnabled ? 1 : 0);
   }
 
-  /** Sets the value to be returned by {@link CaptioningManager#getFontScale()} */
-  public void setFontScale(float fontScale) {
-    this.fontScale = fontScale;
-
-    for (CaptioningChangeListener captioningChangeListener : listeners) {
-      captioningChangeListener.onFontScaleChanged(fontScale);
-    }
+  @Implementation(minSdk = TIRAMISU)
+  protected void setSystemAudioCaptioningUiEnabled(boolean isEnabled) {
+    Settings.Secure.putInt(
+        getContentResolver(), Settings.Secure.ODI_CAPTIONS_VOLUME_UI_ENABLED, isEnabled ? 1 : 0);
   }
 
-  /** Returns false or the most recent value passed to {@link #setEnabled(boolean)} */
-  @Implementation(minSdk = 19)
-  protected boolean isEnabled() {
-    return isEnabled;
+  @Implementation(minSdk = TIRAMISU)
+  protected boolean isSystemAudioCaptioningUiEnabled() {
+    return Settings.Secure.getInt(
+            getContentResolver(), Settings.Secure.ODI_CAPTIONS_VOLUME_UI_ENABLED, 1)
+        == 1;
   }
 
-  /** Sets the value to be returned by {@link CaptioningManager#isEnabled()} */
-  public void setEnabled(boolean isEnabled) {
-    this.isEnabled = isEnabled;
+  private ContentResolver getContentResolver() {
+    return reflector(CaptioningManagerReflector.class, realCaptioningManager).getContentResolver();
   }
 
-  @Implementation(minSdk = 19)
-  protected void addCaptioningChangeListener(@NonNull CaptioningChangeListener listener) {
-    listeners.add(listener);
-  }
-
-  @Implementation(minSdk = 19)
-  protected void removeCaptioningChangeListener(@NonNull CaptioningChangeListener listener) {
-    listeners.remove(listener);
-  }
-
-  /** Returns null or the most recent value passed to {@link #setLocale(Locale)} */
-  @Implementation(minSdk = 19)
-  @Nullable
-  protected Locale getLocale() {
-    return locale;
-  }
-
-  /** Sets the value to be returned by {@link CaptioningManager#getLocale()} */
-  public void setLocale(@Nullable Locale locale) {
-    this.locale = locale;
-
-    for (CaptioningChangeListener captioningChangeListener : listeners) {
-      captioningChangeListener.onLocaleChanged(locale);
-    }
+  @ForType(CaptioningManager.class)
+  interface CaptioningManagerReflector {
+    @Accessor("mContentResolver")
+    ContentResolver getContentResolver();
   }
 }

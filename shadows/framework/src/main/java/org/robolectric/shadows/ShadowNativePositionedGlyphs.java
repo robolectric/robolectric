@@ -8,7 +8,6 @@ import org.robolectric.nativeruntime.PositionedGlyphsNatives;
 import org.robolectric.shadows.ShadowNativePositionedGlyphs.Picker;
 import org.robolectric.versioning.AndroidVersions.S;
 import org.robolectric.versioning.AndroidVersions.U;
-import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for {@link PositionedGlyphs} that is backed by native code */
 @Implements(
@@ -18,15 +17,6 @@ import org.robolectric.versioning.AndroidVersions.V;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativePositionedGlyphs {
-  /**
-   * The {@link PositionedGlyphs} static initializer invokes its own native methods. This has to be
-   * deferred starting in Android V.
-   */
-  @Implementation(minSdk = V.SDK_INT)
-  protected static void __staticInitializer__() {
-    // deferred
-  }
-
   @Implementation(maxSdk = U.SDK_INT)
   protected static int nGetGlyphCount(long minikinLayout) {
     return PositionedGlyphsNatives.nGetGlyphCount(minikinLayout);

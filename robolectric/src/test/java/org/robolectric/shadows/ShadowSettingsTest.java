@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowSettingsTest {
@@ -317,5 +318,23 @@ public class ShadowSettingsTest {
             Secure.getInt(
                 context.getContentResolver(), Secure.LOCK_SCREEN_ALLOW_PRIVATE_NOTIFICATIONS, 0))
         .isEqualTo(0);
+  }
+
+  @Config(minSdk = U.SDK_INT)
+  @Test
+  public void testConfig_putAndGetString() {
+    assertThat(Settings.Config.putString("namespace", "key", "value", false)).isTrue();
+    assertThat(Settings.Config.getString("namespace/key")).isEqualTo("value");
+    assertThat(Settings.Config.getString("namespace/missing_key")).isEqualTo(null);
+    assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
+  }
+
+  @Config(minSdk = U.SDK_INT)
+  @Test
+  public void testConfig_putAndGetStrings() {
+    assertThat(Settings.Config.putString("namespace", "key", "value", false)).isTrue();
+    assertThat(Settings.Config.getString("namespace/key")).isEqualTo("value");
+    assertThat(Settings.Config.getString("namespace/missing_key")).isEqualTo(null);
+    assertThat(Settings.Config.getString("missing_namespace/key")).isEqualTo(null);
   }
 }

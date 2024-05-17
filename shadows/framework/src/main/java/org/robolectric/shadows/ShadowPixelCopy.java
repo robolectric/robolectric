@@ -85,16 +85,7 @@ public class ShadowPixelCopy {
     if (srcRect != null && srcRect.isEmpty()) {
       throw new IllegalArgumentException("sourceRect is empty");
     }
-    View view = source.getDecorView();
-    Rect adjustedSrcRect = null;
-    if (srcRect != null) {
-      adjustedSrcRect = new Rect(srcRect);
-      int[] locationInWindow = new int[2];
-      view.getLocationInWindow(locationInWindow);
-      // offset the srcRect by the decor view's location in the window
-      adjustedSrcRect.offset(-locationInWindow[0], -locationInWindow[1]);
-    }
-    takeScreenshot(view, dest, adjustedSrcRect);
+    takeScreenshot(source.getDecorView(), dest, srcRect);
     alertFinished(listener, listenerThread, PixelCopy.SUCCESS);
   }
 
@@ -168,7 +159,7 @@ public class ShadowPixelCopy {
 
     Bitmap bitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(), Bitmap.Config.ARGB_8888);
 
-    if (HardwareRenderingScreenshot.canTakeScreenshot()) {
+    if (HardwareRenderingScreenshot.canTakeScreenshot(view)) {
       PerfStatsCollector.getInstance()
           .measure(
               "ShadowPixelCopy-Hardware",

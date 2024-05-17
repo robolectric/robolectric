@@ -22,19 +22,13 @@ public abstract class ShadowAssetInputStream {
         from(long.class, assetPtr));
 
     ShadowAssetInputStream sais = Shadow.extract(ais);
-    if (sais instanceof ShadowLegacyAssetInputStream) {
-      ShadowLegacyAssetInputStream slais = (ShadowLegacyAssetInputStream) sais;
-      slais.setDelegate(delegateInputStream);
-      slais.setNinePatch(asset.isNinePatch());
-    }
     return ais;
   }
 
   public static class Picker extends ResourceModeShadowPicker<ShadowAssetInputStream> {
 
     public Picker() {
-      super(ShadowLegacyAssetInputStream.class, ShadowArscAssetInputStream.class,
-          ShadowArscAssetInputStream.class);
+      super(ShadowArscAssetInputStream.class, ShadowArscAssetInputStream.class);
     }
   }
 
