@@ -1,6 +1,7 @@
 package org.robolectric.integrationtests.memoryleaks;
 
 import static android.os.Build.VERSION_CODES.N;
+import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.app.Activity;
@@ -16,8 +17,10 @@ import com.google.common.testing.GcFinalization;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
@@ -35,9 +38,31 @@ import org.robolectric.util.ReflectionHelpers;
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = Config.ALL_SDKS)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class BaseMemoryLeaksTest {
 
   private static WeakReference<Activity> awr = null;
+
+  @Test
+  // Do not shard these two tests, they must run on the same machine sequentially.
+  // These tests are prefixed with aaa_ to ensure they run first. Some leaks are caused by
+  // static setup that occurs once at the start of a test class, so these must be the first tests
+  // that run.
+  public void aaa_activityCanBeGcdBetweenTest_1() {
+    assertThat(awr).isNull();
+    ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
+    awr = new WeakReference<>(ac.get());
+  }
+
+  @Test
+  // Do not shard these two tests, they must run on the same machine sequentially.
+  // These tests are prefixed with aaa_ to ensure they run first. Some leaks are caused by
+  // static setup that occurs once at the start of a test class, so these must be the first tests
+  // that run.
+  public void aaa_activityCanBeGcdBetweenTest_2() {
+    assertThat(awr).isNotNull();
+    assertNotLeaking(awr::get);
+  }
 
   @Test
   public void activityCanBeGcdAfterDestroyed() {
@@ -111,28 +136,6 @@ public abstract class BaseMemoryLeaksTest {
               .commitNow();
           return f;
         });
-  }
-
-  @Test
-  // Do not shard these two tests, they must run on the same machine sequentially.
-  public void activityCanBeGcdBetweenTest_1() {
-    if (awr == null) {
-      ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
-      awr = new WeakReference<>(ac.get());
-    } else {
-      assertNotLeaking(awr::get);
-    }
-  }
-
-  @Test
-  // Do not shard these two tests, they must run on the same machine sequentially.
-  public void activityCanBeGcdBetweenTest_2() {
-    if (awr == null) {
-      ActivityController<Activity> ac = Robolectric.buildActivity(Activity.class).setup();
-      awr = new WeakReference<>(ac.get());
-    } else {
-      assertNotLeaking(awr::get);
-    }
   }
 
   @Test

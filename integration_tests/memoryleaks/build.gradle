@@ -31,4 +31,5 @@ dependencies {
     testImplementation libs.junit4
     testImplementation libs.guava.testlib
     testImplementation libs.androidx.fragment
+    testImplementation 'com.google.truth:truth:1.1.3'
 }
