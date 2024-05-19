@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.View;
+import java.lang.reflect.Modifier;
 import javax.annotation.Nullable;
 import org.robolectric.android.AttributeSetBuilderImpl;
 import org.robolectric.android.AttributeSetBuilderImpl.ArscResourceResolver;
@@ -114,6 +115,9 @@ public class Robolectric {
     checkState(
         Thread.currentThread() == Looper.getMainLooper().getThread(),
         "buildActivity must be called on main Looper thread");
+    if (Modifier.isAbstract(activityClass.getModifiers())) {
+      throw new RuntimeException("buildActivity must be called with non-abstract class");
+    }
     return ActivityController.of(
         instantiateActivity(activityClass, intent), intent, activityOptions);
   }
