@@ -30,8 +30,6 @@ import org.robolectric.shadows.ShadowBluetoothLeScanner
 @Config(sdk = [S])
 class BluetoothProvisionerTest {
 
-  val BLUETOOTH_MAC = "00:11:22:33:AA:BB"
-
   val context = RuntimeEnvironment.getApplication()
 
   val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -79,5 +77,9 @@ class BluetoothProvisionerTest {
     shadowGatt.notifyConnection(BLUETOOTH_MAC)
 
     executor.runAll()
+  }
+
+  private companion object {
+    private const val BLUETOOTH_MAC = "00:11:22:33:AA:BB"
   }
 }
