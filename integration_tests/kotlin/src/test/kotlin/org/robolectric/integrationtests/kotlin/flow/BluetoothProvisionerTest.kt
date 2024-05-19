@@ -29,14 +29,12 @@ import org.robolectric.shadows.ShadowBluetoothLeScanner
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [S])
 class BluetoothProvisionerTest {
+  private val context = RuntimeEnvironment.getApplication()
 
-  val BLUETOOTH_MAC = "00:11:22:33:AA:BB"
+  private val bluetoothManager =
+    context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-  val context = RuntimeEnvironment.getApplication()
-
-  val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
-  fun newScanResult(): ScanResult {
+  private fun newScanResult(): ScanResult {
     val bluetoothDevice = bluetoothManager.adapter.getRemoteDevice(BLUETOOTH_MAC)
     return ScanResult(bluetoothDevice, null, 0, 0)
   }
@@ -79,5 +77,9 @@ class BluetoothProvisionerTest {
     shadowGatt.notifyConnection(BLUETOOTH_MAC)
 
     executor.runAll()
+  }
+
+  companion object {
+    const val BLUETOOTH_MAC = "00:11:22:33:AA:BB"
   }
 }

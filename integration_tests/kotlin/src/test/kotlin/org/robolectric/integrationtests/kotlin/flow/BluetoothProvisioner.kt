@@ -18,19 +18,14 @@ import kotlinx.coroutines.flow.flow
 
 /** A class that invokes Android Bluetooth LE APIs. */
 class BluetoothProvisioner(applicationContext: Context) {
+  private val context: Context = applicationContext
 
-  val context: Context
-
-  init {
-    context = applicationContext
-  }
-
-  fun startScan(): Flow<BluetoothDevice> = callbackFlow {
+  private fun startScan(): Flow<BluetoothDevice> = callbackFlow {
     val scanCallback =
       object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
           if (result?.device != null) {
-            val unused = trySend(result.device)
+            @Suppress("UnusedPrivateProperty") val unused = trySend(result.device)
           }
         }
 
@@ -44,12 +39,12 @@ class BluetoothProvisioner(applicationContext: Context) {
     awaitClose { scanner.stopScan(scanCallback) }
   }
 
-  fun connectToDevice(device: BluetoothDevice): Flow<BluetoothGatt> = callbackFlow {
+  private fun connectToDevice(device: BluetoothDevice): Flow<BluetoothGatt> = callbackFlow {
     val gattCallback =
       object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
           if (newState == BluetoothProfile.STATE_CONNECTED) {
-            val unused = gatt!!.discoverServices()
+            @Suppress("UnusedPrivateProperty") val unused = gatt!!.discoverServices()
           } else {
             cancel("Connect Failed", null)
           }
@@ -57,7 +52,7 @@ class BluetoothProvisioner(applicationContext: Context) {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
           if (status == BluetoothGatt.GATT_SUCCESS) {
-            val unused = trySend(gatt!!)
+            @Suppress("UnusedPrivateProperty") val unused = trySend(gatt!!)
           } else {
             cancel("Service discovery failed", null)
           }
