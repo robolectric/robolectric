@@ -57,7 +57,7 @@ compile-testing = "0.21.0"
 guava-jre = "31.1-jre"
 
 # https://github.com/google/gson/releases
-gson = "2.10.1"
+gson = "2.11.0"
 
 # https://github.com/google/truth/releases
 truth = "1.4.0"
