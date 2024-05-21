@@ -48,6 +48,11 @@ public class ShadowSensor {
     return maximumRange;
   }
 
+  /** Sets the return value for {@link Sensor#getMinDelay}. */
+  public void setMinDelay(int delay) {
+    reflector(_Sensor_.class, realSensor).setMinDelay(delay);
+  }
+
   private void setMask(int mask) {
     _Sensor_ _sensor_ = reflector(_Sensor_.class, realSensor);
     _sensor_.setFlags(_sensor_.getFlags() | mask);
@@ -80,6 +85,9 @@ public class ShadowSensor {
 
     @Accessor("mFlags")
     void setFlags(int flags);
+
+    @Accessor("mMinDelay")
+    void setMinDelay(int minDelay);
 
     @Static
     @Accessor("SENSOR_FLAG_WAKE_UP_SENSOR")
