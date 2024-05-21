@@ -112,6 +112,9 @@ public class ShadowSettings {
     }
 
     private static boolean put(ContentResolver cr, String name, Object value) {
+      if (simulateDatabaseFailure) {
+        return false;
+      }
       if (!Objects.equals(
           settings.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
         if (cr != null) {
@@ -122,6 +125,9 @@ public class ShadowSettings {
     }
 
     private static <T> Optional<T> get(Class<T> type, String name) {
+      if (simulateDatabaseFailure) {
+        return Optional.empty();
+      }
       return settings.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
@@ -203,6 +209,9 @@ public class ShadowSettings {
 
     @Implementation
     protected static boolean putInt(ContentResolver cr, String name, int value) {
+      if (simulateDatabaseFailure) {
+        return false;
+      }
       boolean changed = !Objects.equals(dataMap.put(name, Optional.of(value)), Optional.of(value));
 
       if (Settings.Secure.LOCATION_MODE.equals(name)) {
@@ -237,8 +246,7 @@ public class ShadowSettings {
     @Implementation
     protected static boolean putIntForUser(
         ContentResolver cr, String name, int value, int userHandle) {
-      putInt(cr, name, value);
-      return true;
+      return putInt(cr, name, value);
     }
 
     @Implementation
@@ -323,6 +331,9 @@ public class ShadowSettings {
     }
 
     private static boolean put(ContentResolver cr, String name, Object value) {
+      if (simulateDatabaseFailure) {
+        return false;
+      }
       if (!Objects.equals(
           dataMap.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
         if (cr != null) {
@@ -333,6 +344,9 @@ public class ShadowSettings {
     }
 
     private static <T> Optional<T> get(Class<T> type, String name) {
+      if (simulateDatabaseFailure) {
+        return Optional.empty();
+      }
       return dataMap.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
@@ -417,6 +431,9 @@ public class ShadowSettings {
     }
 
     private static boolean put(ContentResolver cr, String name, Object value) {
+      if (simulateDatabaseFailure) {
+        return false;
+      }
       if (!Objects.equals(
           settings.put(name, Optional.ofNullable(value)), Optional.ofNullable(value))) {
         if (cr != null) {
@@ -427,6 +444,9 @@ public class ShadowSettings {
     }
 
     private static <T> Optional<T> get(Class<T> type, String name) {
+      if (simulateDatabaseFailure) {
+        return Optional.empty();
+      }
       return settings.getOrDefault(name, Optional.empty()).filter(type::isInstance).map(type::cast);
     }
 
@@ -655,9 +675,18 @@ public class ShadowSettings {
     }
   }
 
+  @SuppressWarnings("NonFinalStaticField")
+  private static boolean simulateDatabaseFailure = false;
+
+  /** This will generate failure when trying to write into the database */
+  public static void setSimulateDatabaseFailure(boolean simulateDatabaseFailure) {
+    ShadowSettings.simulateDatabaseFailure = simulateDatabaseFailure;
+  }
+
   @Resetter
   public static void reset() {
     canDrawOverlays = false;
+    simulateDatabaseFailure = false;
   }
 
   @ForType(Settings.Secure.class)
