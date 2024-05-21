@@ -11,6 +11,7 @@ import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import android.accounts.IAccountManager;
 import android.app.IAlarmManager;
@@ -109,6 +110,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.Resetter;
+import org.robolectric.shadows.ShadowBluetoothAdapter.BluetoothManagerDelegate;
 import org.robolectric.util.ReflectionHelpers;
 
 /** Shadow for {@link ServiceManager}. */
@@ -123,6 +125,16 @@ public class ShadowServiceManager {
   @GuardedBy("ShadowServiceManager.class")
   private static final Set<String> unavailableServices = new HashSet<>();
 
+  /** Represents the type of implementation to generate for the Binder interface */
+  private enum BinderProxyType {
+    /* use ReflectionHelpers.createNullProxy */
+    NULL,
+    /* use ReflectionHelpers.createDeepProxy */
+    DEEP,
+    /* use ReflectionHelpers.createDelegatingProxy */
+    DELEGATING
+  }
+
   /**
    * A data class that holds descriptor information about binder services. It also holds the cached
    * binder object if it is requested by {@link #getService(String)}.
@@ -131,26 +143,44 @@ public class ShadowServiceManager {
 
     private final Class<? extends IInterface> clazz;
     private final String className;
-    private final boolean useDeepBinder;
+    private final BinderProxyType proxyType;
     private Binder cachedBinder;
+    private final Object delegate;
 
-    BinderService(Class<? extends IInterface> clazz, String className, boolean useDeepBinder) {
+    BinderService(
+        Class<? extends IInterface> clazz,
+        String className,
+        BinderProxyType proxyType,
+        @Nullable Object delegate) {
       this.clazz = clazz;
       this.className = className;
-      this.useDeepBinder = useDeepBinder;
+      this.proxyType = proxyType;
+      this.delegate = delegate;
+      if (proxyType == BinderProxyType.DELEGATING) {
+        checkNotNull(delegate);
+      }
     }
 
     @GuardedBy("ShadowServiceManager.class")
     IBinder getBinder() {
       if (cachedBinder == null) {
         cachedBinder = new Binder();
-        cachedBinder.attachInterface(
-            useDeepBinder
-                ? ReflectionHelpers.createDeepProxy(clazz)
-                : ReflectionHelpers.createNullProxy(clazz),
-            className);
+
+        cachedBinder.attachInterface(createProxy(), className);
       }
       return cachedBinder;
+    }
+
+    private IInterface createProxy() {
+      switch (proxyType) {
+        case NULL:
+          return ReflectionHelpers.createNullProxy(clazz);
+        case DEEP:
+          return ReflectionHelpers.createDeepProxy(clazz);
+        case DELEGATING:
+          return ReflectionHelpers.createDelegatingProxy(clazz, delegate);
+      }
+      throw new IllegalStateException("unrecognized proxy type " + proxyType);
     }
   }
 
@@ -182,10 +212,19 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.WALLPAPER_SERVICE, IWallpaperManager.class);
     addBinderService(binderServices, Context.BLUETOOTH_SERVICE, IBluetooth.class);
     addBinderService(binderServices, Context.WINDOW_SERVICE, IWindowManager.class);
-    addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, true);
+    addBinderService(binderServices, Context.NFC_SERVICE, INfcAdapter.class, BinderProxyType.DEEP);
     addBinderService(binderServices, Context.USER_SERVICE, IUserManager.class);
-    addBinderService(
-        binderServices, BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE, IBluetoothManager.class);
+    if (RuntimeEnvironment.getApiLevel() < TIRAMISU) {
+      addBinderService(
+          binderServices, BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE, IBluetoothManager.class);
+    } else {
+      addBinderService(
+          binderServices,
+          BluetoothAdapter.BLUETOOTH_MANAGER_SERVICE,
+          IBluetoothManager.class,
+          BinderProxyType.DELEGATING,
+          new BluetoothManagerDelegate());
+    }
     addBinderService(binderServices, Context.APP_OPS_SERVICE, IAppOpsService.class);
     addBinderService(binderServices, "batteryproperties", IBatteryPropertiesRegistrar.class);
 
@@ -196,12 +235,16 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.NETWORK_SCORE_SERVICE, INetworkScoreService.class);
       addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
       addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
-      addBinderService(binderServices, Context.MEDIA_SESSION_SERVICE, ISessionManager.class, true);
+      addBinderService(
+          binderServices,
+          Context.MEDIA_SESSION_SERVICE,
+          ISessionManager.class,
+          BinderProxyType.DEEP);
       addBinderService(
           binderServices,
           Context.VOICE_INTERACTION_MANAGER_SERVICE,
           IVoiceInteractionManagerService.class,
-          true);
+          BinderProxyType.DEEP);
     }
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(binderServices, Context.FINGERPRINT_SERVICE, IFingerprintService.class);
@@ -278,15 +321,16 @@ public class ShadowServiceManager {
 
   protected static void addBinderService(
       Map<String, BinderService> binderServices, String name, Class<? extends IInterface> clazz) {
-    addBinderService(binderServices, name, clazz, clazz.getCanonicalName(), false);
+    addBinderService(
+        binderServices, name, clazz, clazz.getCanonicalName(), BinderProxyType.NULL, null);
   }
 
   private static void addBinderService(
       Map<String, BinderService> binderServices,
       String name,
       Class<? extends IInterface> clazz,
-      boolean useDeepBinder) {
-    addBinderService(binderServices, name, clazz, clazz.getCanonicalName(), useDeepBinder);
+      BinderProxyType proxyType) {
+    addBinderService(binderServices, name, clazz, clazz.getCanonicalName(), proxyType, null);
   }
 
   private static void addBinderService(
@@ -297,7 +341,16 @@ public class ShadowServiceManager {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    addBinderService(binderServices, name, clazz, className, false);
+    addBinderService(binderServices, name, clazz, className, BinderProxyType.NULL, null);
+  }
+
+  private static void addBinderService(
+      Map<String, BinderService> binderServices,
+      String name,
+      Class<? extends IInterface> clazz,
+      BinderProxyType proxyType,
+      @Nullable Object delegate) {
+    addBinderService(binderServices, name, clazz, clazz.getCanonicalName(), proxyType, delegate);
   }
 
   private static void addBinderService(
@@ -305,8 +358,9 @@ public class ShadowServiceManager {
       String name,
       Class<? extends IInterface> clazz,
       String className,
-      boolean useDeepBinder) {
-    binderServices.put(name, new BinderService(clazz, className, useDeepBinder));
+      BinderProxyType proxyType,
+      @Nullable Object delegate) {
+    binderServices.put(name, new BinderService(clazz, className, proxyType, delegate));
   }
 
   /**

@@ -20,11 +20,9 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothStatusCodes;
-import android.bluetooth.IBluetoothManager;
 import android.bluetooth.IBluetoothProfileServiceConnection;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.content.AttributionSource;
 import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
@@ -50,8 +48,6 @@ import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.annotation.Resetter;
-import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
@@ -130,18 +126,6 @@ public class ShadowBluetoothAdapter {
       return null;
     }
     return reflector(BluetoothAdapterReflector.class).getDefaultAdapter();
-  }
-
-  /** Requires LooseSignatures because of {@link AttributionSource} parameter */
-  @Implementation(minSdk = VERSION_CODES.TIRAMISU)
-  protected static Object createAdapter(Object attributionSource) {
-    IBluetoothManager service =
-        ReflectionHelpers.createDelegatingProxy(
-            IBluetoothManager.class, new BluetoothManagerDelegate());
-    return ReflectionHelpers.callConstructor(
-        BluetoothAdapter.class,
-        ClassParameter.from(IBluetoothManager.class, service),
-        ClassParameter.from(AttributionSource.class, attributionSource));
   }
 
   /** Sets whether the Le Audio is supported or not. Minimum sdk version required is TIRAMISU. */
@@ -818,7 +802,7 @@ public class ShadowBluetoothAdapter {
   // Any BluetoothAdapter calls which need to invoke BluetoothManager methods can delegate those
   // calls to this class. The default behavior for any methods not defined in this class is a no-op.
   @SuppressWarnings("unused")
-  private static class BluetoothManagerDelegate {
+  static class BluetoothManagerDelegate {
     /**
      * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
      * automatically invoke the service connected callback.
