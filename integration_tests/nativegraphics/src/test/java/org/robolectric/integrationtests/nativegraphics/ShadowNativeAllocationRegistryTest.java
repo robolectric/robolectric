@@ -17,10 +17,13 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.U;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(minSdk = O)
 public final class ShadowNativeAllocationRegistryTest {
+  // TODO(hoisie): choose a different free function to test in V and above.
+  @Config(maxSdk = U.SDK_INT)
   @Test
   public void applyFreeFunction_matrix() throws Exception {
     WeakReference<Matrix> weakMatrix = new WeakReference<>(newMatrix());
