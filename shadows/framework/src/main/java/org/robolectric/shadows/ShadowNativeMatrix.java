@@ -22,15 +22,6 @@ import org.robolectric.versioning.AndroidVersions.V;
     callNativeMethodsByDefault = true)
 public class ShadowNativeMatrix extends ShadowMatrix {
 
-  /**
-   * The {@link Matrix} static initializer invokes its own native methods. This has to be deferred
-   * starting in Android V.
-   */
-  @Implementation(minSdk = V.SDK_INT)
-  protected static void __staticInitializer__() {
-    // deferred
-  }
-
   @Implementation(maxSdk = N_MR1)
   protected static long native_create(long nSrcOrZero) {
     return nCreate(nSrcOrZero);
@@ -274,5 +265,22 @@ public class ShadowNativeMatrix extends ShadowMatrix {
   @Override
   public String getDescription() {
     throw new UnsupportedOperationException("Legacy ShadowMatrix APIs are not supported");
+  }
+
+  /** Shadow for {@link Matrix$ExtraNatives} that contains native functions. */
+  @Implements(
+      className = "android.graphics.Matrix$ExtraNatives",
+      isInAndroidSdk = false,
+      callNativeMethodsByDefault = true,
+      shadowPicker = ShadowNativeMatrix.ShadowExtraNatives.Picker.class,
+      minSdk = V.SDK_INT)
+  @SuppressWarnings("robolectric.internal.IgnoreMissingClass")
+  public static class ShadowExtraNatives {
+    /** Shadow picker for {@link Matrix.ExtraNatives}. */
+    public static final class Picker extends GraphicsShadowPicker<Object> {
+      public Picker() {
+        super(null, ShadowNativeMatrix.ShadowExtraNatives.class);
+      }
+    }
   }
 }
