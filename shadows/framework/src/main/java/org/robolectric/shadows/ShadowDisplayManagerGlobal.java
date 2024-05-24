@@ -231,7 +231,7 @@ public class ShadowDisplayManagerGlobal {
     }
 
     // @Override
-    void setVirtualDisplayState(IVirtualDisplayCallback token, boolean isOn) {
+    public void setVirtualDisplayState(IVirtualDisplayCallback token, boolean isOn) {
       Integer id = virtualDisplayIds.get(token);
       DisplayInfo displayInfo = displayInfos.get(id);
       displayInfo.state = isOn ? Display.STATE_ON : Display.STATE_OFF;

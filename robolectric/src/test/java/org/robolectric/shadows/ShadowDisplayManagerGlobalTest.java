@@ -4,14 +4,19 @@ import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
+import android.hardware.display.DisplayManager;
+import android.hardware.display.DisplayManager.DisplayListener;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.display.VirtualDisplay;
 import android.hardware.display.VirtualDisplayConfig;
 import android.media.projection.MediaProjection;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
@@ -90,6 +95,26 @@ public class ShadowDisplayManagerGlobalTest {
     virtualDisplay.release();
 
     assertThat(DisplayManagerGlobal.getInstance().getDisplayInfo(displayId)).isNull();
+  }
+
+  @Test
+  @Config(minSdk = TIRAMISU)
+  public void testVirtualDisplay_setSurfaceTogglesState() {
+    Surface surface = new Surface(new SurfaceTexture(0));
+    VirtualDisplay virtualDisplay = createVirtualDisplay(surface);
+
+    assertThat(virtualDisplay.getDisplay().getState()).isEqualTo(Display.STATE_ON);
+    DisplayListener listener = mock(DisplayListener.class);
+    getApplicationContext()
+        .getSystemService(DisplayManager.class)
+        .registerDisplayListener(listener, new Handler(Looper.getMainLooper()));
+
+    // Set the surface to null and verify display turns off and listeners are notified.
+    virtualDisplay.setSurface(null);
+    ShadowLooper.idleMainLooper();
+
+    assertThat(virtualDisplay.getDisplay().getState()).isEqualTo(Display.STATE_OFF);
+    verify(listener).onDisplayChanged(virtualDisplay.getDisplay().getDisplayId());
   }
 
   private VirtualDisplay createVirtualDisplay(Surface surface) {
