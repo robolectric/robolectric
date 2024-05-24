@@ -26,6 +26,7 @@ import android.util.ArrayMap;
 import android.util.SparseIntArray;
 import com.google.common.base.Preconditions;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import java.io.InputStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -389,6 +390,7 @@ public class ShadowActivityManager {
   public static class ApplicationExitInfoBuilder {
 
     private final ApplicationExitInfo instance;
+    private final ShadowApplicationExitInfo shadow;
 
     public static ApplicationExitInfoBuilder newBuilder() {
       return new ApplicationExitInfoBuilder();
@@ -472,12 +474,19 @@ public class ShadowActivityManager {
       return this;
     }
 
+    @CanIgnoreReturnValue
+    public ApplicationExitInfoBuilder setTraceInputStream(InputStream in) {
+      shadow.setTraceInputStream(in);
+      return this;
+    }
+
     public ApplicationExitInfo build() {
       return instance;
     }
 
     private ApplicationExitInfoBuilder() {
       this.instance = new ApplicationExitInfo();
+      this.shadow = Shadow.extract(instance);
     }
   }
 
