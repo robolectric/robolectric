@@ -1,7 +1,13 @@
 package org.robolectric.shadows;
 
+import static org.robolectric.util.reflector.Reflector.reflector;
+
+import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice.StateCallback;
+import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.impl.CameraCaptureSessionImpl;
 import android.hardware.camera2.impl.CameraDeviceImpl;
@@ -11,6 +17,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.view.Surface;
+import com.google.common.util.concurrent.MoreExecutors;
 import java.util.List;
 import java.util.concurrent.Executor;
 import org.robolectric.annotation.Implementation;
@@ -18,12 +25,55 @@ import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
+import org.robolectric.util.reflector.Accessor;
+import org.robolectric.util.reflector.Direct;
+import org.robolectric.util.reflector.ForType;
+import org.robolectric.util.reflector.WithType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraDeviceImpl} */
-@Implements(value = CameraDeviceImpl.class, minSdk = VERSION_CODES.LOLLIPOP, isInAndroidSdk = false)
+@Implements(
+    value = CameraDeviceImpl.class,
+    minSdk = VERSION_CODES.LOLLIPOP,
+    isInAndroidSdk = false,
+    looseSignatures = true)
 public class ShadowCameraDeviceImpl {
   @RealObject private CameraDeviceImpl realObject;
   private boolean closed = false;
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected void __constructor__(
+      Object cameraId,
+      Object callback,
+      Object executor,
+      Object characteristics,
+      Object cameraManager,
+      Object appTargetSdkVersion,
+      Object ctx,
+      Object cameraDeviceSetup) {
+    try {
+      reflector(CameraDeviceImplReflector.class, realObject)
+          .__constructor__(
+              (String) cameraId,
+              (StateCallback) callback,
+              (Executor) executor,
+              (CameraCharacteristics) characteristics,
+              (CameraManager) cameraManager,
+              (int) appTargetSdkVersion,
+              (Context) ctx,
+              // TODO(juliansull) Remove once Robolectric compiles against Android V
+              Class.forName("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+                  .cast(cameraDeviceSetup));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+
+    // When singleThreadedDeviceExecutor flag is set, this gets put on a background thread.
+    // This isn't necessary for Robolectric as there is no real camera, so we default back to the
+    // given executor.
+    reflector(CameraDeviceImplReflector.class, realObject)
+        .setDeviceExecutor(MoreExecutors.directExecutor());
+  }
 
   @Implementation
   protected CaptureRequest.Builder createCaptureRequest(int templateType) {
@@ -101,5 +151,23 @@ public class ShadowCameraDeviceImpl {
     ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mStateCallback", callback);
     ReflectionHelpers.setField(CameraCaptureSessionImpl.class, sess, "mDeviceImpl", realObject);
     return sess;
+  }
+
+  @ForType(CameraDeviceImpl.class)
+  interface CameraDeviceImplReflector {
+    @Direct
+    void __constructor__(
+        String cameraId,
+        StateCallback callback,
+        Executor executor,
+        CameraCharacteristics characteristics,
+        CameraManager cameraManager,
+        int appTargetSdkVersion,
+        Context ctx,
+        @WithType("android.hardware.camera2.CameraDevice$CameraDeviceSetup")
+            Object cameraDeviceSetup);
+
+    @Accessor("mDeviceExecutor")
+    void setDeviceExecutor(Executor executor);
   }
 }
