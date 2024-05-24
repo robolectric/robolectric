@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.S;
+import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.os.Looper;
 import android.view.Choreographer;
 import android.view.ThreadedRenderer;
-import com.android.internal.policy.BackdropFrameRenderer;
 import com.google.common.util.concurrent.Uninterruptibles;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,14 +21,18 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 
 /** Shadow for {@link BackdropFrameRenderer} */
-@Implements(value = BackdropFrameRenderer.class, minSdk = S, isInAndroidSdk = false)
+@Implements(
+    className = "com.android.internal.policy.BackdropFrameRenderer",
+    minSdk = S,
+    maxSdk = UPSIDE_DOWN_CAKE,
+    isInAndroidSdk = false)
 public class ShadowBackdropFrameRenderer {
 
   // Updated to the real value in the generated Shadow constructor
-  @RealObject private final BackdropFrameRenderer realBackdropFrameRenderer = null;
+  @RealObject private final Object realBackdropFrameRenderer = null;
   private Looper looper;
 
-  private static final List<BackdropFrameRenderer> activeRenderers = new CopyOnWriteArrayList<>();
+  private static final List<Object> activeRenderers = new CopyOnWriteArrayList<>();
 
   @Implementation
   protected void run() {
@@ -60,19 +64,19 @@ public class ShadowBackdropFrameRenderer {
 
   // called from ShadowChoreographer to ensure choreographer is unpaused before this is executed
   static void reset() {
-    for (BackdropFrameRenderer renderer : activeRenderers) {
+    for (Object renderer : activeRenderers) {
       reflector(BackdropFrameRendererReflector.class, renderer).releaseRenderer();
       // Explicitly quit the looper if in legacy looper mode - otherwise it will hang forever
       if (ConfigurationRegistry.get(LooperMode.Mode.class) == Mode.LEGACY) {
         ShadowBackdropFrameRenderer shadowBackdropFrameRenderer = Shadow.extract(renderer);
         shadowBackdropFrameRenderer.looper.quit();
       }
-      Uninterruptibles.joinUninterruptibly(renderer);
+      Uninterruptibles.joinUninterruptibly((Thread) renderer);
       activeRenderers.remove(renderer);
     }
   }
 
-  @ForType(BackdropFrameRenderer.class)
+  @ForType(className = "com.android.internal.policy.BackdropFrameRenderer")
   interface BackdropFrameRendererReflector {
     void releaseRenderer();
 
