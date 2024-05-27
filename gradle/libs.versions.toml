@@ -60,7 +60,7 @@ guava-jre = "31.1-jre"
 gson = "2.11.0"
 
 # https://github.com/google/truth/releases
-truth = "1.4.0"
+truth = "1.4.2"
 
 # https://github.com/unicode-org/icu/releases
 icu4j = "75.1"
@@ -201,7 +201,6 @@ sqlite4java-linux-i386 = { module = "com.almworks.sqlite4java:libsqlite4java-lin
 sqlite4java-win32-x86 = { module = "com.almworks.sqlite4java:sqlite4java-win32-x86", version.ref = "sqlite4java" }
 
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
-truth-java8-extension = { module = "com.google.truth.extensions:truth-java8-extension", version.ref = "truth" }
 
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-inline = { module = "org.mockito:mockito-inline", version.ref = "mockito" }
