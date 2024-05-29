@@ -5,6 +5,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
+import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.S_V2;
 import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -20,14 +21,13 @@ import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothStatusCodes;
-import android.bluetooth.IBluetoothProfileServiceConnection;
+import android.bluetooth.IBluetoothGatt;
 import android.bluetooth.le.BluetoothLeAdvertiser;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.ParcelUuid;
-import android.os.RemoteException;
 import android.provider.Settings;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
@@ -52,6 +52,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.util.reflector.Static;
+import org.robolectric.versioning.AndroidVersions.V;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = BluetoothAdapter.class, looseSignatures = true)
@@ -106,6 +107,7 @@ public class ShadowBluetoothAdapter {
       new ConcurrentHashMap<>();
   private final Map<Integer, List<BluetoothProfile.ServiceListener>>
       bluetoothProfileServiceListeners = new HashMap<>();
+  private IBluetoothGatt ibluetoothGatt;
 
   @Resetter
   public static void reset() {
@@ -151,7 +153,7 @@ public class ShadowBluetoothAdapter {
     isDistanceMeasurementSupported = supported;
   }
 
-  @Implementation(minSdk = VERSION_CODES.UPSIDE_DOWN_CAKE)
+  @Implementation(minSdk = UPSIDE_DOWN_CAKE)
   protected int isDistanceMeasurementSupported() {
     return isDistanceMeasurementSupported;
   }
@@ -750,6 +752,21 @@ public class ShadowBluetoothAdapter {
     return Set.of(backgroundRfcommServers.keySet().toArray(new UUID[0]));
   }
 
+  @Implementation(minSdk = S)
+  protected int getNameLengthForAdvertise() {
+    return name.length();
+  }
+
+  // TODO: remove this method as it shouldn't be necessary.
+  //  Real android just calls IBluetoothManager.getBluetoothGatt
+  @Implementation(minSdk = V.SDK_INT)
+  protected IBluetoothGatt getBluetoothGatt() {
+    if (ibluetoothGatt == null) {
+      ibluetoothGatt = IBluetoothGattDelegates.createIBluetoothGatt();
+    }
+    return ibluetoothGatt;
+  }
+
   private static final class BackgroundRfcommServerEntry {
     final BluetoothServerSocket serverSocket;
     final PendingIntent pendingIntent;
@@ -797,40 +814,5 @@ public class ShadowBluetoothAdapter {
     @Accessor("sBluetoothLeScanner")
     @Static
     void setSBluetoothLeScanner(BluetoothLeScanner scanner);
-  }
-
-  // Any BluetoothAdapter calls which need to invoke BluetoothManager methods can delegate those
-  // calls to this class. The default behavior for any methods not defined in this class is a no-op.
-  @SuppressWarnings("unused")
-  static class BluetoothManagerDelegate {
-    /**
-     * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
-     * automatically invoke the service connected callback.
-     */
-    public boolean bindBluetoothProfileService(
-        int bluetoothProfile, String serviceName, IBluetoothProfileServiceConnection proxy) {
-      if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
-        return false;
-      }
-      try {
-        proxy.onServiceConnected(null, null);
-      } catch (RemoteException e) {
-        return false;
-      }
-      return true;
-    }
-
-    /**
-     * Allows the internal BluetoothProfileConnector associated with a {@link BluetoothProfile} to
-     * automatically invoke the service disconnected callback.
-     */
-    public void unbindBluetoothProfileService(
-        int bluetoothProfile, IBluetoothProfileServiceConnection proxy) {
-      try {
-        proxy.onServiceDisconnected(null);
-      } catch (RemoteException e) {
-        // nothing to do
-      }
-    }
   }
 }
