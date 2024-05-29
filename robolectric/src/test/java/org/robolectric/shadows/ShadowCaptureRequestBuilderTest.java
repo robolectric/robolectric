@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowCaptureRequestBuilder}. */
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 @RunWith(AndroidJUnit4.class)
 public class ShadowCaptureRequestBuilderTest {
 

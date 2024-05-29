@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.S;
@@ -23,7 +22,7 @@ import org.robolectric.annotation.HiddenApi;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-@Implements(value = JobScheduler.class, minSdk = LOLLIPOP)
+@Implements(value = JobScheduler.class)
 public abstract class ShadowJobScheduler {
 
   @Implementation
@@ -55,7 +54,7 @@ public abstract class ShadowJobScheduler {
   /** Whether to fail a job if it is set as expedited. */
   public abstract void failExpeditedJob(boolean enabled);
 
-  @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false, minSdk = LOLLIPOP)
+  @Implements(value = JobSchedulerImpl.class, isInAndroidSdk = false)
   public static class ShadowJobSchedulerImpl extends ShadowJobScheduler {
 
     private final Map<Integer, JobInfo> scheduledJobs =

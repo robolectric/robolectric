@@ -14,7 +14,6 @@ import org.robolectric.util.ReflectionHelpers;
 
 /** Test of ShadowCall. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = VERSION_CODES.LOLLIPOP)
 public final class ShadowCallTest {
   Call call;
   ShadowCall shadowCall;

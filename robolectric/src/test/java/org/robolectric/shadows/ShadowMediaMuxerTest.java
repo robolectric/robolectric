@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -40,7 +39,6 @@ public final class ShadowMediaMuxerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_sameZeroOffset() throws IOException {
     String tempFilePath =
         tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
@@ -50,7 +48,6 @@ public final class ShadowMediaMuxerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_sameNonZeroOffset() throws IOException {
     String tempFilePath =
         tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
@@ -60,7 +57,6 @@ public final class ShadowMediaMuxerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_nonSameButSmallerOffset() throws IOException {
     String tempFilePath =
         tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();
@@ -70,7 +66,6 @@ public final class ShadowMediaMuxerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void basicMuxingFlow_nonSameButLargerOffset() throws IOException {
     String tempFilePath =
         tempDirectory.create("dir").resolve(UUID.randomUUID().toString()).toString();

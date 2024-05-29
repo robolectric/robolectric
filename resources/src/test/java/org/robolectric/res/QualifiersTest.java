@@ -38,26 +38,25 @@ public class QualifiersTest {
 
   ///////// deprecated stuff...
 
-  @Test public void addPlatformVersion() throws Exception {
-    assertThat(Qualifiers.addPlatformVersion("", 21)).isEqualTo("v21");
-    assertThat(Qualifiers.addPlatformVersion("v23", 21)).isEqualTo("v23");
-    assertThat(Qualifiers.addPlatformVersion("foo-v14", 21)).isEqualTo("foo-v14");
-  }
-
-  @Test public void addSmallestScreenWidth() throws Exception {
+  @Test
+  public void addSmallestScreenWidth() throws Exception {
     assertThat(Qualifiers.addSmallestScreenWidth("", 320)).isEqualTo("sw320dp");
     assertThat(Qualifiers.addSmallestScreenWidth("sw160dp", 320)).isEqualTo("sw160dp");
     assertThat(Qualifiers.addSmallestScreenWidth("sw480dp", 320)).isEqualTo("sw480dp");
-    assertThat(Qualifiers.addSmallestScreenWidth("en-v23", 320)).isEqualTo("en-v23-sw320dp"); // todo: order is wrong here
-    assertThat(Qualifiers.addSmallestScreenWidth("en-sw160dp-v23", 320)).isEqualTo("en-sw160dp-v23");
-    assertThat(Qualifiers.addSmallestScreenWidth("en-sw480dp-v23", 320)).isEqualTo("en-sw480dp-v23");
+    assertThat(Qualifiers.addSmallestScreenWidth("en-v23", 320))
+        .isEqualTo("en-v23-sw320dp"); // todo: order is wrong here
+    assertThat(Qualifiers.addSmallestScreenWidth("en-sw160dp-v23", 320))
+        .isEqualTo("en-sw160dp-v23");
+    assertThat(Qualifiers.addSmallestScreenWidth("en-sw480dp-v23", 320))
+        .isEqualTo("en-sw480dp-v23");
   }
 
   @Test public void addScreenWidth() throws Exception {
     assertThat(Qualifiers.addScreenWidth("", 320)).isEqualTo("w320dp");
     assertThat(Qualifiers.addScreenWidth("w160dp", 320)).isEqualTo("w160dp");
     assertThat(Qualifiers.addScreenWidth("w480dp", 320)).isEqualTo("w480dp");
-    assertThat(Qualifiers.addScreenWidth("en-v23", 320)).isEqualTo("en-v23-w320dp"); // todo: order is wrong here
+    assertThat(Qualifiers.addScreenWidth("en-v23", 320))
+        .isEqualTo("en-v23-w320dp"); // todo: order is wrong here
     assertThat(Qualifiers.addScreenWidth("en-w160dp-v23", 320)).isEqualTo("en-w160dp-v23");
     assertThat(Qualifiers.addScreenWidth("en-w480dp-v23", 320)).isEqualTo("en-w480dp-v23");
   }

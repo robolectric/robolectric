@@ -9,14 +9,12 @@ import android.content.ComponentName;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
 import android.nfc.cardemulation.CardEmulation;
-import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
 
 /** Test the shadow implementation of {@link CardEmulation}. */
 @RunWith(AndroidJUnit4.class)
@@ -42,7 +40,6 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
   public void isDefaultServiceForCategory_canOverride() {
     assertThat(cardEmulation.isDefaultServiceForCategory(service, TEST_CATEGORY)).isFalse();
     ShadowCardEmulation.setDefaultServiceForCategory(service, TEST_CATEGORY);
@@ -52,7 +49,6 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
   public void setPreferredService_canCapture() {
     assertThat(ShadowCardEmulation.getPreferredService() == null).isTrue();
     cardEmulation.setPreferredService(activity, service);
@@ -62,7 +58,6 @@ public final class ShadowCardEmulationTest {
   }
 
   @Test
-  @Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
   public void categoryAllowsForegroundPreference_canSet() {
     assertThat(cardEmulation.categoryAllowsForegroundPreference(CardEmulation.CATEGORY_PAYMENT))
         .isFalse();

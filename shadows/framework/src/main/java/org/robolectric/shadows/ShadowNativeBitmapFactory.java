@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
@@ -101,7 +100,7 @@ public class ShadowNativeBitmapFactory {
         nativeAsset, padding, opts, inBitmapHandle, colorSpaceHandle);
   }
 
-  @Implementation(minSdk = LOLLIPOP, maxSdk = P)
+  @Implementation(maxSdk = P)
   protected static Bitmap nativeDecodeAsset(long nativeAsset, Rect padding, Options opts) {
     return nativeDecodeAsset(nativeAsset, padding, opts, nativeInBitmap(opts), 0);
   }

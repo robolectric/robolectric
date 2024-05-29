@@ -5,6 +5,7 @@ import static java.util.Arrays.stream;
 
 import com.google.common.base.Splitter;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import javax.annotation.Nonnull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -274,6 +276,8 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
                 throw new RuntimeException(e);
               }
 
+              Queue<Throwable> thrown = new ArrayDeque<>();
+
               try {
                 // Only invoke @BeforeClass once per class
                 invokeBeforeClass(bootstrappedTestClass, sandbox);
@@ -284,20 +288,32 @@ public class SandboxTestRunner extends BlockJUnit4ClassRunner {
 
                 Statement statement =
                     helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
-
-                // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
-                try {
-                  statement.evaluate();
-                } finally {
-                  afterTest(method, bootstrappedMethod);
-                }
+                statement.evaluate();
               } catch (Throwable throwable) {
-                throw Util.sneakyThrow(throwable);
-              } finally {
+                thrown.add(throwable);
+              }
+
+              try {
+                afterTest(method, bootstrappedMethod);
+              } catch (Throwable throwable) {
+                thrown.add(throwable);
+              }
+
+              try {
                 Thread.currentThread().setContextClassLoader(priorContextClassLoader);
                 finallyAfterTest(method);
                 reportPerfStats(perfStatsCollector);
                 perfStatsCollector.reset();
+              } catch (Throwable throwable) {
+                thrown.add(throwable);
+              }
+
+              Throwable first = thrown.poll();
+              if (first != null) {
+                while (!thrown.isEmpty()) {
+                  first.addSuppressed(thrown.remove());
+                }
+                throw Util.sneakyThrow(first);
               }
             });
       }

@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.nfc.INfcCardEmulation;
 import android.nfc.cardemulation.CardEmulation;
-import android.os.Build;
 import android.provider.Settings;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,13 +34,13 @@ public class ShadowCardEmulation {
     return service.equals(defaultServiceForCategoryMap.get(category));
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.LOLLIPOP)
+  @Implementation
   public boolean setPreferredService(Activity activity, ComponentName service) {
     preferredService = service;
     return true;
   }
 
-  @Implementation(minSdk = Build.VERSION_CODES.LOLLIPOP)
+  @Implementation
   public boolean unsetPreferredService(Activity activity) {
     preferredService = null;
     return true;

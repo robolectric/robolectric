@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -182,7 +180,7 @@ public class ShadowKeyCharacterMap {
     return ReflectionHelpers.callConstructor(KeyCharacterMap.class);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static KeyEvent[] nativeGetEvents(long ptr, char[] chars) {
     int eventsPerChar = 2;
     KeyEvent[] events = new KeyEvent[chars.length * eventsPerChar];
@@ -195,27 +193,12 @@ public class ShadowKeyCharacterMap {
     return events;
   }
 
-  @Implementation(maxSdk = KITKAT)
-  protected static KeyEvent[] nativeGetEvents(int ptr, char[] chars) {
-    return nativeGetEvents((long) ptr, chars);
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static int nativeGetKeyboardType(long ptr) {
     return KeyCharacterMap.FULL;
   }
 
-  @Implementation(maxSdk = KITKAT)
-  protected static int nativeGetKeyboardType(int ptr) {
-    return KeyCharacterMap.FULL;
-  }
-
-  @Implementation(maxSdk = KITKAT)
-  protected static char nativeGetCharacter(int ptr, int keyCode, int metaState) {
-    return nativeGetCharacter((long) ptr, keyCode, metaState);
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static char nativeGetCharacter(long ptr, int keyCode, int metaState) {
     boolean metaShiftOn = (metaState & KeyEvent.META_SHIFT_ON) != 0;
     Character character = KEY_CODE_TO_CHAR.get(keyCode);
@@ -252,27 +235,13 @@ public class ShadowKeyCharacterMap {
         0);
   }
 
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static char nativeGetDisplayLabel(long ptr, int keyCode) {
     return KEY_CODE_TO_CHAR.getOrDefault(keyCode, (char) 0);
   }
 
-  @Implementation(maxSdk = KITKAT)
-  protected static char nativeGetDisplayLabel(int ptr, int keyCode) {
-    return KEY_CODE_TO_CHAR.getOrDefault(keyCode, (char) 0);
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static char nativeGetNumber(long ptr, int keyCode) {
-    Character character = KEY_CODE_TO_CHAR.get(keyCode);
-    if (character == null) {
-      return 0;
-    }
-    return character;
-  }
-
-  @Implementation(maxSdk = KITKAT)
-  protected static char nativeGetNumber(int ptr, int keyCode) {
     Character character = KEY_CODE_TO_CHAR.get(keyCode);
     if (character == null) {
       return 0;

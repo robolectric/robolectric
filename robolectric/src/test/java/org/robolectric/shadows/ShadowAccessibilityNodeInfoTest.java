@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.P;
@@ -107,7 +106,6 @@ public class ShadowAccessibilityNodeInfoTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void shouldRecordFlagsProperly() {
     node = AccessibilityNodeInfo.obtain();
     node.setClickable(false);

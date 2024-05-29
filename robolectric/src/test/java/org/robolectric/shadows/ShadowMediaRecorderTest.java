@@ -5,14 +5,12 @@ import static org.junit.Assert.assertThrows;
 
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.os.Build.VERSION_CODES;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 @RunWith(AndroidJUnit4.class)
@@ -222,7 +220,6 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void testGetSurface() throws Exception {
     mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
     mediaRecorder.prepare();
@@ -230,14 +227,12 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void testGetSurface_beforePrepare() {
     mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
     assertThrows(IllegalStateException.class, () -> mediaRecorder.getSurface());
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void testGetSurface_afterStop() throws Exception {
     mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
     mediaRecorder.prepare();
@@ -247,7 +242,6 @@ public class ShadowMediaRecorderTest {
   }
 
   @Test
-  @Config(minSdk = VERSION_CODES.LOLLIPOP)
   public void testGetSurface_wrongVideoSource() throws Exception {
     mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
     mediaRecorder.prepare();

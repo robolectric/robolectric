@@ -15,8 +15,10 @@ import android.os.Build.VERSION_CODES;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
+import android.view.ViewRootImpl;
 import com.android.internal.R;
-import java.nio.IntBuffer;
+import com.google.common.base.Preconditions;
+import java.util.WeakHashMap;
 import org.robolectric.annotation.GraphicsMode;
 import org.robolectric.util.ReflectionHelpers;
 
@@ -26,7 +28,12 @@ import org.robolectric.util.ReflectionHelpers;
  */
 public final class HardwareRenderingScreenshot {
 
-  static final String USE_HARDWARE_RENDERER_NATIVE_ENV = "robolectric.screenshot.hwrdr.native";
+  // It is important to reuse HardwareRenderer objects, and ensure that after a HardwareRenderer is
+  // collected, no associated views in the same View hierarchy will be rendered as well.
+  private static final WeakHashMap<ViewRootImpl, HardwareRenderer> hardwareRenderers =
+      new WeakHashMap<>();
+
+  static final String PIXEL_COPY_RENDER_MODE = "robolectric.pixelCopyRenderMode";
 
   private HardwareRenderingScreenshot() {}
 
@@ -35,10 +42,11 @@ public final class HardwareRenderingScreenshot {
    * the presence of the {@link #USE_HARDWARE_RENDERER_NATIVE_ENV} property, and the {@link
    * GraphicsMode}.
    */
-  static boolean canTakeScreenshot() {
+  static boolean canTakeScreenshot(View view) {
     return VERSION.SDK_INT >= VERSION_CODES.S
-        && Boolean.getBoolean(HardwareRenderingScreenshot.USE_HARDWARE_RENDERER_NATIVE_ENV)
-        && ShadowView.useRealGraphics();
+        && "hardware".equalsIgnoreCase(System.getProperty(PIXEL_COPY_RENDER_MODE, ""))
+        && ShadowView.useRealGraphics()
+        && view.canHaveDisplayList();
   }
 
   /**
@@ -59,8 +67,10 @@ public final class HardwareRenderingScreenshot {
       // - ImageReader is configured as RGBA_8888.
       // - However the native libs/hwui/pipeline/skia/SkiaHostPipeline.cpp always treats
       //   the buffer as BGRA_8888, thus matching what the Android Bitmap object requires.
-
-      HardwareRenderer renderer = new HardwareRenderer();
+      ViewRootImpl viewRootImpl = view.getViewRootImpl();
+      Preconditions.checkNotNull(viewRootImpl, "View not attached");
+      HardwareRenderer renderer =
+          hardwareRenderers.computeIfAbsent(viewRootImpl, k -> new HardwareRenderer());
       Surface surface = imageReader.getSurface();
       renderer.setSurface(surface);
       Image nativeImage = imageReader.acquireNextImage();
@@ -71,21 +81,8 @@ public final class HardwareRenderingScreenshot {
       renderer.setContentRoot(node);
 
       renderer.createRenderRequest().syncAndDraw();
-
-      int[] renderPixels = new int[width * height];
-
       Plane[] planes = nativeImage.getPlanes();
-      IntBuffer srcBuff = planes[0].getBuffer().asIntBuffer();
-      srcBuff.get(renderPixels);
-
-      destBitmap.setPixels(
-          renderPixels,
-          /* offset= */ 0,
-          /* stride= */ width,
-          /* x= */ 0,
-          /* y= */ 0,
-          width,
-          height);
+      destBitmap.copyPixelsFromBuffer(planes[0].getBuffer());
       surface.release();
     }
   }

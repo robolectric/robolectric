@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_SCREEN_ON;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
@@ -68,7 +67,6 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isWakeLockLevelSupported() {
     assertThat(powerManager.isWakeLockLevelSupported(PowerManager.PARTIAL_WAKE_LOCK)).isFalse();
 
@@ -163,7 +161,6 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isInteractive_shouldGetAndSet() {
     shadowOf(powerManager).turnScreenOn(false);
     assertThat(powerManager.isInteractive()).isFalse();
@@ -181,7 +178,6 @@ public class ShadowPowerManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void isPowerSaveMode_shouldGetAndSet() {
     assertThat(powerManager.isPowerSaveMode()).isFalse();
     shadowOf(powerManager).setIsPowerSaveMode(true);

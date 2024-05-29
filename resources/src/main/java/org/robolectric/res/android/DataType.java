@@ -70,6 +70,8 @@ public enum DataType {
   }
 
   public static DataType fromCode(byte code) {
-    return Preconditions.checkNotNull(FROM_BYTE.get(code), "Unknown resource type: %s", code);
+    DataType type = FROM_BYTE.get(code);
+    Preconditions.checkArgument(type != null, "Unknown resource type: %s", code);
+    return type;
   }
 }

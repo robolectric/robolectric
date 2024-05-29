@@ -1,31 +1,81 @@
 package org.robolectric.shadows;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.TIRAMISU;
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.content.Context;
+import android.os.Looper;
+import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.view.accessibility.CaptioningManager;
+import android.view.accessibility.CaptioningManager.CaptionStyle;
 import android.view.accessibility.CaptioningManager.CaptioningChangeListener;
+import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.Locale;
+import javax.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 /** Tests for the ShadowCaptioningManager. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = 19)
+@Config(minSdk = KITKAT)
 public final class ShadowCaptioningManagerTest {
 
-  @Mock private CaptioningChangeListener captioningChangeListener;
+  private TestCaptioningChangeListener captioningChangeListener =
+      new TestCaptioningChangeListener();
+
+  private static final int ENABLED = 1;
+  private static final int DISABLED = 0;
 
   private CaptioningManager captioningManager;
+  private Context context;
+
+  public class TestCaptioningChangeListener extends CaptioningChangeListener {
+    public boolean isEnabled = false;
+    @Nullable public CaptionStyle captionStyle = null;
+    @Nullable public Locale locale = null;
+    public float fontScale = 1.0f;
+    public boolean systemAudioCaptioningEnabled = false;
+    public boolean systemAudioCaptioningUiEnabled = false;
+
+    @Override
+    public void onEnabledChanged(boolean enabled) {
+      isEnabled = enabled;
+    }
+
+    @Override
+    public void onUserStyleChanged(@NonNull CaptionStyle userStyle) {
+      captionStyle = userStyle;
+    }
+
+    @Override
+    public void onLocaleChanged(@Nullable Locale locale) {
+      this.locale = locale;
+    }
+
+    @Override
+    public void onFontScaleChanged(float fontScale) {
+      this.fontScale = fontScale;
+    }
+
+    @Override
+    public void onSystemAudioCaptioningChanged(boolean enabled) {
+      this.systemAudioCaptioningEnabled = enabled;
+    }
+
+    @Override
+    public void onSystemAudioCaptioningUiChanged(boolean enabled) {
+      this.systemAudioCaptioningUiEnabled = enabled;
+    }
+  }
 
   @Before
   public void setUp() {
@@ -34,87 +84,106 @@ public final class ShadowCaptioningManagerTest {
         (CaptioningManager)
             ApplicationProvider.getApplicationContext()
                 .getSystemService(Context.CAPTIONING_SERVICE);
+    context = RuntimeEnvironment.getApplication();
   }
 
   @Test
   public void setEnabled_true() {
-    assertThat(captioningManager.isEnabled()).isFalse();
-
-    shadowOf(captioningManager).setEnabled(true);
+    Settings.Secure.putInt(
+        context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_ENABLED, ENABLED);
 
     assertThat(captioningManager.isEnabled()).isTrue();
   }
 
   @Test
   public void setEnabled_false() {
-    shadowOf(captioningManager).setEnabled(false);
+    Settings.Secure.putInt(
+        context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_ENABLED, DISABLED);
 
     assertThat(captioningManager.isEnabled()).isFalse();
   }
 
   @Test
-  public void setFontScale_changesValueOfGetFontScale() {
-    float fontScale = 1.5f;
-    shadowOf(captioningManager).setFontScale(fontScale);
-
-    assertThat(captioningManager.getFontScale()).isWithin(0.001f).of(fontScale);
-  }
-
-  @Test
-  public void setFontScale_notifiesObservers() {
-    float fontScale = 1.5f;
+  public void setEnabled_callsCallback() {
     captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    Settings.Secure.putInt(
+        context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_ENABLED, ENABLED);
 
-    shadowOf(captioningManager).setFontScale(fontScale);
-
-    verify(captioningChangeListener).onFontScaleChanged(fontScale);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.isEnabled).isTrue();
   }
 
   @Test
-  public void addCaptioningChangeListener_doesNotRegisterSameListenerTwice() {
-    float fontScale = 1.5f;
+  public void setFontScale_updatesValue() {
+    Settings.Secure.putFloat(
+        context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_FONT_SCALE, 2.0f);
+
+    assertThat(captioningManager.getFontScale()).isEqualTo(2.0f);
+  }
+
+  @Test
+  public void setFontScale_callsCallback() {
     captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    Settings.Secure.putFloat(
+        context.getContentResolver(), Secure.ACCESSIBILITY_CAPTIONING_FONT_SCALE, 3.0f);
 
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.fontScale).isEqualTo(3.0f);
+  }
+
+  @Test
+  public void setLocale_updatesValue() {
+    Settings.Secure.putString(
+        context.getContentResolver(),
+        Secure.ACCESSIBILITY_CAPTIONING_LOCALE,
+        Locale.JAPANESE.toLanguageTag());
+
+    assertThat(captioningManager.getLocale()).isEqualTo(Locale.JAPANESE);
+  }
+
+  @Test
+  public void setLocale_callsCallback() {
     captioningManager.addCaptioningChangeListener(captioningChangeListener);
+    Settings.Secure.putString(
+        context.getContentResolver(),
+        Secure.ACCESSIBILITY_CAPTIONING_LOCALE,
+        Locale.FRENCH.toLanguageTag());
 
-    shadowOf(captioningManager).setFontScale(fontScale);
-    verify(captioningChangeListener).onFontScaleChanged(fontScale);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.locale).isEqualTo(Locale.FRENCH);
   }
 
   @Test
-  public void removeCaptioningChangeListener_unregistersFontScaleListener() {
-    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+  @Config(minSdk = TIRAMISU)
+  public void setSystemAudioCaptioningEnabled_updatesValue() {
+    captioningManager.setSystemAudioCaptioningEnabled(true);
 
-    captioningManager.removeCaptioningChangeListener(captioningChangeListener);
-
-    shadowOf(captioningManager).setFontScale(1.5f);
-    verifyNoMoreInteractions(captioningChangeListener);
+    assertThat(captioningManager.isSystemAudioCaptioningEnabled()).isEqualTo(true);
   }
 
   @Test
-  public void setLocale_nonNull() {
-    Locale locale = Locale.US;
-    assertThat(captioningManager.getLocale()).isNull();
+  @Config(minSdk = TIRAMISU)
+  public void setSystemAudioCaptioningEnabled_callsCallback() {
+    captioningManager.setSystemAudioCaptioningEnabled(false);
 
-    shadowOf(captioningManager).setLocale(locale);
-
-    assertThat(captioningManager.getLocale()).isEqualTo(locale);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.systemAudioCaptioningEnabled).isEqualTo(false);
   }
 
   @Test
-  public void setLocale_null() {
-    shadowOf(captioningManager).setLocale(null);
+  @Config(minSdk = TIRAMISU)
+  public void setSystemAudioCaptioningUiEnabled_updatesValue() {
+    captioningManager.setSystemAudioCaptioningUiEnabled(true);
 
-    assertThat(captioningManager.getLocale()).isNull();
+    assertThat(captioningManager.isSystemAudioCaptioningUiEnabled()).isEqualTo(true);
   }
 
   @Test
-  public void setLocale_notifiesObservers() {
-    Locale locale = Locale.US;
-    captioningManager.addCaptioningChangeListener(captioningChangeListener);
+  @Config(minSdk = TIRAMISU)
+  public void setSystemAudioCaptioningUiEnabled_callsCallback() {
+    captioningManager.setSystemAudioCaptioningUiEnabled(false);
 
-    shadowOf(captioningManager).setLocale(locale);
-
-    verify(captioningChangeListener).onLocaleChanged(locale);
+    shadowOf(Looper.getMainLooper()).idle();
+    assertThat(captioningChangeListener.systemAudioCaptioningUiEnabled).isEqualTo(false);
   }
 }

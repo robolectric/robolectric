@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.Arrays.copyOfRange;
 import static java.util.Collections.max;
@@ -8,6 +7,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.times;
@@ -20,7 +20,6 @@ import android.media.MediaCodec.CodecException;
 import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
-import android.os.Build;
 import android.view.Surface;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.io.IOException;
@@ -33,13 +32,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.verification.VerificationMode;
-import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig;
 import org.robolectric.shadows.ShadowMediaCodec.CodecConfig.Codec;
 
 /** Tests for {@link ShadowMediaCodec}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public final class ShadowMediaCodecTest {
   private static final String AUDIO_MIME = "audio/fake";
   private static final String AUDIO_DECODER_NAME = "audio-fake.decoder";
@@ -212,7 +209,13 @@ public final class ShadowMediaCodecTest {
   @Test
   public void formatChangeReported() throws IOException {
     MediaCodec codec = createAsyncEncoder();
-    verify(callback).onOutputFormatChanged(same(codec), any());
+    MediaFormat mediaFormat = getBasicAacFormat();
+    // ShadowMediaCodec if async, simulates adding codec specific info before making input
+    // buffers available.
+    mediaFormat.setByteBuffer("csd-0", ByteBuffer.wrap(new byte[] {0x13, 0x10}));
+    mediaFormat.setByteBuffer("csd-1", ByteBuffer.wrap(new byte[0]));
+
+    verify(callback).onOutputFormatChanged(same(codec), refEq(mediaFormat));
   }
 
   @Test
@@ -731,10 +734,6 @@ public final class ShadowMediaCodecTest {
   private static void writeToInputBuffer(MediaCodec codec, ByteBuffer src) {
     int inputBufferId = codec.dequeueInputBuffer(WITHOUT_TIMEOUT);
     ByteBuffer inputBuffer = codec.getInputBuffer(inputBufferId);
-    // API versions lower than 21 don't clear the buffer before returning it.
-    if (Build.VERSION.SDK_INT < 21) {
-      inputBuffer.clear();
-    }
     int srcLimit = src.limit();
     int numberOfBytesToWrite = Math.min(src.remaining(), inputBuffer.remaining());
     src.limit(src.position() + numberOfBytesToWrite);

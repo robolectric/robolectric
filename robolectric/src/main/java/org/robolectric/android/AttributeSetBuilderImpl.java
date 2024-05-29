@@ -6,7 +6,7 @@ import static org.robolectric.res.android.ResourceTypes.RES_XML_END_ELEMENT_TYPE
 import static org.robolectric.res.android.ResourceTypes.RES_XML_RESOURCE_MAP_TYPE;
 import static org.robolectric.res.android.ResourceTypes.RES_XML_START_ELEMENT_TYPE;
 import static org.robolectric.res.android.ResourceTypes.ResTable_map.ATTR_TYPE;
-import static org.robolectric.shadows.ShadowLegacyAssetManager.ATTRIBUTE_TYPE_PRECIDENCE;
+import static org.robolectric.shadows.ShadowAssetManager.ATTRIBUTE_TYPE_PRECIDENCE;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -17,7 +17,6 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -27,9 +26,6 @@ import org.robolectric.res.AttrData;
 import org.robolectric.res.AttrData.Pair;
 import org.robolectric.res.AttributeResource;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResType;
-import org.robolectric.res.ResourceTable;
-import org.robolectric.res.TypedResource;
 import org.robolectric.res.android.DataType;
 import org.robolectric.res.android.ResTable;
 import org.robolectric.res.android.ResTable.ResourceName;
@@ -42,11 +38,9 @@ import org.robolectric.res.android.ResourceTypes.ResXMLTree_header;
 import org.robolectric.res.android.ResourceTypes.ResXMLTree_node;
 import org.robolectric.res.android.ResourceTypes.Res_value;
 import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.Converter;
 import org.robolectric.shadows.Converter2;
 import org.robolectric.shadows.ShadowArscAssetManager;
 import org.robolectric.shadows.ShadowAssetManager;
-import org.robolectric.shadows.ShadowLegacyAssetManager;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
@@ -159,72 +153,6 @@ public class AttributeSetBuilderImpl implements AttributeSetBuilder {
             break;
           }
         }
-      }
-    }
-  }
-
-  public static class LegacyResourceResolver implements ResourceResolver {
-
-    private final Context context;
-    private final ResourceTable resourceTable;
-
-    public LegacyResourceResolver(Context context, ResourceTable compileTimeResourceTable) {
-      this.context = context;
-      resourceTable = compileTimeResourceTable;
-    }
-
-    @Override
-    public String getPackageName() {
-      return context.getPackageName();
-    }
-
-    @Override
-    public String getResourceName(Integer attrId) {
-      return resourceTable.getResName(attrId).getFullyQualifiedName();
-    }
-
-    @Override
-    public Integer getIdentifier(String name, String type, String packageName) {
-      Integer resourceId = resourceTable.getResourceId(new ResName(packageName, type, name));
-      if (resourceId == 0) {
-        resourceId = resourceTable.getResourceId(
-            new ResName(packageName, type, name.replace('.', '_')));
-      }
-      return resourceId;
-    }
-
-    @Override
-    public void parseValue(Integer attrId, ResName attrResName, AttributeResource attribute,
-        TypedValue outValue) {
-      ShadowLegacyAssetManager shadowAssetManager = Shadow
-          .extract(context.getResources().getAssets());
-      TypedResource attrTypeData = shadowAssetManager.getAttrTypeData(attribute.resName);
-      if (attrTypeData != null) {
-        AttrData attrData = (AttrData) attrTypeData.getData();
-        String format = attrData.getFormat();
-        String[] types = format.split("\\|");
-        Arrays.sort(types, ATTRIBUTE_TYPE_PRECIDENCE);
-        for (String type : types) {
-          if ("reference".equals(type)) continue; // already handled above
-          Converter2 converter = Converter2.getConverterFor(attrData, type);
-
-          if (converter != null) {
-            if (converter.fillTypedValue(attribute.value, outValue, true)) {
-              break;
-            }
-          }
-
-        }
-        // throw new IllegalArgumentException("wha? " + format);
-      } else {
-      /* In cases where the runtime framework doesn't know this attribute, e.g: viewportHeight (added in 21) on a
-       * KitKat runtine, then infer the attribute type from the value.
-       *
-       * TODO: When we are able to pass the SDK resources from the build environment then we can remove this
-       * and replace the NullResourceLoader with simple ResourceProvider that only parses attribute type information.
-       */
-        ResType resType = ResType.inferFromValue(attribute.value);
-        Converter.getConverter(resType).fillTypedValue(attribute.value, outValue);
       }
     }
   }

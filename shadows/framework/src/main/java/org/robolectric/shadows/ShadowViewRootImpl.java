@@ -10,12 +10,10 @@ import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.util.MergedConfiguration;
 import android.view.Display;
 import android.view.HandlerActionQueue;
-import android.view.IWindowSession;
 import android.view.InsetsState;
 import android.view.Surface;
 import android.view.SurfaceControl;
@@ -92,13 +90,6 @@ public class ShadowViewRootImpl {
   /** Clears the last known state of {@link #isNavigationBarVisible}. */
   protected static void clearIsNavigationBarVisible() {
     ShadowViewRootImpl.isNavigationBarVisible = Optional.empty();
-  }
-
-  @Implementation(maxSdk = VERSION_CODES.JELLY_BEAN)
-  protected static IWindowSession getWindowSession(Looper mainLooper) {
-    IWindowSession windowSession = ShadowWindowManagerGlobal.getWindowSession();
-    ReflectionHelpers.setStaticField(ViewRootImpl.class, "sWindowSession", windowSession);
-    return windowSession;
   }
 
   @Implementation
@@ -388,15 +379,6 @@ public class ShadowViewRootImpl {
     @Accessor("mWindowAttributes")
     WindowManager.LayoutParams getWindowAttributes();
 
-    // == KITKAT
-    void dispatchResized(
-        Rect frame,
-        Rect overscanInsets,
-        Rect contentInsets,
-        Rect visibleInsets,
-        boolean reportDraw,
-        Configuration newConfig);
-
     // <= LOLLIPOP_MR1
     void dispatchResized(
         Rect frame,
@@ -467,9 +449,7 @@ public class ShadowViewRootImpl {
       Rect emptyRect = new Rect(0, 0, 0, 0);
 
       int apiLevel = RuntimeEnvironment.getApiLevel();
-      if (apiLevel == Build.VERSION_CODES.KITKAT) {
-        dispatchResized(frame, emptyRect, emptyRect, emptyRect, true, null);
-      } else if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+      if (apiLevel <= Build.VERSION_CODES.LOLLIPOP_MR1) {
         dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, true, null);
       } else if (apiLevel <= Build.VERSION_CODES.M) {
         dispatchResized(frame, emptyRect, emptyRect, emptyRect, emptyRect, emptyRect, true, null);

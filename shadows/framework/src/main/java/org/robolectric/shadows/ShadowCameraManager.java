@@ -33,9 +33,10 @@ import org.robolectric.util.ReflectionHelpers.ClassParameter;
 import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow class for {@link CameraManager} */
-@Implements(value = CameraManager.class, minSdk = VERSION_CODES.LOLLIPOP)
+@Implements(value = CameraManager.class)
 public class ShadowCameraManager {
   @RealObject private CameraManager realObject;
 
@@ -83,7 +84,7 @@ public class ShadowCameraManager {
     }
   }
 
-  @Implementation(minSdk = U.SDK_INT)
+  @Implementation(minSdk = U.SDK_INT, maxSdk = U.SDK_INT)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId,
       CameraDevice.StateCallback callback,
@@ -91,6 +92,17 @@ public class ShadowCameraManager {
       final int uid,
       final int oomScoreOffset,
       boolean overrideToPortrait) {
+    return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
+  }
+
+  @Implementation(minSdk = V.SDK_INT)
+  protected CameraDevice openCameraDeviceUserAsync(
+      String cameraId,
+      CameraDevice.StateCallback callback,
+      Executor executor,
+      final int uid,
+      final int oomScoreOffset,
+      int rotationOverride) {
     return openCameraDeviceUserAsync(cameraId, callback, executor, uid, oomScoreOffset);
   }
 
@@ -185,7 +197,7 @@ public class ShadowCameraManager {
    * CameraDevice.StateCallback#onDisconnected(CameraDevice)} will not be triggered by {@link
    * CameraManager#openCamera(String, StateCallback, Handler)}.
    */
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP, maxSdk = VERSION_CODES.N)
+  @Implementation(maxSdk = VERSION_CODES.N)
   protected CameraDevice openCameraDeviceUserAsync(
       String cameraId, CameraDevice.StateCallback callback, Handler handler)
       throws CameraAccessException {
@@ -205,14 +217,14 @@ public class ShadowCameraManager {
     return deviceImpl;
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void registerAvailabilityCallback(
       CameraManager.AvailabilityCallback callback, Handler handler) {
     Preconditions.checkNotNull(callback);
     registeredCallbacks.add(callback);
   }
 
-  @Implementation(minSdk = VERSION_CODES.LOLLIPOP)
+  @Implementation
   protected void unregisterAvailabilityCallback(CameraManager.AvailabilityCallback callback) {
     Preconditions.checkNotNull(callback);
     registeredCallbacks.remove(callback);
@@ -329,9 +341,7 @@ public class ShadowCameraManager {
   }
 
   /** Shadow class for internal class CameraManager$CameraManagerGlobal */
-  @Implements(
-      className = "android.hardware.camera2.CameraManager$CameraManagerGlobal",
-      minSdk = VERSION_CODES.LOLLIPOP)
+  @Implements(className = "android.hardware.camera2.CameraManager$CameraManagerGlobal")
   public static class ShadowCameraManagerGlobal {
 
     /**

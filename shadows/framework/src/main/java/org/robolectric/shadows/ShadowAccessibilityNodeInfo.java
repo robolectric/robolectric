@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -429,7 +428,7 @@ public class ShadowAccessibilityNodeInfo {
     this.view = root;
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected AccessibilityWindowInfo getWindow() {
     return accessibilityWindowInfo;
   }
@@ -574,13 +573,8 @@ public class ShadowAccessibilityNodeInfo {
     newShadow.labeledBy = (labeledBy == null) ? null : obtain(labeledBy);
     newShadow.view = view;
     newShadow.actionListener = actionListener;
-    if (getApiLevel() >= LOLLIPOP) {
-      newShadow.accessibilityNodeInfoReflector.setActionsList(
-          new ArrayList<>(realAccessibilityNodeInfo.getActionList()));
-    } else {
-      newShadow.accessibilityNodeInfoReflector.setActionsMask(
-          realAccessibilityNodeInfo.getActions());
-    }
+    newShadow.accessibilityNodeInfoReflector.setActionsList(
+        new ArrayList<>(realAccessibilityNodeInfo.getActionList()));
 
     if (children != null) {
       newShadow.children = new ArrayList<>();
@@ -602,15 +596,14 @@ public class ShadowAccessibilityNodeInfo {
     newInfo.setLiveRegion(realAccessibilityNodeInfo.getLiveRegion());
     newInfo.setRangeInfo(realAccessibilityNodeInfo.getRangeInfo());
     newShadow.realAccessibilityNodeInfo.getExtras().putAll(realAccessibilityNodeInfo.getExtras());
-    if (getApiLevel() >= LOLLIPOP) {
-      newInfo.setMaxTextLength(realAccessibilityNodeInfo.getMaxTextLength());
-      newInfo.setError(realAccessibilityNodeInfo.getError());
-    }
+    newInfo.setMaxTextLength(realAccessibilityNodeInfo.getMaxTextLength());
+    newInfo.setError(realAccessibilityNodeInfo.getError());
+
     if (getApiLevel() >= LOLLIPOP_MR1) {
       newShadow.traversalAfter = (traversalAfter == null) ? null : obtain(traversalAfter);
       newShadow.traversalBefore = (traversalBefore == null) ? null : obtain(traversalBefore);
     }
-    if ((getApiLevel() >= LOLLIPOP) && (accessibilityWindowInfo != null)) {
+    if (accessibilityWindowInfo != null) {
       newShadow.accessibilityWindowInfo =
           ShadowAccessibilityWindowInfo.obtain(accessibilityWindowInfo);
     }

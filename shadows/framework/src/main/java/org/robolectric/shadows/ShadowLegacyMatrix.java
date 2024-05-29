@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import android.graphics.Matrix;
 import android.graphics.Matrix.ScaleToFit;
@@ -74,7 +73,7 @@ public class ShadowLegacyMatrix extends ShadowMatrix {
     return simpleMatrix.equals(SimpleMatrix.IDENTITY);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected boolean isAffine() {
     return simpleMatrix.isAffine();
   }

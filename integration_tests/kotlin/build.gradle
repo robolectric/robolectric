@@ -1,7 +1,12 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.robolectric.gradle.RoboJavaModulePlugin
+import org.robolectric.gradle.SpotlessPlugin
+
 apply plugin: RoboJavaModulePlugin
 apply plugin: 'kotlin'
+apply plugin: SpotlessPlugin
+apply plugin: "io.gitlab.arturbosch.detekt"
+
 compileKotlin {
     compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 }
@@ -18,6 +23,7 @@ dependencies {
     testCompileOnly AndroidSdk.MAX_SDK.coordinates
     testRuntimeOnly AndroidSdk.MAX_SDK.coordinates
     testImplementation libs.kotlin.stdlib
+    testImplementation libs.kotlinx.coroutines.android
     testImplementation libs.junit4
     testImplementation libs.truth
     testImplementation "androidx.test:core:$axtCoreVersion@aar"

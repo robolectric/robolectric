@@ -27,7 +27,7 @@ class PluginFinderTest {
         ImplMinus1::class.java,
         ImplZeroA::class.java,
         ImplOne::class.java,
-        ImplZeroB::class.java
+        ImplZeroB::class.java,
       )
     )
     Truth.assertThat(pluginFinder.findPlugin(Iface::class.java)).isEqualTo(ImplOne::class.java)
@@ -55,7 +55,7 @@ class PluginFinderTest {
         ImplMinus1::class.java,
         ImplZeroA::class.java,
         ImplOne::class.java,
-        ImplZeroB::class.java
+        ImplZeroB::class.java,
       )
     )
     Truth.assertThat(pluginFinder.findPlugins(Iface::class.java))
@@ -63,7 +63,7 @@ class PluginFinderTest {
         ImplOne::class.java,
         ImplZeroA::class.java,
         ImplZeroB::class.java,
-        ImplMinus1::class.java
+        ImplMinus1::class.java,
       )
       .inOrder()
   }
@@ -77,7 +77,7 @@ class PluginFinderTest {
         ImplZeroXSupercedesA::class.java,
         ImplZeroA::class.java,
         ImplOne::class.java,
-        ImplZeroB::class.java
+        ImplZeroB::class.java,
       )
     )
     val plugins = pluginFinder.findPlugins(Iface::class.java)
@@ -86,7 +86,7 @@ class PluginFinderTest {
         ImplOne::class.java,
         ImplZeroB::class.java,
         ImplZeroXSupercedesA::class.java,
-        ImplMinus1::class.java
+        ImplMinus1::class.java,
       )
       .inOrder()
   }
@@ -95,10 +95,12 @@ class PluginFinderTest {
   @Priority(-1) private class ImplMinus1 : Iface
 
   @Priority(0) private class ImplZeroA : Iface
+
   private class ImplZeroB : Iface
 
   @Priority(1) private class ImplOne : Iface
 
   @Supercedes(ImplZeroA::class) private class ImplZeroXSupercedesA : Iface
+
   private interface Iface
 }

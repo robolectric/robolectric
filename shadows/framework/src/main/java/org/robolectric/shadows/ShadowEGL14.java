@@ -5,14 +5,13 @@ import android.opengl.EGLConfig;
 import android.opengl.EGLContext;
 import android.opengl.EGLDisplay;
 import android.opengl.EGLSurface;
-import android.os.Build.VERSION_CODES;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.ReflectionHelpers.ClassParameter;
 
 /** Shadow for EGL14. Currently doesn't handle real graphics work, but avoids crashing when run. */
-@Implements(value = EGL14.class, minSdk = VERSION_CODES.LOLLIPOP)
+@Implements(value = EGL14.class)
 public class ShadowEGL14 {
   private static final long UNUSED_HANDLE_ID = 43L;
 
@@ -37,7 +36,11 @@ public class ShadowEGL14 {
       int configSize,
       int[] numConfig,
       int numConfigOffset) {
-    configs[configsOffset] = createEglConfig();
+    // The configs array here can be null, in which case the numConfig output is supposed to be
+    // set to the number of matching configs instead of the number of returned configs.
+    if (configs != null) {
+      configs[configsOffset] = createEglConfig();
+    }
     numConfig[numConfigOffset] = 1;
     return true;
   }

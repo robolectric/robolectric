@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
-import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageParser;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implements;
-import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowLog.LogItem;
 import org.robolectric.util.ReflectionHelpers;
 import org.robolectric.util.reflector.Accessor;
@@ -35,20 +33,13 @@ public class ShadowPackageParser {
     PackageParser packageParser = new PackageParser();
 
     try {
-      Package thePackage;
-      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.LOLLIPOP) {
-        // TODO(christianw/brettchabot): workaround for NPE from probable bug in Q.
-        // Can be removed when upstream properly handles a null callback
-        // PackageParser#setMinAspectRatio(Package)
-        if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
-          QHelper.setCallback(packageParser);
-        }
-        thePackage = packageParser.parsePackage(apkFile.toFile(), 0);
-      } else { // JB -> KK
-        thePackage =
-            reflector(_PackageParser_.class, packageParser)
-                .parsePackage(apkFile.toFile(), Fs.externalize(apkFile), new DisplayMetrics(), 0);
+      // TODO(christianw/brettchabot): workaround for NPE from probable bug in Q.
+      // Can be removed when upstream properly handles a null callback
+      // PackageParser#setMinAspectRatio(Package)
+      if (RuntimeEnvironment.getApiLevel() >= Build.VERSION_CODES.Q) {
+        QHelper.setCallback(packageParser);
       }
+      Package thePackage = packageParser.parsePackage(apkFile.toFile(), 0);
 
       if (thePackage == null) {
         List<LogItem> logItems = ShadowLog.getLogsForTag("PackageParser");
@@ -141,7 +132,7 @@ public class ShadowPackageParser {
         long lastUpdateTime) {
       int apiLevel = RuntimeEnvironment.getApiLevel();
 
-      if (apiLevel <= LOLLIPOP) {
+      if (apiLevel == LOLLIPOP) {
         return generatePackageInfo(
             p,
             gids,

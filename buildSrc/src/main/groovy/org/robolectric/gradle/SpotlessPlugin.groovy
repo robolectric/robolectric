@@ -11,7 +11,7 @@ class SpotlessPlugin implements Plugin<Project> {
             kotlin {
                 // Add configurations for Kotlin files
                 target '**/*.kt'
-                ktfmt('0.42').googleStyle()
+                ktfmt('0.49').googleStyle()
             }
             groovy {
                 // Add configurations for Groovy files
@@ -21,7 +21,6 @@ class SpotlessPlugin implements Plugin<Project> {
                 // Add configurations for Groovy Gradle files
                 target('*.gradle', "**/*.gradle")
             }
-
         }
     }
 }

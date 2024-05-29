@@ -1,12 +1,7 @@
 package org.robolectric.shadows;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.TruthJUnit.assume;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.robolectric.shadows.ShadowAssetManager.legacyShadowOf;
-import static org.robolectric.shadows.ShadowAssetManager.useLegacy;
 
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -25,9 +20,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
-import org.robolectric.shadows.ShadowResources.ShadowLegacyTheme;
 
 @RunWith(AndroidJUnit4.class)
 public class ShadowAssetManagerTest {
@@ -46,7 +38,6 @@ public class ShadowAssetManagerTest {
 
   @Test
   public void openFd_shouldProvideFileDescriptorForDeflatedAsset() throws Exception {
-    assume().that(useLegacy()).isFalse();
     expectedException.expect(FileNotFoundException.class);
     expectedException.expectMessage(
         "This file can not be opened as a file descriptor; it is probably compressed");
@@ -68,62 +59,8 @@ public class ShadowAssetManagerTest {
   @Test
   public void openNonAssetShouldOpenFileFromAndroidJar() throws IOException {
     String fileName = "res/raw/fallbackring.ogg";
-    if (useLegacy()) {
-      // Not the real full path (it's in .m2/repository), but it only cares about the last folder and file name;
-      // retrieves the uncompressed, un-version-qualified file from raw-res/...
-      fileName = "jar:" + fileName;
-    }
     InputStream inputStream = assetManager.openNonAsset(0, fileName, 0);
     assertThat(countBytes(inputStream)).isEqualTo(14611);
-  }
-
-  @Test
-  public void openNonAssetShouldThrowExceptionWhenFileDoesNotExist() throws IOException {
-    assume().that(useLegacy()).isTrue();
-
-    expectedException.expect(IOException.class);
-    expectedException.expectMessage(
-        "res/drawable/does_not_exist.png");
-
-    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
-  }
-
-  @Test
-  public void unknownResourceIdsShouldReportPackagesSearched() throws IOException {
-    assume().that(useLegacy()).isTrue();
-
-    expectedException.expect(Resources.NotFoundException.class);
-    expectedException.expectMessage("Resource ID #0xffffffff");
-
-    resources.newTheme().applyStyle(-1, false);
-    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
-  }
-
-  @Test
-  public void forSystemResources_unknownResourceIdsShouldReportPackagesSearched()
-      throws IOException {
-    assume().that(useLegacy()).isTrue();
-    expectedException.expect(Resources.NotFoundException.class);
-    expectedException.expectMessage("Resource ID #0xffffffff");
-
-    Resources.getSystem().newTheme().applyStyle(-1, false);
-    assetManager.openNonAsset(0, "res/drawable/does_not_exist.png", 0);
-  }
-
-  @Test
-  @Config(qualifiers = "mdpi")
-  public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierMdpi() throws IOException {
-    assume().that(useLegacy()).isTrue();
-    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
-    assertThat(countBytes(inputStream)).isEqualTo(8141);
-  }
-
-  @Test
-  @Config(qualifiers = "hdpi")
-  public void openNonAssetShouldOpenCorrectAssetBasedOnQualifierHdpi() throws IOException {
-    assume().that(useLegacy()).isTrue();
-    InputStream inputStream = assetManager.openNonAsset(0, "res/drawable/robolectric.png", 0);
-    assertThat(countBytes(inputStream)).isEqualTo(23447);
   }
 
   // todo: port to ResourcesTest
@@ -172,41 +109,6 @@ public class ShadowAssetManagerTest {
     TypedValue outValue = new TypedValue();
     typedArray.getValue(0, outValue);
     assertThat(outValue.type).isEqualTo(TypedValue.TYPE_INT_BOOLEAN);
-  }
-
-  @Test
-  public void attrsToTypedArray_shouldAllowMockedAttributeSets() {
-    assume().that(useLegacy()).isTrue();
-    AttributeSet mockAttributeSet = mock(AttributeSet.class);
-    when(mockAttributeSet.getAttributeCount()).thenReturn(1);
-    when(mockAttributeSet.getAttributeNameResource(0)).thenReturn(android.R.attr.windowBackground);
-    when(mockAttributeSet.getAttributeName(0)).thenReturn("android:windowBackground");
-    when(mockAttributeSet.getAttributeValue(0)).thenReturn("value");
-
-    resources.obtainAttributes(mockAttributeSet, new int[]{android.R.attr.windowBackground});
-  }
-
-  @Test
-  public void whenStyleAttrResolutionFails_attrsToTypedArray_returnsNiceErrorMessage() {
-    assume().that(useLegacy()).isTrue();
-    expectedException.expect(RuntimeException.class);
-    expectedException.expectMessage(
-        "no value for org.robolectric:attr/styleNotSpecifiedInAnyTheme in theme with applied"
-            + " styles: [Style org.robolectric:Theme.Robolectric (and parents)]");
-
-   Resources.Theme theme = resources.newTheme();
-   theme.applyStyle(R.style.Theme_Robolectric, false);
-
-    legacyShadowOf(assetManager)
-        .attrsToTypedArray(
-            resources,
-            Robolectric.buildAttributeSet()
-                .setStyleAttribute("?attr/styleNotSpecifiedInAnyTheme")
-                .build(),
-            new int[] {R.attr.string1},
-            0,
-            ((ShadowLegacyTheme) Shadow.extract(theme)).getNativePtr(),
-            0);
   }
 
   ///////////////////////////////

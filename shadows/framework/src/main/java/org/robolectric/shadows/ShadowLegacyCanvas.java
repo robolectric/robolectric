@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -22,7 +20,6 @@ import android.graphics.RectF;
 import com.google.common.base.Preconditions;
 import java.util.ArrayList;
 import java.util.List;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
@@ -72,9 +69,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
   }
 
   private long getNativeId() {
-    return RuntimeEnvironment.getApiLevel() <= KITKAT_WATCH
-        ? (int) ReflectionHelpers.getField(realCanvas, "mNativeCanvas")
-        : realCanvas.getNativeCanvasWrapper();
+    return realCanvas.getNativeCanvasWrapper();
   }
 
   private NativeCanvas getNativeCanvas() {
@@ -483,12 +478,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     canvasReflector.release();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int initRaster(int bitmapHandle) {
-    return (int) nativeObjectRegistry.register(new NativeCanvas());
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = LOLLIPOP_MR1)
+  @Implementation(maxSdk = LOLLIPOP_MR1)
   protected static long initRaster(long bitmapHandle) {
     return nativeObjectRegistry.register(new NativeCanvas());
   }
@@ -518,18 +508,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     return nativeObjectRegistry.getNativeObject(canvasHandle).save();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int native_saveLayer(int nativeCanvas, RectF bounds, int paint, int layerFlags) {
-    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
-  }
-
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int native_saveLayer(
-      int nativeCanvas, float l, float t, float r, float b, int paint, int layerFlags) {
-    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected static int native_saveLayer(
       long nativeCanvas, float l, float t, float r, float b, long nativePaint, int layerFlags) {
     return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
@@ -547,19 +526,7 @@ public class ShadowLegacyCanvas extends ShadowCanvas {
     return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
   }
 
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int native_saveLayerAlpha(
-      int nativeCanvas, RectF bounds, int alpha, int layerFlags) {
-    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
-  }
-
-  @Implementation(maxSdk = KITKAT_WATCH)
-  protected static int native_saveLayerAlpha(
-      int nativeCanvas, float l, float t, float r, float b, int alpha, int layerFlags) {
-    return nativeObjectRegistry.getNativeObject(nativeCanvas).save();
-  }
-
-  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected static int native_saveLayerAlpha(
       long nativeCanvas, float l, float t, float r, float b, int alpha, int layerFlags) {
     return nativeObjectRegistry.getNativeObject(nativeCanvas).save();

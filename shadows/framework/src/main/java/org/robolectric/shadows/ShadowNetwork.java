@@ -1,25 +1,22 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.R;
 
 import android.net.Network;
-import com.google.common.base.Preconditions;
 import java.io.FileDescriptor;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.RealObject;
 import org.robolectric.shadow.api.Shadow;
 import org.robolectric.util.ReflectionHelpers;
 
-@Implements(value = Network.class, minSdk = LOLLIPOP)
+@Implements(value = Network.class)
 public class ShadowNetwork {
 
   @RealObject private Network realObject;
@@ -31,15 +28,10 @@ public class ShadowNetwork {
   /**
    * Creates new instance of {@link Network}, because its constructor is hidden.
    *
-   * <p>Requires API 21 (Lollipop) and above.
-   *
    * @param netId The netId.
    * @return The Network instance.
    */
   public static Network newInstance(int netId) {
-    Preconditions.checkState(
-        RuntimeEnvironment.getApiLevel() >= LOLLIPOP,
-        "android.net.Network requires API 21 (Lollipop) or above");
     return Shadow.newInstance(Network.class, new Class[] {int.class}, new Object[] {netId});
   }
 

@@ -204,12 +204,10 @@ public class ShadowPackageManager {
    * @return existing or newly created activity info.
    */
   public ActivityInfo addActivityIfNotPresent(ComponentName componentName) {
+    ActivityInfo activityInfo = updateName(componentName, new ActivityInfo());
+    activityInfo.flags |= ActivityInfo.FLAG_HARDWARE_ACCELERATED;
     return addComponent(
-        activityFilters,
-        p -> p.activities,
-        (p, a) -> p.activities = a,
-        updateName(componentName, new ActivityInfo()),
-        false);
+        activityFilters, p -> p.activities, (p, a) -> p.activities = a, activityInfo, false);
   }
 
   /**

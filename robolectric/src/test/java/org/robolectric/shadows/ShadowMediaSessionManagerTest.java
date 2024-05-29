@@ -6,7 +6,6 @@ import android.content.Context;
 import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
-import android.os.Build;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import java.util.ArrayList;
@@ -15,11 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
 
 /** Tests for {@link ShadowMediaSessionManager} */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = Build.VERSION_CODES.LOLLIPOP)
 public class ShadowMediaSessionManagerTest {
 
   private MediaSessionManager mediaSessionManager;

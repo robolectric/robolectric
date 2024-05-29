@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -363,7 +362,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     reflector(_Activity_.class, realActivity).setFinished(true);
   }
 
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void finishAndRemoveTask() {
     // Sets the mFinished field in the real activity so NoDisplay activities can be tested.
     reflector(_Activity_.class, realActivity).setFinished(true);
@@ -846,7 +845,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise this
    * implementation has no effect.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void startLockTask() {
     Shadow.<ShadowActivityManager>extract(getActivityManager())
         .setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_LOCKED);
@@ -858,7 +857,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
    * <p>The status of the lock task can be verified using {@link #isLockTask} method. Otherwise this
    * implementation has no effect.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void stopLockTask() {
     Shadow.<ShadowActivityManager>extract(getActivityManager())
         .setLockTaskModeState(ActivityManager.LOCK_TASK_MODE_NONE);

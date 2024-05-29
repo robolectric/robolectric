@@ -4,7 +4,6 @@ import static android.media.AudioTrack.ERROR_BAD_VALUE;
 import static android.media.AudioTrack.ERROR_DEAD_OBJECT;
 import static android.media.AudioTrack.WRITE_BLOCKING;
 import static android.media.AudioTrack.WRITE_NON_BLOCKING;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.P;
@@ -358,7 +357,7 @@ public class ShadowAudioTrack {
    * properly created). Do not block even if {@link AudioTrack} in offload mode is in STOPPING play
    * state. This method returns immediately even with {@link AudioTrack#WRITE_BLOCKING}
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int write(@NonNull ByteBuffer audioData, int sizeInBytes, @WriteMode int writeMode) {
     int encoding = audioTrack.getAudioFormat();
     // Assume that offload support does not change during the lifetime of the instance.

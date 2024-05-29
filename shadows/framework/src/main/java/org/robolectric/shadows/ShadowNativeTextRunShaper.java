@@ -14,6 +14,7 @@ import org.robolectric.versioning.AndroidVersions.U;
     value = TextRunShaper.class,
     minSdk = S.SDK_INT,
     shadowPicker = Picker.class,
+    isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeTextRunShaper {
 

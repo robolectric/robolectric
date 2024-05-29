@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -45,7 +44,6 @@ import org.robolectric.shadows.ShadowTelecomManager.CallRequestMode;
 import org.robolectric.shadows.testing.TestConnectionService;
 
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowTelecomManagerTest {
 
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -710,6 +708,22 @@ public class ShadowTelecomManagerTest {
     PhoneAccountHandle phoneAccountHandle = createHandle("id1");
 
     assertThat(telecomService.handleMmi("123", phoneAccountHandle)).isTrue();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isOutgoingCallPermitted_false() {
+    shadowOf(telecomService).setIsOutgoingCallPermitted(false);
+
+    assertThat(telecomService.isOutgoingCallPermitted(/* phoneAccountHandle= */ null)).isFalse();
+  }
+
+  @Test
+  @Config(minSdk = O)
+  public void isOutgoingCallPermitted_true() {
+    shadowOf(telecomService).setIsOutgoingCallPermitted(true);
+
+    assertThat(telecomService.isOutgoingCallPermitted(/* phoneAccountHandle= */ null)).isTrue();
   }
 
   private static PhoneAccountHandle createHandle(String id) {

@@ -4,6 +4,7 @@ import static android.companion.virtual.VirtualDeviceManager.LAUNCH_SUCCESS;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.PendingIntent;
 import android.companion.virtual.IVirtualDevice;
 import android.companion.virtual.IVirtualDeviceManager;
@@ -42,6 +43,7 @@ import org.robolectric.util.reflector.Accessor;
 import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.ForType;
 import org.robolectric.versioning.AndroidVersions.U;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow for VirtualDeviceManager. */
 @Implements(
@@ -134,6 +136,7 @@ public class ShadowVirtualDeviceManager {
     @RealObject VirtualDeviceManager.VirtualDevice realVirtualDevice;
     private VirtualDeviceParams params;
     private int deviceId;
+    private String persistentDeviceId;
     private PendingIntent pendingIntent;
     private Integer pendingIntentResultCode = LAUNCH_SUCCESS;
     private final AtomicBoolean isClosed = new AtomicBoolean(false);
@@ -153,11 +156,18 @@ public class ShadowVirtualDeviceManager {
           ClassParameter.from(VirtualDeviceParams.class, params));
       this.params = params;
       this.deviceId = nextDeviceId.getAndIncrement();
+      this.persistentDeviceId = "companion:" + associationId;
     }
 
     @Implementation
     protected int getDeviceId() {
       return deviceId;
+    }
+
+    @Implementation(minSdk = V.SDK_INT)
+    @Nullable
+    protected String getPersistentDeviceId() {
+      return persistentDeviceId;
     }
 
     /** Prevents a NPE when calling .close() on a VirtualDevice in unit tests. */

@@ -1061,7 +1061,6 @@ public class ShadowInstrumentation {
   /** Reflector interface for {@link Instrumentation}'s internals. */
   @ForType(Instrumentation.class)
   public interface _Instrumentation_ {
-    // > JELLY_BEAN_MR1:
     void init(
         ActivityThread thread,
         Context instrContext,

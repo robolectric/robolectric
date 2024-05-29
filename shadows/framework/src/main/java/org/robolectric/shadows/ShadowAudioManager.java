@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -977,7 +976,7 @@ public class ShadowAudioManager {
    * returning positive distinct values, or {@link AudioManager#ERROR} if all possible values have
    * already been returned.
    */
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected int generateAudioSessionId() {
     if (audioSessionIdCounter < 0) {
       return AudioManager.ERROR;

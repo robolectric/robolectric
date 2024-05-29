@@ -1,7 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.O_MR1;
@@ -9,7 +7,6 @@ import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
-import static org.robolectric.RuntimeEnvironment.getApiLevel;
 import static org.robolectric.Shadows.shadowOf;
 
 import android.annotation.SuppressLint;
@@ -48,13 +45,8 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   private static final AtomicLong nextFontId = new AtomicLong(1);
   private FontDesc description;
 
-  @Implementation(maxSdk = KITKAT)
-  protected void __constructor__(int fontId) {
-    description = findById(fontId);
-  }
-
   /** Starting in U, this constructor calls {@link #__constructor__(long, String )} below. */
-  @Implementation(minSdk = LOLLIPOP, maxSdk = T.SDK_INT)
+  @Implementation(maxSdk = T.SDK_INT)
   protected void __constructor__(long fontId) {
     description = findById(fontId);
   }
@@ -168,13 +160,13 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   }
 
   @HiddenApi
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected static Typeface createFromFamilies(Object /*FontFamily[]*/ families) {
     return null;
   }
 
   @HiddenApi
-  @Implementation(minSdk = LOLLIPOP, maxSdk = N_MR1)
+  @Implementation(maxSdk = N_MR1)
   protected static Typeface createFromFamiliesWithDefault(Object /*FontFamily[]*/ families) {
     return null;
   }
@@ -204,7 +196,7 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   }
 
   /** Avoid spurious error message about /system/etc/fonts.xml */
-  @Implementation(minSdk = LOLLIPOP, maxSdk = O_MR1)
+  @Implementation(maxSdk = O_MR1)
   protected static void init() {}
 
   @HiddenApi
@@ -220,13 +212,8 @@ public class ShadowLegacyTypeface extends ShadowTypeface {
   protected static Typeface createUnderlyingTypeface(String familyName, int style) {
     long thisFontId = nextFontId.getAndIncrement();
     FONTS.put(thisFontId, new FontDesc(familyName, style));
-    if (getApiLevel() >= LOLLIPOP) {
-      return ReflectionHelpers.callConstructor(
-          Typeface.class, ClassParameter.from(long.class, thisFontId));
-    } else {
-      return ReflectionHelpers.callConstructor(
-          Typeface.class, ClassParameter.from(int.class, (int) thisFontId));
-    }
+    return ReflectionHelpers.callConstructor(
+        Typeface.class, ClassParameter.from(long.class, thisFontId));
   }
 
   private static synchronized FontDesc findById(long fontId) {

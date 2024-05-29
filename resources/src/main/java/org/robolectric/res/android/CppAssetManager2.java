@@ -885,7 +885,10 @@ public class CppAssetManager2 {
     out_value.set(device_value.copy());
 
     // Convert the package ID to the runtime assigned package ID.
-    entry.get().dynamic_ref_table.lookupResourceValue(out_value);
+    int err = entry.get().dynamic_ref_table.lookupResourceValue(out_value);
+    if (err != NO_ERROR) {
+      return K_INVALID_COOKIE;
+    }
 
     out_selected_config.set(new ResTable_config(entry.get().config));
     out_flags.set(entry.get().type_flags);

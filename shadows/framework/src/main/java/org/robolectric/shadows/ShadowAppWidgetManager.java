@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.L;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.O;
 import static org.robolectric.util.reflector.Reflector.reflector;
 
@@ -58,12 +56,7 @@ public class ShadowAppWidgetManager {
   //  to false if the last widget is removed (when removing widgets is implemented).
   private boolean isWidgetsEnabled = false;
 
-  @Implementation(maxSdk = KITKAT)
-  protected void __constructor__(Context context) {
-    this.context = context;
-  }
-
-  @Implementation(minSdk = LOLLIPOP)
+  @Implementation
   protected void __constructor__(Context context, IAppWidgetService service) {
     this.context = context;
   }

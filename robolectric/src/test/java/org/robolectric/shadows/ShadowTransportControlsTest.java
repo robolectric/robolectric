@@ -12,7 +12,6 @@ import static android.media.session.PlaybackState.ACTION_SKIP_TO_NEXT;
 import static android.media.session.PlaybackState.ACTION_SKIP_TO_PREVIOUS;
 import static android.media.session.PlaybackState.ACTION_SKIP_TO_QUEUE_ITEM;
 import static android.media.session.PlaybackState.ACTION_STOP;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static com.google.common.truth.Truth.assertThat;
@@ -45,7 +44,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testPause_lastPerformedActionIsPause() {
     transportControls.pause();
 
@@ -53,7 +51,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testPlay_lastPerformedActionIsPlay() {
     transportControls.play();
 
@@ -61,7 +58,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testPlayFromSearch_lastPerformedActionIsPlayFromSearch() {
     transportControls.playFromSearch("query", new Bundle());
 
@@ -98,7 +94,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testSeekTo_lastPerformedActionIsSeekTo() {
     transportControls.seekTo(50);
 
@@ -107,7 +102,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testSendCustomAction_customActionAndArgsAreRecorded() {
     Bundle customActionArgs = new Bundle();
     customActionArgs.putInt("test", 5);
@@ -118,7 +112,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testSetRating_lastPerformedActionIsSetRating() {
     Rating rating = Rating.newPercentageRating(30F);
     transportControls.setRating(rating);
@@ -128,7 +121,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testSkipToNext_lastPerformedActionIsSkipToNext() {
     transportControls.skipToNext();
 
@@ -136,7 +128,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testSkipToPrevious_lastPerformedActionIsSkipToPrevious() {
     transportControls.skipToPrevious();
 
@@ -144,7 +135,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testSkipToPrevious_lastPerformedActionIsSkipToQueueItem() {
     transportControls.skipToQueueItem(5);
 
@@ -154,7 +144,6 @@ public class ShadowTransportControlsTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void testStop_lastPerformedActionIsStop() {
     transportControls.stop();
 

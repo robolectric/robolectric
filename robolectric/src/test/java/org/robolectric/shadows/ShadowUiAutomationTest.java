@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.KITKAT;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.app.UiAutomation;
@@ -14,13 +13,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
 /** Test for {@link ShadowUiAutomation}. */
 @RunWith(AndroidJUnit4.class)
 public class ShadowUiAutomationTest {
-  @Config(sdk = KITKAT)
   @Test
   public void setAnimationScale_zero() throws Exception {
     ShadowUiAutomation.setAnimationScaleCompat(0);
@@ -32,7 +29,6 @@ public class ShadowUiAutomationTest {
     assertThat(Settings.Global.getFloat(cr, Settings.Global.WINDOW_ANIMATION_SCALE)).isEqualTo(0);
   }
 
-  @Config(sdk = KITKAT)
   @Test
   public void setAnimationScale_one() throws Exception {
     ShadowUiAutomation.setAnimationScaleCompat(1);

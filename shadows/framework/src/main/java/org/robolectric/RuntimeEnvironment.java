@@ -1,6 +1,5 @@
 package org.robolectric;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static org.robolectric.annotation.LooperMode.Mode.LEGACY;
 import static org.robolectric.shadows.ShadowLooper.assertLooperMode;
 
@@ -250,16 +249,6 @@ public class RuntimeEnvironment {
     return apiLevel;
   }
 
-  public static Number castNativePtr(long ptr) {
-    // Weird, using a ternary here doesn't work, there's some auto promotion of boxed types
-    // happening.
-    if (getApiLevel() >= LOLLIPOP) {
-      return ptr;
-    } else {
-      return (int) ptr;
-    }
-  }
-
   /**
    * Retrieves the current master scheduler. This scheduler is always used by the main {@link
    * android.os.Looper Looper}, and if the global scheduler option is set it is also used for the
@@ -325,15 +314,5 @@ public class RuntimeEnvironment {
 
   public static Path getAndroidFrameworkJarPath() {
     return RuntimeEnvironment.androidFrameworkJar;
-  }
-
-  /**
-   * Internal only.
-   *
-   * @deprecated Do not use.
-   */
-  @Deprecated
-  public static boolean useLegacyResources() {
-    return false;
   }
 }

@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.N_MR1;
@@ -82,6 +81,7 @@ import android.os.storage.IStorageManager;
 import android.permission.ILegacyPermissionManager;
 import android.permission.IPermissionManager;
 import android.safetycenter.ISafetyCenterManager;
+import android.security.IFileIntegrityService;
 import android.speech.IRecognitionServiceManager;
 import android.uwb.IUwbAdapter;
 import android.view.IWindowManager;
@@ -188,20 +188,18 @@ public class ShadowServiceManager {
     addBinderService(binderServices, Context.APP_OPS_SERVICE, IAppOpsService.class);
     addBinderService(binderServices, "batteryproperties", IBatteryPropertiesRegistrar.class);
 
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      addBinderService(binderServices, Context.RESTRICTIONS_SERVICE, IRestrictionsManager.class);
-      addBinderService(binderServices, Context.TRUST_SERVICE, ITrustManager.class);
-      addBinderService(binderServices, Context.JOB_SCHEDULER_SERVICE, IJobScheduler.class);
-      addBinderService(binderServices, Context.NETWORK_SCORE_SERVICE, INetworkScoreService.class);
-      addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
-      addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
-      addBinderService(binderServices, Context.MEDIA_SESSION_SERVICE, ISessionManager.class, true);
-      addBinderService(
-          binderServices,
-          Context.VOICE_INTERACTION_MANAGER_SERVICE,
-          IVoiceInteractionManagerService.class,
-          true);
-    }
+    addBinderService(binderServices, Context.RESTRICTIONS_SERVICE, IRestrictionsManager.class);
+    addBinderService(binderServices, Context.TRUST_SERVICE, ITrustManager.class);
+    addBinderService(binderServices, Context.JOB_SCHEDULER_SERVICE, IJobScheduler.class);
+    addBinderService(binderServices, Context.NETWORK_SCORE_SERVICE, INetworkScoreService.class);
+    addBinderService(binderServices, Context.USAGE_STATS_SERVICE, IUsageStatsManager.class);
+    addBinderService(binderServices, Context.MEDIA_ROUTER_SERVICE, IMediaRouterService.class);
+    addBinderService(binderServices, Context.MEDIA_SESSION_SERVICE, ISessionManager.class, true);
+    addBinderService(
+        binderServices,
+        Context.VOICE_INTERACTION_MANAGER_SERVICE,
+        IVoiceInteractionManagerService.class,
+        true);
     if (RuntimeEnvironment.getApiLevel() >= M) {
       addBinderService(binderServices, Context.FINGERPRINT_SERVICE, IFingerprintService.class);
     }
@@ -242,6 +240,7 @@ public class ShadowServiceManager {
       addBinderService(binderServices, Context.TETHERING_SERVICE, ITetheringConnector.class);
       addBinderService(binderServices, "telephony.registry", ITelephonyRegistry.class);
       addBinderService(binderServices, Context.PLATFORM_COMPAT_SERVICE, IPlatformCompat.class);
+      addBinderService(binderServices, Context.FILE_INTEGRITY_SERVICE, IFileIntegrityService.class);
     }
     if (RuntimeEnvironment.getApiLevel() >= S) {
       addBinderService(binderServices, "permissionmgr", IPermissionManager.class);

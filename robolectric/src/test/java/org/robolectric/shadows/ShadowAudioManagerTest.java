@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
 import static android.os.Build.VERSION_CODES.O;
@@ -1233,7 +1232,6 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void generateAudioSessionId_returnsPositiveValues() {
     int audioSessionId = audioManager.generateAudioSessionId();
     int audioSessionId2 = audioManager.generateAudioSessionId();
@@ -1243,7 +1241,6 @@ public class ShadowAudioManagerTest {
   }
 
   @Test
-  @Config(minSdk = LOLLIPOP)
   public void generateAudioSessionId_returnsDistinctValues() {
     int audioSessionId = audioManager.generateAudioSessionId();
     int audioSessionId2 = audioManager.generateAudioSessionId();

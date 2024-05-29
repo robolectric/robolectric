@@ -1,6 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.google.common.truth.Truth.assertThat;
 import static org.robolectric.Shadows.shadowOf;
 
@@ -16,7 +15,6 @@ import org.robolectric.annotation.Config;
 
 /** Robolectric test for {@link ShadowJobService}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowJobServiceTest {
   private JobService jobService;
   @Mock private JobParameters params;

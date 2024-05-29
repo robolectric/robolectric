@@ -2,7 +2,6 @@ package org.robolectric.android;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
-import static com.google.common.truth.TruthJUnit.assume;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
@@ -29,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RuntimeEnvironment;
 import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -272,15 +270,6 @@ public class XmlResourceParserImplTest {
     while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
       assertThat(parser.getEventType()).isEqualTo(evt);
     }
-  }
-
-  @Test
-  public void testIsWhitespace() throws Exception {
-    assume().that(RuntimeEnvironment.useLegacyResources()).isTrue();
-
-    XmlResourceParserImpl parserImpl = (XmlResourceParserImpl) parser;
-    assertThat(parserImpl.isWhitespace("bar")).isFalse();
-    assertThat(parserImpl.isWhitespace(" ")).isTrue();
   }
 
   @Test

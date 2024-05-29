@@ -16,6 +16,7 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -390,5 +391,20 @@ public class ShadowApplication extends ShadowContextWrapper {
   public void setSystemService(String key, Object service) {
     ShadowContextImpl shadowContext = Shadow.extract(realApplication.getBaseContext());
     shadowContext.setSystemService(key, service);
+  }
+
+  /**
+   * Enables or disables predictive back for the current application.
+   *
+   * <p>This is the equivalent of specifying {code android:enableOnBackInvokedCallback} on the
+   * {@code <application>} tag in the Android manifest.
+   */
+  public static void setEnableOnBackInvokedCallback(boolean isEnabled) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      ShadowWindowOnBackInvokedDispatcher.setEnablePredictiveBack(isEnabled);
+      RuntimeEnvironment.getApplication()
+          .getApplicationInfo()
+          .setEnableOnBackInvokedCallback(isEnabled);
+    }
   }
 }

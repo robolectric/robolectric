@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
-import static android.os.Build.VERSION_CODES.KITKAT;
-import static android.os.Build.VERSION_CODES.KITKAT_WATCH;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.base.Preconditions.checkState;
@@ -55,7 +52,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
   @Implementation
   protected void __constructor__(boolean quitAllowed) {
     invokeConstructor(MessageQueue.class, realQueue, from(boolean.class, quitAllowed));
-    int ptr = (int) nativeQueueRegistry.register(this);
+    long ptr = nativeQueueRegistry.register(this);
     reflector(MessageQueueReflector.class, realQueue).setPtr(ptr);
     clockListener =
         () -> {
@@ -70,25 +67,10 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     ShadowPausedSystemClock.addStaticListener(clockListener);
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected void nativeDestroy() {
-    nativeDestroy(reflector(MessageQueueReflector.class, realQueue).getPtr());
-  }
-
-  @Implementation(maxSdk = KITKAT)
-  protected static void nativeDestroy(int ptr) {
-    nativeDestroy((long) ptr);
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
+  @Implementation
   protected static void nativeDestroy(long ptr) {
     ShadowPausedMessageQueue q = nativeQueueRegistry.unregister(ptr);
     ShadowPausedSystemClock.removeListener(q.clockListener);
-  }
-
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected void nativePollOnce(int ptr, int timeoutMillis) {
-    nativePollOnce((long) ptr, timeoutMillis);
   }
 
   // use the generic Object parameter types here, to avoid conflicts with the non-static
@@ -153,30 +135,12 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected void nativeWake(int ptr) {
+  @Implementation
+  protected static void nativeWake(long ptr) {
+    MessageQueue realQueue = nativeQueueRegistry.getNativeObject(ptr).realQueue;
     synchronized (realQueue) {
       realQueue.notifyAll();
     }
-  }
-
-  // use the generic Object parameter types here, to avoid conflicts with the non-static
-  // nativeWake
-  @Implementation(maxSdk = KITKAT)
-  protected static void nativeWake(Object ptr) {
-    // JELLY_BEAN_MR2 has a bug where nativeWake can get called when pointer has already been
-    // destroyed. See here where nativeWake is called outside the synchronized block
-    // https://android.googlesource.com/platform/frameworks/base/+/refs/heads/jb-mr2-release/core/java/android/os/MessageQueue.java#239
-    // So check to see if native object exists first
-    ShadowPausedMessageQueue q = nativeQueueRegistry.peekNativeObject(getLong(ptr));
-    if (q != null) {
-      q.nativeWake(getInt(ptr));
-    }
-  }
-
-  @Implementation(minSdk = KITKAT_WATCH)
-  protected static void nativeWake(long ptr) {
-    nativeQueueRegistry.getNativeObject(ptr).nativeWake((int) ptr);
   }
 
   @Implementation(minSdk = M)
@@ -256,9 +220,8 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     }
   }
 
-  @Implementation(maxSdk = JELLY_BEAN_MR1)
-  protected void quit() {
-    reflector(MessageQueueReflector.class, realQueue).quit(false);
+  void quit() {
+    quit(true);
   }
 
   @Implementation
@@ -494,7 +457,7 @@ public class ShadowPausedMessageQueue extends ShadowMessageQueue {
     boolean getQuitAllowed();
 
     @Accessor("mPtr")
-    void setPtr(int ptr);
+    void setPtr(long ptr);
 
     @Accessor("mPtr")
     int getPtr();

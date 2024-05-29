@@ -28,11 +28,11 @@ import org.robolectric.versioning.AndroidVersions.U;
     isInAndroidSdk = false,
     callNativeMethodsByDefault = true)
 public class ShadowNativeSurface {
-  @Implementation(maxSdk = U.SDK_INT)
+  @Implementation
   protected static long nativeCreateFromSurfaceTexture(SurfaceTexture surfaceTexture)
       throws OutOfResourcesException {
-    DefaultNativeRuntimeLoader.injectAndLoad();
-    return SurfaceNatives.nativeCreateFromSurfaceTexture(surfaceTexture);
+    // SurfaceTexture is not available for host.
+    return 0;
   }
 
   @Implementation(maxSdk = U.SDK_INT)

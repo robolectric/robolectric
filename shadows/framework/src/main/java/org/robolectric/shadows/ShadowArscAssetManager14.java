@@ -6,6 +6,7 @@ import android.content.res.ApkAssets;
 import android.content.res.AssetManager;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.versioning.AndroidVersions.U;
 import org.robolectric.versioning.AndroidVersions.V;
 
@@ -74,6 +75,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   }
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected static void nativeSetConfiguration(
       long ptr,
       int mcc,
@@ -129,6 +131,7 @@ public class ShadowArscAssetManager14 extends ShadowArscAssetManager10 {
   }
 
   @Implementation(minSdk = V.SDK_INT)
+  @InDevelopment
   protected static void nativeSetApkAssets(
       long ptr, @NonNull ApkAssets[] apkAssets, boolean invalidateCaches, boolean preset) {
     nativeSetApkAssets(ptr, apkAssets, invalidateCaches);

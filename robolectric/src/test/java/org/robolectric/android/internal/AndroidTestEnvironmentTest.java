@@ -162,17 +162,6 @@ public class AndroidTestEnvironmentTest {
   }
 
   @Test
-  public void setUpApplicationState_setsVersionQualifierFromSdk() {
-    String givenQualifiers = "";
-    ConfigurationImpl config = new ConfigurationImpl();
-    config.put(Config.class, new Config.Builder().setQualifiers(givenQualifiers).build());
-    config.put(LooperMode.Mode.class, LEGACY);
-    bootstrapWrapper.changeConfig(config);
-    bootstrapWrapper.callSetUpApplicationState();
-    assertThat(RuntimeEnvironment.getQualifiers()).contains("v" + Build.VERSION.RESOURCES_SDK_INT);
-  }
-
-  @Test
   public void setUpApplicationState_setsVersionQualifierFromSdkWithOtherQualifiers() {
     String givenQualifiers = "large-land";
     ConfigurationImpl config = new ConfigurationImpl();
@@ -186,9 +175,11 @@ public class AndroidTestEnvironmentTest {
         ? "nowidecg-lowdr-"
         : "";
     assertThat(RuntimeEnvironment.getQualifiers())
-        .contains("large-notlong-notround-" + optsForO + "land-notnight-mdpi-finger-keyssoft"
-            + "-nokeys-navhidden-nonav-v"
-            + Build.VERSION.RESOURCES_SDK_INT);
+        .contains(
+            "large-notlong-notround-"
+                + optsForO
+                + "land-notnight-mdpi-finger-keyssoft"
+                + "-nokeys-navhidden-nonav");
   }
 
   @Test

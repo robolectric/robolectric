@@ -1,6 +1,5 @@
 package org.robolectric.android.internal;
 
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.LOLLIPOP_MR1;
 import static android.os.Build.VERSION_CODES.M;
 import static android.os.Build.VERSION_CODES.N;
@@ -232,11 +231,9 @@ public final class DisplayConfig {
     logicalDensityDpi = other.logicalDensityDpi;
     physicalXDpi = other.physicalXDpi;
     physicalYDpi = other.physicalYDpi;
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      appVsyncOffsetNanos = other.appVsyncOffsetNanos;
-      presentationDeadlineNanos = other.presentationDeadlineNanos;
-      state = other.state;
-    }
+    appVsyncOffsetNanos = other.appVsyncOffsetNanos;
+    presentationDeadlineNanos = other.presentationDeadlineNanos;
+    state = other.state;
     ownerUid = other.ownerUid;
     ownerPackageName = other.ownerPackageName;
     if (RuntimeEnvironment.getApiLevel() >= O) {
@@ -364,11 +361,9 @@ public final class DisplayConfig {
     other.logicalDensityDpi = logicalDensityDpi;
     other.physicalXDpi = physicalXDpi;
     other.physicalYDpi = physicalYDpi;
-    if (RuntimeEnvironment.getApiLevel() >= LOLLIPOP) {
-      other.appVsyncOffsetNanos = appVsyncOffsetNanos;
-      other.presentationDeadlineNanos = presentationDeadlineNanos;
-      other.state = state;
-    }
+    other.appVsyncOffsetNanos = appVsyncOffsetNanos;
+    other.presentationDeadlineNanos = presentationDeadlineNanos;
+    other.state = state;
     other.ownerUid = ownerUid;
     other.ownerPackageName = ownerPackageName;
     if (RuntimeEnvironment.getApiLevel() >= O) {

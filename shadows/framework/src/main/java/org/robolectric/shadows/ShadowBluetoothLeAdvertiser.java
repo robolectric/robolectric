@@ -4,11 +4,13 @@ import static android.os.Build.VERSION_CODES.O;
 import static android.os.Build.VERSION_CODES.R;
 import static android.os.Build.VERSION_CODES.S;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
+import static org.robolectric.util.reflector.Reflector.reflector;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattServer;
 import android.bluetooth.BluetoothUuid;
+import android.bluetooth.IBluetoothGatt;
 import android.bluetooth.IBluetoothManager;
 import android.bluetooth.le.AdvertiseCallback;
 import android.bluetooth.le.AdvertiseData;
@@ -26,14 +28,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 import org.robolectric.annotation.ReflectorObject;
 import org.robolectric.util.PerfStatsCollector;
 import org.robolectric.util.ReflectionHelpers;
-import org.robolectric.util.ReflectionHelpers.ClassParameter;
+import org.robolectric.util.reflector.Constructor;
 import org.robolectric.util.reflector.Direct;
 import org.robolectric.util.reflector.ForType;
+import org.robolectric.versioning.AndroidVersions.V;
 
 /** Shadow implementation of {@link BluetoothLeAdvertiser}. */
 @Implements(value = BluetoothLeAdvertiser.class, minSdk = O)
@@ -231,16 +235,28 @@ public class ShadowBluetoothLeAdvertiser {
       return;
     }
 
-    AdvertisingSet advertisingSet =
-        ReflectionHelpers.callConstructor(
-            AdvertisingSet.class,
-            ClassParameter.from(int.class, advertiserId.getAndAdd(1)),
-            ClassParameter.from(
-                IBluetoothManager.class,
-                ReflectionHelpers.createNullProxy(IBluetoothManager.class)),
-            ClassParameter.from(
-                AttributionSource.class,
-                ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getAttributionSource")));
+    AdvertisingSet advertisingSet;
+    if (RuntimeEnvironment.getApiLevel() >= V.SDK_INT) {
+      IBluetoothGatt gatt =
+          ReflectionHelpers.callInstanceMethod(bluetoothAdapter, "getBluetoothGatt");
+
+      advertisingSet =
+          reflector(AdvertisingSetReflector.class)
+              .__constructor__(
+                  gatt == null ? ReflectionHelpers.createNullProxy(IBluetoothGatt.class) : gatt,
+                  advertiserId.getAndAdd(1),
+                  bluetoothAdapter,
+                  bluetoothAdapter.getAttributionSource());
+    } else {
+      advertisingSet =
+          reflector(AdvertisingSetReflector.class)
+              .__constructor__(
+                  advertiserId.getAndAdd(1),
+                  ReflectionHelpers.createNullProxy(IBluetoothManager.class),
+                  (AttributionSource)
+                      ReflectionHelpers.callInstanceMethod(
+                          bluetoothAdapter, "getAttributionSource"));
+    }
 
     callback.onAdvertisingSetStarted(
         advertisingSet, parameters.getTxPowerLevel(), AdvertisingSetCallback.ADVERTISE_SUCCESS);
@@ -342,5 +358,19 @@ public class ShadowBluetoothLeAdvertiser {
 
     @Direct
     void __constructor__(BluetoothAdapter bluetoothAdapter);
+  }
+
+  @ForType(AdvertisingSet.class)
+  interface AdvertisingSetReflector {
+    @Constructor
+    AdvertisingSet __constructor__(
+        IBluetoothGatt bluetoothGatt,
+        int advertiserId,
+        BluetoothAdapter bluetoothAdapter,
+        AttributionSource attributionSource);
+
+    @Constructor
+    AdvertisingSet __constructor__(
+        int advertiserId, IBluetoothManager bluetoothManager, AttributionSource attributionSource);
   }
 }

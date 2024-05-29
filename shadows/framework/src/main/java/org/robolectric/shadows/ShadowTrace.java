@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.annotation.InDevelopment;
 import org.robolectric.annotation.Resetter;
 
 /**
@@ -112,6 +113,7 @@ public class ShadowTrace {
   }
 
   @Implementation
+  @InDevelopment
   protected static long nativeGetEnabledTags() {
     return tags;
   }

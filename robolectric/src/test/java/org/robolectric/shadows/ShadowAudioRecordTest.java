@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import static android.media.AudioPort.ROLE_SOURCE;
-import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static android.os.Build.VERSION_CODES.M;
 import static com.google.common.truth.Truth.assertThat;
 import static java.lang.Math.min;
@@ -27,7 +26,6 @@ import org.robolectric.shadows.ShadowAudioRecord.AudioRecordSource;
 
 /** Tests for {@link ShadowAudioRecord}. */
 @RunWith(AndroidJUnit4.class)
-@Config(minSdk = LOLLIPOP)
 public class ShadowAudioRecordTest {
 
   @Test
